@@ -4,6 +4,9 @@ using Puzzle.Core.Levels;
 
 namespace Puzzle.Generator;
 
+/// <summary>Quality numbers of one level as recorded in the report.</summary>
+public sealed record ReportRow(double TargetWinRate, double WinRate, int PoolSize);
+
 /// <summary>The generation report: one CSV row per level, merged with the rows already on disk.</summary>
 public static class GenerationReport
 {
@@ -42,6 +45,41 @@ public static class GenerationReport
         }
 
         File.WriteAllLines(path, lines.Values.Prepend(header));
+    }
+
+    /// <summary>The quality columns of existing report rows, keyed by level (for <c>generate --repair</c>).</summary>
+    public static IReadOnlyDictionary<int, ReportRow> Read(string path)
+    {
+        var rows = new Dictionary<int, ReportRow>();
+        if (!File.Exists(path))
+        {
+            return rows;
+        }
+
+        string[] lines = File.ReadAllLines(path);
+        string[] header = lines.Length > 0 ? lines[0].Split(',') : [];
+        int level = Array.IndexOf(header, "level");
+        int target = Array.IndexOf(header, "targetWin");
+        int win = Array.IndexOf(header, "win");
+        int pool = Array.IndexOf(header, "poolSize");
+        if (Math.Min(Math.Min(level, target), Math.Min(win, pool)) < 0)
+        {
+            return rows;
+        }
+
+        foreach (string[] cells in lines.Skip(1).Select(line => line.Split(',')))
+        {
+            if (cells.Length == header.Length
+                && int.TryParse(cells[level], NumberStyles.Integer, Invariant, out int number)
+                && double.TryParse(cells[target], NumberStyles.Float, Invariant, out double targetWin)
+                && double.TryParse(cells[win], NumberStyles.Float, Invariant, out double winRate)
+                && int.TryParse(cells[pool], NumberStyles.Integer, Invariant, out int poolSize))
+            {
+                rows[number] = new ReportRow(targetWin, winRate, poolSize);
+            }
+        }
+
+        return rows;
     }
 
     /// <summary>Per-tier averages, so a profile's outcome can be compared with another at a glance.</summary>

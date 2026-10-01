@@ -31,8 +31,27 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   - Hiçbir aday aralığa oturmazsa en yakını `relaxed` olarak tutuluyor.
 - **Eşit zorluk havuzu:** seed'ler artık bölümün doğrulanmış kazanma oranını hedefliyor (`--target`). Medyan seed'i hedeflemek zor bölümlerde yanlış sonuç veriyordu: #310'da kazanma %26, ortanca seed'ler %0–8.
 - **Rapor:** `levels/generated/report.csv` ve kademe özeti.
-- **CLI ve web:** `generate` komutu (`--quick`, `--overwrite`); web laboratuvarında bölüm arama kutusu.
-- **Testler:** 61'den 67'ye.
+- **CLI ve web:** `generate` komutu (`--quick`, `--overwrite`, `--repair`); web laboratuvarında bölüm arama kutusu.
+- **Testler:** 61'den 68'e.
+
+**İlk 1000 bölüm — sonuçlar**
+
+Üretim 61 dakika, onarım 41 dakika sürdü. Hiç başarısız ya da gevşetilmiş bölüm yok. Sorunu düzeltilmiş olarak 257 bölüm yeniden üretildi, 743'ü aynen korundu.
+
+| Kademe | Bölüm | Ort. hamle | Hedef | Average | Casual | Expert | Near-miss |
+|---|---|---|---|---|---|---|---|
+| Kolay | 204 | 22,6 | %87 | %87 | %67 | %96 | %10 |
+| Normal | 497 | 26,5 | %68 | %69 | %39 | %90 | %23 |
+| Zor | 199 | 31,1 | %43 | %44 | %18 | %74 | %35 |
+| Süper Zor | 100 | 35,5 | %28 | %29 | %10 | %57 | %41 |
+
+- **Onarım:** ilk tam üretimde 231 bölümün seed havuzu 8'in altındaydı (50'si 4 veya altı), 29 bölüm hedeften 7 puandan fazla sapıyordu.
+  - Havuz en az 8 seed olacak şekilde garantiye alındı.
+  - Aralığa sığmayan doğrulama artık adayı reddediyor.
+  - `--repair` yalnızca sorunlu bölümleri yeniden üretti. Sonuç: sapan bölüm 29'dan 2'ye indi, en küçük havuz 8.
+- **Determinizm doğrulandı:** sağlam bir bölüm yeniden üretilince dosyası bayt bayt aynı çıktı.
+- **Bulgu: expert bot average'dan güçlü değil** (#30'da 300 oyun: expert %45, average %48,7; expert'in kötü oyunları daha kötü). Muhtemel sebep, özel taş harcamayı cezalandıran puanlama yüzünden özel taşları biriktirmesi. Rapordaki expert sütunu şimdilik bilgi amaçlı. Gerçek "usta oyuncu" sınırı için geleceği bilmeyen güçlü ajan gerekiyor (plan).
+- **Hedef oyuncu sorusuna veri:** Normal bir bölümü average oyuncu %69, casual oyuncu %39 kazanıyor.
 
 ---
 

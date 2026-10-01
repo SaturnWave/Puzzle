@@ -139,13 +139,9 @@ public sealed class LevelGenerator(GenerationProfile profile)
 
     private GeneratedLevel Finish(LevelPlan plan, LevelDefinition level, LevelReport verification, string style, int candidatesTried, bool relaxed, Stopwatch clock)
     {
-        SeedPoolReport pool = SeedPoolCalibrator.Calibrate(
-            level,
-            new StartBoard.Varied(),
-            () => LevelCalibrator.CreatePolicy(profile.CalibrationBot),
-            profile.SeedPool,
-            targetWinRate: verification.WinRateAt(level.MoveLimit));
-        LevelDefinition final = level.WithAttempts(new AttemptPolicy { SeedPool = pool.Pool.Select(d => d.Seed).ToArray() });
+        double targetWinRate = verification.WinRateAt(level.MoveLimit);
+        IReadOnlyList<SeedDifficulty> poolSeeds = BuildPool(level, targetWinRate);
+        LevelDefinition final = level.WithAttempts(new AttemptPolicy { SeedPool = poolSeeds.Select(d => d.Seed).ToArray() });
         var botWinRates = new Dictionary<string, double>();
         for (int i = 0; i < profile.ReportBots.Count; i++)
         {
@@ -154,7 +150,6 @@ public sealed class LevelGenerator(GenerationProfile profile)
             botWinRates[bot] = report.WinRateAt(final.MoveLimit);
         }
 
-        IReadOnlyList<SeedDifficulty> poolSeeds = pool.Pool.Count > 0 ? pool.Pool : pool.Candidates;
         var metrics = new LevelMetrics
         {
             Number = plan.Number,
@@ -172,7 +167,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
             MovesP90 = verification.MovesNeeded(0.9),
             NearMiss = verification.NearMissRateAt(final.MoveLimit),
             BotWinRates = botWinRates,
-            PoolSize = pool.Pool.Count,
+            PoolSize = poolSeeds.Count,
             PoolMinWinRate = poolSeeds.Min(d => d.WinRateAtLimit),
             PoolMaxWinRate = poolSeeds.Max(d => d.WinRateAtLimit),
             CandidatesTried = candidatesTried,
@@ -180,6 +175,46 @@ public sealed class LevelGenerator(GenerationProfile profile)
             Seconds = clock.Elapsed.TotalSeconds,
         };
         return new GeneratedLevel(final, metrics);
+    }
+
+    /// <summary>
+    /// Equal-difficulty seeds around the level's verified win rate. Retries must not run out of patterns: a pool
+    /// under the profile's minimum is searched again with three times the candidates, and if still short it takes
+    /// the candidates closest to the target regardless of tolerance.
+    /// </summary>
+    private IReadOnlyList<SeedDifficulty> BuildPool(LevelDefinition level, double targetWinRate)
+    {
+        SeedPoolReport Search(int candidates) => SeedPoolCalibrator.Calibrate(
+            level,
+            new StartBoard.Varied(),
+            () => LevelCalibrator.CreatePolicy(profile.CalibrationBot),
+            new SeedPoolSettings
+            {
+                Candidates = candidates,
+                GamesPerSeed = profile.SeedPool.GamesPerSeed,
+                PoolSize = profile.SeedPool.PoolSize,
+                TolerancePoints = profile.SeedPool.TolerancePoints,
+                MoveCap = profile.Calibration.MoveCap,
+            },
+            targetWinRate);
+
+        SeedPoolReport report = Search(profile.SeedPool.Candidates);
+        if (report.Pool.Count >= profile.MinPoolSize)
+        {
+            return report.Pool;
+        }
+
+        report = Search(profile.SeedPool.Candidates * 3);
+        if (report.Pool.Count >= profile.MinPoolSize)
+        {
+            return report.Pool;
+        }
+
+        return report.Candidates
+            .OrderBy(d => Math.Abs(d.WinRateAtLimit - targetWinRate))
+            .ThenBy(d => d.Seed)
+            .Take(profile.MinPoolSize)
+            .ToArray();
     }
 
     private static bool IsCloser(CalibrationOutcome.OutOfRange candidate, CalibrationOutcome.OutOfRange current, LevelPlan plan) =>

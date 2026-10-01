@@ -1,0 +1,75 @@
+{
+  "formatVersion": 1,
+  "id": 833,
+  "difficulty": "Normal",
+  "width": 9,
+  "height": 11,
+  "moves": 31,
+  "cells": [
+    "...###...",
+    "..#####..",
+    ".#######.",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    ".#######.",
+    "..#####..",
+    "...###..."
+  ],
+  "tiles": [
+    "...I.I...",
+    "....I....",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    ".........",
+    "........."
+  ],
+  "goals": [
+    {
+      "type": "DropItems",
+      "count": 5
+    },
+    {
+      "type": "CollectColor",
+      "color": "Purple",
+      "count": 16
+    }
+  ],
+  "spawn": {
+    "colors": 6,
+    "palette": [
+      "Green",
+      "Blue",
+      "Yellow",
+      "Purple",
+      "Orange",
+      "Cyan"
+    ],
+    "smoothingPermille": 60,
+    "goalBias": 0,
+    "cascadeBias": 0,
+    "itemsTotal": 2,
+    "maxItemsOnBoard": 2,
+    "itemChancePercent": 7
+  },
+  "attempts": {
+    "board": "varied",
+    "seedPool": [
+      1099688959,
+      3390545802,
+      847272917,
+      460598085,
+      3554548364,
+      2448479772,
+      805238253,
+      2422258908
+    ]
+  }
+}

@@ -81,6 +81,7 @@ public static class ProfileLoader
                 PoolSize = Positive(file.SeedPool?.PoolSize ?? 16, "seedPool.poolSize"),
                 TolerancePoints = Positive(file.SeedPool?.TolerancePoints ?? 7, "seedPool.tolerancePoints"),
             },
+            MinPoolSize = Math.Min(Positive(file.SeedPool?.MinPoolSize ?? 8, "seedPool.minPoolSize"), file.SeedPool?.PoolSize ?? 16),
         };
     }
 
@@ -297,5 +298,7 @@ public static class ProfileLoader
         public int? PoolSize { get; set; }
 
         public int? TolerancePoints { get; set; }
+
+        public int? MinPoolSize { get; set; }
     }
 }

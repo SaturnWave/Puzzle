@@ -15,7 +15,7 @@ const string Usage = """
       seeds <level.json>    Measure seed difficulty spread and build the equal-difficulty retry pool.
                             --board varied|fixed  --board-seed N  --target 0.6  --candidates 64  --games 64  --pool 16  --tolerance 5  --write
       generate              Produce bot-calibrated levels from a generation profile.
-                            --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite
+                            --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite  --repair
       validate <dir|file>   Parse every level file and build a starting board for it.
     """;
 

@@ -1,0 +1,66 @@
+{
+  "formatVersion": 1,
+  "id": 268,
+  "difficulty": "Normal",
+  "width": 9,
+  "height": 11,
+  "moves": 25,
+  "cells": [
+    "...###...",
+    "..#####..",
+    ".#######.",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    "#########",
+    ".#######.",
+    "..#####..",
+    "...###..."
+  ],
+  "goals": [
+    {
+      "type": "CollectColor",
+      "color": "Red",
+      "count": 38
+    }
+  ],
+  "spawn": {
+    "colors": 6,
+    "palette": [
+      "Red",
+      "Blue",
+      "Yellow",
+      "Purple",
+      "Cyan",
+      "Pink"
+    ],
+    "smoothingPermille": 60,
+    "goalBias": 0,
+    "cascadeBias": 0,
+    "itemsTotal": 0,
+    "maxItemsOnBoard": 0,
+    "itemChancePercent": 0
+  },
+  "attempts": {
+    "board": "varied",
+    "seedPool": [
+      738209851,
+      3409500623,
+      916110077,
+      2290167304,
+      2789264854,
+      1452997149,
+      1742875312,
+      2029817295,
+      3068151462,
+      3717907149,
+      614029521,
+      2795450108,
+      1122245968,
+      1072529634,
+      3427388511,
+      3970832474
+    ]
+  }
+}

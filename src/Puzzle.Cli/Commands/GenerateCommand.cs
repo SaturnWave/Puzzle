@@ -8,8 +8,9 @@ using Puzzle.Tooling;
 namespace Puzzle.Cli.Commands;
 
 /// <summary>
-/// <c>generate [--profile profiles/default.json] [--from 1] [--to 20] [--out levels/generated] [--quick] [--overwrite]</c>:
-/// produces calibrated levels. Existing level files are kept (and feed the novelty check) unless --overwrite.
+/// <c>generate [--profile profiles/default.json] [--from 1] [--to 20] [--out levels/generated] [--quick] [--overwrite] [--repair]</c>:
+/// produces calibrated levels. Existing level files are kept (and feed the novelty check) unless --overwrite;
+/// --repair regenerates only those whose report row shows a small seed pool or an off-target win rate.
 /// </summary>
 internal static class GenerateCommand
 {
@@ -25,12 +26,19 @@ internal static class GenerateCommand
         int to = args.Int("to", from + 19);
         string outDir = args.Text("out", "levels/generated");
         bool overwrite = args.Flag("overwrite");
+        bool repair = args.Flag("repair");
         if (from < 1 || to < from)
         {
             throw new UsageException("--from must be >= 1 and --to >= --from.");
         }
 
         Directory.CreateDirectory(outDir);
+        IReadOnlyDictionary<int, ReportRow> recorded = repair
+            ? GenerationReport.Read(Path.Combine(outDir, GenerationReport.FileName))
+            : new Dictionary<int, ReportRow>();
+        bool NeedsRepair(int number) => !recorded.TryGetValue(number, out ReportRow? row)
+            || row.PoolSize < profile.MinPoolSize
+            || Math.Abs(row.WinRate - row.TargetWinRate) > profile.Calibration.WinRateTolerance;
         Console.WriteLine($"profile '{profile.Name}' -> {outDir}, levels {from}..{to}{(args.Flag("quick") ? " (quick)" : string.Empty)}");
         var generator = new LevelGenerator(profile);
         var recent = new Queue<LevelSignature>(LoadRecent(outDir, from, profile.NoveltyWindow));
@@ -40,7 +48,7 @@ internal static class GenerateCommand
         {
             string path = Path.Combine(outDir, FileNameOf(number));
             LevelSignature signature;
-            if (File.Exists(path) && !overwrite)
+            if (File.Exists(path) && !overwrite && !(repair && NeedsRepair(number)))
             {
                 signature = LevelSignature.Of(LevelJson.Load(path));
                 Console.WriteLine($"#{number:0000} kept (exists)");

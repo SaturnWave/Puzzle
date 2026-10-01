@@ -95,16 +95,27 @@ internal sealed class LevelCalibrator(GenerationProfile profile)
         ? policy
         : throw new InvalidOperationException($"Unknown bot '{bot}' (the profile loader should have rejected it).");
 
-    private CalibrationOutcome.Accepted Verify(LevelDefinition level, LevelReport calibration, LevelPlan plan)
+    /// <summary>
+    /// Re-checks the limit on fresh seeds. A small miss is fixed by re-reading the limit; when the fixed limit
+    /// would leave the move range, the candidate is handed back as out of range so another one is tried.
+    /// </summary>
+    private CalibrationOutcome Verify(LevelDefinition level, LevelReport calibration, LevelPlan plan)
     {
         LevelReport verification = Simulate(level, profile.CalibrationBot, Settings.VerifyRuns, Rng.Derive(plan.Seed, VerificationStream));
-        bool offTarget = Math.Abs(verification.WinRateAt(level.MoveLimit) - plan.TargetWinRate) > Settings.WinRateTolerance;
-        if (offTarget && verification.MoveLimitFor(plan.TargetWinRate) is int adjusted && plan.Moves.Contains(adjusted))
+        if (Math.Abs(verification.WinRateAt(level.MoveLimit) - plan.TargetWinRate) <= Settings.WinRateTolerance)
         {
-            level = level.WithMoveLimit(adjusted);
+            return new CalibrationOutcome.Accepted(level, calibration, verification);
         }
 
-        return new CalibrationOutcome.Accepted(level, calibration, verification);
+        int? adjusted = verification.MoveLimitFor(plan.TargetWinRate);
+        if (adjusted is int fixedLimit && plan.Moves.Contains(fixedLimit))
+        {
+            return new CalibrationOutcome.Accepted(level.WithMoveLimit(fixedLimit), calibration, verification);
+        }
+
+        return adjusted is int outside
+            ? new CalibrationOutcome.OutOfRange(level.WithMoveLimit(outside), verification, outside > plan.Moves.Max)
+            : new CalibrationOutcome.OutOfRange(level, verification, TooLong: true);
     }
 
     private static bool IsCloser(int limit, CalibrationOutcome.OutOfRange? current, LevelPlan plan) =>

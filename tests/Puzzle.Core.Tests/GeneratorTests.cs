@@ -115,6 +115,22 @@ public class GeneratorTests
         Assert.Equal(first.Level.Attempts.SeedPool, second.Level.Attempts.SeedPool);
     }
 
+    [Fact]
+    public void Seed_pool_never_drops_below_the_minimum()
+    {
+        GenerationProfile strict = DefaultProfile.Value with
+        {
+            Calibration = DefaultProfile.Value.Calibration with { Runs = 30, VerifyRuns = 30, ReportRuns = 10, MaxCandidates = 3, MaxScaleIterations = 2 },
+            SeedPool = new SeedPoolSettings { Candidates = 6, GamesPerSeed = 6, PoolSize = 8, TolerancePoints = 1 },
+            MinPoolSize = 5,
+        };
+
+        GeneratedLevel level = new LevelGenerator(strict).Generate(7, []);
+
+        Assert.True(level.Level.Attempts.SeedPool.Count >= 5, $"pool of {level.Level.Attempts.SeedPool.Count}");
+        Assert.Equal(level.Level.Attempts.SeedPool.Count, level.Metrics.PoolSize);
+    }
+
     private static string FindRepoFile(params string[] parts)
     {
         for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)

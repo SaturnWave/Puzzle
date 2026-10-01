@@ -1,0 +1,74 @@
+{
+  "formatVersion": 1,
+  "id": 658,
+  "difficulty": "Normal",
+  "width": 10,
+  "height": 10,
+  "moves": 30,
+  "cells": [
+    "##########",
+    "##########",
+    "##########",
+    ".########.",
+    "..######..",
+    "..######..",
+    "..######..",
+    ".########.",
+    "##########",
+    "##########"
+  ],
+  "jelly": [
+    "..........",
+    "..........",
+    "2.1.11.1.2",
+    ".2.1..1.2.",
+    "..1.11.1..",
+    "...1..1...",
+    "..2.11.2..",
+    ".1.2..2.1.",
+    "..........",
+    ".........."
+  ],
+  "goals": [
+    {
+      "type": "ClearJelly",
+      "count": 24
+    },
+    {
+      "type": "CollectColor",
+      "color": "Orange",
+      "count": 40
+    }
+  ],
+  "spawn": {
+    "colors": 6,
+    "palette": [
+      "Green",
+      "Blue",
+      "Yellow",
+      "Purple",
+      "Orange",
+      "Cyan"
+    ],
+    "smoothingPermille": 60,
+    "goalBias": 0,
+    "cascadeBias": 0,
+    "itemsTotal": 0,
+    "maxItemsOnBoard": 0,
+    "itemChancePercent": 0
+  },
+  "attempts": {
+    "board": "varied",
+    "seedPool": [
+      2061674596,
+      1225419366,
+      1711630215,
+      2903422053,
+      1436617465,
+      2847326551,
+      2492962099,
+      1974258555,
+      4186021028
+    ]
+  }
+}

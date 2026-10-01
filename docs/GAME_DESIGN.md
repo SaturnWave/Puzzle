@@ -1,6 +1,6 @@
 # Oyun Tasarımı ve Algoritma Planı — v0.1
 
-> Durum: Faz 1 (çekirdek algoritma + test botu) tamamlandı; sıradaki Faz 2 (1000 bölüm). UI ve oyunun adı en son.
+> Durum: Faz 1 (motor + bot) ve Faz 2 (ilk 1000 bölüm) tamamlandı. Mobil tasarım, UI ve oyunun adı motor hazır ilan edilince.
 > Kaynak araştırma: [research.md](../research.md)
 
 ## 0. Temel kararlar
@@ -315,7 +315,7 @@ levels/samples      el yapımı örnek bölümler
 |---|---|
 | 1 ✅ | Çekirdek motor, bot, CLI, testler, örnek bölümler |
 | 1.5 ✅ | İki bomba, 8 renk + palet, spawn yönetmeni, mükemmel bilgi çözücüsü, web test laboratuvarı |
-| **2 (sıradaki)** | Bölüm üretici, 1000 bölüm, zorluk raporu |
+| 2 ✅ | Bölüm üretici, 1000 bölüm, zorluk raporu |
 | 3 | Unity entegrasyonu: görsel katman, animasyon event'leri, ipucu, DDA |
 | 4 | UI, oyunun adı, meta oyun (harita, ödüller), ekonomi |
 
@@ -394,6 +394,19 @@ Oyuncu açısından ise senin dediğin gibi kuralı (spawn yönetmeni + seed) te
 | s04 malzeme + zincir, 6 renk | 13 … 28 | %72 … %100 | %89 … %92 |
 
 Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmiş havuz gerekiyor (§17).
+
+**Faz 2 sonuçları — ilk 1000 bölüm** (average bot, doğrulama oyunları; ayrıntı `levels/generated/report.csv`):
+
+| Kademe | Bölüm | Ort. hamle | Hedef | Average | Casual | Expert | Near-miss |
+|---|---|---|---|---|---|---|---|
+| Kolay | 204 | 22,6 | %87 | %87 | %67 | %96 | %10 |
+| Normal | 497 | 26,5 | %68 | %69 | %39 | %90 | %23 |
+| Zor | 199 | 31,1 | %43 | %44 | %18 | %74 | %35 |
+| Süper Zor | 100 | 35,5 | %28 | %29 | %10 | %57 | %41 |
+
+- Hedeften 7 puandan fazla sapan bölüm: 2. Bütün bölümlerin eşit zorluk havuzu en az 8 seed.
+- Gevşetilen veya üretilemeyen bölüm yok.
+- Expert bot average'dan belirgin güçlü değil (§7); expert sütunu bilgi amaçlı.
 
 ## 14. Açık sorular
 

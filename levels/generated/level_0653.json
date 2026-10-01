@@ -1,0 +1,75 @@
+{
+  "formatVersion": 1,
+  "id": 653,
+  "difficulty": "Normal",
+  "width": 10,
+  "height": 11,
+  "moves": 24,
+  "cells": [
+    "##########",
+    "##########",
+    "##########",
+    ".########.",
+    "..######..",
+    "..######..",
+    "..######..",
+    ".########.",
+    "##########",
+    "##########",
+    "##########"
+  ],
+  "chains": [
+    "..........",
+    "....11....",
+    "..........",
+    "..........",
+    "..........",
+    "..........",
+    "....22....",
+    "..........",
+    "..........",
+    "..2....2..",
+    "..2....2.."
+  ],
+  "goals": [
+    {
+      "type": "BreakChains",
+      "count": 8
+    },
+    {
+      "type": "CollectColor",
+      "color": "Purple",
+      "count": 40
+    }
+  ],
+  "spawn": {
+    "colors": 6,
+    "palette": [
+      "Green",
+      "Blue",
+      "Yellow",
+      "Purple",
+      "Orange",
+      "Cyan"
+    ],
+    "smoothingPermille": 60,
+    "goalBias": 0,
+    "cascadeBias": 0,
+    "itemsTotal": 0,
+    "maxItemsOnBoard": 0,
+    "itemChancePercent": 0
+  },
+  "attempts": {
+    "board": "varied",
+    "seedPool": [
+      2708608386,
+      3647791426,
+      1510704942,
+      2614709873,
+      3451414748,
+      16325198,
+      1683216375,
+      3779197799
+    ]
+  }
+}

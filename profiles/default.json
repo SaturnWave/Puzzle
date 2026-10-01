@@ -68,5 +68,5 @@
     "maxScaleIterations": 4
   },
 
-  "seedPool": { "candidates": 32, "gamesPerSeed": 32, "poolSize": 16, "tolerancePoints": 7 }
+  "seedPool": { "candidates": 32, "gamesPerSeed": 32, "poolSize": 16, "tolerancePoints": 7, "minPoolSize": 8 }
 }

@@ -135,5 +135,8 @@ public sealed record GenerationProfile
 
     public required SeedPoolSettings SeedPool { get; init; }
 
+    /// <summary>Retries must not run out of patterns: pools smaller than this are widened (see <c>LevelGenerator</c>).</summary>
+    public required int MinPoolSize { get; init; }
+
     public ProfileBand BandFor(int level) => Bands.Last(band => band.FromLevel <= level);
 }
