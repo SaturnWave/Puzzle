@@ -45,11 +45,13 @@ Geçerli eşleşme: yatay/dikey **3+** aynı renk veya **2x2 kare**. Eşleşen h
 | Desen (öncelik sırasıyla) | Özel taş | Etki |
 |---|---|---|
 | 5'li düz | **Renk Bombası** | Değiştirildiği taşın rengindeki tüm taşları vurur |
-| L / T / + (yatay 3 + dikey 3 kesişir) | **Bomba** | 5x5 alan (yarıçap 2) |
+| 6+ taşlı kesişim (ör. 4'lü × 3'lü, L + kare) | **Büyük Bomba** | 5x5 alan (yarıçap 2) |
+| L / T / + — tam 5 taş (yatay 3 + dikey 3 kesişir) | **Bomba** | 3x3 alan (yarıçap 1) |
 | 4'lü düz | **Roket** (eşleşmeye dik yönde) | Tüm satırı veya sütunu vurur |
 | 2x2 kare | **Pervane** | Etrafındaki + şeklini vurur, sonra bir hedef hücreye uçar |
 | 3'lü | — | — |
 
+- **İki bomba (2026-10-01 kararı):** "Daha büyük şekil, daha büyük bomba." Küçük L/T 3x3, daha büyük kesişimler 5x5 patlar. Yarıçaplar `RuleSet.BombRadius` ve `RuleSet.BigBombRadius` içinde.
 - **Konum:** oyuncunun hareket ettirdiği hücre gruptaysa özel taş orada çıkar; kaskadda desenin sabit hücresinde (bomba → kesişim, roket → 2. hücre, renk bombası → orta, pervane → karenin sol üstü).
 - **Özel taşlar renksizdir** (Royal Match tarzı): eşleşmeye katılmaz. Patlatma yolları: bir komşuyla yer değiştirmek, **dokunmak** (1 hamle) veya başka bir efektin vurması (zincirleme).
 - **Pervane hedefi:** aktif hedefe en çok katkı veren hücre (kutu > zincir > jöle > hedef renk > herhangi taş); eşitlikte deterministik rastgele.
@@ -59,8 +61,8 @@ Geçerli eşleşme: yatay/dikey **3+** aynı renk veya **2x2 kare**. Eşleşen h
 | Kombinasyon | Etki |
 |---|---|
 | Roket + Roket | Satır + sütun (artı) |
-| Roket + Bomba | 3 satır + 3 sütun |
-| Bomba + Bomba | 7x7 alan (yarıçap 3) |
+| Roket + Bomba / Büyük Bomba | 3 satır + 3 sütun / 5 satır + 5 sütun |
+| Bomba + Bomba | Yarıçaplar toplanır: 3x3+3x3 → 5x5, 3x3+5x5 → 7x7, 5x5+5x5 → 9x9 |
 | Pervane + Pervane | + şekli, sonra 3 ayrı hedefe uçuş |
 | Pervane + Roket/Bomba | Pervane hedefe uçar, orada roket/bomba patlar |
 | Renk Bombası + Roket/Bomba/Pervane | En çok bulunan rengin tüm taşları o özel taşa dönüşür ve patlar |
@@ -106,7 +108,20 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
   - diğerleri: `p ← p + p_taban · s`
   - `s` = yumuşatma (‰). `s = 0` saf rastgele; büyüdükçe "renk kuraklığı" kaybolur ama doğal kümelenme de azalır (bölüm zorlaşır). Varsayılan 60‰.
   - Sabit-nokta tam sayı ile hesaplanır (platformlar arası birebir aynı sonuç).
-- **Bölüm başına spawn tablosu:** renk sayısı (3–6), yumuşatma, malzeme spawn'ı (toplam adet, tahtada en fazla, % şans).
+- **Renk paleti:** oyun 8 renk tanır (kırmızı, yeşil, mavi, sarı, mor, turuncu, camgöbeği, pembe). Her bölüm
+  3–8 renklik kendi paletini seçer (varsayılan: ilk N renk). Böylece ilerledikçe yeni renkler tanıtılabilir ve
+  bölüm grupları farklı renk setleriyle oynanabilir. Arayüzde her rengin ayrıca kendi şekli var (daire, kare,
+  elmas, altıgen, üçgen, sekizgen, beşgen, yıldız); renk körü oyuncular için kimlik yalnızca renkte değil.
+- **Spawn yönetmeni ("karma algoritma"):** her yeni taşı aynı anda çalışan birkaç algoritma birlikte belirler:
+  1. **Denge (dueness):** yukarıdaki sönümlü ağırlıklar taban ağırlıkları önerir.
+  2. **Hedef eğilimi** (`goalBias`, −90..+200 %): açık "renk topla" hedefinin renklerini daha sık veya seyrek getirir.
+  3. **Kaskad kontrolü** (`cascadeBias`, −100..+200 %): düştüğü yerde hemen eşleşecek rengin şansını değiştirir.
+     −100 hiç bedava eşleşme vermez (her renk eşleşiyorsa denge ağırlıklarına döner).
+  4. **DDA yardımı** (`GameOptions.AssistPercent`, 0..+100): oyun anında, oyuncuya göre; kaskad ve hedef eğilimine eklenir.
+     **Yalnızca kolaylaştırır.** Bir bölümü zorlaştırmak tasarım zamanı kararıdır (bölüm dosyasındaki bias'lar).
+     Gerekçe: [araştırma §5](research/spawn-control-and-solvability.md).
+  Stratejiler çarpımsal birleşir, sonra tek bir ağırlıklı çekiliş yapılır. Yeni bir strateji eklemek tek bir sınıf işi.
+- **Bölüm başına spawn tablosu:** palet, yumuşatma, hedef/kaskad eğilimi, malzeme spawn'ı (toplam adet, tahtada en fazla, % şans).
 - **Başlangıç tahtası:** hazır eşleşme yok, en az 3 geçerli hamle; sağlanamazsa yeniden üretilir. Bölüm dosyasındaki sabit taşlar (kutu, özel taş, malzeme) korunur.
 - **Karıştırma:** geçerli hamle kalmazsa ücretsiz; eşleşmesiz ve hamleli bir dizilim bulunana kadar.
 - **Bağımsız rastgele akışlar:** başlangıç, spawn, efekt (pervane hedefi vb.) ve karıştırma ayrı akışlardan beslenir; birindeki değişiklik diğerlerini kaydırmaz.
@@ -127,6 +142,21 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 
 - Araştırmaya göre MCTS fazla güçlü oynar ve zorluğu olduğundan düşük gösterir; CNN taklit modeli için gerçek oyuncu verisi gerekir. Bu yüzden ilk sürüm **parametrik greedy**; lansmandan sonra oyuncu telemetrisiyle profiller yeniden kalibre edilir.
 
+**Üç ajan ve hata payı** (araştırma §3 ile uyumlu):
+
+| Ajan | Ne bilir | Durum | Ne ölçer |
+|---|---|---|---|
+| (a) **Çözücü** — beam search, mükemmel bilgi | Gelecek taşları bilir (oyunun birebir replikası) | ✅ `BeamSearchSolver` | "Her seferinde doğru hamle" ile bulunan en iyi hamle sayısı (alt sınır tahmini) |
+| (b) Geleceği bilmeyen güçlü ajan | Yalnızca tahtayı; birçok olası geleceği örnekler | Faz 2 (expectimax / MCTS) | Gerçekçi beceri tavanı |
+| (c) İnsan benzeri bot | Yalnızca tahtayı; dikkat + sıcaklık | ✅ `GreedyPolicy` profilleri | Hamle limiti kalibrasyonu |
+
+- Mükemmel oyunu bulmak taşlar bilinse bile NP-zor. Çözücünün sonucu "optimal" değil, "bulunan en iyi"dir.
+- Hamle limiti yalnızca çözücüye göre ayarlanmaz.
+- Faz 2 metrikleri:
+  - `marj = limit − P80(b)`
+  - `beceri aralığı = geçme(b) − geçme(c)`
+  - `şans payı` = seed'ler arası geçme varyansı
+
 ## 8. Hamle sayısının hesaplanması
 
 **Temel fikir:** bot kalan hamleye bakmadan oynadığı için, **sınırsız hamleyle** N oyun oynatıp her oyunun "kaçıncı hamlede bittiğini" kaydetmek yeterlidir. Herhangi bir hamle limiti `L` için kazanma oranı = `bitiş hamlesi ≤ L` olan oyunların oranı (birikimli dağılım). Tek bir simülasyon grubuyla bütün `L` değerleri için kazanma eğrisi elde edilir.
@@ -141,7 +171,7 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 Her bölüm `i` için deterministik seed (`ana seed + i + deneme no`):
 
 1. **Plan:** zorluk kademesi, tahta boyutu, açık mekanikler, renk sayısı, simetri türü.
-2. **Şekil:** simetrik maske şablonları (köşe kesme, orta delik, elmas, kum saati, sütun boşlukları). Kısıtlar: oynanabilir hücre ≥ %70, bağlı, her hücre beslenebilir.
+2. **Şekil — jeneratör portföyü:** tek jeneratör yerine paralel çalışan birkaç algoritma aday üretir: simetrik maske şablonları (köşe kesme, orta delik, elmas, kum saati, sütun boşlukları), önceki bölümlerin mutasyonu, kısıt yayılımlı (WFC benzeri) yerleşim. Bot her adayı ölçer; hedef zorluğa ve çeşitliliğe en uygun olanı seçilir. Kısıtlar: oynanabilir hücre ≥ %70, bağlı, her hücre beslenebilir.
 3. **Engel yerleşimi:** simetrik desenler (sıra, küme, çerçeve).
 4. **Hedefler:** yerleştirilen engellerden türetilir + renk toplama / malzeme sayısı.
 5. **Yapısal doğrulama:** birkaç seed ile başlangıç tahtası kurulabiliyor mu.
@@ -180,7 +210,7 @@ Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır):
 | Bölüm | Yeni öğe |
 |---|---|
 | 1 | Temel eşleşme, renk toplama |
-| 3 / 5 / 8 / 11 | Roket / Bomba / Pervane / Renk Bombası tanıtımı |
+| 3 / 5 / 8 / 11 / 15 | Roket / Bomba / Pervane / Renk Bombası / Büyük Bomba tanıtımı |
 | 13 | Kutu (1 can) |
 | 21 | Jöle (1 kat) |
 | 31 | Kutu (2 can) |
@@ -189,11 +219,19 @@ Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır):
 | 71 | Jöle (2 kat) |
 | 91 | Kutu (3 can) |
 | 120+ | 2 engel türü birlikte; 200+ 3 tür |
-| 300+ | v2 mekanikleri |
+| 300+ | v2 engelleri ve v2 özel taşları (§16) |
 
-Renk sayısı (Faz 1 ölçümüne göre güncellendi, bkz. §13): bölüm 1–5 → 4 renk (öğretici), 6–30 → 5 renk,
-sonrasında **standart 6 renk**. 5 renk yalnızca Kolay / nefes bölümlerinde. Büyük tahtada 4–5 renk, hedef
-sayıları ne olursa olsun bölümü "kendi kendine oynayan" bir tahtaya çevirir.
+Renk sayısı (Faz 1 ölçümüne göre güncellendi, bkz. §13). Bölümler ilerledikçe yeni renkler gelir:
+
+| Bölüm | Renk | Not |
+|---|---|---|
+| 1–5 | 4 | Öğretici |
+| 6–30 | 5 | |
+| 31–300 | 6 (standart) | 5 renk yalnızca Kolay / nefes bölümlerinde |
+| 301+ | 6–7 | 7. renk Zor / Süper Zor bölümlerde |
+| 600+ | 6–8 | 8 renk yalnızca seyrek "renk fırtınası" kancası olarak |
+
+Büyük tahtada 4–5 renk, hedef sayıları ne olursa olsun bölümü "kendi kendine oynayan" bir tahtaya çevirir.
 
 **Kapalı hücre kısıtı (üretici için):** yan yana 3+ kutudan oluşan bir sıranın altındaki hücrelere ne
 yukarıdan ne çaprazdan taş gelebilir; kutu kırılana kadar boş kalırlar (Candy Crush'taki davranışla aynı).
@@ -213,22 +251,28 @@ Katmanlar karakter ızgarası olarak tutulur (elle de düzenlenebilir):
   "jelly":  ["1111111111", "..."],
   "chains": ["..........", "..."],
   "goals":  [{ "type": "BreakBoxes", "count": 8 }, { "type": "CollectColor", "color": "Red", "count": 30 }],
-  "spawn":  { "colors": 5, "smoothingPermille": 60, "itemsTotal": 0, "maxItemsOnBoard": 0, "itemChancePercent": 0 }
+  "spawn":  { "colors": 6, "palette": ["Red", "Blue", "Cyan", "Pink", "Yellow", "Green"],
+              "smoothingPermille": 60, "goalBias": 0, "cascadeBias": -30,
+              "itemsTotal": 0, "maxItemsOnBoard": 0, "itemChancePercent": 0 }
 }
 ```
+
+`palette` verilirse `colors` yok sayılır; verilmezse palet ilk `colors` renktir.
 
 | Katman | Karakterler |
 |---|---|
 | `cells` | `#` oynanabilir, `.` boşluk |
-| `tiles` | `.` rastgele taş, `r g b y p o` sabit renk, `H`/`V` roket, `X` bomba, `S` pervane, `C` renk bombası, `1`–`3` kutu, `I` malzeme |
+| `tiles` | `.` rastgele taş, `r g b y p o c k` sabit renk (c = camgöbeği, k = pembe), `H`/`V` roket, `X` bomba, `M` büyük bomba, `S` pervane, `C` renk bombası, `1`–`3` kutu, `I` malzeme |
 | `jelly` / `chains` | `.` yok, `1`–`2` kat/can |
 
 ## 11. Proje yapısı
 
 ```
-src/Puzzle.Core     netstandard2.1, C# 9 — simülasyon (Unity'ye girer)
-src/Puzzle.Bot      netstandard2.1, C# 9 — bot politikaları + simülasyon koşucusu (oyunda ipucu için de)
-src/Puzzle.Cli      net10.0 — sim / demo / bench komutları (Faz 2'de generate)
+src/Puzzle.Core     netstandard2.1, C# 9 — simülasyon + spawn yönetmeni (Unity'ye girer)
+src/Puzzle.Bot      netstandard2.1, C# 9 — botlar, çözücü, paralel simülasyon (oyunda ipucu için de)
+src/Puzzle.Tooling  net10.0 — bölüm JSON'u ve bölüm kütüphanesi (CLI, web ve üretici ortak)
+src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de generate)
+src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
 tests/Puzzle.Core.Tests  net10.0, xUnit
 levels/samples      el yapımı örnek bölümler
 ```
@@ -238,6 +282,7 @@ levels/samples      el yapımı örnek bölümler
 | Faz | İçerik |
 |---|---|
 | 1 ✅ | Çekirdek motor, bot, CLI, testler, örnek bölümler |
+| 1.5 ✅ | İki bomba, 8 renk + palet, spawn yönetmeni, mükemmel bilgi çözücüsü, web test laboratuvarı |
 | **2 (sıradaki)** | Bölüm üretici, 1000 bölüm, zorluk raporu |
 | 3 | Unity entegrasyonu: görsel katman, animasyon event'leri, ipucu, DDA |
 | 4 | UI, oyunun adı, meta oyun (harita, ödüller), ekonomi |
@@ -245,6 +290,7 @@ levels/samples      el yapımı örnek bölümler
 ## 13. Faz 1 sonuçları — ölçümler (2026-10-01)
 
 Bot: `greedy-average`, 300 oyun / ölçüm, hamle üst sınırı 150. Komut: `puzzle sim <bölüm> --bot all`.
+Bu bölümdeki ilk iki tablo Faz 1 kuralıyla (tek bomba, 5x5) ölçüldü; Faz 1.5 ölçümleri aşağıda.
 
 **Beceri farkı ölçülebiliyor** (örnek bölümler, medyan bitiriş hamlesi):
 
@@ -271,10 +317,82 @@ Sonuçlar:
 **Hız** (tek çekirdek, Release): motor ~10–16 bin hamle/sn; average bot ~1–2 bin hamle/sn. 12 çekirdekte
 300 oyunluk kalibrasyon bölüm başına ~0,5–1 sn → 1000 bölüm, yeniden denemelerle birlikte dakikalar mertebesinde.
 
+**Faz 1.5 ölçümleri** (iki bomba kuralıyla, s03 jöle bölümü, average bot, 300 oyun):
+
+| Renk | Kaskad eğilimi | Medyan hamle | p90 | Kaskad / hamle |
+|---|---|---|---|---|
+| 5 | 0 / −50 / −100 | 12 / 12 / 13 | 18 / 20 / 20 | 2,00 / 1,80 / 1,51 |
+| 6 | 0 / −50 / −100 | 22 / 22 / 22 | 35 / 35 / 35 | 1,03 / 0,91 / 0,81 |
+
+- Kaskad kontrolü kaskadları ~%25 azaltıyor ama hamle ihtiyacını yalnızca ~%5–8 artırıyor. Neden: kaskadların çoğu yeni düşen taştan değil, mevcut taşların kaymasından doğuyor. Bu yüzden orta güçte bir ince ayar kolu; ana kol renk sayısı.
+
+**Mükemmel bilgi çözücüsü** (`puzzle solve`, beam 8, aynı başlangıç tahtası):
+
+| Bölüm | Çözücü (geleceği bilir) | Average bot | Random bot | Oran |
+|---|---|---|---|---|
+| s03 jöle, 6 renk | 7,7 | 18,2 | ~90 | 2,4x |
+| s02 kutular, 5 renk | 3,7 | 6,0 | ~17 | 1,6x |
+
+Senin gözlemin doğrulanıyor: her seferinde doğru hamleyle (ve gelecek taşları bilerek) bölüm çok daha kısa bitiyor.
+Yanlış hamleler hamle ihtiyacını 1,6–2,4 katına çıkarıyor. Çözücü 6 seed'i 0,5 saniyede çözüyor.
+
 ## 14. Açık sorular
 
-1. Bomba yarıçapı 2 (5x5) mi, 1 (3x3) mü? (Şu an 2; `RuleSet` içinde tek sabit.)
-2. Özel taşa dokunarak patlatma serbest kalsın mı? (Şu an evet, 1 hamle.)
+1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
+2. ~~Dokunarak patlatma?~~ → Evet, 1 hamle.
 3. Zor bölümlerde boyut değişimi bölüm başına mı, yoksa ileride bölüm içinde (çok aşamalı tahta) de olsun mu?
 4. Can sistemi / booster ekonomisi Faz 4'te mi konuşulacak?
-5. Büyük tahtada standart renk sayısını 6 yapıyoruz (§13). Daha da zorlaştırmak için ileride 7. renk eklensin mi?
+5. **Retry politikası (§17):** her denemede yeni refill seed'i (öneri) mi, yoksa aynı bölüm hep aynı taşları mı düşürsün?
+6. **Başlangıç tahtası:** her denemede rastgele mi, yoksa bölüm başına sabit ve tasarımcı onaylı mı?
+
+## 15. Paralel çalışan algoritmalar — mimari
+
+Oyun tek bir algoritma değil, aynı anda çalışan birkaç sistemden oluşuyor:
+
+| Katman | Algoritmalar | Nerede çalışır | Durum |
+|---|---|---|---|
+| **Spawn yönetmeni** | Denge (dueness) + hedef eğilimi + kaskad kontrolü + DDA yardımı, her taş için birlikte | Oyun içi (Core) | ✅ |
+| **Oyuncu botları** | Random, Greedy (4 profil), çözücü (beam search, mükemmel bilgi) | Analiz, ipucu (Bot) | ✅ |
+| **Paralel simülasyon** | Yüzlerce oyun 12 çekirdekte aynı anda; tek seri tüm kazanma eğrisini verir | Kalibrasyon (Bot) | ✅ |
+| **Jeneratör portföyü** | Şablon/simetri, mutasyon, WFC benzeri yerleşim, paralel aday + bot seçimi | Üretim (Faz 2) | Plan |
+| **Oyun içi eşzamanlı sistemler** | İpucu botu, beceri takibi (EWMA), DDA denetleyicisi (yalnızca yardım), near-miss tespiti (yalnızca ölçüm), telemetri | Unity (Faz 3) | Plan |
+
+## 16. İlerleme — yeni renkler, engeller, özel taşlar, temalar
+
+Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" bölümüyle tanıtılır):
+
+- **Renkler:** §9 tablosu (4 → 8 renk) + bölüm grubuna özel palet.
+- **Yeni engeller (v2, 300+):**
+
+  | Engel | Davranış |
+  |---|---|
+  | Buz | Taşın üstünde kaplama; vurulunca kırılır, taş düşebilir |
+  | Taş duvar | Yok edilemez; şekil gibi davranır ama kaskadı keser |
+  | Yayılan balçık | Her tur temizlenmezse komşuya yayılır |
+  | Portal | Sütunlar arası düşüş |
+  | Konveyör | Her hamlede satırı kaydırır |
+  | Bal | Komşu eşleşmeyle temizlenir, üstündeki taşı yapıştırır |
+
+- **Yeni özel taşlar (v2 adayları):**
+
+  | Özel taş | Etki |
+  |---|---|
+  | Şimşek | İki çapraz |
+  | Boya kovası | 3x3 alandaki taşları tek renge boyar |
+  | Mıknatıs | Bir hedef türünü kendine çeker |
+  | Kum saati | +2 hamle, nadir ödül |
+
+  Her yeni özel taş yeni bir `TileKind`. Kapalı küme testleri hangi switch'lerin güncelleneceğini gösterir (Büyük Bomba eklenirken bu sistem eksik switch'i anında yakaladı).
+- **Temalar:** her 50–100 bölüm bir tema (görsel set: taş şekilleri, arka plan, müzik). Mekanik değişmez; yalnızca Unity görsel katmanı.
+
+## 17. Retry politikası ve etik korkuluklar
+
+- Motor deterministik: aynı seed ve aynı hamleler aynı oyunu üretir.
+- Öneri: refill seed'i her denemede `H(bölüm, sürüm, deneme no)` ile değişsin. Aynı seed'i vermek bulmacayı ezberlenebilir yapar.
+- Web laboratuvarındaki "Aynı seed" düğmesi bu ezberlenebilirliği test etmek için var.
+- Korkuluklar ([araştırma §5](research/spawn-control-and-solvability.md)):
+  - DDA yalnızca yardım yönünde (motor zorlar: 0..100).
+  - Harcama veya ödeme eğilimi DDA'ya girdi olmaz.
+  - Near-miss hedeflenmez, yalnızca ölçülür.
+  - Ekstra hamle teklifinden önceki hamlelerde yönetmen sabit kalır (Faz 3).
+  - Seed ve bias kayıtları saklanır.

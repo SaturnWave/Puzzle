@@ -44,7 +44,10 @@ namespace Puzzle.Core.Levels
                 spawn = new SpawnFile
                 {
                     colors = level.Spawn.Colors,
+                    palette = IsDefaultPalette(level.Spawn.Palette) ? null : level.Spawn.Palette.Select(c => c.ToString()).ToArray(),
                     smoothingPermille = level.Spawn.SmoothingPermille,
+                    goalBias = level.Spawn.GoalBiasPercent,
+                    cascadeBias = level.Spawn.CascadeBiasPercent,
                     itemsTotal = level.Spawn.Items.Total,
                     maxItemsOnBoard = level.Spawn.Items.MaxOnBoard,
                     itemChancePercent = level.Spawn.Items.ChancePercent,
@@ -106,8 +109,10 @@ namespace Puzzle.Core.Levels
 
         private static SpawnRules ParseSpawn(SpawnFile spawn) => new SpawnRules
         {
-            Colors = spawn.colors,
+            Palette = spawn.palette is { Length: > 0 } names ? names.Select(ParseColor).ToArray() : GemColors.First(spawn.colors),
             SmoothingPermille = spawn.smoothingPermille,
+            GoalBiasPercent = spawn.goalBias,
+            CascadeBiasPercent = spawn.cascadeBias,
             Items = new ItemSpawnRules
             {
                 Total = spawn.itemsTotal,
@@ -125,6 +130,9 @@ namespace Puzzle.Core.Levels
             GoalSpec.DropItems _ => new GoalFile { type = "DropItems", count = goal.Target },
             _ => throw new InvalidOperationException($"Unhandled goal {goal.GetType().Name}."),
         };
+
+        private static bool IsDefaultPalette(IReadOnlyList<GemColor> palette) =>
+            palette.SequenceEqual(GemColors.First(palette.Count));
 
         /// <summary>Optional layers that carry no information are omitted from the file.</summary>
         private static string[]? NullIfBlank(IReadOnlyList<string>? rows) =>

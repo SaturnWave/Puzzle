@@ -57,6 +57,7 @@ namespace Puzzle.Core.Engine.Resolution
                 case TileKind.RocketH:
                 case TileKind.RocketV:
                 case TileKind.Bomb:
+                case TileKind.BigBomb:
                 case TileKind.Seeker:
                 case TileKind.ColorBomb:
                     Destroy(index, tile);

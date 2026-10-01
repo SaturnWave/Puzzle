@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Puzzle Test Lab</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Puzzle Test Lab</h1>
+    <span id="status-line" class="muted"></span>
+  </header>
+
+  <main class="layout">
+    <aside class="panel controls">
+      <section>
+        <h2>Bölüm</h2>
+        <label>Bölüm
+          <select id="level-select"></select>
+        </label>
+        <div id="level-info" class="muted small"></div>
+        <label>Seed
+          <input id="seed-input" type="number" min="0" max="4294967295" placeholder="rastgele">
+        </label>
+        <label>DDA yardımı <output id="assist-out">0</output>
+          <input id="assist-input" type="range" min="0" max="100" step="10" value="0">
+        </label>
+        <div class="row">
+          <button id="new-game" class="primary">Yeni oyun</button>
+          <button id="replay-seed" title="Aynı başlangıç ve aynı gelecek taşlar">Aynı seed</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Bot</h2>
+        <label>Oyuncu profili
+          <select id="bot-select"></select>
+        </label>
+        <div class="row">
+          <button id="hint-btn">İpucu</button>
+          <button id="bot-step">Bot 1 hamle</button>
+        </div>
+        <button id="autoplay-btn">Bot oynasın ▶</button>
+        <label>Animasyon hızı
+          <select id="speed-select">
+            <option value="2">Yavaş</option>
+            <option value="1" selected>Normal</option>
+            <option value="0.5">Hızlı</option>
+            <option value="0.15">Çok hızlı</option>
+          </select>
+        </label>
+      </section>
+
+      <section>
+        <h2>Analiz</h2>
+        <label>Simülasyon oyun sayısı
+          <select id="runs-select">
+            <option>100</option>
+            <option selected>300</option>
+            <option>1000</option>
+          </select>
+        </label>
+        <button id="simulate-btn">Bölümü simüle et</button>
+        <label>Çözücü genişliği (beam)
+          <select id="beam-select">
+            <option>4</option>
+            <option selected>8</option>
+            <option>16</option>
+          </select>
+        </label>
+        <button id="solve-btn">Mükemmel oyunu bul (buradan)</button>
+      </section>
+    </aside>
+
+    <section class="board-area">
+      <div class="hud">
+        <div class="moves"><span id="moves-left">–</span><small>hamle</small></div>
+        <div id="goals" class="goals"></div>
+      </div>
+      <div id="board-wrap" class="board-wrap">
+        <div id="board" class="board" aria-label="Oyun tahtası"></div>
+        <div id="banner" class="banner hidden"></div>
+      </div>
+      <p class="muted small help">Sürükle ya da iki komşu taşa sırayla dokun · özel taşa dokunmak onu patlatır (1 hamle)</p>
+    </section>
+
+    <aside class="panel info">
+      <section>
+        <h2>Son hamle</h2>
+        <div id="last-move" class="muted">—</div>
+      </section>
+      <section>
+        <h2>Çözücü</h2>
+        <div id="solve-result" class="muted">Henüz çalıştırılmadı.</div>
+      </section>
+      <section>
+        <h2>Simülasyon</h2>
+        <div id="sim-result" class="muted">Henüz çalıştırılmadı.</div>
+      </section>
+      <section>
+        <h2>Hamle günlüğü</h2>
+        <ol id="event-log" class="event-log"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

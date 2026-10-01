@@ -66,13 +66,17 @@ namespace Puzzle.Core.Engine.Resolution
                 }
 
                 _board.Set(effect.Origin, Tile.Empty);
+                if (_events.IsEnabled)
+                {
+                    _events.Add(new GameEvent.TileDestroyed(_shape.PositionOf(effect.Origin), Tile.Special(required)));
+                }
             }
 
             _stats.SpecialsActivated++;
             _stamp++;
             if (_events.IsEnabled)
             {
-                _events.Add(new GameEvent.EffectTriggered(_shape.PositionOf(effect.Origin), effect.Kind));
+                _events.Add(new GameEvent.EffectTriggered(_shape.PositionOf(effect.Origin), effect.Kind, effect.Radius));
             }
 
             int x = _shape.XOf(effect.Origin);
@@ -89,11 +93,7 @@ namespace Puzzle.Core.Engine.Resolution
                     HitArea(x, y, effect.Radius);
                     break;
                 case EffectKind.Cross:
-                    HitRow(y);
-                    HitColumn(x);
-                    break;
-                case EffectKind.WideCross:
-                    for (int offset = -1; offset <= 1; offset++)
+                    for (int offset = -effect.Radius; offset <= effect.Radius; offset++)
                     {
                         HitRow(y + offset);
                         HitColumn(x + offset);

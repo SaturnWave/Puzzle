@@ -310,7 +310,7 @@ namespace Puzzle.Core.Engine.Resolution
             }
         }
 
-        /// <summary>Picks the special by pattern priority (5-line > L/T > 4-line > square) and where it spawns.</summary>
+        /// <summary>Picks the special by pattern priority (5-line > big cross > L/T > 4-line > square) and where it spawns.</summary>
         private void Classify(MatchGroup group, int preferredA, int preferredB)
         {
             foreach (int cell in group.Cells)
@@ -331,7 +331,8 @@ namespace Puzzle.Core.Engine.Resolution
             }
             else if (group.CrossCell >= 0)
             {
-                kind = TileKind.Bomb;
+                // A plain L/T/plus is exactly five gems; anything bigger earns the big bomb.
+                kind = group.Cells.Count >= 6 ? TileKind.BigBomb : TileKind.Bomb;
                 defaultAnchor = group.CrossCell;
             }
             else if (group.FourRun is Run four)

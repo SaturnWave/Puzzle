@@ -3,6 +3,7 @@ using Puzzle.Bot.Simulation;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
+using Puzzle.Tooling;
 
 namespace Puzzle.Cli.Commands;
 

@@ -105,19 +105,19 @@ namespace Puzzle.Core.Levels
 
         internal int Jelly(int index) => _jelly[index];
 
-        /// <summary>Highest color index among preset gems, or -1 when there are none.</summary>
-        internal int MaxPresetColorIndex()
+        /// <summary>Distinct colors of the preset gems.</summary>
+        internal IEnumerable<GemColor> PresetColors()
         {
-            int max = -1;
+            var colors = new HashSet<GemColor>();
             foreach (Tile? preset in _presets)
             {
                 if (preset is Tile tile && tile.IsGem)
                 {
-                    max = Math.Max(max, (int)tile.Color);
+                    colors.Add(tile.Color);
                 }
             }
 
-            return max;
+            return colors;
         }
 
         private static BoardShape ParseShape(IReadOnlyList<string> rows)

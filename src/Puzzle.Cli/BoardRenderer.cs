@@ -70,6 +70,7 @@ internal static class BoardRenderer
             TileKind.RocketH => '-',
             TileKind.RocketV => '|',
             TileKind.Bomb => '*',
+            TileKind.BigBomb => '%',
             TileKind.Seeker => '+',
             TileKind.ColorBomb => '@',
             TileKind.Box => (char)('0' + tile.Hp),

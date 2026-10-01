@@ -39,8 +39,14 @@ namespace Puzzle.Core.Levels
     [Serializable]
     public sealed class SpawnFile
     {
+        /// <summary>Color count; the palette defaults to the first N colors.</summary>
         public int colors = 5;
+
+        /// <summary>Explicit color names; when present it wins and <see cref="colors"/> is ignored.</summary>
+        public string[]? palette;
         public int smoothingPermille = 60;
+        public int goalBias;
+        public int cascadeBias;
         public int itemsTotal;
         public int maxItemsOnBoard;
         public int itemChancePercent;

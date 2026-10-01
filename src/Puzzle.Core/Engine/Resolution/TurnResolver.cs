@@ -59,8 +59,8 @@ namespace Puzzle.Core.Engine.Resolution
 
             if (moved.IsSpecial && target.IsSpecial)
             {
-                _board.Set(from, Tile.Empty);
-                _board.Set(to, Tile.Empty);
+                Consume(from);
+                Consume(to);
                 _pending.Enqueue(Effect.ForCombo(moved.Kind, target.Kind, to, _rules));
                 RunRounds(PlayerMatch.None);
                 return;
@@ -73,7 +73,7 @@ namespace Puzzle.Core.Engine.Resolution
                 int specialAt = moved.IsSpecial ? to : from;
                 Tile special = moved.IsSpecial ? moved : target;
                 Tile partner = moved.IsSpecial ? target : moved;
-                _board.Set(specialAt, Tile.Empty);
+                Consume(specialAt);
                 _pending.Enqueue(special.Kind == TileKind.ColorBomb && partner.IsGem
                     ? Effect.ClearColorOf(partner.Color, specialAt)
                     : Effect.ForSpecial(special.Kind, specialAt, _rules));
@@ -86,10 +86,22 @@ namespace Puzzle.Core.Engine.Resolution
 
         public void ResolveTap(int at)
         {
-            Tile special = _board.Get(at);
-            _board.Set(at, Tile.Empty);
+            Tile special = Consume(at);
             _pending.Enqueue(Effect.ForSpecial(special.Kind, at, _rules));
             RunRounds(PlayerMatch.None);
+        }
+
+        /// <summary>Takes a special off the board as it fires (reported as destroyed so the view removes it).</summary>
+        private Tile Consume(int index)
+        {
+            Tile special = _board.Get(index);
+            _board.Set(index, Tile.Empty);
+            if (_events.IsEnabled)
+            {
+                _events.Add(new GameEvent.TileDestroyed(_shape.PositionOf(index), special));
+            }
+
+            return special;
         }
 
         private void RunRounds(PlayerMatch playerMatch)

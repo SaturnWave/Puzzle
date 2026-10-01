@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
 using Puzzle.Core.Randomness;
@@ -26,7 +27,7 @@ namespace Puzzle.Core.Engine.Resolution
         }
 
         /// <exception cref="LevelInitializationException">No valid starting board exists for this layout.</exception>
-        public void Fill(LevelLayout layout, int colors, Rng rng)
+        public void Fill(LevelLayout layout, IReadOnlyList<GemColor> palette, Rng rng)
         {
             BoardShape shape = _board.Shape;
             if (!layout.HasRandomCells)
@@ -43,7 +44,7 @@ namespace Puzzle.Core.Engine.Resolution
                 {
                     if (shape.IsPlayable(i) && layout.Preset(i) is null)
                     {
-                        _painter.Paint(i, colors, rng);
+                        _painter.Paint(i, palette, rng);
                     }
                 }
 

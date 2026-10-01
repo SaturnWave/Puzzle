@@ -52,9 +52,9 @@ namespace Puzzle.Core.Levels
                 throw Problem($"move limit {MoveLimit} is outside 1..{MaxMoveLimit}");
             }
 
-            if (Layout.MaxPresetColorIndex() >= Spawn.Colors)
+            if (Layout.PresetColors().Any(color => !Spawn.Contains(color)))
             {
-                throw Problem($"a preset gem uses a color outside the level's {Spawn.Colors} colors");
+                throw Problem("a preset gem uses a color outside the level's palette");
             }
 
             foreach (GoalSpec goal in Goals)
@@ -70,9 +70,9 @@ namespace Puzzle.Core.Levels
 
         private void ValidateGoal(GoalSpec goal)
         {
-            if (goal is GoalSpec.CollectColor collect && (int)collect.Color >= Spawn.Colors)
+            if (goal is GoalSpec.CollectColor collect && !Spawn.Contains(collect.Color))
             {
-                throw Problem($"goal {goal} uses a color outside the level's {Spawn.Colors} colors");
+                throw Problem($"goal {goal} uses a color outside the level's palette");
             }
 
             int available = goal switch

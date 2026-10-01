@@ -10,11 +10,11 @@ namespace Puzzle.Core.Engine.Events
         ClearColumn,
         Explode,
 
-        /// <summary>Rocket + rocket: one row and one column.</summary>
+        /// <summary>
+        /// Rows and columns through the origin, Radius cells to each side: rocket + rocket is one row and one
+        /// column (radius 0), rocket + bomb three of each (radius 1), rocket + big bomb five (radius 2).
+        /// </summary>
         Cross,
-
-        /// <summary>Rocket + bomb: three rows and three columns.</summary>
-        WideCross,
         Seeker,
         ClearColor,
 
@@ -43,7 +43,8 @@ namespace Puzzle.Core.Engine.Events
         /// <summary>A special appeared, from a match pattern or a color-bomb conversion.</summary>
         public sealed record SpecialCreated(Position At, TileKind Kind) : GameEvent;
 
-        public sealed record EffectTriggered(Position Origin, EffectKind Kind) : GameEvent;
+        /// <summary>A special fired. <paramref name="Radius"/> is the blast radius or cross half-width (0 when unused).</summary>
+        public sealed record EffectTriggered(Position Origin, EffectKind Kind, int Radius) : GameEvent;
 
         public sealed record SeekerLaunched(Position From, Position Target) : GameEvent;
 

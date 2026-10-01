@@ -3,6 +3,8 @@
     <Project Path="src/Puzzle.Bot/Puzzle.Bot.csproj" />
     <Project Path="src/Puzzle.Cli/Puzzle.Cli.csproj" />
     <Project Path="src/Puzzle.Core/Puzzle.Core.csproj" />
+    <Project Path="src/Puzzle.Tooling/Puzzle.Tooling.csproj" />
+    <Project Path="src/Puzzle.Web/Puzzle.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Puzzle.Core.Tests/Puzzle.Core.Tests.csproj" />

@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Puzzle.Core.Levels;
 
-namespace Puzzle.Cli;
+namespace Puzzle.Tooling;
 
 /// <summary>Reads and writes level files with System.Text.Json (Unity reads the same files with its own serializer).</summary>
-internal static class LevelJson
+public static class LevelJson
 {
     private static readonly JsonSerializerOptions Options = new()
     {

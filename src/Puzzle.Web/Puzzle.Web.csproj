@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Local test lab: plays levels in the browser with the real engine running on the server. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Puzzle.Web</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+    <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
+    <ProjectReference Include="..\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+  </ItemGroup>
+</Project>

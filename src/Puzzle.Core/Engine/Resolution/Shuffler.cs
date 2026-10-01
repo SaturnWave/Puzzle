@@ -35,7 +35,7 @@ namespace Puzzle.Core.Engine.Resolution
         }
 
         /// <returns>False when no arrangement with a legal move was found (the board is degenerate).</returns>
-        public bool TryShuffle(int colors)
+        public bool TryShuffle(IReadOnlyList<GemColor> palette)
         {
             CollectFreeGems();
             if (_cells.Count == 0)
@@ -56,7 +56,7 @@ namespace Puzzle.Core.Engine.Resolution
             {
                 foreach (int cell in _cells)
                 {
-                    _painter.Paint(cell, colors, _rng);
+                    _painter.Paint(cell, palette, _rng);
                 }
 
                 if (IsPlayable())

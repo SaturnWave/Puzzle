@@ -24,8 +24,11 @@ namespace Puzzle.Core.Engine
         private const ulong ShuffleStream = 4;
 
         private readonly GameOptions _options;
-        private readonly bool _isLookahead;
+        private readonly Mode _mode;
         private readonly ItemLedger _items;
+        private readonly ITileSource _tiles;
+        private readonly Rng _effectRng;
+        private readonly Rng _shuffleRng;
         private readonly StatsCounter _moveStats = new StatsCounter();
         private readonly StatsCounter _totalStats;
         private readonly EventLog _events;
@@ -38,32 +41,48 @@ namespace Puzzle.Core.Engine
         private Game(
             LevelDefinition level,
             GameOptions options,
+            Mode mode,
             Board board,
             GoalTracker goals,
             ItemLedger items,
             ITileSource tiles,
-            ulong randomSeed,
-            StatsCounter totalStats,
-            bool isLookahead)
+            Rng effectRng,
+            Rng shuffleRng,
+            StatsCounter totalStats)
         {
             Level = level;
             _options = options;
+            _mode = mode;
             Board = board;
             Goals = goals;
             _items = items;
+            _tiles = tiles;
+            _effectRng = effectRng;
+            _shuffleRng = shuffleRng;
             _totalStats = totalStats;
-            _isLookahead = isLookahead;
-            _events = options.RecordEvents && !isLookahead ? new EventLog(true) : EventLog.Disabled;
+            _events = options.RecordEvents && mode == Mode.Live ? new EventLog(true) : EventLog.Disabled;
 
             RuleSet rules = options.Rules;
             var pending = new Queue<Effect>();
             var damage = new DamageResolver(board, goals, _moveStats, _events, pending, rules);
-            var effects = new EffectResolver(board, goals, _moveStats, _events, damage, pending, rules, new Rng(Rng.Derive(randomSeed, EffectStream)));
-            var gravity = new Gravity(board, tiles, goals, _moveStats, _events, items);
+            var effects = new EffectResolver(board, goals, _moveStats, _events, damage, pending, rules, effectRng);
             _matches = new MatchFinder(board);
+            var gravity = new Gravity(board, tiles, _matches, goals, _moveStats, _events, items);
             _moves = new MoveFinder(board, _matches, rules);
             _resolver = new TurnResolver(board, rules, pending, damage, effects, _matches, gravity, _moveStats, _events);
-            _shuffler = new Shuffler(board, _matches, _moves, rules, new Rng(Rng.Derive(randomSeed, ShuffleStream)), _moveStats, _events);
+            _shuffler = new Shuffler(board, _matches, _moves, rules, shuffleRng, _moveStats, _events);
+        }
+
+        private enum Mode
+        {
+            /// <summary>A real game: real refills, shuffles, events if requested.</summary>
+            Live,
+
+            /// <summary>A bot's what-if copy: refills hidden, no shuffles, no events.</summary>
+            Lookahead,
+
+            /// <summary>An exact copy that knows the future refills (for solvers): live rules, no events.</summary>
+            Replica,
         }
 
         public LevelDefinition Level { get; }
@@ -94,12 +113,21 @@ namespace Puzzle.Core.Engine
             options ??= GameOptions.Default;
             var board = new Board(level.Layout.Shape);
             var items = new ItemLedger { Spawned = level.Layout.PresetItemCount };
-            var colors = new ColorPicker(level.Spawn.Colors, level.Spawn.SmoothingPermille);
-            var tiles = new RandomTileSource(colors, new Rng(Rng.Derive(seed, SpawnStream)), level.Spawn.Items, items);
-            var game = new Game(level, options, board, new GoalTracker(level.Goals), items, tiles, seed, new StatsCounter(), isLookahead: false);
+            SpawnDirector director = SpawnDirector.Create(level.Spawn, options.AssistPercent, new Rng(Rng.Derive(seed, SpawnStream)));
+            var game = new Game(
+                level,
+                options,
+                Mode.Live,
+                board,
+                new GoalTracker(level.Goals),
+                items,
+                director,
+                new Rng(Rng.Derive(seed, EffectStream)),
+                new Rng(Rng.Derive(seed, ShuffleStream)),
+                new StatsCounter());
 
             var initializer = new BoardInitializer(board, game._matches, game._moves, options.Rules);
-            initializer.Fill(level.Layout, level.Spawn.Colors, new Rng(Rng.Derive(seed, InitialStream)));
+            initializer.Fill(level.Layout, level.Spawn.Palette, new Rng(Rng.Derive(seed, InitialStream)));
             return game;
         }
 
@@ -108,15 +136,44 @@ namespace Puzzle.Core.Engine
         /// tiles that never match, and other random choices come from <paramref name="seed"/> instead of the
         /// live game's streams. No events, no shuffles.
         /// </summary>
-        public Game CreateLookahead(ulong seed)
-        {
-            var items = _items.Clone();
-            return new Game(Level, _options, Board.Clone(), Goals.Clone(), items, HiddenTileSource.Instance, seed, _totalStats.Clone(), isLookahead: true)
+        public Game CreateLookahead(ulong seed) =>
+            new Game(
+                Level,
+                _options,
+                Mode.Lookahead,
+                Board.Clone(),
+                Goals.Clone(),
+                _items.Clone(),
+                HiddenTileSource.Instance,
+                new Rng(Rng.Derive(seed, EffectStream)),
+                new Rng(Rng.Derive(seed, ShuffleStream)),
+                _totalStats.Clone())
             {
                 Status = Status,
                 MovesUsed = MovesUsed,
             };
-        }
+
+        /// <summary>
+        /// An exact copy, including every random stream: playing the same moves on it reproduces this game's
+        /// future. That is perfect information — meant for solvers and analysis, never for a fair player bot.
+        /// </summary>
+        public Game CreateReplica() =>
+            new Game(
+                Level,
+                _options,
+                Mode.Replica,
+                Board.Clone(),
+                Goals.Clone(),
+                _items.Clone(),
+                _tiles.Clone(),
+                _effectRng.Clone(),
+                _shuffleRng.Clone(),
+                _totalStats.Clone())
+            {
+                Status = Status,
+                MovesUsed = MovesUsed,
+                LastMove = LastMove,
+            };
 
         public IReadOnlyList<Move> FindLegalMoves()
         {
@@ -188,12 +245,12 @@ namespace Puzzle.Core.Engine
                 return GameStatus.LostOutOfMoves;
             }
 
-            if (_isLookahead || _moves.HasAny())
+            if (_mode == Mode.Lookahead || _moves.HasAny())
             {
                 return GameStatus.Playing;
             }
 
-            return _shuffler.TryShuffle(Level.Spawn.Colors) ? GameStatus.Playing : GameStatus.LostNoMovesPossible;
+            return _shuffler.TryShuffle(Level.Spawn.Palette) ? GameStatus.Playing : GameStatus.LostNoMovesPossible;
         }
     }
 }

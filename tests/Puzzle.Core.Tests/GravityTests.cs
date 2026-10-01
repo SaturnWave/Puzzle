@@ -93,6 +93,7 @@ public class GravityTests
         var gravity = new Gravity(
             board,
             new ConstantSource(Tile.Gem(GemColor.Orange)),
+            new MatchFinder(board),
             goals ?? new GoalTracker(new GoalSpec[] { new GoalSpec.BreakBoxes(1) }),
             new StatsCounter(),
             EventLog.Disabled,
@@ -122,6 +123,8 @@ public class GravityTests
 
         public ConstantSource(Tile tile) => _tile = tile;
 
-        public Tile Next(int column) => _tile;
+        public Tile Next(in SpawnContext context) => _tile;
+
+        public ITileSource Clone() => this;
     }
 }

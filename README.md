@@ -1,19 +1,43 @@
 # Puzzle (çalışma adı)
 
-iOS + Android için swap match-3 oyunu (Unity + C#). Büyük ve boyutu bölümden bölüme değişen tahtalar
-(10x10, 10x12, 11x13 …), algoritmik üretilen ve test botuyla kalibre edilen bölümler.
+iOS + Android için swap match-3 oyunu (Unity + C#). Tahtalar büyük ve boyutu bölümden bölüme değişiyor
+(10x10, 10x12, 11x13 …). Bölümler algoritmik olarak üretilip test botuyla kalibre ediliyor.
 
 - Tasarım ve algoritma planı: [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
-- Araştırma özeti: [research.md](research.md)
+- Geliştirme günlüğü: [docs/DEVLOG.md](docs/DEVLOG.md)
+- Araştırmalar:
+  - [research.md](research.md)
+  - [docs/research/spawn-control-and-solvability.md](docs/research/spawn-control-and-solvability.md)
+
+## Web test laboratuvarı
+
+```bash
+dotnet run --project src/Puzzle.Web
+```
+
+Tarayıcıda <http://localhost:5180> adresini aç. Laboratuvarda şunlar var:
+- Örnek bölümleri sürükleyerek oynama.
+- Seed ve DDA yardımı seçme.
+- İpucu, tek bot hamlesi ve otomatik oynayan bot.
+- Bölümü 100–1000 kez simüle edip kazanma oranı eğrisini görme.
+- Gelecek taşları bilen çözücüyle "mükemmel oyun"u bulup canlı oyunda oynatma.
+
+Telefondan aynı Wi-Fi üzerinden denemek için:
+
+```bash
+dotnet run --project src/Puzzle.Web --urls http://0.0.0.0:5180
+```
 
 ## Yapı
 
 | Proje | Hedef | İçerik |
 |---|---|---|
-| `src/Puzzle.Core` | netstandard2.1, C# 9 | Simülasyon motoru — Unity'ye olduğu gibi girer |
-| `src/Puzzle.Bot` | netstandard2.1, C# 9 | Bot politikaları, simülasyon ve kalibrasyon raporu |
-| `src/Puzzle.Cli` | net10.0 | `sim`, `demo`, `bench`, `validate` komutları |
-| `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot ve dosya formatı testleri |
+| `src/Puzzle.Core` | netstandard2.1, C# 9 | Simülasyon motoru ve spawn yönetmeni; Unity'ye olduğu gibi girer |
+| `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar, beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
+| `src/Puzzle.Tooling` | net10.0 | Bölüm JSON'u ve bölüm kütüphanesi |
+| `src/Puzzle.Cli` | net10.0 | `sim`, `demo`, `bench`, `solve`, `validate` komutları |
+| `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı |
+| `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot, çözücü ve dosya formatı testleri |
 | `levels/samples` | JSON | El yapımı örnek bölümler |
 
 ## Komutlar
@@ -24,6 +48,10 @@ dotnet test
 
 ```bash
 dotnet run --project src/Puzzle.Cli -c Release -- sim levels/samples/s03_jelly_shape.json --bot all --runs 300
+```
+
+```bash
+dotnet run --project src/Puzzle.Cli -c Release -- solve levels/samples/s03_jelly_shape.json --seeds 6 --beam 8
 ```
 
 ```bash

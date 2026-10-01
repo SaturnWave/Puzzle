@@ -10,6 +10,7 @@ const string Usage = """
                             --bot random|novice|casual|average|expert|all (average)  --runs 300  --cap 150  --seed 1
       demo <level.json>     Print one bot game move by move.   --bot average  --seed 1  --moves N
       bench <level.json>    Engine and bot throughput.          --runs 200
+      solve <level.json>    Perfect-information search vs. bots on the same boards.  --seeds 8  --beam 8  --cap 150
       validate <dir|file>   Parse every level file and build a starting board for it.
     """;
 
@@ -21,6 +22,7 @@ try
         "sim" => SimCommand.Run(cli),
         "demo" => DemoCommand.Run(cli),
         "bench" => BenchCommand.Run(cli),
+        "solve" => SolveCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => throw new UsageException($"Unknown command '{cli.Command}'."),

@@ -46,7 +46,7 @@ namespace Puzzle.Bot.Simulation
         /// <exception cref="LevelInitializationException">The level cannot produce a starting board.</exception>
         public static RunResult Play(LevelDefinition level, IBotPolicy policy, ulong seed, int moveCap)
         {
-            Game game = Game.Start(level, Rng.Derive(seed, 1), new GameOptions { MoveLimitOverride = moveCap });
+            Game game = StartGame(level, seed, moveCap);
             var rng = new Rng(Rng.Derive(seed, 2));
             var legalMoves = new List<Move>();
             var progress = new List<float>(moveCap + 1) { (float)game.Goals.OverallProgress };
@@ -67,5 +67,9 @@ namespace Puzzle.Bot.Simulation
             int? completedAt = game.Status == GameStatus.Won ? game.MovesUsed : (int?)null;
             return new RunResult(seed, game.Status, game.MovesUsed, completedAt, progress.ToArray(), game.TotalStats);
         }
+
+        /// <summary>The exact game a run with this seed plays, so other tools (e.g. the solver) can study the same board.</summary>
+        public static Game StartGame(LevelDefinition level, ulong seed, int moveCap) =>
+            Game.Start(level, Rng.Derive(seed, 1), new GameOptions { MoveLimitOverride = moveCap });
     }
 }
