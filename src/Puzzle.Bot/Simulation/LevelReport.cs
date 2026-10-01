@@ -42,6 +42,9 @@ namespace Puzzle.Bot.Simulation
 
         public double AverageSpecialsCreated => _runs.Average(r => r.Totals.SpecialsCreated);
 
+        /// <summary>Moves of every run that finished within the cap, ascending.</summary>
+        public IReadOnlyList<int> CompletionMoves => _sortedCompletion.Where(m => m != NotCompleted).ToArray();
+
         public double AverageCascadesPerMove => _runs.Sum(r => r.Totals.Cascades) / (double)Math.Max(1, _runs.Sum(r => r.MovesUsed));
 
         public static LevelReport From(IReadOnlyList<RunResult> runs, int moveCap) => new LevelReport(runs, moveCap);

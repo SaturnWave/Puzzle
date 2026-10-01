@@ -16,6 +16,7 @@ const string Usage = """
                             --board varied|fixed  --board-seed N  --target 0.6  --candidates 64  --games 64  --pool 16  --tolerance 5  --write
       generate              Produce bot-calibrated levels from a generation profile.
                             --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite  --repair
+      botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert  --runs 30  --cap 150  --out reports/expert_moves.csv
       validate <dir|file>   Parse every level file and build a starting board for it.
     """;
 
@@ -30,6 +31,7 @@ try
         "solve" => SolveCommand.Run(cli),
         "seeds" => SeedsCommand.Run(cli),
         "generate" => GenerateCommand.Run(cli),
+        "botstats" => BotStatsCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => throw new UsageException($"Unknown command '{cli.Command}'."),
