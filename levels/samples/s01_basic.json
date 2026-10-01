@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": 1,
+  "difficulty": "Easy",
+  "width": 10,
+  "height": 10,
+  "moves": 25,
+  "cells": [
+    "##########", "##########", "##########", "##########", "##########",
+    "##########", "##########", "##########", "##########", "##########"
+  ],
+  "goals": [
+    { "type": "CollectColor", "color": "Red", "count": 40 },
+    { "type": "CollectColor", "color": "Blue", "count": 40 }
+  ],
+  "spawn": { "colors": 5, "smoothingPermille": 60 }
+}

@@ -1,0 +1,99 @@
+using System.Diagnostics;
+using System.Globalization;
+using Puzzle.Bot;
+using Puzzle.Bot.Simulation;
+using Puzzle.Core.Levels;
+using Puzzle.Core.Model;
+using Puzzle.Core.Randomness;
+
+namespace Puzzle.Cli.Commands;
+
+/// <summary>
+/// <c>sim &lt;level.json&gt; [--bot average|all] [--runs 300] [--cap 150] [--seed 1]</c>:
+/// plays the level many times and reports how many moves it really needs.
+/// </summary>
+internal static class SimCommand
+{
+    private static readonly double[] SuggestedWinRates = { 0.95, 0.85, 0.75, 0.60, 0.45, 0.30 };
+    private static readonly double[] ReportedShares = { 0.10, 0.25, 0.50, 0.75, 0.90 };
+    private static readonly string[] RandomOnly = { "random" };
+
+    public static int Run(CliArgs args)
+    {
+        string path = args.Required(0, "level.json");
+        int runs = args.Int("runs", 300);
+        int cap = args.Int("cap", 150);
+        ulong seed = args.ULong("seed", 1);
+        string bot = args.Text("bot", "average");
+
+        LevelDefinition level = LevelJson.Load(path);
+        Console.WriteLine(Describe(level));
+        IEnumerable<string> policies = bot.Equals("all", StringComparison.OrdinalIgnoreCase)
+            ? RandomOnly.Concat(SkillProfile.All.Select(p => p.Name))
+            : new[] { bot };
+        foreach (string policyName in policies)
+        {
+            Console.WriteLine();
+            PrintReport(level, policyName, runs, cap, seed);
+        }
+
+        return 0;
+    }
+
+    /// <summary>Runs the simulations in parallel; each worker owns its policy instance (policies keep buffers).</summary>
+    public static LevelReport Simulate(LevelDefinition level, string policyName, int runs, int cap, ulong seed)
+    {
+        var results = new RunResult[runs];
+        Parallel.For(
+            0,
+            runs,
+            () => CreatePolicy(policyName),
+            (i, _, policy) =>
+            {
+                results[i] = SimulationRunner.Play(level, policy, Rng.Derive(seed, (ulong)i), cap);
+                return policy;
+            },
+            _ => { });
+        return LevelReport.From(results, cap);
+    }
+
+    /// <exception cref="UsageException">Unknown policy name.</exception>
+    public static IBotPolicy CreatePolicy(string name)
+    {
+        if (name.Equals("random", StringComparison.OrdinalIgnoreCase))
+        {
+            return new RandomPolicy();
+        }
+
+        return SkillProfile.TryFind(name, out SkillProfile profile)
+            ? new GreedyPolicy(profile)
+            : throw new UsageException($"Unknown bot '{name}'. Use random, {string.Join(", ", SkillProfile.All.Select(p => p.Name))} or all.");
+    }
+
+    private static void PrintReport(LevelDefinition level, string policyName, int runs, int cap, ulong seed)
+    {
+        var clock = Stopwatch.StartNew();
+        LevelReport report = Simulate(level, policyName, runs, cap, seed);
+        clock.Stop();
+
+        Console.WriteLine($"bot={CreatePolicy(policyName).Name}  runs={runs}  cap={cap}  seed={seed}");
+        Console.WriteLine($"  completed within cap : {Percent(report.CompletionRate)}   stuck: {Percent(report.StuckRate)}   shuffles/run: {report.AverageShuffles:0.00}");
+        Console.WriteLine($"  moves needed         : {string.Join(" | ", ReportedShares.Select(q => $"p{q * 100:0} {Moves(report.MovesNeeded(q))}"))}");
+        Console.WriteLine($"  at level limit ({level.MoveLimit,2})  : win {Percent(report.WinRateAt(level.MoveLimit))}   near-miss {Percent(report.NearMissRateAt(level.MoveLimit))}");
+        Console.WriteLine($"  suggested limits     : {string.Join("  ", SuggestedWinRates.Select(w => $"{w * 100:0}%->{Moves(report.MoveLimitFor(w))}"))}");
+        Console.WriteLine($"  specials/run {report.AverageSpecialsCreated:0.0}   cascades/move {report.AverageCascadesPerMove:0.00}");
+        Console.WriteLine($"  time {clock.Elapsed.TotalSeconds:0.00} s  ({clock.Elapsed.TotalMilliseconds / runs:0.0} ms/run on {Environment.ProcessorCount} threads)");
+    }
+
+    public static string Describe(LevelDefinition level)
+    {
+        BoardShape shape = level.Layout.Shape;
+        string goals = string.Join(", ", level.Goals);
+        return $"Level {level.Id} ({level.Difficulty}, {shape.Width}x{shape.Height}, {shape.PlayableCount} cells, {level.Spawn.Colors} colors, limit {level.MoveLimit})\n  goals: {goals}";
+    }
+
+    private static string Percent(double value) => (value * 100).ToString("0.0", CultureInfo.InvariantCulture).PadLeft(5) + "%";
+
+    private static string Moves(int? moves) => moves?.ToString(CultureInfo.InvariantCulture) ?? ">cap";
+
+}

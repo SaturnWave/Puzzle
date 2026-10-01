@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Puzzle.Cli</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>puzzle</AssemblyName>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+    <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
+  </ItemGroup>
+</Project>

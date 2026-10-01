@@ -1,0 +1,50 @@
+using Puzzle.Cli;
+using Puzzle.Cli.Commands;
+using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
+
+const string Usage = """
+    puzzle <command> [options]
+
+      sim <level.json>      Play the level many times with a bot and report the move budget it needs.
+                            --bot random|novice|casual|average|expert|all (average)  --runs 300  --cap 150  --seed 1
+      demo <level.json>     Print one bot game move by move.   --bot average  --seed 1  --moves N
+      bench <level.json>    Engine and bot throughput.          --runs 200
+      validate <dir|file>   Parse every level file and build a starting board for it.
+    """;
+
+CliArgs cli = CliArgs.Parse(args);
+try
+{
+    return cli.Command switch
+    {
+        "sim" => SimCommand.Run(cli),
+        "demo" => DemoCommand.Run(cli),
+        "bench" => BenchCommand.Run(cli),
+        "validate" => ValidateCommand.Run(cli),
+        "help" or "--help" or "-h" => PrintUsage(),
+        _ => throw new UsageException($"Unknown command '{cli.Command}'."),
+    };
+}
+catch (UsageException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    Console.Error.WriteLine(Usage);
+    return 2;
+}
+catch (LevelFormatException ex)
+{
+    Console.Error.WriteLine($"Invalid level: {ex.Message}");
+    return 1;
+}
+catch (LevelInitializationException ex)
+{
+    Console.Error.WriteLine($"Unplayable level: {ex.Message}");
+    return 1;
+}
+
+static int PrintUsage()
+{
+    Console.WriteLine(Usage);
+    return 0;
+}

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Unity compatibility: netstandard2.1 + C# 9. Do not raise LangVersion or add package
+       dependencies here; this assembly is copied into the Unity project as-is. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Puzzle.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+  </ItemGroup>
+</Project>
