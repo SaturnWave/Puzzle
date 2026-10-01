@@ -133,7 +133,7 @@ namespace Puzzle.Core.Levels
             StartBoard board = attempts.board switch
             {
                 "varied" => new StartBoard.Varied(),
-                "fixed" => new StartBoard.Fixed(attempts.boardSeed),
+                "fixed" => new StartBoard.Fixed(attempts.boardSeed ?? throw new LevelFormatException("a fixed start board needs boardSeed")),
                 _ => throw new LevelFormatException($"unknown start board '{attempts.board}' (use varied or fixed)"),
             };
             return new AttemptPolicy { Board = board, SeedPool = attempts.seedPool };

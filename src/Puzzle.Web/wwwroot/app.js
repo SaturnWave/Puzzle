@@ -696,6 +696,20 @@ function winRateChart(curve, limit) {
 }
 
 // ---------- startup ----------
+/** Lists the levels matching every word of the filter (number, key, tier or goal text). */
+function renderLevelOptions(filter) {
+  const words = filter.toLowerCase().split(/s+/).filter(Boolean);
+  const matches = ui.levels.filter((l) => {
+    const text = `${l.key} ${l.id} ${l.difficulty} ${l.width}x${l.height} ${l.goals.join(" ")}`.toLowerCase();
+    return words.every((w) => text.includes(w));
+  });
+  const current = $("level-select").value;
+  $("level-select").innerHTML = matches
+    .map((l) => `<option value="${l.key}"${l.key === current ? " selected" : ""}>${l.key} · ${l.difficulty} · ${l.width}x${l.height}</option>`)
+    .join("");
+  return matches.length;
+}
+
 function describeLevel(level) {
   const retries = level.poolSize > 0 ? `${level.poolSize} eşit zorlukta seed` : "seed havuzu yok";
   const board = level.startBoard === "fixed" ? "sabit tahta" : "değişken tahta";
@@ -707,7 +721,7 @@ async function init() {
   try {
     const [levels, bots] = await Promise.all([api("/api/levels"), api("/api/bots")]);
     ui.levels = levels;
-    $("level-select").innerHTML = levels.map((l) => `<option value="${l.key}">${l.key}</option>`).join("");
+    renderLevelOptions("");
     $("bot-select").innerHTML = bots.map((b) => `<option ${b === "average" ? "selected" : ""}>${b}</option>`).join("");
     const updateInfo = () => {
       const level = ui.levels.find((l) => l.key === $("level-select").value);
@@ -726,6 +740,12 @@ async function init() {
   };
   $("replay-seed").onclick = () => ui.session && newGame({ kind: "repeat" });
   $("start-board-select").onchange = () => newGame({ kind: "next" });
+  $("level-filter").oninput = () => {
+    const before = $("level-select").value;
+    if (renderLevelOptions($("level-filter").value) > 0 && $("level-select").value !== before) {
+      $("level-select").dispatchEvent(new Event("change"));
+    }
+  };
   $("assist-input").oninput = () => { $("assist-out").textContent = $("assist-input").value; };
   $("speed-select").onchange = () => setSpeed(Number($("speed-select").value));
   $("hint-btn").onclick = showHint;

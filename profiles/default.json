@@ -1,0 +1,72 @@
+{
+  "name": "default",
+  "masterSeed": 20261001,
+
+  "calibrationBot": "average",
+  "reportBots": ["casual", "expert"],
+
+  "tutorialUntil": 5,
+  "cycle": ["Easy", "Normal", "Normal", "Normal", "Hard", "Easy", "Normal", "Normal", "Hard", "SuperHard"],
+
+  "bands": [
+    {
+      "fromLevel": 1,
+      "winRate": { "Easy": 0.95, "Normal": 0.85, "Hard": 0.60, "SuperHard": 0.45 },
+      "moves": { "Easy": [16, 24], "Normal": [18, 28], "Hard": [22, 32], "SuperHard": [24, 36] },
+      "colors": { "Easy": 4, "Normal": 4, "Hard": 4, "SuperHard": 4 },
+      "maxObstacleTypes": 1
+    },
+    { "fromLevel": 6, "colors": { "Easy": 5, "Normal": 5, "Hard": 5, "SuperHard": 5 } },
+    { "fromLevel": 31, "colors": { "Easy": 5, "Normal": 6, "Hard": 6, "SuperHard": 6 } },
+    {
+      "fromLevel": 51,
+      "winRate": { "Easy": 0.90, "Normal": 0.75, "Hard": 0.50, "SuperHard": 0.35 },
+      "moves": { "Easy": [18, 26], "Normal": [20, 30], "Hard": [24, 36], "SuperHard": [26, 40] }
+    },
+    { "fromLevel": 121, "maxObstacleTypes": 2 },
+    { "fromLevel": 201, "maxObstacleTypes": 3 },
+    {
+      "fromLevel": 301,
+      "winRate": { "Easy": 0.85, "Normal": 0.65, "Hard": 0.40, "SuperHard": 0.25 },
+      "moves": { "Easy": [18, 28], "Normal": [22, 32], "Hard": [26, 38], "SuperHard": [28, 45] },
+      "colors": { "Easy": 5, "Normal": 6, "Hard": 7, "SuperHard": 7 }
+    },
+    { "fromLevel": 601, "colors": { "Easy": 6, "Normal": 6, "Hard": 7, "SuperHard": 8 } }
+  ],
+
+  "sizes": {
+    "default": "10x10",
+    "fixedUntil": 30,
+    "Easy": ["9x10", "10x10", "10x11"],
+    "Normal": ["10x10", "10x11", "9x11"],
+    "Hard": ["10x12", "11x11", "9x12"],
+    "SuperHard": ["11x12", "11x13", "10x13"]
+  },
+
+  "palette": { "newColorsFrom": 151, "chapterSize": 50 },
+
+  "mechanics": [
+    { "fromLevel": 13, "unlock": "Box1" },
+    { "fromLevel": 21, "unlock": "Jelly1" },
+    { "fromLevel": 31, "unlock": "Box2" },
+    { "fromLevel": 41, "unlock": "Chain1" },
+    { "fromLevel": 56, "unlock": "Items" },
+    { "fromLevel": 71, "unlock": "Jelly2" },
+    { "fromLevel": 91, "unlock": "Box3" },
+    { "fromLevel": 111, "unlock": "Chain2" }
+  ],
+  "hookLevels": 3,
+  "noveltyWindow": 5,
+
+  "calibration": {
+    "runs": 120,
+    "verifyRuns": 200,
+    "reportRuns": 60,
+    "moveCap": 150,
+    "winRateTolerance": 0.07,
+    "maxCandidates": 8,
+    "maxScaleIterations": 4
+  },
+
+  "seedPool": { "candidates": 32, "gamesPerSeed": 32, "poolSize": 16, "tolerancePoints": 7 }
+}

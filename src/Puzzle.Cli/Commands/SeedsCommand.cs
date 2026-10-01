@@ -29,7 +29,8 @@ internal static class SeedsCommand
 
         var clock = Stopwatch.StartNew();
         StartBoard board = ChooseBoard(args, level, botName, settings);
-        SeedPoolReport report = SeedPoolCalibrator.Calibrate(level, board, () => SimCommand.CreatePolicy(botName), settings);
+        double? target = args.Flag("target") ? ParseTarget(args.Text("target", string.Empty)) : null;
+        SeedPoolReport report = SeedPoolCalibrator.Calibrate(level, board, () => SimCommand.CreatePolicy(botName), settings, target);
         clock.Stop();
 
         Print(report, board, settings, level.MoveLimit);
@@ -75,7 +76,7 @@ internal static class SeedsCommand
         Console.WriteLine($"{all.Count} candidate seeds x {settings.GamesPerSeed} bot games ({Describe(board)})");
         Console.WriteLine("median moves per seed  : "
             + $"easiest {all[0].MedianMoves} | p10 {At(0.1).MedianMoves} | typical {report.TypicalMedianMoves} | p90 {At(0.9).MedianMoves} | hardest {all[^1].MedianMoves}");
-        Console.WriteLine($"typical win rate       : {SimCommand.Percent(report.TypicalWinRate).Trim()} at limit {moveLimit}");
+        Console.WriteLine($"target win rate        : {SimCommand.Percent(report.TypicalWinRate).Trim()} at limit {moveLimit}");
         Console.WriteLine($"win rate at limit {moveLimit,3}  : {Range(all)}  (spread between random seeds)");
         if (report.Pool.Count == 0)
         {
@@ -85,6 +86,11 @@ internal static class SeedsCommand
 
         Console.WriteLine($"pool {report.Pool.Count} seeds (+/-{settings.TolerancePoints} points): median moves {report.Pool.Min(d => d.MedianMoves)}..{report.Pool.Max(d => d.MedianMoves)}, win rate {Range(report.Pool)}");
     }
+
+    private static double ParseTarget(string text) =>
+        double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double target) && target is > 0 and < 1
+            ? target
+            : throw new UsageException($"--target expects a win rate between 0 and 1, got '{text}'.");
 
     private static string Range(IEnumerable<SeedDifficulty> seeds) =>
         $"{SimCommand.Percent(seeds.Min(d => d.WinRateAtLimit)).Trim()} .. {SimCommand.Percent(seeds.Max(d => d.WinRateAtLimit)).Trim()}";

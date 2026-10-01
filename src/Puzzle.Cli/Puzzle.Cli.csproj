@@ -12,5 +12,6 @@
     <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
     <ProjectReference Include="..\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+    <ProjectReference Include="..\Puzzle.Generator\Puzzle.Generator.csproj" />
   </ItemGroup>
 </Project>

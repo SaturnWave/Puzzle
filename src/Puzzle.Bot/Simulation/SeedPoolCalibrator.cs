@@ -62,7 +62,7 @@ namespace Puzzle.Bot.Simulation
         /// <summary>The selected seeds, closest to typical first.</summary>
         public IReadOnlyList<SeedDifficulty> Pool { get; }
 
-        /// <summary>The median of the candidates' win rates at the move limit: the level's typical difficulty.</summary>
+        /// <summary>The win rate pool seeds were chosen around: the requested target, or the median candidate.</summary>
         public double TypicalWinRate { get; }
 
         public int TypicalMedianMoves { get; }
@@ -83,7 +83,11 @@ namespace Puzzle.Bot.Simulation
     public static class SeedPoolCalibrator
     {
         /// <param name="createPolicy">Called once per worker thread (policies are not thread-safe).</param>
-        public static SeedPoolReport Calibrate(LevelDefinition level, StartBoard board, Func<IBotPolicy> createPolicy, SeedPoolSettings settings)
+        /// <param name="targetWinRate">
+        /// The win rate pool seeds should play at — normally the level's calibrated win rate. Absent means the
+        /// median candidate, which on hard levels can be far from the average because seed difficulty is skewed.
+        /// </param>
+        public static SeedPoolReport Calibrate(LevelDefinition level, StartBoard board, Func<IBotPolicy> createPolicy, SeedPoolSettings settings, double? targetWinRate = null)
         {
             uint[] candidates = CandidateSeeds(level, settings);
             var attempts = new AttemptPolicy { Board = board };
@@ -108,7 +112,7 @@ namespace Puzzle.Bot.Simulation
                 .ThenBy(d => d.Seed)
                 .ToArray();
             int typicalMoves = measured[measured.Length / 2].MedianMoves;
-            double typicalWinRate = measured.Select(d => d.WinRateAtLimit).OrderBy(w => w).ElementAt(measured.Length / 2);
+            double typicalWinRate = targetWinRate ?? measured.Select(d => d.WinRateAtLimit).OrderBy(w => w).ElementAt(measured.Length / 2);
             double tolerance = settings.TolerancePoints / 100.0;
             SeedDifficulty[] pool = measured
                 .Where(d => Math.Abs(d.WinRateAtLimit - typicalWinRate) <= tolerance + 1e-9)

@@ -180,6 +180,38 @@ Her bölüm `i` için deterministik seed (`ana seed + i + deneme no`):
 8. **Yenilik kontrolü:** son 20 bölümle şekil/mekanik benzerliği yüksekse yeniden üret.
 9. JSON + metrik satırı (CSV raporu).
 
+### Uygulama (Faz 2, `Puzzle.Generator`)
+
+Bütün ayarlar bir **profil dosyasında**: `profiles/default.json`. Farklı kombinasyonları denemek için profilin kopyasını değiştirip ayrı bir klasöre üretmek yeterli:
+
+```
+puzzle generate --profile profiles/deneme.json --from 1 --to 100 --out levels/deneme
+```
+
+Raporları (`report.csv` ve kademe özeti) karşılaştırarak profiller kıyaslanır.
+
+| Profil alanı | Ne belirler |
+|---|---|
+| `cycle`, `tutorialUntil` | Zorluk testere dişi; ilk bölümler hep Kolay |
+| `bands[]` | Bölüm aralığına göre hedef kazanma oranı, **hamle aralığı** (kademe başına), renk sayısı, en fazla engel türü. Her bant yalnızca değişen alanları yazar, gerisini öncekinden miras alır |
+| `sizes` | Kademe başına tahta boyutları. `fixedUntil`'e kadar sabit; bölüm içinde boyut hiç değişmez |
+| `palette` | `newColorsFrom`'dan sonra her bölüm grubu (`chapterSize`) 8 renk arasından kendi paletini alır |
+| `mechanics[]` | Mekanik açılış takvimi (taslak). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
+| `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu (varsayılan `average`) |
+| `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`). Hedef oyuncu kararı verilene kadar karşılaştırma için |
+| `calibration`, `seedPool` | Oyun sayıları, tolerans, aday sayısı |
+
+**Bir bölümün üretimi:**
+1. **Plan** (`LevelPlanner`).
+2. **Aday:** portföyden şekil stili, engel ailesi ve desen seçilir; her deneme farklı bir kombinasyon.
+3. **Beslenebilirlik analizi:** kutu ve zincir hiç kırılmasa bile her hücreye yukarıdan veya çaprazdan taş gelebilmeli. Kenara dayalı bir kutu çifti köşedeki alt hücreyi kapattığı için reddedilir.
+4. **Kalibrasyon:** bot sınırsız oynar → hedef kazanma oranını veren limit. Limit aralık dışındaysa ölçeklenebilir hedefler (renk toplama, malzeme) büyütülür veya küçültülür. Engel yoğunluğu adaydan adaya uyarlanır: uzun gelirse azaltılır, kısa gelirse artırılır.
+5. **Doğrulama:** kalibrasyonda hiç kullanılmamış seed'lerle; sapma toleranstan büyükse limit yeniden okunur.
+6. **Eşit zorluk havuzu:** seed'ler **bölümün doğrulanmış kazanma oranını** hedefleyerek seçilir. Medyan seed'i hedeflemek yanlıştı: zor bölümlerde seed zorluğu çarpık dağılıyor; ortanca seed ortalamadan çok daha zor çıkabiliyor (#310: kazanma %26, ortanca seed'lerin %0–8'i).
+7. **Rapor botları:** casual ve expert kazanma oranları ölçülür; dosya ve rapor satırı yazılır.
+
+Hiçbir aday aralığa oturmazsa en yakın olanı tutulur. Limiti yine hedef kazanma oranına göredir ve rapora `relaxed` diye işaretlenir.
+
 ### Zorluk eğrisi — 10'luk testere dişi
 
 | Döngüdeki sıra | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
@@ -367,10 +399,14 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 
 1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
 2. ~~Dokunarak patlatma?~~ → Evet, 1 hamle.
-3. Zor bölümlerde boyut değişimi bölüm başına mı, yoksa ileride bölüm içinde (çok aşamalı tahta) de olsun mu?
+3. ~~Boyut değişimi bölüm içinde de mi?~~ → Hayır. Bölüm içinde sabit, bölümler ilerledikçe değişir (profil `sizes`).
 4. Can sistemi / booster ekonomisi Faz 4'te mi konuşulacak?
 5. ~~Retry politikası?~~ → Farklı desen, aynı kurallar, aynı zorluk (§17).
-6. **Başlangıç tahtası:** sabit mi değişken mi? İkisi de destekleniyor; zorluk her iki modda havuzla eşitleniyor. Web laboratuvarında "Başlangıç tahtası" seçicisiyle denenip karar verilecek.
+6. ~~Başlangıç tahtası?~~ → **Her denemede farklı** (2026-10-01). Sabit tahta desteği motorda duruyor ama kullanılmıyor.
+7. ~~Zorluk hedefleri?~~ → Şimdilik §9 tablosu. Farklı kombinasyonlar profil dosyalarıyla denenecek.
+8. **Hedef oyuncu (belirsiz):** limitler `average` bota göre. Raporlar `casual` ve `expert` kazanma oranlarını da gösteriyor; karar gerçek oyuncu verisine veya testlere göre verilecek (profil `calibrationBot`).
+9. ~~Hamle aralığı?~~ → Bölüm aralığına ve zorluk kademesine göre değişken (profil `bands[].moves`).
+10. **Mekanik takvimi (belirsiz):** profilde taslak; istendiğinde değiştirilip yeniden üretilir.
 
 ## 15. Paralel çalışan algoritmalar — mimari
 

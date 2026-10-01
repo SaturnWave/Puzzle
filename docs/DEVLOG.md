@@ -4,6 +4,38 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-01 · Oturum 4 — Faz 2: bölüm üreticisi ve ilk 1000 bölüm
+
+**Kullanıcı kararları**
+- Web uygulaması yalnızca hata ayıklama ve test için. Mobil tasarıma motor hazır olduğunda geçilecek.
+- **Başlangıç tahtası:** her denemede farklı.
+- **Zorluk hedefleri:** şimdilik uygun; farklı kombinasyonlar test edilebilmeli.
+- **Hedef oyuncu:** emin değil.
+- **Hamle sayısı:** bölüme ve bölüm zorluğuna göre değişebilmeli.
+- **Tahta boyutu:** bölüm içinde sabit, ilerledikçe değişebilir.
+- **Mekanik takvimi:** şimdilik belirsiz.
+
+**Kararlar**
+- **Profil dosyası:** bütün üretim ayarları `profiles/default.json`'da. Bantlar miras alıyor; hamle aralığı, kazanma hedefi ve renk sayısı kademe ve bölüm aralığına göre tanımlanıyor. Farklı kombinasyonlar profil kopyalarıyla üretilip raporlar karşılaştırılacak.
+- **Hedef oyuncu:** limitler `average` bota göre kalibre ediliyor; raporda `casual` ve `expert` kazanma oranları da var. Karar ertelendi.
+- **Örnek bölüm:** `s02` değişken tahtaya döndürüldü.
+
+**Faz 2 — `Puzzle.Generator`**
+- **Planlayıcı:** zorluk testere dişi, kademe, bant, tahta boyutu, bölüm grubuna göre renk paleti, mekanik takvimi ve "kanca" bölümleri.
+- **Portföy:** 7 şekil stili (dolu, köşe kesme, elmas, çentik, orta delik, sütun boşluğu, kum saati) × kutu desenleri (çift, sütun, küme, dağınık) × jöle desenleri (alt bant, üst bant, merkez, çerçeve, dama, tam) × zincir × malzeme. Hepsi sağ-sol simetrik.
+- **Beslenebilirlik analizi:** kutu ve zincir hiç kırılmasa bile her hücreye taş ulaşabilmeli; kapanan yerleşim reddediliyor.
+- **Kalibrasyon:**
+  - Ölçeklenebilir hedefler, limit aralığa oturana kadar ayarlanıyor.
+  - Engel yoğunluğu adaydan adaya uyarlanıyor.
+  - Limit, hiç kullanılmamış seed'lerle doğrulanıyor.
+  - Hiçbir aday aralığa oturmazsa en yakını `relaxed` olarak tutuluyor.
+- **Eşit zorluk havuzu:** seed'ler artık bölümün doğrulanmış kazanma oranını hedefliyor (`--target`). Medyan seed'i hedeflemek zor bölümlerde yanlış sonuç veriyordu: #310'da kazanma %26, ortanca seed'ler %0–8.
+- **Rapor:** `levels/generated/report.csv` ve kademe özeti.
+- **CLI ve web:** `generate` komutu (`--quick`, `--overwrite`); web laboratuvarında bölüm arama kutusu.
+- **Testler:** 61'den 67'ye.
+
+---
+
 ## 2026-10-01 · Oturum 3 — Eşit zorlukta tekrar denemeler, optimum kanıtı, CI, LAN sunucusu
 
 **Kullanıcı kararları**

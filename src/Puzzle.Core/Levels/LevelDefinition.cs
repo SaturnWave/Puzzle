@@ -45,6 +45,10 @@ namespace Puzzle.Core.Levels
         /// <summary>How retries differ: starting-board rule and the calibrated seed pool.</summary>
         public AttemptPolicy Attempts { get; }
 
+        /// <summary>The same level with a different move budget (set by the bot calibration).</summary>
+        public LevelDefinition WithMoveLimit(int moveLimit) =>
+            new LevelDefinition(Id, Difficulty, Layout, Goals, moveLimit, Spawn, Attempts);
+
         /// <summary>The same level with a different attempt policy (e.g. after calibrating its seed pool).</summary>
         public LevelDefinition WithAttempts(AttemptPolicy attempts) =>
             new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, attempts);

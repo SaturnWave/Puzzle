@@ -60,7 +60,9 @@ namespace Puzzle.Core.Levels
     {
         /// <summary>"varied" (new starting board each attempt) or "fixed" (always <see cref="boardSeed"/>).</summary>
         public string board = "varied";
-        public uint boardSeed;
+
+        /// <summary>Required when <see cref="board"/> is "fixed"; absent otherwise.</summary>
+        public uint? boardSeed;
 
         /// <summary>Play seeds calibrated to the level's typical difficulty; attempt k uses entry k mod length.</summary>
         public uint[] seedPool = Array.Empty<uint>();

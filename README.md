@@ -54,15 +54,24 @@ New-NetFirewallRule -DisplayName "Puzzle Test Lab (5180)" -Direction Inbound -Pr
 | `src/Puzzle.Core` | netstandard2.1, C# 9 | Simülasyon motoru ve spawn yönetmeni; Unity'ye olduğu gibi girer |
 | `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar, beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
 | `src/Puzzle.Tooling` | net10.0 | Bölüm JSON'u ve bölüm kütüphanesi |
-| `src/Puzzle.Cli` | net10.0 | `sim`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
+| `src/Puzzle.Generator` | net10.0 | Bölüm üreticisi: profil, planlayıcı, şekil ve engel portföyü, bot kalibrasyonu, rapor |
+| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
 | `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı |
 | `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot, çözücü ve dosya formatı testleri |
 | `levels/samples` | JSON | El yapımı örnek bölümler |
+| `levels/generated` | JSON + CSV | Üretilen bölümler ve `report.csv` |
+| `profiles` | JSON | Üretim profilleri (zorluk eğrisi, hamle aralıkları, renkler, mekanik takvimi) |
 
 ## Komutlar
 
 ```bash
 dotnet test
+```
+
+Bölüm üretimi (profil `profiles/default.json`; mevcut dosyalar korunur, `--overwrite` ile yeniden üretilir, `--quick` hızlı önizleme):
+
+```bash
+dotnet run --project src/Puzzle.Cli -c Release -- generate --from 1 --to 1000 --out levels/generated
 ```
 
 ```bash
