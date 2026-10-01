@@ -150,7 +150,7 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 | (b) Geleceği bilmeyen güçlü ajan | Yalnızca tahtayı; birçok olası geleceği örnekler | Faz 2 (expectimax / MCTS) | Gerçekçi beceri tavanı |
 | (c) İnsan benzeri bot | Yalnızca tahtayı; dikkat + sıcaklık | ✅ `GreedyPolicy` profilleri | Hamle limiti kalibrasyonu |
 
-- Mükemmel oyunu bulmak taşlar bilinse bile NP-zor. Çözücünün sonucu "optimal" değil, "bulunan en iyi"dir.
+- Mükemmel oyunu bulmak taşlar bilinse bile NP-zor. Çözücünün sonucu "optimal" değil, "bulunan en iyi"dir. Kısa çözümlerde `ExhaustiveSearch` bütün dizileri deneyerek optimumu kanıtlayabilir (§13).
 - Hamle limiti yalnızca çözücüye göre ayarlanmaz.
 - Faz 2 metrikleri:
   - `marj = limit − P80(b)`
@@ -336,14 +336,41 @@ Sonuçlar:
 Senin gözlemin doğrulanıyor: her seferinde doğru hamleyle (ve gelecek taşları bilerek) bölüm çok daha kısa bitiyor.
 Yanlış hamleler hamle ihtiyacını 1,6–2,4 katına çıkarıyor. Çözücü 6 seed'i 0,5 saniyede çözüyor.
 
+**"Kural belli, en iyi yolu bulmak zor olmaz" mı?** (s03, 6 renk, 6 seed; `puzzle solve --beam B --prove 4`)
+
+| Beam genişliği | 1 | 2 | 4 | 8 | 16 | 32 | 64 |
+|---|---|---|---|---|---|---|---|
+| Bulunan en iyi (ort. hamle) | 15,8 | 11,0 | 9,3 | 7,7 | 6,8 | 5,8 | 5,5 |
+
+Tam arama sonuçları (daha kısa bütün hamle dizileri denendi):
+- **Seed 2 ve 3:** beam 64'ün yolu gerçekten en iyisi (kanıtlandı).
+- **Seed 0 ve 5:** gelecek taşları bilen beam 64 beş hamle buldu; tam arama **dört hamlelik daha kısa bir kazanç** buldu.
+- **Seed 1 ve 4:** kanıt 6–7 hamle derinliği istiyor; hesaplanamadı.
+
+Sonuç: kuralı izlemek (simülasyon) kolay, iyi bir yol bulmak kolay, **en iyi yolu kanıtlamak** zor. Pozisyon başına ortalama ~37–40 geçerli hamle var:
+- 4 hamle derinlik ≈ 1 milyon pozisyon, 1,5 sn.
+- 6 hamle derinlik ≈ 2,5 milyar pozisyon, ~yarım saat.
+- 20 hamlelik bir oyun astronomik.
+
+Oyuncu açısından ise senin dediğin gibi kuralı (spawn yönetmeni + seed) tersine mühendislikle çözmek zor.
+
+**Seed'lerin zorluk farkı** (`puzzle seeds`, 64 aday seed × 64 bot oyunu):
+
+| Bölüm | Seed başına medyan hamle (en kolay … en zor) | Limitte kazanma, rastgele seed'ler | Havuz (16 seed, ±5 puan) |
+|---|---|---|---|
+| s03 jöle, 6 renk | 8 … 29 | %55 … %100 | %83 … %91 |
+| s04 malzeme + zincir, 6 renk | 13 … 28 | %72 … %100 | %89 … %92 |
+
+Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmiş havuz gerekiyor (§17).
+
 ## 14. Açık sorular
 
 1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
 2. ~~Dokunarak patlatma?~~ → Evet, 1 hamle.
 3. Zor bölümlerde boyut değişimi bölüm başına mı, yoksa ileride bölüm içinde (çok aşamalı tahta) de olsun mu?
 4. Can sistemi / booster ekonomisi Faz 4'te mi konuşulacak?
-5. **Retry politikası (§17):** her denemede yeni refill seed'i (öneri) mi, yoksa aynı bölüm hep aynı taşları mı düşürsün?
-6. **Başlangıç tahtası:** her denemede rastgele mi, yoksa bölüm başına sabit ve tasarımcı onaylı mı?
+5. ~~Retry politikası?~~ → Farklı desen, aynı kurallar, aynı zorluk (§17).
+6. **Başlangıç tahtası:** sabit mi değişken mi? İkisi de destekleniyor; zorluk her iki modda havuzla eşitleniyor. Web laboratuvarında "Başlangıç tahtası" seçicisiyle denenip karar verilecek.
 
 ## 15. Paralel çalışan algoritmalar — mimari
 
@@ -387,9 +414,22 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 
 ## 17. Retry politikası ve etik korkuluklar
 
-- Motor deterministik: aynı seed ve aynı hamleler aynı oyunu üretir.
-- Öneri: refill seed'i her denemede `H(bölüm, sürüm, deneme no)` ile değişsin. Aynı seed'i vermek bulmacayı ezberlenebilir yapar.
-- Web laboratuvarındaki "Aynı seed" düğmesi bu ezberlenebilirliği test etmek için var.
+**Karar (2026-10-01): tekrar denemede taşlar farklı desende gelir, ama algoritmik matematik ve zorluk denemeden öncekiyle aynıdır.**
+
+- **Aynı kurallar:** palet, spawn yönetmeni ayarları ve hamle sayısı bölüm dosyasında sabit; denemeden denemeye değişmez.
+- **Gizli zorluk ayarı yok:** denemeler arasında DDA ile kural değişikliği yapılmaz (`AssistPercent` = 0). İleride DDA istenirse ayrı bir ürün kararı olur.
+- **Farklı desen:** her deneme farklı bir seed alır. Motor deterministik: aynı seed ve aynı hamleler aynı oyunu üretir.
+- **Aynı zorluk:** rastgele seed'ler zorluk bakımından çok farklı (§13 tablosu). Bu yüzden her bölümün bir **eşit zorluk havuzu** var:
+  - `puzzle seeds` 64 aday seed'i 64'er bot oyunuyla ölçer.
+  - Limitteki kazanma oranı bölümün tipik değerine ±5 puan yakın olan 16 seed'i seçer.
+  - Deneme k havuzdaki (k mod 16). seed'i kullanır.
+- **Başlangıç tahtası:** bölüm dosyasında `attempts.board` alanıyla seçilir:
+  - `varied`: her denemede farklı başlangıç tahtası.
+  - `fixed`: tipik zorlukta seçilmiş sabit bir tahta; yalnızca gelen taşlar değişir.
+
+  Havuz, bölümün kendi moduna göre kalibre edilir.
+- **Motor tarafı:** `AttemptSeeds` (tahta seed'i + oyun seed'i ayrı), `AttemptPolicy`, `SeedPoolCalibrator`.
+- **Web laboratuvarı:** "Yeni deneme" havuzdaki sıradaki seed'i, "Aynı seed" birebir tekrarı verir. İkincisi yalnızca test için.
 - Korkuluklar ([araştırma §5](research/spawn-control-and-solvability.md)):
   - DDA yalnızca yardım yönünde (motor zorlar: 0..100).
   - Harcama veya ödeme eğilimi DDA'ya girdi olmaz.

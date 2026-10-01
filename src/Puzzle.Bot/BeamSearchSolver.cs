@@ -8,11 +8,12 @@ namespace Puzzle.Bot
     /// <summary>The best line a search found from some position.</summary>
     public sealed class SolveResult
     {
-        internal SolveResult(IReadOnlyList<Move>? path, int positionsExplored)
+        internal SolveResult(IReadOnlyList<Move>? path, int positionsExplored, int positionsExpanded)
         {
             Path = path ?? System.Array.Empty<Move>();
             Solved = path is not null;
             PositionsExplored = positionsExplored;
+            PositionsExpanded = positionsExpanded;
         }
 
         public bool Solved { get; }
@@ -24,6 +25,11 @@ namespace Puzzle.Bot
         public int? MovesNeeded => Solved ? Path.Count : (int?)null;
 
         public int PositionsExplored { get; }
+
+        /// <summary>Positions whose moves were tried; explored / expanded is the average number of legal moves (branching factor).</summary>
+        public int PositionsExpanded { get; }
+
+        public double BranchingFactor => PositionsExpanded == 0 ? 0 : PositionsExplored / (double)PositionsExpanded;
     }
 
     /// <summary>
@@ -56,18 +62,20 @@ namespace Puzzle.Bot
         {
             if (game.Status != GameStatus.Playing)
             {
-                return new SolveResult(null, 0);
+                return new SolveResult(null, 0, 0);
             }
 
             var frontier = new List<Node> { new Node(game.CreateReplica(), null, default, 0) };
             var seen = new HashSet<ulong>();
             var buffer = new List<Move>();
             int explored = 0;
+            int expanded = 0;
             for (int depth = 0; depth < maxMoves && frontier.Count > 0; depth++)
             {
                 var children = new List<Node>();
                 foreach (Node node in frontier)
                 {
+                    expanded++;
                     buffer.Clear();
                     node.Game.CollectLegalMoves(buffer);
                     foreach (Move move in buffer)
@@ -77,7 +85,7 @@ namespace Puzzle.Bot
                         explored++;
                         if (child.Status == GameStatus.Won)
                         {
-                            return new SolveResult(new Node(child, node, move, 0).Path(), explored);
+                            return new SolveResult(new Node(child, node, move, 0).Path(), explored, expanded);
                         }
 
                         if (child.Status == GameStatus.Playing && seen.Add(PositionKey(child)))
@@ -90,7 +98,7 @@ namespace Puzzle.Bot
                 frontier = children.OrderByDescending(c => c.Value).Take(BeamWidth).ToList();
             }
 
-            return new SolveResult(null, explored);
+            return new SolveResult(null, explored, expanded);
         }
 
         /// <summary>Board plus goal counters; equal keys are treated as the same position.</summary>

@@ -23,9 +23,23 @@ public sealed record StateDto(
     string Status,
     string[] Palette);
 
-public sealed record LevelSummaryDto(string Key, int Id, string Difficulty, int Width, int Height, int Moves, int Colors, string[] Goals);
+/// <summary>A level in the picker; <see cref="StartBoard"/> is "varied" or "fixed", <see cref="PoolSize"/> the calibrated retry seeds.</summary>
+public sealed record LevelSummaryDto(string Key, int Id, string Difficulty, int Width, int Height, int Moves, int Colors, string[] Goals, string StartBoard, int PoolSize);
 
-public sealed record SessionDto(string SessionId, uint Seed, int Assist, LevelSummaryDto Level, StateDto State);
+/// <summary>
+/// One attempt. <see cref="Attempt"/> is the retry number when the seeds came from the level's policy (absent for
+/// an explicit seed); <see cref="FromPool"/> tells whether they came from the calibrated equal-difficulty pool.
+/// </summary>
+public sealed record SessionDto(
+    string SessionId,
+    int? Attempt,
+    bool FromPool,
+    string StartBoard,
+    ulong BoardSeed,
+    ulong PlaySeed,
+    int Assist,
+    LevelSummaryDto Level,
+    StateDto State);
 
 /// <summary>A move; <see cref="To"/> is absent for a tap.</summary>
 public sealed record MoveDto(string Kind, PositionDto From, PositionDto? To);
@@ -58,7 +72,12 @@ public sealed record EventDto(string Type)
 
 public sealed record MoveResultDto(bool Accepted, MoveDto? Move, IReadOnlyList<EventDto> Events, StateDto State, StatsDto? Stats);
 
-public sealed record NewSessionRequest(string LevelKey, uint? Seed, int? Assist);
+/// <summary>
+/// Starts an attempt. Seeds, by priority: both <see cref="BoardSeed"/> and <see cref="PlaySeed"/> (exact repeat),
+/// <see cref="PlaySeed"/> alone (board follows the start-board rule), otherwise retry number <see cref="Attempt"/>.
+/// <see cref="StartBoard"/> overrides the level's rule for experiments: "level", "varied" or "fixed".
+/// </summary>
+public sealed record NewSessionRequest(string LevelKey, int? Attempt, ulong? PlaySeed, ulong? BoardSeed, string? StartBoard, int? Assist);
 
 public sealed record BotRequest(string? Bot);
 

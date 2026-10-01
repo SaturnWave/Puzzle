@@ -107,10 +107,16 @@ namespace Puzzle.Core.Engine
 
         public PlayStats TotalStats => _totalStats.ToSnapshot();
 
+        /// <summary>Starts an attempt whose board and play both come from <paramref name="seed"/>.</summary>
         /// <exception cref="LevelInitializationException">The level cannot produce a valid starting board.</exception>
-        public static Game Start(LevelDefinition level, ulong seed, GameOptions? options = null)
+        public static Game Start(LevelDefinition level, ulong seed, GameOptions? options = null) =>
+            Start(level, AttemptSeeds.From(seed), options);
+
+        /// <exception cref="LevelInitializationException">The level cannot produce a valid starting board.</exception>
+        public static Game Start(LevelDefinition level, AttemptSeeds seeds, GameOptions? options = null)
         {
             options ??= GameOptions.Default;
+            ulong seed = seeds.Play;
             var board = new Board(level.Layout.Shape);
             var items = new ItemLedger { Spawned = level.Layout.PresetItemCount };
             SpawnDirector director = SpawnDirector.Create(level.Spawn, options.AssistPercent, new Rng(Rng.Derive(seed, SpawnStream)));
@@ -127,7 +133,7 @@ namespace Puzzle.Core.Engine
                 new StatsCounter());
 
             var initializer = new BoardInitializer(board, game._matches, game._moves, options.Rules);
-            initializer.Fill(level.Layout, level.Spawn.Palette, new Rng(Rng.Derive(seed, InitialStream)));
+            initializer.Fill(level.Layout, level.Spawn.Palette, new Rng(Rng.Derive(seeds.Board, InitialStream)));
             return game;
         }
 

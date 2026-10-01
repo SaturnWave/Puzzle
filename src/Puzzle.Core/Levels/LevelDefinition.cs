@@ -17,7 +17,8 @@ namespace Puzzle.Core.Levels
             LevelLayout layout,
             IReadOnlyList<GoalSpec> goals,
             int moveLimit,
-            SpawnRules spawn)
+            SpawnRules spawn,
+            AttemptPolicy? attempts = null)
         {
             Id = id;
             Difficulty = difficulty;
@@ -25,6 +26,7 @@ namespace Puzzle.Core.Levels
             Goals = goals.ToArray();
             MoveLimit = moveLimit;
             Spawn = spawn;
+            Attempts = attempts ?? AttemptPolicy.Default;
             Validate();
         }
 
@@ -39,6 +41,13 @@ namespace Puzzle.Core.Levels
         public int MoveLimit { get; }
 
         public SpawnRules Spawn { get; }
+
+        /// <summary>How retries differ: starting-board rule and the calibrated seed pool.</summary>
+        public AttemptPolicy Attempts { get; }
+
+        /// <summary>The same level with a different attempt policy (e.g. after calibrating its seed pool).</summary>
+        public LevelDefinition WithAttempts(AttemptPolicy attempts) =>
+            new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, attempts);
 
         private void Validate()
         {

@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Puzzle.Bot;
 using Puzzle.Bot.Simulation;
 using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
 using Puzzle.Tooling;
 using Puzzle.Web.Sessions;
@@ -45,16 +47,50 @@ internal static class PuzzleApi
             return Results.BadRequest("Assist must be 0..100.");
         }
 
-        uint seed = request.Seed ?? (uint)Random.Shared.Next();
+        if (!TryApplyStartBoard(level.Level, request.StartBoard, out AttemptPolicy? policy))
+        {
+            return Results.BadRequest("StartBoard must be level, varied or fixed.");
+        }
+
+        if (request.PlaySeed > uint.MaxValue || request.Attempt < 0)
+        {
+            return Results.BadRequest("PlaySeed must fit in 32 bits and Attempt must not be negative.");
+        }
+
+        (AttemptSeeds seeds, AttemptOrigin origin) = request switch
+        {
+            { BoardSeed: ulong board, PlaySeed: ulong play } => (AttemptSeeds.WithFixedBoard(board, play), new AttemptOrigin(null, false, policy.Board)),
+            { PlaySeed: ulong play } => (policy.SeedsForPlaySeed((uint)play), new AttemptOrigin(null, false, policy.Board)),
+            _ => (policy.SeedsFor(request.Attempt ?? 0, (uint)Random.Shared.Next()), new AttemptOrigin(request.Attempt ?? 0, policy.SeedPool.Count > 0, policy.Board)),
+        };
+
         try
         {
-            GameSession session = sessions.Create(level, seed, assist);
+            GameSession session = sessions.Create(level, seeds, origin, assist);
             return Results.Ok(ToSession(session));
         }
         catch (LevelInitializationException ex)
         {
             return Results.UnprocessableEntity(ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Lets the lab try a level with the other start-board rule. The level's calibrated pool is kept, but it was
+    /// measured under the level's own rule, so equal difficulty is only guaranteed for "level".
+    /// </summary>
+    private static bool TryApplyStartBoard(LevelDefinition level, string? mode, [NotNullWhen(true)] out AttemptPolicy? policy)
+    {
+        AttemptPolicy own = level.Attempts;
+        uint fixedSeed = own.Board is StartBoard.Fixed configured ? configured.Seed : (uint)Rng.Derive((ulong)level.Id.Value, 7);
+        policy = (mode ?? "level") switch
+        {
+            "level" => own,
+            "varied" => new AttemptPolicy { Board = new StartBoard.Varied(), SeedPool = own.SeedPool },
+            "fixed" => new AttemptPolicy { Board = new StartBoard.Fixed(fixedSeed), SeedPool = own.SeedPool },
+            _ => null,
+        };
+        return policy is not null;
     }
 
     private static IResult GetSession(string id, GameSessionStore sessions)
@@ -227,6 +263,14 @@ internal static class PuzzleApi
             accepted ? StateMapper.ToStats(game.LastMove) : null));
     }
 
-    private static SessionDto ToSession(GameSession session) =>
-        new SessionDto(session.Id, session.Seed, session.Assist, StateMapper.ToSummary(session.Level), StateMapper.ToState(session.Game));
+    private static SessionDto ToSession(GameSession session) => new SessionDto(
+        session.Id,
+        session.Origin.Attempt,
+        session.Origin.FromPool,
+        StateMapper.StartBoardName(session.Origin.StartBoard),
+        session.Seeds.Board,
+        session.Seeds.Play,
+        session.Assist,
+        StateMapper.ToSummary(session.Level),
+        StateMapper.ToState(session.Game));
 }

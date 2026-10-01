@@ -63,8 +63,17 @@ internal static class StateMapper
             level.Layout.Shape.Height,
             level.MoveLimit,
             level.Spawn.Colors,
-            level.Goals.Select(DescribeGoal).ToArray());
+            level.Goals.Select(DescribeGoal).ToArray(),
+            StartBoardName(level.Attempts.Board),
+            level.Attempts.SeedPool.Count);
     }
+
+    public static string StartBoardName(StartBoard board) => board switch
+    {
+        StartBoard.Varied _ => "varied",
+        StartBoard.Fixed _ => "fixed",
+        _ => throw new InvalidOperationException($"Unhandled start board {board.GetType().Name}."),
+    };
 
     public static MoveDto ToMove(Move move) => move.Kind == MoveKind.Tap
         ? new MoveDto("tap", ToPosition(move.From), null)

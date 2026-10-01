@@ -30,6 +30,10 @@ foreach (LibraryProblem problem in library.Problems)
 
 Log.LevelsLoaded(app.Logger, library.Levels.Count, levelsPath);
 app.UseDefaultFiles();
-app.UseStaticFiles();
+// The lab changes often: make browsers (and phones on the LAN) revalidate instead of serving stale files.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "no-cache",
+});
 app.MapPuzzleApi();
 app.Run();

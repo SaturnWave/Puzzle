@@ -16,6 +16,7 @@ const ui = {
   chains: new Map(), // cell index -> chain overlay element
   cells: [],        // cell index -> cell element (or null for gaps)
   selected: null,   // {x, y}
+  attempts: new Map(), // level key -> next retry number
   busy: false,
   autoplay: false,
   speed: 1,
@@ -215,11 +216,11 @@ function showBanner(state) {
   }
   const won = state.status === "Won";
   banner.innerHTML = `<div><strong>${won ? "Kazandın!" : "Hamle bitti"}</strong>
-    <span>${state.movesUsed} hamle · seed ${ui.session.seed}</span><br>
-    <button id="banner-retry">Aynı seed ile tekrar</button> <button id="banner-new">Yeni seed</button></div>`;
+    <span>${state.movesUsed} hamle · ${describeAttempt(ui.session)}</span><br>
+    <button id="banner-next">Tekrar dene (yeni desen, aynı zorluk)</button> <button id="banner-repeat">Aynı seed</button></div>`;
   banner.classList.remove("hidden");
-  $("banner-retry").onclick = () => newGame(ui.session.seed);
-  $("banner-new").onclick = () => newGame(null);
+  $("banner-next").onclick = () => newGame({ kind: "next" });
+  $("banner-repeat").onclick = () => newGame({ kind: "repeat" });
 }
 
 // ---------- animation ----------
@@ -496,15 +497,35 @@ function clearSelection() {
 }
 
 // ---------- game flow ----------
-async function newGame(seed) {
+function describeAttempt(session) {
+  const board = session.startBoard === "fixed" ? "tahta sabit" : "tahta her denemede farklı";
+  const source = session.attempt === undefined || session.attempt === null
+    ? "elle seçilen seed"
+    : `deneme #${session.attempt + 1}${session.fromPool ? ` (eşit zorluk havuzu, ${session.level.poolSize} seed)` : " (havuz yok: zorluk değişebilir)"}`;
+  const seeds = session.boardSeed === session.playSeed ? `seed ${session.playSeed}` : `tahta ${session.boardSeed} / oyun ${session.playSeed}`;
+  return `${source} · ${board} · ${seeds}`;
+}
+
+/** mode: {kind: "next"} next retry · {kind: "repeat"} exact same seeds · {kind: "seed", playSeed} explicit seed */
+async function newGame(mode) {
   const levelKey = $("level-select").value;
   const assist = Number($("assist-input").value);
+  const body = { levelKey, assist, startBoard: $("start-board-select").value };
+  if (mode.kind === "repeat" && ui.session) {
+    body.boardSeed = ui.session.boardSeed;
+    body.playSeed = ui.session.playSeed;
+  } else if (mode.kind === "seed") {
+    body.playSeed = mode.playSeed;
+  } else {
+    const next = ui.attempts.get(levelKey) ?? 0;
+    ui.attempts.set(levelKey, next + 1);
+    body.attempt = next;
+  }
   try {
     stopAutoplay();
-    const session = await api("/api/sessions", { levelKey, seed: seed ?? null, assist });
+    const session = await api("/api/sessions", body);
     ui.session = session;
-    $("seed-input").value = session.seed;
-    $("status-line").textContent = `${session.level.key} · seed ${session.seed}${assist ? ` · yardım %${assist}` : ""}`;
+    $("status-line").textContent = `${session.level.key} · ${describeAttempt(session)}${assist ? ` · yardım %${assist}` : ""}`;
     $("event-log").innerHTML = "";
     $("last-move").textContent = "—";
     $("solve-result").textContent = "Henüz çalıştırılmadı.";
@@ -676,7 +697,9 @@ function winRateChart(curve, limit) {
 
 // ---------- startup ----------
 function describeLevel(level) {
-  return `${level.difficulty} · ${level.width}x${level.height} · ${level.colors} renk · ${level.moves} hamle · hedef: ${level.goals.join(", ")}`;
+  const retries = level.poolSize > 0 ? `${level.poolSize} eşit zorlukta seed` : "seed havuzu yok";
+  const board = level.startBoard === "fixed" ? "sabit tahta" : "değişken tahta";
+  return `${level.difficulty} · ${level.width}x${level.height} · ${level.colors} renk · ${level.moves} hamle · hedef: ${level.goals.join(", ")} · ${board}, ${retries}`;
 }
 
 async function init() {
@@ -690,7 +713,7 @@ async function init() {
       const level = ui.levels.find((l) => l.key === $("level-select").value);
       $("level-info").textContent = level ? describeLevel(level) : "";
     };
-    $("level-select").onchange = () => { updateInfo(); newGame(null); };
+    $("level-select").onchange = () => { updateInfo(); newGame({ kind: "next" }); };
     updateInfo();
   } catch (error) {
     reportError(error);
@@ -699,9 +722,10 @@ async function init() {
 
   $("new-game").onclick = () => {
     const typed = $("seed-input").value;
-    newGame(typed === "" ? null : Number(typed));
+    newGame(typed === "" ? { kind: "next" } : { kind: "seed", playSeed: Number(typed) });
   };
-  $("replay-seed").onclick = () => ui.session && newGame(ui.session.seed);
+  $("replay-seed").onclick = () => ui.session && newGame({ kind: "repeat" });
+  $("start-board-select").onchange = () => newGame({ kind: "next" });
   $("assist-input").oninput = () => { $("assist-out").textContent = $("assist-input").value; };
   $("speed-select").onchange = () => setSpeed(Number($("speed-select").value));
   $("hint-btn").onclick = showHint;
@@ -714,7 +738,7 @@ async function init() {
   board.addEventListener("pointerup", onPointerUp);
   board.addEventListener("pointercancel", () => { pointerStart = null; });
   window.addEventListener("resize", layoutBoard);
-  await newGame(null);
+  await newGame({ kind: "next" });
 }
 
 init();

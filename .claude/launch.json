@@ -6,6 +6,12 @@
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "--project", "src/Puzzle.Web", "--urls", "http://localhost:5180"],
       "port": 5180
+    },
+    {
+      "name": "web-lan",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["out/web/Puzzle.Web.dll", "--urls", "http://0.0.0.0:5180", "--contentRoot", "."],
+      "port": 5180
     }
   ]
 }

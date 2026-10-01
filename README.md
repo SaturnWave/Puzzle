@@ -17,15 +17,34 @@ dotnet run --project src/Puzzle.Web
 
 Tarayıcıda <http://localhost:5180> adresini aç. Laboratuvarda şunlar var:
 - Örnek bölümleri sürükleyerek oynama.
+- "Yeni deneme" ile eşit zorluk havuzundan farklı desenler; "Aynı seed" ile birebir tekrar; başlangıç tahtasını sabit veya değişken deneme.
 - Seed ve DDA yardımı seçme.
 - İpucu, tek bot hamlesi ve otomatik oynayan bot.
 - Bölümü 100–1000 kez simüle edip kazanma oranı eğrisini görme.
 - Gelecek taşları bilen çözücüyle "mükemmel oyun"u bulup canlı oyunda oynatma.
 
-Telefondan aynı Wi-Fi üzerinden denemek için:
+Aynı Wi-Fi'deki telefon ve bilgisayarlardan erişmek için uygulamayı ayrı bir klasöre yayınla, sonra bütün ağ arayüzlerinde başlat. Ayrı klasör, geliştirme derlemeleriyle dosya kilidi çakışmasını önler.
 
 ```bash
-dotnet run --project src/Puzzle.Web --urls http://0.0.0.0:5180
+dotnet publish src/Puzzle.Web -c Release -o out/web
+```
+
+```bash
+dotnet out/web/Puzzle.Web.dll --urls http://0.0.0.0:5180 --contentRoot .
+```
+
+Sonra diğer cihazda `http://<bilgisayarın Wi-Fi IP'si>:5180` adresini aç. Windows Güvenlik Duvarı gelen bağlantıyı engelliyorsa yönetici PowerShell'de şu üç adımı uygula: Wi-Fi'yi "Özel" ağ yap, .NET Host engelleme kurallarını kapat, 5180 portuna izin ver.
+
+```powershell
+Set-NetConnectionProfile -InterfaceAlias "Wi-Fi" -NetworkCategory Private
+```
+
+```powershell
+Get-NetFirewallRule -DisplayName ".NET Host" | Where-Object Action -eq Block | Disable-NetFirewallRule
+```
+
+```powershell
+New-NetFirewallRule -DisplayName "Puzzle Test Lab (5180)" -Direction Inbound -Protocol TCP -LocalPort 5180 -Action Allow -Profile Private
 ```
 
 ## Yapı
@@ -35,7 +54,7 @@ dotnet run --project src/Puzzle.Web --urls http://0.0.0.0:5180
 | `src/Puzzle.Core` | netstandard2.1, C# 9 | Simülasyon motoru ve spawn yönetmeni; Unity'ye olduğu gibi girer |
 | `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar, beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
 | `src/Puzzle.Tooling` | net10.0 | Bölüm JSON'u ve bölüm kütüphanesi |
-| `src/Puzzle.Cli` | net10.0 | `sim`, `demo`, `bench`, `solve`, `validate` komutları |
+| `src/Puzzle.Cli` | net10.0 | `sim`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
 | `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı |
 | `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot, çözücü ve dosya formatı testleri |
 | `levels/samples` | JSON | El yapımı örnek bölümler |
@@ -51,7 +70,11 @@ dotnet run --project src/Puzzle.Cli -c Release -- sim levels/samples/s03_jelly_s
 ```
 
 ```bash
-dotnet run --project src/Puzzle.Cli -c Release -- solve levels/samples/s03_jelly_shape.json --seeds 6 --beam 8
+dotnet run --project src/Puzzle.Cli -c Release -- solve levels/samples/s03_jelly_shape.json --seeds 6 --beam 64 --prove 4
+```
+
+```bash
+dotnet run --project src/Puzzle.Cli -c Release -- seeds levels/samples/s03_jelly_shape.json --write
 ```
 
 ```bash

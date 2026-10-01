@@ -21,9 +21,10 @@ namespace Puzzle.Core.Levels
             LevelLayout layout = WithLevelContext(file.id, () => ParseLayout(file));
             GoalSpec[] goals = WithLevelContext(file.id, () => file.goals.Select(ParseGoal).ToArray());
             SpawnRules spawn = WithLevelContext(file.id, () => ParseSpawn(file.spawn));
+            AttemptPolicy attempts = WithLevelContext(file.id, () => ParseAttempts(file.attempts));
 
             // LevelDefinition reports cross-part inconsistencies with the level id already in the message.
-            return new LevelDefinition(id, difficulty, layout, goals, file.moves, spawn);
+            return new LevelDefinition(id, difficulty, layout, goals, file.moves, spawn, attempts);
         }
 
         public static LevelFile ToFile(LevelDefinition level)
@@ -52,6 +53,7 @@ namespace Puzzle.Core.Levels
                     maxItemsOnBoard = level.Spawn.Items.MaxOnBoard,
                     itemChancePercent = level.Spawn.Items.ChancePercent,
                 },
+                attempts = ToAttemptsFile(level.Attempts),
             };
         }
 
@@ -119,6 +121,31 @@ namespace Puzzle.Core.Levels
                 MaxOnBoard = spawn.maxItemsOnBoard,
                 ChancePercent = spawn.itemChancePercent,
             },
+        };
+
+        private static AttemptPolicy ParseAttempts(AttemptsFile? attempts)
+        {
+            if (attempts is null)
+            {
+                return AttemptPolicy.Default;
+            }
+
+            StartBoard board = attempts.board switch
+            {
+                "varied" => new StartBoard.Varied(),
+                "fixed" => new StartBoard.Fixed(attempts.boardSeed),
+                _ => throw new LevelFormatException($"unknown start board '{attempts.board}' (use varied or fixed)"),
+            };
+            return new AttemptPolicy { Board = board, SeedPool = attempts.seedPool };
+        }
+
+        /// <summary>The default policy is omitted so plain levels stay short.</summary>
+        private static AttemptsFile? ToAttemptsFile(AttemptPolicy attempts) => attempts.Board switch
+        {
+            StartBoard.Varied _ when attempts.SeedPool.Count == 0 => null,
+            StartBoard.Varied _ => new AttemptsFile { board = "varied", seedPool = attempts.SeedPool.ToArray() },
+            StartBoard.Fixed fixedBoard => new AttemptsFile { board = "fixed", boardSeed = fixedBoard.Seed, seedPool = attempts.SeedPool.ToArray() },
+            _ => throw new InvalidOperationException($"Unhandled start board {attempts.Board.GetType().Name}."),
         };
 
         private static GoalFile ToGoalFile(GoalSpec goal) => goal switch

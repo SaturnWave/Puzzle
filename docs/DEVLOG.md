@@ -4,6 +4,50 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-01 · Oturum 3 — Eşit zorlukta tekrar denemeler, optimum kanıtı, CI, LAN sunucusu
+
+**Kullanıcı kararları**
+- **Tekrar deneme:** taşlar farklı desende gelir, ama algoritmik matematik denemeden öncekiyle aynı kalır.
+- **Başlangıç tahtası:** sabit de olabilir değişken de; zorluk aynı olmalı. Kesin karar web laboratuvarında denendikten sonra verilecek.
+- GitHub Actions eklensin.
+- **NP-zor itirazı:** "Kural belli olduğu için en iyi yolu bulmak zor olmaz; zor olan kuralı tersine mühendislikle çözmek."
+- Aynı Wi-Fi'deki her cihazdan erişilebilen bir sunucu başlatılsın.
+
+**Kararlar**
+- **Eşit zorluk havuzu:** her bölüm, tipik zorluğa (limitteki kazanma oranı ±5 puan) yakın 16 seed taşıyor. Deneme k havuzdaki (k mod 16). seed'i kullanıyor.
+- **Ayrı seed'ler:** tahta seed'i ve oyun seed'i ayrıldı (`AttemptSeeds`). Böylece "sabit tahta, değişen taşlar" mümkün.
+- **DDA yok:** denemeler arasında gizli kural değişikliği yapılmıyor (`AssistPercent` = 0).
+- **Örnek bölümler:** zor örnekler (s03, s04) 6 renge çekildi. Dördü de havuz aldı; s02 "sabit tahta" örneği.
+
+**Bulgular**
+- **Rastgele seed'ler eşit değil:**
+  - Jöle bölümünde (6 renk) seed başına medyan 8 ile 29 hamle arası; limitteki kazanma oranı %55 ile %100 arası.
+  - Havuz bunu %83–91'e indiriyor.
+  - Seçim ölçüsü medyan hamleden limitteki kazanma oranına çevrildi: aynı medyana sahip iki seed'in "kuyrukları" farklı olabiliyor.
+- **Optimum kanıtı:** tam arama (`ExhaustiveSearch`) bütün kısa dizileri denedi.
+  - Seed 2 ve 3: beam 64'ün yolu gerçekten en iyisi (kanıtlandı).
+  - Seed 0 ve 5: gelecek taşları bilen beam 64 beş hamle buldu; tam arama dört hamlelik daha kısa bir kazanç buldu.
+  - Pozisyon başına ~37–40 geçerli hamle var. 4 hamle derinlik ~1 milyon pozisyon (1,5 sn); 6–7 hamle derinlik saatler veya günler sürüyor.
+  - Özet: kuralı izlemek kolay, iyi yol bulmak kolay, en iyiyi kanıtlamak zor.
+- **Güvenlik duvarı:** Windows'ta .NET Host için gelen bağlantıları engelleyen kurallar ve "Public" Wi-Fi profili var. Diğer cihazların bağlanması için kullanıcının bunları kendisinin açması gerekiyor (README'de komutlar).
+
+**Değişiklikler**
+- **Core:** `AttemptSeeds`, `Game.Start(level, AttemptSeeds)`, `StartBoard` (Varied / Fixed), `AttemptPolicy`, bölüm dosyasında `attempts`.
+- **Bot:**
+  - `SeedPoolCalibrator`, `ExhaustiveSearch`.
+  - Çözücü dallanma faktörünü raporluyor.
+  - `SimulationRunner` artık `AttemptSeeds` alıyor.
+- **CLI:** `seeds` komutu (havuzu ölçer ve `--write` ile yazar), `solve --prove`.
+- **Web:**
+  - Yeni kontroller: "Yeni deneme" (havuz), "Aynı seed" (birebir tekrar), "Başlangıç tahtası" seçici.
+  - Statik dosyalar `no-cache` ile sunuluyor.
+  - Telefonda üst çubuk düzeltildi.
+  - LAN için `web-lan` başlatma ayarı eklendi (derlenmiş kopya, 0.0.0.0:5180).
+- **CI:** `.github/workflows/ci.yml` (build, test, bölüm doğrulama).
+- **Testler:** 55'ten 61'e.
+
+---
+
 ## 2026-10-01 · Oturum 2 — İki bomba, renk paleti, spawn yönetmeni, çözücü, web laboratuvarı
 
 **Kullanıcı istekleri**
