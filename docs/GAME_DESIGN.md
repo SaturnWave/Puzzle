@@ -1,6 +1,6 @@
-# Oyun Tasarımı ve Algoritma Planı — v0.1
+# Oyun Tasarımı ve Algoritma Planı — v0.2
 
-> Durum: Faz 1 (motor + bot) ve Faz 2 (ilk 1000 bölüm) tamamlandı. Mobil tasarım, UI ve oyunun adı motor hazır ilan edilince.
+> Durum: Faz 1 (motor + bot) ve Faz 2 (ilk 1000 bölüm) tamamlandı. Tema, ürün ve yayın kararları 2026-10-02'de verildi (§18–§21). Sıradaki iş motoru "hazır" yapmak (§21); arayüz, isim ve görseller en son.
 > Kaynak araştırma: [research.md](../research.md)
 
 ## 0. Temel kararlar
@@ -13,6 +13,10 @@
 | Determinizm | Kendi PRNG'miz (PCG32) + yalnızca tam sayı aritmetiği | Aynı seed her cihazda aynı oyunu üretir; botun ölçtüğü şey oyuncunun oynadığı şeydir |
 | Tahta | Büyük: 10x10, 10x12 ve türevleri; bölüm başına değişken W×H + şekil maskesi | Zor bölümlerde satır/sütun sayısı değişecek |
 | İçerik | İlk 1000 bölüm algoritmik üretilecek, hamle sayıları botla kalibre edilecek | Elle 1000 bölüm dengelenemez |
+| Tema | Genç bir ressam hasar görmüş müzeyi onarıyor; tablolar yapboz parçaları olarak toplanıyor (§18) | Bölümler yalnızca ilerleme aracı; oyuncuyu geri getiren meta oyun. Kamu malı tablolar içerik maliyetini sıfıra yaklaştırıyor |
+| Hedef oyuncu | 30 yaş üstü rahat oyuncu; içerik aileye uygun (§19) | Türün en büyük ve kanıtlanmış kitlesi |
+| İş modeli | Ücretsiz oyun + uygulama içi satın alma + isteğe bağlı ödüllü reklam (§19) | Türün standardı |
+| Ekip | Kullanıcı ve Claude; görseller en son (Claude Design / 3D araçlar) | Darboğaz çizim; içerik parça parça çoğaltılabilir olmalı |
 
 ## 1. Beyin fırtınası — büyük tahtanın getirdikleri
 
@@ -138,16 +142,18 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 | Novice | 50 | 12 | Kolay bölüm kontrolü |
 | Casual | 70 | 6 | Gündelik oyuncu |
 | **Average** | 85 | 3 | **Kalibrasyonun ana profili** |
-| Expert | 100 | 0 (her zaman en iyi) | Üst sınır, "çözülemez bölüm" tespiti |
+| Expert | 100 | 0 (her zaman en iyi) | Hatasız ama tek hamle ileriyi gören oyuncu; "çözülemez bölüm" tespiti |
 
-- Araştırmaya göre MCTS fazla güçlü oynar ve zorluğu olduğundan düşük gösterir; CNN taklit modeli için gerçek oyuncu verisi gerekir. Bu yüzden ilk sürüm **parametrik greedy**; lansmandan sonra oyuncu telemetrisiyle profiller yeniden kalibre edilir.
+- Botlar eğitilmedi: kurallar ve puanlar elle yazıldı, oynadıkça hiçbir şey öğrenmiyorlar. CNN taklit modeli için gerçek oyuncu verisi gerekir; bu yüzden ilk sürüm **parametrik greedy**. Yayındaki oyuncu verisiyle profiller yeniden kalibre edilir (§20).
+- **Bilinen sorun — özel taş biriktirme:** harcanan özel taşın değerinin yarısı kayıp sayıldığı için botlar özel taşları biriktiriyor; expert, average'dan belirgin güçlü değil. **Karar (2026-10-02):** düzeltilecek, ardından 1000 bölüm bir kez yeniden üretilecek (§21).
+- **Usta bot (karar 2026-10-02):** adil MCTS, yani gelecek taşları bilmeden olası gelecekleri örnekleyen ayrı bir bot yazılacak. Kalibrasyon greedy profillerde kalır. Araştırmadaki uyarı (MCTS fazla güçlü oynar, zorluğu düşük gösterir) bu yüzden geçerli değil: usta bot limit belirlemez, raporlarda gerçekçi beceri tavanını gösterir.
 
 **Üç ajan ve hata payı** (araştırma §3 ile uyumlu):
 
 | Ajan | Ne bilir | Durum | Ne ölçer |
 |---|---|---|---|
 | (a) **Çözücü** — beam search, mükemmel bilgi | Gelecek taşları bilir (oyunun birebir replikası) | ✅ `BeamSearchSolver` | "Her seferinde doğru hamle" ile bulunan en iyi hamle sayısı (alt sınır tahmini) |
-| (b) Geleceği bilmeyen güçlü ajan | Yalnızca tahtayı; birçok olası geleceği örnekler | Faz 2 (expectimax / MCTS) | Gerçekçi beceri tavanı |
+| (b) Geleceği bilmeyen güçlü ajan ("usta" bot) | Yalnızca tahtayı; birçok olası geleceği örnekler | Sıradaki iş (adil MCTS, §21) | Gerçekçi beceri tavanı |
 | (c) İnsan benzeri bot | Yalnızca tahtayı; dikkat + sıcaklık | ✅ `GreedyPolicy` profilleri | Hamle limiti kalibrasyonu |
 
 - Mükemmel oyunu bulmak taşlar bilinse bile NP-zor. Çözücünün sonucu "optimal" değil, "bulunan en iyi"dir. Kısa çözümlerde `ExhaustiveSearch` bütün dizileri deneyerek optimumu kanıtlayabilir (§13).
@@ -165,6 +171,11 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 2. `L` = hedef kazanma oranına ulaşan **en küçük** hamle sayısı.
 3. **Doğrulama:** yeni seed'lerle 200 oyun; kazanma oranı hedefin ±%7'si içinde değilse `L` ayarlanır.
 4. Ek metrikler: **near-miss** oranı (kaybedip hedefin ≥%80'ine ulaşan oyunlar — "bir hamle daha" hissi), ortalama karıştırma sayısı, Expert/Novice kazanma oranı farkı.
+
+Karar verilen, henüz uygulanmamış iki ek (2026-10-02, §21):
+
+5. **Casual koruması:** limit average bota göre belirlenir. Casual botun kazanma oranı Kolay bölümde %80'in, Normal bölümde %60'ın altındaysa üretici bölümü onarır ya da reddeder. Zor ve Süper Zor bölümlerde koruma yok.
+6. **Limit+5 sütunu:** raporlar `L + 5` hamledeki kazanma oranını da gösterir. "+5 hamle" teklifinin bölümü ne kadar kolaylaştırdığı böylece görünür. Kalibrasyon yine `L`'ye göre yapılır; dağılım elde olduğu için ek simülasyon gerekmez.
 
 ## 9. 1000 bölüm üretim hattı (Faz 2)
 
@@ -196,9 +207,9 @@ Raporları (`report.csv` ve kademe özeti) karşılaştırarak profiller kıyasl
 | `bands[]` | Bölüm aralığına göre hedef kazanma oranı, **hamle aralığı** (kademe başına), renk sayısı, en fazla engel türü. Her bant yalnızca değişen alanları yazar, gerisini öncekinden miras alır |
 | `sizes` | Kademe başına tahta boyutları. `fixedUntil`'e kadar sabit; bölüm içinde boyut hiç değişmez |
 | `palette` | `newColorsFrom`'dan sonra her bölüm grubu (`chapterSize`) 8 renk arasından kendi paletini alır |
-| `mechanics[]` | Mekanik açılış takvimi (taslak). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
-| `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu (varsayılan `average`) |
-| `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`). Hedef oyuncu kararı verilene kadar karşılaştırma için |
+| `mechanics[]` | Mekanik açılış takvimi (aşağıdaki tablo). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
+| `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu: `average` (karar 2026-10-02) |
+| `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`). Casual ayrıca koruma eşiği olarak kullanılacak (§8) |
 | `calibration`, `seedPool` | Oyun sayıları, tolerans, aday sayısı |
 
 **Bir bölümün üretimi:**
@@ -237,21 +248,24 @@ Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır):
 
 İlk 30 bölümde boyut sabit kalır (öğrenme); boyut değişimi bölüm 30'dan sonra Zor bölümlerde başlar.
 
-### Mekanik açılış takvimi (taslak)
+### Mekanik açılış takvimi
+
+**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil ve üretilmiş bölümler henüz eski takvimde (parantez içindeki numaralar); §21'deki adımlarla güncellenecek.
 
 | Bölüm | Yeni öğe |
 |---|---|
 | 1 | Temel eşleşme, renk toplama |
-| 3 / 5 / 8 / 11 / 15 | Roket / Bomba / Pervane / Renk Bombası / Büyük Bomba tanıtımı |
-| 13 | Kutu (1 can) |
+| 3 / 5 / 8 / 12 / 15 | Roket / Bomba / Pervane / Renk Bombası (eski: 11) / Büyük Bomba tanıtımı |
+| 11 | Kutu (1 can) (eski: 13) |
 | 21 | Jöle (1 kat) |
 | 31 | Kutu (2 can) |
 | 41 | Zincir |
-| 56 | Malzeme indirme |
+| 51 | Malzeme indirme; ikinci müze odası bununla açılır (eski: 56) |
 | 71 | Jöle (2 kat) |
 | 91 | Kutu (3 can) |
 | 120+ | 2 engel türü birlikte; 200+ 3 tür |
-| 300+ | v2 engelleri ve v2 özel taşları (§16) |
+
+v2 engelleri ve v2 özel taşları (§16) yayından sonra güncellemelerle gelir; en erken 300. bölümden sonra kullanılır. O zamana kadar 300 sonrası bölümler v1 mekaniklerinin kombinasyonlarıyla üretilir.
 
 Renk sayısı (Faz 1 ölçümüne göre güncellendi, bkz. §13). Bölümler ilerledikçe yeni renkler gelir:
 
@@ -307,7 +321,11 @@ src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de 
 src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
 tests/Puzzle.Core.Tests  net10.0, xUnit
 levels/samples      el yapımı örnek bölümler
+tools/docs-pdf      belgelerin PDF baskısını üreten betik (pandoc + Chrome)
+docs/pdf            üretilmiş PDF'ler; kaynak her zaman Markdown dosyasıdır
 ```
+
+**Belgeler.** Tasarım belgeleri Markdown olarak yazılır ve gözden geçirilir; her değişiklikten sonra `py tools/docs-pdf/build.py` ile PDF baskıları yeniden üretilir (kapak, belge künyesi, sayfa numaralı içindekiler, üst ve alt bilgi). Kod, `beautiful-code` standardına göre yazılır (kullanıcı kararı, 2026-10-02).
 
 ## 12. Yol haritası
 
@@ -316,8 +334,13 @@ levels/samples      el yapımı örnek bölümler
 | 1 ✅ | Çekirdek motor, bot, CLI, testler, örnek bölümler |
 | 1.5 ✅ | İki bomba, 8 renk + palet, spawn yönetmeni, mükemmel bilgi çözücüsü, web test laboratuvarı |
 | 2 ✅ | Bölüm üretici, 1000 bölüm, zorluk raporu |
-| 3 | Unity entegrasyonu: görsel katman, animasyon event'leri, ipucu, DDA |
-| 4 | UI, oyunun adı, meta oyun (harita, ödüller), ekonomi |
+| 2.5 (sıradaki) | Motoru "hazır" yapmak: bot düzeltmesi, usta bot, casual koruması, booster'lar, bitiş şöleni, düzeltme paketleri, 1000 bölümün yeniden üretimi (§21) |
+| 3 | Tema ve meta tasarımı: yapboz kesimi (C#), ekonomi simülatörü, 20 odanın ve 100 tablonun listesi (§18, §19) |
+| 4 | Arayüz ve oyunun adı |
+| 5 | Unity: görsel katman, animasyon event'leri, ipucu, analiz; görseller en son |
+| 6 | Yayın: APK testi → sınırlı ülke yayını → dünya geneli (§20) |
+
+Sıra kararı (2026-10-02): tema arayüzden önce gelir, çünkü engellerin görünüşü, renk paleti ve oyunun adı temadan çıkar.
 
 ## 13. Faz 1 sonuçları — ölçümler (2026-10-01)
 
@@ -408,18 +431,37 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 - Gevşetilen veya üretilemeyen bölüm yok.
 - Expert bot average'dan belirgin güçlü değil (§7); expert sütunu bilgi amaçlı.
 
+**Expert botun hamle raporu** (`puzzle botstats levels/generated --bot expert --runs 30`, hamle üst sınırı 150; ayrıntı `reports/expert_moves.csv`):
+
+| Kademe | Hamle limiti | Expert en az | Expert medyan | Expert p90 | Limitle kazanma |
+|---|---|---|---|---|---|
+| Kolay | 22,6 | 6,9 | 14,2 | 19,7 | %96 |
+| Normal | 26,5 | 9,8 | 19,0 | 26,3 | %90 |
+| Zor | 31,1 | 13,8 | 26,2 | 37,3 | %74 |
+| Süper Zor | 35,5 | 17,4 | 34,0 | 49,4 | %59 |
+
+- Expert her bölümü 30 denemenin 30'unda 150 hamle içinde bitirdi. Medyanların toplamı 20.930 hamle; limitlerin toplamı 27.515.
+- 26 bölümde expert'in medyanı limiti aşıyor (23'ü Süper Zor, 3'ü Zor). Çoğunda fark 1–3 hamle. En büyük fark #780: medyan 44, limit 33.
+- Bu ölçümler özel taş biriktirme sorunu düzeltilmeden önce alındı (§7); düzeltmeden ve yeniden üretimden sonra tekrarlanacak.
+
 ## 14. Açık sorular
 
 1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
 2. ~~Dokunarak patlatma?~~ → Evet, 1 hamle.
 3. ~~Boyut değişimi bölüm içinde de mi?~~ → Hayır. Bölüm içinde sabit, bölümler ilerledikçe değişir (profil `sizes`).
-4. Can sistemi / booster ekonomisi Faz 4'te mi konuşulacak?
+4. ~~Can sistemi / booster ekonomisi?~~ → 5 can + sınırsız can ödülleri, 7 booster, "+5 hamle" teklifi (§18, §19). Fiyatlar ekonomi simülatörüyle belirlenecek.
 5. ~~Retry politikası?~~ → Farklı desen, aynı kurallar, aynı zorluk (§17).
 6. ~~Başlangıç tahtası?~~ → **Her denemede farklı** (2026-10-01). Sabit tahta desteği motorda duruyor ama kullanılmıyor.
 7. ~~Zorluk hedefleri?~~ → Şimdilik §9 tablosu. Farklı kombinasyonlar profil dosyalarıyla denenecek.
-8. **Hedef oyuncu (belirsiz):** limitler `average` bota göre. Raporlar `casual` ve `expert` kazanma oranlarını da gösteriyor; karar gerçek oyuncu verisine veya testlere göre verilecek (profil `calibrationBot`).
+8. ~~Hedef oyuncu?~~ → 30 yaş üstü rahat oyuncu. Yayından önce limitler `average` bota göre, casual korumasıyla (§8). Gerçek oyuncu verisi geldikçe yeniden ayarlanır (§20).
 9. ~~Hamle aralığı?~~ → Bölüm aralığına ve zorluk kademesine göre değişken (profil `bands[].moves`).
-10. **Mekanik takvimi (belirsiz):** profilde taslak; istendiğinde değiştirilip yeniden üretilir.
+10. ~~Mekanik takvimi?~~ → Tablo başlangıçlarına hizalandı (§9).
+11. **Taşların görseli:** sanat aşamasında seçilecek. Kural: her rengin kendi şekli olur, renkler renk körlüğüne uygun sabit bir set kalır.
+12. **Fiyatlar ve coin miktarları:** ekonomi simülatörüyle (§19).
+13. **20 odanın sanat akımı listesi ve 100 tablo:** tema fazında hazırlanıp onaya sunulacak.
+14. **Oyunun adı:** tema kesinleşti; arayüzle birlikte konuşulacak.
+15. **Analiz servisi:** Firebase mi Unity Analytics mi (§20).
+16. **Sınırlı yayın ülkeleri** (§20).
 
 ## 15. Paralel çalışan algoritmalar — mimari
 
@@ -428,9 +470,9 @@ Oyun tek bir algoritma değil, aynı anda çalışan birkaç sistemden oluşuyor
 | Katman | Algoritmalar | Nerede çalışır | Durum |
 |---|---|---|---|
 | **Spawn yönetmeni** | Denge (dueness) + hedef eğilimi + kaskad kontrolü + DDA yardımı, her taş için birlikte | Oyun içi (Core) | ✅ |
-| **Oyuncu botları** | Random, Greedy (4 profil), çözücü (beam search, mükemmel bilgi) | Analiz, ipucu (Bot) | ✅ |
+| **Oyuncu botları** | Random, Greedy (4 profil), çözücü (beam search, mükemmel bilgi); usta bot (adil MCTS) sırada | Analiz, ipucu (Bot) | ✅ / usta bot plan |
 | **Paralel simülasyon** | Yüzlerce oyun 12 çekirdekte aynı anda; tek seri tüm kazanma eğrisini verir | Kalibrasyon (Bot) | ✅ |
-| **Jeneratör portföyü** | Şablon/simetri, mutasyon, WFC benzeri yerleşim, paralel aday + bot seçimi | Üretim (Faz 2) | Plan |
+| **Jeneratör portföyü** | 7 şekil stili × engel desenleri, beslenebilirlik analizi, bot kalibrasyonu, eşit zorluk havuzu | Üretim (`Puzzle.Generator`) | ✅ |
 | **Oyun içi eşzamanlı sistemler** | İpucu botu, beceri takibi (EWMA), DDA denetleyicisi (yalnızca yardım), near-miss tespiti (yalnızca ölçüm), telemetri | Unity (Faz 3) | Plan |
 
 ## 16. İlerleme — yeni renkler, engeller, özel taşlar, temalar
@@ -459,7 +501,7 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
   | Kum saati | +2 hamle, nadir ödül |
 
   Her yeni özel taş yeni bir `TileKind`. Kapalı küme testleri hangi switch'lerin güncelleneceğini gösterir (Büyük Bomba eklenirken bu sistem eksik switch'i anında yakaladı).
-- **Temalar:** her 50–100 bölüm bir tema (görsel set: taş şekilleri, arka plan, müzik). Mekanik değişmez; yalnızca Unity görsel katmanı.
+- **Temalar:** her 50 bölüm bir müze odası, yani bir sanat akımı (§18). Oda kendi arka planını ve renk paletini getirir. Mekanik değişmez; yalnızca Unity görsel katmanı.
 
 ## 17. Retry politikası ve etik korkuluklar
 
@@ -485,3 +527,112 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
   - Near-miss hedeflenmez, yalnızca ölçülür.
   - Ekstra hamle teklifinden önceki hamlelerde yönetmen sabit kalır (Faz 3).
   - Seed ve bias kayıtları saklanır.
+
+## 18. Tema ve meta oyun — ressam ve müze
+
+**Karar (2026-10-02).** Bölümler oyunun yakıtı; oyuncuyu ertesi gün geri getiren şey, bölümlerle kazandığını harcadığı yer. Tema kullanıcının fikri.
+
+**Hikâye:** genç bir ressamın sevdiği müze bir felakette hasar gördü; tablolar parçalanıp dağıldı. Ressam bölüm kazanarak parçaları topluyor, tabloları yapboz gibi birleştirip yerlerine asıyor ve müzeyi oda oda yeniden açıyor.
+
+**Yapı.** Üreticideki döngülerle birebir örtüşüyor; mevcut sisteme değişiklik gerektirmiyor:
+
+| Birim | Bölüm | Üreticideki karşılığı |
+|---|---|---|
+| 1 tablo | 10 | Zorluk testere dişi (`cycle`). Döngünün son ve en zor bölümü tablonun son parçalarını verir |
+| 1 müze odası = 1 sanat akımı | 50 (5 tablo) | Renk paleti grubu (`palette.chapterSize`) |
+| Yayındaki oyun | 1000 (100 tablo, 20 oda) | — |
+
+- **Oda sırası:** en sevilen akımlarla başlar (Empresyonizm, Post-empresyonizm), kronolojik değil. İlk 100 bölüm oyuncuyu tutmak için en kritik dönem; en renkli ve en tanınan tablolar orada olmalı.
+- **Oda finali:** her odanın 5. tablosu o akımın en ünlü eseri. Her 50 bölümde bir büyük ödül anı olur.
+
+**Tablolar**
+- **Ana içerik:** kamu malı ünlü tablolar, güvenli olmak için 1900 öncesi sanatçılarla sınırlı. Kaynak: müzelerin açık erişim koleksiyonları (Art Institute of Chicago, The Met, Rijksmuseum). Yalnızca Art Institute of Chicago'da yaklaşık 2.000 kamu malı tablo var (2026-10-02 sorgusu).
+- **Lisans listesi:** her görüntünün kaynağı ve lisansı kaydedilir, tek tek kontrol edilir. Aynı müzede "American Gothic" ve "Nighthawks" telifli.
+- **Yan koleksiyon:** bizim çizdiğimiz özgün tablolar ve etkinlik tabloları. Parçaları coinle alınır. Ana tablolar bölümlere bağlı kalır.
+
+**Yapboz**
+- Gerçek mini yapboz: oyuncu parçayı sürükler, parça yerine yaklaşınca oturur. Döndürme yok. İstemeyen için "otomatik tamamla" düğmesi.
+- Her kazanılan bölüm eşit sayıda parça verir. Parçalar tepsiye düşer; oyuncu hemen ya da sonra yerleştirir.
+- Gerçek parayla rastgele parça paketi satılmaz. Rastgele paket yalnızca ücretsiz etkinlik ödülü olabilir.
+- Kesimi algoritma üretir; aynı tohum aynı parçaları verir (motorun determinizm ilkesiyle aynı).
+
+| Bölüm | Parça sayısı | Bölüm başına | Dizilim (yatay tablo) |
+|---|---|---|---|
+| 1–100 | 10 | 1 | **3-4-3** (sıralar 3, 4 ve 3 parçalı) |
+| 101–300 | 20 | 2 | 5×4 |
+| 301–600 | 30 | 3 | 6×5 |
+| 601–1000 | 40 | 4 | 8×5 |
+
+10 parçayı düz ızgarayla bölmenin tek yolu 5×2; yaygın tablo oranlarında ince uzun parçalar veriyor. 3-4-3 diziliminde parçalar kareye yakın kalıyor (prototipte karşılaştırıldı, kullanıcı 3-4-3'ü seçti). Dikey tablolarda dizilimler 90 derece döner. Prototip atılabilir bir JS denemesi; gerçek kesim kodu C# ile yazılacak (§12, Faz 3).
+
+**Müze:** hafif. Tamamlanan tablo duvara asılır, oda adım adım onarılır (çatlaklar kapanır, ışıklar yanar). Oyuncu seçim yapmaz. Seçenekli dekorasyon ve müze işletmesi ileride eklenebilir.
+
+**Tema eşlemesi.** Motordaki adlar değişmez; yalnızca görünüşler ve oyuncunun gördüğü adlar değişir.
+
+| Motordaki öğe | Temadaki karşılığı |
+|---|---|
+| Renkli taşlar | Boya (görseli sanat aşamasında seçilecek) |
+| Roket | Fırça darbesi |
+| Bomba / Büyük Bomba | Boya sıçraması / büyük sıçrama |
+| Pervane | Tablodan fırlayan kuş ya da kelebek |
+| Renk Bombası | Gökkuşağı paleti |
+| Jöle | Tablodaki kir ya da eski vernik katmanı |
+| Kutu | Nakliye sandığı |
+| Zincir | Koruma bandı ya da ip |
+| Malzeme | Kayıp çerçeve köşesi ya da fırça |
+| v2: yayılan balçık / buz / bal | Dökülen mürekkep / koruyucu cila / tutkal |
+
+Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit set kalır. Tablonun renkleri arka plana ve çerçeveye yansır.
+
+**Booster'lar.** Motora "booster kullanma" diye yeni bir hamle türü eklenecek; hamle sayısını düşürmez. Botlar kalibrasyonda booster kullanmaz: zorluk booster'sız ölçülür, booster oyuncu için gerçek bir avantaj olarak kalır.
+
+| Ne zaman | Booster | Etki |
+|---|---|---|
+| Bölüm öncesi | Fırça + sıçrama | Tahtada bir roket ve bir bombayla başla |
+| Bölüm öncesi | Gökkuşağı paleti | Tahtada bir renk bombasıyla başla |
+| Bölüm öncesi | +3 hamle | Hamle limiti 3 artar |
+| Bölüm içi | Spatula | Tek bir hücreyi vurur |
+| Bölüm içi | Yatay fırça | Bir satırı vurur |
+| Bölüm içi | Dikey fırça | Bir sütunu vurur |
+| Bölüm içi | Paleti karıştır | Tahtayı karıştırır |
+
+## 19. Ürün kararları
+
+**Karar (2026-10-02).**
+
+- **Hedef oyuncu:** 30 yaş üstü, kısa oturumlarla oynayan rahat oyuncu. İçerik aileye uygun.
+- **İş modeli:** ücretsiz oyun + uygulama içi satın alma (booster, ekstra hamle, coin) + isteğe bağlı ödüllü reklam.
+- **Can sistemi:** 5 can, yarım saatte bir can dolar, yalnızca kaybedince can gider. Etkinlik ödülü olarak sınırsız can süreleri. Yalnızca meta katmanı; motoru etkilemez.
+- **"+5 hamle" teklifi:** hamle bitince coinle ya da reklam izleyerek alınır. Zorluk ayarı teklifsiz limite göre yapılır; raporlar limit+5'teki kazanma oranını da gösterir (§8).
+- **Bitiş şöleni:** bölüm kazanılınca kalan her hamle tahtada bir rokete dönüşüp patlar ve coin verir. Kazanma kesinleştikten sonra çalıştığı için zorluk ölçümünü etkilemez.
+- **Coin:** booster, ekstra hamle ve yan koleksiyon parçaları için. Ana tabloların parçaları coinle alınmaz.
+- **Fiyatlar:** elle tahmin edilmeyecek. Bir **ekonomi simülatörü** botların 1000 bölümdeki kazanma oranlarını ve hamle dağılımlarını kullanarak can, "+5" teklifi ve coin akışını ölçecek; "ücretsiz oynayan biri 100. bölüme kaç günde gelir, nerede tıkanır" sorusunu cevaplayacak.
+- **Etik sınırlar** (§17'ye ek): oyuncunun para harcama eğilimi zorluğu etkilemez, zorluk gizlice ayarlanmaz, gerçek parayla rastgele kutu satılmaz.
+- **Ekip ve görseller:** kullanıcı ve Claude. Görseller en son, Claude Design ya da 3D araçlarla.
+
+## 20. Kalibrasyon, veri ve yayın
+
+**Karar (2026-10-02).**
+
+- **Yayın öncesi kalibrasyon:** `average` bot + casual koruması (§8). İnsan verisi yayından önce az olacağı için ilk sürüm botla ayarlanır.
+- **Web test uygulaması:** oynanan her oyun otomatik kaydedilir. Kayıt biçimi yayındaki oyununkiyle aynı; ilk "insan mı, bot mu" karşılaştırması APK beklenmeden görülür.
+- **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
+- **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
+- **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
+- **Yayın sırası:** APK testi → birkaç küçük ülkede birkaç haftalık sınırlı yayın → gerçek kazanma oranlarına göre limit ayarı → dünya geneli. Yayında 1000 bölümün tamamı bulunur.
+- **Düzeltme paketleri:** bölümler uygulamanın içinde gelir; sunucudan küçük düzeltme paketleri inebilir (örneğin bir bölümün hamle limiti ya da seed havuzu). Oyun internetsiz de oynanır. Bölüm dosyasındaki `formatVersion` dosya biçimini sürümler; düzeltme paketleri için bölüm başına bir içerik sürümü alanı eklenecek (eklemeli değişiklik).
+
+## 21. Motorun "hazır" tanımı ve iş sırası
+
+**Karar (2026-10-02).** Motor aşağıdaki liste tamamlanınca "hazır" sayılır ve tema fazına geçilir. v2 engelleri bu tanıma girmez; yayından sonra güncellemelerle gelir.
+
+| # | İş | Durum |
+|---|---|---|
+| 1 | Kararları bu belgeye ve geliştirme günlüğüne yaz | ✅ |
+| 2 | Botların özel taş biriktirme sorununu düzelt; usta botu (adil MCTS) yaz | |
+| 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | |
+| 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
+| 5 | Web test uygulamasına oyun kaydını ekle | |
+| 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | |
+
+Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına ve takvime bağlı; bölümler iki kez üretilmesin diye onlar önce gelir.

@@ -4,6 +4,44 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-02 · Oturum 5 — Expert raporu, tema ve yol haritası kararları
+
+**Kullanıcı kararları** (soru-cevap oturumu; ayrıntı [GAME_DESIGN.md](GAME_DESIGN.md) §18–§21)
+- **Tema:** genç bir ressam hasar görmüş müzeyi onarıyor; tablolar yapboz parçaları olarak toplanıyor. Fikir kullanıcının.
+- **Yapı:** 1 tablo = 10 bölüm, 1 müze odası = 50 bölüm, 1000 bölüm = 100 tablo = 20 oda. Odalar en sevilen akımlarla başlar; her odanın son tablosu o akımın en ünlü eseri.
+- **Tablolar:** telifsiz ünlü tablolar; bazılarını biz çizeceğiz (coinle alınan yan koleksiyon).
+- **Yapboz:** gerçek mini yapboz, döndürme yok. 10 parçada 3-4-3 dizilimi (prototipte 5×2 ile karşılaştırıldı). Gerçek parayla rastgele paket yok.
+- **Müze:** hafif; tablo asılır, oda adım adım onarılır.
+- **Hedef oyuncu:** 30 yaş üstü rahat oyuncu, aileye uygun içerik.
+- **İş modeli:** ücretsiz oyun + uygulama içi satın alma + isteğe bağlı ödüllü reklam. 5 can + sınırsız can ödülleri, "+5 hamle" teklifi, 7 booster, bitiş şöleni.
+- **Kalibrasyon:** average bot + casual koruması (Kolay ≥ %80, Normal ≥ %60). Raporlara limit+5 sütunu.
+- **Botlar:** özel taş biriktirme sorunu şimdi düzeltilecek; adil MCTS "usta" botu ayrı bir ölçüm botu olarak yazılacak.
+- **Mekanik takvimi:** tablo başlangıçlarına hizalandı (kutu 11, malzeme 51, renk bombası tanıtımı 12).
+- **Veri ve yayın:** web test uygulaması oyunları kaydedecek; Play Store'dan önce APK testi; hazır analiz servisi; sınırlı ülke yayını, sonra dünya. Yayında 1000 bölüm. Bölümlere sunucudan düzeltme paketi inebilecek.
+- **Sıra:** motor "hazır" → tema ve meta tasarımı → arayüz ve isim → Unity. Görseller en son. Ekip: kullanıcı ve Claude.
+- **Motor "hazır" tanımı:** GAME_DESIGN §21'deki 6 adım. v2 engelleri dahil değil.
+- **Çalışma düzeni:** kod `beautiful-code` standardına göre yazılacak; tasarım belgeleri profesyonel PDF olarak da tutulacak.
+
+**Bulgular**
+- **Expert botun hamle raporu:** expert 1000 bölümün hepsini 30 denemenin 30'unda bitirdi (üst sınır 150 hamle). Limitle kazanma oranı Kolay'da %96, Süper Zor'da %59. 26 bölümde expert'in medyanı limiti aşıyor; en büyük fark #780 (medyan 44, limit 33).
+- **Botlar eğitilmedi:** kurallar ve puanlar elle yazıldı. Expert tek hamle ileriyi görüyor ve özel taş biriktiriyor; average'dan belirgin güçlü değil.
+- **Üretici temaya hazırdı:** 10 bölümlük zorluk döngüsü ve 50 bölümlük palet grupları, "1 tablo = 10 bölüm, 1 oda = 50 bölüm" yapısıyla birebir örtüşüyor.
+- **Tablo kaynağı:** Art Institute of Chicago'da yaklaşık 2.000 kamu malı tablo var. Aynı müzede telifli eserler de bulunuyor; her görüntü tek tek kontrol edilmeli.
+- **Yapboz dizilimi:** 10 parçayı düz ızgarayla bölmenin tek yolu 5×2 ve ince uzun parça veriyor. Sıraları 3, 4 ve 3 parçalı dizmek parçaları kareye yakın tutuyor.
+- **Bölüm dosyasında `formatVersion` zaten var.** Düzeltme paketleri için eksik olan, bölüm başına içerik sürümü.
+
+**Değişiklikler**
+- **CLI:** `botstats` komutu; bir botun her bölümü kaç hamlede bitirdiğinin dağılımını CSV'ye yazar. `LevelReport.CompletionMoves`.
+- **Rapor:** `reports/expert_moves.csv`.
+- **Prototip:** yapboz kesimi (JS, atılabilir; repoda değil). Van Gogh'un "Yatak Odası" tablosu, 3-4-3 ve 5×2 dizilimleri.
+- **Belgeler:** GAME_DESIGN v0.2 — yeni §18 (tema ve meta), §19 (ürün), §20 (kalibrasyon, veri, yayın), §21 (motor "hazır" tanımı); yol haritası, mekanik takvimi ve açık sorular güncellendi.
+- **PDF baskıları:** `tools/docs-pdf/build.py` dört belgeyi `docs/pdf/` altına PDF olarak üretir: kapak, belge künyesi, sayfa numaralı içindekiler, üst ve alt bilgi, PDF yer imleri. Kaynak Markdown dosyaları olarak kalır.
+- **Araçlar:** Claude Code'a `mattpocock-skills` eklentisi kuruldu (soru-cevap oturumu bununla yapıldı).
+
+**Sıradaki:** GAME_DESIGN §21, 2. adım — bot düzeltmesi ve usta bot.
+
+---
+
 ## 2026-10-01 · Oturum 4 — Faz 2: bölüm üreticisi ve ilk 1000 bölüm
 
 **Kullanıcı kararları**
