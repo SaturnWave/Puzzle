@@ -4,6 +4,38 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-03 · Oturum 6 — Özel taş düzeltmesi ve usta bot (yol haritası 2. adım)
+
+**Kullanıcı kararları**
+- Kod `beautiful-code` standardına göre yazılıyor; tasarım belgeleri profesyonel PDF olarak da tutuluyor.
+- Motora yeni public metot onaylandı: `Game.CreateImagined(ulong seed)`.
+- Usta botu örneklemesiz iki hamle aramaya çevirme önerisi onaylandı; ölçüm önerinin yanlış olduğunu gösterince geri alındı (aşağıda).
+
+**Nasıl çalışıldı:** dört iş akışı, toplam 22 ajan.
+1. Okuma, teşhis ve tasarım: üç okuyucu, bir ölçüm ajanı, üç bağımsız tasarım, iki değerlendirici.
+2. Uygulama ve ölçüm: motor, bot, ölçüm.
+3. Örneklemesiz iki hamle denemesi ve ölçümü.
+4. Bağımsız inceleme (dört boyut, her bulguyu çürütmeye çalışan doğrulayıcılar) ve düzeltmeler.
+
+**Bulgular**
+- **Biriktirme gerçek ama dar:** 0,5 cezasıyla expert özel taşlarının %19'unu kullanmadan bitiriyordu; zarar büyük "renk topla" hedefli bölümlerdeydi. 0,25 iki profil için de en iyi değer (1000 bölüm × 100 oyun): expert limitle kazanma %84,8 → %86,8, average %64,2 → %65,3. 0 değeri eşya indirme bölümlerinde özel taşları erken harcatıyor.
+- **Ağaç araması bu bütçede değmiyor:** karar başına ~550 deneme oyunu var; üç tasarımdan değerlendiriciler örneklemeli iki hamle aramayı seçti.
+- **Usta, expert'ten çok güçlü:** 1000 bölüm × 30 oyun, aynı tohumlar: limitle kazanma %86,8 → %98,6, ortanca hamle 20,4 → 15,8. Her kademede ve her hedef türünde önde; en büyük kazanç eşya indirme bölümlerinde. Rapor 13,4 dakika.
+- **Örneklemesiz iki hamle daha zayıf çıktı:** 40 bölümlük örneklemde biraz daha iyi görünmüştü; 1000 bölümde limitle kazanmada 1,0 puan geride, ortancada 0,9 hamle fazla, rapor 24 dakika. Örneklem temsil edici değildi (356 "sadece renk topla" bölümüne karşı 5). Değişiklik geri alındı; bot kararları artık 1000 bölümde doğrulanıyor.
+- **İnceleme:** 18 bulgu; 10'u çürütüldü, 8'i doğrulandı (hepsi küçük önemde) ve düzeltildi. Öne çıkanlar: kalan hamle testi botun kalan hamleye bakmasını yakalamıyordu; web test uygulaması pahalı `usta-<n>` bütçelerine açıktı; `botstats` bir oyun hata verince önceki satırları kaybedebiliyordu.
+
+**Değişiklikler**
+- **Bot:** `MoveEvaluator.SpendFactor` 0,25. Yeni `UstaPolicy`, `UstaSettings`, `HalvingPlan`; `BotPolicies`'e `usta` / `usta-<n>` (oyuncu modelleri listesi değişmedi). `TryCreate` boş isimde hata fırlatmak yerine `false` döndürüyor.
+- **Motor:** `Game.CreateImagined` (olası bir gelecek: bölümün spawn kuralları, botun kendi tohumu, hamle limiti yok); `ITileSource.Reseed`. Gizli taşlı kopyalardan gelecek üretilemez.
+- **Korumalar:** üretici ustayı kalibrasyon botu olarak kabul etmiyor ve boş `reportBots` girdisini reddediyor. Web yalnızca `usta`yı kabul ediyor, en fazla 100 simülasyon.
+- **CLI:** `botstats` bütün çekirdekleri kullanıyor (çıktı birebir aynı, hata olursa önceki satırlar korunuyor); `bench`'e usta satırı.
+- **Testler:** 98'den 139'a. Kritik testler kasıtlı hata eklenerek sınandı (gerçek rastgeleliği sızdırmak, kalan hamleye bakmak, hamle limitini geri getirmek).
+- **Belgeler:** GAME_DESIGN §7, §13, §15, §21.
+
+**Sıradaki:** GAME_DESIGN §21, 3. adım — casual koruması, limit+5 sütunu, mekanik takviminin tablo başlangıçlarına hizalanması.
+
+---
+
 ## 2026-10-02 · Oturum 5 — Expert raporu, tema ve yol haritası kararları
 
 **Kullanıcı kararları** (soru-cevap oturumu; ayrıntı [GAME_DESIGN.md](GAME_DESIGN.md) §18–§21)

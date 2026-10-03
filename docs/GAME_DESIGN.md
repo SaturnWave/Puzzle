@@ -134,7 +134,7 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 
 - Bot, oyunun **aynı kodunu** kullanır ama geleceği göremez: bir hamleyi denerken yeni düşen taşlar **gizli** taş olarak gelir (eşleşmez). Oyuncunun gördüğünden fazlasını görmez.
 - **Politikalar:** `Random` (alt sınır), `Greedy` (her geçerli hamleyi 1 adım simüle et, puanla, seç).
-- **Puan fonksiyonu:** hedef ilerlemesi (ana bileşen) + hedef tamamlama bonusu + üretilen özel taşın değeri − harcanan özel taşın değeri (×0,5) + kısmi hasar (kutu canı, jöle katı, zincir) + malzemenin aşağı inmesi + temizlenen taş sayısı. Kazandıran hamle her zaman seçilir.
+- **Puan fonksiyonu:** hedef ilerlemesi (ana bileşen) + hedef tamamlama bonusu + üretilen özel taşın değeri − harcanan özel taşın değeri (×0,25) + kısmi hasar (kutu canı, jöle katı, zincir) + malzemenin aşağı inmesi + temizlenen taş sayısı. Kazandıran hamle her zaman seçilir.
 - **Beceri profilleri:**
 
 | Profil | Dikkat (hamleyi görme %) | Sıcaklık (softmax) | Kullanım |
@@ -145,15 +145,20 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 | Expert | 100 | 0 (her zaman en iyi) | Hatasız ama tek hamle ileriyi gören oyuncu; "çözülemez bölüm" tespiti |
 
 - Botlar eğitilmedi: kurallar ve puanlar elle yazıldı, oynadıkça hiçbir şey öğrenmiyorlar. CNN taklit modeli için gerçek oyuncu verisi gerekir; bu yüzden ilk sürüm **parametrik greedy**. Yayındaki oyuncu verisiyle profiller yeniden kalibre edilir (§20).
-- **Bilinen sorun — özel taş biriktirme:** harcanan özel taşın değerinin yarısı kayıp sayıldığı için botlar özel taşları biriktiriyor; expert, average'dan belirgin güçlü değil. **Karar (2026-10-02):** düzeltilecek, ardından 1000 bölüm bir kez yeniden üretilecek (§21).
-- **Usta bot (karar 2026-10-02):** adil MCTS, yani gelecek taşları bilmeden olası gelecekleri örnekleyen ayrı bir bot yazılacak. Kalibrasyon greedy profillerde kalır. Araştırmadaki uyarı (MCTS fazla güçlü oynar, zorluğu düşük gösterir) bu yüzden geçerli değil: usta bot limit belirlemez, raporlarda gerçekçi beceri tavanını gösterir.
+- **Özel taş biriktirme (düzeltildi, 2026-10-03):** harcanan özel taşın değerinin yarısı kayıp sayıldığı için botlar özel taşları biriktiriyordu. 1000 bölüm × 100 oyunluk ölçümde expert, ürettiği özel taşların %19'unu kullanmadan bırakıyordu; zarar neredeyse yalnızca büyük "renk topla" hedefli bölümlerdeydi. Ceza 0,5'ten 0,25'e indi: iki profil için de en iyi değer bu (limitle kazanma expert %84,8 → %86,8, average %64,2 → %65,3). 0 ise eşya indirme bölümlerinde özel taşları erken harcatıyor. Bölümler eski ayarla kalibre edildiği için limitler 6. adımda yeniden üretilecek (§21).
+- **Usta bot (2026-10-03, `UstaPolicy`):** adil bir ölçüm botu. Limit belirlemez, raporlarda gerçekçi beceri tavanını gösterir; kalibrasyon greedy profillerde kalır (üretici ustayı kalibrasyon botu olarak kabul etmez). Araştırmadaki uyarı (güçlü arama zorluğu düşük gösterir) bu yüzden geçerli değil.
+  - **Nasıl oynar:** her hamleyi expert gibi puanlar ve en iyi 8'ini aday seçer; 2 yer özel taş patlatan hamlelere ayrılır. Adayları kendi rastgeleliğiyle örneklediği olası geleceklerde karşılaştırır: her örnekte aday hamleyi oynar, sonra o tahtadaki en iyi ikinci hamleye bakar (iki hamle ileri). Zayıf adaylar art arda yarıya elenir. Bütçe karar başına 24 örnek (8 aday × 1, 4 × 2, 2 × 4); bütün adaylar aynı örnek geleceklerde denenir.
+  - **Adillik:** gerçek gelecek taşları ve oyunun gerçek efekt ve karıştırma rastgeleliğini göremez. Olası gelecekleri `Game.CreateImagined(seed)` üretir: bölümün herkese açık spawn kuralları, botun kendi tohumu. Renk dengesi ağırlıkları kopyalanır; bu, geçmiş taşları kusursuz hatırlayan bir oyuncunun bilebileceği bilgi. Testler, aynı tahtada gerçek gelecek farklı olsa da aynı hamlenin seçildiğini ve kararın kalan hamleye bağlı olmadığını doğrular.
+  - **Neden MCTS değil:** ölçülen hızda karar başına yaklaşık 550 deneme oyunluk bütçe var. Gerçek bir ağaç araması bu bütçede derinleşemiyor; üç bağımsız tasarım arasından değerlendiriciler örneklemeli iki hamle aramayı seçti.
+  - **Örneklemesiz iki hamle denendi, reddedildi:** 40 bölümlük örneklemde biraz daha iyi görünmüştü. 1000 bölümün tamamında ise limitle kazanmada 1,0 puan geride, ortancada 0,9 hamle fazla çıktı ve rapor 24 dakika sürdü. Örneklem temsil edici değildi (1000 bölümdeki 356 "sadece renk topla" bölümüne karşı 5). Ders: bot kararları 1000 bölümün tamamında doğrulanır.
+  - **İsimler:** `usta` (24 örnek) ve `usta-<n>` (n örnek). Web test uygulaması yalnızca `usta`yı ve en fazla 100 simülasyonu kabul eder.
 
 **Üç ajan ve hata payı** (araştırma §3 ile uyumlu):
 
 | Ajan | Ne bilir | Durum | Ne ölçer |
 |---|---|---|---|
 | (a) **Çözücü** — beam search, mükemmel bilgi | Gelecek taşları bilir (oyunun birebir replikası) | ✅ `BeamSearchSolver` | "Her seferinde doğru hamle" ile bulunan en iyi hamle sayısı (alt sınır tahmini) |
-| (b) Geleceği bilmeyen güçlü ajan ("usta" bot) | Yalnızca tahtayı; birçok olası geleceği örnekler | Sıradaki iş (adil MCTS, §21) | Gerçekçi beceri tavanı |
+| (b) Geleceği bilmeyen güçlü ajan ("usta" bot) | Yalnızca tahtayı; birçok olası geleceği örnekler | ✅ `UstaPolicy` (örneklemeli iki hamle arama) | Gerçekçi beceri tavanı |
 | (c) İnsan benzeri bot | Yalnızca tahtayı; dikkat + sıcaklık | ✅ `GreedyPolicy` profilleri | Hamle limiti kalibrasyonu |
 
 - Mükemmel oyunu bulmak taşlar bilinse bile NP-zor. Çözücünün sonucu "optimal" değil, "bulunan en iyi"dir. Kısa çözümlerde `ExhaustiveSearch` bütün dizileri deneyerek optimumu kanıtlayabilir (§13).
@@ -442,7 +447,21 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 
 - Expert her bölümü 30 denemenin 30'unda 150 hamle içinde bitirdi. Medyanların toplamı 20.930 hamle; limitlerin toplamı 27.515.
 - 26 bölümde expert'in medyanı limiti aşıyor (23'ü Süper Zor, 3'ü Zor). Çoğunda fark 1–3 hamle. En büyük fark #780: medyan 44, limit 33.
-- Bu ölçümler özel taş biriktirme sorunu düzeltilmeden önce alındı (§7); düzeltmeden ve yeniden üretimden sonra tekrarlanacak.
+- Bu ölçümler özel taş biriktirme düzeltmesinden önce alındı (§7).
+
+**Usta ve expert** (2026-10-03; 1000 bölüm × 30 oyun, üst sınır 150, `botstats` tohumlarıyla eşleştirilmiş; expert 0,25 cezasıyla). Limitler hâlâ eski ayarla kalibre edilmiş limitler; 6. adımda yeniden üretilecek.
+
+| Kademe | Bölüm | Expert limitle kazanma | Usta limitle kazanma | Expert ortanca hamle | Usta ortanca hamle |
+|---|---|---|---|---|---|
+| Kolay | 204 | %97,7 | %99,9 | 13,5 | 11,1 |
+| Normal | 497 | %91,5 | %99,4 | 18,6 | 14,6 |
+| Zor | 199 | %76,5 | %97,5 | 25,8 | 19,4 |
+| Süper Zor | 100 | %61,5 | %94,2 | 33,1 | 23,9 |
+| **Toplam** | 1000 | **%86,8** | **%98,6** | **20,4** | **15,8** |
+
+- Usta her hedef türünde önde; en büyük kazanç eşya indirme bölümlerinde (+16,5 puan, −6,5 hamle). Ortancada 984 bölümde daha iyi, 1 bölümde daha kötü.
+- Rapor süresi 13,4 dakika (12 iş parçacığı; ölçüm sırasında makinede başka iş de çalışıyordu). Karar başına yaklaşık 550 deneme oyunu.
+- `botstats` artık bütün çekirdekleri kullanıyor; aynı girdiyle çıktısı birebir aynı, expert raporu yaklaşık iki kat hızlı.
 
 ## 14. Açık sorular
 
@@ -470,7 +489,7 @@ Oyun tek bir algoritma değil, aynı anda çalışan birkaç sistemden oluşuyor
 | Katman | Algoritmalar | Nerede çalışır | Durum |
 |---|---|---|---|
 | **Spawn yönetmeni** | Denge (dueness) + hedef eğilimi + kaskad kontrolü + DDA yardımı, her taş için birlikte | Oyun içi (Core) | ✅ |
-| **Oyuncu botları** | Random, Greedy (4 profil), çözücü (beam search, mükemmel bilgi); usta bot (adil MCTS) sırada | Analiz, ipucu (Bot) | ✅ / usta bot plan |
+| **Oyuncu botları** | Random, Greedy (4 profil), usta (örneklemeli iki hamle arama), çözücü (beam search, mükemmel bilgi) | Analiz, ipucu (Bot) | ✅ |
 | **Paralel simülasyon** | Yüzlerce oyun 12 çekirdekte aynı anda; tek seri tüm kazanma eğrisini verir | Kalibrasyon (Bot) | ✅ |
 | **Jeneratör portföyü** | 7 şekil stili × engel desenleri, beslenebilirlik analizi, bot kalibrasyonu, eşit zorluk havuzu | Üretim (`Puzzle.Generator`) | ✅ |
 | **Oyun içi eşzamanlı sistemler** | İpucu botu, beceri takibi (EWMA), DDA denetleyicisi (yalnızca yardım), near-miss tespiti (yalnızca ölçüm), telemetri | Unity (Faz 3) | Plan |
@@ -629,7 +648,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 | # | İş | Durum |
 |---|---|---|
 | 1 | Kararları bu belgeye ve geliştirme günlüğüne yaz | ✅ |
-| 2 | Botların özel taş biriktirme sorununu düzelt; usta botu (adil MCTS) yaz | |
+| 2 | Botların özel taş biriktirme sorununu düzelt; usta botu yaz | ✅ 2026-10-03 |
 | 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | |
 | 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
 | 5 | Web test uygulamasına oyun kaydını ekle | |

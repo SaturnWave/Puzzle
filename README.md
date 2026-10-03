@@ -53,10 +53,10 @@ New-NetFirewallRule -DisplayName "Puzzle Test Lab (5180)" -Direction Inbound -Pr
 | Proje | Hedef | İçerik |
 |---|---|---|
 | `src/Puzzle.Core` | netstandard2.1, C# 9 | Simülasyon motoru ve spawn yönetmeni; Unity'ye olduğu gibi girer |
-| `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar, beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
+| `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar (greedy profilleri, usta arama botu), beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
 | `src/Puzzle.Tooling` | net10.0 | Bölüm JSON'u ve bölüm kütüphanesi |
 | `src/Puzzle.Generator` | net10.0 | Bölüm üreticisi: profil, planlayıcı, şekil ve engel portföyü, bot kalibrasyonu, rapor |
-| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
+| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `botstats`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
 | `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı |
 | `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot, çözücü ve dosya formatı testleri |
 | `levels/samples` | JSON | El yapımı örnek bölümler |
@@ -77,6 +77,12 @@ dotnet run --project src/Puzzle.Cli -c Release -- generate --from 1 --to 1000 --
 
 ```bash
 dotnet run --project src/Puzzle.Cli -c Release -- sim levels/samples/s03_jelly_shape.json --bot all --runs 300
+```
+
+Bir botun 1000 bölümün her birini kaç hamlede bitirdiği (CSV; `--bot usta` ile arama botu, yaklaşık 15 dakika):
+
+```bash
+dotnet run --project src/Puzzle.Cli -c Release -- botstats levels/generated --bot expert --runs 30
 ```
 
 ```bash
