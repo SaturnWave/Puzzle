@@ -1,4 +1,5 @@
 using Puzzle.Core.Engine;
+using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Engine.Resolution;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
@@ -58,8 +59,9 @@ public class ImaginedFutureTests
 
         PlayFirstLegalMoves(live.CreateImagined(seed: 99), 20);
 
-        // Same refills, effect choices and shuffles as the untouched replica: thinking moved no live stream,
-        // dueness weight or item count.
+        // Same refills and item spawns as the untouched replica. The imagined play drew refills and spawned two items,
+        // so thinking moved neither the live spawn stream, its dueness weights nor its item count. It fired no seeker or
+        // colour bomb and shuffled nothing, so the effect and shuffle streams are left to the play-seed tests below.
         Assert.Equal(PlayFirstLegalMoves(control, 20), PlayFirstLegalMoves(live, 20));
     }
 
@@ -97,7 +99,8 @@ public class ImaginedFutureTests
     [Fact]
     public void Imagined_future_depends_on_the_board_and_not_on_the_live_play_seed()
     {
-        // Small and many-colored, so 60 moves include specials and shuffles: all three random streams get used.
+        // Small and many-colored, so 60 moves make a seeker or colour bomb (the only effect-stream users) and shuffle:
+        // all three random streams get used.
         LevelDefinition level = Level(Blank(6, 6), colors: 8);
         Game liveA = Game.Start(level, AttemptSeeds.WithFixedBoard(5, 100));
         Game liveB = Game.Start(level, AttemptSeeds.WithFixedBoard(5, 200));
@@ -109,9 +112,32 @@ public class ImaginedFutureTests
         List<ulong> replicaA = PlayFirstLegalMoves(liveA.CreateReplica(), 10);
         List<ulong> replicaB = PlayFirstLegalMoves(liveB.CreateReplica(), 10);
 
-        Assert.True(imaginedA.TotalStats.SpecialsActivated > 0 && imaginedA.TotalStats.Shuffles > 0, "every stream must be exercised");
+        PlayStats imagined = imaginedA.TotalStats;
+        Assert.True(imagined.SeekersCreated + imagined.ColorBombsCreated > 0, "the effect stream must be exercised");
+        Assert.True(imagined.Shuffles > 0, "the shuffle stream must be exercised");
         Assert.Equal(futureA, futureB);
         Assert.NotEqual(replicaA, replicaB); // replicas know each live future, and those differ
+    }
+
+    [Theory]
+    [InlineData('C', 3, 3)] // tapped colour bomb: red and blue tie at 14 gems each, so the cleared colour is drawn
+    [InlineData('S', 0, 0)] // tapped seeker: every red gem serves the goal equally, so the target is drawn
+    public void An_imagined_effect_choice_comes_from_the_imagination_seed_and_not_the_live_game(char special, int x, int y)
+    {
+        LevelDefinition level = Level(Filler(7, 7).With(x, y, special));
+        var events = new GameOptions { RecordEvents = true };
+        Game liveA = Game.Start(level, AttemptSeeds.WithFixedBoard(5, 100), events);
+        Game liveB = Game.Start(level, AttemptSeeds.WithFixedBoard(5, 200), events);
+        Move tap = Move.Tap(P(x, y));
+
+        List<ulong> futureA = ImagineAfter(liveA, tap);
+        List<ulong> futureB = ImagineAfter(liveB, tap);
+        Assert.True(liveA.TryPlay(tap));
+        Assert.True(liveB.TryPlay(tap));
+
+        // The live effect streams choose differently on this move, so a copy drawing from them would differ too.
+        Assert.NotEqual(TilesHitByTheMove(liveA), TilesHitByTheMove(liveB));
+        Assert.Equal(futureA, futureB);
     }
 
     [Fact]
@@ -190,14 +216,31 @@ public class ImaginedFutureTests
     }
 
     [Fact]
-    public void Imagining_works_from_a_replica_and_is_refused_from_a_lookahead()
+    public void Imagining_works_from_a_replica_and_is_refused_from_hidden_refills()
     {
         Game live = Game.Start(GameTests.OpenLevel(), seed: 7);
 
         Assert.Throws<InvalidOperationException>(() => live.CreateLookahead(seed: 1).CreateImagined(seed: 99));
+        Assert.Throws<InvalidOperationException>(() => live.CreateLookahead(seed: 1).CreateReplica().CreateImagined(seed: 99));
         Assert.Equal(
             PlayFirstLegalMoves(live.CreateImagined(seed: 99), 10),
             PlayFirstLegalMoves(live.CreateReplica().CreateImagined(seed: 99), 10));
+    }
+
+    [Fact]
+    public void A_replica_of_an_imagined_copy_past_the_move_limit_plays_exactly_like_it()
+    {
+        Game live = Game.Start(GameTests.OpenLevel(), seed: 7, new GameOptions { MoveLimitOverride = 1 });
+        Game imagined = live.CreateImagined(seed: 99);
+        PlayFirstLegalMoves(imagined, 2); // already one move past the limit
+        Game replica = imagined.CreateReplica();
+
+        List<ulong> original = PlayFirstLegalMoves(imagined, 10);
+        List<ulong> copy = PlayFirstLegalMoves(replica, 10);
+
+        Assert.Equal(10, original.Count);
+        Assert.Equal(original, copy);
+        Assert.Equal(imagined.Status, replica.Status);
     }
 
     [Fact]
@@ -234,6 +277,20 @@ public class ImaginedFutureTests
 
         return hashes;
     }
+
+    /// <summary>Plays <paramref name="move"/> and then ten first legal moves on an imagined copy (seed 99); the board hash after each.</summary>
+    private static List<ulong> ImagineAfter(Game live, Move move)
+    {
+        Game imagined = live.CreateImagined(seed: 99);
+        Assert.True(imagined.TryPlay(move));
+        var hashes = new List<ulong> { imagined.Board.ComputeHash() };
+        hashes.AddRange(PlayFirstLegalMoves(imagined, 10));
+        return hashes;
+    }
+
+    /// <summary>Cells the move's own effects destroyed, before refills and cascades (needs recorded events).</summary>
+    private static List<Position> TilesHitByTheMove(Game game) =>
+        game.FirstRound().OfType<GameEvent.TileDestroyed>().Select(destroyed => destroyed.At).ToList();
 
     private static int[] GoalsDone(Game game) =>
         Enumerable.Range(0, game.Goals.Count).Select(i => game.Goals[i].Done).ToArray();

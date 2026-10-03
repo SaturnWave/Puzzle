@@ -53,10 +53,13 @@ public static class ProfileLoader
     private static GenerationProfile Build(ProfileFile file)
     {
         string calibrationBot = file.CalibrationBot ?? "average";
-        IReadOnlyList<string> reportBots = file.ReportBots ?? [];
+        string knownBots = $"{string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>";
+        List<string?> listedReportBots = file.ReportBots ?? [];
+        Require(!listedReportBots.Contains(null), $"reportBots has a null entry; every entry must name a bot ({knownBots})");
+        IReadOnlyList<string> reportBots = listedReportBots.OfType<string>().ToArray();
         foreach (string bot in reportBots.Append(calibrationBot))
         {
-            Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>)");
+            Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {knownBots})");
         }
 
         Require(
@@ -211,7 +214,8 @@ public static class ProfileLoader
 
         public string? CalibrationBot { get; set; }
 
-        public List<string>? ReportBots { get; set; }
+        /// <summary>JSON may hold null entries; <see cref="Build"/> rejects them.</summary>
+        public List<string?>? ReportBots { get; set; }
 
         public int? TutorialUntil { get; set; }
 

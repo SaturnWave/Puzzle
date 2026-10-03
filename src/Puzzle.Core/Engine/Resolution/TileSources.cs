@@ -66,10 +66,13 @@ namespace Puzzle.Core.Engine.Resolution
 
         public ITileSource Clone() => this;
 
-        /// <summary>Never called: <see cref="Game.CreateImagined"/> refuses a lookahead copy before it gets here.</summary>
+        /// <summary>
+        /// The one guard against imagining from hidden refills: <see cref="Game.CreateImagined"/> reaches it from a
+        /// lookahead copy and from any copy of one (a replica of a lookahead keeps this source).
+        /// </summary>
         /// <exception cref="InvalidOperationException">Always: hidden refills follow no spawn rules.</exception>
         public ITileSource Reseed(Rng rng) =>
-            throw new InvalidOperationException("Hidden refills follow no spawn rules, so there is no future to reseed.");
+            throw new InvalidOperationException("A copy with hidden refills has no spawn rules to imagine from.");
     }
 
     /// <summary>

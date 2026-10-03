@@ -99,18 +99,23 @@ public class UstaPolicyTests
         Assert.True(game.TryPlay(chosen));
     }
 
-    [Fact]
-    public void Usta_ignores_the_moves_left()
+    [Theory]
+    [InlineData(4UL)]
+    [InlineData(5UL)]
+    public void Usta_plays_the_same_moves_whatever_the_moves_left(ulong seed)
     {
         LevelDefinition level = GameTests.ObstacleLevel();
 
-        RunResult open = SimulationRunner.Play(level, new UstaPolicy(), seed: 4, moveCap: 150);
+        (RunResult open, IReadOnlyList<Move> openMoves) = PlayRecorded(level, seed, moveCap: 150);
         Assert.Equal(GameStatus.Won, open.FinalStatus);
-        int tightCap = open.MovesUsed - 1; // one move short of the win: the tight game must run out of moves
-        RunResult tight = SimulationRunner.Play(level, new UstaPolicy(), seed: 4, moveCap: tightCap);
 
-        Assert.Equal(GameStatus.LostOutOfMoves, tight.FinalStatus);
-        Assert.Equal(open.ProgressAfterMove.Take(tightCap + 1), tight.ProgressAfterMove);
+        // Every limit short of the win, down to a single move: each game's last decision is made with one move left.
+        for (int cap = 1; cap < openMoves.Count; cap++)
+        {
+            (RunResult tight, IReadOnlyList<Move> tightMoves) = PlayRecorded(level, seed, cap);
+            Assert.Equal(GameStatus.LostOutOfMoves, tight.FinalStatus);
+            Assert.Equal(openMoves.Take(cap), tightMoves);
+        }
     }
 
     [Fact]
@@ -186,6 +191,24 @@ public class UstaPolicyTests
         from budget in new[] { 2, 6, 12, 24, 48 }
         select new object[] { candidates, budget };
 
+    [Theory]
+    [InlineData(24, 8)]
+    [InlineData(24, 5)]
+    [InlineData(48, 7)]
+    [InlineData(12, 3)]
+    public void One_decision_runs_exactly_the_planned_simulations(int simulations, int rootWidth)
+    {
+        Game game = Game.Start(GameTests.ObstacleLevel(), seed: 7);
+        IReadOnlyList<Move> legalMoves = game.FindLegalMoves();
+        var usta = new UstaPolicy(UstaSettings.Default with { Simulations = simulations, RootWidth = rootWidth });
+
+        usta.ChooseMove(game, legalMoves, new Rng(1));
+
+        HalvingPlan plan = HalvingPlan.For(Math.Min(legalMoves.Count, rootWidth), simulations);
+        Assert.True(plan.Arms > 2, "with more than two arms, the survivors of one round decide the next round's cost");
+        Assert.Equal(plan.Simulations, usta.LastDecisionSimulations);
+    }
+
     [Fact]
     public void A_single_candidate_needs_no_simulation()
     {
@@ -246,6 +269,13 @@ public class UstaPolicyTests
     }
 
     [Fact]
+    public void A_missing_bot_name_is_rejected_without_throwing()
+    {
+        Assert.False(BotPolicies.TryCreate(null, out IBotPolicy fallback));
+        Assert.NotNull(fallback);
+    }
+
+    [Fact]
     public void Usta_is_a_measurement_bot_not_a_player_model()
     {
         Assert.Equal(new[] { "random", "novice", "casual", "average", "expert" }, BotPolicies.Names);
@@ -267,4 +297,32 @@ public class UstaPolicyTests
 
     private static int MovesToWin(RunResult run) =>
         run.CompletedAtMove ?? throw new InvalidOperationException($"Run {run.Seed} did not finish within the cap.");
+
+    /// <summary>Plays one usta game with a move cap and returns it with the moves usta chose, in order.</summary>
+    private static (RunResult Run, IReadOnlyList<Move> Moves) PlayRecorded(LevelDefinition level, ulong seed, int moveCap)
+    {
+        var recorder = new MoveRecorder(new UstaPolicy());
+        RunResult run = SimulationRunner.Play(level, recorder, seed, moveCap);
+        return (run, recorder.Moves);
+    }
+
+    /// <summary>Plays like the bot it wraps and remembers every move that bot chose.</summary>
+    private sealed class MoveRecorder : IBotPolicy
+    {
+        private readonly IBotPolicy _bot;
+        private readonly List<Move> _moves = new();
+
+        public MoveRecorder(IBotPolicy bot) => _bot = bot;
+
+        public string Name => _bot.Name;
+
+        public IReadOnlyList<Move> Moves => _moves;
+
+        public Move ChooseMove(Game game, IReadOnlyList<Move> legalMoves, Rng rng)
+        {
+            Move move = _bot.ChooseMove(game, legalMoves, rng);
+            _moves.Add(move);
+            return move;
+        }
+    }
 }

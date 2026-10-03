@@ -39,6 +39,9 @@ namespace Puzzle.Bot
             }
         }
 
+        /// <summary>Arms that go on after round <paramref name="round"/>: the next round's arms, or the one winner after the last.</summary>
+        public int SurvivorsAfter(int round) => round + 1 < Rounds.Count ? Rounds[round + 1].Arms : 1;
+
         /// <param name="candidates">Moves that could be searched, at least one.</param>
         /// <param name="budget">Simulations allowed, at least two.</param>
         public static HalvingPlan For(int candidates, int budget)

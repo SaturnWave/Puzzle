@@ -26,8 +26,16 @@ namespace Puzzle.Bot
         /// </summary>
         public static IReadOnlyList<string> MeasurementNames { get; } = new[] { Usta };
 
-        public static bool TryCreate(string name, out IBotPolicy policy)
+        /// <summary>Creates the bot <paramref name="name"/> names (case-insensitive); false for any other name, a missing one included.</summary>
+        /// <param name="policy">The named bot; a random bot when the name is not one, so it is never null.</param>
+        public static bool TryCreate(string? name, out IBotPolicy policy)
         {
+            if (name is null)
+            {
+                policy = new RandomPolicy();
+                return false;
+            }
+
             if (string.Equals(name, Random, StringComparison.OrdinalIgnoreCase))
             {
                 policy = new RandomPolicy();

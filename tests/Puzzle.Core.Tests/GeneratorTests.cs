@@ -145,8 +145,16 @@ public class GeneratorTests
         Assert.Contains("calibrationBot 'USTA-12' is a measurement bot", rejectedBudget.Message);
     }
 
+    [Fact]
+    public void A_null_report_bot_is_a_profile_error()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileWith(calibrationBot: "average", "expert", null));
+
+        Assert.Contains("reportBots has a null entry", rejected.Message);
+    }
+
     /// <summary>Loads the default profile with other bots, through a temporary file that is removed afterwards.</summary>
-    private static GenerationProfile LoadDefaultProfileWith(string calibrationBot, params string[] reportBots)
+    private static GenerationProfile LoadDefaultProfileWith(string calibrationBot, params string?[] reportBots)
     {
         var options = new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
         JsonObject profile = JsonNode.Parse(File.ReadAllText(FindRepoFile("profiles", "default.json")), documentOptions: options)!.AsObject();

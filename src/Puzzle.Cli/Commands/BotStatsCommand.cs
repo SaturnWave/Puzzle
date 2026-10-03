@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using Puzzle.Bot;
 using Puzzle.Bot.Simulation;
+using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
 using Puzzle.Tooling;
@@ -57,17 +59,27 @@ internal static class BotStatsCommand
     /// report sees its runs in the same order as <see cref="BatchSimulator.Run"/> and its row can be written as soon as
     /// it and every level before it are done.
     /// </summary>
+    /// <remarks>
+    /// A failed job travels through the pipeline as its outcome, so every level before the failing one still gets its
+    /// row; then the job's own exception is rethrown with its original stack trace.
+    /// </remarks>
     private static IEnumerable<string> RowsInLevelOrder(LevelDefinition[] levels, string bot, int runs, int cap)
     {
-        IEnumerable<RunResult[]> resultsByLevel = Partitioner.Create(Jobs(levels, runs), EnumerablePartitionerOptions.NoBuffering)
+        IEnumerable<RunOutcome[]> outcomesByLevel = Partitioner.Create(Jobs(levels, runs), EnumerablePartitionerOptions.NoBuffering)
             .AsParallel()
             .AsOrdered()
             .WithMergeOptions(ParallelMergeOptions.NotBuffered) // pass each result on at once instead of in batches
             .Select(job => job.Play(SimCommand.CreatePolicy(bot), cap)) // a policy of its own: policies are not thread-safe
             .AsSequential()
             .Chunk(runs);
-        foreach ((LevelDefinition level, RunResult[] results) in levels.Zip(resultsByLevel))
+        foreach ((LevelDefinition level, RunOutcome[] outcomes) in levels.Zip(outcomesByLevel))
         {
+            if (outcomes.OfType<RunOutcome.Failed>().FirstOrDefault() is { } failed)
+            {
+                ExceptionDispatchInfo.Capture(failed.Exception).Throw();
+            }
+
+            RunResult[] results = outcomes.OfType<RunOutcome.Played>().Select(played => played.Result).ToArray();
             yield return Row(level, LevelReport.From(results, cap), runs);
         }
     }
@@ -109,7 +121,33 @@ internal static class BotStatsCommand
     /// </summary>
     private readonly record struct RunJob(LevelDefinition Level, int Run)
     {
-        public RunResult Play(IBotPolicy policy, int cap) =>
-            SimulationRunner.Play(Level, policy, Rng.Derive(Rng.Derive(7, (ulong)Level.Id.Value), (ulong)Run), cap);
+        /// <summary>
+        /// Plays the run. What a game can fail with (an unplayable level, or a bot or engine fault reported as
+        /// <see cref="InvalidOperationException"/>) becomes the outcome, to be rethrown in level order; nothing is swallowed.
+        /// </summary>
+        public RunOutcome Play(IBotPolicy policy, int cap)
+        {
+            try
+            {
+                return new RunOutcome.Played(
+                    SimulationRunner.Play(Level, policy, Rng.Derive(Rng.Derive(7, (ulong)Level.Id.Value), (ulong)Run), cap));
+            }
+            catch (Exception ex) when (ex is LevelInitializationException or InvalidOperationException)
+            {
+                return new RunOutcome.Failed(ex);
+            }
+        }
+    }
+
+    /// <summary>How one job ended: with its result, or with the exception it failed with.</summary>
+    private abstract record RunOutcome
+    {
+        private RunOutcome()
+        {
+        }
+
+        public sealed record Played(RunResult Result) : RunOutcome;
+
+        public sealed record Failed(Exception Exception) : RunOutcome;
     }
 }

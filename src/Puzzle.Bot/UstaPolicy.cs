@@ -58,9 +58,13 @@ namespace Puzzle.Bot
         /// </summary>
         public int LastDecisionPlays { get; private set; }
 
+        /// <summary>Diagnostic for tests: how many sampled futures the most recent <see cref="ChooseMove"/> simulated.</summary>
+        internal int LastDecisionSimulations { get; private set; }
+
         public Move ChooseMove(Game game, IReadOnlyList<Move> legalMoves, Rng rng)
         {
             LastDecisionPlays = 0;
+            LastDecisionSimulations = 0;
             if (legalMoves.Count == 1)
             {
                 return legalMoves[0];
@@ -146,19 +150,20 @@ namespace Puzzle.Bot
             board.TileAt(move.From).IsSpecial || board.TileAt(move.To).IsSpecial;
 
         /// <summary>
-        /// Spends the budget as planned. In each round every arm still in plays the same freshly drawn futures (common
-        /// random numbers), so all survivors have played the same futures and their totals compare like means.
+        /// Spends the budget exactly as planned: after each round, as many arms go on as the plan gives the next round.
+        /// In each round every arm still in plays the same freshly drawn futures (common random numbers), so all
+        /// survivors have played the same futures and their totals compare like means.
         /// </summary>
         private Move SequentialHalving(Game game, MoveEvaluator.Snapshot present, HalvingPlan plan, Rng rng)
         {
-            foreach (HalvingRound round in plan.Rounds)
+            for (int round = 0; round < plan.Rounds.Count; round++)
             {
-                for (int sample = 0; sample < round.SamplesPerArm; sample++)
+                for (int sample = 0; sample < plan.Rounds[round].SamplesPerArm; sample++)
                 {
                     SimulateEveryArm(game, present, rng.NextULong());
                 }
 
-                KeepBetterHalf();
+                KeepBest(plan.SurvivorsAfter(round));
             }
 
             return _arms[0].Move;
@@ -172,11 +177,11 @@ namespace Puzzle.Bot
             }
         }
 
-        /// <summary>Keeps the better half, rounded up: higher total first, the better prior rank on a tie.</summary>
-        private void KeepBetterHalf()
+        /// <summary>Keeps the best <paramref name="survivors"/> arms: higher total first, the better prior rank on a tie.</summary>
+        private void KeepBest(int survivors)
         {
             _arms.Sort(Arm.HigherTotalFirst);
-            _arms.RemoveRange((_arms.Count + 1) / 2, _arms.Count / 2);
+            _arms.RemoveRange(survivors, _arms.Count - survivors);
         }
 
         /// <summary>
@@ -185,6 +190,7 @@ namespace Puzzle.Bot
         /// </summary>
         private double Simulate(Game game, MoveEvaluator.Snapshot present, Move move, ulong future)
         {
+            LastDecisionSimulations++;
             Game imagined = game.CreateImagined(future);
             Play(imagined, move);
             double now = _evaluator.Score(game, present, imagined);

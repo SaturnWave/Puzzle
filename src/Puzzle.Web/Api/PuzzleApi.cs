@@ -16,7 +16,11 @@ internal static class PuzzleApi
     private const int SimulationMoveCap = 150;
     private const int MaxSimulationRuns = 2000;
 
-    /// <summary>A search bot thinks 25 to 30 times longer per move than a greedy one; this keeps a lab request to seconds.</summary>
+    /// <summary>
+    /// Runs cap for the lab's one search bot, the default usta (24 simulations per move, about 0.1 thread-seconds per game
+    /// in <c>bench</c> on an idle machine): 100 runs cost about 10 thread-seconds, a few seconds of wall time on a
+    /// multi-core machine. Larger budgets cost more per game, so <see cref="TryCreateLabBot"/> refuses every "usta-&lt;n&gt;".
+    /// </summary>
     private const int MaxSearchBotSimulationRuns = 100;
     private const int MaxBeamWidth = 32;
 
@@ -139,7 +143,7 @@ internal static class PuzzleApi
             return Results.NotFound();
         }
 
-        if (!BotPolicies.TryCreate(request.Bot ?? "average", out IBotPolicy policy))
+        if (!TryCreateLabBot(request.Bot ?? "average", out IBotPolicy? policy))
         {
             return Results.BadRequest($"Unknown bot '{request.Bot}'.");
         }
@@ -163,7 +167,7 @@ internal static class PuzzleApi
             return Results.NotFound();
         }
 
-        if (!BotPolicies.TryCreate(bot ?? "expert", out IBotPolicy policy))
+        if (!TryCreateLabBot(bot ?? "expert", out IBotPolicy? policy))
         {
             return Results.BadRequest($"Unknown bot '{bot}'.");
         }
@@ -217,7 +221,7 @@ internal static class PuzzleApi
         }
 
         string bot = request.Bot ?? "average";
-        if (!BotPolicies.TryCreate(bot, out _))
+        if (!TryCreateLabBot(bot, out _))
         {
             return Results.BadRequest($"Unknown bot '{bot}'.");
         }
@@ -242,6 +246,18 @@ internal static class PuzzleApi
             report.AverageSpecialsCreated,
             report.AverageCascadesPerMove,
             clock.ElapsedMilliseconds));
+    }
+
+    /// <summary>
+    /// Creates a bot the lab may run: a player model or a measurement bot at its default budget. Any other name, an
+    /// "usta-&lt;n&gt;" included, is refused like an unknown one: the lab's run caps hold for the default budget only.
+    /// </summary>
+    private static bool TryCreateLabBot(string name, [NotNullWhen(true)] out IBotPolicy? policy)
+    {
+        bool offered = BotPolicies.Names.Contains(name, StringComparer.OrdinalIgnoreCase)
+            || BotPolicies.MeasurementNames.Contains(name, StringComparer.OrdinalIgnoreCase);
+        policy = offered && BotPolicies.TryCreate(name, out IBotPolicy created) ? created : null;
+        return policy is not null;
     }
 
     private static IBotPolicy CreatePolicy(string name)

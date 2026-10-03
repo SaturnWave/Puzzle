@@ -168,12 +168,13 @@ namespace Puzzle.Core.Engine
         /// <summary>
         /// An exact copy, including every random stream: playing the same moves on it reproduces this game's
         /// future. That is perfect information — meant for solvers and analysis, never for a fair player bot.
+        /// A replica of an imagined copy (<see cref="CreateImagined"/>) stays imagined, so it has no move limit either.
         /// </summary>
         public Game CreateReplica() =>
             new Game(
                 Level,
                 _options,
-                Mode.Replica,
+                _mode == Mode.Imagined ? Mode.Imagined : Mode.Replica,
                 Board.Clone(),
                 Goals.Clone(),
                 _items.Clone(),
@@ -204,15 +205,9 @@ namespace Puzzle.Core.Engine
         /// shuffles a dead board like a live game, and starts with an empty <see cref="LastMove"/>.
         /// </para>
         /// </remarks>
-        /// <exception cref="InvalidOperationException">This game is a lookahead copy, whose refills are hidden.</exception>
-        public Game CreateImagined(ulong seed)
-        {
-            if (_mode == Mode.Lookahead)
-            {
-                throw new InvalidOperationException("A lookahead copy has no spawn rules to imagine from.");
-            }
-
-            return new Game(
+        /// <exception cref="InvalidOperationException">This game's refills are hidden (a lookahead copy or a copy of one).</exception>
+        public Game CreateImagined(ulong seed) =>
+            new Game(
                 Level,
                 _options,
                 Mode.Imagined,
@@ -227,7 +222,6 @@ namespace Puzzle.Core.Engine
                 Status = Status,
                 MovesUsed = MovesUsed,
             };
-        }
 
         public IReadOnlyList<Move> FindLegalMoves()
         {
