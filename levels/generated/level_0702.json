@@ -34,7 +34,7 @@
   "goals": [
     {
       "type": "DropItems",
-      "count": 5
+      "count": 4
     }
   ],
   "spawn": {
@@ -50,22 +50,24 @@
     "smoothingPermille": 60,
     "goalBias": 0,
     "cascadeBias": 0,
-    "itemsTotal": 3,
+    "itemsTotal": 2,
     "maxItemsOnBoard": 2,
     "itemChancePercent": 7
   },
   "attempts": {
     "board": "varied",
     "seedPool": [
-      4047631570,
+      4047973394,
       1883883549,
-      608105341,
-      1317059760,
+      4037444639,
+      1687398116,
+      1310131868,
+      2404172651,
+      4202350115,
+      2162991344,
+      3355844190,
       1989125882,
-      3336184845,
-      2726234863,
-      794289160,
-      3654536957
+      608105341
     ]
   }
 }

@@ -4,7 +4,7 @@
   "difficulty": "SuperHard",
   "width": 11,
   "height": 13,
-  "moves": 38,
+  "moves": 35,
   "cells": [
     "###########",
     "###########",
@@ -38,12 +38,12 @@
   "goals": [
     {
       "type": "DropItems",
-      "count": 8
+      "count": 7
     },
     {
       "type": "CollectColor",
       "color": "Yellow",
-      "count": 37
+      "count": 34
     }
   ],
   "spawn": {
@@ -51,26 +51,25 @@
     "smoothingPermille": 60,
     "goalBias": 0,
     "cascadeBias": 0,
-    "itemsTotal": 5,
+    "itemsTotal": 4,
     "maxItemsOnBoard": 2,
     "itemChancePercent": 7
   },
   "attempts": {
     "board": "varied",
     "seedPool": [
-      1554070385,
-      1790701894,
-      4242018317,
       2643474406,
-      1201407497,
-      1965992279,
-      1819115241,
-      3795937896,
-      3523298518,
-      222295472,
-      964160992,
       4199908474,
-      4050751725
+      278571377,
+      2291367687,
+      3360248342,
+      4050751725,
+      3157736714,
+      1554070385,
+      1965992279,
+      3523298518,
+      1437439870,
+      222295472
     ]
   }
 }

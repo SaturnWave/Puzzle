@@ -4,7 +4,7 @@
   "difficulty": "Normal",
   "width": 9,
   "height": 11,
-  "moves": 32,
+  "moves": 28,
   "cells": [
     "#########",
     "#########",
@@ -51,7 +51,7 @@
     },
     {
       "type": "DropItems",
-      "count": 5
+      "count": 4
     }
   ],
   "spawn": {
@@ -67,21 +67,21 @@
     "smoothingPermille": 60,
     "goalBias": 0,
     "cascadeBias": 0,
-    "itemsTotal": 3,
+    "itemsTotal": 2,
     "maxItemsOnBoard": 2,
     "itemChancePercent": 7
   },
   "attempts": {
     "board": "varied",
     "seedPool": [
+      1721228619,
+      285326687,
+      1122563465,
+      526679212,
       1422316296,
-      4067687640,
-      4047151247,
       2476117922,
-      1683576896,
-      1376540614,
-      2763354001,
-      1127351916
+      710530812,
+      2527443968
     ]
   }
 }

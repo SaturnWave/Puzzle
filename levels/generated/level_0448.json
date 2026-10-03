@@ -4,7 +4,7 @@
   "difficulty": "Normal",
   "width": 10,
   "height": 10,
-  "moves": 31,
+  "moves": 26,
   "cells": [
     "...####...",
     "..######..",
@@ -32,12 +32,12 @@
   "goals": [
     {
       "type": "DropItems",
-      "count": 5
+      "count": 4
     },
     {
       "type": "CollectColor",
       "color": "Green",
-      "count": 24
+      "count": 17
     }
   ],
   "spawn": {
@@ -53,25 +53,24 @@
     "smoothingPermille": 60,
     "goalBias": 0,
     "cascadeBias": 0,
-    "itemsTotal": 3,
+    "itemsTotal": 2,
     "maxItemsOnBoard": 2,
     "itemChancePercent": 7
   },
   "attempts": {
     "board": "varied",
     "seedPool": [
-      3281604349,
-      4092459574,
-      3932805505,
+      3235007319,
+      413572017,
+      2917744418,
       3377607314,
-      91407102,
+      282036233,
       1773550476,
+      91407102,
+      3152487535,
       3166115827,
-      255587787,
-      1304699804,
-      1411133684,
-      2054340551,
-      4149956657
+      3191287115,
+      2570008758
     ]
   }
 }
