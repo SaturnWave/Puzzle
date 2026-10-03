@@ -29,8 +29,12 @@ namespace Puzzle.Bot
 
         public double ColorBombValue { get; init; } = 18;
 
-        /// <summary>Fraction of a special's value lost when it is used.</summary>
-        public double SpendFactor { get; init; } = 0.5;
+        /// <summary>
+        /// Fraction of a special's value lost when it is used. Measured over all 1000 generated levels (2026-10-02):
+        /// 0.25 gives the best win rate for both the expert and the average profile; 0.5 made the bots hoard specials
+        /// on levels with large collect targets, and 0 made them fire specials too early on item-drop levels.
+        /// </summary>
+        public double SpendFactor { get; init; } = 0.25;
 
         /// <summary>Per box hit point, jelly layer or chain hit point removed while that goal is open.</summary>
         public double PartialDamageWeight { get; init; } = 3;
