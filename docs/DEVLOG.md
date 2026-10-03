@@ -4,6 +4,36 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-03 · Oturum 7 — Kalibrasyon kuralları, deneme kaydı ve yeni test arayüzü (3. ve 5. adım)
+
+**Kullanıcı kararları**
+- **Casual koruması:** sabit 80/60 yerine bölüm aralığına göre inen alt sınır: Kolay 80/75/70, Normal 60/50/40 (1–50 / 51–300 / 301–1000).
+- **Özel taş tanıtımları** (roket 3, bomba 5, pervane 8, renk bombası 12, büyük bomba 15) bir öğretici takvimi; motor kuralı değil. Arayüz fazında yapılacak.
+- **Şekilli tahtalar** 21. bölümde başlar; 11. bölüm yalnızca kutuyu öğretir.
+- **5. adım paralel yürütüldü** (kullanıcının önerisi): ayrı bir git çalışma kopyasında, 3. adımla aynı anda.
+- **Web test uygulaması** oyuncuya sunulmayacak (oyun yalnızca iOS ve Android), ama özenli bir arayüzle geliştirilecek: "test ortamı" diye stilsiz bırakılmayacak.
+
+**Bulgular**
+- **Sabit casual eşiği koruma değil, kalibrasyonun kendisi oluyordu:** 80/60, 51. bölümden sonra Kolay ve Normal bölümlerin %95'inden fazlasında limiti belirliyor, Normal'de average'ı her aralıkta %89'a sabitliyordu. Fark bölümlerden değil botlardan geliyor: casual, average'dan 19–32 puan az kazanıyor ve hiçbir bölüm tasarımı bunu kapatmıyor.
+- **"+5 hamle" teklifi** mevcut 1000 bölümde average'ın kazanma oranını %65,7'den %80,3'e çıkarıyor.
+- **Koruma çoğu zaman "daha kolay hedef" olarak görünüyor:** alt sınır limiti hamle aralığının dışına itince üretici hamle eklemek yerine hedefi küçültüyor.
+- **Botları insanın oynadığı tahtada oynatmak şart:** ilk sürümde botlar rastgele tahtalarda oynuyordu; aynı tohumda novice %100 kazanırken rastgele tohumlarda %93 görünüyordu.
+- **İncelemeler:** 3. adımda 4 + 5, 5. adımda 9 + 11 bulgu doğrulandı ve düzeltildi; her düzeltmeyi ayrı bir ajan kontrol etti.
+
+**Değişiklikler**
+- **Profil:** mekanik takvimi tablo başlangıçlarına hizalı (kutu 11, eşya indirme 51); `casualFloor`, `floorBot` (kalibrasyon botundan zayıf bir oyuncu modeli), `sizes.plainShapesUntil` = 20; Kolay ve Normal hamle üst sınırı 51. bölümden sonra +3.
+- **Üretici:** limit = `max(average'ın hedef limiti, casual'ın alt sınır limiti)`; doğrulama iki botu da yeni tohumlarla denetliyor. Rapor sütunları: `winPlus5`, `floor`, `floorWin`, `floorSetLimit`, `floorBot`. `generate --repair` alt sınırı, koruma botu ya da hedefi değişen bölümleri yeniden üretiyor.
+- **Core:** `ExtraMovesOffer.Moves` (= 5); `Puzzle.Core/Recording`: deneme kaydı tipi (`AttemptRecord`), mobil oyunla ortak biçim. `LevelFileMapper.ParseGoal` ve `ToGoalFile` public oldu.
+- **Bot:** `LevelReport.WinRateWithExtraMoves`.
+- **Tooling:** kayıt JSON'u (`AttemptRecordJson`), eşzamanlı yazmaya dayanıklı kayıt dosyası (`AttemptLog`), insan–bot karşılaştırması (`HumanBotComparison`), bölüm parmak izi.
+- **CLI:** `botstats` çıktısına `winAtLimitPlus5`; yeni `humans` komutu.
+- **Web:** her deneme kaydediliyor (bitince, yarıda bırakılınca, zaman aşımında, kapanışta); deneme numarasını sunucu veriyor. Yeni "Kayıtlar" paneli ve botlarla karşılaştırma grafiği, kayıt göstergesi. Görsel yenileme: her rengin kendi şekli olan taş seti, özel taşlar ve engeller için çizimler, daha akıcı animasyonlar, sekmeli paneller, telefon düzeni.
+- **Testler:** 143'ten 242'ye.
+
+**Sıradaki:** herkese açık oyun modu (tanıdıklara oynatıp insan verisi toplamak) kullanıcıyla konuşuluyor; ardından 4. adım (booster'lar, bitiş şöleni, düzeltme paketleri) ve 6. adım (1000 bölümün yeniden üretimi).
+
+---
+
 ## 2026-10-03 · Oturum 6 — Özel taş düzeltmesi ve usta bot (yol haritası 2. adım)
 
 **Kullanıcı kararları**

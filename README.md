@@ -56,8 +56,8 @@ New-NetFirewallRule -DisplayName "Puzzle Test Lab (5180)" -Direction Inbound -Pr
 | `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar (greedy profilleri, usta arama botu), beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
 | `src/Puzzle.Tooling` | net10.0 | Bölüm JSON'u ve bölüm kütüphanesi |
 | `src/Puzzle.Generator` | net10.0 | Bölüm üreticisi: profil, planlayıcı, şekil ve engel portföyü, bot kalibrasyonu, rapor |
-| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `botstats`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
-| `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı |
+| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `botstats`, `humans`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
+| `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı: oyna, botlar, çözücü, simülasyon, deneme kayıtları ve botlarla karşılaştırma |
 | `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot, çözücü ve dosya formatı testleri |
 | `levels/samples` | JSON | El yapımı örnek bölümler |
 | `levels/generated` | JSON + CSV | Üretilen bölümler ve `report.csv` |
@@ -83,6 +83,12 @@ Bir botun 1000 bölümün her birini kaç hamlede bitirdiği (CSV; `--bot usta` 
 
 ```bash
 dotnet run --project src/Puzzle.Cli -c Release -- botstats levels/generated --bot expert --runs 30
+```
+
+Web test uygulamasında oynanan denemeleri (`recordings/attempts.jsonl`) botlarla karşılaştırır:
+
+```bash
+dotnet run --project src/Puzzle.Cli -c Release -- humans
 ```
 
 ```bash

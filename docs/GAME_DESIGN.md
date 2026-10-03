@@ -338,6 +338,7 @@ src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de 
 src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
 tests/Puzzle.Core.Tests  net10.0, xUnit
 levels/samples      el yapımı örnek bölümler
+recordings/         web test uygulamasının oyun kayıtları (attempts.jsonl); git'e girmez
 tools/docs-pdf      belgelerin PDF baskısını üreten betik (pandoc + Chrome)
 docs/pdf            üretilmiş PDF'ler; kaynak her zaman Markdown dosyasıdır
 ```
@@ -646,7 +647,9 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 **Karar (2026-10-02).**
 
 - **Yayın öncesi kalibrasyon:** `average` bot + casual koruması (§8). İnsan verisi yayından önce az olacağı için ilk sürüm botla ayarlanır.
-- **Web test uygulaması:** oynanan her oyun otomatik kaydedilir. Kayıt biçimi yayındaki oyununkiyle aynı; ilk "insan mı, bot mu" karşılaştırması APK beklenmeden görülür.
+- **Deneme kaydı (uygulandı, 2026-10-03):** her oyun denemesi tek bir kayıt. Kayıt tipi `Puzzle.Core/Recording` içinde tanımlı, yani mobil oyun aynı biçimi kullanacak: bölüm, deneme tohumları, hamle limiti, kullanılan hamle, sonuç (kazandı / hamle bitti / hamle kalmadı / yarıda bırakıldı), her hedefin son durumu, "+5" alındı mı, booster'lar, rastgele cihaz kimliği, başlangıç ve bitiş zamanı. Web test uygulamasında ayrıca oynanan hamleler de saklanır; deneme birebir tekrar oynatılabilir.
+- **Web test uygulaması:** oynanan her deneme `recordings/attempts.jsonl` dosyasına bir satır olarak yazılır (git'e girmez). Deneme bitince, yarıda bırakılınca, oturum zaman aşımına uğrayınca ve sunucu kapanırken kaydedilir; yazılamayan kayıt bekletilip yeniden denenir. Deneme numarasını sunucu verir. İpucu, çözücü, bot hamlesi ya da DDA yardımıyla oynanan denemeler ve elle seçilen tohumlar kaydedilir ama karşılaştırmaya girmez.
+- **İnsan ve bot karşılaştırması:** `puzzle humans` komutu ve web'deki "Kayıtlar" paneli. Her insan denemesinin oyununu (aynı tohumlar, aynı hamle limiti) dört greedy profile oynatır, limitte kazanma oranlarını yan yana koyar ve en yakın profili söyler. Yarıda bırakılan denemeler kazanma oranını yükseltmesin diye iki oran verilir: biten denemeler üzerinden ve yarıda bırakılanlar kayıp sayılarak (alt sınır).
 - **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
 - **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
 - **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
@@ -663,7 +666,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 | 2 | Botların özel taş biriktirme sorununu düzelt; usta botu yaz | ✅ 2026-10-03 |
 | 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | ✅ 2026-10-03 |
 | 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
-| 5 | Web test uygulamasına oyun kaydını ekle | |
+| 5 | Web test uygulamasına oyun kaydını ekle | ✅ 2026-10-03 (kayıt, insan–bot karşılaştırması, yenilenen arayüz) |
 | 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | |
 
 Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına ve takvime bağlı; bölümler iki kez üretilmesin diye onlar önce gelir.
