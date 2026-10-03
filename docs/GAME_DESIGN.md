@@ -177,10 +177,10 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 3. **Doğrulama:** yeni seed'lerle 200 oyun; kazanma oranı hedefin ±%7'si içinde değilse `L` ayarlanır.
 4. Ek metrikler: **near-miss** oranı (kaybedip hedefin ≥%80'ine ulaşan oyunlar — "bir hamle daha" hissi), ortalama karıştırma sayısı, Expert/Novice kazanma oranı farkı.
 
-Karar verilen, henüz uygulanmamış iki ek (2026-10-02, §21):
+İki ek (2026-10-02 kararı, §21):
 
-5. **Casual koruması:** limit average bota göre belirlenir. Casual botun kazanma oranı Kolay bölümde %80'in, Normal bölümde %60'ın altındaysa üretici bölümü onarır ya da reddeder. Zor ve Süper Zor bölümlerde koruma yok.
-6. **Limit+5 sütunu:** raporlar `L + 5` hamledeki kazanma oranını da gösterir. "+5 hamle" teklifinin bölümü ne kadar kolaylaştırdığı böylece görünür. Kalibrasyon yine `L`'ye göre yapılır; dağılım elde olduğu için ek simülasyon gerekmez.
+5. **Casual koruması (karar bekliyor):** limit average bota göre belirlenir. Casual botun kazanma oranı Kolay bölümde %80'in, Normal bölümde %60'ın altındaysa üretici bölümü onarır ya da reddeder. Zor ve Süper Zor bölümlerde koruma yok. 2026-10-03 ölçümü: bu eşikler 51. bölümden sonra Kolay ve Normal bölümlerin neredeyse hepsinde limiti belirliyor ve zorluk eğrisini düzleştiriyor (casual ile average arasındaki fark bölümden değil botlardan geliyor). Bölüm aralığına göre ölçeklenen eşik önerildi; kullanıcı kararı bekleniyor.
+6. **Limit+5 sütunu (uygulandı, 2026-10-03):** raporlar `L + 5` hamledeki kazanma oranını da gösterir (`botstats`: son sütun `winAtLimitPlus5`; üretici raporu: `win`'in yanında `winPlus5`). 5 değeri `ExtraMovesOffer.Moves` sabitinde. `L + 5` hamle üst sınırını aşarsa hücre boş kalır. "+5 hamle" teklifinin bölümü ne kadar kolaylaştırdığı böylece görünür. Kalibrasyon yine `L`'ye göre yapılır; dağılım elde olduğu için ek simülasyon gerekmez.
 
 ## 9. 1000 bölüm üretim hattı (Faz 2)
 
@@ -255,7 +255,7 @@ Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır):
 
 ### Mekanik açılış takvimi
 
-**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil ve üretilmiş bölümler henüz eski takvimde (parantez içindeki numaralar); §21'deki adımlarla güncellenecek.
+**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil 2026-10-03'te güncellendi; üretilmiş 1000 bölüm 6. adımdaki yeniden üretime kadar eski takvimde (parantez içindeki numaralar). Özel taşların tanıtım bölümleri (3, 5, 8, 12, 15) motor ya da üretici tarafından uygulanmıyor: özel taşlar her bölümde eşleşme şekliyle oluşuyor. Bu numaralar şimdilik yalnızca belgede.
 
 | Bölüm | Yeni öğe |
 |---|---|
@@ -649,7 +649,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 |---|---|---|
 | 1 | Kararları bu belgeye ve geliştirme günlüğüne yaz | ✅ |
 | 2 | Botların özel taş biriktirme sorununu düzelt; usta botu yaz | ✅ 2026-10-03 |
-| 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | |
+| 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | Takvim ve limit+5 ✅; casual koruması karar bekliyor |
 | 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
 | 5 | Web test uygulamasına oyun kaydını ekle | |
 | 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | |

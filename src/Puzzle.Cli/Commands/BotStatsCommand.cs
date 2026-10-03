@@ -14,7 +14,8 @@ namespace Puzzle.Cli.Commands;
 /// <summary>
 /// <c>botstats &lt;dir|file&gt; [--bot expert] [--runs 30] [--cap 150] [--out reports/expert_moves.csv]</c>:
 /// plays every level with one bot and writes how many moves it needed (distribution over the runs) next to
-/// the level's move limit.
+/// the level's move limit. The last column is the win rate with the "+5 moves" offer (<see cref="ExtraMovesOffer"/>),
+/// read from the same runs; it stays last so the columns before it keep their positions.
 /// </summary>
 internal static class BotStatsCommand
 {
@@ -36,7 +37,7 @@ internal static class BotStatsCommand
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
         var clock = Stopwatch.StartNew();
         using var writer = new StreamWriter(outPath);
-        writer.WriteLine("level,tier,size,colors,moveLimit,runs,completed,winAtLimit,minMoves,p25,medianMoves,p75,p90,maxMoves,avgMoves");
+        writer.WriteLine("level,tier,size,colors,moveLimit,runs,completed,winAtLimit,minMoves,p25,medianMoves,p75,p90,maxMoves,avgMoves,winAtLimitPlus5");
         int written = 0;
         foreach (string row in RowsInLevelOrder(levels, bot, runs, cap))
         {
@@ -109,6 +110,7 @@ internal static class BotStatsCommand
             Moves(report.MovesNeeded(0.90)),
             moves.Count > 0 ? moves[^1].ToString(Invariant) : string.Empty,
             moves.Count > 0 ? moves.Average().ToString("0.0", Invariant) : string.Empty,
+            report.WinRateWithExtraMoves(level.MoveLimit)?.ToString("0.000", Invariant) ?? string.Empty,
         });
     }
 

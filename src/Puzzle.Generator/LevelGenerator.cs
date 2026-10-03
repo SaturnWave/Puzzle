@@ -45,6 +45,12 @@ public sealed record LevelMetrics
     /// <summary>Calibration bot's win rate at the final limit, measured on fresh seeds.</summary>
     public required double WinRate { get; init; }
 
+    /// <summary>
+    /// Calibration bot's win rate with the "+5 moves" offer (final limit + <see cref="ExtraMovesOffer.Moves"/>),
+    /// read from the same games as <see cref="WinRate"/>. Absent when that limit goes past the calibration move cap.
+    /// </summary>
+    public required double? WinRateWithExtraMoves { get; init; }
+
     public required int? MovesP50 { get; init; }
 
     public required int? MovesP90 { get; init; }
@@ -163,6 +169,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
             MoveRange = plan.Moves,
             TargetWinRate = plan.TargetWinRate,
             WinRate = verification.WinRateAt(final.MoveLimit),
+            WinRateWithExtraMoves = verification.WinRateWithExtraMoves(final.MoveLimit),
             MovesP50 = verification.MovesNeeded(0.5),
             MovesP90 = verification.MovesNeeded(0.9),
             NearMiss = verification.NearMissRateAt(final.MoveLimit),

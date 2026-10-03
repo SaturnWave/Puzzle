@@ -13,7 +13,7 @@ public static class GenerationReport
     public const string FileName = "report.csv";
 
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
-    private static readonly string[] LeadingColumns = ["level", "tier", "size", "playable", "colors", "style", "goals", "moves", "moveRange", "targetWin", "win", "p50", "p90", "nearMiss"];
+    private static readonly string[] LeadingColumns = ["level", "tier", "size", "playable", "colors", "style", "goals", "moves", "moveRange", "targetWin", "win", "winPlus5", "p50", "p90", "nearMiss"];
     private static readonly string[] TrailingColumns = ["poolSize", "poolMinWin", "poolMaxWin", "candidates", "relaxed", "seconds"];
 
     /// <summary>Writes <paramref name="rows"/> into the report, replacing earlier rows of the same levels.</summary>
@@ -25,29 +25,21 @@ public static class GenerationReport
         }
 
         IReadOnlyList<string> bots = rows[0].BotWinRates.Keys.OrderBy(b => b, StringComparer.Ordinal).ToArray();
-        string header = string.Join(',', LeadingColumns.Concat(bots.Select(b => b + "Win")).Concat(TrailingColumns));
+        string[] columns = LeadingColumns.Concat(bots.Select(b => b + "Win")).Concat(TrailingColumns).ToArray();
 
-        var lines = new SortedDictionary<int, string>();
-        if (File.Exists(path))
-        {
-            foreach (string line in File.ReadLines(path).Skip(1))
-            {
-                if (int.TryParse(line.Split(',')[0], NumberStyles.Integer, Invariant, out int level))
-                {
-                    lines[level] = line;
-                }
-            }
-        }
-
+        SortedDictionary<int, string> lines = ExistingRows(path, columns);
         foreach (LevelMetrics row in rows)
         {
             lines[row.Number] = ToCsv(row, bots);
         }
 
-        File.WriteAllLines(path, lines.Values.Prepend(header));
+        File.WriteAllLines(path, lines.Values.Prepend(string.Join(',', columns)));
     }
 
-    /// <summary>The quality columns of existing report rows, keyed by level (for <c>generate --repair</c>).</summary>
+    /// <summary>
+    /// The quality columns of existing report rows, keyed by level (for <c>generate --repair</c>). Columns are found
+    /// by name, so a report written before a column was added still reads.
+    /// </summary>
     public static IReadOnlyDictionary<int, ReportRow> Read(string path)
     {
         var rows = new Dictionary<int, ReportRow>();
@@ -104,6 +96,36 @@ public static class GenerationReport
         return text.ToString();
     }
 
+    /// <summary>
+    /// The rows already in the report, keyed by level and laid out in <paramref name="columns"/>. A report written with
+    /// other columns (before a column was added, or with other report bots) is realigned by column name: a column it
+    /// lacks stays empty, a column the new layout drops is left out. A row that does not fit its own header is kept as is.
+    /// </summary>
+    private static SortedDictionary<int, string> ExistingRows(string path, IReadOnlyList<string> columns)
+    {
+        var rows = new SortedDictionary<int, string>();
+        if (!File.Exists(path))
+        {
+            return rows;
+        }
+
+        string[] lines = File.ReadAllLines(path);
+        string[] header = lines.Length > 0 ? lines[0].Split(',') : [];
+        int[] sourceOf = columns.Select(column => Array.IndexOf(header, column)).ToArray();
+        foreach (string line in lines.Skip(1))
+        {
+            string[] cells = line.Split(',');
+            if (int.TryParse(cells[0], NumberStyles.Integer, Invariant, out int level))
+            {
+                rows[level] = cells.Length == header.Length
+                    ? string.Join(',', sourceOf.Select(source => source >= 0 ? cells[source] : string.Empty))
+                    : line;
+            }
+        }
+
+        return rows;
+    }
+
     private static string ToCsv(LevelMetrics row, IReadOnlyList<string> bots)
     {
         IEnumerable<string> fields = new[]
@@ -119,6 +141,7 @@ public static class GenerationReport
             row.MoveRange.ToString(),
             Ratio(row.TargetWinRate),
             Ratio(row.WinRate),
+            row.WinRateWithExtraMoves is double winWithExtraMoves ? Ratio(winWithExtraMoves) : string.Empty,
             row.MovesP50?.ToString(Invariant) ?? string.Empty,
             row.MovesP90?.ToString(Invariant) ?? string.Empty,
             Ratio(row.NearMiss),

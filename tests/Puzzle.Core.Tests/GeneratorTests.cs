@@ -39,14 +39,40 @@ public class GeneratorTests
         Assert.All(Enumerable.Range(1, 5), n => Assert.Equal(DifficultyTier.Easy, planner.Plan(n).Tier));
         Assert.Equal(DifficultyTier.SuperHard, planner.Plan(20).Tier);
         Assert.Equal(new BoardSize(10, 10), planner.Plan(25).Size);
+        Assert.DoesNotContain(Mechanic.Box1, planner.Plan(10).Unlocked);
+        Assert.Contains(Mechanic.Box1, planner.Plan(11).Featured);
         Assert.Contains(Mechanic.Box1, planner.Plan(13).Featured);
-        Assert.DoesNotContain(Mechanic.Box1, planner.Plan(16).Featured);
+        Assert.DoesNotContain(Mechanic.Box1, planner.Plan(14).Featured);
         Assert.Equal(GemColors.First(6), planner.Plan(100).Palette);
         Assert.Equal(planner.Plan(400).Palette.Count, DefaultProfile.Value.BandFor(400).Colors.For(planner.Plan(400).Tier));
         LevelPlan once = planner.Plan(77);
         LevelPlan again = planner.Plan(77);
         Assert.Equal((once.Seed, once.Size, once.Tier), (again.Seed, again.Size, again.Tier));
         Assert.Equal(once.Palette, again.Palette);
+    }
+
+    [Fact]
+    public void Mechanics_open_on_the_first_level_of_a_painting()
+    {
+        GenerationProfile profile = DefaultProfile.Value;
+        int paintingLevels = profile.Cycle.Count;          // one painting = one saw-tooth cycle (GAME_DESIGN §18)
+        int roomLevels = profile.Palette.ChapterSize;      // one museum room = one palette chapter
+
+        Assert.Equal(
+            new[]
+            {
+                new MechanicUnlock(11, Mechanic.Box1),
+                new MechanicUnlock(21, Mechanic.Jelly1),
+                new MechanicUnlock(31, Mechanic.Box2),
+                new MechanicUnlock(41, Mechanic.Chain1),
+                new MechanicUnlock(51, Mechanic.Items),
+                new MechanicUnlock(71, Mechanic.Jelly2),
+                new MechanicUnlock(91, Mechanic.Box3),
+                new MechanicUnlock(111, Mechanic.Chain2),
+            },
+            profile.Mechanics);
+        Assert.All(profile.Mechanics, unlock => Assert.Equal(1, unlock.FromLevel % paintingLevels));
+        Assert.Equal(1, profile.Mechanics.Single(u => u.Mechanic == Mechanic.Items).FromLevel % roomLevels); // opens the second museum room
     }
 
     [Fact]
@@ -115,6 +141,7 @@ public class GeneratorTests
         Assert.Equal(LevelFileMapper.ToFile(first.Level).cells, LevelFileMapper.ToFile(second.Level).cells);
         Assert.Equal(first.Level.MoveLimit, second.Level.MoveLimit);
         Assert.Equal(first.Level.Attempts.SeedPool, second.Level.Attempts.SeedPool);
+        Assert.InRange(Assert.NotNull(first.Metrics.WinRateWithExtraMoves), first.Metrics.WinRate, 1.0); // five more moves never lose a won game
     }
 
     [Fact]

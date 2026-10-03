@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
 
 namespace Puzzle.Bot.Simulation
 {
@@ -53,6 +54,16 @@ namespace Puzzle.Bot.Simulation
         {
             int wins = UpperBound(moveLimit);
             return wins / (double)Runs;
+        }
+
+        /// <summary>
+        /// Win rate with the "+5 moves" offer (<see cref="ExtraMovesOffer"/>) on top of <paramref name="moveLimit"/>. Absent when
+        /// that goes past <see cref="MoveCap"/>: games still running at the cap were never followed that far, so the rate is unknown.
+        /// </summary>
+        public double? WinRateWithExtraMoves(int moveLimit)
+        {
+            int extendedLimit = moveLimit + ExtraMovesOffer.Moves;
+            return extendedLimit <= MoveCap ? WinRateAt(extendedLimit) : (double?)null;
         }
 
         /// <summary>Lost at this limit but had reached <paramref name="threshold"/> of the goals: the "one more move" feeling.</summary>

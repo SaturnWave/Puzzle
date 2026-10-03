@@ -46,11 +46,11 @@
   "palette": { "newColorsFrom": 151, "chapterSize": 50 },
 
   "mechanics": [
-    { "fromLevel": 13, "unlock": "Box1" },
+    { "fromLevel": 11, "unlock": "Box1" },
     { "fromLevel": 21, "unlock": "Jelly1" },
     { "fromLevel": 31, "unlock": "Box2" },
     { "fromLevel": 41, "unlock": "Chain1" },
-    { "fromLevel": 56, "unlock": "Items" },
+    { "fromLevel": 51, "unlock": "Items" },
     { "fromLevel": 71, "unlock": "Jelly2" },
     { "fromLevel": 91, "unlock": "Box3" },
     { "fromLevel": 111, "unlock": "Chain2" }
