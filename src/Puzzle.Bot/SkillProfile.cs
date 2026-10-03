@@ -22,6 +22,7 @@ namespace Puzzle.Bot
 
         public static SkillProfile Expert { get; } = new SkillProfile { Name = "expert", NoticePercent = 100, Temperature = 0 };
 
+        /// <summary>Weakest first; <see cref="BotPolicies.Names"/> keeps this order.</summary>
         public static IReadOnlyList<SkillProfile> All { get; } = new[] { Novice, Casual, Average, Expert };
 
         public string Name { get; init; } = "custom";

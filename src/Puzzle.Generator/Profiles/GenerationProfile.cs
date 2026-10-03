@@ -116,7 +116,8 @@ public sealed record GenerationProfile
 
     /// <summary>
     /// The player model behind the casual guard: on a tier with a <see cref="ProfileBand.CasualFloor"/>, this bot must
-    /// reach the floor at the move limit too, and the limit grows when it would not.
+    /// reach the floor at the move limit too, and the limit grows when it would not. Weaker than
+    /// <see cref="CalibrationBot"/>; plays (and is checked by the loader) only when some band has a floor.
     /// </summary>
     public required string FloorBot { get; init; }
 

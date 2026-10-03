@@ -14,8 +14,9 @@ namespace Puzzle.Bot
         public const string Usta = "usta";
 
         /// <summary>
-        /// The player models: the random floor and the greedy skill profiles. These are what calibration, "sim --bot all"
-        /// and the web lab's bot list use.
+        /// The player models: the random floor and the greedy skill profiles, weakest first. These are what calibration,
+        /// "sim --bot all" and the web lab's bot list use; the level generator relies on the order (a floor bot must be
+        /// weaker than the calibration bot).
         /// </summary>
         public static IReadOnlyList<string> Names { get; } =
             new[] { Random }.Concat(SkillProfile.All.Select(profile => profile.Name)).ToArray();

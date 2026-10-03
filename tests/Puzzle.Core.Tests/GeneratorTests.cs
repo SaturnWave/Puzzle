@@ -143,7 +143,7 @@ public class GeneratorTests
         Assert.Equal(first.Level.MoveLimit, second.Level.MoveLimit);
         Assert.Equal(first.Level.Attempts.SeedPool, second.Level.Attempts.SeedPool);
         Assert.InRange(Assert.NotNull(first.Metrics.WinRateWithExtraMoves), first.Metrics.WinRate, 1.0); // five more moves never lose a won game
-        Assert.Equal(0.60, Assert.NotNull(first.Metrics.Floor).Required);                                  // a Normal level of the first band
+        Assert.Equal(0.60, Assert.IsType<FloorCheck>(first.Metrics.Floor).WinRate.Required);             // a Normal level of the first band
         Assert.Equal((first.Metrics.Floor, first.Metrics.FloorSetLimit), (second.Metrics.Floor, second.Metrics.FloorSetLimit));
     }
 
@@ -168,13 +168,69 @@ public class GeneratorTests
         LevelMetrics withFloor = new LevelGenerator(guarded).Generate(13, []).Metrics;
         LevelMetrics withoutFloor = new LevelGenerator(unguarded).Generate(13, []).Metrics;
 
-        WinRateCheck floor = Assert.NotNull(withFloor.Floor);
+        WinRateCheck floor = Assert.IsType<FloorCheck>(withFloor.Floor).WinRate;
         Assert.False(withFloor.Relaxed);
         Assert.True(withFloor.FloorSetLimit, "the floor bot needed no more moves than the calibration bot");
         Assert.True(floor.Measured >= floor.Required - guarded.Calibration.WinRateTolerance, $"the floor bot won {floor.Measured:P0} of the fresh-seed games at {withFloor.MoveLimit} moves");
         Assert.True(withFloor.MoveLimit >= withoutFloor.MoveLimit, $"{withFloor.MoveLimit} moves with the floor, {withoutFloor.MoveLimit} without");
         Assert.Null(withoutFloor.Floor);
     }
+
+    /// <summary>The default profile with the random bot behind the casual guard: it needs far more moves than the calibration bot.</summary>
+    private static GenerationProfile RandomFloorProfile => TinyProfile with { FloorBot = "random" };
+
+    [Fact]
+    public void A_floor_that_needs_more_moves_than_the_range_allows_shrinks_the_goals_until_its_limit_fits()
+    {
+        // Level 7 is Normal: 85 % target, 60 % floor, 18-28 moves. On its first candidate the calibration bot needs about
+        // 20 moves, inside the range, and the random bot about 38. A limit read from the target alone would be checked
+        // as it is and fail on the floor; read from both, it is out of range and the collect goal shrinks until it fits.
+        LevelPlan plan = new LevelPlanner(RandomFloorProfile).Plan(7);
+        Candidate candidate = Assert.IsType<Candidate>(CandidateFactory.TryCreate(plan, attempt: 0, density: 1.0));
+
+        CalibrationOutcome outcome = new LevelCalibrator(RandomFloorProfile).Calibrate(candidate, plan);
+
+        var accepted = Assert.IsType<CalibrationOutcome.Accepted>(outcome);
+        Assert.True(accepted.FloorSetLimit, "the floor did not decide the limit");
+        Assert.InRange(accepted.Level.MoveLimit, plan.Moves.Min, plan.Moves.Max);
+        Assert.True(
+            CollectTarget(accepted.Level) < CollectTarget(candidate.Build(plan, scale: 1)),
+            $"collect goal {CollectTarget(accepted.Level)}, {CollectTarget(candidate.Build(plan, scale: 1))} unscaled");
+    }
+
+    [Fact]
+    public void A_limit_the_floor_set_is_reported_as_set_by_the_floor_when_fresh_seeds_confirm_it()
+    {
+        // Level 7's second candidate: the random bot needs more moves than the calibration bot and both fit the range.
+        LevelPlan plan = new LevelPlanner(RandomFloorProfile).Plan(7);
+        Candidate candidate = Assert.IsType<Candidate>(CandidateFactory.TryCreate(plan, attempt: 1, density: 1.0));
+
+        var accepted = Assert.IsType<CalibrationOutcome.Accepted>(new LevelCalibrator(RandomFloorProfile).Calibrate(candidate, plan));
+
+        // A limit re-read from the fresh-seed games would equal theirs; this one stood as calibrated.
+        Assert.NotEqual(accepted.Verification.ReadLimit()?.Moves, accepted.Level.MoveLimit);
+        Assert.True(accepted.FloorSetLimit, "a limit the floor set and fresh seeds confirmed lost its mark");
+    }
+
+    [Fact]
+    public void A_relaxed_level_keeps_its_casual_floor_in_the_report()
+    {
+        // Level 13 is Normal and features boxes. The random bot cannot break them for the 60 % floor within 5-6 moves,
+        // and goals are never rescaled here, so no candidate fits and the closest is kept.
+        GenerationProfile cramped = RandomFloorProfile with
+        {
+            Bands = RandomFloorProfile.Bands.Select(band => band with { Moves = band.Moves with { Normal = new MoveRange(5, 6) } }).ToArray(),
+            Calibration = RandomFloorProfile.Calibration with { MaxCandidates = 2, MaxScaleIterations = 1 },
+        };
+
+        LevelMetrics relaxed = new LevelGenerator(cramped).Generate(13, []).Metrics;
+
+        Assert.True(relaxed.Relaxed, $"{relaxed.MoveLimit} moves were accepted");
+        FloorCheck floor = Assert.IsType<FloorCheck>(relaxed.Floor);
+        Assert.Equal(("random", 0.60), (floor.Bot, floor.WinRate.Required));
+    }
+
+    private static int CollectTarget(LevelDefinition level) => level.Goals.OfType<GoalSpec.CollectColor>().Single().Target;
 
     [Fact]
     public void Seed_pool_never_drops_below_the_minimum()
@@ -304,7 +360,73 @@ public class GeneratorTests
     {
         ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json => json["floorBot"] = "Average"));
 
-        Assert.Contains("floorBot 'Average' is the same bot as calibrationBot 'average'", rejected.Message);
+        Assert.Contains("floorBot 'Average' is not weaker than calibrationBot 'average'", rejected.Message);
+    }
+
+    [Fact]
+    public void The_floor_bot_must_be_weaker_than_the_calibration_bot()
+    {
+        ProfileFormatException stronger = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json => json["floorBot"] = "expert"));
+
+        Assert.Contains("floorBot 'expert' is not weaker than calibrationBot 'average'", stronger.Message);
+        Assert.Contains("random < novice < casual < average < expert", stronger.Message);
+        Assert.Equal("novice", LoadDefaultProfileEdited(json => json["floorBot"] = "novice").FloorBot);
+        Assert.Equal("random", LoadDefaultProfileEdited(json => json["floorBot"] = "random").FloorBot);
+    }
+
+    [Fact]
+    public void The_floor_bot_is_checked_only_when_some_band_has_a_casual_floor()
+    {
+        // Calibrating against the casual bot leaves the default floor bot, casual, no weaker player to model.
+        static void CalibrateAgainstCasual(JsonObject json)
+        {
+            json["calibrationBot"] = "casual";
+            json.Remove("floorBot");
+        }
+
+        GenerationProfile withoutFloors = LoadDefaultProfileEdited(json =>
+        {
+            CalibrateAgainstCasual(json);
+            foreach (JsonNode? band in json["bands"]!.AsArray())
+            {
+                band!.AsObject().Remove("casualFloor");
+            }
+        });
+        ProfileFormatException withFloors = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(CalibrateAgainstCasual));
+
+        Assert.Equal(("casual", "casual"), (withoutFloors.CalibrationBot, withoutFloors.FloorBot));
+        Assert.Contains("floorBot 'casual' is not weaker than calibrationBot 'casual'", withFloors.Message);
+    }
+
+    [Fact]
+    public void A_misspelled_floor_bot_is_rejected_even_before_any_band_has_a_casual_floor()
+    {
+        ProfileFormatException error = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json =>
+        {
+            json["floorBot"] = "casul";
+            foreach (JsonNode? band in json["bands"]!.AsArray())
+            {
+                band!.AsObject().Remove("casualFloor");
+            }
+        }));
+
+        Assert.Contains("casul", error.Message);
+    }
+
+    [Fact]
+    public void A_casual_floor_on_any_tier_makes_the_floor_bot_prove_it_is_weaker()
+    {
+        // Floors only on Normal: the strength check must still run, not only when Easy has a floor.
+        ProfileFormatException error = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json =>
+        {
+            json["floorBot"] = "expert";
+            foreach (JsonNode? band in json["bands"]!.AsArray())
+            {
+                band!.AsObject()["casualFloor"]?.AsObject().Remove("Easy");
+            }
+        }));
+
+        Assert.Contains("floorBot 'expert' is not weaker than calibrationBot 'average'", error.Message);
     }
 
     [Fact]

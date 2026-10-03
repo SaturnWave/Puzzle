@@ -19,6 +19,11 @@ public sealed record LevelSignature(int Width, int Height, string Cells, string 
         string.Join(',', level.Goals.Select(g => g.GetType().Name).OrderBy(n => n)));
 }
 
+/// <summary>How a level met its casual floor.</summary>
+/// <param name="Bot">The floor bot whose games gave the measured win rate.</param>
+/// <param name="WinRate">The casual floor and the floor bot's win rate at the move limit.</param>
+public sealed record FloorCheck(string Bot, WinRateCheck WinRate);
+
 /// <summary>Numbers for the generation report (one row per level).</summary>
 public sealed record LevelMetrics
 {
@@ -52,10 +57,10 @@ public sealed record LevelMetrics
     public required double? WinRateWithExtraMoves { get; init; }
 
     /// <summary>
-    /// The casual floor and the floor bot's win rate at the final limit, measured on the same fresh seeds as
+    /// The casual floor, the floor bot and its win rate at the final limit, measured on the same fresh seeds as
     /// <see cref="WinRate"/>. Absent on a tier without a floor.
     /// </summary>
-    public required WinRateCheck? Floor { get; init; }
+    public required FloorCheck? Floor { get; init; }
 
     /// <summary>The floor bot needed more moves than the target did, so the casual floor decided the limit.</summary>
     public required bool FloorSetLimit { get; init; }
@@ -181,7 +186,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
             TargetWinRate = plan.TargetWinRate,
             WinRate = verification.WinRateAt(final.MoveLimit),
             WinRateWithExtraMoves = verification.WinRateWithExtraMoves(final.MoveLimit),
-            Floor = kept.Verification.Floor?.CheckAt(final.MoveLimit),
+            Floor = kept.Verification.Floor is MeasuredShare floor ? new FloorCheck(profile.FloorBot, floor.CheckAt(final.MoveLimit)) : null,
             FloorSetLimit = kept.FloorSetLimit,
             MovesP50 = verification.MovesNeeded(0.5),
             MovesP90 = verification.MovesNeeded(0.9),

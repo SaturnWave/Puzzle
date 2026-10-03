@@ -59,16 +59,19 @@ public static class ProfileLoader
         List<string?> listedReportBots = file.ReportBots ?? [];
         Require(!listedReportBots.Contains(null), $"reportBots has a null entry; every entry must name a bot ({knownBots})");
         IReadOnlyList<string> reportBots = listedReportBots.OfType<string>().ToArray();
-        foreach (string bot in reportBots.Append(calibrationBot).Append(floorBot))
+        foreach (string bot in reportBots.Append(calibrationBot))
         {
-            Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {knownBots})");
+            RequireKnownBot(bot, knownBots);
         }
 
         RequirePlayerModel(calibrationBot, "calibrationBot", "move limits are set against a player model");
+        ProfileBand[] bands = ParseBands(file.Bands);
+        RequireKnownBot(floorBot, knownBots);
         RequirePlayerModel(floorBot, "floorBot", "the casual floor is checked against a player model");
-        Require(
-            !string.Equals(floorBot, calibrationBot, StringComparison.OrdinalIgnoreCase),
-            $"floorBot '{floorBot}' is the same bot as calibrationBot '{calibrationBot}'; on the same games a floor at or below the target never needs more moves, so floorBot must name a weaker player model");
+        if (bands.Any(HasCasualFloor))
+        {
+            RequireWeakerFloorBot(floorBot, calibrationBot);
+        }
 
         return new GenerationProfile
         {
@@ -79,7 +82,7 @@ public static class ProfileLoader
             ReportBots = reportBots,
             TutorialUntil = file.TutorialUntil ?? 0,
             Cycle = ParseCycle(file.Cycle),
-            Bands = ParseBands(file.Bands),
+            Bands = bands,
             Sizes = ParseSizes(file.Sizes),
             Palette = new PaletteRules(file.Palette?.NewColorsFrom ?? int.MaxValue, Positive(file.Palette?.ChapterSize ?? 50, "palette.chapterSize")),
             Mechanics = (file.Mechanics ?? []).Select(ParseUnlock).OrderBy(u => u.FromLevel).ToArray(),
@@ -97,9 +100,30 @@ public static class ProfileLoader
         };
     }
 
+    private static void RequireKnownBot(string bot, string knownBots) =>
+        Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {knownBots})");
+
     private static void RequirePlayerModel(string bot, string field, string purpose) => Require(
         BotPolicies.Names.Contains(bot, StringComparer.OrdinalIgnoreCase),
         $"{field} '{bot}' is a measurement bot; {purpose} ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
+
+    /// <summary>
+    /// The floor bot plays only on a tier with a casual floor, so its strength is checked only when some band has one (its
+    /// name is always checked, so a typo is caught before a floor is added). On the same games a floor at or below the
+    /// target needs more moves than the target only from a weaker player, so it must come before the calibration bot in
+    /// <see cref="BotPolicies.Names"/>, which lists the player models weakest first.
+    /// </summary>
+    private static void RequireWeakerFloorBot(string floorBot, string calibrationBot) =>
+        Require(
+            StrengthOf(floorBot) < StrengthOf(calibrationBot),
+            $"floorBot '{floorBot}' is not weaker than calibrationBot '{calibrationBot}'; a floor at or below the target needs more moves only from a weaker player, so floorBot must come before calibrationBot in {string.Join(" < ", BotPolicies.Names)}");
+
+    /// <summary>The place of a player model in <see cref="BotPolicies.Names"/>: 0 for the weakest.</summary>
+    private static int StrengthOf(string playerModel) =>
+        BotPolicies.Names.TakeWhile(name => !string.Equals(name, playerModel, StringComparison.OrdinalIgnoreCase)).Count();
+
+    private static bool HasCasualFloor(ProfileBand band) =>
+        Enum.GetValues<DifficultyTier>().Any(tier => band.CasualFloor.For(tier) is not null);
 
     private static DifficultyTier[] ParseCycle(List<string>? cycle)
     {

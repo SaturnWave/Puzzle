@@ -226,7 +226,7 @@ Raporları (`report.csv` ve kademe özeti) karşılaştırarak profiller kıyasl
 | `mechanics[]` | Mekanik açılış takvimi (aşağıdaki tablo). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
 | `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu: `average` (karar 2026-10-02) |
 | `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`) |
-| `floorBot`, `bands[].casualFloor` | Casual koruması (§8): alt sınırı tutturması gereken bot (`casual`; kalibrasyon botu ya da ölçüm botu olamaz) ve aralık başına alt sınırlar. Raporda `floor`, `floorWin`, `floorSetLimit` sütunları |
+| `floorBot`, `bands[].casualFloor` | Casual koruması (§8): alt sınırı tutturması gereken bot (`casual`) ve aralık başına alt sınırlar. Koruma botu kalibrasyon botundan zayıf bir oyuncu modeli olmalı (random < novice < casual < average < expert); ölçüm botu olamaz. Raporda `floor`, `floorWin`, `floorSetLimit`, `floorBot` sütunları; `generate --repair` alt sınırı, koruma botu ya da hedefi değişen bölümleri yeniden üretir |
 | `calibration`, `seedPool` | Oyun sayıları, tolerans, aday sayısı |
 
 **Bir bölümün üretimi:**
