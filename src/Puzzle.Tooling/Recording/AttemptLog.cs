@@ -79,7 +79,7 @@ public sealed class AttemptLog
                     file.Write(line);
                     return;
                 }
-                catch (IOException ex) when (IsSharingViolation(ex) && tries < AppendTries)
+                catch (IOException ex) when (MayBeBriefLock(ex) && tries < AppendTries)
                 {
                     Thread.Sleep(pause);
                     pause *= 2;
@@ -141,13 +141,12 @@ public sealed class AttemptLog
         return file.ReadByte() == '\n';
     }
 
-    /// <summary>Windows refuses an open that another handle's sharing excludes; such a hold is brief, so it is worth waiting for.</summary>
-    private static bool IsSharingViolation(IOException ex)
-    {
-        const int SharingViolation = 32; // ERROR_SHARING_VIOLATION
-        const int LockViolation = 33; // ERROR_LOCK_VIOLATION
-        return (ex.HResult & 0xFFFF) is SharingViolation or LockViolation;
-    }
+    /// <summary>
+    /// An open refused because another handle holds the file is brief, so it is worth waiting for. Windows and Unix report
+    /// it with different error codes and .NET offers no portable test, but both throw the plain <see cref="IOException"/>;
+    /// its subclasses (file or folder not found, path too long) are permanent and are not retried.
+    /// </summary>
+    private static bool MayBeBriefLock(IOException ex) => ex.GetType() == typeof(IOException);
 
     /// <summary>The lines that end in a line break, without it; whatever follows the last break is not a line yet.</summary>
     private static IEnumerable<string> CompleteLines(TextReader reader)
