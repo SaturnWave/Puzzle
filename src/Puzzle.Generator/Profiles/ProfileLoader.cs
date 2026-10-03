@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Puzzle.Bot;
 using Puzzle.Bot.Simulation;
@@ -53,24 +54,28 @@ public static class ProfileLoader
     private static GenerationProfile Build(ProfileFile file)
     {
         string calibrationBot = file.CalibrationBot ?? "average";
+        string floorBot = file.FloorBot ?? "casual";
         string knownBots = $"{string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>";
         List<string?> listedReportBots = file.ReportBots ?? [];
         Require(!listedReportBots.Contains(null), $"reportBots has a null entry; every entry must name a bot ({knownBots})");
         IReadOnlyList<string> reportBots = listedReportBots.OfType<string>().ToArray();
-        foreach (string bot in reportBots.Append(calibrationBot))
+        foreach (string bot in reportBots.Append(calibrationBot).Append(floorBot))
         {
             Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {knownBots})");
         }
 
+        RequirePlayerModel(calibrationBot, "calibrationBot", "move limits are set against a player model");
+        RequirePlayerModel(floorBot, "floorBot", "the casual floor is checked against a player model");
         Require(
-            BotPolicies.Names.Contains(calibrationBot, StringComparer.OrdinalIgnoreCase),
-            $"calibrationBot '{calibrationBot}' is a measurement bot; move limits are set against a player model ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
+            !string.Equals(floorBot, calibrationBot, StringComparison.OrdinalIgnoreCase),
+            $"floorBot '{floorBot}' is the same bot as calibrationBot '{calibrationBot}'; on the same games a floor at or below the target never needs more moves, so floorBot must name a weaker player model");
 
         return new GenerationProfile
         {
             Name = file.Name ?? "unnamed",
             MasterSeed = file.MasterSeed ?? 1,
             CalibrationBot = calibrationBot,
+            FloorBot = floorBot,
             ReportBots = reportBots,
             TutorialUntil = file.TutorialUntil ?? 0,
             Cycle = ParseCycle(file.Cycle),
@@ -92,10 +97,14 @@ public static class ProfileLoader
         };
     }
 
+    private static void RequirePlayerModel(string bot, string field, string purpose) => Require(
+        BotPolicies.Names.Contains(bot, StringComparer.OrdinalIgnoreCase),
+        $"{field} '{bot}' is a measurement bot; {purpose} ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
+
     private static DifficultyTier[] ParseCycle(List<string>? cycle)
     {
         Require(cycle is { Count: > 0 }, "cycle needs at least one tier");
-        return cycle!.Select(ParseTier).ToArray();
+        return cycle!.Select(tier => ParseTier(tier, "cycle")).ToArray();
     }
 
     private static ProfileBand[] ParseBands(List<BandFile>? bands)
@@ -112,10 +121,12 @@ public static class ProfileLoader
             var current = new ProfileBand(
                 band.FromLevel,
                 MergeTiers(previous?.WinRate, band.WinRate, v => Require(v is > 0 and < 1, $"{where}: win rates must be between 0 and 1"), where + " winRate"),
+                MergeOptionalTiers(previous?.CasualFloor, band.CasualFloor, where + " casualFloor"),
                 MergeTiers(previous?.Moves, band.Moves is null ? null : band.Moves.ToDictionary(p => p.Key, p => ParseRange(p.Value, where)), _ => { }, where + " moves"),
                 MergeTiers(previous?.Colors, band.Colors, v => Require(v is >= 3 and <= 8, $"{where}: colors must be 3..8"), where + " colors"),
                 band.MaxObstacleTypes ?? previous?.MaxObstacleTypes ?? 1);
             Require(current.MaxObstacleTypes is >= 0 and <= 4, $"{where}: maxObstacleTypes must be 0..4");
+            RequireFloorsWithinWinRates(current, where);
             resolved.Add(current);
             previous = current;
         }
@@ -137,12 +148,44 @@ public static class ProfileLoader
             return inherited is not null ? inherited.For(tier) : throw new ProfileFormatException($"{where}: missing {tier}");
         }
 
-        foreach (string key in overrides?.Keys ?? Enumerable.Empty<string>())
-        {
-            ParseTier(key);
-        }
-
+        RequireKnownTiers(overrides?.Keys, where);
         return new TierValues<T>(Pick(DifficultyTier.Easy), Pick(DifficultyTier.Normal), Pick(DifficultyTier.Hard), Pick(DifficultyTier.SuperHard));
+    }
+
+    /// <summary>Overlays the band's tier values on the inherited ones for a value a tier may lack: a tier no band names has none.</summary>
+    private static TierValues<double?> MergeOptionalTiers(TierValues<double?>? inherited, Dictionary<string, double>? overrides, string where)
+    {
+        double? Pick(DifficultyTier tier) =>
+            overrides is not null && overrides.TryGetValue(tier.ToString(), out double value) ? value : inherited?.For(tier);
+
+        RequireKnownTiers(overrides?.Keys, where);
+        return new TierValues<double?>(Pick(DifficultyTier.Easy), Pick(DifficultyTier.Normal), Pick(DifficultyTier.Hard), Pick(DifficultyTier.SuperHard));
+    }
+
+    /// <summary>
+    /// Floors are checked against the band's resolved win rates, so a band that lowers a target under an inherited floor
+    /// is rejected too. The floor guards a weaker player than the target describes; one above the target is no floor.
+    /// </summary>
+    private static void RequireFloorsWithinWinRates(ProfileBand band, string where)
+    {
+        foreach (DifficultyTier tier in Enum.GetValues<DifficultyTier>())
+        {
+            double target = band.WinRate.For(tier);
+            if (band.CasualFloor.For(tier) is double floor)
+            {
+                Require(
+                    floor > 0 && floor <= target,
+                    string.Create(CultureInfo.InvariantCulture, $"{where}: casualFloor {tier} is {floor}; a floor must be above 0 and at most the {tier} win rate {target}"));
+            }
+        }
+    }
+
+    private static void RequireKnownTiers(IEnumerable<string>? keys, string where)
+    {
+        foreach (string key in keys ?? Enumerable.Empty<string>())
+        {
+            ParseTier(key, where);
+        }
     }
 
     private static MoveRange ParseRange(int[] pair, string where)
@@ -165,6 +208,7 @@ public static class ProfileLoader
         return new SizeRules(
             Size(sizes!.Default ?? "10x10", "default"),
             sizes.FixedUntil ?? 0,
+            sizes.PlainShapesUntil ?? 10,
             new TierValues<IReadOnlyList<BoardSize>>(Sizes(sizes.Easy, "Easy"), Sizes(sizes.Normal, "Normal"), Sizes(sizes.Hard, "Hard"), Sizes(sizes.SuperHard, "SuperHard")));
     }
 
@@ -189,10 +233,10 @@ public static class ProfileLoader
         };
     }
 
-    private static DifficultyTier ParseTier(string text) =>
+    private static DifficultyTier ParseTier(string text, string where) =>
         Enum.TryParse(text, ignoreCase: false, out DifficultyTier tier) && Enum.IsDefined(tier)
             ? tier
-            : throw new ProfileFormatException($"unknown tier '{text}' (use Easy, Normal, Hard, SuperHard)");
+            : throw new ProfileFormatException($"{where}: unknown tier '{text}' (use Easy, Normal, Hard, SuperHard)");
 
     private static int Positive(int value, string field) =>
         value > 0 ? value : throw new ProfileFormatException($"{field} must be positive, got {value}");
@@ -213,6 +257,8 @@ public static class ProfileLoader
         public ulong? MasterSeed { get; set; }
 
         public string? CalibrationBot { get; set; }
+
+        public string? FloorBot { get; set; }
 
         /// <summary>JSON may hold null entries; <see cref="Build"/> rejects them.</summary>
         public List<string?>? ReportBots { get; set; }
@@ -244,6 +290,8 @@ public static class ProfileLoader
 
         public Dictionary<string, double>? WinRate { get; set; }
 
+        public Dictionary<string, double>? CasualFloor { get; set; }
+
         public Dictionary<string, int[]>? Moves { get; set; }
 
         public Dictionary<string, int>? Colors { get; set; }
@@ -256,6 +304,8 @@ public static class ProfileLoader
         public string? Default { get; set; }
 
         public int? FixedUntil { get; set; }
+
+        public int? PlainShapesUntil { get; set; }
 
         public List<string>? Easy { get; set; }
 

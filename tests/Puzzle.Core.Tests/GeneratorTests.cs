@@ -6,6 +6,8 @@ using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
 using Puzzle.Core.Randomness;
 using Puzzle.Generator;
+using Puzzle.Generator.Calibration;
+using Puzzle.Generator.Composition;
 using Puzzle.Generator.Layout;
 using Puzzle.Generator.Planning;
 using Puzzle.Generator.Profiles;
@@ -14,12 +16,10 @@ namespace Puzzle.Core.Tests;
 
 public class GeneratorTests
 {
-    private static readonly Lazy<GenerationProfile> DefaultProfile = new(() => ProfileLoader.Load(FindRepoFile("profiles", "default.json")));
-
     [Fact]
     public void Bands_inherit_what_they_do_not_override()
     {
-        GenerationProfile profile = DefaultProfile.Value;
+        GenerationProfile profile = RepoFiles.DefaultProfile;
 
         ProfileBand early = profile.BandFor(6);
         ProfileBand late = profile.BandFor(350);
@@ -34,7 +34,7 @@ public class GeneratorTests
     [Fact]
     public void Planner_follows_tutorial_cycle_sizes_hooks_and_palettes()
     {
-        var planner = new LevelPlanner(DefaultProfile.Value);
+        var planner = new LevelPlanner(RepoFiles.DefaultProfile);
 
         Assert.All(Enumerable.Range(1, 5), n => Assert.Equal(DifficultyTier.Easy, planner.Plan(n).Tier));
         Assert.Equal(DifficultyTier.SuperHard, planner.Plan(20).Tier);
@@ -44,7 +44,7 @@ public class GeneratorTests
         Assert.Contains(Mechanic.Box1, planner.Plan(13).Featured);
         Assert.DoesNotContain(Mechanic.Box1, planner.Plan(14).Featured);
         Assert.Equal(GemColors.First(6), planner.Plan(100).Palette);
-        Assert.Equal(planner.Plan(400).Palette.Count, DefaultProfile.Value.BandFor(400).Colors.For(planner.Plan(400).Tier));
+        Assert.Equal(planner.Plan(400).Palette.Count, RepoFiles.DefaultProfile.BandFor(400).Colors.For(planner.Plan(400).Tier));
         LevelPlan once = planner.Plan(77);
         LevelPlan again = planner.Plan(77);
         Assert.Equal((once.Seed, once.Size, once.Tier), (again.Seed, again.Size, again.Tier));
@@ -54,7 +54,7 @@ public class GeneratorTests
     [Fact]
     public void Mechanics_open_on_the_first_level_of_a_painting()
     {
-        GenerationProfile profile = DefaultProfile.Value;
+        GenerationProfile profile = RepoFiles.DefaultProfile;
         int paintingLevels = profile.Cycle.Count;          // one painting = one saw-tooth cycle (GAME_DESIGN §18)
         int roomLevels = profile.Palette.ChapterSize;      // one museum room = one palette chapter
 
@@ -123,17 +123,18 @@ public class GeneratorTests
         }
     }
 
+    /// <summary>The default profile with few games everywhere, so a test can generate whole levels quickly.</summary>
+    private static GenerationProfile TinyProfile => RepoFiles.DefaultProfile with
+    {
+        Calibration = RepoFiles.DefaultProfile.Calibration with { Runs = 30, VerifyRuns = 30, ReportRuns = 10, MaxCandidates = 4, MaxScaleIterations = 3 },
+        SeedPool = new SeedPoolSettings { Candidates = 6, GamesPerSeed = 6, PoolSize = 4, TolerancePoints = 20 },
+    };
+
     [Fact]
     public void Generated_level_features_its_hook_and_is_reproducible()
     {
-        GenerationProfile tiny = DefaultProfile.Value with
-        {
-            Calibration = DefaultProfile.Value.Calibration with { Runs = 30, VerifyRuns = 30, ReportRuns = 10, MaxCandidates = 4, MaxScaleIterations = 3 },
-            SeedPool = new SeedPoolSettings { Candidates = 6, GamesPerSeed = 6, PoolSize = 4, TolerancePoints = 20 },
-        };
-
-        GeneratedLevel first = new LevelGenerator(tiny).Generate(13, []);
-        GeneratedLevel second = new LevelGenerator(tiny).Generate(13, []);
+        GeneratedLevel first = new LevelGenerator(TinyProfile).Generate(13, []);
+        GeneratedLevel second = new LevelGenerator(TinyProfile).Generate(13, []);
 
         Assert.Contains(first.Level.Goals, g => g is GoalSpec.BreakBoxes);
         Assert.Equal(DifficultyTier.Normal, first.Level.Difficulty);
@@ -142,14 +143,45 @@ public class GeneratorTests
         Assert.Equal(first.Level.MoveLimit, second.Level.MoveLimit);
         Assert.Equal(first.Level.Attempts.SeedPool, second.Level.Attempts.SeedPool);
         Assert.InRange(Assert.NotNull(first.Metrics.WinRateWithExtraMoves), first.Metrics.WinRate, 1.0); // five more moves never lose a won game
+        Assert.Equal(0.60, Assert.NotNull(first.Metrics.Floor).Required);                                  // a Normal level of the first band
+        Assert.Equal((first.Metrics.Floor, first.Metrics.FloorSetLimit), (second.Metrics.Floor, second.Metrics.FloorSetLimit));
+    }
+
+    [Fact]
+    public void A_binding_casual_floor_raises_the_limit_until_the_floor_bot_reaches_it_on_fresh_seeds()
+    {
+        // Normal levels aim at 95 % for the calibration bot and 80 % for the random bot, which needs far more moves.
+        // Above 95 % the calibration bot cannot overshoot by more than the tolerance, so whether a limit the floor set
+        // stands on fresh seeds is up to the floor bot. The wide move range keeps both limits in range.
+        GenerationProfile guarded = TinyProfile with
+        {
+            FloorBot = "random",
+            Bands = TinyProfile.Bands.Select(band => band with
+            {
+                WinRate = band.WinRate with { Normal = 0.95 },
+                CasualFloor = band.CasualFloor with { Normal = 0.80 },
+                Moves = band.Moves with { Normal = new MoveRange(12, 40) },
+            }).ToArray(),
+        };
+        GenerationProfile unguarded = guarded with { Bands = guarded.Bands.Select(band => band with { CasualFloor = band.CasualFloor with { Normal = null } }).ToArray() };
+
+        LevelMetrics withFloor = new LevelGenerator(guarded).Generate(13, []).Metrics;
+        LevelMetrics withoutFloor = new LevelGenerator(unguarded).Generate(13, []).Metrics;
+
+        WinRateCheck floor = Assert.NotNull(withFloor.Floor);
+        Assert.False(withFloor.Relaxed);
+        Assert.True(withFloor.FloorSetLimit, "the floor bot needed no more moves than the calibration bot");
+        Assert.True(floor.Measured >= floor.Required - guarded.Calibration.WinRateTolerance, $"the floor bot won {floor.Measured:P0} of the fresh-seed games at {withFloor.MoveLimit} moves");
+        Assert.True(withFloor.MoveLimit >= withoutFloor.MoveLimit, $"{withFloor.MoveLimit} moves with the floor, {withoutFloor.MoveLimit} without");
+        Assert.Null(withoutFloor.Floor);
     }
 
     [Fact]
     public void Seed_pool_never_drops_below_the_minimum()
     {
-        GenerationProfile strict = DefaultProfile.Value with
+        GenerationProfile strict = RepoFiles.DefaultProfile with
         {
-            Calibration = DefaultProfile.Value.Calibration with { Runs = 30, VerifyRuns = 30, ReportRuns = 10, MaxCandidates = 3, MaxScaleIterations = 2 },
+            Calibration = RepoFiles.DefaultProfile.Calibration with { Runs = 30, VerifyRuns = 30, ReportRuns = 10, MaxCandidates = 3, MaxScaleIterations = 2 },
             SeedPool = new SeedPoolSettings { Candidates = 6, GamesPerSeed = 6, PoolSize = 8, TolerancePoints = 1 },
             MinPoolSize = 5,
         };
@@ -180,13 +212,141 @@ public class GeneratorTests
         Assert.Contains("reportBots has a null entry", rejected.Message);
     }
 
-    /// <summary>Loads the default profile with other bots, through a temporary file that is removed afterwards.</summary>
-    private static GenerationProfile LoadDefaultProfileWith(string calibrationBot, params string?[] reportBots)
+    [Fact]
+    public void Casual_floors_are_inherited_like_win_rates_and_tiers_without_one_have_none()
     {
-        var options = new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
-        JsonObject profile = JsonNode.Parse(File.ReadAllText(FindRepoFile("profiles", "default.json")), documentOptions: options)!.AsObject();
+        GenerationProfile profile = RepoFiles.DefaultProfile;
+
+        Assert.Equal("casual", profile.FloorBot);
+        Assert.Equal((0.80, 0.60), (profile.BandFor(6).CasualFloor.Easy, profile.BandFor(6).CasualFloor.Normal));      // inherited from level 1
+        Assert.Equal((0.75, 0.50), (profile.BandFor(121).CasualFloor.Easy, profile.BandFor(121).CasualFloor.Normal));  // inherited from level 51
+        Assert.Equal((0.70, 0.40), (profile.BandFor(700).CasualFloor.Easy, profile.BandFor(700).CasualFloor.Normal));  // inherited from level 301
+        Assert.All(new[] { 1, 51, 301, 601 }, level => Assert.Null(profile.BandFor(level).CasualFloor.Hard));
+        Assert.All(new[] { 1, 51, 301, 601 }, level => Assert.Null(profile.BandFor(level).CasualFloor.SuperHard));
+
+        var planner = new LevelPlanner(profile);
+        Assert.Equal(0.80, planner.Plan(1).CasualFloor);   // tutorial levels are Easy
+        Assert.Equal(0.50, planner.Plan(52).CasualFloor);  // Normal
+        Assert.Null(planner.Plan(55).CasualFloor);         // Hard
+    }
+
+    [Fact]
+    public void Move_ranges_from_level_51_leave_room_for_the_casual_floor()
+    {
+        GenerationProfile profile = RepoFiles.DefaultProfile;
+
+        Assert.Equal((new MoveRange(16, 24), new MoveRange(18, 28)), (profile.BandFor(50).Moves.Easy, profile.BandFor(50).Moves.Normal));
+        Assert.Equal((new MoveRange(18, 29), new MoveRange(20, 33)), (profile.BandFor(51).Moves.Easy, profile.BandFor(51).Moves.Normal));
+        Assert.Equal((new MoveRange(18, 31), new MoveRange(22, 35)), (profile.BandFor(301).Moves.Easy, profile.BandFor(301).Moves.Normal));
+        Assert.Equal((new MoveRange(24, 36), new MoveRange(26, 38)), (profile.BandFor(51).Moves.Hard, profile.BandFor(301).Moves.Hard));
+    }
+
+    [Fact]
+    public void The_floor_bot_defaults_to_casual()
+    {
+        GenerationProfile profile = LoadDefaultProfileEdited(json => json.Remove("floorBot"));
+
+        Assert.Equal("casual", profile.FloorBot);
+    }
+
+    [Fact]
+    public void A_floor_above_the_target_is_a_profile_error()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() =>
+            LoadDefaultProfileEdited(json => json["bands"]![0]!["casualFloor"]!["Easy"] = 0.96));
+
+        Assert.Contains("band fromLevel 1: casualFloor Easy is 0.96; a floor must be above 0 and at most the Easy win rate 0.95", rejected.Message);
+    }
+
+    [Fact]
+    public void An_inherited_floor_above_a_lowered_target_is_a_profile_error()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json =>
+        {
+            JsonObject band51 = json["bands"]![3]!.AsObject();
+            band51.Remove("casualFloor");                   // inherits Easy 0.80 from level 1
+            band51["winRate"]!["Easy"] = 0.78;
+        }));
+
+        Assert.Contains("band fromLevel 51: casualFloor Easy is 0.8; a floor must be above 0 and at most the Easy win rate 0.78", rejected.Message);
+    }
+
+    [Fact]
+    public void A_zero_floor_is_a_profile_error()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() =>
+            LoadDefaultProfileEdited(json => json["bands"]![0]!["casualFloor"]!["Normal"] = 0));
+
+        Assert.Contains("casualFloor Normal is 0; a floor must be above 0", rejected.Message);
+    }
+
+    [Fact]
+    public void A_floor_for_an_unknown_tier_is_a_profile_error()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() =>
+            LoadDefaultProfileEdited(json => json["bands"]![0]!["casualFloor"]!["Medium"] = 0.5));
+
+        Assert.Contains("band fromLevel 1 casualFloor: unknown tier 'Medium'", rejected.Message);
+    }
+
+    [Fact]
+    public void The_floor_bot_must_be_a_known_player_model()
+    {
+        ProfileFormatException measurement = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json => json["floorBot"] = "usta"));
+        ProfileFormatException unknown = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json => json["floorBot"] = "beginner"));
+
+        Assert.Contains("floorBot 'usta' is a measurement bot; the casual floor is checked against a player model", measurement.Message);
+        Assert.Contains("unknown bot 'beginner'", unknown.Message);
+    }
+
+    [Fact]
+    public void The_floor_bot_must_not_be_the_calibration_bot()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileEdited(json => json["floorBot"] = "Average"));
+
+        Assert.Contains("floorBot 'Average' is the same bot as calibrationBot 'average'", rejected.Message);
+    }
+
+    [Fact]
+    public void Boards_stay_plain_rectangles_through_level_20_and_may_be_shaped_from_21()
+    {
+        var planner = new LevelPlanner(RepoFiles.DefaultProfile);
+        string[] ShapesOf(int level) => Enumerable.Range(0, 8)
+            .Select(attempt => CandidateFactory.TryCreate(planner.Plan(level), attempt, density: 1.0))
+            .OfType<Candidate>()
+            .Select(candidate => candidate.Style.Split('+')[0])
+            .ToArray();
+
+        Assert.True(planner.Plan(20).PlainShape);
+        Assert.False(planner.Plan(21).PlainShape);
+        Assert.NotEmpty(ShapesOf(20));
+        Assert.All(ShapesOf(20), shape => Assert.Equal("Full", shape));
+        Assert.Contains(ShapesOf(21), shape => shape != "Full");
+    }
+
+    [Fact]
+    public void Plain_shapes_end_after_level_10_when_the_profile_does_not_say()
+    {
+        GenerationProfile profile = LoadDefaultProfileEdited(json => json["sizes"]!.AsObject().Remove("plainShapesUntil"));
+
+        Assert.Equal(10, profile.Sizes.PlainShapesUntil);
+        Assert.True(new LevelPlanner(profile).Plan(10).PlainShape);
+        Assert.False(new LevelPlanner(profile).Plan(11).PlainShape);
+    }
+
+    /// <summary>Loads the default profile with other bots, through a temporary file that is removed afterwards.</summary>
+    private static GenerationProfile LoadDefaultProfileWith(string calibrationBot, params string?[] reportBots) => LoadDefaultProfileEdited(profile =>
+    {
         profile["calibrationBot"] = calibrationBot;
         profile["reportBots"] = new JsonArray(reportBots.Select(bot => JsonValue.Create(bot)).ToArray<JsonNode?>());
+    });
+
+    /// <summary>Loads the default profile after <paramref name="edit"/> changed its JSON, through a temporary file that is removed afterwards.</summary>
+    private static GenerationProfile LoadDefaultProfileEdited(Action<JsonObject> edit)
+    {
+        var options = new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
+        JsonObject profile = JsonNode.Parse(File.ReadAllText(RepoFiles.DefaultProfilePath), documentOptions: options)!.AsObject();
+        edit(profile);
         string path = Path.Combine(Path.GetTempPath(), $"puzzle-profile-{Guid.NewGuid():N}.json");
         File.WriteAllText(path, profile.ToJsonString());
         try
@@ -197,19 +357,5 @@ public class GeneratorTests
         {
             File.Delete(path);
         }
-    }
-
-    private static string FindRepoFile(params string[] parts)
-    {
-        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-        {
-            string candidate = Path.Combine(new[] { dir.FullName }.Concat(parts).ToArray());
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        throw new FileNotFoundException($"{Path.Combine(parts)} not found above {AppContext.BaseDirectory}.");
     }
 }

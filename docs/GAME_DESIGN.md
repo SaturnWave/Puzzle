@@ -179,7 +179,18 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 
 İki ek (2026-10-02 kararı, §21):
 
-5. **Casual koruması (karar bekliyor):** limit average bota göre belirlenir. Casual botun kazanma oranı Kolay bölümde %80'in, Normal bölümde %60'ın altındaysa üretici bölümü onarır ya da reddeder. Zor ve Süper Zor bölümlerde koruma yok. 2026-10-03 ölçümü: bu eşikler 51. bölümden sonra Kolay ve Normal bölümlerin neredeyse hepsinde limiti belirliyor ve zorluk eğrisini düzleştiriyor (casual ile average arasındaki fark bölümden değil botlardan geliyor). Bölüm aralığına göre ölçeklenen eşik önerildi; kullanıcı kararı bekleniyor.
+5. **Casual koruması (karar ve uygulama 2026-10-03):** limit average bota göre belirlenir; Kolay ve Normal bölümlerde casual bot da bir alt sınırı tutturmalıdır. Limit, ikisini birlikte karşılayan en küçük hamle sayısıdır: `max(average'ın hedef limiti, casual'ın alt sınır limiti)`. Zor ve Süper Zor bölümlerde koruma yok.
+
+   | Bölüm | Kolay: hedef / casual alt sınırı | Normal: hedef / casual alt sınırı |
+   |---|---|---|
+   | 1–50 | %95 / %80 | %85 / %60 |
+   | 51–300 | %90 / %75 | %75 / %50 |
+   | 301–1000 | %85 / %70 | %65 / %40 |
+
+   - **Neden aralığa göre:** sabit 80/60 eşiği 51. bölümden sonra Kolay ve Normal bölümlerin %95'inden fazlasında limiti belirliyor ve zorluk artışını yok ediyordu (Normal'de average her aralıkta %89). Casual ile average arasındaki 19–32 puanlık fark bölümlerden değil botlardan geliyor; hiçbir bölüm tasarımı kapatmıyor. Aralığa göre inen eşik ilk 50 bölümde tam olarak 80/60, sonrasında zorluk artışını koruyor (Normal'de average 88 → 81 → 75) ve çoğu Kolay ve Normal bölüme yaklaşık 2 hamle ekliyor.
+   - **Doğrulama:** yeni tohumlarla iki bot da kendi eşiğine tolerans içinde olmalıdır. Kural, korumasız eski kuralın aynısı gibi iki yönlü: daha sıkı olan koşul hedefinin tolerans kadar altında da üstünde de kalamaz; limit çok cömertse yeniden okunur.
+   - **Maliyet:** Kolay ve Normal adaylarında casual bot da oynar (aday başına 320 oyun daha); 1000 bölümlük üretime yaklaşık 10 dakika ekler.
+   - Alt sınırı tutturmak için limit hamle aralığını aşınca üretici önce hedefleri küçültür; bu yüzden koruma çoğu zaman "daha çok hamle" yerine "biraz daha kolay hedef" olarak görünür.
 6. **Limit+5 sütunu (uygulandı, 2026-10-03):** raporlar `L + 5` hamledeki kazanma oranını da gösterir (`botstats`: son sütun `winAtLimitPlus5`; üretici raporu: `win`'in yanında `winPlus5`). 5 değeri `ExtraMovesOffer.Moves` sabitinde. `L + 5` hamle üst sınırını aşarsa hücre boş kalır. "+5 hamle" teklifinin bölümü ne kadar kolaylaştırdığı böylece görünür. Kalibrasyon yine `L`'ye göre yapılır; dağılım elde olduğu için ek simülasyon gerekmez.
 
 ## 9. 1000 bölüm üretim hattı (Faz 2)
@@ -210,11 +221,12 @@ Raporları (`report.csv` ve kademe özeti) karşılaştırarak profiller kıyasl
 |---|---|
 | `cycle`, `tutorialUntil` | Zorluk testere dişi; ilk bölümler hep Kolay |
 | `bands[]` | Bölüm aralığına göre hedef kazanma oranı, **hamle aralığı** (kademe başına), renk sayısı, en fazla engel türü. Her bant yalnızca değişen alanları yazar, gerisini öncekinden miras alır |
-| `sizes` | Kademe başına tahta boyutları. `fixedUntil`'e kadar sabit; bölüm içinde boyut hiç değişmez |
+| `sizes` | Kademe başına tahta boyutları. `fixedUntil`'e kadar sabit; bölüm içinde boyut hiç değişmez. `plainShapesUntil` (20): o bölüme kadar tahtalar düz dikdörtgen |
 | `palette` | `newColorsFrom`'dan sonra her bölüm grubu (`chapterSize`) 8 renk arasından kendi paletini alır |
 | `mechanics[]` | Mekanik açılış takvimi (aşağıdaki tablo). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
 | `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu: `average` (karar 2026-10-02) |
-| `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`). Casual ayrıca koruma eşiği olarak kullanılacak (§8) |
+| `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`) |
+| `floorBot`, `bands[].casualFloor` | Casual koruması (§8): alt sınırı tutturması gereken bot (`casual`; kalibrasyon botu ya da ölçüm botu olamaz) ve aralık başına alt sınırlar. Raporda `floor`, `floorWin`, `floorSetLimit` sütunları |
 | `calibration`, `seedPool` | Oyun sayıları, tolerans, aday sayısı |
 
 **Bir bölümün üretimi:**
@@ -251,11 +263,11 @@ Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır):
 | Zor | 10x12, 11x11, 9x12 |
 | Süper Zor | 11x12, 11x13, 10x13 |
 
-İlk 30 bölümde boyut sabit kalır (öğrenme); boyut değişimi bölüm 30'dan sonra Zor bölümlerde başlar.
+İlk 30 bölümde boyut sabit kalır (öğrenme); boyut değişimi bölüm 30'dan sonra Zor bölümlerde başlar. İlk 20 bölümün tahtaları düz dikdörtgen; şekilli tahtalar ikinci tablonun ilk bölümünde, 21'de başlar. Böylece 11. bölüm yalnızca kutuyu öğretir (karar 2026-10-03).
 
 ### Mekanik açılış takvimi
 
-**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil 2026-10-03'te güncellendi; üretilmiş 1000 bölüm 6. adımdaki yeniden üretime kadar eski takvimde (parantez içindeki numaralar). Özel taşların tanıtım bölümleri (3, 5, 8, 12, 15) motor ya da üretici tarafından uygulanmıyor: özel taşlar her bölümde eşleşme şekliyle oluşuyor. Bu numaralar şimdilik yalnızca belgede.
+**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil 2026-10-03'te güncellendi; üretilmiş 1000 bölüm 6. adımdaki yeniden üretime kadar eski takvimde (parantez içindeki numaralar). Özel taşların tanıtım bölümleri (3, 5, 8, 12, 15) bir **öğretici takvimidir** (karar 2026-10-03): özel taşlar her bölümde eşleşme şekliyle oluşur, oyun kuralı değişmez; oyuncu o özel taşı ilk kez yaptığında arayüz kısa bir anlatım gösterir. Arayüz fazında yapılacak.
 
 | Bölüm | Yeni öğe |
 |---|---|
@@ -649,7 +661,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 |---|---|---|
 | 1 | Kararları bu belgeye ve geliştirme günlüğüne yaz | ✅ |
 | 2 | Botların özel taş biriktirme sorununu düzelt; usta botu yaz | ✅ 2026-10-03 |
-| 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | Takvim ve limit+5 ✅; casual koruması karar bekliyor |
+| 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | ✅ 2026-10-03 |
 | 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
 | 5 | Web test uygulamasına oyun kaydını ekle | |
 | 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | |

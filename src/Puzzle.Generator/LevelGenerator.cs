@@ -51,6 +51,15 @@ public sealed record LevelMetrics
     /// </summary>
     public required double? WinRateWithExtraMoves { get; init; }
 
+    /// <summary>
+    /// The casual floor and the floor bot's win rate at the final limit, measured on the same fresh seeds as
+    /// <see cref="WinRate"/>. Absent on a tier without a floor.
+    /// </summary>
+    public required WinRateCheck? Floor { get; init; }
+
+    /// <summary>The floor bot needed more moves than the target did, so the casual floor decided the limit.</summary>
+    public required bool FloorSetLimit { get; init; }
+
     public required int? MovesP50 { get; init; }
 
     public required int? MovesP90 { get; init; }
@@ -80,8 +89,9 @@ public sealed record GeneratedLevel(LevelDefinition Level, LevelMetrics Metrics)
 public sealed class GenerationFailedException(string message) : Exception(message);
 
 /// <summary>
-/// Produces one level: plan it, draw candidates from the portfolio, calibrate them with the bot, keep the
-/// first that fits (or the closest), then build its equal-difficulty seed pool and report bot win rates.
+/// Produces one level: plan it, draw candidates from the portfolio, calibrate them with the bot (and the floor bot
+/// on a tier with a casual floor), keep the first that fits (or the closest), then build its equal-difficulty seed
+/// pool and report bot win rates.
 /// </summary>
 public sealed class LevelGenerator(GenerationProfile profile)
 {
@@ -113,7 +123,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
             switch (_calibrator.Calibrate(candidate, plan))
             {
                 case CalibrationOutcome.Accepted accepted when attempt >= maxCandidates / 2 || !recent.Contains(LevelSignature.Of(accepted.Level)):
-                    return Finish(plan, accepted.Level, accepted.Verification, candidate.Style, attempt + 1, relaxed: false, clock);
+                    return Finish(plan, new KeptCandidate(accepted.Level, accepted.Verification, accepted.FloorSetLimit, candidate.Style, attempt + 1, Relaxed: false), clock);
                 case CalibrationOutcome.Accepted:
                     reasons.Add("too similar to a recent level");
                     break;
@@ -134,20 +144,21 @@ public sealed class LevelGenerator(GenerationProfile profile)
             }
         }
 
-        if (fallback is not { } kept)
+        if (fallback is not { } closest)
         {
             throw new GenerationFailedException($"Level {number}: no usable candidate ({string.Join("; ", reasons.Distinct())}).");
         }
 
-        LevelReport verification = _calibrator.Simulate(kept.Outcome.Level, profile.CalibrationBot, profile.Calibration.VerifyRuns, Rng.Derive(plan.Seed, 401));
-        return Finish(plan, kept.Outcome.Level, verification, kept.Style, maxCandidates, relaxed: true, clock);
+        LimitEvidence verification = _calibrator.Measure(closest.Outcome.Level, plan, profile.Calibration.VerifyRuns, Rng.Derive(plan.Seed, 401));
+        return Finish(plan, new KeptCandidate(closest.Outcome.Level, verification, closest.Outcome.FloorSetLimit, closest.Style, maxCandidates, Relaxed: true), clock);
     }
 
-    private GeneratedLevel Finish(LevelPlan plan, LevelDefinition level, LevelReport verification, string style, int candidatesTried, bool relaxed, Stopwatch clock)
+    private GeneratedLevel Finish(LevelPlan plan, KeptCandidate kept, Stopwatch clock)
     {
-        double targetWinRate = verification.WinRateAt(level.MoveLimit);
-        IReadOnlyList<SeedDifficulty> poolSeeds = BuildPool(level, targetWinRate);
-        LevelDefinition final = level.WithAttempts(new AttemptPolicy { SeedPool = poolSeeds.Select(d => d.Seed).ToArray() });
+        LevelReport verification = kept.Verification.Target.Games;
+        double targetWinRate = verification.WinRateAt(kept.Level.MoveLimit);
+        IReadOnlyList<SeedDifficulty> poolSeeds = BuildPool(kept.Level, targetWinRate);
+        LevelDefinition final = kept.Level.WithAttempts(new AttemptPolicy { SeedPool = poolSeeds.Select(d => d.Seed).ToArray() });
         var botWinRates = new Dictionary<string, double>();
         for (int i = 0; i < profile.ReportBots.Count; i++)
         {
@@ -163,13 +174,15 @@ public sealed class LevelGenerator(GenerationProfile profile)
             Size = plan.Size.ToString(),
             Playable = final.Layout.Shape.PlayableCount,
             Colors = final.Spawn.Colors,
-            Style = style,
+            Style = kept.Style,
             Goals = string.Join(" ", final.Goals.Select(Describe)),
             MoveLimit = final.MoveLimit,
             MoveRange = plan.Moves,
             TargetWinRate = plan.TargetWinRate,
             WinRate = verification.WinRateAt(final.MoveLimit),
             WinRateWithExtraMoves = verification.WinRateWithExtraMoves(final.MoveLimit),
+            Floor = kept.Verification.Floor?.CheckAt(final.MoveLimit),
+            FloorSetLimit = kept.FloorSetLimit,
             MovesP50 = verification.MovesNeeded(0.5),
             MovesP90 = verification.MovesNeeded(0.9),
             NearMiss = verification.NearMissRateAt(final.MoveLimit),
@@ -177,8 +190,8 @@ public sealed class LevelGenerator(GenerationProfile profile)
             PoolSize = poolSeeds.Count,
             PoolMinWinRate = poolSeeds.Min(d => d.WinRateAtLimit),
             PoolMaxWinRate = poolSeeds.Max(d => d.WinRateAtLimit),
-            CandidatesTried = candidatesTried,
-            Relaxed = relaxed,
+            CandidatesTried = kept.CandidatesTried,
+            Relaxed = kept.Relaxed,
             Seconds = clock.Elapsed.TotalSeconds,
         };
         return new GeneratedLevel(final, metrics);
@@ -223,6 +236,10 @@ public sealed class LevelGenerator(GenerationProfile profile)
             .Take(profile.MinPoolSize)
             .ToArray();
     }
+
+    /// <summary>The candidate a level keeps: its limit, the fresh-seed games that checked it, and how it was found.</summary>
+    /// <param name="Relaxed">No candidate fit the move range; this is the closest one.</param>
+    private sealed record KeptCandidate(LevelDefinition Level, LimitEvidence Verification, bool FloorSetLimit, string Style, int CandidatesTried, bool Relaxed);
 
     private static bool IsCloser(CalibrationOutcome.OutOfRange candidate, CalibrationOutcome.OutOfRange current, LevelPlan plan) =>
         plan.Moves.DistanceTo(candidate.Level.MoveLimit) < plan.Moves.DistanceTo(current.Level.MoveLimit);

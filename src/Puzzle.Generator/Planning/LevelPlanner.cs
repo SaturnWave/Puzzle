@@ -15,9 +15,18 @@ public sealed record LevelPlan
     /// <summary>Win rate the calibration bot should have at the final move limit.</summary>
     public required double TargetWinRate { get; init; }
 
+    /// <summary>
+    /// Least win rate the profile's floor bot must have at the final move limit; absent when the tier has no floor.
+    /// The limit is the larger of what the target and the floor need.
+    /// </summary>
+    public required double? CasualFloor { get; init; }
+
     public required MoveRange Moves { get; init; }
 
     public required BoardSize Size { get; init; }
+
+    /// <summary>The board must be a plain rectangle (no cut-out shape).</summary>
+    public required bool PlainShape { get; init; }
 
     public required IReadOnlyList<GemColor> Palette { get; init; }
 
@@ -59,8 +68,10 @@ public sealed class LevelPlanner(GenerationProfile profile)
             Number = number,
             Tier = tier,
             TargetWinRate = band.WinRate.For(tier),
+            CasualFloor = band.CasualFloor.For(tier),
             Moves = band.Moves.For(tier),
             Size = ChooseSize(number, tier, seed),
+            PlainShape = number <= profile.Sizes.PlainShapesUntil,
             Palette = ChoosePalette(number, band.Colors.For(tier)),
             Unlocked = unlocked,
             Featured = featured,

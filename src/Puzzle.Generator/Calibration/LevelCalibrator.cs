@@ -17,18 +17,19 @@ internal abstract record CalibrationOutcome
     }
 
     /// <summary>The move limit landed in the plan's range and was checked on fresh seeds.</summary>
-    public sealed record Accepted(LevelDefinition Level, LevelReport Calibration, LevelReport Verification) : CalibrationOutcome;
+    public sealed record Accepted(LevelDefinition Level, bool FloorSetLimit, LimitEvidence Verification) : CalibrationOutcome;
 
-    /// <summary>The target win rate needs a limit outside the range; kept as a fallback (limit honors the win rate).</summary>
-    public sealed record OutOfRange(LevelDefinition Level, LevelReport Calibration, bool TooLong) : CalibrationOutcome;
+    /// <summary>The target win rate or the casual floor needs a limit outside the range; kept as a fallback (the limit honors both).</summary>
+    public sealed record OutOfRange(LevelDefinition Level, bool FloorSetLimit, bool TooLong) : CalibrationOutcome;
 
     public sealed record Rejected(string Reason) : CalibrationOutcome;
 }
 
 /// <summary>
-/// Finds the move limit of a candidate: plays it uncapped with the calibration bot, reads the smallest limit
-/// that reaches the target win rate, and rescales the candidate's amount goals until that limit lands in the
-/// plan's move range. The accepted limit is re-checked on seeds the calibration never saw.
+/// Finds the move limit of a candidate: plays it uncapped with the calibration bot (and, on a tier with a casual
+/// floor, with the floor bot on the same seeds), reads the smallest limit that reaches the target win rate and the
+/// floor, and rescales the candidate's amount goals until that limit lands in the plan's move range. The accepted
+/// limit is re-checked on seeds the calibration never saw.
 /// </summary>
 internal sealed class LevelCalibrator(GenerationProfile profile)
 {
@@ -44,11 +45,11 @@ internal sealed class LevelCalibrator(GenerationProfile profile)
         for (int iteration = 0; iteration < Settings.MaxScaleIterations; iteration++)
         {
             LevelDefinition level;
-            LevelReport report;
+            LimitEvidence evidence;
             try
             {
                 level = candidate.Build(plan, scale);
-                report = Simulate(level, profile.CalibrationBot, Settings.Runs, Rng.Derive(plan.Seed, CalibrationStream + (ulong)iteration));
+                evidence = Measure(level, plan, Settings.Runs, Rng.Derive(plan.Seed, CalibrationStream + (ulong)iteration));
             }
             catch (LevelFormatException ex)
             {
@@ -59,20 +60,20 @@ internal sealed class LevelCalibrator(GenerationProfile profile)
                 return new CalibrationOutcome.Rejected($"no starting board: {ex.Message}");
             }
 
-            if (report.StuckRate > 0)
+            if (evidence.AnyRunStuck)
             {
                 return new CalibrationOutcome.Rejected("some runs ran out of legal moves");
             }
 
-            int? limit = report.MoveLimitFor(plan.TargetWinRate);
-            if (limit is int inRange && plan.Moves.Contains(inRange))
+            LimitChoice? limit = evidence.ReadLimit();
+            if (limit is LimitChoice inRange && plan.Moves.Contains(inRange.Moves))
             {
-                return Verify(level.WithMoveLimit(inRange), report, plan);
+                return Verify(level.WithMoveLimit(inRange.Moves), inRange.FloorSetLimit, plan);
             }
 
-            if (limit is int outside && IsCloser(outside, closest, plan))
+            if (limit is LimitChoice outside && IsCloser(outside.Moves, closest, plan))
             {
-                closest = new CalibrationOutcome.OutOfRange(level.WithMoveLimit(outside), report, outside > plan.Moves.Max);
+                closest = new CalibrationOutcome.OutOfRange(level.WithMoveLimit(outside.Moves), outside.FloorSetLimit, outside.Moves > plan.Moves.Max);
             }
 
             if (!candidate.IsScalable)
@@ -80,13 +81,22 @@ internal sealed class LevelCalibrator(GenerationProfile profile)
                 break;
             }
 
-            scale *= limit is int known ? Math.Clamp(plan.Moves.Mid / (double)known, 0.4, 2.5) : 0.5;
+            scale *= limit is LimitChoice known ? Math.Clamp(plan.Moves.Mid / (double)known.Moves, 0.4, 2.5) : 0.5;
         }
 
+        string unreached = plan.CasualFloor is null ? "the target win rate" : "both the target win rate and the casual floor";
         return closest is not null
             ? closest
-            : new CalibrationOutcome.Rejected("never reached the target win rate within the move cap");
+            : new CalibrationOutcome.Rejected($"never reached {unreached} within the move cap");
     }
+
+    /// <summary>
+    /// Plays <paramref name="runs"/> uncapped games with the calibration bot and, when the plan has a casual floor, as
+    /// many with the floor bot on the same seeds.
+    /// </summary>
+    public LimitEvidence Measure(LevelDefinition level, LevelPlan plan, int runs, ulong seed) => new(
+        new MeasuredShare(plan.TargetWinRate, Simulate(level, profile.CalibrationBot, runs, seed)),
+        plan.CasualFloor is double floor ? new MeasuredShare(floor, Simulate(level, profile.FloorBot, runs, seed)) : null);
 
     public LevelReport Simulate(LevelDefinition level, string bot, int runs, ulong seed) =>
         BatchSimulator.Run(level, () => CreatePolicy(bot), runs, Settings.MoveCap, seed);
@@ -96,26 +106,27 @@ internal sealed class LevelCalibrator(GenerationProfile profile)
         : throw new InvalidOperationException($"Unknown bot '{bot}' (the profile loader should have rejected it).");
 
     /// <summary>
-    /// Re-checks the limit on fresh seeds. A small miss is fixed by re-reading the limit; when the fixed limit
-    /// would leave the move range, the candidate is handed back as out of range so another one is tried.
+    /// Re-checks the limit on fresh seeds (<see cref="LimitVerification"/>). A miss is fixed by re-reading the limit,
+    /// the larger of the target's and the floor's, from those games; when the fixed limit would leave the move range,
+    /// the candidate is handed back as out of range so another one is tried.
     /// </summary>
-    private CalibrationOutcome Verify(LevelDefinition level, LevelReport calibration, LevelPlan plan)
+    private CalibrationOutcome Verify(LevelDefinition level, bool floorSetLimit, LevelPlan plan)
     {
-        LevelReport verification = Simulate(level, profile.CalibrationBot, Settings.VerifyRuns, Rng.Derive(plan.Seed, VerificationStream));
-        if (Math.Abs(verification.WinRateAt(level.MoveLimit) - plan.TargetWinRate) <= Settings.WinRateTolerance)
+        LimitEvidence verification = Measure(level, plan, Settings.VerifyRuns, Rng.Derive(plan.Seed, VerificationStream));
+        if (verification.Confirms(level.MoveLimit, Settings.WinRateTolerance))
         {
-            return new CalibrationOutcome.Accepted(level, calibration, verification);
+            return new CalibrationOutcome.Accepted(level, floorSetLimit, verification);
         }
 
-        int? adjusted = verification.MoveLimitFor(plan.TargetWinRate);
-        if (adjusted is int fixedLimit && plan.Moves.Contains(fixedLimit))
+        LimitChoice? adjusted = verification.ReadLimit();
+        if (adjusted is LimitChoice fixedLimit && plan.Moves.Contains(fixedLimit.Moves))
         {
-            return new CalibrationOutcome.Accepted(level.WithMoveLimit(fixedLimit), calibration, verification);
+            return new CalibrationOutcome.Accepted(level.WithMoveLimit(fixedLimit.Moves), fixedLimit.FloorSetLimit, verification);
         }
 
-        return adjusted is int outside
-            ? new CalibrationOutcome.OutOfRange(level.WithMoveLimit(outside), verification, outside > plan.Moves.Max)
-            : new CalibrationOutcome.OutOfRange(level, verification, TooLong: true);
+        return adjusted is LimitChoice outside
+            ? new CalibrationOutcome.OutOfRange(level.WithMoveLimit(outside.Moves), outside.FloorSetLimit, outside.Moves > plan.Moves.Max)
+            : new CalibrationOutcome.OutOfRange(level, floorSetLimit, TooLong: true);
     }
 
     private static bool IsCloser(int limit, CalibrationOutcome.OutOfRange? current, LevelPlan plan) =>

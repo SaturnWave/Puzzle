@@ -2,6 +2,7 @@ using System.Globalization;
 using Puzzle.Bot.Simulation;
 using Puzzle.Core.Levels;
 using Puzzle.Generator;
+using Puzzle.Generator.Calibration;
 using Puzzle.Generator.Profiles;
 using Puzzle.Tooling;
 
@@ -10,7 +11,8 @@ namespace Puzzle.Cli.Commands;
 /// <summary>
 /// <c>generate [--profile profiles/default.json] [--from 1] [--to 20] [--out levels/generated] [--quick] [--overwrite] [--repair]</c>:
 /// produces calibrated levels. Existing level files are kept (and feed the novelty check) unless --overwrite;
-/// --repair regenerates only those whose report row shows a small seed pool or an off-target win rate.
+/// --repair regenerates only those whose report row no longer holds (<see cref="ReportRow.StillHolds"/>): a small seed
+/// pool, a casual floor other than the profile's, or a limit that does not stand (an off-target win rate or a missed floor).
 /// </summary>
 internal static class GenerateCommand
 {
@@ -33,14 +35,12 @@ internal static class GenerateCommand
         }
 
         Directory.CreateDirectory(outDir);
+        var generator = new LevelGenerator(profile);
         IReadOnlyDictionary<int, ReportRow> recorded = repair
             ? GenerationReport.Read(Path.Combine(outDir, GenerationReport.FileName))
             : new Dictionary<int, ReportRow>();
-        bool NeedsRepair(int number) => !recorded.TryGetValue(number, out ReportRow? row)
-            || row.PoolSize < profile.MinPoolSize
-            || Math.Abs(row.WinRate - row.TargetWinRate) > profile.Calibration.WinRateTolerance;
+        bool NeedsRepair(int number) => !recorded.TryGetValue(number, out ReportRow? row) || !row.StillHolds(generator.Plan(number), profile);
         Console.WriteLine($"profile '{profile.Name}' -> {outDir}, levels {from}..{to}{(args.Flag("quick") ? " (quick)" : string.Empty)}");
-        var generator = new LevelGenerator(profile);
         var recent = new Queue<LevelSignature>(LoadRecent(outDir, from, profile.NoveltyWindow));
         var rows = new List<LevelMetrics>();
         int failures = 0;
@@ -114,9 +114,12 @@ internal static class GenerateCommand
     {
         string bots = string.Join(" ", m.BotWinRates.Select(b => $"{b.Key} {b.Value:P0}"));
         string relaxed = m.Relaxed ? " RELAXED" : string.Empty;
+        string floor = m.Floor is WinRateCheck guard
+            ? string.Format(CultureInfo.InvariantCulture, "  floor {0:P0} (min {1:P0}{2})", guard.Measured, guard.Required, m.FloorSetLimit ? ", set the limit" : string.Empty)
+            : string.Empty;
         return string.Format(
             CultureInfo.InvariantCulture,
-            "#{0:0000} {1,-9} {2,-5} {3}c  moves {4,2} [{5}]  win {6:P0} (target {7:P0})  {8}  pool {9} ({10:P0}-{11:P0})  {12}  {13:0.0}s{14}",
+            "#{0:0000} {1,-9} {2,-5} {3}c  moves {4,2} [{5}]  win {6:P0} (target {7:P0}){8}  {9}  pool {10} ({11:P0}-{12:P0})  {13}  {14:0.0}s{15}",
             m.Number,
             m.Tier,
             m.Size,
@@ -125,6 +128,7 @@ internal static class GenerateCommand
             m.MoveRange,
             m.WinRate,
             m.TargetWinRate,
+            floor,
             bots,
             m.PoolSize,
             m.PoolMinWinRate,

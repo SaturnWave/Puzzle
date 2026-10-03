@@ -52,8 +52,7 @@ internal static class CandidateFactory
 
     private static (bool[] Mask, ShapeStyle Style)? DrawShape(LevelPlan plan, Rng rng)
     {
-        // Early levels keep the plain rectangle; shapes grow more varied with difficulty.
-        ShapeStyle[] styles = plan.Number <= 10
+        ShapeStyle[] styles = plan.PlainShape
             ? [ShapeStyle.Full]
             : Enum.GetValues<ShapeStyle>();
         for (int i = 0; i < MaxShapeTries; i++)

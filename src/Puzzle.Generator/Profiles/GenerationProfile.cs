@@ -62,14 +62,21 @@ public sealed record TierValues<T>(T Easy, T Normal, T Hard, T SuperHard)
 }
 
 /// <summary>The rules in force from <see cref="FromLevel"/> on, fully resolved (inheritance already applied).</summary>
+/// <param name="CasualFloor">
+/// Least win rate the profile's <see cref="GenerationProfile.FloorBot"/> must have at the move limit, per tier; absent
+/// for a tier without a floor. Never above that tier's <paramref name="WinRate"/>.
+/// </param>
 public sealed record ProfileBand(
     int FromLevel,
     TierValues<double> WinRate,
+    TierValues<double?> CasualFloor,
     TierValues<MoveRange> Moves,
     TierValues<int> Colors,
     int MaxObstacleTypes);
 
-public sealed record SizeRules(BoardSize Default, int FixedUntil, TierValues<IReadOnlyList<BoardSize>> ByTier);
+/// <param name="FixedUntil">Levels up to this number use <paramref name="Default"/>.</param>
+/// <param name="PlainShapesUntil">Levels up to this number are plain rectangles, so early levels bring one new thing at a time.</param>
+public sealed record SizeRules(BoardSize Default, int FixedUntil, int PlainShapesUntil, TierValues<IReadOnlyList<BoardSize>> ByTier);
 
 /// <summary>From <see cref="NewColorsFrom"/> on, each chapter of <see cref="ChapterSize"/> levels gets its own palette drawn from all colors.</summary>
 public sealed record PaletteRules(int NewColorsFrom, int ChapterSize);
@@ -89,7 +96,7 @@ public sealed record CalibrationSettings
 
     public required int MoveCap { get; init; }
 
-    /// <summary>Accepted gap between the verified and the target win rate.</summary>
+    /// <summary>Accepted gap between a verified win rate and the one required: the target, or the casual floor (see <c>LimitVerification</c>).</summary>
     public required double WinRateTolerance { get; init; }
 
     public required int MaxCandidates { get; init; }
@@ -106,6 +113,12 @@ public sealed record GenerationProfile
 
     /// <summary>The bot whose win rate the move limits are calibrated against.</summary>
     public required string CalibrationBot { get; init; }
+
+    /// <summary>
+    /// The player model behind the casual guard: on a tier with a <see cref="ProfileBand.CasualFloor"/>, this bot must
+    /// reach the floor at the move limit too, and the limit grows when it would not.
+    /// </summary>
+    public required string FloorBot { get; init; }
 
     /// <summary>Extra bots whose win rate at the chosen limit is reported (e.g. casual, expert).</summary>
     public required IReadOnlyList<string> ReportBots { get; init; }
