@@ -41,6 +41,9 @@ internal sealed class CliArgs
 
     public string Text(string key, string fallback) => _options.TryGetValue(key, out string? value) ? value : fallback;
 
+    /// <summary>The option's value; absent when the option was not given.</summary>
+    public string? OptionalText(string key) => _options.TryGetValue(key, out string? value) ? value : null;
+
     public bool Flag(string key) => _options.ContainsKey(key);
 
     /// <exception cref="UsageException">The value is not an integer.</exception>

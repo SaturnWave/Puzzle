@@ -7,5 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+    <!-- The human-vs-bot comparison of recorded attempts simulates the bots. -->
+    <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
   </ItemGroup>
 </Project>

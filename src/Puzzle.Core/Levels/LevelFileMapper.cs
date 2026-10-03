@@ -94,7 +94,10 @@ namespace Puzzle.Core.Levels
                 ? tier
                 : throw new LevelFormatException($"unknown difficulty '{text}'");
 
-        private static GoalSpec ParseGoal(GoalFile goal) => goal.type switch
+        /// <summary>A goal in the level-file vocabulary; attempt records name their goals the same way.</summary>
+        /// <exception cref="LevelFormatException">Unknown goal type or color.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The count is not positive.</exception>
+        public static GoalSpec ParseGoal(GoalFile goal) => goal.type switch
         {
             "CollectColor" => new GoalSpec.CollectColor(ParseColor(goal.color), goal.count),
             "BreakBoxes" => new GoalSpec.BreakBoxes(goal.count),
@@ -148,7 +151,8 @@ namespace Puzzle.Core.Levels
             _ => throw new InvalidOperationException($"Unhandled start board {attempts.Board.GetType().Name}."),
         };
 
-        private static GoalFile ToGoalFile(GoalSpec goal) => goal switch
+        /// <summary>The level-file form of a goal; the inverse of <see cref="ParseGoal"/>.</summary>
+        public static GoalFile ToGoalFile(GoalSpec goal) => goal switch
         {
             GoalSpec.CollectColor collect => new GoalFile { type = "CollectColor", color = collect.Color.ToString(), count = goal.Target },
             GoalSpec.BreakBoxes _ => new GoalFile { type = "BreakBoxes", count = goal.Target },

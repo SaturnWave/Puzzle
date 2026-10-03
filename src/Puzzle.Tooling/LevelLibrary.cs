@@ -48,14 +48,17 @@ public sealed class LevelLibrary
     }
 
     /// <summary>Walks up from <paramref name="start"/> to the first folder containing a "levels" directory.</summary>
-    public static string? FindLevelsDirectory(string start)
+    public static string? FindLevelsDirectory(string start) =>
+        FindRepositoryRoot(start) is { } root ? System.IO.Path.Combine(root, "levels") : null;
+
+    /// <summary>The repository root: the first folder at or above <paramref name="start"/> that contains a "levels" directory.</summary>
+    public static string? FindRepositoryRoot(string start)
     {
         for (DirectoryInfo? dir = new DirectoryInfo(start); dir is not null; dir = dir.Parent)
         {
-            string candidate = System.IO.Path.Combine(dir.FullName, "levels");
-            if (Directory.Exists(candidate))
+            if (Directory.Exists(System.IO.Path.Combine(dir.FullName, "levels")))
             {
-                return candidate;
+                return dir.FullName;
             }
         }
 

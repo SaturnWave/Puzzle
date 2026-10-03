@@ -1,11 +1,15 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Puzzle.Bot;
 using Puzzle.Bot.Simulation;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
+using Puzzle.Core.Recording;
 using Puzzle.Tooling;
+using Puzzle.Web.Recording;
 using Puzzle.Web.Sessions;
 
 namespace Puzzle.Web.Api;
@@ -24,6 +28,9 @@ internal static class PuzzleApi
     private const int MaxSearchBotSimulationRuns = 100;
     private const int MaxBeamWidth = 32;
 
+    /// <summary>Carries the browser's anonymous device id for the attempt records (docs/GAME_DESIGN.md §20).</summary>
+    internal const string DeviceHeader = "X-Device-Id";
+
     public static void MapPuzzleApi(this WebApplication app)
     {
         RouteGroupBuilder api = app.MapGroup("/api");
@@ -41,8 +48,18 @@ internal static class PuzzleApi
     private static IResult ListLevels(LevelLibrary library) =>
         Results.Ok(library.Levels.Select(StateMapper.ToSummary));
 
-    private static IResult CreateSession(NewSessionRequest request, LevelLibrary library, GameSessionStore sessions)
+    private static IResult CreateSession(
+        NewSessionRequest request,
+        [FromHeader(Name = DeviceHeader)] string? deviceHeader,
+        LevelLibrary library,
+        GameSessionStore sessions,
+        RetryNumbers retries)
     {
+        if (!DeviceId.TryCreate(deviceHeader, out DeviceId? device))
+        {
+            return DeviceRequired();
+        }
+
         if (!library.TryGet(request.LevelKey, out LibraryLevel? level))
         {
             return Results.NotFound($"Unknown level '{request.LevelKey}'.");
@@ -64,23 +81,45 @@ internal static class PuzzleApi
             return Results.BadRequest("PlaySeed must fit in 32 bits and Attempt must not be negative.");
         }
 
+        bool deviceKept = request.TransientDeviceId != true;
         (AttemptSeeds seeds, AttemptOrigin origin) = request switch
         {
-            { BoardSeed: ulong board, PlaySeed: ulong play } => (AttemptSeeds.WithFixedBoard(board, play), new AttemptOrigin(null, false, policy.Board)),
-            { PlaySeed: ulong play } => (policy.SeedsForPlaySeed((uint)play), new AttemptOrigin(null, false, policy.Board)),
-            _ => (policy.SeedsFor(request.Attempt ?? 0, (uint)Random.Shared.Next()), new AttemptOrigin(request.Attempt ?? 0, policy.SeedPool.Count > 0, policy.Board)),
+            { BoardSeed: ulong board, PlaySeed: ulong play } => (AttemptSeeds.WithFixedBoard(board, play), ChosenSeeds(policy, deviceKept)),
+            { PlaySeed: ulong play } => (policy.SeedsForPlaySeed((uint)play), ChosenSeeds(policy, deviceKept)),
+            { Attempt: int asked } => Retry(policy, asked, inSequence: false, deviceKept),
+            _ => Retry(policy, retries.Take(device, level.Level), inSequence: true, deviceKept),
         };
 
+        GameSession session;
         try
         {
-            GameSession session = sessions.Create(level, seeds, origin, assist);
-            return Results.Ok(ToSession(session));
+            session = sessions.Create(level, seeds, origin, assist, device);
         }
         catch (LevelInitializationException ex)
         {
             return Results.UnprocessableEntity(ex.Message);
         }
+
+        // Only now that the new attempt exists has the player really left the old one.
+        if (request.Replaces is { } left)
+        {
+            sessions.Leave(left);
+        }
+
+        return Results.Ok(ToSession(session));
     }
+
+    /// <summary>The answer to a request without a well-formed <see cref="DeviceHeader"/>.</summary>
+    internal static IResult DeviceRequired() => Results.BadRequest(
+        $"Send this device's random id in the {DeviceHeader} header ({DeviceId.MinLength}..{DeviceId.MaxLength} letters, digits, '-' or '_').");
+
+    /// <summary>The seeds of retry <paramref name="attempt"/>; <paramref name="inSequence"/> when the server numbered it.</summary>
+    private static (AttemptSeeds Seeds, AttemptOrigin Origin) Retry(AttemptPolicy policy, int attempt, bool inSequence, bool deviceKept) =>
+        (policy.SeedsFor(attempt, (uint)Random.Shared.Next()), new AttemptOrigin(attempt, policy.SeedPool.Count > 0, policy.Board, inSequence, deviceKept));
+
+    /// <summary>The origin of seeds given directly: no retry number, so outside any sequence.</summary>
+    private static AttemptOrigin ChosenSeeds(AttemptPolicy policy, bool deviceKept) =>
+        new(Attempt: null, FromPool: false, policy.Board, InSequence: false, deviceKept);
 
     /// <summary>
     /// Lets the lab try a level with the other start-board rule. The level's calibrated pool is kept, but it was
@@ -113,7 +152,7 @@ internal static class PuzzleApi
         }
     }
 
-    private static IResult PlayMove(string id, MoveDto request, GameSessionStore sessions)
+    private static IResult PlayMove(string id, MoveDto request, GameSessionStore sessions, AttemptRecorder recorder)
     {
         if (!sessions.TryGet(id, out GameSession? session))
         {
@@ -132,11 +171,11 @@ internal static class PuzzleApi
 
         lock (session.Gate)
         {
-            return Play(session, move);
+            return Play(session, move, MoveSource.Player, recorder);
         }
     }
 
-    private static IResult PlayBotMove(string id, BotRequest request, GameSessionStore sessions)
+    private static IResult PlayBotMove(string id, BotRequest request, GameSessionStore sessions, AttemptRecorder recorder)
     {
         if (!sessions.TryGet(id, out GameSession? session))
         {
@@ -156,7 +195,7 @@ internal static class PuzzleApi
             }
 
             Move move = policy.ChooseMove(session.Game, session.Game.FindLegalMoves(), session.BotRng);
-            return Play(session, move);
+            return Play(session, move, MoveSource.Bot, recorder);
         }
     }
 
@@ -180,13 +219,15 @@ internal static class PuzzleApi
             }
 
             Move move = policy.ChooseMove(session.Game, session.Game.FindLegalMoves(), session.BotRng);
+            session.HintShown();
             return Results.Ok(StateMapper.ToMove(move));
         }
     }
 
     /// <summary>
     /// Perfect-information search from the current position within the moves left. The replica is taken
-    /// under the lock; the search itself runs without blocking the session.
+    /// under the lock; the search itself runs without blocking the session. The path it shows counts as a hint
+    /// while the attempt is being played; after its end it is only a look back (<see cref="GameSession.HintShown"/>).
     /// </summary>
     private static IResult Solve(string id, SolveRequest request, GameSessionStore sessions)
     {
@@ -200,6 +241,7 @@ internal static class PuzzleApi
         lock (session.Gate)
         {
             replica = session.Game.CreateReplica();
+            session.HintShown();
         }
 
         var clock = Stopwatch.StartNew();
@@ -266,7 +308,8 @@ internal static class PuzzleApi
         return policy;
     }
 
-    private static IResult Play(GameSession session, Move move)
+    /// <summary>Plays <paramref name="move"/>, keeps it in the attempt's history and records the attempt if the move decided it. Hold the gate.</summary>
+    private static IResult Play(GameSession session, Move move, MoveSource source, AttemptRecorder recorder)
     {
         Game game = session.Game;
         if (game.Status.IsOver())
@@ -275,12 +318,19 @@ internal static class PuzzleApi
         }
 
         bool accepted = game.TryPlay(move);
+        if (accepted)
+        {
+            session.MovePlayed(move, source);
+            recorder.RecordIfDecided(session);
+        }
+
         return Results.Ok(new MoveResultDto(
             accepted,
             StateMapper.ToMove(move),
             accepted ? game.LastEvents.Select(StateMapper.ToEvent).ToArray() : Array.Empty<EventDto>(),
             StateMapper.ToState(game),
-            accepted ? StateMapper.ToStats(game.LastMove) : null));
+            accepted ? StateMapper.ToStats(game.LastMove) : null,
+            RecordingOf(session)));
     }
 
     private static SessionDto ToSession(GameSession session) => new SessionDto(
@@ -292,5 +342,14 @@ internal static class PuzzleApi
         session.Seeds.Play,
         session.Assist,
         StateMapper.ToSummary(session.Level),
-        StateMapper.ToState(session.Game));
+        StateMapper.ToState(session.Game),
+        RecordingOf(session));
+
+    private static RecordingDto RecordingOf(GameSession session) => new(
+        WireName(session.Standing),
+        session.SequenceBreak is { } sequenceBreak ? WireName(sequenceBreak) : null,
+        WireName(session.Record));
+
+    private static string WireName<TEnum>(TEnum value)
+        where TEnum : struct, Enum => JsonNamingPolicy.CamelCase.ConvertName(value.ToString());
 }

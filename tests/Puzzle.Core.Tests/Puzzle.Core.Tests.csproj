@@ -22,5 +22,12 @@
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bot\Puzzle.Bot.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Generator\Puzzle.Generator.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+    <!-- The attempt recorder's session lifecycle lives in the web lab. -->
+    <ProjectReference Include="..\..\src\Puzzle.Web\Puzzle.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The attempt-record wire format, pinned for every writer of it (the lab here, the Unity game later). -->
+    <None Include="..\fixtures\attempt-records.schema-1.jsonl" Link="fixtures\attempt-records.schema-1.jsonl" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

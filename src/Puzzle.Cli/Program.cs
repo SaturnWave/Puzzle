@@ -19,6 +19,10 @@ const string Usage = """
                             --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite  --repair
       botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert|usta|usta-<n>  --runs 30  --cap 150  --out reports/<bot>_moves.csv
       validate <dir|file>   Parse every level file and build a starting board for it.
+      humans [attempts.jsonl]
+                            Web lab attempts of people vs. the greedy bots on the same games, as CSV.
+                            Default file: recordings/attempts.jsonl in the repository root, where the lab records.
+                            --levels <folder> (default: levels in the repository root, as the lab)  --runs 30  --out reports/humans.csv
     """;
 
 CliArgs cli = CliArgs.Parse(args);
@@ -34,6 +38,7 @@ try
         "generate" => GenerateCommand.Run(cli),
         "botstats" => BotStatsCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
+        "humans" => HumansCommand.Run(cli),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => throw new UsageException($"Unknown command '{cli.Command}'."),
     };
