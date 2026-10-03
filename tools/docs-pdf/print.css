@@ -1,0 +1,72 @@
+/* Print stylesheet of the PDF editions. A4, one column. The running header and footer texts, and the rule that
+   keeps them off the cover, are in page.html because they depend on the document. */
+
+@page {
+  size: A4;
+  margin: 24mm 18mm 22mm 18mm;
+
+  @top-left { font: 8pt "Segoe UI", Arial, sans-serif; color: #5b6673; vertical-align: bottom; padding-bottom: 5mm; }
+  @top-right { font: 8pt "Segoe UI", Arial, sans-serif; color: #5b6673; vertical-align: bottom; padding-bottom: 5mm; }
+  @bottom-left { font: 8pt "Segoe UI", Arial, sans-serif; color: #5b6673; vertical-align: top; padding-top: 5mm; }
+  @bottom-right {
+    content: "Sayfa " counter(page) " / " counter(pages);
+    font: 8pt "Segoe UI", Arial, sans-serif; color: #5b6673; vertical-align: top; padding-top: 5mm;
+  }
+}
+
+* { print-color-adjust: exact; -webkit-print-color-adjust: exact; box-sizing: border-box; }
+
+html { font: 10pt/1.5 "Segoe UI", Arial, sans-serif; color: #1d2733; }
+body { margin: 0; }
+
+/* Cover */
+.cover { height: 249mm; display: flex; flex-direction: column; break-after: page; }
+.cover-project { margin: 0; padding-top: 10pt; border-top: 6pt solid #17324d; font-size: 9pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #17324d; }
+.cover-heading { margin-top: 62mm; }
+.cover-kind { margin: 0 0 8pt; font-size: 12pt; color: #5b6673; }
+.cover-title { margin: 0; font-size: 28pt; line-height: 1.18; font-weight: 600; color: #17324d; }
+.cover-control { margin-top: auto; }
+.control { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+.control th, .control td { padding: 5pt 0; border: 0; border-top: 0.5pt solid #b8c2cc; text-align: left; vertical-align: top; }
+.control tr:last-child th, .control tr:last-child td { border-bottom: 0.5pt solid #b8c2cc; }
+.control th { width: 42mm; font-weight: 600; color: #17324d; }
+.cover-note { margin: 8pt 0 0; font-size: 8.5pt; color: #5b6673; }
+
+/* Table of contents */
+.contents { break-after: page; }
+.contents h1 { margin: 0 0 12pt; font-size: 15pt; font-weight: 600; color: #17324d; }
+.contents ul { list-style: none; margin: 0; padding: 0; }
+.contents > ul > li { margin-top: 5pt; font-weight: 600; }
+.contents ul ul { padding-left: 14pt; }
+.contents ul ul li { font-size: 9.5pt; font-weight: 400; }
+.contents a { display: flex; align-items: baseline; color: inherit; text-decoration: none; }
+.toc-dots { flex: 1; margin: 0 4pt; border-bottom: 0.6pt dotted #9aa5b1; }
+.toc-page { width: 2.4em; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* Body */
+main h1 { margin: 22pt 0 8pt; padding-top: 8pt; border-top: 1.5pt solid #17324d; font-size: 15pt; line-height: 1.25; font-weight: 600; color: #17324d; break-after: avoid; }
+main h2 { margin: 16pt 0 6pt; font-size: 12pt; line-height: 1.3; font-weight: 600; color: #17324d; break-after: avoid; }
+main h3, main h4 { margin: 12pt 0 4pt; font-size: 10.5pt; font-weight: 600; color: #17324d; break-after: avoid; }
+main > :first-child { margin-top: 0; }
+p { margin: 0 0 7pt; orphans: 3; widows: 3; }
+ul, ol { margin: 3pt 0 8pt; padding-left: 16pt; }
+li { margin: 2pt 0; }
+li > p { margin: 0 0 3pt; }
+a { color: #1a5a96; text-decoration: none; overflow-wrap: anywhere; }
+del { color: #7b8794; }
+hr { margin: 14pt 0; border: 0; border-top: 0.5pt solid #d5dbe1; }
+hr:has(+ h1) { display: none; }
+
+blockquote { margin: 8pt 0 10pt; padding: 5pt 10pt; border-left: 2.5pt solid #7f93a8; background: #f5f7f9; color: #3d4b5a; }
+blockquote p:last-child { margin-bottom: 0; }
+
+table { width: 100%; margin: 7pt 0 12pt; border-collapse: collapse; font-size: 8.5pt; line-height: 1.35; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th, td { padding: 3.5pt 5pt; border: 0.5pt solid #b8c2cc; text-align: left; vertical-align: top; }
+main th { background: #e9eef4; font-weight: 600; color: #17324d; }
+main tbody tr:nth-child(even) td { background: #f7f9fb; }
+
+code { padding: 0 2pt; border-radius: 2pt; background: #eef1f4; font: 8.5pt Consolas, "Courier New", monospace; overflow-wrap: anywhere; }
+pre { margin: 7pt 0 11pt; padding: 7pt 9pt; border: 0.5pt solid #d5dbe1; background: #f5f7f9; white-space: pre-wrap; break-inside: avoid; }
+pre code { padding: 0; background: none; font-size: 8pt; line-height: 1.4; }

@@ -5,6 +5,7 @@ iOS + Android için swap match-3 oyunu (Unity + C#). Tahtalar büyük ve boyutu 
 
 - Tasarım ve algoritma planı: [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 - Geliştirme günlüğü: [docs/DEVLOG.md](docs/DEVLOG.md)
+- PDF baskıları: [docs/pdf/](docs/pdf/) — `py tools/docs-pdf/build.py` ile Markdown dosyalarından üretilir
 - Araştırmalar:
   - [research.md](research.md)
   - [docs/research/spawn-control-and-solvability.md](docs/research/spawn-control-and-solvability.md)
