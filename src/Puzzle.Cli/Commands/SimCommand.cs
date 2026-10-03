@@ -40,7 +40,9 @@ internal static class SimCommand
     /// <exception cref="UsageException">Unknown policy name.</exception>
     public static IBotPolicy CreatePolicy(string name) => BotPolicies.TryCreate(name, out IBotPolicy policy)
         ? policy
-        : throw new UsageException($"Unknown bot '{name}'. Use {string.Join(", ", BotPolicies.Names)} or all.");
+        : throw new UsageException(
+            $"Unknown bot '{name}'. Use {string.Join(", ", BotPolicies.Names)} or all; measurement bots: {string.Join(", ", BotPolicies.MeasurementNames)}, "
+            + $"usta-<n> (n simulations per move, {UstaSettings.MinSimulations}..{UstaSettings.MaxSimulations}).");
 
     public static string Describe(LevelDefinition level)
     {

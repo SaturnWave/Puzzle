@@ -1,4 +1,6 @@
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Puzzle.Bot.Simulation;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
@@ -129,6 +131,37 @@ public class GeneratorTests
 
         Assert.True(level.Level.Attempts.SeedPool.Count >= 5, $"pool of {level.Level.Attempts.SeedPool.Count}");
         Assert.Equal(level.Level.Attempts.SeedPool.Count, level.Metrics.PoolSize);
+    }
+
+    [Fact]
+    public void A_measurement_bot_may_report_on_levels_but_never_calibrate_them()
+    {
+        GenerationProfile reporting = LoadDefaultProfileWith(calibrationBot: "average", "expert", "usta-48");
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileWith(calibrationBot: "usta", "expert"));
+        ProfileFormatException rejectedBudget = Assert.Throws<ProfileFormatException>(() => LoadDefaultProfileWith(calibrationBot: "USTA-12", "expert"));
+
+        Assert.Equal(new[] { "expert", "usta-48" }, reporting.ReportBots);
+        Assert.Contains("calibrationBot 'usta' is a measurement bot", rejected.Message);
+        Assert.Contains("calibrationBot 'USTA-12' is a measurement bot", rejectedBudget.Message);
+    }
+
+    /// <summary>Loads the default profile with other bots, through a temporary file that is removed afterwards.</summary>
+    private static GenerationProfile LoadDefaultProfileWith(string calibrationBot, params string[] reportBots)
+    {
+        var options = new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
+        JsonObject profile = JsonNode.Parse(File.ReadAllText(FindRepoFile("profiles", "default.json")), documentOptions: options)!.AsObject();
+        profile["calibrationBot"] = calibrationBot;
+        profile["reportBots"] = new JsonArray(reportBots.Select(bot => JsonValue.Create(bot)).ToArray<JsonNode?>());
+        string path = Path.Combine(Path.GetTempPath(), $"puzzle-profile-{Guid.NewGuid():N}.json");
+        File.WriteAllText(path, profile.ToJsonString());
+        try
+        {
+            return ProfileLoader.Load(path);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     private static string FindRepoFile(params string[] parts)

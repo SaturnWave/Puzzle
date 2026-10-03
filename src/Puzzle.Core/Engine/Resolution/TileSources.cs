@@ -37,6 +37,13 @@ namespace Puzzle.Core.Engine.Resolution
 
         /// <summary>An independent copy that continues with the same random sequence and internal state.</summary>
         ITileSource Clone();
+
+        /// <summary>
+        /// An independent copy with the same observable state whose future draws come from <paramref name="rng"/>
+        /// instead of this source's own random sequence.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The source has no spawn rules whose future could be redrawn.</exception>
+        ITileSource Reseed(Rng rng);
     }
 
     /// <summary>Items are indestructible, so the number on the board is simply spawned minus collected.</summary>
@@ -58,6 +65,11 @@ namespace Puzzle.Core.Engine.Resolution
         public Tile Next(in SpawnContext context) => Tile.Hidden;
 
         public ITileSource Clone() => this;
+
+        /// <summary>Never called: <see cref="Game.CreateImagined"/> refuses a lookahead copy before it gets here.</summary>
+        /// <exception cref="InvalidOperationException">Always: hidden refills follow no spawn rules.</exception>
+        public ITileSource Reseed(Rng rng) =>
+            throw new InvalidOperationException("Hidden refills follow no spawn rules, so there is no future to reseed.");
     }
 
     /// <summary>
@@ -139,8 +151,14 @@ namespace Puzzle.Core.Engine.Resolution
             return Tile.Gem(_palette[picked]);
         }
 
-        public ITileSource Clone() =>
-            new SpawnDirector(_palette, _balance.Clone(), _strategies, _items, _rng.Clone(), _spawnedItems);
+        public ITileSource Clone() => Reseed(_rng.Clone());
+
+        /// <summary>
+        /// Keeps the dueness weights and the spawned-item count (both follow from the refills seen so far) and
+        /// shares the immutable palette, strategies and item rules; only the random sequence is replaced.
+        /// </summary>
+        public ITileSource Reseed(Rng rng) =>
+            new SpawnDirector(_palette, _balance.Clone(), _strategies, _items, rng, _spawnedItems);
 
         private static long Total(long[] weights)
         {

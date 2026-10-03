@@ -3,6 +3,7 @@ using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Engine.Resolution;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
+using Puzzle.Core.Randomness;
 using static Puzzle.Core.Tests.TestBoards;
 
 namespace Puzzle.Core.Tests;
@@ -126,5 +127,7 @@ public class GravityTests
         public Tile Next(in SpawnContext context) => _tile;
 
         public ITileSource Clone() => this;
+
+        public ITileSource Reseed(Rng rng) => this;
     }
 }

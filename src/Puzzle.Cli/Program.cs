@@ -9,14 +9,15 @@ const string Usage = """
 
       sim <level.json>      Play the level many times with a bot and report the move budget it needs.
                             --bot random|novice|casual|average|expert|all (average)  --runs 300  --cap 150  --seed 1
-      demo <level.json>     Print one bot game move by move.   --bot average  --seed 1  --moves N
-      bench <level.json>    Engine and bot throughput.          --runs 200
+                            --bot usta|usta-<n>  the fair search bot (n simulations per move, default 24); slow, for measurements
+      demo <level.json>     Print one bot game move by move.   --bot average|usta|usta-<n>  --seed 1  --moves N
+      bench <level.json>    Engine, greedy bot and usta throughput.   --runs 200
       solve <level.json>    Perfect-information search vs. bots on the same boards.  --seeds 8  --beam 8  --cap 150  --prove 4
       seeds <level.json>    Measure seed difficulty spread and build the equal-difficulty retry pool.
                             --board varied|fixed  --board-seed N  --target 0.6  --candidates 64  --games 64  --pool 16  --tolerance 5  --write
       generate              Produce bot-calibrated levels from a generation profile.
                             --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite  --repair
-      botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert  --runs 30  --cap 150  --out reports/expert_moves.csv
+      botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert|usta|usta-<n>  --runs 30  --cap 150  --out reports/<bot>_moves.csv
       validate <dir|file>   Parse every level file and build a starting board for it.
     """;
 

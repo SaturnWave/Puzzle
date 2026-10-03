@@ -56,8 +56,12 @@ public static class ProfileLoader
         IReadOnlyList<string> reportBots = file.ReportBots ?? [];
         foreach (string bot in reportBots.Append(calibrationBot))
         {
-            Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {string.Join(", ", BotPolicies.Names)})");
+            Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>)");
         }
+
+        Require(
+            BotPolicies.Names.Contains(calibrationBot, StringComparer.OrdinalIgnoreCase),
+            $"calibrationBot '{calibrationBot}' is a measurement bot; move limits are set against a player model ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
 
         return new GenerationProfile
         {

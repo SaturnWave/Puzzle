@@ -15,6 +15,9 @@ internal static class PuzzleApi
 {
     private const int SimulationMoveCap = 150;
     private const int MaxSimulationRuns = 2000;
+
+    /// <summary>A search bot thinks 25 to 30 times longer per move than a greedy one; this keeps a lab request to seconds.</summary>
+    private const int MaxSearchBotSimulationRuns = 100;
     private const int MaxBeamWidth = 32;
 
     public static void MapPuzzleApi(this WebApplication app)
@@ -219,7 +222,8 @@ internal static class PuzzleApi
             return Results.BadRequest($"Unknown bot '{bot}'.");
         }
 
-        int runs = Math.Clamp(request.Runs ?? 300, 1, MaxSimulationRuns);
+        bool playerModel = BotPolicies.Names.Contains(bot, StringComparer.OrdinalIgnoreCase);
+        int runs = Math.Clamp(request.Runs ?? 300, 1, playerModel ? MaxSimulationRuns : MaxSearchBotSimulationRuns);
         var clock = Stopwatch.StartNew();
         LevelReport report = BatchSimulator.Run(level.Level, () => CreatePolicy(bot), runs, SimulationMoveCap, seed: 1);
         int curveEnd = Math.Min(SimulationMoveCap, Math.Max(level.Level.MoveLimit * 2, (report.MovesNeeded(0.95) ?? SimulationMoveCap) + 2));

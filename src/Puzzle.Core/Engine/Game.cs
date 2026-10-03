@@ -83,6 +83,9 @@ namespace Puzzle.Core.Engine
 
             /// <summary>An exact copy that knows the future refills (for solvers): live rules, no events.</summary>
             Replica,
+
+            /// <summary>A bot's sampled future: live rules with freshly seeded randomness, no events, no move limit.</summary>
+            Imagined,
         }
 
         public LevelDefinition Level { get; }
@@ -106,6 +109,9 @@ namespace Puzzle.Core.Engine
         public IReadOnlyList<GameEvent> LastEvents => _lastEvents;
 
         public PlayStats TotalStats => _totalStats.ToSnapshot();
+
+        /// <summary>An imagined future is open-ended: a bot's thinking must not depend on the moves left.</summary>
+        private bool HasMoveLimit => _mode != Mode.Imagined;
 
         /// <summary>Starts an attempt whose board and play both come from <paramref name="seed"/>.</summary>
         /// <exception cref="LevelInitializationException">The level cannot produce a valid starting board.</exception>
@@ -181,6 +187,48 @@ namespace Puzzle.Core.Engine
                 LastMove = LastMove,
             };
 
+        /// <summary>
+        /// A sampled future for a fair search bot: this game's present state under live rules, with every random
+        /// stream (refills, effect choices, shuffles) freshly seeded from <paramref name="seed"/>. Nothing is cloned
+        /// from, advanced on or derived from this game's own streams, so the copy knows no more than the player
+        /// does, and the same state, seed and moves always give the same imagined game.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The copy keeps the spawn director's dueness weights: they follow from the refills seen so far, which a
+        /// player with perfect memory knows. It also inherits the director's strategies, including any
+        /// <see cref="GameOptions.AssistPercent"/>; reports and calibration always play with assist 0.
+        /// </para>
+        /// <para>
+        /// It never runs out of moves (a bot's thinking must not depend on the moves left), records no events,
+        /// shuffles a dead board like a live game, and starts with an empty <see cref="LastMove"/>.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">This game is a lookahead copy, whose refills are hidden.</exception>
+        public Game CreateImagined(ulong seed)
+        {
+            if (_mode == Mode.Lookahead)
+            {
+                throw new InvalidOperationException("A lookahead copy has no spawn rules to imagine from.");
+            }
+
+            return new Game(
+                Level,
+                _options,
+                Mode.Imagined,
+                Board.Clone(),
+                Goals.Clone(),
+                _items.Clone(),
+                _tiles.Reseed(new Rng(Rng.Derive(seed, SpawnStream))),
+                new Rng(Rng.Derive(seed, EffectStream)),
+                new Rng(Rng.Derive(seed, ShuffleStream)),
+                _totalStats.Clone())
+            {
+                Status = Status,
+                MovesUsed = MovesUsed,
+            };
+        }
+
         public IReadOnlyList<Move> FindLegalMoves()
         {
             var moves = new List<Move>();
@@ -246,7 +294,7 @@ namespace Puzzle.Core.Engine
                 return GameStatus.Won;
             }
 
-            if (MovesUsed >= MoveLimit)
+            if (HasMoveLimit && MovesUsed >= MoveLimit)
             {
                 return GameStatus.LostOutOfMoves;
             }
