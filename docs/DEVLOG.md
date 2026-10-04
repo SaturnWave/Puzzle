@@ -4,6 +4,34 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-04 · Oturum 8 — Herkese açık test modu ve 1000 bölümün yeniden üretimi
+
+**Kullanıcı kararları**
+- Web test uygulaması internete açılacak; tanıdıklar oynayacak ve gerçek oyuncu verisi APK'dan önce toplanacak. Bu iş 4. adımın önüne alındı.
+- Giriş kullanıcı adı ve şifreyle; kayıt ekranı yok. Üç hazır test hesabı, basit ortak şifreyle ("test ortamı, zorlaştırmaya gerek yok").
+- Bölümler gerçek oyundaki gibi sırayla oynanır.
+- Yayın Tailscale Funnel ile (bilgisayarda zaten kurulu); Cloudflare Tunnel yerine.
+
+**Bulgular**
+- **Test paneli asla tünelden açılmamalı:** varsayılan mod test modu olduğu için "herkese açık" ayarını unutmak çözücüyü, botları ve herkesin kayıtlarını şifresiz açardı. Test modu artık bir vekil sunucudan geçen her isteği reddediyor.
+- **Tailscale, istemcinin yazdığı `CF-Connecting-IP` başlığını olduğu gibi geçiriyor;** sunucu bu başlığa güvenseydi her istek kendine yeni bir "adres" seçip deneme sınırını aşabilirdi. Artık yalnızca bu makinedeki vekilin yazdığı adrese güveniliyor.
+- **HSTS makinenin bütün adını bağlar:** bu bilgisayar aynı ad altında başka servisler de yayınlıyor; Tailscale üzerinden gelen isteklere HSTS gönderilmiyor.
+- **Yeniden üretim tahmini doğruladı:** Normal'de average %89 → %81 → %73 (tahmin 88 → 81 → 75); casual koruması 513 bölümde limiti belirledi.
+- **Uzun işler arka planda 10 dakikada kesiliyor:** üretim ayrı bir pencerede tamamlandı; yarıda kesilen ilk çalıştırmanın rapor satırları onarım komutuyla geri üretildi, bölüm dosyaları değişmedi.
+- **İncelemeler:** herkese açık modda 13 + 3 + 3 bulgu doğrulandı ve kapatıldı (güvenlik ve doğruluk); her tur ayrı bir ajanla doğrulandı.
+
+**Değişiklikler**
+- **Web:** `Puzzle:Mode` = Lab / Public. Oyuncu sayfası (giriş, oyun, sonuç, sonraki bölüm), oyuncu API'si, çerez oturumu, PBKDF2 şifre karması, kilitleme ve deneme sınırları, HTTPS yönlendirmesi, önbellek yasağı. Oyuncunun yarım kalan denemesi diske yazılıyor ve yeniden başlatmada hamleler tekrar oynatılarak kuruluyor. Test paneli `/lab` altında, yönetici anahtarıyla.
+- **Hesaplar:** `data/players.json` (atomik yazma); hazır test hesapları `src/Puzzle.Web/public-test-players.json`; CLI `players list | add | password | delete`.
+- **Betik:** `tools/public/Start-PublicServer.ps1` (modu ayarlar, yönetici anahtarını üretir, sunucuyu başlatır).
+- **Bölümler:** `levels/generated` yeni kurallarla yeniden üretildi; `reports/expert_moves.csv` yenilendi.
+- **Testler:** 242'den 461'e.
+- **Belgeler:** yeni [PUBLIC_TEST.md](PUBLIC_TEST.md); GAME_DESIGN §13, §20, §21.
+
+**Sıradaki:** sunucunun yayına açılması (kullanıcının adımı), ilk insan verisi; ardından 4. adım (booster'lar, bitiş şöleni, düzeltme paketleri).
+
+---
+
 ## 2026-10-03 · Oturum 7 — Kalibrasyon kuralları, deneme kaydı ve yeni test arayüzü (3. ve 5. adım)
 
 **Kullanıcı kararları**

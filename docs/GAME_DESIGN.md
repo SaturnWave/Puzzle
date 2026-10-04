@@ -476,6 +476,20 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 - Rapor süresi 13,4 dakika (12 iş parçacığı; ölçüm sırasında makinede başka iş de çalışıyordu). Karar başına yaklaşık 550 deneme oyunu.
 - `botstats` artık bütün çekirdekleri kullanıyor; aynı girdiyle çıktısı birebir aynı, expert raporu yaklaşık iki kat hızlı.
 
+**Yeniden üretim — yeni kurallarla 1000 bölüm** (2026-10-04; düzeltilmiş botlar, casual koruması, hizalanmış mekanik takvimi, 20. bölüme kadar düz tahta; ayrıntı `levels/generated/report.csv`):
+
+| Kademe | Bölüm | Ort. hamle | Hedef | Average | Average, +5 hamleyle | Casual | Expert | Near-miss |
+|---|---|---|---|---|---|---|---|---|
+| Kolay | 204 | 23,7 | %87 | %92 | %98 | %73 | %98,5 | %6 |
+| Normal | 497 | 27,6 | %68 | %76 | %90 | %45 | %94 | %18 |
+| Zor | 199 | 30,9 | %43 | %44 | %64 | %18 | %76 | %35 |
+| Süper Zor | 100 | 34,9 | %28 | %29 | %45 | %9 | %60 | %40 |
+
+- 1000 bölümün tamamı geçerli; gevşetilen yok; her deneme havuzunda en az 8 tohum var; casual alt sınırını toleranstan fazla kaçıran bölüm yok.
+- Casual koruması limiti Kolay'da 172, Normal'de 341 bölümde belirledi. Normal'de average bölüm aralıklarına göre %89 → %81 → %73 (ölçümdeki tahmin 88 → 81 → 75).
+- Üretim tekrarlanabilir: 83–164. bölümler yeniden üretildiğinde hiçbir dosya değişmedi.
+- Yukarıdaki "Faz 2 sonuçları", "Expert botun hamle raporu" ve "Usta ve expert" tabloları önceki bölüm setiyle ölçüldü; karşılaştırma için duruyor.
+
 ## 14. Açık sorular
 
 1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
@@ -650,6 +664,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Deneme kaydı (uygulandı, 2026-10-03):** her oyun denemesi tek bir kayıt. Kayıt tipi `Puzzle.Core/Recording` içinde tanımlı, yani mobil oyun aynı biçimi kullanacak: bölüm, deneme tohumları, hamle limiti, kullanılan hamle, sonuç (kazandı / hamle bitti / hamle kalmadı / yarıda bırakıldı), her hedefin son durumu, "+5" alındı mı, booster'lar, rastgele cihaz kimliği, başlangıç ve bitiş zamanı. Web test uygulamasında ayrıca oynanan hamleler de saklanır; deneme birebir tekrar oynatılabilir.
 - **Web test uygulaması:** oynanan her deneme `recordings/attempts.jsonl` dosyasına bir satır olarak yazılır (git'e girmez). Deneme bitince, yarıda bırakılınca, oturum zaman aşımına uğrayınca ve sunucu kapanırken kaydedilir; yazılamayan kayıt bekletilip yeniden denenir. Deneme numarasını sunucu verir. İpucu, çözücü, bot hamlesi ya da DDA yardımıyla oynanan denemeler ve elle seçilen tohumlar kaydedilir ama karşılaştırmaya girmez.
 - **İnsan ve bot karşılaştırması:** `puzzle humans` komutu ve web'deki "Kayıtlar" paneli. Her insan denemesinin oyununu (aynı tohumlar, aynı hamle limiti) dört greedy profile oynatır, limitte kazanma oranlarını yan yana koyar ve en yakın profili söyler. Yarıda bırakılan denemeler kazanma oranını yükseltmesin diye iki oran verilir: biten denemeler üzerinden ve yarıda bırakılanlar kayıp sayılarak (alt sınır).
+- **Herkese açık web testi (2026-10-04, APK'dan önce):** web test uygulamasının "herkese açık" modu. Tanıdıklar internet adresinden giriş yapıp bölümleri gerçek oyundaki gibi sırayla oynar; her deneme kaydedilir. Test paneli yalnızca sahibine, yönetici anahtarıyla açıktır. Yayın Tailscale Funnel ile yapılır. Kullanım: [PUBLIC_TEST.md](PUBLIC_TEST.md).
 - **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
 - **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
 - **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
@@ -667,6 +682,6 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 | 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | ✅ 2026-10-03 |
 | 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
 | 5 | Web test uygulamasına oyun kaydını ekle | ✅ 2026-10-03 (kayıt, insan–bot karşılaştırması, yenilenen arayüz) |
-| 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | |
+| 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | Bölümler yeniden üretildi ✅ 2026-10-04 (herkese açık test bu bölümlerle yapılsın diye öne alındı); motor 4. adım bitince "hazır" |
 
 Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına ve takvime bağlı; bölümler iki kez üretilmesin diye onlar önce gelir.
