@@ -151,6 +151,8 @@ public sealed record LevelAttemptsDto(
 /// The recorded attempts of a scope ("device" or "all"). <see cref="Levels"/> lists the most recently played level
 /// versions first, and at most a page of them; <see cref="LevelCount"/> counts them all. <see cref="Assisted"/> and
 /// <see cref="ChosenSeeds"/> attempts are left out of <see cref="Overall"/> and of the comparison.
+/// <see cref="Players"/> lists the public mode's players by username, the one who played last first; it is present only
+/// on a public server, for the scope "all".
 /// </summary>
 public sealed record RecordingsDto(
     string Scope,
@@ -160,7 +162,8 @@ public sealed record RecordingsDto(
     int Assisted,
     int ChosenSeeds,
     int LevelCount,
-    LevelAttemptsDto[] Levels);
+    LevelAttemptsDto[] Levels,
+    PlayerAttemptsDto[]? Players);
 
 /// <summary>Compares a scope's attempts ("device", the default, or "all") with the bots; <see cref="Runs"/> games per bot and attempt.</summary>
 public sealed record CompareRequest(string? Scope, int? Runs);

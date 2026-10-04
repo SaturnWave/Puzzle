@@ -23,6 +23,17 @@ const string Usage = """
                             Web lab attempts of people vs. the greedy bots on the same games, as CSV.
                             Default file: recordings/attempts.jsonl in the repository root, where the lab records.
                             --levels <folder> (default: levels in the repository root, as the lab)  --runs 30  --out reports/humans.csv
+      players add <username>
+                            Make a public-mode account (the server registers nobody). The password is asked for here,
+                            hidden and twice; never give it as an argument. Stop the public server first.
+      players password <username>
+                            Give a player a new password, asked for like the first one. Their progress and records
+                            stay; every browser signed in with the old password is signed out. Stop the public server first.
+      players list          The public mode's accounts: username, player id, progress and recorded attempts.
+      players delete <username>
+                            Delete a player on request: the account, its progress and every attempt record of theirs.
+                            Stop the public server first. All four: --data <folder> (default: data in the repository
+                            root); list and delete: --records <attempts.jsonl> (default: recordings/attempts.jsonl there)
     """;
 
 CliArgs cli = CliArgs.Parse(args);
@@ -39,6 +50,7 @@ try
         "botstats" => BotStatsCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
         "humans" => HumansCommand.Run(cli),
+        "players" => PlayersCommand.Run(cli),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => throw new UsageException($"Unknown command '{cli.Command}'."),
     };

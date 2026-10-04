@@ -10,6 +10,9 @@ internal static class RepoFiles
 
     public static string DefaultProfilePath => Find("profiles", "default.json");
 
+    /// <summary>The test settings file of the public test, beside the web app's settings.</summary>
+    public static string ReadyMadePlayersPath => Find("src", "Puzzle.Web", "public-test-players.json");
+
     /// <summary>profiles/default.json, loaded once.</summary>
     public static GenerationProfile DefaultProfile => LoadedDefaultProfile.Value;
 

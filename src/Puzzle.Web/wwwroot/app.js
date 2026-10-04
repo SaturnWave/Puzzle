@@ -1,15 +1,13 @@
-// Puzzle Test Lab client. The server runs the real engine; this file only draws the board, animates the engine's
-// events and shows the recorded attempts. After every move the board is reconciled with the authoritative state, so a
-// missed animation can never leave the view wrong.
+// Puzzle Test Lab client. The server runs the real engine; this file is the lab around the game: it starts sessions,
+// sends the moves, runs the bots and the solver, and shows the recorded attempts. The game itself — the board, its
+// animation and the HUD — is drawn by game-view.js, which the public mode's player page shares.
+
+import { make, svgElement, svgText } from "./dom.js";
+import { createBoard, endTitle, installTileArt, reducedMotion, showHud } from "./game-view.js";
 
 const $ = (id) => document.getElementById(id);
-const SVG_NS = "http://www.w3.org/2000/svg";
-const SPECIALS = new Set(["rocketH", "rocketV", "bomb", "bigBomb", "seeker", "colorBomb"]);
-const SWAPPABLE = new Set([...SPECIALS, "gem", "item"]);
-const STEP_MS = { swap: 170, hit: 230, fall: 260 };
 const REQUEST_TIMEOUT_MS = 120_000;
 const TABS = ["recordings", "analysis", "log"];
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const percent0 = new Intl.NumberFormat("tr-TR", { style: "percent", maximumFractionDigits: 0 });
 const percent1 = new Intl.NumberFormat("tr-TR", { style: "percent", maximumFractionDigits: 1 });
@@ -19,47 +17,14 @@ const ui = {
   session: null,
   state: null,
   levels: [],
-  tiles: new Map(), // cell index -> tile element
-  chains: new Map(), // cell index -> chain overlay element
-  cells: [],        // cell index -> cell element (or null for gaps)
-  selected: null,   // {x, y}
   busy: false,
   autoplay: false,
-  speed: 1,
   scope: "device",  // whose recordings the panel shows: "device" or "all"
   comparing: false,
   comparison: null, // the last comparison with the bots
   chartRow: null,   // the comparison row the chart shows; null for all levels together
   simulation: null, // the last simulation, redrawn when its chart's width changes
 };
-
-// ---------- small DOM helpers ----------
-/** An element with a class and text; text always goes in as text, never as markup. */
-function make(tag, className, text) {
-  const element = document.createElement(tag);
-  if (className) element.className = className;
-  if (text !== undefined) element.textContent = text;
-  return element;
-}
-
-function svgElement(tag, attributes) {
-  const element = document.createElementNS(SVG_NS, tag);
-  for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, String(value));
-  return element;
-}
-
-function svgText(text, attributes) {
-  const element = svgElement("text", attributes);
-  element.textContent = text;
-  return element;
-}
-
-/** An inline SVG that shows one symbol of the page's sprite. */
-function symbolArt(symbol, className = "art") {
-  const svg = svgElement("svg", { class: className, viewBox: "0 0 100 100", "aria-hidden": "true" });
-  svg.appendChild(svgElement("use", { href: `#${symbol}` }));
-  return svg;
-}
 
 const formatRate = (rate) => (rate === null || rate === undefined ? "–" : percent0.format(rate));
 const formatMoves = (moves) => (moves === null || moves === undefined ? "–" : decimal1.format(moves));
@@ -169,232 +134,40 @@ function reportError(error) {
   toastTimer = setTimeout(() => { toast.hidden = true; }, 6000);
 }
 
-// ---------- geometry and timing ----------
-const indexOf = (p) => p.y * ui.state.width + p.x;
-const posOf = (i) => ({ x: i % ui.state.width, y: Math.floor(i / ui.state.width) });
-const isAdjacent = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
+// ---------- board and HUD ----------
+const board = createBoard($("board"), {
+  onMove: sendMove,
+  mayPlay: () => !ui.busy && !ui.autoplay,
+  space: boardSpace,
+});
 
-/** Steps still take turns without motion, only quicker, so a reduced-motion player can follow them. */
-const motionScale = () => (reducedMotion.matches ? 0.5 : 1);
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms * ui.speed * motionScale()));
-
-function layoutBoard() {
-  if (!ui.state) return;
-  const area = document.querySelector(".board-area");
+/** The room the board may take: the board area's width, and the window's height less the lab's own rows. */
+function boardSpace() {
   const narrow = window.innerWidth <= 760;
-  const available = Math.min(area.clientWidth - 12, 720);
   const reserved = narrow ? 200 : 270; // top bar, attempt bar, HUD and the action buttons
-  const byHeight = Math.max(240, window.innerHeight - reserved);
-  const size = Math.max(22, Math.floor(Math.min(available / ui.state.width, byHeight / ui.state.height, 64)));
-  const board = $("board");
-  board.classList.add("still"); // a new size moves every tile at once: no slide across the board
-  board.style.setProperty("--cell-size", `${size}px`);
-  board.style.setProperty("--cols", ui.state.width);
-  board.style.setProperty("--rows", ui.state.height);
-  board.getBoundingClientRect();
-  requestAnimationFrame(() => board.classList.remove("still"));
-}
-
-function setSpeed(speed) {
-  ui.speed = speed;
-  const root = document.documentElement.style;
-  root.setProperty("--move-ms", `${Math.round(STEP_MS.fall * speed * 0.9)}ms`);
-  root.setProperty("--swap-ms", `${Math.round(STEP_MS.swap * speed)}ms`);
-  root.setProperty("--fade-ms", `${Math.round(STEP_MS.hit * speed * 0.8)}ms`);
-}
-
-// ---------- tiles ----------
-function tileSignature(tile) {
-  return tile ? `${tile.kind}|${tile.color ?? ""}|${tile.hp}` : "";
-}
-
-/** The sprite symbol that draws a tile: every gem colour has its own shape. */
-function symbolFor(tile) {
-  switch (tile.kind) {
-    case "gem": return `gem-${tile.color.toLowerCase()}`;
-    case "rocketH": return "sp-rocket-h";
-    case "rocketV": return "sp-rocket-v";
-    case "bomb": return "sp-bomb";
-    case "bigBomb": return "sp-bigbomb";
-    case "seeker": return "sp-seeker";
-    case "colorBomb": return "sp-colorbomb";
-    case "box": return `sp-box-${Math.min(3, Math.max(1, tile.hp))}`;
-    case "item": return "item";
-    default: return "unknown";
-  }
-}
-
-function tileClass(tile) {
-  if (tile.kind === "gem") return `tile k-gem gem c-${tile.color.toLowerCase()}`;
-  if (tile.kind === "box") return `tile k-box hp-${tile.hp}`;
-  return `tile k-${tile.kind}`;
-}
-
-function paintFace(face, tile) {
-  face.replaceChildren(symbolArt(symbolFor(tile)));
-  if (tile.kind === "box" && tile.hp > 1) face.appendChild(make("span", "hp", String(tile.hp)));
-}
-
-function createTile(tile, p) {
-  const el = make("div", tileClass(tile));
-  el.dataset.sig = tileSignature(tile);
-  const face = make("div", "face");
-  paintFace(face, tile);
-  el.appendChild(face);
-  placeTile(el, p);
-  $("board").appendChild(el);
-  return el;
-}
-
-function placeTile(el, p) {
-  el.style.setProperty("--x", p.x);
-  el.style.setProperty("--y", p.y);
-}
-
-function removeTile(el, animated) {
-  if (!animated) {
-    el.remove();
-    return;
-  }
-  el.classList.add("dying");
-  setTimeout(() => el.remove(), STEP_MS.hit * ui.speed + 60);
-}
-
-/** Restarts a one-shot animation class on an element. */
-function flashClass(el, className, ms) {
-  el.classList.remove(className);
-  el.getBoundingClientRect();
-  el.classList.add(className);
-  setTimeout(() => el.classList.remove(className), ms);
+  return {
+    width: Math.min(document.querySelector(".board-area").clientWidth - 12, 720),
+    height: Math.max(240, window.innerHeight - reserved),
+  };
 }
 
 function renderBoard(state) {
   ui.state = state;
-  const board = $("board");
-  board.replaceChildren();
-  ui.tiles.clear();
-  ui.chains.clear();
-  ui.cells = [];
-  layoutBoard();
-  for (let i = 0; i < state.width * state.height; i++) {
-    const p = posOf(i);
-    if (!state.playable[i]) {
-      ui.cells.push(null);
-      continue;
-    }
-    const cell = make("div", `cell${(p.x + p.y) % 2 ? " alt" : ""}`);
-    cell.style.setProperty("--x", p.x);
-    cell.style.setProperty("--y", p.y);
-    board.appendChild(cell);
-    ui.cells.push(cell);
-    if (state.tiles[i]) ui.tiles.set(i, createTile(state.tiles[i], p));
-  }
-  updateOverlays(state);
+  board.render(state);
   updateHud(state);
-}
-
-function updateOverlays(state) {
-  ui.cells.forEach((cell, i) => {
-    if (!cell) return;
-    setJelly(cell, state.jelly[i]);
-    setChain(i, state.chains[i]);
-  });
-}
-
-/** Shows `layers` of jelly on a cell; `animated` when a hit took a layer off (it squishes, the last one melts away). */
-function setJelly(cell, layers, animated = false) {
-  const had = cell.classList.contains("jelly-1") || cell.classList.contains("jelly-2");
-  cell.classList.toggle("jelly-1", layers === 1);
-  cell.classList.toggle("jelly-2", layers >= 2);
-  if (animated && had) flashClass(cell, layers > 0 ? "jelly-hit" : "jelly-clear", STEP_MS.hit * ui.speed + 60);
-}
-
-function setChain(i, hp) {
-  let el = ui.chains.get(i);
-  if (hp > 0) {
-    if (!el) {
-      el = make("div", "chain");
-      const p = posOf(i);
-      el.style.setProperty("--x", p.x);
-      el.style.setProperty("--y", p.y);
-      $("board").appendChild(el);
-      ui.chains.set(i, el);
-    }
-    if (el.dataset.hp !== String(hp)) {
-      el.dataset.hp = String(hp);
-      el.className = `chain hp-${hp}`;
-      el.replaceChildren(symbolArt(`ov-chain-${Math.min(hp, 2)}`));
-    }
-  } else if (el) {
-    ui.chains.delete(i);
-    el.classList.add("breaking");
-    setTimeout(() => el.remove(), STEP_MS.hit * ui.speed + 60);
-  }
 }
 
 /** Makes the view match the server state exactly, without animation. */
 function reconcile(state) {
   ui.state = state;
-  let corrected = 0;
-  for (let i = 0; i < state.width * state.height; i++) {
-    if (!state.playable[i]) continue;
-    const expected = state.tiles[i];
-    const el = ui.tiles.get(i);
-    if (!expected) {
-      if (el) { removeTile(el, false); ui.tiles.delete(i); corrected++; }
-    } else if (!el || el.dataset.sig !== tileSignature(expected)) {
-      if (el) removeTile(el, false);
-      corrected++;
-      const fresh = createTile(expected, posOf(i));
-      fresh.classList.add("instant");
-      ui.tiles.set(i, fresh);
-    } else {
-      placeTile(el, posOf(i));
-    }
-  }
-  updateOverlays(state);
+  board.reconcile(state);
   updateHud(state);
-  if (corrected > 0) console.warn(`reconcile corrected ${corrected} cell(s): the animation missed an event`);
-}
-
-// ---------- HUD ----------
-const GOAL_NAMES = { breakBoxes: "Kutu kır", clearJelly: "Jöle temizle", breakChains: "Zincir kır", dropItems: "Taç indir" };
-const COLOR_NAMES = { red: "kırmızı", green: "yeşil", blue: "mavi", yellow: "sarı", purple: "mor", orange: "turuncu", cyan: "turkuaz", pink: "pembe" };
-
-function goalIcon(goal) {
-  const icon = make("span", "goal-icon");
-  switch (goal.type) {
-    case "collectColor": icon.appendChild(symbolArt(`gem-${goal.color.toLowerCase()}`)); break;
-    case "breakBoxes": icon.appendChild(symbolArt("sp-box-1")); break;
-    case "dropItems": icon.appendChild(symbolArt("item")); break;
-    case "breakChains": icon.classList.add("on-cell"); icon.appendChild(symbolArt("ov-chain-1")); break;
-    case "clearJelly": icon.classList.add("jelly-icon"); break;
-    default: icon.textContent = "?"; break;
-  }
-  return icon;
-}
-
-function goalName(goal) {
-  if (goal.type === "collectColor") return `${COLOR_NAMES[goal.color.toLowerCase()] ?? goal.color} taş topla`;
-  return GOAL_NAMES[goal.type] ?? goal.type;
 }
 
 function updateHud(state) {
-  const left = Math.max(0, state.moveLimit - state.movesUsed);
-  $("moves-left").textContent = left;
-  $("moves").classList.toggle("low", state.status === "Playing" && left <= 3);
-  const chips = state.goals.map((goal) => {
-    const done = goal.done >= goal.target;
-    const chip = make("div", `goal${done ? " done" : ""}`);
-    chip.title = `${goalName(goal)}: ${Math.min(goal.done, goal.target)} / ${goal.target}`;
-    chip.append(goalIcon(goal), done ? make("span", "done-mark", "✓") : make("span", "", String(goal.target - goal.done)));
-    return chip;
-  });
-  $("goals").replaceChildren(...chips);
+  showHud({ moves: $("moves"), movesLeft: $("moves-left"), goals: $("goals") }, state);
   showBanner(state);
 }
-
-const END_TITLES = { Won: "Kazandın!", LostOutOfMoves: "Hamle bitti", LostNoMovesPossible: "Oynanacak hamle kalmadı" };
 
 function showBanner(state) {
   const banner = $("banner");
@@ -415,7 +188,7 @@ function showBanner(state) {
   const actions = make("div", "banner-actions");
   actions.append(next, repeat);
   card.append(
-    make("div", `banner-title ${won ? "won" : "lost"}`, END_TITLES[state.status] ?? state.status),
+    make("div", `banner-title ${won ? "won" : "lost"}`, endTitle(state.status)),
     make("div", "banner-meta", `${state.movesUsed} hamle · ${describeAttempt(ui.session)}`),
     make("div", "banner-rec", recordingView(ui.session).summary),
     actions,
@@ -581,203 +354,11 @@ async function refreshRecording() {
   if (ui.session.sessionId === asked) setRecording(session.recording); // the player may have moved on meanwhile
 }
 
-// ---------- animation ----------
-function category(type) {
-  switch (type) {
-    case "swapped": return "swap";
-    case "tileMoved":
-    case "tileSpawned": return "fall";
-    case "roundStarted":
-    case "shuffled": return "marker";
-    default: return "hit";
-  }
-}
-
-async function playEvents(events) {
-  let step = [];
-  let stepKind = null;
-  for (const event of events) {
-    const kind = category(event.type);
-    if (kind === "marker" || (stepKind && kind !== stepKind)) {
-      await runStep(stepKind, step);
-      step = [];
-      stepKind = null;
-    }
-    if (kind !== "marker") {
-      step.push(event);
-      stepKind = kind;
-    }
-  }
-  await runStep(stepKind, step);
-}
-
-async function runStep(kind, events) {
-  if (!kind || events.length === 0) return;
-  $("board").dataset.phase = kind;
-  let duration = STEP_MS[kind];
-  if (kind === "fall") {
-    const spawned = new Map(); // column -> spawns so far in this step
-    let slowest = 1;
-    for (const e of events) {
-      const factor = e.type === "tileMoved" ? moveTile(indexOf(e.from), indexOf(e.to)) : spawnTile(e, spawned);
-      slowest = Math.max(slowest, factor);
-    }
-    if (!reducedMotion.matches) duration *= slowest; // without motion nothing travels, so nothing needs the time
-  } else {
-    for (const e of events) applyHit(e);
-  }
-  await wait(duration);
-}
-
-/**
- * How much longer than a one-row fall a fall of `rows` takes. Under gravity the time grows with the square root of
- * the distance; this keeps a short drop snappy and lets a long refill visibly accelerate.
- */
-const fallFactor = (rows) => 0.75 + 0.25 * Math.sqrt(Math.max(1, rows));
-
-/** Slides a tile to its new cell; returns its fall factor. */
-function moveTile(from, to) {
-  const el = ui.tiles.get(from);
-  if (!el) return 1;
-  ui.tiles.delete(from);
-  ui.tiles.set(to, el);
-  const a = posOf(from);
-  const b = posOf(to);
-  const factor = fallFactor(Math.hypot(b.x - a.x, b.y - a.y));
-  el.style.setProperty("--fall", factor.toFixed(3));
-  placeTile(el, b);
-  return factor;
-}
-
-/** Drops a new tile in from above its column's top cell; returns its fall factor. */
-function spawnTile(e, spawned) {
-  const column = e.at.x;
-  const count = (spawned.get(column) ?? 0) + 1;
-  spawned.set(column, count);
-  const start = { x: column, y: topRow(column) - count };
-  const el = createTile(e.tile, start);
-  el.classList.add("instant");
-  el.getBoundingClientRect(); // commit the start position before animating
-  el.classList.remove("instant");
-  ui.tiles.set(indexOf(e.at), el);
-  const factor = fallFactor(e.at.y - start.y);
-  el.style.setProperty("--fall", factor.toFixed(3));
-  placeTile(el, e.at);
-  return factor;
-}
-
-function topRow(column) {
-  for (let y = 0; y < ui.state.height; y++) {
-    if (ui.state.playable[y * ui.state.width + column]) return y;
-  }
-  return 0;
-}
-
-function applyHit(e) {
-  switch (e.type) {
-    case "swapped": {
-      const a = indexOf(e.from);
-      const b = indexOf(e.to);
-      const elA = ui.tiles.get(a);
-      const elB = ui.tiles.get(b);
-      ui.tiles.delete(a);
-      ui.tiles.delete(b);
-      if (elA) { ui.tiles.set(b, elA); placeTile(elA, e.to); }
-      if (elB) { ui.tiles.set(a, elB); placeTile(elB, e.from); }
-      break;
-    }
-    case "tileDestroyed":
-    case "itemCollected": {
-      const i = indexOf(e.at);
-      const el = ui.tiles.get(i);
-      if (el) { ui.tiles.delete(i); removeTile(el, true); }
-      break;
-    }
-    case "boxDamaged": {
-      const i = indexOf(e.at);
-      const el = ui.tiles.get(i);
-      if (!el) break;
-      if (e.hp === 0) {
-        ui.tiles.delete(i);
-        removeTile(el, true);
-      } else {
-        const box = { kind: "box", hp: e.hp };
-        el.className = tileClass(box);
-        paintFace(el.querySelector(".face"), box);
-        el.dataset.sig = tileSignature(box);
-        flashClass(el, "bump", STEP_MS.hit * ui.speed + 60);
-      }
-      break;
-    }
-    case "chainDamaged":
-      setChain(indexOf(e.at), e.hp);
-      break;
-    case "jellyDamaged": {
-      const cell = ui.cells[indexOf(e.at)];
-      if (cell) setJelly(cell, e.hp, true);
-      break;
-    }
-    case "specialCreated": {
-      const i = indexOf(e.at);
-      const old = ui.tiles.get(i);
-      if (old) removeTile(old, false);
-      const el = createTile(e.tile, e.at);
-      el.classList.add("pop");
-      ui.tiles.set(i, el);
-      break;
-    }
-    case "effectTriggered":
-      showEffect(e);
-      break;
-    case "seekerLaunched":
-      showSeeker(e);
-      break;
-    default:
-      break; // matchCleared: the destroyed tiles already animate
-  }
-}
-
-function addFx(kind, x, y, w, h) {
-  const fx = make("div", `fx ${kind}`);
-  fx.style.left = `calc(${x} * var(--cell-size))`;
-  fx.style.top = `calc(${y} * var(--cell-size))`;
-  fx.style.width = `calc(${w} * var(--cell-size))`;
-  fx.style.height = `calc(${h} * var(--cell-size))`;
-  $("board").appendChild(fx);
-  setTimeout(() => fx.remove(), 2 * STEP_MS.hit * ui.speed + 100);
-}
-
-function showEffect(e) {
-  const { width, height } = ui.state;
-  const { x, y } = e.at;
-  const r = e.radius ?? 0;
-  switch (e.kind) {
-    case "clearRow": addFx("beam-h", 0, y, width, 1); break;
-    case "clearColumn": addFx("beam-v", x, 0, 1, height); break;
-    case "explode": addFx("burst", x - r - 0.5, y - r - 0.5, 2 * r + 2, 2 * r + 2); break;
-    case "cross": addFx("beam-h", 0, y - r, width, 2 * r + 1); addFx("beam-v", x - r, 0, 2 * r + 1, height); break;
-    case "clearBoard":
-    case "clearColor":
-    case "convertColor": addFx("wash", 0, 0, width, height); break;
-    default: addFx("burst", x - 1.5, y - 1.5, 4, 4); break;
-  }
-}
-
-function showSeeker(e) {
-  const fx = make("div", "fx seeker");
-  fx.appendChild(symbolArt("sp-seeker"));
-  fx.style.transform = `translate(calc(${e.from.x} * var(--cell-size)), calc(${e.from.y} * var(--cell-size)))`;
-  $("board").appendChild(fx);
-  fx.getBoundingClientRect();
-  fx.style.transform = `translate(calc(${e.to.x} * var(--cell-size)), calc(${e.to.y} * var(--cell-size)))`;
-  setTimeout(() => fx.remove(), STEP_MS.fall * ui.speed + 120);
-}
-
 // ---------- moves ----------
 async function sendMove(move) {
   if (ui.busy || !ui.session || ui.state.status !== "Playing") return null;
   ui.busy = true;
-  clearSelection();
+  board.clearSelection();
   try {
     const result = await api(`/api/sessions/${ui.session.sessionId}/moves`, move);
     await applyResult(result);
@@ -793,38 +374,13 @@ async function sendMove(move) {
 async function applyResult(result) {
   setRecording(result.recording);
   if (!result.accepted) {
-    await showRefused(result.move);
+    await board.showRefused(result.move);
     return;
   }
-  await playEvents(result.events);
+  await board.playEvents(result.events);
   reconcile(result.state);
   logMove(result);
   if (result.state.status !== "Playing") refreshRecordings();
-}
-
-/**
- * A refused swap trades the two tiles and slides them back, as in the game; a refused tap shakes. Without motion the
- * tiles only dim for a moment instead.
- */
-async function showRefused(move) {
-  if (!move) return;
-  const tiles = [move.from, move.to].filter(Boolean).map((p) => ui.tiles.get(indexOf(p))).filter(Boolean);
-  if (reducedMotion.matches) {
-    for (const el of tiles) flashClass(el, "refused", 400);
-    return;
-  }
-  if (move.kind !== "swap" || tiles.length !== 2) {
-    for (const el of tiles) flashClass(el, "shake", 340);
-    return;
-  }
-  const [a, b] = tiles;
-  $("board").dataset.phase = "swap";
-  placeTile(a, move.to);
-  placeTile(b, move.from);
-  await wait(STEP_MS.swap);
-  placeTile(a, move.from);
-  placeTile(b, move.to);
-  await wait(STEP_MS.swap);
 }
 
 function describeMove(move) {
@@ -838,67 +394,6 @@ function logMove(result) {
   const log = $("event-log");
   log.prepend(make("li", "", `#${result.state.movesUsed} ${text}`));
   while (log.children.length > 60) log.lastChild.remove();
-}
-
-// ---------- input ----------
-let pointerStart = null;
-
-function cellFromEvent(event) {
-  const rect = $("board").getBoundingClientRect();
-  const size = rect.width / ui.state.width;
-  const x = Math.floor((event.clientX - rect.left) / size);
-  const y = Math.floor((event.clientY - rect.top) / size);
-  return { x, y, size };
-}
-
-function onPointerDown(event) {
-  if (!ui.state || ui.busy || ui.autoplay) return;
-  const cell = cellFromEvent(event);
-  if (cell.x < 0 || cell.y < 0 || cell.x >= ui.state.width || cell.y >= ui.state.height) return;
-  pointerStart = { ...cell, clientX: event.clientX, clientY: event.clientY };
-  $("board").setPointerCapture(event.pointerId);
-}
-
-function onPointerUp(event) {
-  if (!pointerStart) return;
-  const start = pointerStart;
-  pointerStart = null;
-  const dx = event.clientX - start.clientX;
-  const dy = event.clientY - start.clientY;
-  const threshold = start.size * 0.3;
-  if (Math.max(Math.abs(dx), Math.abs(dy)) >= threshold) {
-    const to = Math.abs(dx) > Math.abs(dy)
-      ? { x: start.x + Math.sign(dx), y: start.y }
-      : { x: start.x, y: start.y + Math.sign(dy) };
-    sendMove({ kind: "swap", from: { x: start.x, y: start.y }, to });
-  } else {
-    onTap({ x: start.x, y: start.y });
-  }
-}
-
-function onTap(p) {
-  const tile = ui.state.tiles[indexOf(p)];
-  if (ui.selected) {
-    const from = ui.selected;
-    if (from.x === p.x && from.y === p.y) { clearSelection(); return; }
-    if (isAdjacent(from, p)) { sendMove({ kind: "swap", from, to: p }); return; }
-  }
-  if (tile && SPECIALS.has(tile.kind) && ui.state.chains[indexOf(p)] === 0) {
-    sendMove({ kind: "tap", from: p });
-    return;
-  }
-  if (tile && SWAPPABLE.has(tile.kind)) select(p); else clearSelection();
-}
-
-function select(p) {
-  clearSelection();
-  ui.selected = p;
-  ui.tiles.get(indexOf(p))?.classList.add("selected");
-}
-
-function clearSelection() {
-  if (ui.selected) ui.tiles.get(indexOf(ui.selected))?.classList.remove("selected");
-  ui.selected = null;
 }
 
 // ---------- game flow ----------
@@ -934,7 +429,7 @@ async function newGame(mode) {
 async function botStep() {
   if (ui.busy || !ui.session || ui.state.status !== "Playing") return false;
   ui.busy = true;
-  clearSelection();
+  board.clearSelection();
   try {
     const result = await api(`/api/sessions/${ui.session.sessionId}/bot`, { bot: $("bot-select").value });
     await applyResult(result);
@@ -954,7 +449,7 @@ async function toggleAutoplay() {
   button.textContent = "Durdur ■";
   button.classList.add("is-on");
   while (ui.autoplay && await botStep()) {
-    await wait(250);
+    await board.wait(250);
   }
   stopAutoplay();
 }
@@ -971,11 +466,7 @@ async function showHint() {
   try {
     const move = await api(`/api/sessions/${ui.session.sessionId}/hint?bot=expert`);
     // A ring marks the hinted tiles; it pulses with motion, and without it stays a little longer instead.
-    const shownMs = reducedMotion.matches ? 3000 : 1900;
-    for (const p of [move.from, move.to].filter(Boolean)) {
-      const el = ui.tiles.get(indexOf(p));
-      if (el) flashClass(el, "hint", shownMs);
-    }
+    board.flashTiles([move.from, move.to], "hint", reducedMotion.matches ? 3000 : 1900);
     await refreshRecording();
   } catch (error) {
     reportError(error);
@@ -1013,7 +504,7 @@ async function playPath(path) {
   for (const move of path) {
     const result = await sendMove(move);
     if (!result || !result.accepted) break;
-    await wait(150);
+    await board.wait(150);
   }
 }
 
@@ -1152,7 +643,7 @@ function renderRecordings(data) {
   if (data.records === 0) {
     body.replaceChildren(make("p", "empty", ui.scope === "device"
       ? "Bu cihazın kaydı yok. Bir bölümde en az bir hamle oyna: deneme bitince ya da yenisine geçince kaydedilir."
-      : "Henüz hiç kayıt yok."));
+      : "Henüz hiç kayıt yok."), ...playersSection(data.players));
     return;
   }
   const overall = data.overall;
@@ -1169,8 +660,42 @@ function renderRecordings(data) {
   const notes = ["Sayılan: yardımsız, sıradaki denemeler. Kaz.: limitte kazanılan; % biten denemelere göre. Dışı: yardımlı (ipucu, çözücü, bot hamlesi, DDA) ya da elle seçilen seed; kaydedilir ama botlarla karşılaştırılmaz. Satıra dokun: bölümü aç."];
   if (data.levelCount > data.levels.length) notes.push(`Son ${data.levels.length} bölüm gösteriliyor (toplam ${data.levelCount}).`);
   if (data.unreadableLines > 0) notes.push(`Kayıt dosyasında ${data.unreadableLines} satır okunamadı.`);
-  parts.push(make("p", "table-note", notes.join(" ")));
+  parts.push(make("p", "table-note", notes.join(" ")), ...playersSection(data.players));
   body.replaceChildren(...parts);
+}
+
+const shortDateTime = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+/**
+ * The players of a public server by username, the one who played last first. Only a public server sends them, to its
+ * owner and for everyone's scope; anywhere else there is nothing to show.
+ */
+function playersSection(players) {
+  if (!players) return [];
+  if (players.length === 0) return [make("h3", "", "Oyuncular"), make("p", "empty", "Henüz kayıtlı oyuncu yok.")];
+  const table = make("table", "data-table");
+  const head = table.createTHead().insertRow();
+  for (const [label, title] of [["Oyuncu", ""], ["Geçti", "Kazandığı bölüm sayısı"], ["Say.", "Sayılan deneme"], ["Kaz.", "Limitte kazanılan"], ["%", "Limitte kazanma oranı (biten denemeler)"], ["Yarım", "Limit dolmadan bırakılan"], ["Son oyun", "Son denemenin bittiği an"]]) {
+    const th = make("th", "", label);
+    if (title) th.title = title;
+    head.appendChild(th);
+  }
+  const body = table.createTBody();
+  for (const player of players) {
+    const row = body.insertRow();
+    row.insertCell().append(make("span", "level-name", player.username), make("span", "level-sub", `${player.records} kayıt`));
+    row.insertCell().textContent = String(player.levelsWon);
+    row.insertCell().textContent = String(player.play.finished + player.play.abandoned);
+    row.insertCell().textContent = String(player.play.wins);
+    row.insertCell().textContent = formatRate(player.play.winRate);
+    row.insertCell().textContent = String(player.play.abandoned);
+    const last = row.insertCell();
+    last.textContent = player.lastPlayedUtc ? shortDateTime.format(new Date(player.lastPlayedUtc)) : "–";
+    if (!player.lastPlayedUtc) last.className = "dim";
+  }
+  const wrap = make("div", "table-wrap");
+  wrap.appendChild(table);
+  return [make("h3", "", "Oyuncular"), wrap, make("p", "table-note", "Kullanıcı adları yalnızca burada görünür; kayıtlarda oyuncunun rastgele kimliği durur.")];
 }
 
 function recordingsTable(levels) {
@@ -1527,7 +1052,7 @@ function redrawCharts() {
 function onResize() {
   cancelAnimationFrame(resizeFrame);
   resizeFrame = requestAnimationFrame(() => {
-    layoutBoard();
+    board.fit();
     // A phone's toolbar showing or hiding changes only the height: the charts keep their width, and their focus.
     if (window.innerWidth !== laidOutWidth) {
       laidOutWidth = window.innerWidth;
@@ -1543,6 +1068,21 @@ function onTabKey(event) {
   const next = TABS[(current + step + TABS.length) % TABS.length];
   selectTab(next);
   $(`tab-btn-${next}`).focus();
+}
+
+// ---------- owner ----------
+/** A public server serves the lab under /lab/, to its owner alone; in the lab mode the page is the site's root. */
+const isOwnersLab = location.pathname.startsWith("/lab/");
+
+/** Ends the owner's sign-in on this browser and goes back to the key form. */
+async function signOutOwner() {
+  try {
+    const response = await fetch("/api/owner/sign-out", { method: "POST", headers: { "X-Device-Id": DEVICE.id } });
+    if (!response.ok) throw new ApiError(response.status, await errorMessage(response));
+    location.assign("/lab/sign-in");
+  } catch (error) {
+    reportError(error);
+  }
 }
 
 // ---------- startup ----------
@@ -1581,7 +1121,9 @@ function renderStatusLine(levelCount) {
 }
 
 async function init() {
-  setSpeed(1);
+  const tileArt = installTileArt();
+  $("owner-sign-out").hidden = !isOwnersLab;
+  $("owner-sign-out").onclick = signOutOwner;
   const storedScope = recall("puzzle.recordingsScope");
   if (storedScope === "device" || storedScope === "all") ui.scope = storedScope;
   for (const button of document.querySelectorAll(".segmented [data-scope]")) {
@@ -1591,7 +1133,7 @@ async function init() {
   const storedTab = recall("puzzle.tab");
   selectTab(TABS.includes(storedTab) ? storedTab : "recordings");
   try {
-    const [levels, bots] = await Promise.all([api("/api/levels"), api("/api/bots")]);
+    const [levels, bots] = await Promise.all([api("/api/levels"), api("/api/bots"), tileArt]);
     ui.levels = levels;
     renderStatusLine(levels.length);
     renderLevelOptions("");
@@ -1624,7 +1166,7 @@ async function init() {
     }
   };
   $("assist-input").oninput = () => { $("assist-out").textContent = $("assist-input").value; };
-  $("speed-select").onchange = () => setSpeed(Number($("speed-select").value));
+  $("speed-select").onchange = () => board.setSpeed(Number($("speed-select").value));
   $("hint-btn").onclick = showHint;
   $("bot-step").onclick = botStep;
   $("autoplay-btn").onclick = toggleAutoplay;
@@ -1635,10 +1177,6 @@ async function init() {
   $("compare-btn").onclick = compareWithBots;
   for (const tab of TABS) $(`tab-btn-${tab}`).onclick = () => selectTab(tab);
   document.querySelector(".tabs").addEventListener("keydown", onTabKey);
-  const board = $("board");
-  board.addEventListener("pointerdown", onPointerDown);
-  board.addEventListener("pointerup", onPointerUp);
-  board.addEventListener("pointercancel", () => { pointerStart = null; });
   window.addEventListener("resize", onResize);
   await newGame({ kind: "next" });
 }

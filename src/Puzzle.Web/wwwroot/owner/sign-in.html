@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#131312" media="(prefers-color-scheme: dark)">
+  <meta name="robots" content="noindex">
+  <title>Puzzle Test Lab · Giriş</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <!-- The owner's way into the lab of a public server. Players never need this page. -->
+  <main class="auth">
+    <!-- The script sends the form. Should the browser send it itself (the script did not load, a password manager
+         submitted it), it goes out as a POST, so the key is never put into an address; the server refuses it. -->
+    <form id="key-form" class="panel auth-card" method="post" action="/api/owner/sign-in" autocomplete="off">
+      <h1>Puzzle Test Lab</h1>
+      <p class="lead">Bu bölüm yalnızca sunucunun sahibi içindir. Girmek için yönetici anahtarını yaz.</p>
+      <label class="field">Yönetici anahtarı
+        <input id="key-input" name="key" type="password" autocomplete="current-password" required autofocus>
+      </label>
+      <button id="key-submit" class="btn primary" type="submit"><span class="spinner" aria-hidden="true"></span><span class="btn-label">Giriş yap</span></button>
+      <p id="key-error" class="form-error" role="alert" hidden></p>
+      <p class="auth-foot"><a href="/">Oyuna dön</a></p>
+    </form>
+  </main>
+
+  <script src="/lab/sign-in.js" type="module"></script>
+</body>
+</html>

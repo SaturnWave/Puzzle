@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#131312" media="(prefers-color-scheme: dark)">
+  <meta name="robots" content="noindex">
+  <title>Puzzle</title>
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+  <!-- The public mode's page for players: sign in, play the level the server deals, go on. In the public mode this
+       folder is the site's root; the stylesheet, the tile art and the board come from the lab's files, shared. -->
+  <header id="topbar" class="topbar" hidden>
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#gem-blue"/></svg>
+      <h1>Puzzle</h1>
+    </div>
+    <div class="topbar-end">
+      <span id="account-name" class="account-name"></span>
+      <button id="sign-out" class="btn" type="button">Çıkış</button>
+    </div>
+  </header>
+
+  <main>
+    <p id="loading-view" class="page-note" role="status">Yükleniyor…</p>
+
+    <section id="sign-in-view" class="auth" aria-labelledby="sign-in-title" hidden>
+      <!-- The script sends the form. Should the browser ever send it itself, it goes out as a POST, so the password
+           is never put into an address; the server refuses it, as it refuses every change the script did not make. -->
+      <form id="sign-in-form" class="panel auth-card" method="post" action="/api/player/sign-in" novalidate>
+        <div class="card-brand">
+          <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#gem-blue"/></svg>
+          <h1 id="sign-in-title">Puzzle</h1>
+        </div>
+        <p class="lead">Oynamak için sana verilen kullanıcı adı ve şifreyle giriş yap.</p>
+        <label class="field">Kullanıcı adı
+          <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20">
+        </label>
+        <label class="field">Şifre
+          <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128">
+        </label>
+        <button id="sign-in-submit" class="btn primary" type="submit"><span class="spinner" aria-hidden="true"></span><span class="btn-label">Giriş yap</span></button>
+        <p id="sign-in-error" class="form-error" role="alert" hidden></p>
+        <p class="notice">Hamlelerin ve sonuçların oyunu ayarlamak için kaydedilir. Kayıtlarda adın değil, rastgele bir kimlik durur. Verilerinin silinmesini dilediğin zaman isteyebilirsin.</p>
+      </form>
+    </section>
+
+    <section id="game-view" class="play" aria-labelledby="level-title" hidden>
+      <div class="level-head">
+        <h2 id="level-title" class="level-title"></h2>
+        <p id="progress-line" class="progress-line"></p>
+      </div>
+      <div class="hud">
+        <div id="moves" class="moves"><span id="moves-left">–</span><small>hamle</small></div>
+        <div id="goals" class="goals"></div>
+      </div>
+      <div id="board-wrap" class="board-wrap">
+        <div id="board" class="board" aria-label="Oyun tahtası"></div>
+        <div id="banner" class="banner hidden"></div>
+      </div>
+      <p class="help">Sürükle ya da iki komşu taşa sırayla dokun · özel taşa dokunmak onu patlatır</p>
+    </section>
+
+    <section id="finished-view" class="auth" aria-labelledby="finished-title" hidden>
+      <div class="panel auth-card finished-card">
+        <svg class="finished-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#item"/></svg>
+        <h2 id="finished-title">Tüm bölümleri bitirdin!</h2>
+        <p class="lead">Şimdilik bu kadar. Oynadığın için teşekkürler.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script src="player.js" type="module"></script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
-using Puzzle.Core.Model;
 using Puzzle.Core.Recording;
 
 namespace Puzzle.Tooling.Recording;
@@ -142,7 +141,7 @@ public static class AttemptRecordJson
         AssistPercent = lab.AssistPercent,
         HintsShown = lab.HintsShown,
         BotMoves = lab.BotMoves,
-        Moves = lab.Moves.Select(ToNumbers).ToArray(),
+        Moves = lab.Moves.Select(MoveNumbers.Of).ToArray(),
     };
 
     private static LabDetails ToLabDetails(LabLine lab) => new(
@@ -151,18 +150,7 @@ public static class AttemptRecordJson
         assistPercent: lab.AssistPercent,
         hintsShown: lab.HintsShown,
         botMoves: lab.BotMoves,
-        moves: lab.Moves.Select(ToMove).ToArray());
-
-    private static int[] ToNumbers(Move move) => move.Kind == MoveKind.Tap
-        ? [move.From.X, move.From.Y]
-        : [move.From.X, move.From.Y, move.To.X, move.To.Y];
-
-    private static Move ToMove(int[]? numbers) => numbers switch
-    {
-        [int x, int y] => Move.Tap(new Position(x, y)),
-        [int fromX, int fromY, int toX, int toY] => Move.Swap(new Position(fromX, fromY), new Position(toX, toY)),
-        _ => throw new ArgumentException("A move is [x, y] for a tap or [fromX, fromY, toX, toY] for a swap."),
-    };
+        moves: lab.Moves.Select(MoveNumbers.ToMove).ToArray());
 
     // Wire shapes. Declaration order is field order in the line; "required" makes a missing field a format error.
     private sealed class SchemaProbe

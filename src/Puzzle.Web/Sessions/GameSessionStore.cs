@@ -90,6 +90,16 @@ public enum MoveSource
     Bot,
 }
 
+/// <summary>Which face of the web app an attempt is played in; its record names it as the client.</summary>
+public enum WebClient
+{
+    /// <summary>The owner's test lab, with its tools.</summary>
+    Lab,
+
+    /// <summary>The public mode's player page: a signed-in player, no tools. Its attempts are kept with the player, not in the session store.</summary>
+    Public,
+}
+
 /// <summary>
 /// One browser attempt. <see cref="Game"/> and the attempt's history are not thread-safe: hold <see cref="Gate"/>
 /// while touching them.
@@ -98,11 +108,12 @@ public sealed class GameSession
 {
     private readonly List<Move> _moves = new();
     private readonly TimeProvider _clock;
-    private readonly long _startedAt;
+    private readonly long _openedAt;
+    private readonly DateTimeOffset _openedUtc;
     private volatile RecordProgress _record;
 
     /// <param name="sequenceBreak">Why the attempt stands outside its device's retries; absent when it is the next one.</param>
-    public GameSession(
+    private GameSession(
         string id,
         LibraryLevel level,
         AttemptOrigin origin,
@@ -120,7 +131,11 @@ public sealed class GameSession
         Game = game;
         Start = start;
         _clock = clock;
-        _startedAt = clock.GetTimestamp();
+        _openedAt = clock.GetTimestamp();
+
+        // An attempt rebuilt after a restart started long before this session; no session is made before its attempt started.
+        DateTimeOffset now = clock.GetUtcNow();
+        _openedUtc = now > start.StartedUtc ? now : start.StartedUtc;
         LastActivityUtc = start.StartedUtc;
         BotRng = new Rng(Rng.Derive(start.Seeds.Play, 99));
     }
@@ -193,10 +208,46 @@ public sealed class GameSession
     }
 
     /// <summary>
-    /// The time on the attempt's own clock: its start plus the time measured since. The wall clock may step back (a time
-    /// sync after sleep); this never does, so an attempt never ends before it starts.
+    /// Starts an attempt: the level's game from <paramref name="seeds"/>, and the session that keeps its history for
+    /// the record.
     /// </summary>
-    public DateTimeOffset NowUtc() => Start.StartedUtc + _clock.GetElapsedTime(_startedAt);
+    /// <param name="device">The lab browser's device id, or in the public mode the player's id.</param>
+    /// <param name="startedUtc">
+    /// When the attempt started, for one that began before this session: a player's attempt rebuilt after a restart
+    /// (<see cref="TryReplay"/>). Now when absent.
+    /// </param>
+    /// <exception cref="LevelInitializationException">The level cannot produce a starting board.</exception>
+    public static GameSession Begin(
+        LibraryLevel level,
+        AttemptSeeds seeds,
+        AttemptOrigin origin,
+        int assist,
+        DeviceId device,
+        WebClient client,
+        TimeProvider clock,
+        DateTimeOffset? startedUtc = null)
+    {
+        Game game = Game.Start(level.Level, seeds, new GameOptions { RecordEvents = true, AssistPercent = assist });
+
+        // Only the device's next retry under the level's own rules is a real retry count; any other attempt is
+        // recorded without a number, as hand-chosen, and left out of the comparison with the bots.
+        SequenceBreak? sequenceBreak = origin.SequenceBreakOn(level.Level);
+        var start = new AttemptStart(
+            level: level.Level.Id,
+            moveLimit: game.MoveLimit,
+            seeds: seeds,
+            attempt: sequenceBreak is null ? origin.Attempt : null,
+            device: device,
+            client: ClientName(client),
+            startedUtc: startedUtc ?? clock.GetUtcNow());
+        return new GameSession(Guid.NewGuid().ToString("N"), level, origin, sequenceBreak, assist, game, start, clock);
+    }
+
+    /// <summary>
+    /// The time on the attempt's own clock: when this session was made, plus the time measured since. The wall clock
+    /// may step back (a time sync after sleep); this never does, so an attempt never ends before it starts.
+    /// </summary>
+    public DateTimeOffset NowUtc() => _openedUtc + _clock.GetElapsedTime(_openedAt);
 
     public void MovePlayed(Move move, MoveSource source)
     {
@@ -207,6 +258,26 @@ public sealed class GameSession
         }
 
         LastActivityUtc = NowUtc();
+    }
+
+    /// <summary>
+    /// Plays again, as the player's own, the moves an earlier session of this attempt kept, in their order: the engine
+    /// is deterministic, so the same level, seeds and moves give the same board. False when the game refuses one of
+    /// them: they are then not the moves of this level and these seeds. Only for a session nobody has played in.
+    /// </summary>
+    public bool TryReplay(IEnumerable<Move> moves)
+    {
+        foreach (Move move in moves)
+        {
+            if (!Game.TryPlay(move))
+            {
+                return false;
+            }
+
+            _moves.Add(move);
+        }
+
+        return true;
     }
 
     /// <summary>A move was suggested to the player; once the attempt has ended, help no longer counts against it.</summary>
@@ -220,10 +291,17 @@ public sealed class GameSession
         HintsShown++;
         LastActivityUtc = NowUtc();
     }
+
+    private static string ClientName(WebClient client) => client switch
+    {
+        WebClient.Lab => AttemptRecorder.Client,
+        WebClient.Public => AttemptRecorder.PublicClient,
+        _ => throw new ArgumentOutOfRangeException(nameof(client), client, "Unknown web client."),
+    };
 }
 
 /// <summary>
-/// In-memory sessions with a hard size limit and idle expiry, so an open browser tab can never grow the
+/// The lab's sessions, in memory, with a hard size limit and idle expiry, so an open browser tab can never grow the
 /// server without bound. A session that leaves the store unfinished is recorded as an abandoned attempt.
 /// </summary>
 public sealed class GameSessionStore
@@ -244,23 +322,11 @@ public sealed class GameSessionStore
         _clock = clock;
     }
 
+    /// <param name="device">The lab browser's device id.</param>
     /// <exception cref="LevelInitializationException">The level cannot produce a starting board.</exception>
     public GameSession Create(LibraryLevel level, AttemptSeeds seeds, AttemptOrigin origin, int assist, DeviceId device)
     {
-        Game game = Game.Start(level.Level, seeds, new GameOptions { RecordEvents = true, AssistPercent = assist });
-
-        // Only the device's next retry under the level's own rules is a real retry count; any other attempt is
-        // recorded without a number, as hand-chosen, and left out of the comparison with the bots.
-        SequenceBreak? sequenceBreak = origin.SequenceBreakOn(level.Level);
-        var start = new AttemptStart(
-            level: level.Level.Id,
-            moveLimit: game.MoveLimit,
-            seeds: seeds,
-            attempt: sequenceBreak is null ? origin.Attempt : null,
-            device: device,
-            client: AttemptRecorder.Client,
-            startedUtc: _clock.GetUtcNow());
-        var session = new GameSession(Guid.NewGuid().ToString("N"), level, origin, sequenceBreak, assist, game, start, _clock);
+        GameSession session = GameSession.Begin(level, seeds, origin, assist, device, WebClient.Lab, _clock);
         var entry = new MemoryCacheEntryOptions { Size = 1, SlidingExpiration = _idleTimeout };
         entry.RegisterPostEvictionCallback(OnEvicted);
 

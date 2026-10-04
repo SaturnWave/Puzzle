@@ -21,6 +21,9 @@ public sealed class AttemptRecorder
     /// <summary>The client name in the lab's records.</summary>
     public const string Client = "web-lab";
 
+    /// <summary>The client name in the records of the public mode's players.</summary>
+    public const string PublicClient = "web-public";
+
     /// <summary>
     /// Records that may wait for the log at once: as many as the sessions the lab holds by default, each a few kilobytes
     /// at most. Past it, the record that has waited longest gives way.

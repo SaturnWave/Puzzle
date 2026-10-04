@@ -31,7 +31,7 @@ internal static class PuzzleApi
     /// <summary>Carries the browser's anonymous device id for the attempt records (docs/GAME_DESIGN.md §20).</summary>
     internal const string DeviceHeader = "X-Device-Id";
 
-    public static void MapPuzzleApi(this WebApplication app)
+    public static void MapPuzzleApi(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder api = app.MapGroup("/api");
         api.MapGet("/levels", ListLevels);

@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <!-- Local test lab: plays levels in the browser with the real engine running on the server. -->
+  <!-- Local test lab: plays levels in the browser with the real engine running on the server.
+       With Puzzle:Mode=Public it also serves invited players a page of their own (and keeps the lab for the owner). -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,5 +10,12 @@
     <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
     <ProjectReference Include="..\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The ready-made test accounts of the public test (Puzzle:ReadyMadePlayersPath): beside appsettings.json, in the output too. -->
+    <Content Update="public-test-players.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

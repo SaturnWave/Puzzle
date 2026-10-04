@@ -5,6 +5,7 @@ using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Tooling;
+using Puzzle.Tooling.Players;
 using Puzzle.Tooling.Recording;
 using Puzzle.Web.Recording;
 
@@ -31,7 +32,7 @@ internal static class RecordingsApi
 
     private const string LoggerCategory = "Puzzle.Web.Recordings";
 
-    public static void MapRecordingsApi(this WebApplication app)
+    public static void MapRecordingsApi(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder recordings = app.MapGroup("/api/recordings");
         recordings.MapGet(string.Empty, ListRecordings);
@@ -42,7 +43,8 @@ internal static class RecordingsApi
         string? scope,
         [FromHeader(Name = PuzzleApi.DeviceHeader)] string? deviceHeader,
         AttemptLog log,
-        ILoggerFactory loggers)
+        ILoggerFactory loggers,
+        IServiceProvider services)
     {
         if (!DeviceId.TryCreate(deviceHeader, out DeviceId? device))
         {
@@ -61,8 +63,21 @@ internal static class RecordingsApi
 
         AttemptRecord[] inScope = LabRecords.InScope(contents.Records, recordScope, device).ToArray();
         AttemptSummary summary = AttemptSummary.Of(inScope);
-        return Results.Ok(RecordingsMapper.ToRecordings(recordScope, inScope.Length, contents.Problems.Count, summary, MaxListedLevels));
+        return Results.Ok(RecordingsMapper.ToRecordings(
+            recordScope,
+            inScope.Length,
+            contents.Problems.Count,
+            summary,
+            MaxListedLevels,
+            PlayersIn(recordScope, services.GetService<PlayerStore>(), contents.Records)));
     }
+
+    /// <summary>
+    /// The public mode's players by username, for the scope that covers everyone. Absent in the lab mode, which has no
+    /// player store: only a public server's owner, who alone reaches this panel there, sees who a player id belongs to.
+    /// </summary>
+    private static PlayerAttemptsDto[]? PlayersIn(RecordScope scope, PlayerStore? players, IReadOnlyList<AttemptRecord> records) =>
+        players is not null && scope == RecordScope.All ? RecordingsMapper.ToPlayers(players.Accounts, records) : null;
 
     /// <summary>
     /// Plays the bots on the games of the scope's latest comparable attempts. One comparison runs at a time, off the

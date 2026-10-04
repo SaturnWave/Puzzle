@@ -129,6 +129,88 @@ public sealed class AttemptLog
         return new AttemptLogContents(records, problems);
     }
 
+    /// <summary>
+    /// Removes every record of <paramref name="device"/> (a player asked for their data to be deleted) and returns how
+    /// many lines went; every other line stays. A line that cannot be read as a record goes too when it spells the
+    /// device's id: the id is random, so nothing else could hold it. The log is held alone meanwhile, so a lab that
+    /// records at that moment waits and tries again. The lines to keep are first written to a file beside the log
+    /// (<c>.kept</c>) and only then put in the log's place, so a crash in between still leaves every one of them on disk.
+    /// </summary>
+    /// <exception cref="IOException">
+    /// The log could not be rewritten, another process kept it open, or a <c>.kept</c> file is left from a removal that
+    /// was cut short: it may hold records the log lost, so it is never overwritten.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">The process may not write there.</exception>
+    public int RemoveRecordsOf(DeviceId device)
+    {
+        string keptPath = Path + ".kept";
+        lock (_appendGate)
+        {
+            if (!File.Exists(Path))
+            {
+                return 0;
+            }
+
+            if (File.Exists(keptPath))
+            {
+                throw new IOException(
+                    $"'{keptPath}' is left from a removal that was cut short and may hold records '{Path}' lost; compare the two, keep the complete one as the log and delete the other.");
+            }
+
+            int removed;
+            using (FileStream log = OpenAlone())
+            using (var kept = new FileStream(keptPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
+            {
+                removed = CopyLinesOfOthers(log, kept, device);
+                if (removed > 0)
+                {
+                    kept.Flush(flushToDisk: true);
+                    kept.Position = 0;
+                    log.SetLength(0);
+                    log.Position = 0;
+                    kept.CopyTo(log);
+                    log.Flush(flushToDisk: true);
+                }
+            }
+
+            File.Delete(keptPath);
+            return removed;
+        }
+    }
+
+    /// <summary>Copies the lines of <paramref name="log"/> that are not records of <paramref name="device"/> to <paramref name="kept"/>; returns how many it left out.</summary>
+    private static int CopyLinesOfOthers(Stream log, Stream kept, DeviceId device)
+    {
+        using var reader = new StreamReader(log, Encoding.UTF8, leaveOpen: true);
+        using var writer = new StreamWriter(kept, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), leaveOpen: true) { NewLine = "\n" };
+        int removed = 0;
+        while (reader.ReadLine() is { } line)
+        {
+            if (IsRecordOf(line, device))
+            {
+                removed++;
+            }
+            else
+            {
+                writer.WriteLine(line);
+            }
+        }
+
+        return removed;
+    }
+
+    private static bool IsRecordOf(string line, DeviceId device)
+    {
+        try
+        {
+            return AttemptRecordJson.Parse(line).Start.Device == device;
+        }
+        catch (AttemptRecordFormatException)
+        {
+            return line.Contains(device.Value, StringComparison.Ordinal);
+        }
+    }
+
     /// <summary>Whether <paramref name="file"/> is empty or ends in a line break; leaves the position at its end either way.</summary>
     private static bool EndsWithLineBreak(FileStream file)
     {
@@ -162,6 +244,24 @@ public sealed class AttemptLog
             else
             {
                 line.Append((char)next);
+            }
+        }
+    }
+
+    /// <summary>Opens the log for this process alone, waiting out another's brief hold on it as an append does.</summary>
+    private FileStream OpenAlone()
+    {
+        TimeSpan pause = FirstRetryPause;
+        for (int tries = 1; ; tries++)
+        {
+            try
+            {
+                return new FileStream(Path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException ex) when (MayBeBriefLock(ex) && tries < AppendTries)
+            {
+                Thread.Sleep(pause);
+                pause *= 2;
             }
         }
     }
