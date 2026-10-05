@@ -183,7 +183,7 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 
    | Bölüm | Kolay: hedef / casual alt sınırı | Normal: hedef / casual alt sınırı |
    |---|---|---|
-   | 1–50 | %95 / %80 | %85 / %60 |
+   | 1–50 (2026-10-05'e kadar; şimdi madde 7) | %95 / %80 | %85 / %60 |
    | 51–300 | %90 / %75 | %75 / %50 |
    | 301–1000 | %85 / %70 | %65 / %40 |
 
@@ -192,6 +192,19 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
    - **Maliyet:** Kolay ve Normal adaylarında casual bot da oynar (aday başına 320 oyun daha); 1000 bölümlük üretime yaklaşık 10 dakika ekler.
    - Alt sınırı tutturmak için limit hamle aralığını aşınca üretici önce hedefleri küçültür; bu yüzden koruma çoğu zaman "daha çok hamle" yerine "biraz daha kolay hedef" olarak görünür.
 6. **Limit+5 sütunu (uygulandı, 2026-10-03):** raporlar `L + 5` hamledeki kazanma oranını da gösterir (`botstats`: son sütun `winAtLimitPlus5`; üretici raporu: `win`'in yanında `winPlus5`). 5 değeri `ExtraMovesOffer.Moves` sabitinde. `L + 5` hamle üst sınırını aşarsa hücre boş kalır. "+5 hamle" teklifinin bölümü ne kadar kolaylaştırdığı böylece görünür. Kalibrasyon yine `L`'ye göre yapılır; dağılım elde olduğu için ek simülasyon gerekmez.
+7. **İlk oda kuralı (karar ve uygulama 2026-10-05):** birinci müze odasında (bölüm 1–50) limiti average bot değil, zayıf oyuncu modeli belirler; casual koruması bu aralıkta kullanılmaz. Gerekçe: ilk insan verisi (§13, §20).
+
+   | Bölüm | Kademe | Limiti belirleyen bot ve hedef |
+   |---|---|---|
+   | 1–3 | Kolay | random %90 (yalnızca geçerli hamle yapan biri de kazanmalı) |
+   | 4–10 | Kolay | novice %95 |
+   | 11–20 | Kolay | novice %90 |
+   | 21–30 | döngü | novice: Kolay %90, Normal %80, Zor %65, Süper Zor %55 |
+   | 31–50 | döngü | novice: Kolay %80, Normal %60, Zor %40, Süper Zor %30 (geçici; insan verisiyle gözden geçirilecek) |
+   | 51–1000 | döngü | average + casual koruması (madde 5) |
+
+   - Tohum havuzu da aynı botla kurulur; ilk denemeler zayıf oyuncu için de dengeli tohumlarla başlar.
+   - 51 ve sonrası değişmedi. Novice bot 51–60'ta %19, casual %45 kazanıyor: **duvar 51'e taşındı**; APK testinden önce insan verisiyle karar verilecek.
 
 ## 9. 1000 bölüm üretim hattı (Faz 2)
 
@@ -224,7 +237,8 @@ Raporları (`report.csv` ve kademe özeti) karşılaştırarak profiller kıyasl
 | `sizes` | Kademe başına tahta boyutları. `fixedUntil`'e kadar sabit; bölüm içinde boyut hiç değişmez. `plainShapesUntil` (20): o bölüme kadar tahtalar düz dikdörtgen |
 | `palette` | `newColorsFrom`'dan sonra her bölüm grubu (`chapterSize`) 8 renk arasından kendi paletini alır |
 | `mechanics[]` | Mekanik açılış takvimi (aşağıdaki tablo). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
-| `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu: `average` (karar 2026-10-02) |
+| `calibrationBot` | Hamle limitinin göre ayarlandığı oyuncu: `average` (karar 2026-10-02). İlk odada farklı (§8 madde 7) |
+| `profiles/onboarding-1-3.json`, `profiles/onboarding-4-50.json` | İlk oda için **geçici** profiller. Kalibrasyon botu bugün profil genelinde tek alan olduğu için iki ayrı dosya; her biri yalnızca kendi aralığını üretir. **1–50 için `default.json` ile `--overwrite` ya da `--repair` çalıştırılmaz** (eski, zor bölümler geri gelir). Bant başına kalibrasyon botu alanı eklenince iki dosya `default.json` içine katlanacak |
 | `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`) |
 | `floorBot`, `bands[].casualFloor` | Casual koruması (§8): alt sınırı tutturması gereken bot (`casual`) ve aralık başına alt sınırlar. Koruma botu kalibrasyon botundan zayıf bir oyuncu modeli olmalı (random < novice < casual < average < expert); ölçüm botu olamaz. Raporda `floor`, `floorWin`, `floorSetLimit`, `floorBot` sütunları; `generate --repair` alt sınırı, koruma botu ya da hedefi değişen bölümleri yeniden üretir |
 | `calibration`, `seedPool` | Oyun sayıları, tolerans, aday sayısı |
@@ -246,7 +260,9 @@ Hiçbir aday aralığa oturmazsa en yakın olanı tutulur. Limiti yine hedef kaz
 |---|---|---|---|---|---|---|---|---|---|---|
 | Kademe | Kolay | Normal | Normal | Normal | **Zor** | Kolay (nefes) | Normal | Normal | **Zor** | **Süper Zor** |
 
-Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır):
+**İlk oda (2026-10-05):** 20. bölüme kadar her bölüm Kolay (`tutorialUntil` 20); döngü 21'de başlar. İlk Zor bölüm 25, ilk Süper Zor 30; ikisi de sonraki odalardaki adaşlarından çok daha yumuşak (§8 madde 7).
+
+Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır). 1–50 sütunu 2026-10-05'ten beri geçerli değil; ilk odada §8 madde 7 uygulanır:
 
 | Kademe | Bölüm 1–50 | 51–300 | 301–1000 |
 |---|---|---|---|
@@ -490,6 +506,40 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 - Üretim tekrarlanabilir: 83–164. bölümler yeniden üretildiğinde hiçbir dosya değişmedi.
 - Yukarıdaki "Faz 2 sonuçları", "Expert botun hamle raporu" ve "Usta ve expert" tabloları önceki bölüm setiyle ölçüldü; karşılaştırma için duruyor.
 
+**İlk insan verisi ve ilk odanın yeniden üretimi (2026-10-05)**
+
+Herkese açık testte ilk oyuncu (match-3'te deneyimli biri; tek kişi, 37 deneme, 1–10. bölümler) ilk bölümleri çok zor buldu. Botlar aynı tohumlarda ve aynı limitte oynatıldı (`puzzle humans`; karşılaştırılabilir 26 deneme):
+
+| Bölüm (eski) | Kademe | Limit | İnsan | novice | casual | average | expert |
+|---|---|---|---|---|---|---|---|
+| 1 | Kolay | 16 | 1 / 3 | %78 | %98 | %99 | %100 |
+| 2–6 | Kolay | 13–25 | 5 / 5 | %53–100 | %83–100 | %93–100 | %83–100 |
+| 7 | Normal | 22 | 1 / 7 | %31 | %63 | %95 | %98 |
+| 8 | Normal | 21 | 1 / 2 | %23 | %65 | %93 | %100 |
+| 9 | Zor | 27 | 1 / 1 | %0 | %17 | %57 | %67 |
+| 10 | Süper Zor | 31 | 0 / 8 (+11 tekrar, hepsi kayıp) | %2 | %20 | %46 | %50 |
+| Toplam | | | %35 | %34 | %58 | %80 | %82 |
+
+- **Deneyimli bir insan novice botla aynı oranda kazanıyor.** Bot adları insan becerisini göstermiyor: `average` bot insanüstü. İlk 12 denemenin hamle hamle tekrarında oyuncunun hamle başına topladığı hedef taşı 6,57; novice 7,34; average 10,97.
+- Oyuncu özel taşı ihmal etmiyor (kendi eşleşmeleriyle botlardan iki kat özel taş kuruyor); geride kalma nedeni tahtadaki zincirleme düşüşlerden neredeyse hiç taş alamaması ve özel taşları tek tek patlatması.
+- Örneklem tek kişi. Yönü destekliyor (ilk bölümler average bota göre ayarlanamaz); hiçbir sayının büyüklüğünü desteklemiyor.
+
+İlk oda §8 madde 7'deki kuralla yeniden üretildi (bölüm ve bot başına 600 oyun, üreticinin görmediği tohumlarla):
+
+| Bölüm | Ort. limit | random | novice | casual | average | Beklenen deneme (novice): yeni / eski |
+|---|---|---|---|---|---|---|
+| 1–3 | 16,7 | %90 | %100 | %100 | %100 | 1–10 toplam: 10,3 / 93,6 |
+| 4–10 | 19,6 | %49 | %95 | %100 | %100 | |
+| 11–20 | 17,6 | %29 | %92 | %99 | %100 | 10,8 / 78,8 |
+| 21–30 | 23,8 | %23 | %77 | %95 | %100 | 13,2 / 85,1 |
+| 31–40 | 22,9 | %11 | %60 | %84 | %96 | 18,0 / 70,9 |
+| 41–50 | 22,9 | %9 | %57 | %82 | %96 | 19,5 / 89,9 |
+
+- Örnek: 1. bölüm "110 sarı, 16 hamle" yerine "55 sarı, 19 hamle"; 10. bölüm "144 yeşil, 31 hamle (Süper Zor)" yerine "39 yeşil, 21 hamle (Kolay)".
+- 50 bölümün hiçbiri gevşetilmedi; havuzlar en az 8 tohum. 51–1000 dosyaları değişmedi (51–55 yeniden üretilip bayt bayt karşılaştırıldı).
+- Eski 50 dosya `levels/archive/before-onboarding-2026-10-05/` altında; eski kayıtlar karşılaştırılabilir kalıyor. Yukarıdaki "Yeniden üretim" tablosunda Kolay ve Normal satırları 1–50'yi eski hâliyle içeriyor.
+- Kabul ölçütleri ve prova: `out/onboarding/spec.md`, `out/onboarding/rehearsal-check.js` (depoya girmiyor).
+
 ## 14. Açık sorular
 
 1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
@@ -590,6 +640,7 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 
 - **Oda sırası:** en sevilen akımlarla başlar (Empresyonizm, Post-empresyonizm), kronolojik değil. İlk 100 bölüm oyuncuyu tutmak için en kritik dönem; en renkli ve en tanınan tablolar orada olmalı.
 - **Oda finali:** her odanın 5. tablosu o akımın en ünlü eseri. Her 50 bölümde bir büyük ödül anı olur.
+- **İlk iki tablo (2026-10-05):** 1–20. bölümler düz ve kolaydır; "tablonun son bölümü en zorudur" kuralı üçüncü tablodan (21–30) itibaren geçerlidir (§8 madde 7).
 
 **Tablolar**
 - **Ana içerik:** kamu malı ünlü tablolar, güvenli olmak için 1900 öncesi sanatçılarla sınırlı. Kaynak: müzelerin açık erişim koleksiyonları (Art Institute of Chicago, The Met, Rijksmuseum). Yalnızca Art Institute of Chicago'da yaklaşık 2.000 kamu malı tablo var (2026-10-02 sorgusu).
@@ -617,10 +668,10 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 
 | Motordaki öğe | Temadaki karşılığı |
 |---|---|
-| Renkli taşlar | Boya (görseli sanat aşamasında seçilecek) |
+| Renkli taşlar | Altı sade şekil: uğur böceği, damla, kare, papatya, koni, hilal (§22) |
 | Roket | Fırça darbesi |
 | Bomba / Büyük Bomba | Boya sıçraması / büyük sıçrama |
-| Pervane | Tablodan fırlayan kuş ya da kelebek |
+| Pervane | Kelebek (§22) |
 | Renk Bombası | Gökkuşağı paleti |
 | Jöle | Tablodaki kir ya da eski vernik katmanı |
 | Kutu | Nakliye sandığı |
@@ -665,6 +716,8 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Web test uygulaması:** oynanan her deneme `recordings/attempts.jsonl` dosyasına bir satır olarak yazılır (git'e girmez). Deneme bitince, yarıda bırakılınca, oturum zaman aşımına uğrayınca ve sunucu kapanırken kaydedilir; yazılamayan kayıt bekletilip yeniden denenir. Deneme numarasını sunucu verir. İpucu, çözücü, bot hamlesi ya da DDA yardımıyla oynanan denemeler ve elle seçilen tohumlar kaydedilir ama karşılaştırmaya girmez.
 - **İnsan ve bot karşılaştırması:** `puzzle humans` komutu ve web'deki "Kayıtlar" paneli. Her insan denemesinin oyununu (aynı tohumlar, aynı hamle limiti) dört greedy profile oynatır, limitte kazanma oranlarını yan yana koyar ve en yakın profili söyler. Yarıda bırakılan denemeler kazanma oranını yükseltmesin diye iki oran verilir: biten denemeler üzerinden ve yarıda bırakılanlar kayıp sayılarak (alt sınır).
 - **Herkese açık web testi (2026-10-04, APK'dan önce):** web test uygulamasının "herkese açık" modu. Tanıdıklar internet adresinden giriş yapıp bölümleri gerçek oyundaki gibi sırayla oynar; her deneme kaydedilir. Test paneli yalnızca sahibine, yönetici anahtarıyla açıktır. Yayın Tailscale Funnel ile yapılır. Kullanım: [PUBLIC_TEST.md](PUBLIC_TEST.md).
+- **İlk insan verisi (2026-10-04/05):** deneyimli tek bir oyuncunun 37 denemesi novice botla aynı kazanma oranını verdi (§13). Sonuç: **yayın öncesi kalibrasyonda ilk oda novice bota göre ayarlanır** (§8 madde 7); 51 ve sonrası için karar daha çok veriyle verilecek. Tek bölüm için karar eşiği: 35 ilk deneme bir oranı ancak ±10 puana sabitler; daha azıyla bölüm bazında sayı değiştirilmez.
+- **Canlı testte bölüm değiştirme:** sunucu bölümleri yalnızca açılışta okur. Dosyalar diskte değişir, eski sürümler `levels/archive/` altına alınır, sunucu yeniden başlatılır. Yarım kalmış denemesi olan oyuncunun o denemesi düşer; oyuncu bulunduğu bölümün yeni sürümünden devam eder.
 - **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
 - **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
 - **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
@@ -685,3 +738,48 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 | 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | Bölümler yeniden üretildi ✅ 2026-10-04 (herkese açık test bu bölümlerle yapılsın diye öne alındı); motor 4. adım bitince "hazır" |
 
 Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına ve takvime bağlı; bölümler iki kez üretilmesin diye onlar önce gelir.
+
+## 22. Görsel tasarım — sanat yönü ve çizim planı
+
+**Karar (2026-10-05).** Sanat yönü, kullanıcının Claude Design'da çizdirdiği ve beğendiği tuvaldir (ana ekran ve 47. bölüm tahtası). Bu oturumda denenen diğer yönler rafa kalktı. Görseller yol haritasında hâlâ en sonda; aşağıdaki işler çizim dosyaları üzerindedir, oyun koduna girmez. Çizimlerin kaynağı `out/design/next/` altında (taş parçaları `sym/final`, üreteç betikleri `tools`); depoya girmiyor.
+
+**Dil**
+- Camgöbeği damask galeri duvarı, pirinç aplikler, tele asılı krem plaketler, basamaklı ve boncuklu yaldız çerçeve içinde açık camgöbeği dokulu tepsi, altta ahşap booster rafı.
+- Yazı tipleri: Gabarito (arayüz), Paytone One (büyük düğmeler), Young Serif (oda ve tablo adları).
+- **Taş tarifi:** her taş tek, sade ve iri bir siluettir; hepsi aynı ışığı paylaşır (sol üstten ışık, alt kenarda kalınlık, içte hafif kabartma, iki kenar parıltısı, tek beyaz yansıma). Ayrıntılı nesne çizimi bu dile yabancı kalır.
+
+**Taş seti**
+
+| Motordaki | Görsel | Durum |
+|---|---|---|
+| Kırmızı | Uğur böceği (kullanıcı isteği, 2026-10-05; girdaplı diskin yerine) | Çizildi 2026-10-05 |
+| Mavi | Damla | Var |
+| Yeşil | Yuvarlak köşeli kare | Var |
+| Sarı | Papatya (kullanıcı isteği, 2026-10-05; sarı çiçeğin yerine). Yaprakları açık sarı, göbeği altın sarısı: sarı taşın yerini tutsun diye | Çizildi 2026-10-05 |
+| Mor | Koni | Var |
+| Turuncu | Hilal | Var |
+| Roket (yatay / dikey) | Fırça kovanı | Var |
+| Bomba / Büyük Bomba | Mürekkep sıçraması / yaldız kuşaklı büyük sıçrama | Var / çizildi |
+| Pervane | Kelebek | Var |
+| Renk Bombası | Gökkuşağı paleti (altı boya damlalı sedef kap) | Çizildi |
+| Jöle (1 / 2 kat) | Eski vernik / kalın (koyu) vernik | Var / çizildi |
+| Kutu (1 / 2 / 3 can) | Çatlak sandık / nakliye sandığı / demirli sandık | Çizildi |
+| Zincir (1 / 2 can) | Koruma bandı / çift bant | Çizildi |
+| Malzeme | Kayıp çerçeve köşesi | Çizildi |
+
+**Çizim planı**
+
+| # | İş | Durum |
+|---|---|---|
+| 1 | Uğur böceği ve papatya taşları; eksik engeller, özel taşlar ve hedef simgeleri | ✅ 2026-10-05 |
+| 2 | Oyunun gerçek genişliğinde (10 sütun, 36 px hücre) Türkçe tahta ekranı; taş ve engel föyü | ✅ 2026-10-05 (tuvalde iki yeni çizim) |
+| 3 | Türkçe ana ekran | ✅ 2026-10-05 |
+| 4 | Yapboz yerleştirme ekranı (3-4-3 kesim; tepsideki parça yerinin gerçek kesimiyle çizili) | ✅ 2026-10-05 |
+| 5 | Bölüm başı (hedefler, bölüm öncesi booster'lar), kazanma (bitiş şöleni, parça ödülü), kaybetme ("+5 hamle" teklifi) | ✅ 2026-10-05 |
+| 6 | Müze haritası, koleksiyon, mağaza ve ayarlar | Başladı 2026-10-05 |
+| 7 | Herkese açık web testindeki oyuncu sayfasına bu görünümün uygulanması | Karar bekliyor |
+| 8 | Unity'ye aktarım (SVG'den sprite) | Arayüz fazında |
+
+Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
+
+Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hedefi için önerilen 44 pt'nin altında. Tahta genişliği arayüz fazında ayrıca konuşulacak (§2).

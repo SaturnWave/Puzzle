@@ -4,6 +4,108 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-04 · Oturum 10 — İlk insan verisi: ilk bölümler zor
+
+**Geri bildirim**
+- Herkese açık test yayında (Tailscale Funnel, 8443). İlk oyuncu (Admin hesabı, 12 deneme, 1–7. bölümler) ilk bölümlerin zor olduğunu söyledi. Sonuç: 12 denemede 6 galibiyet; 1. bölümde 3'te 1, 7. bölümde 4'te 0.
+- Yayın kontrol edildi: adres giriş ekranını gösteriyor; test paneli ve kayıt uçları anahtarsız isteği reddediyor.
+
+**Bulgular** (ayrıntı `out/onboarding/` altında; depoya girmiyor)
+- **Limitleri yanlış oyuncu modeli belirliyor.** Limitler average bota göre ayarlı; oyuncu novice botun hızında ya da biraz altında (hamle başına 6,57 hedef taşı; novice 7,34; average 10,97). Bugünkü bölümlerde novice bot 1–5'te %79, 6–10'da %23, 9. bölümde %5, 10. bölümde %2 kazanıyor.
+- **Zorluk döngüsü 1. bölümden başlıyor:** 9. bölüm Zor, 10. bölüm Süper Zor.
+- **Oyuncu özel taşı ihmal etmiyor.** Kendi eşleşmeleriyle botlardan iki kat özel taş kuruyor ve hamlelerinin %78'inde hedef rengi eşliyor. Geride kalma nedeni: tahtadaki zincirleme düşüşlerden neredeyse hiç taş almıyor (hamle başına 0,46; novice 1,55) ve özel taşları tek tek patlatıyor.
+- **Tohum şansı zayıf oyuncuya dengesiz:** bugünkü 2. bölümün ilk tohumunda novice %45 kazanıyor (havuz içi fark %45–88).
+- **Sektör:** başarılı oyunlarda ilk ~20 bölüm neredeyse kaybedilmiyor; ilk "Zor" bölüm 24–54, ilk "Süper Zor" 28–65 arasında (topluluk verisi; hiçbir stüdyo oran yayımlamadı).
+- Veri sınırı: tek kişi, 12 deneme. Yönü destekliyor, hiçbir sayının büyüklüğünü desteklemiyor.
+
+**Öneri (kullanıcı onayı bekliyor; şartname `out/onboarding/spec.md`)**
+- Birinci odada (1–50) limitleri zayıf oyuncu modeli belirlesin: 1–3 random bot %90, 4–10 novice %95, 11–20 novice %90, 20'ye kadar hepsi Kolay. 21'den sonra döngü yumuşak hedeflerle döner (ilk Zor 25, ilk Süper Zor 30). 51 ve sonrası aynen kalır.
+- Aşama 0: kod değişikliği yok, iki geçici profil dosyası ve bir sunucu yeniden başlatması. Aşama 1: `bands[].calibrationBot` alanı; iki dosya `default.json` içine katlanır.
+- İpucu ve öğretici bu adımda yok: bölümlerle birlikte değişirse hangisinin işe yaradığı anlaşılamaz.
+
+**Prova** (canlı bölümlere dokunmadan, `out/onboarding/rehearsal`; bölüm ve bot başına 600 oyun)
+
+| Bölüm | Ort. limit | random | novice | casual | average |
+|---|---|---|---|---|---|
+| 1–3 | 16,7 | %90 | %100 | %100 | %100 |
+| 4–10 | 19,6 | %49 | %95 | %100 | %100 |
+| 11–20 | 17,6 | %29 | %92 | %99 | %100 |
+| 21–30 | 23,8 | %23 | %77 | %95 | %100 |
+| 31–40 | 22,9 | %11 | %60 | %84 | %96 |
+| 41–50 | 22,9 | %9 | %57 | %82 | %96 |
+
+- Şartnamedeki 21 kabul ölçütünün tamamı tuttu; gevşetilen bölüm yok; 51–55 yeni 46–50'nin arkasında bayt bayt aynı üretildi.
+- Novice botun ilk 50 bölüm için beklenen deneme sayısı yaklaşık 418'den 72'ye iniyor.
+
+**Süreç notu**
+- İş akışındaki ayrı çalışma kopyaları dalın ucundan değil `main`'den (Faz 1) açıldı; ölçüm ajanları dalın ucunu kopyaya çıkarıp öyle çalıştı. Sonuçlar ana kopyadaki derlenmiş CLI ile yapılan provayla doğrulandı.
+
+**2026-10-05: yeni veri, onay ve takas**
+- Aynı oyuncu (kullanıcının deyişiyle usta bir oyuncu) devam etti: toplam 37 deneme. 7. bölümü 7. denemede, 8'i 2. denemede, 9'u (Zor) ilk denemede geçti; **10. bölümü (Süper Zor, 144 yeşil / 31 hamle) 19 kez üst üste kaybetti** (en iyisi 126/144). Geri bildirim: "çok zor, özellikle ilk bölümler".
+- Karşılaştırılabilir 26 denemede insan %35, novice bot %34, casual %58, average %80, expert %82. **Deneyimli bir insan novice botla aynı oranda kazanıyor;** bot adları insan becerisini göstermiyor.
+- Kullanıcı planı onayladı ("plan yapıp başlanılabilir"). İlk oda diskte takas edildi:
+  - Eski 50 dosya `levels/archive/before-onboarding-2026-10-05/` altına alındı; `data/` ve `recordings/` yedeklendi (`out/backups/`).
+  - `profiles/onboarding-1-3.json` ve `profiles/onboarding-4-50.json` eklendi; 1–50 yerinde yeniden üretildi. 50 dosyanın 50'si provayla bayt bayt aynı; 1000/1000 geçerli; 461 test geçiyor.
+  - Takastan sonra `puzzle humans` 37 kaydın hepsini okuyor (arşiv sayesinde).
+- **Sunucu yeniden başlatılana kadar oyuncular eski bölümleri görür** (sunucu bölümleri açılışta okur). Yeniden başlatma kullanıcının adımı.
+- Belgeler: GAME_DESIGN §8 madde 7, §9, §13, §18, §20 ve yeni §22 (görsel tasarım); PUBLIC_TEST §7 (test sürerken bölüm değiştirme).
+
+**Açık kalanlar**
+- 51 ve sonrası average bota göre ayarlı kaldı (novice 51–60'ta %19): duvar oraya taşındı. İnsan verisi average botun insanüstü olduğunu gösterdiği için 51+ kalibrasyonu yeniden ele alınmalı.
+- Kalıcı çözüm (profilde bant başına kalibrasyon botu; iki geçici dosyanın `default.json` içine katlanması) kullanıcı onayını bekliyor.
+- `puzzle humans`, havuzun ötesindeki tekrar denemelerini "hand-picked seeds" diye sayıyor; etiket yanıltıcı.
+
+---
+
+## 2026-10-04 · Oturum 9 — Claude Design ile ilk ekran denemeleri
+
+**Kullanıcı kararı**
+- Görseller en sonda yapılacak; ama Claude Design ile bir çizim denemesi şimdi yapıldı ("deneyebiliriz").
+
+**Değişiklikler**
+- Tasarım tuvali: "Ressam ve Müze — oyun ekranları" (özel bağlantı, depoda değil). Dört çizim: oyun ekranı, müze odası, yapboz ekranı, taş ve engel seti.
+- Kullanılan tablolar kamu malı, Art Institute of Chicago açık erişim görselleri: Van Gogh *Yatak Odası*, Seurat *Grande Jatte*, Monet *Nilüferler*, Caillebotte *Paris Sokağı; Yağmurlu Gün*.
+- Yapboz çizimi, önceki denemedeki 3-4-3 kesim algoritmasının ürettiği gerçek parça yollarını kullanıyor.
+
+**Denemedeki varsayımlar (karar değil, öneri)**
+- Renk düzeni: gece mavisi zemin, pirinç çerçeve vurgusu. Yazı tipleri Fredoka (başlık) ve Figtree (metin).
+- Tema adları: roket → fırça darbesi, bomba → boya sıçraması, pervane → tablodan uçan kuş, renk bombası → gökkuşağı paleti, kutu → nakliye sandığı, jöle → eski vernik, zincir → koruma bandı, indirilecek eşya → çerçeve köşesi. Motordaki adlar değişmez.
+- Her boya renginin kendi şekli var (renk körlüğünde de ayırt edilsin diye); test arayüzündeki kuralla aynı.
+- Oda adı, coin ve can sayıları, booster adları yer tutucudur.
+
+**Kullanıcı tepkisi ve ikinci tur**
+- İlk çizimler reddedildi ("oyun ekranları çok kötü"): düz geometrik şekiller, kutulu hücreler, tel kafes gibi bir HUD. Kullanıcı kalite çıtası olarak ticari bir match-3 oyununun ekran görüntüsünü verdi.
+- Referanstan yalnızca işçilik düzeyi alındı (hacimli, parlak taşlar; çerçeveli tahta; sahne arka planı; kabartmalı paneller). Karakteri, taş motifleri ve panel düzeni kopyalanmadı; başka bir şirketin tasarımı.
+- Oyun ekranı üç ayrı sanat yönünde yeniden çizildi; her yön çizildi, ayrı bir gözle eleştirildi (ilk puanlar 6/10; 16–19 bulgu), düzeltildi. Bu kez her adımda görüntüye bakıldı.
+  - **A · Atölye nesneleri:** damla, kavanoz, ayçiçeği, tüp, bere, kalem; yaldızlı çerçeve, koyu yeşil galeri duvarı.
+  - **B · Boya damlaları:** emaye boya topakları; ahşap çerçeve, gün ışıklı atölye.
+  - **C · Pigment kristalleri:** fasetli kristaller; gece mavisi müze, altın çerçeve.
+- Çizimlerin kaynağı (SVG taşlar, üreteç betikleri, görüntüler) `out/design/art/` altında; depoya girmiyor.
+- **Bilinen eksik:** çizimlerdeki tahta 9×9; oyunun tahtası 10×10. Seçilen yön 10 sütunla yeniden kurulacak (hücre yaklaşık 36 px).
+
+**Yön seçimi (2026-10-05)**
+- Kullanıcı başka bir oturumda ayrı bir tasarım tuvali çizdirdi ("Design": ana ekran ve 47. bölüm tahtası) ve onu bu oturumdaki üç yönün hepsinden daha iyi buldu. **Sanat yönü artık o tuval;** A, B ve C rafa kalktı (silinmedi).
+- O tasarımın farkı: her renk için ayrı ayrıntılı bir nesne yerine, tek bir ışık tarifini paylaşan sade ve iri şekiller (girdaplı disk, damla, yuvarlak kare, çiçek, koni, hilal); üst üste dizilmiş paneller yerine kurulmuş bir sahne (tele asılı plaketler, şekilli tahta, ahşap booster rafı); az renkli arayüz (camgöbeği duvar, yaldız, krem); onarılan tablonun çevresinde kurulmuş bir ana ekran.
+- Yerel kopyası `out/design/chosen/` altında (iki çizim, tablolar, görüntüler).
+- **Oyuna göre eksikleri:** sandık, koruma bandı, indirilecek eşya ve renk bombası çizimi yok; tahta 9 sütun (oyunda 10); metinler İngilizce; yapboz yerleştirme ve bölüm sonu ekranları yok.
+
+**Seçilen tasarım üzerinde çalışma (2026-10-05, kullanıcı: "beğendiğim dizayn üzerinden çalışmalara başlanılabilir")**
+- Kullanıcı isteği: bazı taşların yerine papatya ve uğur böceği. Eşleme: uğur böceği kırmızı diskin, papatya sarı çiçeğin yerine; diğer dört taş aynı.
+- Yeni taşlar seçilen tasarımdaki taş tarifiyle çizildi (tek sade siluet, alt kenarda kalınlık, sol üstten ışık, iki kenar parıltısı, tek beyaz yansıma). İki ressam ayrı ayrı çizdi; ayrı bir göz ikisinde de yukarıdan görünen, simetrik olanı seçti (36 pikselde daha sakin ve okunur), 21 bulgu düzeltildi.
+- Eksik parçalar aynı dille çizildi: sandık (çatlak / sağlam / demirli), kalın vernik, koruma bandı (tek / çift), çerçeve köşesi, gökkuşağı paleti, büyük sıçrama; hedef simgeleri ve "+5 hamle" simgesi.
+- Tuvale iki yeni çizim eklendi; kullanıcının iki çizimine dokunulmadı: oyunun gerçek genişliğinde (10 sütun, 36 px hücre) Türkçe tahta ve "Taşlar ve engeller" föyü. Çerçeve, tahtanın şekline göre aynı katmanlarla yeniden üretiliyor.
+- Kaynak: `out/design/next/` (taş parçaları `sym/final`, üreteç `tools/build.js`, biçim denetimi `tools/check.js`).
+- Aynı gün beş ekran daha çizilip tuvale eklendi (her biri çizildi, ayrı bir gözle eleştirildi, düzeltildi): Türkçe ana ekran, bölüm başı (hedefler, hamle, üç bölüm öncesi booster, "Oyna"), yapboz yerleştirme (tepsideki parça yerinin gerçek kesimiyle), kazanma (yeni parça, coin, kalan hamlelerin fırçaya dönüşmesi) ve kaybetme ("+5 hamle": coin ya da reklam, "Vazgeç · 1 can gider"). Ekranlar birbirine bağlı; tuvalde oynatılınca aralarında geçilebiliyor. Plan ve yer tutucular GAME_DESIGN §22'de.
+- **Disk doldu:** C: sürücüsünde yaklaşık 240 MB boş yer kalmıştı. Bu oturumun bıraktığı tarayıcı profil klasörleri silindi (yaklaşık 170 MB geri geldi); asıl yer açma işi kullanıcıda. Yer açılana kadar yeni büyük iş başlatılmıyor.
+
+- Kullanıcı yeni taşları tuvalde bulamadı (yedi yeni çizimin yalnızca ikisinde taş var; kendi iki çizimine dokunulmamıştı). İsteği üzerine özgün "Level 47 board" çiziminde de kırmızı disk uğur böceğiyle (12 taş), sarı çiçek papatyayla (14 taş) yerinde değiştirildi; çizimin başka hiçbir yeri değişmedi. Özgün hâli `out/design/chosen/Board.dc.html` olarak duruyor; değişikliği `out/design/next/tools/swap-original.js` yapıyor.
+- Çizimler artık tuvalin kendi çizim motoruyla da yerelde denenebiliyor (tuvalin `dc-runtime.js` dosyası `support.js` olarak çizimin yanına konup başsız Chrome ile açılıyor); uygulama içi tarayıcı tuvale giriş yapamadığı için doğrulama böyle yapıldı.
+- Sıradaki ekranlar çiziliyor: müze haritası, koleksiyon, mağaza, ayarlar.
+
+**Sıradaki:** harita, koleksiyon, mağaza ve ayarlar ekranları; papatyanın rengi; görünümün web testindeki oyuncu sayfasına uygulanıp uygulanmayacağı kararı. Yol haritasındaki sıra değişmedi (4. adım, sonra tema/meta tasarımı).
+
+---
+
 ## 2026-10-04 · Oturum 8 — Herkese açık test modu ve 1000 bölümün yeniden üretimi
 
 **Kullanıcı kararları**

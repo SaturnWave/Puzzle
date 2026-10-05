@@ -7,3 +7,6 @@ TestResults/
 out/
 recordings/
 data/
+
+# Written by "puzzle humans" from the local recordings.
+reports/humans.csv

@@ -104,10 +104,22 @@ dotnet run --project src\Puzzle.Cli -c Release --no-build -- players delete <kul
 Sonuçlara bakmak için test panelindeki **Kayıtlar** sekmesi ya da:
 
 ```bash
-dotnet run --project src\Puzzle.Cli -c Release -- humans
+dotnet run --project src\Puzzle.Cli -c Release --no-build -- humans
 ```
 
-## 7. Korumalar ve bilinen sınırlar
+## 7. Test sürerken bölümleri değiştirme
+
+Sunucu bölüm dosyalarını yalnızca açılışta okur. Bölümler diskte değiştirildikten sonra geçerli olmaları için sunucunun yeniden başlatılması gerekir:
+
+1. Sunucu penceresinde Ctrl+C ile durdur (bekleyen kayıtlar yazılır).
+2. Yeniden başlat: `.\tools\public\Start-PublicServer.ps1`. Günlükte `Public mode: 1000 levels` satırı görünmeli.
+
+- Değiştirilen bölümlerin eski sürümleri `levels/archive/` altında durur; eski kayıtlar bu sayede botlarla karşılaştırılmaya devam eder.
+- Yarım kalmış denemesi olan oyuncunun o denemesi düşer; oyuncu bulunduğu bölümün yeni sürümünden devam eder. Geçilmiş bölümlere dönülmez.
+- Sunucu çalışırken çözümü Release olarak derleme ve `src/Puzzle.Web/wwwroot` altını düzenleme: sayfalar kaynak klasöründen canlı sunulur.
+- İlk 50 bölüm 2026-10-05'te daha kolay sürümleriyle değiştirildi ([GAME_DESIGN.md](GAME_DESIGN.md) §8 madde 7).
+
+## 8. Korumalar ve bilinen sınırlar
 
 - Şifreler düz metin saklanmaz (PBKDF2). Beş yanlış denemeden sonra kullanıcı adı beş dakika kilitlenir; adres başına ve toplamda deneme sınırı vardır.
 - Oyuncular çözücüye, ipucuna, bota, bölüm ya da tohum seçimine erişemez; bunlar sunucu tarafında kapalıdır.
