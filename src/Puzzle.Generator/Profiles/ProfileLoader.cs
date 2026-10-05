@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Puzzle.Bot;
 using Puzzle.Bot.Simulation;
 using Puzzle.Core.Levels;
@@ -20,7 +21,12 @@ public sealed class ProfileFormatException : Exception
     }
 }
 
-/// <summary>Reads profiles/*.json. Bands inherit every field they omit from the band before them.</summary>
+/// <summary>
+/// Reads profiles/*.json. Bands inherit every field they omit from the band before them. A field the profile format
+/// does not have is an error, not something to skip: nearly every field has a default or an inherited value, so a
+/// misspelt or misplaced one (a band's <c>calibratonBot</c>, a <c>moveMargin</c> outside <c>calibration</c>) would
+/// otherwise load in silence and shape every level of a band, or of the whole set, with the wrong value.
+/// </summary>
 public static class ProfileLoader
 {
     private static readonly JsonSerializerOptions Options = new()
@@ -28,7 +34,10 @@ public static class ProfileLoader
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
     };
+
+    private static readonly string KnownBots = $"{string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>";
 
     /// <exception cref="ProfileFormatException">The file is missing, not JSON, or inconsistent.</exception>
     public static GenerationProfile Load(string path)
@@ -45,7 +54,9 @@ public static class ProfileLoader
         }
         catch (JsonException ex)
         {
-            throw new ProfileFormatException($"Profile '{path}' is not valid JSON: {ex.Message}", ex);
+            // Malformed JSON, a value of the wrong kind, or a field the profile format does not have. The serializer's
+            // message names the field but not always the place, so the JSON path is given beside it.
+            throw new ProfileFormatException($"Profile '{path}' is not a valid profile at {ex.Path ?? "$"}: {ex.Message}", ex);
         }
 
         return Build(file);
@@ -53,31 +64,35 @@ public static class ProfileLoader
 
     private static GenerationProfile Build(ProfileFile file)
     {
-        string calibrationBot = file.CalibrationBot ?? "average";
+        string defaultCalibrationBot = file.CalibrationBot ?? "average";
         string floorBot = file.FloorBot ?? "casual";
-        string knownBots = $"{string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>";
         List<string?> listedReportBots = file.ReportBots ?? [];
-        Require(!listedReportBots.Contains(null), $"reportBots has a null entry; every entry must name a bot ({knownBots})");
+        Require(!listedReportBots.Contains(null), $"reportBots has a null entry; every entry must name a bot ({KnownBots})");
         IReadOnlyList<string> reportBots = listedReportBots.OfType<string>().ToArray();
-        foreach (string bot in reportBots.Append(calibrationBot))
+        foreach (string bot in reportBots)
         {
-            RequireKnownBot(bot, knownBots);
+            RequireKnownBot(bot);
         }
 
-        RequirePlayerModel(calibrationBot, "calibrationBot", "move limits are set against a player model");
-        ProfileBand[] bands = ParseBands(file.Bands);
-        RequireKnownBot(floorBot, knownBots);
+        RequireCalibrationBot(defaultCalibrationBot);
+        ProfileBand[] bands = ParseBands(file.Bands, defaultCalibrationBot);
+        RequireKnownBot(floorBot);
         RequirePlayerModel(floorBot, "floorBot", "the casual floor is checked against a player model");
-        if (bands.Any(HasCasualFloor))
+        foreach (ProfileBand band in bands.Where(HasCasualFloor))
         {
-            RequireWeakerFloorBot(floorBot, calibrationBot);
+            RequireWeakerFloorBot(floorBot, band);
+        }
+
+        CalibrationSettings calibration = ParseCalibration(file.Calibration ?? new CalibrationFile());
+        foreach (ProfileBand band in bands)
+        {
+            RequireWholeMarginUnderMoveCap(band, calibration);
         }
 
         return new GenerationProfile
         {
             Name = file.Name ?? "unnamed",
             MasterSeed = file.MasterSeed ?? 1,
-            CalibrationBot = calibrationBot,
             FloorBot = floorBot,
             ReportBots = reportBots,
             TutorialUntil = file.TutorialUntil ?? 0,
@@ -88,7 +103,7 @@ public static class ProfileLoader
             Mechanics = (file.Mechanics ?? []).Select(ParseUnlock).OrderBy(u => u.FromLevel).ToArray(),
             HookLevels = file.HookLevels ?? 3,
             NoveltyWindow = file.NoveltyWindow ?? 5,
-            Calibration = ParseCalibration(file.Calibration ?? new CalibrationFile()),
+            Calibration = calibration,
             SeedPool = new SeedPoolSettings
             {
                 Candidates = Positive(file.SeedPool?.Candidates ?? 32, "seedPool.candidates"),
@@ -100,23 +115,35 @@ public static class ProfileLoader
         };
     }
 
-    private static void RequireKnownBot(string bot, string knownBots) =>
-        Require(BotPolicies.TryCreate(bot, out _), $"unknown bot '{bot}' (use {knownBots})");
+    /// <param name="where">The band that names the bot ("band fromLevel 4"); absent for a field of the profile itself.</param>
+    private static void RequireKnownBot(string bot, string? where = null) =>
+        Require(BotPolicies.TryCreate(bot, out _), $"{Lead(where)}unknown bot '{bot}' (use {KnownBots})");
 
-    private static void RequirePlayerModel(string bot, string field, string purpose) => Require(
+    /// <param name="where">As in <see cref="RequireKnownBot"/>.</param>
+    private static void RequirePlayerModel(string bot, string field, string purpose, string? where = null) => Require(
         BotPolicies.Names.Contains(bot, StringComparer.OrdinalIgnoreCase),
-        $"{field} '{bot}' is a measurement bot; {purpose} ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
+        $"{Lead(where)}{field} '{bot}' is a measurement bot; {purpose} ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
+
+    /// <param name="where">As in <see cref="RequireKnownBot"/>.</param>
+    private static void RequireCalibrationBot(string bot, string? where = null)
+    {
+        RequireKnownBot(bot, where);
+        RequirePlayerModel(bot, "calibrationBot", "move limits are set against a player model", where);
+    }
+
+    /// <summary>How a message starts: with the place it is about, or with nothing for a field of the profile itself.</summary>
+    private static string Lead(string? where) => where is null ? string.Empty : $"{where}: ";
 
     /// <summary>
-    /// The floor bot plays only on a tier with a casual floor, so its strength is checked only when some band has one (its
-    /// name is always checked, so a typo is caught before a floor is added). On the same games a floor at or below the
-    /// target needs more moves than the target only from a weaker player, so it must come before the calibration bot in
-    /// <see cref="BotPolicies.Names"/>, which lists the player models weakest first.
+    /// The floor bot plays only on a tier with a casual floor, so its strength is checked only for a band that has one
+    /// (its name is always checked, so a typo is caught before a floor is added). On the same games a floor at or below
+    /// the target needs more moves than the target only from a weaker player, so it must come before the band's
+    /// calibration bot in <see cref="BotPolicies.Names"/>, which lists the player models weakest first.
     /// </summary>
-    private static void RequireWeakerFloorBot(string floorBot, string calibrationBot) =>
+    private static void RequireWeakerFloorBot(string floorBot, ProfileBand band) =>
         Require(
-            StrengthOf(floorBot) < StrengthOf(calibrationBot),
-            $"floorBot '{floorBot}' is not weaker than calibrationBot '{calibrationBot}'; a floor at or below the target needs more moves only from a weaker player, so floorBot must come before calibrationBot in {string.Join(" < ", BotPolicies.Names)}");
+            StrengthOf(floorBot) < StrengthOf(band.CalibrationBot),
+            $"band fromLevel {band.FromLevel}: floorBot '{floorBot}' is not weaker than calibrationBot '{band.CalibrationBot}'; a floor at or below the target needs more moves only from a weaker player, so floorBot must come before calibrationBot in {string.Join(" < ", BotPolicies.Names)}");
 
     /// <summary>The place of a player model in <see cref="BotPolicies.Names"/>: 0 for the weakest.</summary>
     private static int StrengthOf(string playerModel) =>
@@ -131,7 +158,8 @@ public static class ProfileLoader
         return cycle!.Select(tier => ParseTier(tier, "cycle")).ToArray();
     }
 
-    private static ProfileBand[] ParseBands(List<BandFile>? bands)
+    /// <param name="defaultCalibrationBot">The calibration bot of the first band when that band does not name one.</param>
+    private static ProfileBand[] ParseBands(List<BandFile>? bands, string defaultCalibrationBot)
     {
         Require(bands is { Count: > 0 }, "bands needs at least one band");
         List<BandFile> sorted = bands!.OrderBy(b => b.FromLevel).ToList();
@@ -142,8 +170,14 @@ public static class ProfileLoader
         foreach (BandFile band in sorted)
         {
             string where = $"band fromLevel {band.FromLevel}";
+            if (band.CalibrationBot is string namedBot)
+            {
+                RequireCalibrationBot(namedBot, where);
+            }
+
             var current = new ProfileBand(
                 band.FromLevel,
+                band.CalibrationBot ?? previous?.CalibrationBot ?? defaultCalibrationBot,
                 MergeTiers(previous?.WinRate, band.WinRate, v => Require(v is > 0 and < 1, $"{where}: win rates must be between 0 and 1"), where + " winRate"),
                 MergeOptionalTiers(previous?.CasualFloor, band.CasualFloor, where + " casualFloor"),
                 MergeTiers(previous?.Moves, band.Moves is null ? null : band.Moves.ToDictionary(p => p.Key, p => ParseRange(p.Value, where)), _ => { }, where + " moves"),
@@ -254,7 +288,35 @@ public static class ProfileLoader
             WinRateTolerance = tolerance,
             MaxCandidates = Positive(calibration.MaxCandidates ?? 8, "calibration.maxCandidates"),
             MaxScaleIterations = Positive(calibration.MaxScaleIterations ?? 4, "calibration.maxScaleIterations"),
+            MoveMargin = ParseMoveMargin(calibration.MoveMargin ?? 0),
         };
+    }
+
+    private static MoveMargin ParseMoveMargin(decimal share) => MoveMargin.TryCreate(share, out MoveMargin margin)
+        ? margin
+        : throw new ProfileFormatException(string.Create(CultureInfo.InvariantCulture, $"calibration.moveMargin must be between 0 and 1, got {share}"));
+
+    /// <summary>
+    /// Games are followed only to the move cap, so no win rate is known past it and a final limit stops there (see
+    /// <c>LevelGenerator</c>). A level calibrated inside its move range must still get its whole margin, so the top of
+    /// every range, with the margin on it, has to fit under the cap. Without a margin nothing is asked, as before there
+    /// was one.
+    /// </summary>
+    private static void RequireWholeMarginUnderMoveCap(ProfileBand band, CalibrationSettings calibration)
+    {
+        MoveMargin margin = calibration.MoveMargin;
+        if (margin.IsNone)
+        {
+            return;
+        }
+
+        foreach (DifficultyTier tier in Enum.GetValues<DifficultyTier>())
+        {
+            int rangeTop = band.Moves.For(tier).Max;
+            Require(
+                margin.Soften(rangeTop) <= calibration.MoveCap,
+                $"band fromLevel {band.FromLevel}: calibration.moveMargin {margin} takes the top of the {tier} move range, {rangeTop} moves, to {margin.Soften(rangeTop)}, past calibration.moveCap {calibration.MoveCap}; games are followed only to the cap, so lower the margin or the move range, or raise the cap");
+        }
     }
 
     private static DifficultyTier ParseTier(string text, string where) =>
@@ -280,6 +342,7 @@ public static class ProfileLoader
 
         public ulong? MasterSeed { get; set; }
 
+        /// <summary>The calibration bot of the first band, unless that band names its own.</summary>
         public string? CalibrationBot { get; set; }
 
         public string? FloorBot { get; set; }
@@ -311,6 +374,9 @@ public static class ProfileLoader
     private sealed class BandFile
     {
         public int FromLevel { get; set; }
+
+        /// <summary>Absent: the band keeps the calibration bot of the band before it.</summary>
+        public string? CalibrationBot { get; set; }
 
         public Dictionary<string, double>? WinRate { get; set; }
 
@@ -369,6 +435,9 @@ public static class ProfileLoader
         public int? MaxCandidates { get; set; }
 
         public int? MaxScaleIterations { get; set; }
+
+        /// <summary>A decimal, so the share is read exactly as written (see <see cref="Profiles.MoveMargin"/>).</summary>
+        public decimal? MoveMargin { get; set; }
     }
 
     private sealed class SeedPoolFile

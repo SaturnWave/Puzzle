@@ -9,21 +9,39 @@ using Puzzle.Generator.Profiles;
 namespace Puzzle.Generator;
 
 /// <summary>Quality numbers of one level as recorded in the report.</summary>
-/// <param name="Target">The target win rate and the calibration bot's win rate at the limit.</param>
-/// <param name="Floor">The casual floor, the floor bot and its win rate at the limit; absent when the tier had no floor (or the report predates floors).</param>
-public sealed record ReportRow(WinRateCheck Target, FloorCheck? Floor, int PoolSize)
+/// <param name="CalibrationBot">The player model whose games set the level's calibrated limit.</param>
+/// <param name="Target">The target win rate and the calibration bot's win rate at the final limit.</param>
+/// <param name="Floor">The casual floor, the floor bot and its win rate at the final limit; absent when the tier had no floor (or the report predates floors).</param>
+/// <param name="MoveMargin">The move margin between the level's calibrated limit and its final one.</param>
+public sealed record ReportRow(string CalibrationBot, WinRateCheck Target, FloorCheck? Floor, MoveMargin MoveMargin, int PoolSize)
 {
     /// <summary>
     /// Whether the recorded level still meets the profile, so <c>generate --repair</c> keeps it: its seed pool is large
-    /// enough, it was calibrated against the target win rate and the casual floor its plan has now, the floor with the
-    /// profile's floor bot (a target, floor or floor bot the profile changed since the row was written was never
-    /// checked), and its limit stands on the recorded win rates.
+    /// enough; it was calibrated with the bot and against the target win rate its plan has now; it has the plan's
+    /// casual floor, checked with the profile's floor bot; its limit carries the profile's move margin; and that limit
+    /// stands on the recorded win rates. A bot, target, floor or margin the profile changed since the row was written
+    /// was never checked on this level.
     /// </summary>
     public bool StillHolds(LevelPlan plan, GenerationProfile profile) =>
         PoolSize >= profile.MinPoolSize
-        && GenerationReport.SameWhenRecorded(plan.TargetWinRate, Target.Required)
+        && WasCalibratedFor(plan)
         && RecordsFloorOf(plan, profile.FloorBot)
-        && LimitVerification.Stands(Target, Floor?.WinRate, profile.Calibration.WinRateTolerance);
+        && MoveMargin == profile.Calibration.MoveMargin
+        && LimitStands(profile.Calibration.WinRateTolerance);
+
+    private bool WasCalibratedFor(LevelPlan plan) =>
+        string.Equals(CalibrationBot, plan.CalibrationBot, StringComparison.OrdinalIgnoreCase)
+        && GenerationReport.SameWhenRecorded(plan.TargetWinRate, Target.Required);
+
+    /// <summary>
+    /// The recorded win rates are read at the final limit. Without a move margin that is the calibrated limit, which
+    /// must sit on its requirement from both sides; with one, the report holds no win rate at the calibrated limit and
+    /// only a shortfall can still be told (<see cref="LimitVerification.StandsWithMoveMargin"/>). So for a level with a
+    /// margin, repair does not notice a calibrated limit that overshot its target, nor a tolerance tightened since.
+    /// </summary>
+    private bool LimitStands(double tolerance) => MoveMargin.IsNone
+        ? LimitVerification.Stands(Target, Floor?.WinRate, tolerance)
+        : LimitVerification.StandsWithMoveMargin(Target, Floor?.WinRate, tolerance);
 
     private bool RecordsFloorOf(LevelPlan plan, string floorBot) => (plan.CasualFloor, Floor) switch
     {
@@ -41,7 +59,7 @@ public static class GenerationReport
     public const string FileName = "report.csv";
 
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
-    private static readonly string[] LeadingColumns = ["level", "tier", "size", "playable", "colors", "style", "goals", "moves", "moveRange", "targetWin", "win", "winPlus5", "floor", "floorWin", "floorSetLimit", "floorBot", "p50", "p90", "nearMiss"];
+    private static readonly string[] LeadingColumns = ["level", "tier", "size", "playable", "colors", "style", "goals", "moves", "calibratedMoves", "moveMargin", "moveRange", "calibrationBot", "targetWin", "win", "winPlus5", "floor", "floorWin", "floorSetLimit", "floorBot", "p50", "p90", "nearMiss"];
     private static readonly string[] TrailingColumns = ["poolSize", "poolMinWin", "poolMaxWin", "candidates", "relaxed", "seconds"];
 
     /// <summary>Writes <paramref name="rows"/> into the report, replacing earlier rows of the same levels.</summary>
@@ -70,8 +88,11 @@ public static class GenerationReport
     /// as levels without a floor. A row whose cells do not parse is left out.
     /// </summary>
     /// <param name="profile">
-    /// The profile the report is checked against. A floor recorded without its bot (written before the floorBot
-    /// column) is taken as measured by the profile's <see cref="GenerationProfile.FloorBot"/>.
+    /// The profile the report is checked against. It fills in what a row written before a column existed leaves out:
+    /// a floor recorded without its bot (before the floorBot column) is taken as measured by the profile's
+    /// <see cref="GenerationProfile.FloorBot"/>, and a row without its calibration bot (before the calibrationBot
+    /// column) as calibrated by the bot of the level's band. A row without a move margin (before the moveMargin
+    /// column) had none.
     /// </param>
     public static IReadOnlyDictionary<int, ReportRow> Read(string path, GenerationProfile profile)
     {
@@ -82,7 +103,7 @@ public static class GenerationReport
         }
 
         string[] lines = File.ReadAllLines(path);
-        var columns = new QualityColumns(lines.Length > 0 ? lines[0].Split(',') : [], profile.FloorBot);
+        var columns = new QualityColumns(lines.Length > 0 ? lines[0].Split(',') : [], profile);
         if (!columns.HasRequired)
         {
             return rows;
@@ -167,7 +188,10 @@ public static class GenerationReport
             row.Style,
             row.Goals,
             row.MoveLimit.ToString(Invariant),
+            row.CalibratedMoves.ToString(Invariant),
+            row.MoveMargin.ToString(),
             row.MoveRange.ToString(),
+            row.CalibrationBot,
             Ratio(row.TargetWinRate),
             Ratio(row.WinRate),
             row.WinRateWithExtraMoves is double winWithExtraMoves ? Ratio(winWithExtraMoves) : string.Empty,
@@ -197,17 +221,22 @@ public static class GenerationReport
 
     private static string Ratio(double value) => value.ToString("0.000", Invariant);
 
-    /// <summary>Where the columns <see cref="Read"/> needs sit in one report's header; the floor columns may be missing.</summary>
-    /// <param name="currentFloorBot">Taken as the bot of a floor recorded without one (<see cref="Read"/>).</param>
-    private sealed class QualityColumns(string[] header, string currentFloorBot)
+    /// <summary>
+    /// Where the columns <see cref="Read"/> needs sit in one report's header; the floor, calibrationBot and moveMargin
+    /// columns may be missing.
+    /// </summary>
+    /// <param name="profile">Fills in what a row written before a column existed leaves out (<see cref="Read"/>).</param>
+    private sealed class QualityColumns(string[] header, GenerationProfile profile)
     {
         private readonly int _level = Array.IndexOf(header, "level");
+        private readonly int _calibrationBot = Array.IndexOf(header, "calibrationBot");
         private readonly int _target = Array.IndexOf(header, "targetWin");
         private readonly int _win = Array.IndexOf(header, "win");
         private readonly int _pool = Array.IndexOf(header, "poolSize");
         private readonly int _floor = Array.IndexOf(header, "floor");
         private readonly int _floorWin = Array.IndexOf(header, "floorWin");
         private readonly int _floorBot = Array.IndexOf(header, "floorBot");
+        private readonly int _moveMargin = Array.IndexOf(header, "moveMargin");
 
         public bool HasRequired => Math.Min(Math.Min(_level, _target), Math.Min(_win, _pool)) >= 0;
 
@@ -215,18 +244,43 @@ public static class GenerationReport
         {
             row = null;
             if (cells.Length != header.Length
-                || !int.TryParse(cells[_level], NumberStyles.Integer, Invariant, out number)
+                || !TryReadLevel(cells[_level], out number)
                 || !TryRatio(cells[_target], out double targetWin)
                 || !TryRatio(cells[_win], out double winRate)
                 || !int.TryParse(cells[_pool], NumberStyles.Integer, Invariant, out int poolSize)
-                || !TryReadFloor(cells, out FloorCheck? floor))
+                || !TryReadFloor(cells, out FloorCheck? floor)
+                || !TryReadMoveMargin(cells, out MoveMargin moveMargin))
             {
                 number = 0;
                 return false;
             }
 
-            row = new ReportRow(new WinRateCheck(targetWin, winRate), floor, poolSize);
+            row = new ReportRow(CalibrationBotOf(cells, number), new WinRateCheck(targetWin, winRate), floor, moveMargin, poolSize);
             return true;
+        }
+
+        /// <summary>Levels start at 1; any other number is not a level's row.</summary>
+        private static bool TryReadLevel(string cell, out int number) =>
+            int.TryParse(cell, NumberStyles.Integer, Invariant, out number) && number >= 1;
+
+        /// <summary>An empty or missing calibrationBot cell was written before that column: the bot of the level's band.</summary>
+        private string CalibrationBotOf(string[] cells, int level) =>
+            _calibrationBot >= 0 && cells[_calibrationBot].Length > 0 ? cells[_calibrationBot] : profile.BandFor(level).CalibrationBot;
+
+        /// <summary>
+        /// An empty or missing moveMargin cell was written before that column, when no level had a margin. A cell that
+        /// is not a share is a broken row.
+        /// </summary>
+        private bool TryReadMoveMargin(string[] cells, out MoveMargin margin)
+        {
+            margin = MoveMargin.None;
+            if (_moveMargin < 0 || cells[_moveMargin].Length == 0)
+            {
+                return true;
+            }
+
+            return decimal.TryParse(cells[_moveMargin], NumberStyles.AllowDecimalPoint, Invariant, out decimal share)
+                && MoveMargin.TryCreate(share, out margin);
         }
 
         /// <summary>
@@ -243,7 +297,7 @@ public static class GenerationReport
 
             if (_floorWin >= 0 && TryRatio(cells[_floor], out double required) && TryRatio(cells[_floorWin], out double measured))
             {
-                string bot = _floorBot >= 0 && cells[_floorBot].Length > 0 ? cells[_floorBot] : currentFloorBot;
+                string bot = _floorBot >= 0 && cells[_floorBot].Length > 0 ? cells[_floorBot] : profile.FloorBot;
                 floor = new FloorCheck(bot, new WinRateCheck(required, measured));
                 return true;
             }

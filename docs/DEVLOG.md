@@ -4,6 +4,42 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-05 · Oturum 11 — Kararlar: yüzde 25 yumuşatma, beyaz papatya, tema web testine, doğrudan dünya yayını
+
+**Kullanıcı kararları**
+- **Bütün bölümler yüzde 25 yumuşatılsın.** Uygulama tanımı: kalibrasyonun bulduğu hamle limitine yüzde 25 eklenir (yukarı yuvarlanır); tohum havuzu ve rapor yeni limitte ölçülür. Profilde tek bir sayı (`calibration.moveMargin`).
+- **Papatya beyaz yapraklı olsun.**
+- **Bölümler ve profiller PR'a gönderilsin.**
+- **Yayın doğrudan dünya geneli** olacak; sınırlı ülke yayını adımı kaldırıldı.
+- **Oyunun adı en sona** bırakıldı.
+- **Sunucu güncellenen temayla yeniden başlatılabilir:** seçilen tasarım web testindeki oyuncu sayfasına uygulanacak; sunucuyu yeniden başlatma yetkisi verildi.
+- Özgün "Level 47 board" çizimindeki taşlar da değiştirildi (Oturum 9).
+
+**Yapılanlar**
+- Sunucu yeniden başlatıldı (yerel saatle 20:10): konsoluna Ctrl+C gönderilerek düzgün durduruldu, kendi penceresinde yeniden açıldı. Günlük: `Public mode: 1000 levels`. Oyuncular artık ilk odanın kolaylaştırılmış bölümlerini görüyor; Admin yeni 10. bölümden (39 yeşil, 21 hamle) devam ediyor. Eski 10. bölümde toplam 23 deneme, hepsi kayıp.
+- İlk oda değişiklikleri commit edilip PR'a gönderildi (`bd84183`).
+- `tools/public/Stop-PublicServer.ps1` eklendi: sunucunun konsoluna Ctrl+C gönderir, zorla kapatmaz. Aynı yöntem bu yeniden başlatmada elle kullanıldı; betiğin kendisi bir sonraki yeniden başlatmada denenecek.
+- Başlatılan işler (arka planda): (1) üreticiye bant başına kalibrasyon botu ve hamle payı, iki geçici profilin `default.json` içine katlanması; (2) beyaz yapraklı papatya ve motorun 7. ve 8. renkleri için iki yeni taş; (3) seçilen tasarımın oyuncu sayfasına uygulanması (canlı sunucuya dokunmadan, ayrı bir kopyada); (4) harita, koleksiyon, mağaza ve ayarlar çizimleri.
+
+- Papatya beyaz yapraklı olarak yeniden çizildi (yapraklar beyaz, göbek altın sarısı, kenar çizgisi sıcak koyu sarı; açık tepside ve krem kartta okunuyor) ve onu gösteren beş çizim yeniden üretildi (kullanıcının "Level 47 board" çizimi dahil). Motorun 7. ve 8. renkleri için iki taş çizildi: camgöbeği elmas ve pembe lale; taş föyüne "sonraki bölümlerde" başlığıyla eklendi. Koruma bandı inceltildi (beyaz papatyanın üstünde göbek görünsün diye).
+- Dört ekran daha çizilip tuvale eklendi: müze haritası (kat planı; 1. oda açık, 2. oda kilitli, sonrakiler yalnızca numarayla), koleksiyon (onarılan dört tablo salon duvarında, beşincisi yapboz hâlinde), mağaza (üç altın paketi, iki güçlendirici seti, ödüllü reklam; fiyatlar `[fiyat]`) ve ayarlar. Tuvalde artık on üç çizim var.
+
+**Kesinti (5 Ekim gecesi)**
+- 20:10'da yeniden başlatılan sunucu, onu başlatan oturum kullanım sınırına takılıp kapandığında oturumla birlikte öldürüldü (günlükte kapanış satırı yok). Yayın adresi, fark edilip yeniden başlatılana kadar (6 Ekim 00:25) 502 verdi. Kayıt ve hesap kaybı yok: 41 kayıt yerinde.
+- Neden: `Start-Process` ile açılan pencere oturumun alt sürecidir. Çözüm: sunucu artık WMI üzerinden (`Win32_Process.Create`) başlatılıyor; oturumdan bağımsız yaşıyor. Her oturum başında 5199 portu ve yayın adresi kontrol ediliyor.
+- Aynı kesinti iki arka plan işini de yarıda bıraktı (üretici değişikliğinin doğruluk incelemesi; temanın oyuncu sayfasına uygulanması). İkisi kaldıkları yerden sürdürüldü; tema işi kesildiğinde ekranlar büyük ölçüde hazırdı.
+
+**6 Ekim: yüzde 25 hamle payı yayında**
+- **Üretici:** her bant kendi kalibrasyon botunu adlandırıyor (`bands[].calibrationBot`); iki geçici profil `default.json` içine katlandı ve silindi. Yeni alan `calibration.moveMargin` (0,25): bölümün limiti kalibre limitin yüzde 25 fazlası (yukarı yuvarlanır); havuz ve rapor yeni limitte ölçülür; rapora `calibratedMoves`, `moveMargin`, `calibrationBot` sütunları eklendi. Profil yükleyici artık bilinmeyen alanı reddediyor. İki bağımsız inceleme (doğruluk; sözleşme ve testler) 13 bulgu verdi, 9'u düzeltildi; testler 461'den 526'ya çıktı.
+- **Kabul:** pay 0 iken 1–60. bölümler eskisiyle bayt bayt aynı; pay 0,25 iken iki çalıştırma aynı dosyaları veriyor; `--repair` aynı profille hiçbir şey üretmiyor.
+- **Yeniden üretim:** 1000 bölüm 50'şerlik aralıklarla yaklaşık 50 dakikada üretildi. Tahtalar, hedefler ve kalibre limitler 1000'de 1000 aynı kaldı; yalnızca limit ve havuzlar değişti. Gevşetilen yok, havuzlar en az 8 tohum. Sonuç tabloları GAME_DESIGN §13'te.
+- **Ölçüm:** casual bot 51–300'de Normal %51 → %78, Zor %20 → %46. Novice bot ise 51–100'de ortalama %39 (Zor %16, Süper Zor %5): **pay, novice gibi oynayan biri için 51 sonrasındaki duvarı kaldırmıyor.** İlk oda kendi botu için neredeyse kaybedilmez oldu (%98–100).
+- **Canlıya alma:** bölümler yerine kondu, 526 test geçti, sunucu `Stop-PublicServer.ps1` ile düzgün durduruldu (betik ilk kez denendi, çalışıyor) ve oturumdan bağımsız yeniden başlatıldı. Takastan hemen önce Admin1 hesabı ilk kez oynadı (1. bölümün novice sürümü, ilk denemede 14/19 hamlede kazandı); o sürüm ve komşuları `levels/archive/before-margin-2026-10-06/` altına alındı, 42 kaydın hepsi karşılaştırılabiliyor.
+
+**Sıradaki:** tema hazır olunca oyuncu sayfasına alınması; 51 sonrası için novice kalibrasyonu kararı (insan verisi geldikçe).
+
+---
+
 ## 2026-10-04 · Oturum 10 — İlk insan verisi: ilk bölümler zor
 
 **Geri bildirim**

@@ -80,6 +80,17 @@ public class LimitRuleTests
     }
 
     [Fact]
+    public void A_final_limit_with_a_move_margin_stands_however_far_it_overshoots_but_not_on_a_shortfall()
+    {
+        Assert.True(LimitVerification.StandsWithMoveMargin(new WinRateCheck(0.50, 0.95), floor: null, Tolerance));
+        Assert.True(LimitVerification.StandsWithMoveMargin(new WinRateCheck(0.85, 1.00), new WinRateCheck(0.60, 0.95), Tolerance));
+        Assert.True(LimitVerification.StandsWithMoveMargin(new WinRateCheck(0.85, 0.80), new WinRateCheck(0.60, 0.55), Tolerance));    // short within the tolerance
+        Assert.False(LimitVerification.StandsWithMoveMargin(new WinRateCheck(0.50, 0.40), floor: null, Tolerance));
+        Assert.False(LimitVerification.StandsWithMoveMargin(new WinRateCheck(0.85, 1.00), new WinRateCheck(0.60, 0.50), Tolerance));   // the floor bot falls short
+        Assert.False(LimitVerification.StandsWithMoveMargin(new WinRateCheck(0.85, 0.75), new WinRateCheck(0.60, 0.95), Tolerance));   // the calibration bot falls short
+    }
+
+    [Fact]
     public void Evidence_checks_a_limit_against_both_bots_games()
     {
         var withFloor = new LimitEvidence(new MeasuredShare(0.8, CalibrationGames), new MeasuredShare(0.6, FloorGames));

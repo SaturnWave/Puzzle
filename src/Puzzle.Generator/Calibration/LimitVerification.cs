@@ -16,9 +16,18 @@ public readonly record struct WinRateCheck(double Required, double Measured)
 /// </summary>
 public static class LimitVerification
 {
-    public static bool Stands(WinRateCheck target, WinRateCheck? floor, double tolerance)
-    {
-        double tighterMargin = floor is WinRateCheck guard ? Math.Min(target.Margin, guard.Margin) : target.Margin;
-        return Math.Abs(tighterMargin) <= tolerance;
-    }
+    public static bool Stands(WinRateCheck target, WinRateCheck? floor, double tolerance) =>
+        Math.Abs(TighterMargin(target, floor)) <= tolerance;
+
+    /// <summary>
+    /// What is left of <see cref="Stands"/> for a level with a move margin, judged on win rates read at its final limit
+    /// (the calibrated limit plus the margin): no bot falls short of its share by more than the tolerance. More moves
+    /// only raise a win rate, so an overshoot there is the move margin at work and says nothing about the calibrated
+    /// limit underneath; whether that limit sat on its target can no longer be told from these win rates.
+    /// </summary>
+    internal static bool StandsWithMoveMargin(WinRateCheck target, WinRateCheck? floor, double tolerance) =>
+        TighterMargin(target, floor) >= -tolerance;
+
+    private static double TighterMargin(WinRateCheck target, WinRateCheck? floor) =>
+        floor is WinRateCheck guard ? Math.Min(target.Margin, guard.Margin) : target.Margin;
 }

@@ -12,15 +12,24 @@ public sealed record LevelPlan
 
     public required DifficultyTier Tier { get; init; }
 
-    /// <summary>Win rate the calibration bot should have at the final move limit.</summary>
+    /// <summary>
+    /// The player model that must reach <see cref="TargetWinRate"/>; the retry seed pool is balanced for it too.
+    /// </summary>
+    public required string CalibrationBot { get; init; }
+
+    /// <summary>
+    /// Win rate <see cref="CalibrationBot"/> should have at the calibrated move limit, before the profile's move margin
+    /// adds moves.
+    /// </summary>
     public required double TargetWinRate { get; init; }
 
     /// <summary>
-    /// Least win rate the profile's floor bot must have at the final move limit; absent when the tier has no floor.
-    /// The limit is the larger of what the target and the floor need.
+    /// Least win rate the profile's floor bot must have at the calibrated move limit; absent when the tier has no
+    /// floor. The calibrated limit is the larger of what the target and the floor need.
     /// </summary>
     public required double? CasualFloor { get; init; }
 
+    /// <summary>The range the calibrated move limit should land in.</summary>
     public required MoveRange Moves { get; init; }
 
     public required BoardSize Size { get; init; }
@@ -67,6 +76,7 @@ public sealed class LevelPlanner(GenerationProfile profile)
         {
             Number = number,
             Tier = tier,
+            CalibrationBot = band.CalibrationBot,
             TargetWinRate = band.WinRate.For(tier),
             CasualFloor = band.CasualFloor.For(tier),
             Moves = band.Moves.For(tier),

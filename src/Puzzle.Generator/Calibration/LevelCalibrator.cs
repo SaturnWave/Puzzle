@@ -26,10 +26,11 @@ internal abstract record CalibrationOutcome
 }
 
 /// <summary>
-/// Finds the move limit of a candidate: plays it uncapped with the calibration bot (and, on a tier with a casual
-/// floor, with the floor bot on the same seeds), reads the smallest limit that reaches the target win rate and the
-/// floor, and rescales the candidate's amount goals until that limit lands in the plan's move range. The accepted
-/// limit is re-checked on seeds the calibration never saw.
+/// Finds the calibrated move limit of a candidate: plays it uncapped with the plan's calibration bot (and, on a tier
+/// with a casual floor, with the floor bot on the same seeds), reads the smallest limit that reaches the target win
+/// rate and the floor, and rescales the candidate's amount goals until that limit lands in the plan's move range. The
+/// accepted limit is re-checked on seeds the calibration never saw. The profile's move margin is no concern of the
+/// calibration: <c>LevelGenerator</c> adds it to the limit found here.
 /// </summary>
 internal sealed class LevelCalibrator(GenerationProfile profile)
 {
@@ -91,11 +92,11 @@ internal sealed class LevelCalibrator(GenerationProfile profile)
     }
 
     /// <summary>
-    /// Plays <paramref name="runs"/> uncapped games with the calibration bot and, when the plan has a casual floor, as
-    /// many with the floor bot on the same seeds.
+    /// Plays <paramref name="runs"/> uncapped games with the plan's calibration bot and, when the plan has a casual
+    /// floor, as many with the floor bot on the same seeds.
     /// </summary>
     public LimitEvidence Measure(LevelDefinition level, LevelPlan plan, int runs, ulong seed) => new(
-        new MeasuredShare(plan.TargetWinRate, Simulate(level, profile.CalibrationBot, runs, seed)),
+        new MeasuredShare(plan.TargetWinRate, Simulate(level, plan.CalibrationBot, runs, seed)),
         plan.CasualFloor is double floor ? new MeasuredShare(floor, Simulate(level, profile.FloorBot, runs, seed)) : null);
 
     public LevelReport Simulate(LevelDefinition level, string bot, int runs, ulong seed) =>

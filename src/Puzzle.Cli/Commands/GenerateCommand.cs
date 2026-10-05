@@ -11,8 +11,11 @@ namespace Puzzle.Cli.Commands;
 /// <c>generate [--profile profiles/default.json] [--from 1] [--to 20] [--out levels/generated] [--quick] [--overwrite] [--repair]</c>:
 /// produces calibrated levels. Existing level files are kept (and feed the novelty check) unless --overwrite;
 /// --repair regenerates only those whose report row no longer holds (<see cref="ReportRow.StillHolds"/>): a small seed
-/// pool, a target win rate, casual floor or floor bot other than the profile's, or a limit that does not stand (an
-/// off-target win rate or a missed floor).
+/// pool, a calibration bot, target win rate, casual floor, floor bot or move margin other than the profile's, or a
+/// limit that does not stand on the recorded win rates. Without a move margin that is a win rate off its target on
+/// either side or a missed floor. With one, the win rates are read at the final limit (calibrated plus margin), where
+/// a win rate above its target is the margin at work, so only a shortfall counts: --repair then does not notice a
+/// calibrated limit that overshot its target or a tolerance tightened since, and --overwrite is the way to apply those.
 /// </summary>
 internal static class GenerateCommand
 {
@@ -119,13 +122,13 @@ internal static class GenerateCommand
             : string.Empty;
         return string.Format(
             CultureInfo.InvariantCulture,
-            "#{0:0000} {1,-9} {2,-5} {3}c  moves {4,2} [{5}]  win {6:P0} (target {7:P0}){8}  {9}  pool {10} ({11:P0}-{12:P0})  {13}  {14:0.0}s{15}",
+            "#{0:0000} {1,-9} {2,-5} {3}c  moves {4}  {5} win {6:P0} (target {7:P0}){8}  {9}  pool {10} ({11:P0}-{12:P0})  {13}  {14:0.0}s{15}",
             m.Number,
             m.Tier,
             m.Size,
             m.Colors,
-            m.MoveLimit,
-            m.MoveRange,
+            DescribeMoves(m),
+            m.CalibrationBot,
             m.WinRate,
             m.TargetWinRate,
             floor,
@@ -137,4 +140,20 @@ internal static class GenerateCommand
             m.Seconds,
             relaxed);
     }
+
+    /// <summary>
+    /// The final limit and the move range. With a move margin the calibrated limit is shown too, next to the range: the
+    /// range, like the target win rate, is about the calibrated limit, not the final one. The margin is printed as the
+    /// share the profile and the report hold (a rounded percentage would show a small margin as none).
+    /// </summary>
+    private static string DescribeMoves(LevelMetrics m) => m.MoveMargin.IsNone
+        ? string.Format(CultureInfo.InvariantCulture, "{0,2} [{1}]", m.MoveLimit, m.MoveRange)
+        : string.Format(
+            CultureInfo.InvariantCulture,
+            "{0,2} (calibrated {1,2} [{2}], margin {3}{4})",
+            m.MoveLimit,
+            m.CalibratedMoves,
+            m.MoveRange,
+            m.MoveMargin,
+            m.MarginCutByMoveCap ? ", cut at the move cap" : string.Empty);
 }

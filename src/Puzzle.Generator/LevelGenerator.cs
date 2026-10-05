@@ -41,10 +41,34 @@ public sealed record LevelMetrics
 
     public required string Goals { get; init; }
 
+    /// <summary>
+    /// The final limit, the one the level file carries: <see cref="CalibratedMoves"/> plus <see cref="MoveMargin"/>.
+    /// Less than that only for a relaxed level whose margin would pass the calibration move cap; it stops at the cap.
+    /// </summary>
     public required int MoveLimit { get; init; }
 
+    /// <summary>
+    /// The calibrated limit: the smallest at which the calibration bot reached <see cref="TargetWinRate"/> (and the
+    /// floor bot the casual floor), checked on fresh seeds.
+    /// </summary>
+    public required int CalibratedMoves { get; init; }
+
+    /// <summary>The profile's move margin when the level was generated.</summary>
+    public required MoveMargin MoveMargin { get; init; }
+
+    /// <summary>The final limit stopped at the calibration move cap, short of the whole margin (see <see cref="MoveLimit"/>).</summary>
+    public bool MarginCutByMoveCap => MoveLimit < MoveMargin.Soften(CalibratedMoves);
+
+    /// <summary>The range <see cref="CalibratedMoves"/> was aimed at.</summary>
     public required MoveRange MoveRange { get; init; }
 
+    /// <summary>The player model whose games set <see cref="CalibratedMoves"/> and balanced the seed pool.</summary>
+    public required string CalibrationBot { get; init; }
+
+    /// <summary>
+    /// What the calibration bot was to win at <see cref="CalibratedMoves"/>. <see cref="WinRate"/> is read at the final
+    /// limit, so with a move margin it sits above the target by what the extra moves give.
+    /// </summary>
     public required double TargetWinRate { get; init; }
 
     /// <summary>Calibration bot's win rate at the final limit, measured on fresh seeds.</summary>
@@ -62,7 +86,7 @@ public sealed record LevelMetrics
     /// </summary>
     public required FloorCheck? Floor { get; init; }
 
-    /// <summary>The floor bot needed more moves than the target did, so the casual floor decided the limit.</summary>
+    /// <summary>The floor bot needed more moves than the target did, so the casual floor decided the calibrated limit.</summary>
     public required bool FloorSetLimit { get; init; }
 
     public required int? MovesP50 { get; init; }
@@ -94,9 +118,10 @@ public sealed record GeneratedLevel(LevelDefinition Level, LevelMetrics Metrics)
 public sealed class GenerationFailedException(string message) : Exception(message);
 
 /// <summary>
-/// Produces one level: plan it, draw candidates from the portfolio, calibrate them with the bot (and the floor bot
-/// on a tier with a casual floor), keep the first that fits (or the closest), then build its equal-difficulty seed
-/// pool and report bot win rates.
+/// Produces one level: plan it, draw candidates from the portfolio, calibrate them with the plan's calibration bot
+/// (and the floor bot on a tier with a casual floor), keep the first that fits (or the closest), add the profile's
+/// move margin to its calibrated limit, then build its equal-difficulty seed pool and report bot win rates at that
+/// final limit.
 /// </summary>
 public sealed class LevelGenerator(GenerationProfile profile)
 {
@@ -158,12 +183,17 @@ public sealed class LevelGenerator(GenerationProfile profile)
         return Finish(plan, new KeptCandidate(closest.Outcome.Level, verification, closest.Outcome.FloorSetLimit, closest.Style, maxCandidates, Relaxed: true), clock);
     }
 
+    /// <summary>
+    /// Turns the kept candidate into the level: its calibrated limit becomes the final one, and everything from here on
+    /// (the seed pool, every reported win rate) is measured at the final limit, the one a player gets.
+    /// </summary>
     private GeneratedLevel Finish(LevelPlan plan, KeptCandidate kept, Stopwatch clock)
     {
         LevelReport verification = kept.Verification.Target.Games;
-        double targetWinRate = verification.WinRateAt(kept.Level.MoveLimit);
-        IReadOnlyList<SeedDifficulty> poolSeeds = BuildPool(kept.Level, targetWinRate);
-        LevelDefinition final = kept.Level.WithAttempts(new AttemptPolicy { SeedPool = poolSeeds.Select(d => d.Seed).ToArray() });
+        int calibratedMoves = kept.Level.MoveLimit;
+        LevelDefinition withFinalLimit = kept.Level.WithMoveLimit(FinalLimit(calibratedMoves));
+        IReadOnlyList<SeedDifficulty> poolSeeds = BuildPool(withFinalLimit, plan.CalibrationBot, verification.WinRateAt(withFinalLimit.MoveLimit));
+        LevelDefinition final = withFinalLimit.WithAttempts(new AttemptPolicy { SeedPool = poolSeeds.Select(d => d.Seed).ToArray() });
         var botWinRates = new Dictionary<string, double>();
         for (int i = 0; i < profile.ReportBots.Count; i++)
         {
@@ -182,7 +212,10 @@ public sealed class LevelGenerator(GenerationProfile profile)
             Style = kept.Style,
             Goals = string.Join(" ", final.Goals.Select(Describe)),
             MoveLimit = final.MoveLimit,
+            CalibratedMoves = calibratedMoves,
+            MoveMargin = profile.Calibration.MoveMargin,
             MoveRange = plan.Moves,
+            CalibrationBot = plan.CalibrationBot,
             TargetWinRate = plan.TargetWinRate,
             WinRate = verification.WinRateAt(final.MoveLimit),
             WinRateWithExtraMoves = verification.WinRateWithExtraMoves(final.MoveLimit),
@@ -203,16 +236,26 @@ public sealed class LevelGenerator(GenerationProfile profile)
     }
 
     /// <summary>
-    /// Equal-difficulty seeds around the level's verified win rate. Retries must not run out of patterns: a pool
-    /// under the profile's minimum is searched again with three times the candidates, and if still short it takes
-    /// the candidates closest to the target regardless of tolerance.
+    /// The final limit, the one the level gets: the calibrated limit plus the profile's move margin. Games are followed
+    /// only to the move cap, so no win rate is known past it and the final limit stops there. Only a relaxed level,
+    /// calibrated above its move range, can come that far: the profile loader makes sure a limit inside its range
+    /// keeps its whole margin, and a calibrated limit is read from those games, so it never exceeds the cap itself.
     /// </summary>
-    private IReadOnlyList<SeedDifficulty> BuildPool(LevelDefinition level, double targetWinRate)
+    private int FinalLimit(int calibratedMoves) =>
+        Math.Min(profile.Calibration.MoveMargin.Soften(calibratedMoves), profile.Calibration.MoveCap);
+
+    /// <summary>
+    /// Equal-difficulty seeds around <paramref name="targetWinRate"/>, the calibration bot's verified win rate at the
+    /// level's move limit, so a retry is as hard as the first attempt at the limit the player actually gets. Retries
+    /// must not run out of patterns: a pool under the profile's minimum is searched again with three times the
+    /// candidates, and if still short it takes the candidates closest to the target regardless of tolerance.
+    /// </summary>
+    private IReadOnlyList<SeedDifficulty> BuildPool(LevelDefinition level, string calibrationBot, double targetWinRate)
     {
         SeedPoolReport Search(int candidates) => SeedPoolCalibrator.Calibrate(
             level,
             new StartBoard.Varied(),
-            () => LevelCalibrator.CreatePolicy(profile.CalibrationBot),
+            () => LevelCalibrator.CreatePolicy(calibrationBot),
             new SeedPoolSettings
             {
                 Candidates = candidates,
@@ -242,7 +285,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
             .ToArray();
     }
 
-    /// <summary>The candidate a level keeps: its limit, the fresh-seed games that checked it, and how it was found.</summary>
+    /// <summary>The candidate a level keeps: its calibrated limit, the fresh-seed games that checked it, and how it was found.</summary>
     /// <param name="Relaxed">No candidate fit the move range; this is the closest one.</param>
     private sealed record KeptCandidate(LevelDefinition Level, LimitEvidence Verification, bool FloorSetLimit, string Style, int CandidatesTried, bool Relaxed);
 

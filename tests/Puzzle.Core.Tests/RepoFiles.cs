@@ -7,14 +7,25 @@ namespace Puzzle.Core.Tests;
 internal static class RepoFiles
 {
     private static readonly Lazy<GenerationProfile> LoadedDefaultProfile = new(() => ProfileLoader.Load(DefaultProfilePath));
+    private static readonly Lazy<GenerationProfile> LoadedProfileBeforeOnboarding = new(() => ProfileLoader.Load(ProfileBeforeOnboardingPath));
 
     public static string DefaultProfilePath => Find("profiles", "default.json");
+
+    public static string ProfileBeforeOnboardingPath => Find("tests", "fixtures", "profile-before-onboarding.json");
 
     /// <summary>The test settings file of the public test, beside the web app's settings.</summary>
     public static string ReadyMadePlayersPath => Find("src", "Puzzle.Web", "public-test-players.json");
 
     /// <summary>profiles/default.json, loaded once.</summary>
     public static GenerationProfile DefaultProfile => LoadedDefaultProfile.Value;
+
+    /// <summary>
+    /// profiles/default.json as it was before the first museum room was set for weak players, loaded once: the average
+    /// bot calibrates every level, every band has casual floors, and no level has a move margin. Tests that pin a
+    /// mechanic of the generator on particular levels and numbers read this fixture, so they do not move when the
+    /// shipped curve does.
+    /// </summary>
+    public static GenerationProfile ProfileBeforeOnboarding => LoadedProfileBeforeOnboarding.Value;
 
     /// <exception cref="FileNotFoundException">No directory above the test binaries holds the file.</exception>
     private static string Find(params string[] parts)

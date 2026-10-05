@@ -1,3 +1,4 @@
+using System.Globalization;
 using Puzzle.Bot.Simulation;
 using Puzzle.Core.Levels;
 
@@ -35,7 +36,7 @@ public readonly record struct BoardSize(int Width, int Height)
     public override string ToString() => $"{Width}x{Height}";
 }
 
-/// <summary>Preferred move budget of a level; calibration aims for its middle.</summary>
+/// <summary>The move budget calibration should give a level; it aims for the middle.</summary>
 public readonly record struct MoveRange(int Min, int Max)
 {
     public int Mid => (Min + Max) / 2;
@@ -46,6 +47,37 @@ public readonly record struct MoveRange(int Min, int Max)
     public int DistanceTo(int moves) => moves < Min ? Min - moves : moves > Max ? moves - Max : 0;
 
     public override string ToString() => $"{Min}-{Max}";
+}
+
+/// <summary>
+/// The share of extra moves a level gets on top of its calibrated move limit: 0.25 turns 20 calibrated moves into 25.
+/// A decimal, so a margin written as 0.1 is exactly a tenth and 50 moves become 55 (binary 50 * 1.1 is just above 55
+/// and would round up to 56).
+/// </summary>
+public readonly record struct MoveMargin
+{
+    private MoveMargin(decimal share) => Share = share;
+
+    /// <summary>From 0 (the calibrated limit as it is) to 1 (twice the calibrated limit).</summary>
+    public decimal Share { get; }
+
+    /// <summary>No extra moves: the move limit is the calibrated one.</summary>
+    public static MoveMargin None => default;
+
+    public bool IsNone => Share == 0;
+
+    /// <summary>False, and <see cref="None"/>, when <paramref name="share"/> is outside 0..1.</summary>
+    public static bool TryCreate(decimal share, out MoveMargin margin)
+    {
+        bool isShare = share is >= 0 and <= 1;
+        margin = isShare ? new MoveMargin(share) : None;
+        return isShare;
+    }
+
+    /// <summary>The calibrated limit plus the margin, rounded up to a whole move.</summary>
+    public int Soften(int calibratedMoves) => (int)decimal.Ceiling(calibratedMoves * (1 + Share));
+
+    public override string ToString() => Share.ToString(CultureInfo.InvariantCulture);
 }
 
 /// <summary>One value per difficulty tier.</summary>
@@ -62,12 +94,17 @@ public sealed record TierValues<T>(T Easy, T Normal, T Hard, T SuperHard)
 }
 
 /// <summary>The rules in force from <see cref="FromLevel"/> on, fully resolved (inheritance already applied).</summary>
+/// <param name="CalibrationBot">
+/// The player model whose games set the move limits and balance the retry seed pools of this band's levels.
+/// </param>
+/// <param name="WinRate">Win rate <paramref name="CalibrationBot"/> must have at the calibrated move limit, per tier.</param>
 /// <param name="CasualFloor">
-/// Least win rate the profile's <see cref="GenerationProfile.FloorBot"/> must have at the move limit, per tier; absent
-/// for a tier without a floor. Never above that tier's <paramref name="WinRate"/>.
+/// Least win rate the profile's <see cref="GenerationProfile.FloorBot"/> must have at the calibrated move limit, per
+/// tier; absent for a tier without a floor. Never above that tier's <paramref name="WinRate"/>.
 /// </param>
 public sealed record ProfileBand(
     int FromLevel,
+    string CalibrationBot,
     TierValues<double> WinRate,
     TierValues<double?> CasualFloor,
     TierValues<MoveRange> Moves,
@@ -102,6 +139,13 @@ public sealed record CalibrationSettings
     public required int MaxCandidates { get; init; }
 
     public required int MaxScaleIterations { get; init; }
+
+    /// <summary>
+    /// Extra moves every level gets on top of its calibrated limit. Calibration and verification run without it; the
+    /// seed pool and the reported win rates are measured at the final limit it gives (see <c>LevelGenerator</c>). In a
+    /// loaded profile the top of every move range, with the margin on it, fits under <see cref="MoveCap"/>.
+    /// </summary>
+    public required MoveMargin MoveMargin { get; init; }
 }
 
 /// <summary>Everything that shapes a generated level set. Loaded from profiles/*.json by <see cref="ProfileLoader"/>.</summary>
@@ -111,13 +155,11 @@ public sealed record GenerationProfile
 
     public required ulong MasterSeed { get; init; }
 
-    /// <summary>The bot whose win rate the move limits are calibrated against.</summary>
-    public required string CalibrationBot { get; init; }
-
     /// <summary>
     /// The player model behind the casual guard: on a tier with a <see cref="ProfileBand.CasualFloor"/>, this bot must
-    /// reach the floor at the move limit too, and the limit grows when it would not. Weaker than
-    /// <see cref="CalibrationBot"/>; plays (and is checked by the loader) only when some band has a floor.
+    /// reach the floor at the calibrated move limit too, and the limit grows when it would not. Weaker than the
+    /// <see cref="ProfileBand.CalibrationBot"/> of every band with a floor; plays (and is checked by the loader) only
+    /// where a band has one.
     /// </summary>
     public required string FloorBot { get; init; }
 
