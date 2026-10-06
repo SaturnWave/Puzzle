@@ -2,13 +2,24 @@
 // game — which level, which attempt, every tile — and records it; this page only shows it and sends the moves.
 
 import { make } from "./dom.js";
-import { createBoard, endTitle, installTileArt, showHud, TileArtError } from "./game-view.js";
+import { starAlcove } from "./alcove.js";
+import { TileArtError } from "./game-view.js";
+import { createFramedBoard } from "./framed-board.js";
+import { showHud, showLevel } from "./hud.js";
+import { installPieceArt } from "./piece-art.js";
+import { resultPanel } from "./result-panel.js";
 
 const $ = (id) => document.getElementById(id);
 const REQUEST_TIMEOUT_MS = 20_000;
 const TOAST_MS = 6000;
 const BOARD_PX = { min: 220, max: 720 };
 const VIEWS = { loading: "loading-view", signIn: "sign-in-view", game: "game-view", finished: "finished-view" };
+
+/** What lies behind a result panel: still drawn, in the dark, but out of reach of a touch, the keyboard or a screen reader. */
+const BEHIND_THE_PANEL = ["hud", "board", "help"];
+
+/** The design's three typefaces, as Google Fonts serves them; gallery.css names the fallbacks for each. */
+const DESIGN_FONTS = "https://fonts.googleapis.com/css2?family=Gabarito:wght@600;700;800;900&family=Paytone+One&family=Young+Serif&display=swap";
 
 /** Refusals of a move that mean the game is not where this page thought: another tab, or a request sent twice, moved it on. */
 const PAGE_IS_BEHIND = new Set(["attemptChanged", "noLiveAttempt", "attemptOver"]);
@@ -127,7 +138,14 @@ function showToast(text, tone = "error") {
 // ---------- views ----------
 function showView(name) {
   for (const [view, id] of Object.entries(VIEWS)) $(id).hidden = view !== name;
-  $("topbar").hidden = name === "loading" || name === "signIn";
+  $("shelf").hidden = name === "loading" || name === "signIn";
+  if (name !== "game") leaveGameOnShelf();
+}
+
+/** The shelf carries two things that tell of the attempt on the board: the progress line, and the dimming under a result panel. */
+function leaveGameOnShelf() {
+  $("progress-line").textContent = "";
+  $("shelf").classList.remove("subdued");
 }
 
 /** The sign-in form, with `note` in its error line when there is something to say first. */
@@ -136,6 +154,16 @@ function showSignIn(note) {
   page.outOfSync = false;
   showView("signIn");
   showSignInError(note);
+}
+
+/**
+ * Back to the sign-in form from a game. The control the player last used is gone with the game, so the keyboard's
+ * and a screen reader's place moves to the form's title, from where the next Tab reaches its first field. A field
+ * is not focused itself: on a phone that would raise the keyboard over the form unasked.
+ */
+function returnToSignIn(note) {
+  showSignIn(note);
+  $("sign-in-title").focus({ preventScroll: true });
 }
 
 function showSignInError(text) {
@@ -150,6 +178,7 @@ function showGame(game) {
   page.outOfSync = false;
   if (!game.attempt) {
     showView("finished");
+    $("finished-title").focus({ preventScroll: true }); // the button that led here is gone: the card's title takes its place
     return;
   }
   showView("game"); // before the board: it sizes itself to the rows around it
@@ -160,59 +189,76 @@ function showGame(game) {
 /** Everything around the board for the attempt on it: the level, the progress line, the HUD and the result. */
 function showAttempt() {
   const { attempt, progress } = page.game;
-  $("level-title").textContent = `Bölüm ${attempt.levelNumber}`;
-  $("progress-line").textContent = `İlerleme ${attempt.levelNumber} / ${progress.levelCount} · bu bölümde ${attempt.attemptNumber}. deneme`;
+  showLevel($("level-title"), attempt.levelNumber);
+  $("progress-line").replaceChildren(
+    make("span", "", `İlerleme ${attempt.levelNumber} / ${progress.levelCount}`),
+    " · ",
+    make("span", "", `bu bölümde ${attempt.attemptNumber}. deneme`),
+  );
   showHud({ moves: $("moves"), movesLeft: $("moves-left"), goals: $("goals") }, attempt.state);
   showResult();
 }
 
-/** Over the board once the attempt is decided: what happened, and the one way on. */
+/** In front of the darkened room once the attempt is decided: what happened, and the one way on. */
 function showResult() {
   const { attempt, progress } = page.game;
-  const { status, movesUsed } = attempt.state;
+  const decided = attempt.state.status !== "Playing";
   const banner = $("banner");
-  if (status === "Playing") {
-    banner.classList.add("hidden");
+  for (const id of BEHIND_THE_PANEL) $(id).inert = decided;
+  $("game-view").classList.toggle("decided", decided);
+  $("shelf").classList.toggle("subdued", decided);
+  banner.classList.toggle("hidden", !decided);
+  if (!decided) {
     banner.replaceChildren();
     return;
   }
-  const won = status === "Won";
-  const goOn = make("button", "btn primary", won ? (progress.finished ? "Devam" : "Sonraki bölüm") : "Tekrar dene");
-  goOn.type = "button";
-  goOn.onclick = () => goOnToNextAttempt(goOn);
-  const actions = make("div", "banner-actions");
-  actions.appendChild(goOn);
-  const card = make("div", "banner-card");
-  card.append(
-    make("div", `banner-title ${won ? "won" : "lost"}`, endTitle(status)),
-    make("div", "banner-meta", won ? `Bölüm ${attempt.levelNumber} · ${movesUsed} hamlede` : `Bölüm ${attempt.levelNumber} · ${attempt.attemptNumber}. deneme`),
-    actions,
-  );
+  const { card, goOn } = resultPanel(attempt, { everyLevelWon: progress.finished, onGoOn: goOnToNextAttempt });
   banner.replaceChildren(card);
-  banner.classList.remove("hidden");
-  goOn.focus({ preventScroll: true });
+  goOn.focus(); // on a screen too short for the whole card the page scrolls its button into view
 }
 
 // ---------- board ----------
-const board = createBoard($("board"), {
+const board = createFramedBoard({ board: $("board"), frame: $("board-frame"), wrap: $("board-wrap") }, {
   onMove: sendMove,
   mayPlay: () => !page.busy && isPlaying(),
   space: boardSpace,
+  roomAbove: wallAboveBoard,
 });
 
 const isPlaying = () => page.game?.attempt?.state.status === "Playing";
 
-/** The room the board may take: the play column's width, and the window's height less every other row of the page. */
+const px = (length) => parseFloat(length);
+
+/** An element's height on the page with its margins: the room it takes in a column. */
+function rowHeight(element) {
+  const style = getComputedStyle(element);
+  return element.offsetHeight + px(style.marginTop) + px(style.marginBottom);
+}
+
+/**
+ * The room the board's cells may take: the play column's width and the window's height, less the frame's room
+ * around the cells and every other row of the page.
+ */
 function boardSpace() {
   const column = $("game-view");
+  const wrap = $("board-wrap");
   const columnStyle = getComputedStyle(column);
-  const frame = 2 * parseFloat(getComputedStyle($("board-wrap")).paddingLeft);
-  const width = column.clientWidth - parseFloat(columnStyle.paddingLeft) - parseFloat(columnStyle.paddingRight) - frame;
-  const otherRows = $("topbar").offsetHeight + column.offsetHeight - $("board").offsetHeight;
+  const wrapStyle = getComputedStyle(wrap);
+  const otherRows = [...column.children].filter((row) => row !== wrap);
+  const beside = px(columnStyle.paddingLeft) + px(columnStyle.paddingRight) + px(wrapStyle.paddingLeft) + px(wrapStyle.paddingRight);
+  const aboveAndBelow = px(columnStyle.paddingTop) + px(columnStyle.paddingBottom) + px(wrapStyle.paddingTop) + px(wrapStyle.paddingBottom)
+    + otherRows.reduce((height, row) => height + row.offsetHeight, 0)
+    + otherRows.length * px(columnStyle.rowGap)
+    + rowHeight($("shelf"));
   return {
-    width: Math.min(width, BOARD_PX.max),
-    height: Math.max(BOARD_PX.min, window.innerHeight - otherRows),
+    width: Math.min(column.clientWidth - beside, BOARD_PX.max),
+    height: Math.max(BOARD_PX.min, window.innerHeight - aboveAndBelow),
   };
+}
+
+/** The bare wall between the HUD and the top of the board's cells, in px: what a lamp beside the board may fill. */
+function wallAboveBoard() {
+  return $("board").getBoundingClientRect().top - $("hud").getBoundingClientRect().bottom;
 }
 
 let resizeFrame = 0;
@@ -274,7 +320,7 @@ async function recoverFromFailedMove(error) {
     reportGameFailure(error);
     return;
   }
-  // Nothing was played. Show the game as the server has it; an attempt that ended tells so itself, on its banner.
+  // Nothing was played. Show the game as the server has it; an attempt that ended tells so itself, on its panel.
   const loaded = await loadGame(openGame);
   if (loaded && error.code !== "attemptOver") showToast("Oyun başka bir yerde ilerlemiş. Son hâli yüklendi.", "note");
 }
@@ -287,7 +333,7 @@ async function goOnToNextAttempt(button) {
   try {
     await loadGame(startAttempt);
   } finally {
-    button.disabled = false; // it is gone with its banner when the attempt started, and usable again when it did not
+    button.disabled = false; // it is gone with its panel when the attempt started, and usable again when it did not
     page.busy = false;
   }
 }
@@ -306,7 +352,7 @@ async function loadGame(request) {
 /** Tells a failed game request. A session the server no longer knows goes back to the sign-in form. */
 function reportGameFailure(error) {
   if (isSignInRequired(error)) {
-    showSignIn("Oturumun kapandı. Tekrar giriş yap.");
+    returnToSignIn("Oturumun kapandı. Tekrar giriş yap.");
     return;
   }
   showToast(failureText(error));
@@ -340,7 +386,7 @@ async function signIn(event) {
   }
 }
 
-/** A signed-in player comes in: their name in the top bar, their game on the board. */
+/** A signed-in player comes in: their name on the shelf, their game on the board. */
 async function enter(username) {
   $("account-name").textContent = username;
   showGame(await openGame());
@@ -356,20 +402,35 @@ async function signOut() {
     return;
   }
   $("sign-in-form").reset(); // the next person at this phone starts from an empty form
-  showSignIn();
+  returnToSignIn();
 }
 
 // ---------- startup ----------
+/**
+ * Asks for the design's typefaces once the page is up. They are an extra: the page never waits for another site,
+ * and where they do not arrive (no connection to it, or a server whose policy does not let them in) the fallbacks
+ * of gallery.css stay. Type that arrives late changes the height of a row or two, so the board is fitted again.
+ */
+function requestDesignFonts() {
+  const sheet = document.createElement("link");
+  sheet.rel = "stylesheet";
+  sheet.href = DESIGN_FONTS;
+  document.head.appendChild(sheet);
+  document.fonts?.addEventListener("loadingdone", onResize);
+}
+
 async function start() {
+  $("finished-exhibit").replaceWith(starAlcove()); // the closing card shows the star the result panels show
   $("sign-in-form").addEventListener("submit", signIn);
   $("sign-out").addEventListener("click", signOut);
   window.addEventListener("resize", onResize);
+  requestDesignFonts();
   try {
-    const [session] = await Promise.all([api("/api/player/me"), installTileArt()]);
+    const [session] = await Promise.all([api("/api/player/me"), installPieceArt()]);
     if (session.signedIn) await enter(session.username); else showSignIn();
   } catch (error) {
     if (!isFailedRequest(error)) throw error;
-    $("loading-view").textContent = "Oyun açılamadı. Bağlantını kontrol edip sayfayı yenile.";
+    $("loading-note").textContent = "Oyun açılamadı. Bağlantını kontrol edip sayfayı yenile.";
   }
 }
 

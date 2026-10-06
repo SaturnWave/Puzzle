@@ -41,12 +41,15 @@ internal static class PublicMode
     private static readonly string[] SharedFiles = ["app.css", "dom.js", "game-view.js", "tiles.svg"];
 
     /// <summary>
-    /// What a page of a public server may load and run: only this server's own files. No inline script or style, no
-    /// plugin, no frame around it, and no form or base address that points elsewhere, so markup that slipped into a
-    /// page could neither run nor send anything away.
+    /// What a page of a public server may load and run: only this server's own files, and one thing of another site,
+    /// the typefaces of the player page, which Google Fonts serves (a stylesheet from one of its hosts, the font files
+    /// that stylesheet names from the other). No inline script or style, no plugin, no frame around it, and no form
+    /// or base address that points elsewhere, so markup that slipped into a page could neither run nor send anything
+    /// away.
     /// </summary>
     private const string ContentSecurityPolicy =
-        "default-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
+        "default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; " +
+        "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
 
     /// <exception cref="InvalidOperationException">The public level set cannot be played through; the message says why.</exception>
     public static void AddPublicMode(this WebApplicationBuilder builder, PublicSettings settings, LevelLibrary library)

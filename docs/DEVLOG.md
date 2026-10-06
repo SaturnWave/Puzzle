@@ -36,7 +36,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - **Ölçüm:** casual bot 51–300'de Normal %51 → %78, Zor %20 → %46. Novice bot ise 51–100'de ortalama %39 (Zor %16, Süper Zor %5): **pay, novice gibi oynayan biri için 51 sonrasındaki duvarı kaldırmıyor.** İlk oda kendi botu için neredeyse kaybedilmez oldu (%98–100).
 - **Canlıya alma:** bölümler yerine kondu, 526 test geçti, sunucu `Stop-PublicServer.ps1` ile düzgün durduruldu (betik ilk kez denendi, çalışıyor) ve oturumdan bağımsız yeniden başlatıldı. Takastan hemen önce Admin1 hesabı ilk kez oynadı (1. bölümün novice sürümü, ilk denemede 14/19 hamlede kazandı); o sürüm ve komşuları `levels/archive/before-margin-2026-10-06/` altına alındı, 42 kaydın hepsi karşılaştırılabiliyor.
 
-**Sıradaki:** tema hazır olunca oyuncu sayfasına alınması; 51 sonrası için novice kalibrasyonu kararı (insan verisi geldikçe).
+**6 Ekim: tema oyuncu sayfasında, yayında**
+- Seçilen tasarım herkese açık testin oyuncu sayfasına uygulandı: giriş kartı, tele asılı bölüm / hamle / hedef plaketleri, bölümün şekline göre üretilen basamaklı yaldız çerçeve ve tepsi (her boyutta ve delikli tahtalarda), tasarımın taşları ve engelleri (uğur böceği, beyaz papatya, sandıklar, vernik, bant, özel taşlar; 7. ve 8. renk dahil), kazanma ve kaybetme panelleri. Oynanış mantığı değişmedi; yalnızca çalışan şeyler gösteriliyor (booster, coin, can, yapboz parçası yok).
+- Çalışma canlı sunucuya dokunmadan ayrı bir kopyada yapıldı: haritalama, yapım, iki bağımsız inceleme (görünüm 8/10, 14 bulgu; davranış 8/10, 11 bulgu), düzeltme ve baştan sona doğrulama (iki hesapla tam yolculuk iki kez; 542 test).
+- **Canlıya alma:** yeni dosyalar eski sayfanın yanına kopyalandı, `index.html` tek bir taşımayla değiştirildi; sunucu yeniden derlenmedi ve durdurulmadı. Yayın adresindeki giriş sayfası yeni görünümde.
+- **Yazı tipleri:** sunucunun bugünkü güvenlik politikası Google Fonts'u engelliyor; sayfa şimdilik sistemdeki kalın yazı tipleriyle çalışıyor. Politika değişikliği koda eklendi ama sunucu yeniden derlenene kadar etkisiz. İki yol var: sunucuyu yeniden derleyip başlatmak (oyuncuların tarayıcıları her ziyarette Google'a bağlanır) ya da üç yazı tipini sunucuya koymak (dosyaların indirilmesi gerekir). Karar kullanıcıda.
+- **Sınırlar:** yalnızca bu bilgisayardaki başsız Chrome'da denendi; gerçek telefon, Safari ve ekran okuyucu denenmedi. Taş çizimlerinin kaynakları hâlâ `out/design` altında (git'e girmiyor); temiz bir kopyada `pieces.svg` yeniden üretilemez.
+
+**Sıradaki:** yazı tipi kararı; 51 sonrası için novice kalibrasyonu kararı (insan verisi geldikçe); çizim kaynaklarının depoya alınması.
 
 ---
 

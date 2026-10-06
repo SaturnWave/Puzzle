@@ -1,0 +1,988 @@
+/* The public mode's player page, in the game's own look: a museum wall, hanging gilt plaques, a framed tray of
+   pieces. The page links no other stylesheet. The board's mechanics (how cells and tiles are placed and moved, the
+   timing of every step) are the lab's, copied as they are, because both pages are driven by the same game-view.js;
+   everything around them is this page's. */
+
+:root {
+  color-scheme: light;
+
+  /* The design's three typefaces come from another site and may not arrive (no connection to it, or a server whose
+     policy keeps them out). Each stack then falls to faces a phone or a computer has, chosen to keep the design's
+     weight: the device's own interface face for text, a rounded bold or a black face for figures and button
+     labels, a bold serif for the nameplates. */
+  --font-sans: "Gabarito", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-figure: "Paytone One", "Arial Rounded MT Bold", "Segoe UI Black", "Arial Black", system-ui, sans-serif;
+  --font-serif: "Young Serif", Georgia, "Times New Roman", serif;
+
+  --wall: #17666f;
+  --ink: #46260f;
+  --ink-soft: #7a4a12;      /* small type on cream: 5.6:1 on the darkest cream of a plaque */
+  --cream: #fbf0d6;
+  --on-wall: #fff8e6;
+  --danger: #b3162b;
+  --focus-on-cream: #0f5f69;
+  --focus-on-wall: #fff4c4;
+
+  --gilt: linear-gradient(180deg, #fff4c4 0%, #ffdb6e 22%, #f6b93c 58%, #d38d1a 100%);
+  --plaque-face: linear-gradient(180deg, #fffdf4 0%, #fbf0d6 55%, #f0dfbb 100%);
+  --plaque-edge: inset 0 0 0 1.2px rgba(138, 85, 18, 0.6), inset 0 3.5px 0 0 #fff, inset 0 -3px 0 0 #e3cc9c;
+  --plaque-drop: 0 0 0 1.5px #5e3305, 0 5px 0 1.5px rgba(5, 40, 48, 0.42), 0 11px 16px rgba(4, 32, 40, 0.32);
+  --wire: #f3d58a;
+  --wire-shade: rgba(4, 36, 43, 0.35);
+
+  /* The frame reaches this far past the board's cells; the box around the board leaves it that room. */
+  --frame-reach: 11px;
+  --frame-room: 22px;
+
+  /* The board's timing, the lab's own: the script waits these steps out, so the two must agree. */
+  --cell-size: 36px;
+  --move-ms: 234ms;
+  --swap-ms: 170ms;
+  --fade-ms: 184ms;
+  --ease-swap: cubic-bezier(0.45, 0, 0.25, 1);
+  --ease-fall: cubic-bezier(0.55, 0, 0.75, 1.16);
+}
+
+* { box-sizing: border-box; }
+
+/* The hidden attribute wins over any display a class gives. */
+[hidden] { display: none !important; }
+
+/* Lamps and their glow reach past the sides of a narrow page; nothing of the page may be scrolled to there. */
+html { background: var(--wall); overflow-x: hidden; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--ink);
+  font: 600 15px/1.4 var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* The wall: teal paint, a damask printed on it, a pool of warm light and darker corners. It stays put behind the
+   page, so a page taller than the screen scrolls over it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 75% 75% at 50% 48%, rgba(4, 36, 43, 0) 55%, rgba(4, 36, 43, 0.62) 100%),
+    radial-gradient(ellipse min(62vw, 300px) 62% at 50% 46%, rgba(255, 241, 204, 0.3) 0%, rgba(255, 241, 204, 0.08) 55%, rgba(255, 241, 204, 0) 100%),
+    url("wall.svg") 50% 0 / 48px 72px,
+    linear-gradient(180deg, #1f858c 0%, #17666f 55%, #11505a 100%);
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, p { margin: 0; }
+
+button, input { font: inherit; color: inherit; }
+
+:focus-visible { outline: 3px solid var(--focus-on-wall); outline-offset: 3px; }
+.plaque :focus-visible { outline-color: var(--focus-on-cream); }
+
+/* ---------- plaques ---------- */
+/* A cream plaque in a gilt rim: the rim is the border's gradient, the face the padding box's. */
+.plaque {
+  position: relative;
+  border: 3px solid transparent;
+  border-radius: 18px;
+  background: var(--plaque-face) padding-box, var(--gilt) border-box;
+  box-shadow: var(--plaque-edge), var(--plaque-drop);
+}
+
+/* What hangs, hangs on two picture wires that run up out of the page. */
+.hangs::before {
+  content: "";
+  position: absolute;
+  left: var(--wire-inset, 26px);
+  right: var(--wire-inset, 26px);
+  bottom: calc(100% + 3px);
+  height: 100vh;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--wire), var(--wire)) 0 0 / 1.3px 100% no-repeat,
+    linear-gradient(var(--wire-shade), var(--wire-shade)) 0.8px 0 / 1.6px 100% no-repeat,
+    linear-gradient(var(--wire), var(--wire)) 100% 0 / 1.3px 100% no-repeat,
+    linear-gradient(var(--wire-shade), var(--wire-shade)) calc(100% + 0.8px) 0 / 1.6px 100% no-repeat;
+  opacity: 0.85;
+}
+
+.plaque-label {
+  font: 800 10px/1 var(--font-sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* The figures' typeface has one weight. Asked for the heaviest, it is drawn as it is (nothing is thickened by the
+   browser), while a fallback that stands in for it comes in the heaviest weight it has. */
+.figure {
+  font-family: var(--font-figure);
+  font-weight: 900;
+  font-synthesis: none;
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A brass nameplate riding on the top edge of its plaque, held by a gilt stud at each end. Its typeface has one
+   weight and is drawn as it is; a serif that stands in for it comes in its bold, which is as dark. */
+.nameplate {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  transform: translate(-50%, -50%);
+  min-width: min(280px, calc(100% - 24px));
+  max-width: calc(100% - 16px);
+  min-height: 40px;
+  padding: 6px 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #ffe892 0%, #f6b93c 55%, #de9a22 100%);
+  box-shadow: inset 0 1.5px 0 #fff6cc, inset 0 -2px 0 #c17e12, 0 0 0 1.4px #5e3305, 0 4px 6px rgba(92, 56, 16, 0.34);
+  /* The design's 20.5px from a 390px screen up; below it the type shrinks fast enough (to 15.6px at 320px) that
+     the longest title, "Oynanacak hamle kalmadı!", still stands clear of the studs. */
+  font: 700 clamp(15px, calc(7vw - 6.8px), 20.5px)/1.1 var(--font-serif);
+  font-synthesis: none;
+  color: #4b2a0f;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nameplate::before, .nameplate::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff4c4, #b87412);
+  box-shadow: 0 0 0 0.8px #5e3305;
+}
+
+.nameplate::before { left: 9px; }
+.nameplate::after { right: 9px; }
+
+/* A title that is given the focus when its card comes up is not a control: it shows no ring. */
+.nameplate:focus { outline: none; }
+
+/* ---------- buttons ---------- */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0;
+  border: 3.5px solid transparent;
+  border-radius: 24px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 80ms ease, filter 120ms ease;
+}
+
+.btn:hover:not(:disabled) { filter: brightness(1.05); }
+.btn:active:not(:disabled) { transform: translateY(2px); }
+.btn:disabled { cursor: default; filter: saturate(0.55) brightness(0.92); }
+
+/* The green pill: the one way forward on a card, on a dark lip it is pressed down onto. */
+.btn.primary {
+  min-height: 72px;
+  padding: 0 20px 5px;
+  background: linear-gradient(180deg, #a6ee66 0%, #62cc3d 40%, #3fae35 66%, #2e9c2f 100%) padding-box, var(--gilt) border-box;
+  box-shadow:
+    inset 0 0 0 1.6px #145a1b, inset 0 4px 0 1px rgba(255, 255, 255, 0.5), inset 0 -7px 0 1px #1f7f2a,
+    0 0 0 2px #5e3305, 0 7px 0 2px #3a1f05, 0 12px 10px rgba(92, 56, 16, 0.3);
+}
+
+.btn.primary::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: 6px;
+  height: 37%;
+  border-radius: 14px 14px 22px 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.06));
+  pointer-events: none;
+}
+
+/* White letters in a dark green outline. The outline is a ring of shadows: unlike a text stroke it never eats into
+   the letters, in any browser. White on the button's green alone is far too faint to read (under 2:1): the
+   outline, on which the letters stand at about 8:1, is what makes them legible, so it must stay this thick. The
+   label shrinks with a narrow screen, so the longest one ("Sonraki bölüm") stays inside its button. */
+.btn.primary .btn-label {
+  position: relative;
+  font: 900 clamp(22px, 7.2vw, 28px)/1 var(--font-figure);
+  font-synthesis: none;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow:
+    2.2px 0 0 #145a1b, -2.2px 0 0 #145a1b, 0 2.2px 0 #145a1b, 0 -2.2px 0 #145a1b,
+    1.6px 1.6px 0 #145a1b, -1.6px 1.6px 0 #145a1b, 1.6px -1.6px 0 #145a1b, -1.6px -1.6px 0 #145a1b,
+    2px 1px 0 #145a1b, -2px 1px 0 #145a1b, 2px -1px 0 #145a1b, -2px -1px 0 #145a1b,
+    1px 2px 0 #145a1b, -1px 2px 0 #145a1b, 1px -2px 0 #145a1b, -1px -2px 0 #145a1b,
+    0 4.4px 0 #145a1b, 1.4px 4px 0 #145a1b, -1.4px 4px 0 #145a1b;
+}
+
+/* The teal button: a way out, never the way forward. */
+.btn.teal {
+  min-width: 76px;
+  padding: 0 16px 2px;
+  border-width: 2.4px;
+  background: linear-gradient(180deg, #1a7f87 0%, #136871 55%, #0e5660 100%) padding-box, linear-gradient(#f6b93c, #f6b93c) border-box;
+  box-shadow: inset 0 2.5px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 0 rgba(6, 50, 58, 0.55), 0 0 0 1.4px #4b2a0f, 0 3px 0 1.4px rgba(40, 18, 6, 0.35);
+  font: 800 15px/1 var(--font-sans);
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(6, 50, 58, 0.8);
+}
+
+.spinner { display: none; position: relative; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff; border-right-color: transparent; filter: drop-shadow(0 0 1px #145a1b); animation: spin 0.8s linear infinite; }
+.is-busy .spinner { display: inline-block; }
+
+/* ---------- the halls: sign-in, the closing card, the loading note ---------- */
+.hall {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 72px max(14px, env(safe-area-inset-left)) 40px;
+}
+
+/* A card's two wires come down where the HUD leaves gaps beside its medallion, as in the design. */
+.card {
+  width: min(100%, 362px);
+  padding: 38px 18px 24px;
+  --wire-inset: calc(50% - 54px);
+}
+
+/* A card's wires end on its nameplate, not on its rim, each in a gilt pin on the plate's top edge. A pin is a
+   7.6px picture with its middle on the middle of its wire; the pins are drawn after the plate, over it. */
+.card.hangs::before { bottom: calc(100% + 20px); }
+
+.card.hangs::after {
+  --pin: radial-gradient(circle at 50% 50%, #fff4c4 0, #f6b93c 1.4px, #d38d1a 2.5px, #5e3305 2.8px, #5e3305 3.3px, rgba(94, 51, 5, 0) 3.7px);
+  content: "";
+  position: absolute;
+  left: calc(var(--wire-inset) - 3.15px);
+  right: calc(var(--wire-inset) - 3.15px);
+  bottom: calc(100% + 18.7px);
+  height: 7.6px;
+  pointer-events: none;
+  background: var(--pin) 0 0 / 7.6px 7.6px no-repeat, var(--pin) 100% 0 / 7.6px 7.6px no-repeat;
+}
+
+.card .lead { font-size: 15px; font-weight: 700; color: var(--ink); text-align: center; }
+
+/* The game's pieces in a row under the sign-in nameplate, the middle one largest: what the game is, at a glance. */
+.pieces-row { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin: -6px 0 8px; }
+.pieces-row svg { display: block; flex: none; width: 40px; height: 40px; overflow: visible; }
+.pieces-row svg:nth-child(2), .pieces-row svg:nth-child(4) { width: 46px; height: 46px; }
+.pieces-row svg:nth-child(3) { width: 54px; height: 54px; }
+
+.page-note { padding: 14px 22px; font-weight: 700; text-align: center; }
+
+.field {
+  display: block;
+  margin-top: 14px;
+  font: 800 11px/1 var(--font-sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* A field is a shallow well in the plaque. 16px type keeps iOS from zooming in on focus. */
+.field input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid #a8762a;
+  border-radius: 13px;
+  background: #fffdf6;
+  box-shadow: inset 0 2.5px 4px rgba(92, 56, 16, 0.22), 0 1.5px 0 #fff;
+  font: 700 16px/1.2 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+
+.field input:focus-visible { outline-offset: 1px; border-color: var(--focus-on-cream); }
+
+.card .btn.primary { width: 100%; margin-top: 20px; }
+
+/* The notice keeps clear of the lip under the button. */
+.form-error {
+  margin-top: 24px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  border: 1.5px solid rgba(179, 22, 43, 0.55);
+  background: #ffe6de;
+  color: #8e1126;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* The design's rule: a gilt line with a cut diamond in its middle. */
+.rule {
+  position: relative;
+  width: 62%;
+  height: 11px;
+  margin: 16px auto 0;
+  background:
+    linear-gradient(#e0a63a, #e0a63a) 0 50% / calc(50% - 10px) 1.4px no-repeat,
+    linear-gradient(#e0a63a, #e0a63a) 100% 50% / calc(50% - 10px) 1.4px no-repeat;
+}
+
+.rule::before, .rule::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.rule::before { width: 11px; height: 11px; margin: -5.5px; background: #5e3305; }
+.rule::after { width: 8.6px; height: 8.6px; margin: -4.3px; background: linear-gradient(135deg, #fff0b8 0 38%, #f6b93c 38% 62%, #c8841a 62% 100%); }
+
+.notice {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* A card that shows an alcove gives it the design's measure: close under the nameplate, nearly as wide as the card. */
+.finished-card, .result-card { padding-top: 27px; text-align: center; }
+.finished-card .alcove, .result-card .alcove { margin: 0 -6px; }
+.finished-card .lead { margin-top: 14px; }
+
+/* ---------- the alcove ---------- */
+/* A piece of the gallery wall in a beaded gilt frame, lit from above, with a wooden shelf: where a card shows what
+   was won, or what a lost game left to do. The frame is the border; its row of beads is drawn by alcove.js along
+   the border's middle. What stands in the alcove stands on the shelf, on the ground shadow of its own art, which
+   lies 8% above the foot of every piece. The shelf's two strokes of grain are the first two pictures. */
+.alcove {
+  --alcove-height: 202px; /* the design's: 188px of wall and shelf inside the frame's 7px */
+  --shelf: 30px;
+  --shelf-middle: 18px;   /* from the alcove's foot up to the middle of the shelf's top */
+  --light: 0.5;
+  --grain: transparent calc(50% - 0.6px), rgba(59, 32, 14, 0.28) calc(50% - 0.6px), rgba(59, 32, 14, 0.28) calc(50% + 0.6px), transparent calc(50% + 0.6px);
+  position: relative;
+  height: var(--alcove-height);
+  border: 7px solid transparent;
+  border-radius: 18px;
+  background:
+    linear-gradient(179.2deg, var(--grain)) left 13.8% bottom 18.5px / 54.4% 5px no-repeat padding-box,
+    linear-gradient(180.8deg, var(--grain)) right 9.7% bottom 9.5px / 48.7% 5px no-repeat padding-box,
+    linear-gradient(180deg, #fce8c1 0 1.6px, #f3cf96 1.6px, #d9a566 45%, #b47b40 calc(100% - 7.4px), #e1c296 calc(100% - 7.4px) calc(100% - 6px), #785022 calc(100% - 6px) calc(100% - 4.8px), #9a6532 calc(100% - 4.8px)) 0 100% / 100% var(--shelf) no-repeat padding-box,
+    linear-gradient(180deg, rgba(4, 36, 43, 0), rgba(4, 36, 43, 0.4)) 0 calc(100% - var(--shelf)) / 100% 18px no-repeat padding-box,
+    radial-gradient(ellipse 58% 70% at 50% 40%, rgba(255, 241, 204, var(--light)) 0%, rgba(255, 241, 204, calc(var(--light) * 0.3)) 52%, rgba(255, 241, 204, 0) 100%) padding-box,
+    url("wall.svg") 50% 0 / 48px 72px padding-box,
+    linear-gradient(180deg, #1f858c 0%, #17666f 55%, #11505a 100%) padding-box,
+    var(--gilt) border-box;
+  box-shadow:
+    inset 0 0 0 1.4px #5e3305, inset 0 8px 9px rgba(20, 10, 0, 0.38), inset 4px 0 6px rgba(20, 10, 0, 0.2),
+    0 0 0 1.4px #5e3305, 0 4px 0 1.4px rgba(92, 56, 16, 0.28);
+}
+
+/* The gilt band carries a light line just inside its outer edge and a brown one just outside its inner edge, the
+   beads between them. Each line is the border of a box laid over the band. */
+.alcove::before, .alcove::after { content: ""; position: absolute; pointer-events: none; }
+.alcove::before { inset: -6.65px; border: 1.1px solid rgba(255, 246, 204, 0.9); border-radius: 17.65px; }
+.alcove::after { inset: -1.2px; border: 1px solid rgba(156, 92, 11, 0.55); border-radius: 12.2px; }
+
+/* The beads' box is the middle of the 7px border on every side; the row is stroked along its edge. */
+.alcove-beads { position: absolute; left: -3.5px; top: -3.5px; width: calc(100% + 7px); height: calc(100% + 7px); overflow: visible; pointer-events: none; }
+
+.alcove-won { --light: 0.74; }
+.alcove-lost { --light: 0.4; display: flex; align-items: flex-end; justify-content: center; gap: 24px; }
+
+.alcove-star {
+  position: absolute;
+  left: calc(50% - var(--star) / 2);
+  bottom: calc(var(--shelf-middle) - var(--star) * 0.08);
+  width: var(--star);
+  height: var(--star);
+  overflow: visible;
+}
+
+/* The design's four-pointed sparkle, cut out of a square. */
+.sparkle {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2);
+  background: #fff6cc;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: twinkle 1.7s ease-in-out 7 alternate; /* a few glints, then still: an odd count ends them at full size */
+}
+
+.sparkle:nth-of-type(1) { left: 13%; top: 32%; --size: 24px; }
+.sparkle:nth-of-type(2) { left: 88%; top: 27%; --size: 18px; animation-delay: -0.9s; }
+.sparkle:nth-of-type(3) { left: 85%; top: 66%; --size: 13px; animation-delay: -0.4s; }
+.sparkle:nth-of-type(4) { left: 16%; top: 66%; --size: 10px; animation-delay: -1.3s; }
+.sparkle:nth-of-type(5) { left: 78%; top: 10%; --size: 8px; animation-delay: -0.2s; }
+
+/* A goal left open stands on the shelf as its piece, with what is left of it on a teal badge at its foot. */
+.alcove .goal { position: relative; flex: none; margin-bottom: calc(var(--shelf-middle) - var(--piece) * 0.08); }
+.alcove .goal-art { width: var(--piece); height: var(--piece); }
+.alcove .goal-count {
+  position: absolute;
+  right: -9px;
+  bottom: 3px;
+  min-width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0 6px 1px;
+  display: grid;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #1a7f87 0%, #0e5660 100%) padding-box, linear-gradient(180deg, #fff4c4, #f6b93c) border-box;
+  box-shadow: 0 0 0 1.3px #4b2a0f, 0 2.5px 0 1.3px rgba(40, 18, 6, 0.4);
+  font-size: 16px;
+  color: #fff;
+}
+
+/* What stands in the alcove is sized to it where the browser can measure it (cqh and cqw are hundredths of the
+   alcove's inner height and width): on a card stretched over a tall board the star fills its wall as it does in
+   the design. One goal alone stands larger than several side by side. */
+@supports (container-type: size) {
+  .alcove { container-type: size; }
+  .alcove-won { --star: min(74cqh, 50cqw); }
+  .alcove .goal { --piece: min(46cqh, 26cqw); }
+  .alcove .goal:only-of-type { --piece: min(58cqh, 42cqw); }
+}
+
+/* A browser that cannot gives them the sizes that suit the alcove at its plain height. */
+@supports not (container-type: size) {
+  .alcove-won { --star: 136px; }
+  .alcove .goal { --piece: 84px; }
+  .alcove .goal:only-of-type { --piece: 108px; }
+
+  @media (max-height: 760px) {
+    .alcove-won { --star: 104px; }
+    .alcove .goal { --piece: 64px; }
+    .alcove .goal:only-of-type { --piece: 80px; }
+  }
+}
+
+/* ---------- the play column ---------- */
+/* The frame comes as near to the screen's sides as in the design (4px), which gives a board of ten columns its
+   36px cells on a 390px phone and one of eleven columns 30px cells on a 360px one. */
+.play {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(14px, 5.5vh, 52px) max(4px, env(safe-area-inset-left)) 6px;
+}
+
+/* ---------- HUD ---------- */
+.hud {
+  position: relative;
+  z-index: 1; /* over the glow of the sconces */
+  width: min(100%, 350px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-plaque {
+  flex: 1 1 0;
+  min-width: min-content;
+  height: 84px;
+  padding: 7px 5px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  --wire-inset: 24px;
+}
+
+.level-title { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0; }
+.level-title .figure { font-size: 31px; }
+
+/* The moves medallion: a gilt ring turned on the lathe, around a cream dial. One wire holds it. */
+.medallion {
+  position: relative;
+  flex: none;
+  width: 98px;
+  height: 98px;
+  border: 5.5px solid transparent;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background:
+    radial-gradient(circle at 36% 26%, #fff 0%, #fbf0d6 55%, #ead5a6 100%) padding-box,
+    conic-gradient(from 215deg, #fff4c4, #f6b93c 12%, #d38d1a 28%, #ffdb6e 45%, #fff4c4 55%, #e9a52a 72%, #d38d1a 86%, #fff4c4) border-box;
+  box-shadow: inset 0 0 0 1.4px rgba(138, 85, 18, 0.65), inset 0 4px 0 0 #fff, inset 0 -4px 0 0 #e0c894, var(--plaque-drop);
+}
+
+.medallion.hangs::before {
+  left: calc(50% - 0.65px);
+  right: auto;
+  width: 2.4px;
+  bottom: calc(100% + 5px);
+  background:
+    linear-gradient(var(--wire), var(--wire)) 0 0 / 1.3px 100% no-repeat,
+    linear-gradient(var(--wire-shade), var(--wire-shade)) 0.8px 0 / 1.6px 100% no-repeat;
+}
+
+.moves .figure { font-size: 40px; margin-bottom: 3px; }
+.moves.low .figure { color: var(--danger); }
+
+.goals { display: flex; align-items: flex-start; justify-content: center; gap: 12px; }
+
+/* A goal: the piece's art with its count tucked up under it (the lowest tenth of an icon is only its shadow). */
+.goal { display: flex; flex-direction: column; align-items: center; }
+.goal-art { display: block; flex: none; width: 30px; height: 30px; overflow: visible; }
+.goal-count { margin-top: -4px; font-size: 24px; }
+.goal-done { display: block; width: 20px; height: 20px; margin-top: -1px; }
+
+/* One goal alone stands beside its figure, as large as the plaque allows. */
+.goals[data-count="1"] .goal { flex-direction: row; gap: 5px; }
+.goals[data-count="1"] .goal-art { width: 38px; height: 38px; }
+.goals[data-count="1"] .goal-count { margin-top: 0; font-size: 31px; }
+.goals[data-count="1"][data-digits="3"] .goal-count { font-size: 25px; }
+.goals[data-count="1"] .goal-done { width: 26px; height: 26px; margin-top: 0; }
+
+.goals[data-count="2"][data-digits="3"] { gap: 6px; }
+.goals[data-count="2"][data-digits="3"] .goal-count { font-size: 20px; }
+
+.goals[data-count="3"] { gap: 5px; }
+.goals[data-count="3"] .goal-art { width: 27px; height: 27px; }
+.goals[data-count="3"] .goal-count { font-size: 19px; }
+.goals[data-count="3"][data-digits="3"] .goal-count { font-size: 15px; }
+.goals[data-count="3"] .goal-done { width: 18px; height: 18px; }
+
+/* ---------- the board in its frame ---------- */
+/* The box around the board leaves the frame its reach on every side, and its shadow a little more below. The
+   frame, the board and the sconces are stacked by z-index in the page's own order: the box makes no layer of its
+   own, so the result panel inside it can still cover the whole page. */
+.board-wrap {
+  position: relative;
+  margin: auto 0;
+  padding: var(--frame-reach) var(--frame-reach) calc(var(--frame-reach) + 8px);
+}
+
+/* Exits hang under the frame of a level that has drop items. */
+.board-wrap.has-exits { padding-bottom: calc(var(--frame-reach) + 26px); }
+
+.board-frame {
+  position: absolute;
+  left: calc(var(--frame-reach) - var(--frame-room));
+  top: calc(var(--frame-reach) - var(--frame-room));
+  z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* The lab's board, unchanged in how it works: the script reads touches from this box, so it is exactly the cells,
+   with no border and no padding. What falls in from above is cut off at the tray's edge by a clip the frame's
+   script names. */
+.board {
+  position: relative;
+  z-index: 2;
+  width: calc(var(--cols) * var(--cell-size));
+  height: calc(var(--rows) * var(--cell-size));
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cell {
+  position: absolute;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  transform: translate(calc(var(--x) * var(--cell-size)), calc(var(--y) * var(--cell-size)));
+}
+
+/* Every second cell is a shade darker; where the tray's corner is open, the shade is rounded with it. */
+.cell.alt { background: rgba(13, 84, 90, 0.085); }
+.cell.open-tl { border-top-left-radius: 6px; }
+.cell.open-tr { border-top-right-radius: 6px; }
+.cell.open-br { border-bottom-right-radius: 6px; }
+.cell.open-bl { border-bottom-left-radius: 6px; }
+
+/* Old varnish lies on the cell as a slab under the tile: one layer amber, two layers a darker, thicker slab. The
+   board marks the cell (jelly-1, jelly-2) and says when a layer was hit or the last one went. */
+.slab { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: none; }
+.cell.jelly-1 .slab-1, .cell.jelly-2 .slab-2 { display: block; animation: slab-in var(--fade-ms) ease-out; }
+.cell.jelly-hit .slab-1 { animation: slab-squish var(--fade-ms) ease-out; }
+.cell.jelly-hit .slab-2, .cell.jelly-clear .slab-1 { display: block; animation: slab-out var(--fade-ms) ease-in forwards; }
+
+/* Protective tape lies over the tile, drawn like a piece. */
+.chain {
+  position: absolute;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  transform: translate(calc(var(--x) * var(--cell-size)), calc(var(--y) * var(--cell-size)));
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity var(--fade-ms) ease;
+}
+
+.chain svg { position: absolute; left: -5%; top: -6.5%; width: 110%; height: 110%; display: block; overflow: visible; }
+.chain.breaking { opacity: 0; transform: translate(calc(var(--x) * var(--cell-size)), calc(var(--y) * var(--cell-size))) scale(1.25); transition: opacity var(--fade-ms) ease, transform var(--fade-ms) ease-out; }
+
+/* Every tile keeps a layer of its own (will-change). A piece is a detailed drawing: without the layer, the browser
+   draws every moving piece again when a step starts and when it ends, and on a full board that was a stutter at
+   the start of each fall (about five times the frame time, measured in Chrome with the processor slowed down). */
+.tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  transform: translate(calc(var(--x) * var(--cell-size)), calc(var(--y) * var(--cell-size)));
+  transition: transform var(--move-ms) var(--ease-fall), opacity var(--fade-ms) ease;
+  will-change: transform;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.board[data-phase="swap"] .tile { transition-duration: var(--swap-ms), var(--fade-ms); transition-timing-function: var(--ease-swap), ease; }
+/* A fall takes longer the farther it goes, as under gravity (the factor is the square root of the rows fallen). */
+.board[data-phase="fall"] .tile { transition-duration: calc(var(--move-ms) * var(--fall, 1)), var(--fade-ms); }
+.board.still .tile, .tile.instant { transition: none; }
+
+/* A piece is drawn a tenth larger than its cell and a little high, so its ground shadow falls inside the cell. */
+.face { position: absolute; left: -5%; top: -6.5%; width: 110%; height: 110%; transition: transform 120ms ease, filter 120ms ease; }
+.face .art { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* A crate shows the hits it still takes by its own look, so the lab's number badge is not drawn. */
+.face .hp { display: none; }
+
+/* The chosen tile grows a little where it lies, in a gilt ring full of light. Ring and piece stay inside the edge
+   that tiles are cut off at, so a tile in the tray's outermost row is marked like any other. */
+.tile.selected { z-index: 5; }
+.tile.selected::before {
+  --ring: inset 0 0 0 2px #fff6cc, 0 0 0 2px #f6b93c, 0 0 0 3.4px #5e3305;
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border-radius: 26%;
+  background: rgba(255, 251, 230, 0.5);
+  box-shadow: var(--ring), 0 0 12px 4px rgba(255, 244, 196, 0.75);
+  animation: select-glow 1.1s ease-in-out infinite alternate;
+}
+.tile.selected .face { transform: scale(1.08); }
+.tile.dying { opacity: 0; transition: opacity var(--fade-ms) ease-in; }
+.tile.dying .face { animation: vanish var(--fade-ms) ease-in forwards; }
+.tile.pop .face { animation: pop calc(var(--fade-ms) * 1.7) cubic-bezier(0.3, 1.5, 0.6, 1); }
+.tile.shake .face { animation: shake 0.32s ease-in-out; }
+.tile.bump .face { animation: bump calc(var(--fade-ms) * 1.2) ease-out; }
+.tile.refused .face { opacity: 0.45; }
+
+/* Effects: a brush's stroke of ink along a row or a column, a splash of it around a splat, light over the board. */
+.fx {
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+  border-radius: calc(var(--cell-size) * 0.3);
+  animation: flash calc(var(--fade-ms) * 2) ease-out forwards;
+}
+
+/* A brush leaves a stroke of the game's violet ink, wet in the middle and darker at its edges. */
+.fx.beam-h, .fx.beam-v {
+  --stroke: rgba(42, 29, 94, 0) 17%, #2a1d5e 27%, #4a3792 34%, #4a3792 44%, #efeaff 50%, #4a3792 56%, #4a3792 66%, #2a1d5e 73%, rgba(42, 29, 94, 0) 83%;
+}
+
+.fx.beam-h { background: linear-gradient(180deg, var(--stroke)); animation-name: beam-h; }
+.fx.beam-v { background: linear-gradient(90deg, var(--stroke)); animation-name: beam-v; }
+
+/* A splat throws the same ink: a blot with a wet middle, lobes around its edge and drops beyond them. Every part
+   is a disc, sized and placed in hundredths of the effect's box. */
+.fx.burst {
+  --ink: radial-gradient(circle closest-side, #4a3792 0, #4a3792 90%, rgba(74, 55, 146, 0) 100%);
+  border-radius: 0;
+  background:
+    radial-gradient(circle closest-side, #efeaff 0, rgba(142, 123, 214, 0.9) 45%, rgba(74, 55, 146, 0) 100%) 50% 50% / 34% 34% no-repeat,
+    var(--ink) 50% 50% / 60% 60% no-repeat,
+    var(--ink) 74.8% 10.4% / 8% 8% no-repeat,
+    var(--ink) 98.9% 39.6% / 10% 10% no-repeat,
+    var(--ink) 90.1% 75.1% / 7% 7% no-repeat,
+    var(--ink) 63.6% 97.5% / 9% 9% no-repeat,
+    var(--ink) 28.3% 90.8% / 7% 7% no-repeat,
+    var(--ink) 1.4% 65.8% / 10% 10% no-repeat,
+    var(--ink) 7.8% 27.5% / 8% 8% no-repeat,
+    var(--ink) 39.7% 1.6% / 9% 9% no-repeat,
+    var(--ink) 56.3% 14.1% / 26% 26% no-repeat,
+    var(--ink) 79.3% 27.1% / 22% 22% no-repeat,
+    var(--ink) 87.1% 55.2% / 28% 28% no-repeat,
+    var(--ink) 73.4% 79.9% / 21% 21% no-repeat,
+    var(--ink) 46.9% 85.9% / 25% 25% no-repeat,
+    var(--ink) 21.1% 74.2% / 23% 23% no-repeat,
+    var(--ink) 13.2% 46.8% / 27% 27% no-repeat,
+    var(--ink) 26.9% 20.4% / 20% 20% no-repeat;
+  animation-name: burst;
+}
+.fx.wash { border-radius: 10px; background: radial-gradient(circle at center, rgba(255, 253, 244, 0.75), rgba(255, 219, 110, 0.3) 60%, rgba(255, 219, 110, 0)); }
+
+.fx.seeker {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  background: none;
+  display: grid;
+  place-items: center;
+  transition: transform var(--move-ms) var(--ease-swap);
+  animation: none;
+}
+
+.fx.seeker svg { width: 80%; height: 80%; overflow: visible; }
+
+/* ---------- the wall beside the board ---------- */
+/* A sconce is drawn in a box around its glow; the lamp itself is the 30 by 59 px in the box's lower middle. */
+.sconce { position: absolute; z-index: 0; width: 148px; height: 148px; pointer-events: none; display: none; }
+
+/* In the board's cut corners the lamp's foot comes 13px below the top of the cells; above a board without them it
+   ends a little above the frame. The lamp's middle is 23px in from the cells' side. */
+.board-wrap[data-sconces="corners"] .sconce { display: block; top: calc(var(--frame-reach) + 13px - 134px); }
+.board-wrap[data-sconces="above"] .sconce { display: block; top: calc(-10px - 134px); }
+.board-wrap .sconce-left { left: calc(var(--frame-reach) + 23px - 74px); }
+.board-wrap .sconce-right { right: calc(var(--frame-reach) + 23px - 74px); }
+
+/* Under a result panel the wall is dark and the lamps beside the board are out. */
+.play.decided .sconce { visibility: hidden; }
+
+/* Over a card the two lamps hang on the wall above its corners, clear of the widest nameplate between them. */
+.card .sconce { display: block; top: -148px; }
+.card .sconce-left { left: -62px; }
+.card .sconce-right { right: -62px; }
+
+/* How to play, lettered on the wall under the board. */
+.help {
+  max-width: 350px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--on-wall);
+  text-shadow: 0 1px 2px rgba(4, 36, 43, 0.75);
+}
+
+/* ---------- the shelf ---------- */
+/* The wooden shelf under the wall: who plays, how far they are, and the way out. It stays in front of a result
+   panel, so signing out is always at hand, but goes dark there with the rest of the room: a shade falls over the
+   wood, under the type, which so stands out more, not less; the button is dimmed only as far as its label stays
+   easy to read (about 5:1). */
+.shelf {
+  position: relative;
+  z-index: 20;
+  width: calc(100% - 24px);
+  max-width: 366px;
+  min-height: 58px;
+  margin: 6px 0 max(14px, env(safe-area-inset-bottom));
+  padding: 6px 10px 9px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 22px;
+  background:
+    linear-gradient(176deg, rgba(59, 32, 14, 0) 47%, rgba(59, 32, 14, 0.22) 48%, rgba(59, 32, 14, 0) 52%) 0 0 / 100% 50%,
+    linear-gradient(180deg, #9f6535 0%, #8e5730 30%, #6f4022 100%); /* dark enough for the type (4.5:1) right from its top */
+  box-shadow: inset 0 2.5px 0 rgba(255, 222, 170, 0.6), inset 0 -5px 0 rgba(40, 18, 6, 0.5), 0 0 0 2.5px #4b2a0f, 0 6px 0 2.5px rgba(4, 36, 43, 0.4), 0 12px 16px rgba(3, 28, 34, 0.4);
+  color: var(--on-wall);
+}
+
+.shelf::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(3, 26, 32, 0.52);
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+  pointer-events: none;
+}
+
+.shelf.subdued::before { opacity: 1; }
+.shelf.subdued .btn { filter: brightness(0.72) saturate(0.9); }
+
+.shelf-text { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-shadow: 0 1px 0 rgba(40, 18, 6, 0.55); }
+.account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 800; line-height: 1.1; }
+.progress-line { font-size: 12px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.progress-line:empty { display: none; }
+/* The line has two halves; where the shelf is too narrow for both, it breaks between them and nowhere else. */
+.progress-line span { white-space: nowrap; }
+
+/* ---------- the result panel ---------- */
+/* The room goes dark and a plaque is hung in front of the board. The panel's box is the board's own box, with room
+   above and below it (--overhang) for a card that is taller than a small board. The card is centred in that box,
+   so on the board, and covers it whatever the level's size: at least as tall as the board's box and a little
+   more, with what hangs under the frame, and wide enough that only the frame's side rails show beside it, as in
+   the design. The darkness is the panel's too, laid over the whole screen. The panel moves with the page: where a
+   screen is too short for the card, the page scrolls to it. */
+.banner {
+  --overhang: 72px; /* less than the HUD's height at its smallest, so a card's nameplate never leaves the screen's top */
+  position: absolute;
+  z-index: 10;
+  top: calc(-1 * var(--overhang));
+  bottom: calc(-1 * var(--overhang));
+  left: 0;
+  width: 100%;
+  display: grid;
+  grid-template: 100% / 100%;
+  animation: fade-in 220ms ease-out;
+}
+
+.banner::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 85% 48% at 50% 50%, rgba(4, 36, 43, 0.6) 0%, rgba(3, 26, 32, 0.84) 100%);
+}
+
+.banner.hidden { display: none; }
+
+/* The card is as wide as a card is (the screen's width less a margin, 362px at most) or, before a board wider than
+   that, as the board's box less its rails; a card wider than the box of a narrow board hangs over it evenly. It is
+   centred upright by its margins: a card taller than the panel's box starts at the box's top and runs on below
+   it. What the card has more height than its rows need goes to its alcove. */
+.result-card {
+  justify-self: center;
+  width: max(min(100vw - 28px, 362px), calc(100% - 20px));
+  margin: auto 0;
+  min-height: calc(100% - 2 * var(--overhang) + 6px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--plaque-edge), var(--plaque-drop), 0 2px 18px 8px rgba(3, 24, 30, 0.62);
+  animation: rise 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.result-card .alcove { flex: 1 0 var(--alcove-height); }
+
+.result-meta { margin-top: 14px; font: 800 19px/1.2 var(--font-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+.banner-actions { margin-top: 2px; }
+
+/* ---------- toast ---------- */
+/* Centred by its margins, not by a transform: the rise animation animates the transform, and would undo the
+   centring while it runs. A failure is told on a red plate, a plain notice on a cream one. */
+.toast {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(84px, calc(env(safe-area-inset-bottom) + 84px));
+  margin: 0 auto;
+  width: fit-content;
+  z-index: 50;
+  max-width: min(92vw, 400px);
+  padding: 11px 16px;
+  border: 2.5px solid transparent;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #c8283a, #a3142a) padding-box, var(--gilt) border-box;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 0 0 1.5px #5e3305, 0 8px 18px rgba(3, 24, 30, 0.5);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  animation: rise 220ms ease-out;
+}
+
+.toast[data-tone="note"] { background: var(--plaque-face) padding-box, var(--gilt) border-box; box-shadow: var(--plaque-edge), 0 0 0 1.5px #5e3305, 0 8px 18px rgba(3, 24, 30, 0.5); color: var(--ink); }
+
+/* ---------- short and narrow screens ---------- */
+/* The board comes first: on a short screen the plaques and the shelf give up height for it. */
+@media (max-height: 760px) {
+  .play { gap: 6px; padding-top: 12px; }
+  .hud-plaque { height: 70px; padding-top: 5px; padding-bottom: 4px; }
+  .medallion { width: 80px; height: 80px; border-width: 4.5px; }
+  .moves .figure { font-size: 32px; margin-bottom: 2px; }
+  .level-title { gap: 4px; }
+  .level-title .figure { font-size: 26px; }
+  .goal-art { width: 26px; height: 26px; }
+  .goal-count { font-size: 20px; }
+  .goals[data-count="1"] .goal-art { width: 32px; height: 32px; }
+  .goals[data-count="1"] .goal-count { font-size: 26px; }
+  .goals[data-count="1"][data-digits="3"] .goal-count { font-size: 21px; }
+  .goals[data-count="2"][data-digits="3"] .goal-count { font-size: 17px; }
+  .goals[data-count="3"] .goal-art { width: 24px; height: 24px; }
+  .goals[data-count="3"] .goal-count { font-size: 17px; }
+  .goal-done { width: 17px; height: 17px; margin-top: 0; }
+  .goals[data-count="1"] .goal-done { width: 22px; height: 22px; }
+  .help { font-size: 11.5px; }
+  .shelf { min-height: 52px; margin-top: 2px; margin-bottom: max(10px, env(safe-area-inset-bottom)); padding-top: 3px; padding-bottom: 6px; }
+  .hall { padding-top: 60px; padding-bottom: 24px; }
+  .card { --wire-inset: calc(50% - 45px); }
+  .alcove { --alcove-height: 154px; }
+  .btn.primary { min-height: 64px; }
+  .btn.primary .btn-label { font-size: clamp(22px, 6.6vw, 25px); }
+}
+
+/* The HUD keeps a margin to the screen's sides, as the design's does, and so stays narrower than the board. */
+@media (max-width: 374px) {
+  .hud { gap: 6px; width: min(100% - 20px, 350px); }
+  .shelf { gap: 8px; padding-left: 14px; }
+  .btn.teal { min-width: 68px; padding-left: 12px; padding-right: 12px; }
+  .progress-line { font-size: 11.5px; }
+}
+
+/* ---------- motion ---------- */
+@keyframes pop { 0% { transform: scale(0.2); } 65% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes vanish { 0% { transform: scale(1); } 35% { transform: scale(1.12); filter: brightness(1.5); } 100% { transform: scale(0.15); filter: brightness(1.8); } }
+@keyframes shake { 20% { transform: translateX(-6%); } 50% { transform: translateX(6%); } 80% { transform: translateX(-3%); } }
+@keyframes bump { 40% { transform: scale(0.9) rotate(-3deg); } 100% { transform: scale(1); } }
+@keyframes flash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes beam-h { 0% { opacity: 1; transform: scaleX(0.15); } 45% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+@keyframes beam-v { 0% { opacity: 1; transform: scaleY(0.15); } 45% { opacity: 1; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+@keyframes burst { 0% { opacity: 1; transform: scale(0.4); } 55% { opacity: 1; } 100% { opacity: 0; transform: scale(1.1); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes select-glow { to { box-shadow: var(--ring), 0 0 18px 7px rgba(255, 244, 196, 0.95); } }
+@keyframes twinkle { from { opacity: 0.5; transform: scale(0.72); } to { opacity: 1; transform: scale(1); } }
+@keyframes slab-in { from { opacity: 0; transform: scale(0.85); } }
+@keyframes slab-out { to { opacity: 0; transform: scale(1.18); } }
+@keyframes slab-squish { 40% { transform: scale(0.86); } }
+
+/* Reduced motion: tiles change places without sliding, nothing scales, pulses or flies; state changes stay as fades. */
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: opacity var(--fade-ms) linear; }
+  .board[data-phase="swap"] .tile, .board[data-phase="fall"] .tile { transition: opacity var(--fade-ms) linear; }
+  .tile .face, .fx, .banner, .result-card, .toast, .sparkle, .tile.selected::before { animation: none !important; }
+  .cell.jelly-1 .slab-1, .cell.jelly-2 .slab-2, .cell.jelly-hit .slab-1 { animation: none; }
+  .cell.jelly-hit .slab-2, .cell.jelly-clear .slab-1 { animation: fade-out var(--fade-ms) linear forwards; }
+  .tile.selected .face { transform: none; }
+  .fx { opacity: 0.6; }
+  .fx.seeker { display: none; }
+  .btn, .face { transition: none; }
+  .chain, .chain.breaking { transition: opacity var(--fade-ms) linear; }
+  .chain.breaking { transform: translate(calc(var(--x) * var(--cell-size)), calc(var(--y) * var(--cell-size))); }
+  .spinner { animation-duration: 2.4s; }
+}

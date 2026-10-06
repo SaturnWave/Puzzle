@@ -8,6 +8,8 @@
 - Her deneme, mobil oyunun da kullanacağı biçimde kaydedilir (bölüm, tohumlar, hamle limiti, hamleler, sonuç). Kayıtta kullanıcı adı değil, rastgele bir oyuncu kimliği durur.
 - Bu kayıtlar botlarla karşılaştırılır: "insanlar hangi bota benziyor" sorusu veriyle cevaplanır ve hamle limitleri buna göre ayarlanır ([GAME_DESIGN.md](GAME_DESIGN.md) §20).
 
+Oyuncu sayfası 2026-10-06'dan beri oyunun seçilen görsel tasarımıyla açılıyor (galeri duvarı, yaldız çerçeve, uğur böceği ve papatya taşları). Sayfanın dosyaları `src/Puzzle.Web/wwwroot/player/` altında; taş çizimleri `tools/web-theme/build-sprite.js` ile üretiliyor.
+
 ## 2. İki çalışma modu
 
 | Mod | Kim için | Ne açık |
