@@ -4,6 +4,25 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-07 · Oturum 15 — Unity kurulumu ve proje iskeleti
+
+**Kullanıcı kararları**
+- "Unity bedava mı, bu bilgisayar kaldırır mı" soruları yanıtlandı: Unity Personal 200.000 dolar gelir ve yatırım sınırına kadar ücretsiz; i7-1255U, 16 GB bellek ve Iris Xe yeterli; dar nokta disk.
+- Kurulumu kullanıcı başlattı (Unity Hub 3.22.2); gerisinin komut satırından yapılması ve adımların raporlanması istendi.
+
+**Olanlar**
+- Unity 6.3 LTS (6000.3.25f1) Hub'ın komut satırıyla indirildi, ama kurulum adımı Windows izin penceresi (UAC) onaylanmadığı için zaman aşımına uğradı. Hiçbir şey kurulmadı; indirme silindi.
+- Bu sırada Hub'ın açılış sihirbazı **Unity 6.6 (6000.6.4f1)** ile Web modülünü kurdu. Editor kurulumu yarıda hata verdiği hâlde Hub onu kurulu saydı: `Data/Tools` ve paket yöneticisi sunucusu eksikti, eğitim projesi açılamadı.
+- **Onarım:** Hub'ın indirdiği kurulum dosyası doğrulandı (boyut ve Unity Technologies imzası) ve yarım klasörün üstüne yeniden çalıştırıldı; kullanıcı UAC'yi onayladı. Kurulum hatasız bitti; Web modülü bu sırada kalktı.
+- **Karar:** iki Editor'a disk yetmediği için kurulu olan Unity 6.6 ile devam ediliyor (LTS değil, "Supported" kolu).
+- **Proje:** oyunun Unity projesi depoda `unity/` altında komut satırından oluşturuldu (`Unity.exe -batchmode -quit -createProject`; 77 saniye, hatasız). Lisans Unity Personal, etkin. Web testindeki 41 çizim `unity/Assets/Art/Pieces` altında, `.meta` dosyalarıyla.
+- `.gitignore`: Unity'nin ürettiği klasörler (Library, Temp, Logs, UserSettings, Build) depoya girmiyor.
+
+**Açık**
+- Android modülleri (Android Build Support, NDK r27c ve SDK araçları, OpenJDK 17; 2,41 GB indirme, diskte 8,5 GB): kullanıcının onayı ve UAC için bilgisayar başında olması bekleniyor.
+- Disk: 13 GB boş; Android modüllerinden sonra dar kalacak.
+- İstemci kodu: motor DLL'leri, bölüm paketi, tahta sahnesi.
+
 ## 2026-10-06 · Oturum 14 — Çeşitlilik: tahta başına engel miktarı; APK işine başlangıç
 
 **Kullanıcı kararları**

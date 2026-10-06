@@ -10,3 +10,14 @@ data/
 
 # Written by "puzzle humans" from the local recordings.
 reports/humans.csv
+
+# Unity project (unity/): what the Editor generates and rebuilds on its own.
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/UserSettings/
+unity/Build/
+unity/Builds/
+unity/*.csproj
+unity/*.sln
+unity/*.slnx
