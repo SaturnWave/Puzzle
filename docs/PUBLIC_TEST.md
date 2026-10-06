@@ -128,5 +128,6 @@ Sunucu bölüm dosyalarını yalnızca açılışta okur. Bölümler diskte değ
 - Oyuncular çözücüye, ipucuna, bota, bölüm ya da tohum seçimine erişemez; bunlar sunucu tarafında kapalıdır.
 - Yarım kalan oyun, sunucu yeniden başlasa da kaldığı tahtadan devam eder.
 - **Hazır hesapların şifresi kasıtlı olarak basittir.** Adresi bulan biri bu hesaplarla girip oynayabilir; olabilecek en kötü şey toplanan verinin kirlenmesidir. Kişisel veri ya da test paneli açığa çıkmaz.
+- Oyuncu sayfası yazı tiplerini Google Fonts'tan yükler: her ziyarette oyuncunun tarayıcısı `fonts.googleapis.com` ve `fonts.gstatic.com` adreslerine bağlanır (adres ve tarayıcı bilgisi Google'a görünür). Başka hiçbir dış adrese bağlanılmaz; güvenlik politikası yalnızca bu ikisine izin verir.
 - Çok sayıda adresten gelen istek, yeni girişleri geçici olarak engelleyebilir; giriş yapmış oyuncular oynamaya devam eder.
 - Gerçek Funnel üzerinden ilk giriş ve betiğin baştan sona ilk çalışması sahibi tarafından yapılır; yayına açtıktan sonra adresin giriş ekranını gösterdiğini ve `/api/levels` adresinin reddedildiğini bir kez kontrol et.

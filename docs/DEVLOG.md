@@ -43,7 +43,9 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - **Yazı tipleri:** sunucunun bugünkü güvenlik politikası Google Fonts'u engelliyor; sayfa şimdilik sistemdeki kalın yazı tipleriyle çalışıyor. Politika değişikliği koda eklendi ama sunucu yeniden derlenene kadar etkisiz. İki yol var: sunucuyu yeniden derleyip başlatmak (oyuncuların tarayıcıları her ziyarette Google'a bağlanır) ya da üç yazı tipini sunucuya koymak (dosyaların indirilmesi gerekir). Karar kullanıcıda.
 - **Sınırlar:** yalnızca bu bilgisayardaki başsız Chrome'da denendi; gerçek telefon, Safari ve ekran okuyucu denenmedi. Taş çizimlerinin kaynakları hâlâ `out/design` altında (git'e girmiyor); temiz bir kopyada `pieces.svg` yeniden üretilemez.
 
-**Sıradaki:** yazı tipi kararı; 51 sonrası için novice kalibrasyonu kararı (insan verisi geldikçe); çizim kaynaklarının depoya alınması.
+- **Yazı tipi kararı (kullanıcı, 6 Ekim):** "yazı tipi Design'daki gibi olsun". Sunucu durduruldu, Release olarak yeniden derlendi (0 uyarı) ve yeniden başlatıldı; yeni güvenlik politikası Google Fonts'un stil dosyasına ve yazı tipi dosyalarına izin veriyor. Yayın adresindeki giriş sayfası artık Gabarito, Paytone One ve Young Serif ile açılıyor (ekran görüntüsüyle doğrulandı). Bedeli: her oyuncunun tarayıcısı her ziyarette Google'a bağlanıyor. Yazı tiplerini sunucuya koymak (dosyaları indirerek) hâlâ açık bir seçenek.
+
+**Sıradaki:** 51 sonrası için novice kalibrasyonu kararı (insan verisi geldikçe); çizim kaynaklarının depoya alınması; gerçek telefonda deneme.
 
 ---
 

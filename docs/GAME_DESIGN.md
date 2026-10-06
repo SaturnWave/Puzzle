@@ -820,7 +820,7 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 | 4 | Yapboz yerleştirme ekranı (3-4-3 kesim; tepsideki parça yerinin gerçek kesimiyle çizili) | ✅ 2026-10-05 |
 | 5 | Bölüm başı (hedefler, bölüm öncesi booster'lar), kazanma (bitiş şöleni, parça ödülü), kaybetme ("+5 hamle" teklifi) | ✅ 2026-10-05 |
 | 6 | Müze haritası (kat planı), koleksiyon (salon duvarı), mağaza ve ayarlar | ✅ 2026-10-05 (fiyatlar `[fiyat]`; altın paket miktarları, set içerikleri ve oda planı örnek) |
-| 7 | Herkese açık web testindeki oyuncu sayfasına bu görünümün uygulanması | ✅ 2026-10-06, yayında. Tasarımın yazı tipleri sunucunun bir sonraki derlenip yeniden başlatılmasını ya da yazı tiplerinin sunucuya konmasını bekliyor |
+| 7 | Herkese açık web testindeki oyuncu sayfasına bu görünümün uygulanması | ✅ 2026-10-06, yayında; tasarımın yazı tipleriyle (Google Fonts üzerinden) |
 | 8 | Unity'ye aktarım (SVG'den sprite) | Arayüz fazında |
 
 Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
