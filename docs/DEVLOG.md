@@ -21,6 +21,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 **APK işine başlangıç**
 - Bu bilgisayarda Unity Hub ve Editor kurulu değil; Android SDK ve NDK var; C: sürücüsünde 17 GB boş. Kurulum ve hesap girişi kullanıcıda: Unity 6.3 LTS + Android Build Support (OpenJDK, SDK ve NDK araçları).
 - Önerilen ilk APK kapsamı: bölüm haritası, seçilen tasarımdaki çerçeveli tahta, kazandın/kaybettin panelleri; 1000 bölüm pakette; meta, mağaza, booster ve hesap sonraya.
+- Çizimler: web testindeki taş, özel taş, engel ve hedef simgeleri Unity için PNG olarak dışa aktarılıyor (`node tools/unity/export-sprites.js`; 41 görsel, 512 px, saydam zemin; kontrol sayfasıyla gözden geçirildi). PNG dosyaları Unity projesi kurulunca `.meta` dosyalarıyla birlikte depoya girecek. Duvar lambası ve çerçeve sayfanın stiliyle çizildiği için ayrı ele alınacak.
 - Motor hazır: `Puzzle.Core` ve `Puzzle.Bot` netstandard2.1; animasyon için olay günlüğü (`GameEvent`); bölüm dosyası modeli Unity'nin JSON okuyucusuna uygun.
 
 **Açık**
