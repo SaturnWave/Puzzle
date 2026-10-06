@@ -119,13 +119,19 @@ public sealed class GenerationFailedException(string message) : Exception(messag
 
 /// <summary>
 /// Produces one level: plan it, draw candidates from the portfolio, calibrate them with the plan's calibration bot
-/// (and the floor bot on a tier with a casual floor), keep the first that fits (or the closest), add the profile's
-/// move margin to its calibrated limit, then build its equal-difficulty seed pool and report bot win rates at that
-/// final limit.
+/// (and the floor bot on a tier with a casual floor), keep the first that fits (searching a second time, board by
+/// board, when none does; the closest when that fails too), add the plan's move margin to its calibrated limit, then
+/// build its equal-difficulty seed pool and report bot win rates at that final limit.
 /// </summary>
 public sealed class LevelGenerator(GenerationProfile profile)
 {
     private const ulong ReportStream = 500;
+    private const ulong ClosestCheckStream = 401;
+
+    /// <summary>The obstacle amounts the second search may give a board, as multiples of the planned amount.</summary>
+    private const double SparsestAmount = 1.0 / 3;
+    private const double DensestAmount = 3.0;
+    private const int AmountSteps = 4;
 
     private readonly LevelPlanner _planner = new(profile);
     private readonly LevelCalibrator _calibrator = new(profile);
@@ -138,50 +144,133 @@ public sealed class LevelGenerator(GenerationProfile profile)
     {
         var clock = Stopwatch.StartNew();
         LevelPlan plan = _planner.Plan(number);
+        var misses = new Misses(plan);
+        KeptCandidate kept = FirstFit(plan, recent, misses) ?? FirstFitAtItsOwnAmount(plan, misses) ?? Closest(plan, misses);
+        return Finish(plan, kept, clock);
+    }
+
+    /// <summary>
+    /// The first search: one board per attempt, the obstacle amount handed on from each to the next (less after a
+    /// too-long one, more after a too-short one). The first half of the attempts also turns down a board too similar
+    /// to a recent level.
+    /// </summary>
+    private KeptCandidate? FirstFit(LevelPlan plan, IReadOnlyList<LevelSignature> recent, Misses misses)
+    {
         double density = 1.0;
-        (CalibrationOutcome.OutOfRange Outcome, string Style)? fallback = null;
-        var reasons = new List<string>();
         int maxCandidates = profile.Calibration.MaxCandidates;
         for (int attempt = 0; attempt < maxCandidates; attempt++)
         {
             if (CandidateFactory.TryCreate(plan, attempt, density) is not Candidate candidate)
             {
-                reasons.Add("unusable board");
+                misses.Add("unusable board");
                 continue;
             }
 
             switch (_calibrator.Calibrate(candidate, plan))
             {
                 case CalibrationOutcome.Accepted accepted when attempt >= maxCandidates / 2 || !recent.Contains(LevelSignature.Of(accepted.Level)):
-                    return Finish(plan, new KeptCandidate(accepted.Level, accepted.Verification, accepted.FloorSetLimit, candidate.Style, attempt + 1, Relaxed: false), clock);
+                    return Fit(accepted, candidate, misses);
                 case CalibrationOutcome.Accepted:
-                    reasons.Add("too similar to a recent level");
+                    misses.Add("too similar to a recent level");
                     break;
                 case CalibrationOutcome.OutOfRange outOfRange:
-                    reasons.Add(outOfRange.TooLong ? "too long" : "too short");
+                    misses.Add(outOfRange, candidate.Style);
                     density *= outOfRange.TooLong ? 0.7 : 1.35;
-                    if (fallback is null || IsCloser(outOfRange, fallback.Value.Outcome, plan))
-                    {
-                        fallback = (outOfRange, candidate.Style);
-                    }
-
                     break;
                 case CalibrationOutcome.Rejected rejected:
-                    reasons.Add(rejected.Reason);
+                    misses.Add(rejected.Reason);
                     break;
                 default:
                     throw new InvalidOperationException("Unhandled calibration outcome.");
             }
         }
 
-        if (fallback is not { } closest)
+        return null;
+    }
+
+    /// <summary>
+    /// The second search, for a level whose first one found nothing. The first hands one obstacle amount from board
+    /// to board, and a family whose length that amount does not decide (items to drop, a jelly band) can drive it down
+    /// until every other board has next to nothing on it. Here each of those boards gets an amount of its own
+    /// (<see cref="FitByAmount"/>). A board like a recent level's is taken too: better that than a level out of its
+    /// move range.
+    /// </summary>
+    private KeptCandidate? FirstFitAtItsOwnAmount(LevelPlan plan, Misses misses)
+    {
+        for (int attempt = 0; attempt < profile.Calibration.MaxCandidates; attempt++)
         {
-            throw new GenerationFailedException($"Level {number}: no usable candidate ({string.Join("; ", reasons.Distinct())}).");
+            if (FitByAmount(plan, attempt, misses) is KeptCandidate fit)
+            {
+                return fit;
+            }
         }
 
-        LimitEvidence verification = _calibrator.Measure(closest.Outcome.Level, plan, profile.Calibration.VerifyRuns, Rng.Derive(plan.Seed, 401));
-        return Finish(plan, new KeptCandidate(closest.Outcome.Level, verification, closest.Outcome.FloorSetLimit, closest.Style, maxCandidates, Relaxed: true), clock);
+        return null;
     }
+
+    /// <summary>
+    /// One board of the second search: starting from the planned obstacle amount, the amount moves halfway (as a
+    /// ratio) toward the side its limit missed, until the board fits or the steps run out.
+    /// </summary>
+    private KeptCandidate? FitByAmount(LevelPlan plan, int attempt, Misses misses)
+    {
+        (double tooShortAt, double tooLongAt) = (SparsestAmount, DensestAmount);
+        for (int step = 0; step < AmountSteps; step++)
+        {
+            double density = Math.Sqrt(tooShortAt * tooLongAt);
+            if (CandidateFactory.TryCreate(plan, attempt, density) is not Candidate candidate)
+            {
+                misses.Add("unusable board");
+                return null;
+            }
+
+            switch (_calibrator.Calibrate(candidate, plan))
+            {
+                case CalibrationOutcome.Accepted accepted:
+                    return Fit(accepted, candidate, misses);
+                case CalibrationOutcome.OutOfRange { TooLong: true } tooLong:
+                    misses.Add(tooLong, candidate.Style);
+                    tooLongAt = density;
+                    break;
+                case CalibrationOutcome.OutOfRange tooShort:
+                    misses.Add(tooShort, candidate.Style);
+                    tooShortAt = density;
+                    break;
+                case CalibrationOutcome.Rejected rejected:
+                    misses.Add(rejected.Reason);
+                    return null;
+                default:
+                    throw new InvalidOperationException("Unhandled calibration outcome.");
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The level when no board fit: the candidate whose limit came closest to the move range, marked relaxed. That
+    /// limit was read from the calibration games, so it is checked on fresh seeds like an accepted one's and, when it
+    /// does not stand there, read again from those games: a relaxed level leaves its move range, not its win rate.
+    /// </summary>
+    /// <exception cref="GenerationFailedException">Every candidate was broken.</exception>
+    private KeptCandidate Closest(LevelPlan plan, Misses misses)
+    {
+        if (misses.Closest is not { } closest)
+        {
+            throw new GenerationFailedException($"Level {plan.Number}: no usable candidate ({string.Join("; ", misses.Reasons)}).");
+        }
+
+        LevelDefinition level = closest.Outcome.Level;
+        LimitEvidence verification = _calibrator.Measure(level, plan, profile.Calibration.VerifyRuns, Rng.Derive(plan.Seed, ClosestCheckStream));
+        var calibrated = new LimitChoice(level.MoveLimit, closest.Outcome.FloorSetLimit);
+        LimitChoice limit = verification.Confirms(calibrated.Moves, profile.Calibration.WinRateTolerance)
+            ? calibrated
+            : verification.ReadLimit() ?? calibrated;
+        return new KeptCandidate(level.WithMoveLimit(limit.Moves), verification, limit.FloorSetLimit, closest.Style, misses.Count, Relaxed: true);
+    }
+
+    private static KeptCandidate Fit(CalibrationOutcome.Accepted accepted, Candidate candidate, Misses misses) =>
+        new(accepted.Level, accepted.Verification, accepted.FloorSetLimit, candidate.Style, misses.Count + 1, Relaxed: false);
 
     /// <summary>
     /// Turns the kept candidate into the level: its calibrated limit becomes the final one, and everything from here on
@@ -191,7 +280,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
     {
         LevelReport verification = kept.Verification.Target.Games;
         int calibratedMoves = kept.Level.MoveLimit;
-        LevelDefinition withFinalLimit = kept.Level.WithMoveLimit(FinalLimit(calibratedMoves));
+        LevelDefinition withFinalLimit = kept.Level.WithMoveLimit(FinalLimit(plan, calibratedMoves));
         IReadOnlyList<SeedDifficulty> poolSeeds = BuildPool(withFinalLimit, plan.CalibrationBot, verification.WinRateAt(withFinalLimit.MoveLimit));
         LevelDefinition final = withFinalLimit.WithAttempts(new AttemptPolicy { SeedPool = poolSeeds.Select(d => d.Seed).ToArray() });
         var botWinRates = new Dictionary<string, double>();
@@ -213,7 +302,7 @@ public sealed class LevelGenerator(GenerationProfile profile)
             Goals = string.Join(" ", final.Goals.Select(Describe)),
             MoveLimit = final.MoveLimit,
             CalibratedMoves = calibratedMoves,
-            MoveMargin = profile.Calibration.MoveMargin,
+            MoveMargin = plan.MoveMargin,
             MoveRange = plan.Moves,
             CalibrationBot = plan.CalibrationBot,
             TargetWinRate = plan.TargetWinRate,
@@ -236,13 +325,13 @@ public sealed class LevelGenerator(GenerationProfile profile)
     }
 
     /// <summary>
-    /// The final limit, the one the level gets: the calibrated limit plus the profile's move margin. Games are followed
+    /// The final limit, the one the level gets: the calibrated limit plus the plan's move margin. Games are followed
     /// only to the move cap, so no win rate is known past it and the final limit stops there. Only a relaxed level,
     /// calibrated above its move range, can come that far: the profile loader makes sure a limit inside its range
     /// keeps its whole margin, and a calibrated limit is read from those games, so it never exceeds the cap itself.
     /// </summary>
-    private int FinalLimit(int calibratedMoves) =>
-        Math.Min(profile.Calibration.MoveMargin.Soften(calibratedMoves), profile.Calibration.MoveCap);
+    private int FinalLimit(LevelPlan plan, int calibratedMoves) =>
+        Math.Min(plan.MoveMargin.Soften(calibratedMoves), profile.Calibration.MoveCap);
 
     /// <summary>
     /// Equal-difficulty seeds around <paramref name="targetWinRate"/>, the calibration bot's verified win rate at the
@@ -288,6 +377,29 @@ public sealed class LevelGenerator(GenerationProfile profile)
     /// <summary>The candidate a level keeps: its calibrated limit, the fresh-seed games that checked it, and how it was found.</summary>
     /// <param name="Relaxed">No candidate fit the move range; this is the closest one.</param>
     private sealed record KeptCandidate(LevelDefinition Level, LimitEvidence Verification, bool FloorSetLimit, string Style, int CandidatesTried, bool Relaxed);
+
+    /// <summary>The candidates of one level that did not become it: how many, why, and the one whose limit came closest to the move range.</summary>
+    private sealed class Misses(LevelPlan plan)
+    {
+        private readonly List<string> _reasons = [];
+
+        public int Count => _reasons.Count;
+
+        public IEnumerable<string> Reasons => _reasons.Distinct();
+
+        public (CalibrationOutcome.OutOfRange Outcome, string Style)? Closest { get; private set; }
+
+        public void Add(string reason) => _reasons.Add(reason);
+
+        public void Add(CalibrationOutcome.OutOfRange outOfRange, string style)
+        {
+            _reasons.Add(outOfRange.TooLong ? "too long" : "too short");
+            if (Closest is null || IsCloser(outOfRange, Closest.Value.Outcome, plan))
+            {
+                Closest = (outOfRange, style);
+            }
+        }
+    }
 
     private static bool IsCloser(CalibrationOutcome.OutOfRange candidate, CalibrationOutcome.OutOfRange current, LevelPlan plan) =>
         plan.Moves.DistanceTo(candidate.Level.MoveLimit) < plan.Moves.DistanceTo(current.Level.MoveLimit);

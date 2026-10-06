@@ -25,7 +25,7 @@ public class GeneratorTests
         Assert.Equal(5, early.Colors.Normal);
         Assert.Equal(0.80, early.WinRate.Normal);   // inherited from the band at level 1
         Assert.Equal(new MoveRange(18, 28), early.Moves.Normal);
-        Assert.Equal(0.40, late.WinRate.Hard);
+        Assert.Equal(0.55, late.WinRate.Hard);        // inherited from the band at level 51
         Assert.Equal(3, late.MaxObstacleTypes);       // inherited from the band at level 201
     }
 
@@ -223,6 +223,25 @@ public class GeneratorTests
         Assert.True(relaxed.Relaxed, $"{relaxed.MoveLimit} moves were accepted");
         FloorCheck floor = Assert.IsType<FloorCheck>(relaxed.Floor);
         Assert.Equal(("random", 0.60), (floor.Bot, floor.WinRate.Required));
+
+        // Relaxed is about the move range only: the limit is checked on fresh seeds, and read again from them on a miss.
+        double tighterMargin = Math.Min(relaxed.WinRate - relaxed.TargetWinRate, floor.WinRate.Margin);
+        Assert.True(tighterMargin >= -0.07, $"a bot is {-tighterMargin:P0} short of its share at the relaxed limit");
+    }
+
+    [Fact]
+    public void A_level_no_board_fits_at_the_handed_on_obstacle_amount_is_searched_again_board_by_board()
+    {
+        // Level 952: the first search's eight boards all miss 22-35 moves, the amount sinking after each too-long one
+        // until the last boards have next to nothing on them. Given an amount of its own, one of the same boards fits.
+        GenerationProfile profile = RepoFiles.DefaultProfile;
+
+        LevelMetrics fit = new LevelGenerator(profile).Generate(952, []).Metrics;
+
+        Assert.True(fit.CandidatesTried > profile.Calibration.MaxCandidates, $"fit after {fit.CandidatesTried} candidates, within the first search");
+        Assert.False(fit.Relaxed);
+        Assert.True(fit.MoveRange.Contains(fit.CalibratedMoves), $"{fit.CalibratedMoves} moves are outside {fit.MoveRange.Min}-{fit.MoveRange.Max}");
+        Assert.InRange(fit.WinRate - fit.TargetWinRate, -0.07, 0.07);
     }
 
     private static int CollectTarget(LevelDefinition level) => level.Goals.OfType<GoalSpec.CollectColor>().Single().Target;
@@ -266,17 +285,19 @@ public class GeneratorTests
     [Fact]
     public void Casual_floors_are_inherited_like_win_rates_and_tiers_without_one_have_none()
     {
-        GenerationProfile profile = RepoFiles.DefaultProfile;
+        // The shipped profile sets every level for a weak or an average player, so no band of it has a floor.
+        Assert.All(RepoFiles.DefaultProfile.Bands, band => Assert.Equal(new TierValues<double?>(null, null, null, null), band.CasualFloor));
+
+        GenerationProfile profile = RepoFiles.ProfileBeforeOnboarding;
 
         Assert.Equal("casual", profile.FloorBot);
-        Assert.All(new[] { 1, 4, 6, 11, 31 }, level => Assert.Equal(new TierValues<double?>(null, null, null, null), profile.BandFor(level).CasualFloor)); // no band before 51 names a floor
         Assert.Equal((0.75, 0.50), (profile.BandFor(121).CasualFloor.Easy, profile.BandFor(121).CasualFloor.Normal));  // inherited from level 51
         Assert.Equal((0.70, 0.40), (profile.BandFor(700).CasualFloor.Easy, profile.BandFor(700).CasualFloor.Normal));  // inherited from level 301
         Assert.All(new[] { 51, 301, 601 }, level => Assert.Null(profile.BandFor(level).CasualFloor.Hard));
         Assert.All(new[] { 51, 301, 601 }, level => Assert.Null(profile.BandFor(level).CasualFloor.SuperHard));
 
         var planner = new LevelPlanner(profile);
-        Assert.Null(planner.Plan(1).CasualFloor);          // the first museum room has no floor
+        Assert.Null(new LevelPlanner(RepoFiles.DefaultProfile).Plan(52).CasualFloor);
         Assert.Equal(0.50, planner.Plan(52).CasualFloor);  // Normal
         Assert.Null(planner.Plan(55).CasualFloor);         // Hard
     }
@@ -464,7 +485,6 @@ public class GeneratorTests
     [Theory]
     [InlineData("", "moveMargin", "$.moveMargin")]                         // belongs under calibration
     [InlineData("bands", "calibratonBot", "$.bands[7].calibratonBot")]    // a misspelt calibrationBot would leave the inherited bot in charge
-    [InlineData("bands", "moveMargin", "$.bands[7].moveMargin")]          // the margin is the profile's, not a band's
     [InlineData("calibration", "moveMargins", "$.calibration.moveMargins")]
     [InlineData("sizes", "fixedTill", "$.sizes.fixedTill")]
     [InlineData("palette", "chapterSizes", "$.palette.chapterSizes")]

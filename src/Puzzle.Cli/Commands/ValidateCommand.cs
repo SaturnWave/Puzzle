@@ -11,10 +11,7 @@ internal static class ValidateCommand
 
     public static int Run(CliArgs args)
     {
-        string target = args.Required(0, "dir|file");
-        string[] files = Directory.Exists(target)
-            ? Directory.GetFiles(target, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray()
-            : new[] { target };
+        string[] files = LevelFiles.Under(args.Required(0, "dir|file"));
 
         int failures = 0;
         foreach (string file in files)

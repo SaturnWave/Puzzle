@@ -29,6 +29,9 @@ public sealed record LevelPlan
     /// </summary>
     public required double? CasualFloor { get; init; }
 
+    /// <summary>The move margin the level's final limit carries on top of its calibrated one: its band's, or the profile's.</summary>
+    public required MoveMargin MoveMargin { get; init; }
+
     /// <summary>The range the calibrated move limit should land in.</summary>
     public required MoveRange Moves { get; init; }
 
@@ -79,6 +82,7 @@ public sealed class LevelPlanner(GenerationProfile profile)
             CalibrationBot = band.CalibrationBot,
             TargetWinRate = band.WinRate.For(tier),
             CasualFloor = band.CasualFloor.For(tier),
+            MoveMargin = band.MarginUnder(profile.Calibration),
             Moves = band.Moves.For(tier),
             Size = ChooseSize(number, tier, seed),
             PlainShape = number <= profile.Sizes.PlainShapesUntil,

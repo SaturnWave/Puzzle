@@ -18,7 +18,7 @@ public sealed record ReportRow(string CalibrationBot, WinRateCheck Target, Floor
     /// <summary>
     /// Whether the recorded level still meets the profile, so <c>generate --repair</c> keeps it: its seed pool is large
     /// enough; it was calibrated with the bot and against the target win rate its plan has now; it has the plan's
-    /// casual floor, checked with the profile's floor bot; its limit carries the profile's move margin; and that limit
+    /// casual floor, checked with the profile's floor bot; its limit carries the plan's move margin; and that limit
     /// stands on the recorded win rates. A bot, target, floor or margin the profile changed since the row was written
     /// was never checked on this level.
     /// </summary>
@@ -26,7 +26,7 @@ public sealed record ReportRow(string CalibrationBot, WinRateCheck Target, Floor
         PoolSize >= profile.MinPoolSize
         && WasCalibratedFor(plan)
         && RecordsFloorOf(plan, profile.FloorBot)
-        && MoveMargin == profile.Calibration.MoveMargin
+        && MoveMargin == plan.MoveMargin
         && LimitStands(profile.Calibration.WinRateTolerance);
 
     private bool WasCalibratedFor(LevelPlan plan) =>

@@ -30,7 +30,7 @@ public class GenerationReportTests
 
     /// <summary>
     /// Rows of levels 3, 4 and 52 as written before the calibrationBot, calibratedMoves and moveMargin columns existed.
-    /// In the default profile the random bot calibrates level 3, the novice bot level 4 and the average bot level 52.
+    /// In the default profile the random bot calibrates level 3, the novice bot level 4 and ladder rung 55 level 52.
     /// </summary>
     private const string ReportWithoutCalibrationBot =
         "level,tier,size,playable,colors,style,goals,moves,moveRange,targetWin,win,winPlus5,floor,floorWin,floorSetLimit,floorBot,p50,p90,nearMiss,casualWin,expertWin,poolSize,poolMinWin,poolMaxWin,candidates,relaxed,seconds\n"
@@ -245,7 +245,7 @@ public class GenerationReportTests
         IReadOnlyDictionary<int, ReportRow> againstTheDefault = GenerationReport.Read(report.Path, RepoFiles.DefaultProfile);
         IReadOnlyDictionary<int, ReportRow> againstOneBot = GenerationReport.Read(report.Path, Profile);
 
-        Assert.Equal(("random", "novice", "average"), (againstTheDefault[3].CalibrationBot, againstTheDefault[4].CalibrationBot, againstTheDefault[52].CalibrationBot));
+        Assert.Equal(("random", "novice", "skill-55"), (againstTheDefault[3].CalibrationBot, againstTheDefault[4].CalibrationBot, againstTheDefault[52].CalibrationBot));
         Assert.All(againstOneBot.Values, row => Assert.Equal("average", row.CalibrationBot));
     }
 
@@ -258,7 +258,7 @@ public class GenerationReportTests
 
         Assert.Equal(MoveMargin.None, row.MoveMargin);
         Assert.True(row.StillHolds(Planner.Plan(52), Profile));
-        Assert.False(row.StillHolds(Planner.Plan(52), Profile.WithMoveMargin(0.25m)));
+        Assert.False(StillHoldsUnder(Profile.WithMoveMargin(0.25m), row, level: 52));
     }
 
     [Theory]
@@ -308,35 +308,38 @@ public class GenerationReportTests
     }
 
     [Fact]
-    public void Repair_regenerates_a_level_whose_move_margin_is_not_the_profiles()
+    public void Repair_regenerates_a_level_whose_move_margin_is_not_its_plans()
     {
-        LevelPlan plan = Planner.Plan(55);
         GenerationProfile softer = Profile.WithMoveMargin(0.25m);
         ReportRow calibrated = Row(new WinRateCheck(0.50, 0.52));
         ReportRow softened = calibrated with { MoveMargin = TestProfiles.Margin(0.25m) };
 
-        Assert.True(calibrated.StillHolds(plan, Profile));
-        Assert.False(calibrated.StillHolds(plan, softer));
-        Assert.True(softened.StillHolds(plan, softer));
-        Assert.True(softened.StillHolds(plan, Profile.WithMoveMargin(0.250m)));   // the same margin, written with another zero
-        Assert.False(softened.StillHolds(plan, Profile.WithMoveMargin(0.1m)));
-        Assert.False(softened.StillHolds(plan, Profile));
+        Assert.True(StillHoldsUnder(Profile, calibrated, level: 55));
+        Assert.False(StillHoldsUnder(softer, calibrated, level: 55));
+        Assert.True(StillHoldsUnder(softer, softened, level: 55));
+        Assert.True(StillHoldsUnder(Profile.WithMoveMargin(0.250m), softened, level: 55));   // the same margin, written with another zero
+        Assert.False(StillHoldsUnder(Profile.WithMoveMargin(0.1m), softened, level: 55));
+        Assert.False(StillHoldsUnder(Profile, softened, level: 55));
     }
 
     [Fact]
     public void A_softened_level_is_kept_however_far_its_win_rates_are_above_their_shares_but_not_when_one_falls_short()
     {
-        LevelPlan plan = Planner.Plan(52);   // Normal from level 51: target 0.75, floor 0.50
         GenerationProfile softer = Profile.WithMoveMargin(0.25m);
+        LevelPlan plan = new LevelPlanner(softer).Plan(52);   // Normal from level 51: target 0.75, floor 0.50, a quarter more moves
         ReportRow softened = Row(new WinRateCheck(0.75, 0.97), new FloorCheck(CurrentFloorBot, new WinRateCheck(0.50, 0.80))) with { MoveMargin = TestProfiles.Margin(0.25m) };
         ReportRow sameWinRatesWithoutMargin = softened with { MoveMargin = MoveMargin.None };
 
         Assert.True(softened.StillHolds(plan, softer));                       // the overshoot is the margin at work
-        Assert.False(sameWinRatesWithoutMargin.StillHolds(plan, Profile));    // at a calibrated limit it is a limit set too high
+        Assert.False(StillHoldsUnder(Profile, sameWinRatesWithoutMargin, level: 52));    // at a calibrated limit it is a limit set too high
         Assert.False((softened with { Target = new WinRateCheck(0.75, 0.60) }).StillHolds(plan, softer));
         Assert.False((softened with { Floor = new FloorCheck(CurrentFloorBot, new WinRateCheck(0.50, 0.40)) }).StillHolds(plan, softer));
         Assert.True((softened with { Target = new WinRateCheck(0.75, 0.70) }).StillHolds(plan, softer));   // short, but within the tolerance
     }
+
+    /// <summary>Whether repair keeps <paramref name="row"/> when <paramref name="profile"/> plans its level: the margin a row must carry is its plan's.</summary>
+    private static bool StillHoldsUnder(GenerationProfile profile, ReportRow row, int level) =>
+        row.StillHolds(new LevelPlanner(profile).Plan(level), profile);
 
     /// <summary>A row the profile before onboarding writes: calibrated by the average bot, no move margin.</summary>
     private static ReportRow Row(WinRateCheck target, FloorCheck? floor = null) => new("average", target, floor, MoveMargin.None, PoolSize: 16);

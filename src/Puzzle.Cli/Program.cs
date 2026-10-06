@@ -3,12 +3,15 @@ using Puzzle.Cli.Commands;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Generator.Profiles;
+using Puzzle.Tooling.Ladder;
 
 const string Usage = """
     puzzle <command> [options]
 
       sim <level.json>      Play the level many times with a bot and report the move budget it needs.
                             --bot random|novice|casual|average|expert|all (average)  --runs 300  --cap 150  --seed 1
+                            --bot skill-<n>  a rung of the skill ladder, n = 30, 35 .. 100: it notices n % of the moves
+                                             (skill-50 = novice, skill-70 = casual, skill-85 = average, skill-100 = expert)
                             --bot usta|usta-<n>  the fair search bot (n simulations per move, default 24); slow, for measurements
       demo <level.json>     Print one bot game move by move.   --bot average|usta|usta-<n>  --seed 1  --moves N
       bench <level.json>    Engine, greedy bot and usta throughput.   --runs 200
@@ -18,6 +21,10 @@ const string Usage = """
       generate              Produce bot-calibrated levels from a generation profile.
                             --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite  --repair
       botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert|usta|usta-<n>  --runs 30  --cap 150  --out reports/<bot>_moves.csv
+      ladder <dir|file>     Existing levels against the skill ladder, every bot of a level on the same fresh games, as CSV:
+                            win rate at the move limit, moves needed and the limit each win rate would take, per level and bot.
+                            --from 1  --to <last>  --from-skill 30  --to-skill 100  --step 5  --runs 60  --cap 150  --seed 7
+                            --out reports/ladder.csv   A run replaces the rows of its own levels there and keeps the others.
       validate <dir|file>   Parse every level file and build a starting board for it.
       humans [attempts.jsonl]
                             Web lab attempts of people vs. the greedy bots on the same games, as CSV.
@@ -48,6 +55,7 @@ try
         "seeds" => SeedsCommand.Run(cli),
         "generate" => GenerateCommand.Run(cli),
         "botstats" => BotStatsCommand.Run(cli),
+        "ladder" => LadderCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
         "humans" => HumansCommand.Run(cli),
         "players" => PlayersCommand.Run(cli),
@@ -74,6 +82,11 @@ catch (LevelInitializationException ex)
 catch (ProfileFormatException ex)
 {
     Console.Error.WriteLine($"Invalid profile: {ex.Message}");
+    return 1;
+}
+catch (LadderReportFormatException ex)
+{
+    Console.Error.WriteLine($"Not a ladder report: {ex.Message}");
     return 1;
 }
 

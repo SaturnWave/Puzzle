@@ -37,7 +37,18 @@ public static class ProfileLoader
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
     };
 
-    private static readonly string KnownBots = $"{string.Join(", ", BotPolicies.Names.Concat(BotPolicies.MeasurementNames))} or usta-<n>";
+    /// <summary>The player models a message can list: the named ones, and how the ladder's rungs are named.</summary>
+    private static readonly string PlayerModels = $"{string.Join(", ", BotPolicies.Names)}, {SkillLadder.NamePattern}";
+
+    private static readonly string KnownBots = $"{PlayerModels}, {string.Join(", ", BotPolicies.MeasurementNames)} or usta-<n>";
+
+    /// <summary>
+    /// The player models from the weakest to the strongest, for a message: the named ones in order, and where a ladder
+    /// rung stands among them (at its skill, which novice, casual, average and expert share with a rung each).
+    /// </summary>
+    private static readonly string StrengthOrder =
+        $"{string.Join(" < ", BotPolicies.Names)}, with a {SkillLadder.NamePrefix}<n> bot at its n "
+        + $"({string.Join(", ", SkillProfile.All.Select(named => $"{named.Name} = {SkillLadder.NameOf(named.NoticePercent)}"))})";
 
     /// <exception cref="ProfileFormatException">The file is missing, not JSON, or inconsistent.</exception>
     public static GenerationProfile Load(string path)
@@ -121,8 +132,8 @@ public static class ProfileLoader
 
     /// <param name="where">As in <see cref="RequireKnownBot"/>.</param>
     private static void RequirePlayerModel(string bot, string field, string purpose, string? where = null) => Require(
-        BotPolicies.Names.Contains(bot, StringComparer.OrdinalIgnoreCase),
-        $"{Lead(where)}{field} '{bot}' is a measurement bot; {purpose} ({string.Join(", ", BotPolicies.Names)}), measurement bots belong in reportBots");
+        BotPolicies.IsPlayerModel(bot),
+        $"{Lead(where)}{field} '{bot}' is a measurement bot; {purpose} ({PlayerModels}), measurement bots belong in reportBots");
 
     /// <param name="where">As in <see cref="RequireKnownBot"/>.</param>
     private static void RequireCalibrationBot(string bot, string? where = null)
@@ -137,17 +148,17 @@ public static class ProfileLoader
     /// <summary>
     /// The floor bot plays only on a tier with a casual floor, so its strength is checked only for a band that has one
     /// (its name is always checked, so a typo is caught before a floor is added). On the same games a floor at or below
-    /// the target needs more moves than the target only from a weaker player, so it must come before the band's
-    /// calibration bot in <see cref="BotPolicies.Names"/>, which lists the player models weakest first.
+    /// the target needs more moves than the target only from a weaker player, so the floor bot must be the weaker of
+    /// the two (<see cref="BotPolicies.TryCompareStrength"/>): a named profile or a ladder rung below the band's
+    /// calibration bot, and never its equal (casual is no floor for skill-70).
     /// </summary>
     private static void RequireWeakerFloorBot(string floorBot, ProfileBand band) =>
         Require(
-            StrengthOf(floorBot) < StrengthOf(band.CalibrationBot),
-            $"band fromLevel {band.FromLevel}: floorBot '{floorBot}' is not weaker than calibrationBot '{band.CalibrationBot}'; a floor at or below the target needs more moves only from a weaker player, so floorBot must come before calibrationBot in {string.Join(" < ", BotPolicies.Names)}");
+            IsWeaker(floorBot, than: band.CalibrationBot),
+            $"band fromLevel {band.FromLevel}: floorBot '{floorBot}' is not weaker than calibrationBot '{band.CalibrationBot}'; a floor at or below the target needs more moves only from a weaker player, so floorBot must come before calibrationBot in {StrengthOrder}");
 
-    /// <summary>The place of a player model in <see cref="BotPolicies.Names"/>: 0 for the weakest.</summary>
-    private static int StrengthOf(string playerModel) =>
-        BotPolicies.Names.TakeWhile(name => !string.Equals(name, playerModel, StringComparison.OrdinalIgnoreCase)).Count();
+    /// <summary>Whether the player model <paramref name="bot"/> is weaker than the player model <paramref name="than"/>; false for equals.</summary>
+    private static bool IsWeaker(string bot, string than) => BotPolicies.TryCompareStrength(bot, than, out int order) && order < 0;
 
     private static bool HasCasualFloor(ProfileBand band) =>
         Enum.GetValues<DifficultyTier>().Any(tier => band.CasualFloor.For(tier) is not null);
@@ -182,7 +193,8 @@ public static class ProfileLoader
                 MergeOptionalTiers(previous?.CasualFloor, band.CasualFloor, where + " casualFloor"),
                 MergeTiers(previous?.Moves, band.Moves is null ? null : band.Moves.ToDictionary(p => p.Key, p => ParseRange(p.Value, where)), _ => { }, where + " moves"),
                 MergeTiers(previous?.Colors, band.Colors, v => Require(v is >= 3 and <= 8, $"{where}: colors must be 3..8"), where + " colors"),
-                band.MaxObstacleTypes ?? previous?.MaxObstacleTypes ?? 1);
+                band.MaxObstacleTypes ?? previous?.MaxObstacleTypes ?? 1,
+                band.MoveMargin is decimal share ? ParseMoveMargin(share, where + ": moveMargin") : previous?.MoveMargin);
             Require(current.MaxObstacleTypes is >= 0 and <= 4, $"{where}: maxObstacleTypes must be 0..4");
             RequireFloorsWithinWinRates(current, where);
             resolved.Add(current);
@@ -288,34 +300,37 @@ public static class ProfileLoader
             WinRateTolerance = tolerance,
             MaxCandidates = Positive(calibration.MaxCandidates ?? 8, "calibration.maxCandidates"),
             MaxScaleIterations = Positive(calibration.MaxScaleIterations ?? 4, "calibration.maxScaleIterations"),
-            MoveMargin = ParseMoveMargin(calibration.MoveMargin ?? 0),
+            MoveMargin = ParseMoveMargin(calibration.MoveMargin ?? 0, "calibration.moveMargin"),
         };
     }
 
-    private static MoveMargin ParseMoveMargin(decimal share) => MoveMargin.TryCreate(share, out MoveMargin margin)
+    /// <param name="field">The field the share was written in, as the message names it.</param>
+    private static MoveMargin ParseMoveMargin(decimal share, string field) => MoveMargin.TryCreate(share, out MoveMargin margin)
         ? margin
-        : throw new ProfileFormatException(string.Create(CultureInfo.InvariantCulture, $"calibration.moveMargin must be between 0 and 1, got {share}"));
+        : throw new ProfileFormatException(string.Create(CultureInfo.InvariantCulture, $"{field} must be between 0 and 1, got {share}"));
 
     /// <summary>
     /// Games are followed only to the move cap, so no win rate is known past it and a final limit stops there (see
     /// <c>LevelGenerator</c>). A level calibrated inside its move range must still get its whole margin, so the top of
-    /// every range, with the margin on it, has to fit under the cap. Without a margin nothing is asked, as before there
-    /// was one.
+    /// every range, with its band's margin on it, has to fit under the cap. Without a margin nothing is asked, as
+    /// before there was one.
     /// </summary>
     private static void RequireWholeMarginUnderMoveCap(ProfileBand band, CalibrationSettings calibration)
     {
-        MoveMargin margin = calibration.MoveMargin;
+        MoveMargin margin = band.MarginUnder(calibration);
         if (margin.IsNone)
         {
             return;
         }
+
+        string field = band.MoveMargin is null ? "calibration.moveMargin" : "moveMargin";
 
         foreach (DifficultyTier tier in Enum.GetValues<DifficultyTier>())
         {
             int rangeTop = band.Moves.For(tier).Max;
             Require(
                 margin.Soften(rangeTop) <= calibration.MoveCap,
-                $"band fromLevel {band.FromLevel}: calibration.moveMargin {margin} takes the top of the {tier} move range, {rangeTop} moves, to {margin.Soften(rangeTop)}, past calibration.moveCap {calibration.MoveCap}; games are followed only to the cap, so lower the margin or the move range, or raise the cap");
+                $"band fromLevel {band.FromLevel}: {field} {margin} takes the top of the {tier} move range, {rangeTop} moves, to {margin.Soften(rangeTop)}, past calibration.moveCap {calibration.MoveCap}; games are followed only to the cap, so lower the margin or the move range, or raise the cap");
         }
     }
 
@@ -387,6 +402,12 @@ public static class ProfileLoader
         public Dictionary<string, int>? Colors { get; set; }
 
         public int? MaxObstacleTypes { get; set; }
+
+        /// <summary>
+        /// Absent: the band keeps the move margin of the band before it, and the first band the profile's
+        /// (<c>calibration.moveMargin</c>). A decimal, so the share is read exactly as written.
+        /// </summary>
+        public decimal? MoveMargin { get; set; }
     }
 
     private sealed class SizesFile

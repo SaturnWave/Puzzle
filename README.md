@@ -57,7 +57,7 @@ New-NetFirewallRule -DisplayName "Puzzle Test Lab (5180)" -Direction Inbound -Pr
 | `src/Puzzle.Bot` | netstandard2.1, C# 9 | Botlar (greedy profilleri, usta arama botu), beam search çözücü, paralel simülasyon ve kalibrasyon raporu |
 | `src/Puzzle.Tooling` | net10.0 | Bölüm JSON'u ve bölüm kütüphanesi |
 | `src/Puzzle.Generator` | net10.0 | Bölüm üreticisi: profil, planlayıcı, şekil ve engel portföyü, bot kalibrasyonu, rapor |
-| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `botstats`, `humans`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
+| `src/Puzzle.Cli` | net10.0 | `generate`, `sim`, `botstats`, `ladder`, `humans`, `demo`, `bench`, `solve`, `seeds`, `validate` komutları |
 | `src/Puzzle.Web` | net10.0 | Tarayıcıda test laboratuvarı: oyna, botlar, çözücü, simülasyon, deneme kayıtları ve botlarla karşılaştırma |
 | `tests/Puzzle.Core.Tests` | net10.0, xUnit | Motor, bot, çözücü ve dosya formatı testleri |
 | `levels/samples` | JSON | El yapımı örnek bölümler |
@@ -84,6 +84,12 @@ Bir botun 1000 bölümün her birini kaç hamlede bitirdiği (CSV; `--bot usta` 
 
 ```bash
 dotnet run --project src/Puzzle.Cli -c Release -- botstats levels/generated --bot expert --runs 30
+```
+
+Mevcut bölümleri beceri merdivenine karşı ölçer; hiçbir bölüm yeniden üretilmez. Merdiven `skill-30` … `skill-100` botlarıdır (5'er puan arayla; `skill-50` = novice, `skill-70` = casual, `skill-85` = average, `skill-100` = expert) ve bir bölümde bütün botlar aynı oyunları oynar. Çıktı bölüm ve bot başına bir satırdır (`reports/ladder.csv`: limitte kazanma oranı, gereken hamle, her kazanma oranı için gereken limit). `--from/--to` ile parça parça çalıştırılabilir; her çalıştırma kendi bölümlerinin satırlarını yeniler, diğerlerini korur:
+
+```bash
+dotnet run --project src/Puzzle.Cli -c Release -- ladder levels/generated --from 1 --to 100
 ```
 
 Web test uygulamasında oynanan denemeleri (`recordings/attempts.jsonl`) botlarla karşılaştırır:

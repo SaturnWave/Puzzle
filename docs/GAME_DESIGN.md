@@ -168,6 +168,29 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
   - `beceri aralığı = geçme(b) − geçme(c)`
   - `şans payı` = seed'ler arası geçme varyansı
 
+**Beceri merdiveni (2026-10-06).** Dört greedy profilin arası 5 puanlık basamaklarla dolduruldu: `skill-30` … `skill-100` (15 bot). Basamak numarası botun fark ettiği hamle yüzdesidir; yargı hatası dört profilden geçen doğrularla belirlenir. `skill-50`, `skill-70`, `skill-85` ve `skill-100` tam olarak novice, casual, average ve expert'tir; adlı profiller değişmedi. Basamak adları bot adı geçen her yerde kullanılabilir (CLI, profil, test paneli).
+
+Bölümler merdivenle ölçülür (`puzzle ladder`; bölüm ve bot başına 60 oyun, her bot aynı oyunlarda; hiçbir bölüm dosyası değişmez; sonuç `reports/ladder.csv`). Onaylanan paylarla üretilen bugünkü bölümlerde (2026-10-06, §8 madde 9), limitte kazanma oranı:
+
+| Basamak | 1–50 | 51+ Kolay | 51+ Normal | 51+ Zor | 51+ Süper Zor |
+|---|---|---|---|---|---|
+| 30 | %81 | %74 | %54 | %33 | %21 |
+| 40 | %86 | %81 | %62 | %41 | %27 |
+| 50 (novice) | %90 | %88 | %72 | %50 | %36 |
+| 55 | %92 | %90 | %76 | %55 | %40 |
+| 60 | %94 | %93 | %81 | %62 | %47 |
+| 65 | %96 | %96 | %86 | %69 | %56 |
+| 70 (casual) | %98 | %98 | %91 | %77 | %65 |
+| 75 | %99 | %99 | %94 | %83 | %73 |
+| 80 | %99 | %99 | %97 | %89 | %81 |
+| 85 (average) | %100 | %100 | %99 | %94 | %88 |
+| 90 | %100 | %100 | %99 | %97 | %94 |
+| 100 (expert) | %100 | %100 | %100 | %99 | %97 |
+
+- 55. basamak satırı üreticinin görmediği oyunlarda da hedefi tutuyor: %90 / %76 / %55 / %40 (hedef 90 / 75 / 55 / 40).
+- Tablo, bölümleri yeniden üretmeden "şu basamaktaki oyuncu şu oranı tutsun" sorusunu cevaplar: dosyada her bölüm ve basamak için o botun %70, %80, %90 ve %95 kazandığı en küçük limit de var.
+- **Önceki bölümlerde** (51+ average bota göre, yüzde 25 payla) aynı ölçüm 55. basamak için Kolay %72, Normal %46, Zor %17, Süper Zor %8 veriyordu; 50. basamaktaki bir oyuncunun Zor bölümlerde %70 kazanması için ortalama 72 hamle gerekiyordu (limit 39). Yalnızca limiti uzatmak yetmediği için bölümler yeniden üretildi; hedefler de küçüldü.
+
 ## 8. Hamle sayısının hesaplanması
 
 **Temel fikir:** bot kalan hamleye bakmadan oynadığı için, **sınırsız hamleyle** N oyun oynatıp her oyunun "kaçıncı hamlede bittiğini" kaydetmek yeterlidir. Herhangi bir hamle limiti `L` için kazanma oranı = `bitiş hamlesi ≤ L` olan oyunların oranı (birikimli dağılım). Tek bir simülasyon grubuyla bütün `L` değerleri için kazanma eğrisi elde edilir.
@@ -184,8 +207,8 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
    | Bölüm | Kolay: hedef / casual alt sınırı | Normal: hedef / casual alt sınırı |
    |---|---|---|
    | 1–50 (2026-10-05'e kadar; şimdi madde 7) | %95 / %80 | %85 / %60 |
-   | 51–300 | %90 / %75 | %75 / %50 |
-   | 301–1000 | %85 / %70 | %65 / %40 |
+   | 51–300 (2026-10-06'ya kadar; şimdi madde 9) | %90 / %75 | %75 / %50 |
+   | 301–1000 (2026-10-06'ya kadar; şimdi madde 9) | %85 / %70 | %65 / %40 |
 
    - **Neden aralığa göre:** sabit 80/60 eşiği 51. bölümden sonra Kolay ve Normal bölümlerin %95'inden fazlasında limiti belirliyor ve zorluk artışını yok ediyordu (Normal'de average her aralıkta %89). Casual ile average arasındaki 19–32 puanlık fark bölümlerden değil botlardan geliyor; hiçbir bölüm tasarımı kapatmıyor. Aralığa göre inen eşik ilk 50 bölümde tam olarak 80/60, sonrasında zorluk artışını koruyor (Normal'de average 88 → 81 → 75) ve çoğu Kolay ve Normal bölüme yaklaşık 2 hamle ekliyor.
    - **Doğrulama:** yeni tohumlarla iki bot da kendi eşiğine tolerans içinde olmalıdır. Kural, korumasız eski kuralın aynısı gibi iki yönlü: daha sıkı olan koşul hedefinin tolerans kadar altında da üstünde de kalamaz; limit çok cömertse yeniden okunur.
@@ -201,15 +224,25 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
    | 11–20 | Kolay | novice %90 |
    | 21–30 | döngü | novice: Kolay %90, Normal %80, Zor %65, Süper Zor %55 |
    | 31–50 | döngü | novice: Kolay %80, Normal %60, Zor %40, Süper Zor %30 (geçici; insan verisiyle gözden geçirilecek) |
-   | 51–1000 | döngü | average + casual koruması (madde 5) |
+   | 51–1000 | döngü | 55. basamak botu, onaylanan paylar (madde 9); 2026-10-06'ya kadar average + casual koruması |
 
    - Tohum havuzu da aynı botla kurulur; ilk denemeler zayıf oyuncu için de dengeli tohumlarla başlar.
-   - Profilde her bant kendi kalibrasyon botunu adlandırır (`bands[].calibrationBot`, §9). 51 ve sonrasında kalibrasyon botu average kalır.
-8. **Hamle payı (karar ve uygulama 2026-10-05, "bütün bölümler yüzde 25 yumuşatılsın"):** kalibrasyon ve doğrulama yukarıdaki gibi çalışır ve **kalibre limiti** `L₀` verir. Bölümün limiti `L = ⌈L₀ × 1,25⌉` olur (yukarı yuvarlanır; örnek: 19 → 24). Profildeki tek sayı: `calibration.moveMargin` (0,25).
+   - Profilde her bant kendi kalibrasyon botunu adlandırır (`bands[].calibrationBot`, §9). 51 ve sonrasında kalibrasyon botu 2026-10-06'dan beri `skill-55` (madde 9).
+8. **Hamle payı (karar ve uygulama 2026-10-05, "bütün bölümler yüzde 25 yumuşatılsın"):** kalibrasyon ve doğrulama yukarıdaki gibi çalışır ve **kalibre limiti** `L₀` verir. Bölümün limiti `L = ⌈L₀ × 1,25⌉` olur (yukarı yuvarlanır; örnek: 19 → 24). Profilde `calibration.moveMargin` (0,25) varsayılandır; bir bant kendi payını yazabilir (`bands[].moveMargin`, sonraki bantlar miras alır). 2026-10-06'dan beri pay yalnızca ilk odada: 51 ve sonrasının bandı payını 0 yazar (madde 9).
    - Paydan sonra her şey `L`'de ölçülür: tohum havuzu kalibrasyon botunun `L`'deki kazanma oranına göre dengelenir; rapordaki `win`, `winPlus5`, `floorWin`, near-miss, casual ve expert oranları `L`'dedir. `targetWin` ve `moveRange` kalibre limiti anlatır; bu yüzden `moves` hamle aralığının dışına çıkabilir ve `win − targetWin` yumuşatmanın büyüklüğünü gösterir.
    - Rapora `calibratedMoves` (L₀) ve `moveMargin` sütunları eklendi. `generate --repair` payı değişen bölümü yeniden üretir; pay varken limiti yalnızca tek yönlü denetler (bir bot hedefinin toleranstan fazla altına düşmüşse), çünkü hedefin üstünde olmak payın amacıdır.
    - Pay 0 iken üretici eskisiyle bayt bayt aynı bölümleri verir (1–60. bölümlerde sınandı). Pay, hiçbir hamle aralığının tepesini simülasyon üst sınırının (150 hamle) ötesine taşıyamaz; profil yüklenirken reddedilir.
-   - **Bedeli:** ilk oda kendi kalibrasyon botu için neredeyse kaybedilmez oldu (novice 1–21'de %98–100) ve o bölümlerde havuz tohumları ayırt etmiyor. İlk odaya daha küçük pay istenirse bant başına pay gerekir; yapılmadı.
+   - **Bedeli:** ilk oda kendi kalibrasyon botu için neredeyse kaybedilmez oldu (novice 1–21'de %98–100) ve o bölümlerde havuz tohumları ayırt etmiyor. Bant başına pay 2026-10-06'da eklendi (madde 9); ilk odanın payı 0,25 kaldı.
+9. **Ortalama oyuncu ve onaylanan paylar (karar ve uygulama 2026-10-06):** zorluk bir botun kazanma oranıyla ayarlanır; "ortalama oyuncu" artık average bot değil, ilk insan test oyuncusunun beceri merdivenindeki yeri olan **55. basamak** botudur (`skill-55`; §7, §13). 51. bölümden itibaren bu bot, ilk denemede şu payı kazanır:
+
+   | Bölüm | Kolay | Normal | Zor | Süper Zor |
+   |---|---|---|---|---|
+   | 51–1000 | %90 | %75 | %55 | %40 |
+
+   - Paylar limitin kendisinde tutulur: bu bölümlerde hamle payı 0'dır ve casual koruması yoktur (55. basamak casual bottan zayıf; koruma daha güçlü bir kalibrasyon botu için vardı). 301. bölümdeki sıkılaşma kaldırıldı.
+   - Değişmeyenler: ilk oda (madde 7 ve 8), kademe döngüsü, hamle aralıkları, renk sayıları, tahta boyutları, mekanik takvimi.
+   - Hamle aralıkları average bot dönemindekiyle aynı kaldığı için, daha zayıf bir bot aynı aralıkta hedefe ancak daha küçük hedeflerle ulaşır: limitler kısalır, hedefler küçülür (sonuçlar §13).
+   - Daha çok insan verisi geldikçe ortalama oyuncunun basamağı yeniden kestirilir (`puzzle humans` ve `reports/ladder.csv`); değişirse profilde yalnızca bandın `calibrationBot` alanı değişir.
 
 ## 9. 1000 bölüm üretim hattı (Faz 2)
 
@@ -242,10 +275,10 @@ Raporları (`report.csv` ve kademe özeti) karşılaştırarak profiller kıyasl
 | `sizes` | Kademe başına tahta boyutları. `fixedUntil`'e kadar sabit; bölüm içinde boyut hiç değişmez. `plainShapesUntil` (20): o bölüme kadar tahtalar düz dikdörtgen |
 | `palette` | `newColorsFrom`'dan sonra her bölüm grubu (`chapterSize`) 8 renk arasından kendi paletini alır |
 | `mechanics[]` | Mekanik açılış takvimi (aşağıdaki tablo). Yeni açılan mekanik `hookLevels` bölüm boyunca öne çıkarılır |
-| `calibrationBot`, `bands[].calibrationBot` | Hamle limitini ve tohum havuzunu belirleyen oyuncu modeli. Üst düzeydeki alan yalnızca ilk bandın varsayılanıdır; her bant kendi botunu adlandırabilir, sonraki bantlar miras alır. Bugün: 1–3 `random`, 4–50 `novice`, 51+ `average` (§8 madde 7). Ölçüm botu (usta) olamaz |
-| `calibration.moveMargin` | Hamle payı (§8 madde 8): kalibre limitin üstüne eklenen oran, 0–1 arası; bugün 0,25 |
+| `calibrationBot`, `bands[].calibrationBot` | Hamle limitini ve tohum havuzunu belirleyen oyuncu modeli. Üst düzeydeki alan yalnızca ilk bandın varsayılanıdır; her bant kendi botunu adlandırabilir, sonraki bantlar miras alır. Merdiven basamakları da yazılabilir (`skill-55`). Bugün: 1–3 `random`, 4–50 `novice`, 51+ `skill-55` (§8 madde 7 ve 9). Ölçüm botu (usta) olamaz |
+| `calibration.moveMargin`, `bands[].moveMargin` | Hamle payı (§8 madde 8): kalibre limitin üstüne eklenen oran, 0–1 arası. Üst düzeydeki alan varsayılandır (0,25); bir bant kendi payını yazabilir, sonraki bantlar miras alır. Bugün: 1–50 0,25; 51+ 0 |
 | `reportBots` | Raporda ayrıca kazanma oranı gösterilen oyuncular (`casual`, `expert`) |
-| `floorBot`, `bands[].casualFloor` | Casual koruması (§8): alt sınırı tutturması gereken bot (`casual`) ve aralık başına alt sınırlar. Koruma botu kalibrasyon botundan zayıf bir oyuncu modeli olmalı (random < novice < casual < average < expert); ölçüm botu olamaz. Raporda `floor`, `floorWin`, `floorSetLimit`, `floorBot` sütunları; `generate --repair` alt sınırı, koruma botu ya da hedefi değişen bölümleri yeniden üretir |
+| `floorBot`, `bands[].casualFloor` | Casual koruması (§8): alt sınırı tutturması gereken bot (`casual`) ve aralık başına alt sınırlar. Koruma botu kalibrasyon botundan zayıf bir oyuncu modeli olmalı (random < novice < casual < average < expert); ölçüm botu olamaz. 2026-10-06'dan beri hiçbir bandın alt sınırı yok (§8 madde 9); düzenek duruyor. Raporda `floor`, `floorWin`, `floorSetLimit`, `floorBot` sütunları; `generate --repair` alt sınırı, koruma botu ya da hedefi değişen bölümleri yeniden üretir |
 | `calibration`, `seedPool` | Oyun sayıları, tolerans, aday sayısı |
 
 Profil dosyasında biçimde olmayan bir alan (yazım hatası, yanlış yere konmuş alan) artık yükleme hatasıdır; eskiden sessizce yok sayılıyordu ve bir bandın bütün bölümlerini fark ettirmeden değiştirebiliyordu. İlk oda için 2026-10-05'te kullanılan iki geçici profil (`onboarding-1-3`, `onboarding-4-50`) `default.json` içine katlandı ve silindi; bugünkü profilin katlanmadan önceki hâli test fikstürü olarak duruyor (`tests/fixtures/profile-before-onboarding.json`).
@@ -254,13 +287,15 @@ Profil dosyasında biçimde olmayan bir alan (yazım hatası, yanlış yere konm
 1. **Plan** (`LevelPlanner`).
 2. **Aday:** portföyden şekil stili, engel ailesi ve desen seçilir; her deneme farklı bir kombinasyon.
 3. **Beslenebilirlik analizi:** kutu ve zincir hiç kırılmasa bile her hücreye yukarıdan veya çaprazdan taş gelebilmeli. Kenara dayalı bir kutu çifti köşedeki alt hücreyi kapattığı için reddedilir.
-4. **Kalibrasyon:** bot sınırsız oynar → hedef kazanma oranını veren limit. Limit aralık dışındaysa ölçeklenebilir hedefler (renk toplama, malzeme) büyütülür veya küçültülür. Engel yoğunluğu adaydan adaya uyarlanır: uzun gelirse azaltılır, kısa gelirse artırılır.
+4. **Kalibrasyon:** bot sınırsız oynar → hedef kazanma oranını veren limit. Limit aralık dışındaysa ölçeklenebilir hedefler (renk toplama, malzeme) büyütülür veya küçültülür. Engel yoğunluğu adaydan adaya uyarlanır: uzun gelirse azaltılır, kısa gelirse artırılır. Sekiz adayın hiçbiri oturmazsa **ikinci arama** yapılır: aynı sekiz tahta tek tek ele alınır ve her birinin engel miktarı, limitin kaçırdığı yöne doğru en çok dört adımda ayarlanır (planlanan miktarın üçte biri ile üç katı arasında).
 5. **Doğrulama:** kalibrasyonda hiç kullanılmamış seed'lerle; sapma toleranstan büyükse limit yeniden okunur.
 6. **Eşit zorluk havuzu:** seed'ler **bölümün doğrulanmış kazanma oranını** hedefleyerek seçilir. Medyan seed'i hedeflemek yanlıştı: zor bölümlerde seed zorluğu çarpık dağılıyor; ortanca seed ortalamadan çok daha zor çıkabiliyor (#310: kazanma %26, ortanca seed'lerin %0–8'i).
-7. **Hamle payı** (§8 madde 8): limit kalibre limitin yüzde 25 üstüne çıkarılır; havuz (6. adım) ve rapor botları (8. adım) bu son limitte ölçülür.
+7. **Hamle payı** (§8 madde 8): limit, kalibre limitin bandın payı kadar üstüne çıkarılır (ilk odada yüzde 25, sonrasında 0); havuz (6. adım) ve rapor botları (8. adım) bu son limitte ölçülür.
 8. **Rapor botları:** casual ve expert kazanma oranları ölçülür; dosya ve rapor satırı yazılır.
 
-Hiçbir aday aralığa oturmazsa en yakın olanı tutulur. Limiti yine hedef kazanma oranına göredir ve rapora `relaxed` diye işaretlenir.
+İkinci arama da sonuç vermezse limiti aralığa en yakın aday tutulur ve rapora `relaxed` diye işaretlenir. Bu limit de yeni tohumlarla denetlenir; hedefi tolerans içinde tutmuyorsa o oyunlardan yeniden okunur. Gevşetilen bölüm hamle aralığından çıkar, kazanma oranından çıkmaz.
+
+**İkinci arama neden gerekti (2026-10-06):** engel miktarı adaydan adaya tek bir çarpanla taşınıyordu. Uzunluğu bu çarpana bağlı olmayan bir aile (indirilecek malzeme, jöle bandı) art arda "uzun" çıkınca çarpan çöküyor, sıra kutu ya da zincir tahtasına geldiğinde tahtada neredeyse hiçbir şey kalmıyordu. 55. basamak botuyla ilk üretimde 31 bölüm bu yüzden aralık dışında kaldı (ör. 969: 4 kutu, 5 hamle; 127: 2 zincir, 6 hamle). İkinci arama yalnızca hiçbir adayı oturmayan bölümde çalışır; öteki bölümler bayt bayt aynı kalır.
 
 ### Zorluk eğrisi — 10'luk testere dişi
 
@@ -270,7 +305,7 @@ Hiçbir aday aralığa oturmazsa en yakın olanı tutulur. Limiti yine hedef kaz
 
 **İlk oda (2026-10-05):** 20. bölüme kadar her bölüm Kolay (`tutorialUntil` 20); döngü 21'de başlar. İlk Zor bölüm 25, ilk Süper Zor 30; ikisi de sonraki odalardaki adaşlarından çok daha yumuşak (§8 madde 7).
 
-Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır). 1–50 sütunu 2026-10-05'ten beri geçerli değil; ilk odada §8 madde 7 uygulanır:
+Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır). Tablo tarihsel: 1–50 sütunu 2026-10-05'ten, öteki iki sütun 2026-10-06'dan beri geçerli değil. İlk odada §8 madde 7, 51–1000'de §8 madde 9 uygulanır:
 
 | Kademe | Bölüm 1–50 | 51–300 | 301–1000 |
 |---|---|---|---|
@@ -485,6 +520,7 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 - Expert her bölümü 30 denemenin 30'unda 150 hamle içinde bitirdi. Medyanların toplamı 20.930 hamle; limitlerin toplamı 27.515.
 - 26 bölümde expert'in medyanı limiti aşıyor (23'ü Süper Zor, 3'ü Zor). Çoğunda fark 1–3 hamle. En büyük fark #780: medyan 44, limit 33.
 - Bu ölçümler özel taş biriktirme düzeltmesinden önce alındı (§7).
+- **Bugünkü bölümlerde (2026-10-06, onaylanan paylar; `reports/expert_moves.csv` yenilendi):** ortalama limit / expert medyanı / expert p90 / limitle kazanma: Kolay 24,6 / 8,9 / 12,5 / %100; Normal 28,7 / 13,0 / 17,7 / %100; Zor 31,5 / 16,0 / 22,7 / %99; Süper Zor 35,8 / 19,2 / 28,1 / %97. Hiçbir bölümde expert'in medyanı limiti aşmıyor; medyanların toplamı 13.296 hamle, limitlerin toplamı 29.086. Güçlü bir oyuncu için oyun artık kolay: limitin yarısından azı yetiyor.
 
 **Usta ve expert** (2026-10-03; 1000 bölüm × 30 oyun, üst sınır 150, `botstats` tohumlarıyla eşleştirilmiş; expert 0,25 cezasıyla). Limitler hâlâ eski ayarla kalibre edilmiş limitler; 6. adımda yeniden üretilecek.
 
@@ -580,6 +616,25 @@ Novice bot (ilk oyuncunun en çok benzediği model) 51. bölümden sonra, yeni l
 - **Pay, 51 sonrasındaki duvarı kaldırmıyor.** Casual bot için belirgin bir rahatlama var; novice gibi oynayan biri için ikinci odanın Zor ve Süper Zor bölümleri hâlâ çok zor. Malzeme indirme bölümleri en kötüsü (55. bölüm: novice %10; ortanca oyun 73 hamle istiyor, limit 39).
 - İlk oda ise kendi botu için neredeyse kaybedilmez oldu (1–20'de %98–100).
 - Asıl çözüm adayı: sonraki odaları da novice bota göre kalibre etmek (profilde bandın `calibrationBot` alanı; hedefler oda oda sıkılaşır). Karar insan verisiyle verilecek.
+
+**Onaylanan paylar — 51–1000'in 55. basamak botuyla yeniden üretimi (2026-10-06)**
+
+İlk test oyuncusunun (Admin) merdivendeki yeri, kayıtlı denemelerinin olabilirliğiyle kestirildi: en iyi uyan basamak 55, 40–60 arası makul, 65 ve üstü verilerle bağdaşmıyor. Sahibinin kararı: bu oyuncu ortalama oyuncu sayılır ve 51. bölümden itibaren ilk denemede Kolay %90, Normal %75, Zor %55, Süper Zor %40 kazanır (§8 madde 9). 51–1000 bu kuralla yeniden üretildi; ilk oda 50 bölümün 50'sinde bayt bayt aynı kaldı.
+
+| 51–1000 | Adet | Ort. limit (önce → sonra) | 55. basamak (hedef) | Casual | Expert |
+|---|---|---|---|---|---|
+| Kolay | 190 | 30,4 → 24,8 | %91 (%90) | %98 | %100 |
+| Normal | 475 | 35,2 → 28,7 | %76 (%75) | %91 | %100 |
+| Zor | 190 | 39,2 → 31,5 | %56 (%55) | %77 | %99 |
+| Süper Zor | 95 | 44,3 → 35,8 | %41 (%40) | %65 | %98 |
+
+- Her havuzda en az 8 tohum var. Limitler 18 ile 65 hamle arasında; 45'in üstünde 3 bölüm var. Near-miss oranı (kaybedilip hedefin en az %80'ine ulaşılan oyunlar) ortalama %10'dan %18'e çıktı.
+- **Hedefler küçüldü, limitler kısaldı.** Örnek: 100. bölüm "88 turuncu, 34 hamle" yerine "60 turuncu, 32 hamle"; 1000. bölüm "36 pembe + 36 sarı, 49 hamle" yerine "23 + 23, 34 hamle"; 55. bölüm "4 malzeme + 21 sarı, 39 hamle" yerine "3 malzeme, 31 hamle".
+- **Tahtalar da değişti:** 950 bölümün 406'sı önceki tahta stilini korudu, 43'ü aynı hedefleri. 51 ve sonrasını henüz kimse oynamadığı için kayıt kaybı yok.
+- **Çeşitlilik bedeli:** zayıf botla engelli tahtalar hamle aralığına daha zor oturuyor ve üretici ilk oturan adayı aldığı için yalnızca renk toplanan bölümlere kayıyor: bu tür bölümler 335'ten 528'e çıktı; malzeme indirilen bölümler 223'ten 70'e, jöleli bölümler 187'den 78'e, kutulu 212'den 158'e, zincirli 218'den 185'e indi. Çare adayı: ikinci aramadaki "her tahtaya kendi miktarı" yöntemini ilk aramada da kullanmak; bu, bütün bölümleri değiştirir ve ayrı bir karar ister.
+- **Gevşetilen 9 bölüm** (limit hamle aralığının dışında, pay hedefte): 52 (44 hamle), 53 (45), 358 (36), 730 (65), 771 (33), 795 (54), 813 (37), 841 (44), 980 (48). Altısı malzeme indirme ya da jöle bandı bölümü: 55. basamak botu üç malzemeyi bu tahtalarda aralıktaki hamleyle indiremiyor. 730 ve 795 elle gözden geçirilmeye aday.
+- Hedeften 7 puandan fazla sapan tek bölüm 899 (%62,5; hedef %55): limit bir hamle azalınca oran hedefin altına düşüyor.
+- İlk üretimde 31 bölüm gevşetilmiş, 14 bölüm hedeften 7 puandan fazla sapmıştı (5 ve 6 hamlelik iki bölüm dahil). Nedeni ve düzeltmesi §9'da ("ikinci arama"); düzeltmeden sonra bu 31 bölümün 26'sı değişti, öteki 969 dosya iki üretimde bayt bayt aynı.
 
 ## 14. Açık sorular
 

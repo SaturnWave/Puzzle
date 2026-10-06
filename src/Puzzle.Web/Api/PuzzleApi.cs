@@ -35,7 +35,7 @@ internal static class PuzzleApi
     {
         RouteGroupBuilder api = app.MapGroup("/api");
         api.MapGet("/levels", ListLevels);
-        api.MapGet("/bots", () => BotPolicies.Names);
+        api.MapGet("/bots", () => BotPolicies.NamesByStrength);
         api.MapPost("/sessions", CreateSession);
         api.MapGet("/sessions/{id}", GetSession);
         api.MapPost("/sessions/{id}/moves", PlayMove);
@@ -268,8 +268,7 @@ internal static class PuzzleApi
             return Results.BadRequest($"Unknown bot '{bot}'.");
         }
 
-        bool playerModel = BotPolicies.Names.Contains(bot, StringComparer.OrdinalIgnoreCase);
-        int runs = Math.Clamp(request.Runs ?? 300, 1, playerModel ? MaxSimulationRuns : MaxSearchBotSimulationRuns);
+        int runs = Math.Clamp(request.Runs ?? 300, 1, BotPolicies.IsPlayerModel(bot) ? MaxSimulationRuns : MaxSearchBotSimulationRuns);
         var clock = Stopwatch.StartNew();
         LevelReport report = BatchSimulator.Run(level.Level, () => CreatePolicy(bot), runs, SimulationMoveCap, seed: 1);
         int curveEnd = Math.Min(SimulationMoveCap, Math.Max(level.Level.MoveLimit * 2, (report.MovesNeeded(0.95) ?? SimulationMoveCap) + 2));
@@ -291,12 +290,13 @@ internal static class PuzzleApi
     }
 
     /// <summary>
-    /// Creates a bot the lab may run: a player model or a measurement bot at its default budget. Any other name, an
+    /// Creates a bot the lab may run: a player model (the random bot, a named skill profile or a rung of the skill
+    /// ladder, as <c>/api/bots</c> lists them) or a measurement bot at its default budget. Any other name, an
     /// "usta-&lt;n&gt;" included, is refused like an unknown one: the lab's run caps hold for the default budget only.
     /// </summary>
     private static bool TryCreateLabBot(string name, [NotNullWhen(true)] out IBotPolicy? policy)
     {
-        bool offered = BotPolicies.Names.Contains(name, StringComparer.OrdinalIgnoreCase)
+        bool offered = BotPolicies.IsPlayerModel(name)
             || BotPolicies.MeasurementNames.Contains(name, StringComparer.OrdinalIgnoreCase);
         policy = offered && BotPolicies.TryCreate(name, out IBotPolicy created) ? created : null;
         return policy is not null;

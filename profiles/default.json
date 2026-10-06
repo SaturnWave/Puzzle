@@ -29,17 +29,15 @@
     },
     {
       "fromLevel": 51,
-      "calibrationBot": "average",
-      "winRate": { "Easy": 0.90, "Normal": 0.75, "Hard": 0.50, "SuperHard": 0.35 },
-      "casualFloor": { "Easy": 0.75, "Normal": 0.50 },
+      "calibrationBot": "skill-55",
+      "moveMargin": 0,
+      "winRate": { "Easy": 0.90, "Normal": 0.75, "Hard": 0.55, "SuperHard": 0.40 },
       "moves": { "Easy": [18, 29], "Normal": [20, 33], "Hard": [24, 36], "SuperHard": [26, 40] }
     },
     { "fromLevel": 121, "maxObstacleTypes": 2 },
     { "fromLevel": 201, "maxObstacleTypes": 3 },
     {
       "fromLevel": 301,
-      "winRate": { "Easy": 0.85, "Normal": 0.65, "Hard": 0.40, "SuperHard": 0.25 },
-      "casualFloor": { "Easy": 0.70, "Normal": 0.40 },
       "moves": { "Easy": [18, 31], "Normal": [22, 35], "Hard": [26, 38], "SuperHard": [28, 45] },
       "colors": { "Easy": 5, "Normal": 6, "Hard": 7, "SuperHard": 7 }
     },

@@ -102,6 +102,10 @@ public sealed record TierValues<T>(T Easy, T Normal, T Hard, T SuperHard)
 /// Least win rate the profile's <see cref="GenerationProfile.FloorBot"/> must have at the calibrated move limit, per
 /// tier; absent for a tier without a floor. Never above that tier's <paramref name="WinRate"/>.
 /// </param>
+/// <param name="MoveMargin">
+/// The move margin of this band's levels when the band, or one before it, names its own; absent when they take the
+/// profile's (<see cref="CalibrationSettings.MoveMargin"/>). <see cref="MarginUnder"/> gives the one in force.
+/// </param>
 public sealed record ProfileBand(
     int FromLevel,
     string CalibrationBot,
@@ -109,7 +113,12 @@ public sealed record ProfileBand(
     TierValues<double?> CasualFloor,
     TierValues<MoveRange> Moves,
     TierValues<int> Colors,
-    int MaxObstacleTypes);
+    int MaxObstacleTypes,
+    MoveMargin? MoveMargin = null)
+{
+    /// <summary>The move margin of this band's levels: its own, or the profile's when it has none.</summary>
+    public MoveMargin MarginUnder(CalibrationSettings calibration) => MoveMargin ?? calibration.MoveMargin;
+}
 
 /// <param name="FixedUntil">Levels up to this number use <paramref name="Default"/>.</param>
 /// <param name="PlainShapesUntil">Levels up to this number are plain rectangles, so early levels bring one new thing at a time.</param>
@@ -141,9 +150,10 @@ public sealed record CalibrationSettings
     public required int MaxScaleIterations { get; init; }
 
     /// <summary>
-    /// Extra moves every level gets on top of its calibrated limit. Calibration and verification run without it; the
-    /// seed pool and the reported win rates are measured at the final limit it gives (see <c>LevelGenerator</c>). In a
-    /// loaded profile the top of every move range, with the margin on it, fits under <see cref="MoveCap"/>.
+    /// Extra moves a level gets on top of its calibrated limit, unless its band names a margin of its own
+    /// (<see cref="ProfileBand.MarginUnder"/>). Calibration and verification run without it; the seed pool and the
+    /// reported win rates are measured at the final limit it gives (see <c>LevelGenerator</c>). In a loaded profile the
+    /// top of every move range, with its band's margin on it, fits under <see cref="MoveCap"/>.
     /// </summary>
     public required MoveMargin MoveMargin { get; init; }
 }

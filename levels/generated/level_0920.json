@@ -4,7 +4,7 @@
   "difficulty": "SuperHard",
   "width": 11,
   "height": 12,
-  "moves": 45,
+  "moves": 34,
   "cells": [
     "###########",
     "###########",
@@ -23,12 +23,12 @@
     {
       "type": "CollectColor",
       "color": "Purple",
-      "count": 36
+      "count": 24
     },
     {
       "type": "CollectColor",
       "color": "Cyan",
-      "count": 36
+      "count": 24
     }
   ],
   "spawn": {
@@ -43,14 +43,14 @@
   "attempts": {
     "board": "varied",
     "seedPool": [
+      1470437031,
+      282321740,
       2305948348,
       2441982191,
-      4015860217,
+      584165530,
+      1440796177,
       3331750439,
-      4214485415,
-      2122788124,
-      1750811342,
-      3832394776
+      3688067752
     ]
   }
 }

@@ -1,13 +1,10 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.ExceptionServices;
-using Puzzle.Bot;
 using Puzzle.Bot.Simulation;
-using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
 using Puzzle.Tooling;
+using Puzzle.Tooling.Simulation;
 
 namespace Puzzle.Cli.Commands;
 
@@ -19,6 +16,9 @@ namespace Puzzle.Cli.Commands;
 /// </summary>
 internal static class BotStatsCommand
 {
+    /// <summary>Run i of a level plays <c>Rng.Derive(Rng.Derive(BaseSeed, id), i)</c>: seeds are per level, the same for every bot.</summary>
+    private const ulong BaseSeed = 7;
+
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
 
     public static int Run(CliArgs args)
@@ -30,10 +30,7 @@ internal static class BotStatsCommand
         string outPath = args.Text("out", $"reports/{bot}_moves.csv");
         SimCommand.CreatePolicy(bot); // fail fast on a typo
 
-        string[] files = Directory.Exists(target)
-            ? Directory.GetFiles(target, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray()
-            : [target];
-        LevelDefinition[] levels = files.Select(LevelJson.Load).ToArray(); // a broken file stops the run before any game
+        LevelDefinition[] levels = LevelFiles.Under(target).Select(LevelJson.Load).ToArray(); // a broken file stops the run before any game
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
         var clock = Stopwatch.StartNew();
         using var writer = new StreamWriter(outPath);
@@ -55,40 +52,16 @@ internal static class BotStatsCommand
     }
 
     /// <summary>
-    /// Plays every run of every level as one job in a single queue, one worker per core, so cores only idle during
-    /// the very last runs instead of at the end of every level. Results come back in (level, run) order, so each level's
-    /// report sees its runs in the same order as <see cref="BatchSimulator.Run"/> and its row can be written as soon as
-    /// it and every level before it are done.
+    /// Every level's row, in level order and each as soon as it and every level before it are done: all runs of all
+    /// levels are one queue across the cores (<see cref="MultiBatchSimulator"/>). A game that fails stops the rows at
+    /// its level, after every level before it got its row.
     /// </summary>
-    /// <remarks>
-    /// A failed job travels through the pipeline as its outcome, so every level before the failing one still gets its
-    /// row; then the job's own exception is rethrown with its original stack trace.
-    /// </remarks>
     private static IEnumerable<string> RowsInLevelOrder(LevelDefinition[] levels, string bot, int runs, int cap)
     {
-        IEnumerable<RunOutcome[]> outcomesByLevel = Partitioner.Create(Jobs(levels, runs), EnumerablePartitionerOptions.NoBuffering)
-            .AsParallel()
-            .AsOrdered()
-            .WithMergeOptions(ParallelMergeOptions.NotBuffered) // pass each result on at once instead of in batches
-            .Select(job => job.Play(SimCommand.CreatePolicy(bot), cap)) // a policy of its own: policies are not thread-safe
-            .AsSequential()
-            .Chunk(runs);
-        foreach ((LevelDefinition level, RunOutcome[] outcomes) in levels.Zip(outcomesByLevel))
-        {
-            if (outcomes.OfType<RunOutcome.Failed>().FirstOrDefault() is { } failed)
-            {
-                ExceptionDispatchInfo.Capture(failed.Exception).Throw();
-            }
-
-            RunResult[] results = outcomes.OfType<RunOutcome.Played>().Select(played => played.Result).ToArray();
-            yield return Row(level, LevelReport.From(results, cap), runs);
-        }
+        IEnumerable<SimulationBatch> batches = levels.Select(level =>
+            new SimulationBatch(level, () => SimCommand.CreatePolicy(bot), Rng.Derive(BaseSeed, (ulong)level.Id.Value)));
+        return levels.Zip(MultiBatchSimulator.Run(batches, runs, cap), (level, report) => Row(level, report, runs));
     }
-
-    private static IEnumerable<RunJob> Jobs(LevelDefinition[] levels, int runs) =>
-        from level in levels
-        from run in Enumerable.Range(0, runs)
-        select new RunJob(level, run);
 
     private static string Row(LevelDefinition level, LevelReport report, int runs)
     {
@@ -116,40 +89,4 @@ internal static class BotStatsCommand
 
     /// <summary>Empty when that share of runs never finished within the cap.</summary>
     private static string Moves(int? moves) => moves?.ToString(Invariant) ?? string.Empty;
-
-    /// <summary>
-    /// Run <see cref="Run"/> of one level. Seeds are per level (<c>Rng.Derive(7, id)</c>), and run i plays the seed
-    /// <see cref="BatchSimulator.Run"/> would give it, <c>Rng.Derive(levelSeed, i)</c>, so no ordering of jobs changes a result.
-    /// </summary>
-    private readonly record struct RunJob(LevelDefinition Level, int Run)
-    {
-        /// <summary>
-        /// Plays the run. What a game can fail with (an unplayable level, or a bot or engine fault reported as
-        /// <see cref="InvalidOperationException"/>) becomes the outcome, to be rethrown in level order; nothing is swallowed.
-        /// </summary>
-        public RunOutcome Play(IBotPolicy policy, int cap)
-        {
-            try
-            {
-                return new RunOutcome.Played(
-                    SimulationRunner.Play(Level, policy, Rng.Derive(Rng.Derive(7, (ulong)Level.Id.Value), (ulong)Run), cap));
-            }
-            catch (Exception ex) when (ex is LevelInitializationException or InvalidOperationException)
-            {
-                return new RunOutcome.Failed(ex);
-            }
-        }
-    }
-
-    /// <summary>How one job ended: with its result, or with the exception it failed with.</summary>
-    private abstract record RunOutcome
-    {
-        private RunOutcome()
-        {
-        }
-
-        public sealed record Played(RunResult Result) : RunOutcome;
-
-        public sealed record Failed(Exception Exception) : RunOutcome;
-    }
 }

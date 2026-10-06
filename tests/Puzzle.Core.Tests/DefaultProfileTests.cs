@@ -5,8 +5,9 @@ using Puzzle.Generator.Profiles;
 namespace Puzzle.Core.Tests;
 
 /// <summary>
-/// The rules profiles/default.json ships with: the first museum room (levels 1-50) is set for weak players, the rest
-/// is planned as it was before, and every level gets a quarter more moves than calibration found.
+/// The rules profiles/default.json ships with: the first museum room (levels 1-50) is set for weak players and gets
+/// a quarter more moves than calibration found; from level 51 the average player (ladder rung 55, where the first
+/// human tester sits) wins the approved share of first attempts at the limit itself.
 /// </summary>
 public class DefaultProfileTests
 {
@@ -20,7 +21,7 @@ public class DefaultProfileTests
     {
         Assert.All(Plans(1, 3), plan => Assert.Equal("random", plan.CalibrationBot));
         Assert.All(Plans(4, 50), plan => Assert.Equal("novice", plan.CalibrationBot));
-        Assert.All(new[] { 51, 301, 1000 }, level => Assert.Equal("average", Planner.Plan(level).CalibrationBot));
+        Assert.All(new[] { 51, 301, 1000 }, level => Assert.Equal("skill-55", Planner.Plan(level).CalibrationBot));
     }
 
     [Fact]
@@ -91,29 +92,49 @@ public class DefaultProfileTests
     }
 
     /// <summary>
-    /// A guard of the fold of 2026-10-05: setting the first room for weak players was to leave every later level as it
-    /// was. It ties the shipped profile to the frozen fixture, so delete it at the first deliberate retune of a band
-    /// from level 51 on (the wall at 51 is to be decided on human data); a failure after that does not mean anything
-    /// broke.
+    /// The owner's decision of 2026-10-06: the average player is the first human tester, who sits on ladder rung 55,
+    /// and wins 90 / 75 / 55 / 40 % of first attempts by tier from level 51 on. No casual floor guards a weaker player
+    /// there, and the shares hold at the limit itself (no move margin).
     /// </summary>
     [Fact]
-    public void The_default_profile_plans_levels_51_to_1000_as_before_onboarding()
+    public void From_level_51_the_average_player_wins_the_approved_share_of_first_attempts()
+    {
+        Assert.All(Plans(51, 1000), plan =>
+        {
+            double approved = plan.Tier switch
+            {
+                DifficultyTier.Easy => 0.90,
+                DifficultyTier.Normal => 0.75,
+                DifficultyTier.Hard => 0.55,
+                _ => 0.40,
+            };
+            Assert.Equal(("skill-55", approved, MoveMargin.None), (plan.CalibrationBot, plan.TargetWinRate, plan.MoveMargin));
+            Assert.Null(plan.CasualFloor);
+        });
+    }
+
+    /// <summary>
+    /// Retuning levels 51-1000 for the average player was to change who the limits are set for and nothing else: tiers,
+    /// move ranges, boards, colours and mechanics are those of the frozen fixture. Delete it at the first deliberate
+    /// change of one of these; a failure after that does not mean anything broke.
+    /// </summary>
+    [Fact]
+    public void Levels_51_to_1000_keep_the_tiers_move_ranges_boards_colours_and_mechanics_they_had()
     {
         Assert.All(Plans(51, 1000), plan =>
         {
             LevelPlan before = PlannerBeforeOnboarding.Plan(plan.Number);
-            Assert.Equal("average", plan.CalibrationBot);
             Assert.Equal(
-                (before.Tier, before.CalibrationBot, before.TargetWinRate, before.CasualFloor, before.Moves, before.Size, before.PlainShape, before.MaxObstacleTypes, before.Seed),
-                (plan.Tier, plan.CalibrationBot, plan.TargetWinRate, plan.CasualFloor, plan.Moves, plan.Size, plan.PlainShape, plan.MaxObstacleTypes, plan.Seed));
+                (before.Tier, before.Moves, before.Size, before.PlainShape, before.MaxObstacleTypes, before.Seed),
+                (plan.Tier, plan.Moves, plan.Size, plan.PlainShape, plan.MaxObstacleTypes, plan.Seed));
             AssertSameColoursAndMechanics(before, plan);
         });
     }
 
     /// <summary>
-    /// A guard of the fold of 2026-10-05, like <see cref="The_default_profile_plans_levels_51_to_1000_as_before_onboarding"/>:
-    /// delete it at the first deliberate change of a setting it compares (bots, cycle, mechanics, calibration, seed
-    /// pool); a failure after that does not mean anything broke.
+    /// A guard of the fold of 2026-10-05, when the first room's rules moved into profiles/default.json: delete it at
+    /// the first deliberate change of a setting it compares (bots, cycle, mechanics, calibration, seed pool); a failure
+    /// after that does not mean anything broke.
     /// </summary>
     [Fact]
     public void Onboarding_left_every_setting_outside_the_curve_alone()
@@ -134,12 +155,13 @@ public class DefaultProfileTests
     }
 
     [Fact]
-    public void The_default_profile_gives_every_level_a_quarter_more_moves_than_calibration_found()
+    public void The_first_room_gets_a_quarter_more_moves_than_calibration_found()
     {
-        MoveMargin margin = RepoFiles.DefaultProfile.Calibration.MoveMargin;
-
-        Assert.Equal(0.25m, margin.Share);
-        Assert.Equal((20, 25, 45), (margin.Soften(16), margin.Soften(20), margin.Soften(36)));
+        Assert.All(Plans(1, 50), plan =>
+        {
+            Assert.Equal(0.25m, plan.MoveMargin.Share);
+            Assert.Equal((20, 25, 45), (plan.MoveMargin.Soften(16), plan.MoveMargin.Soften(20), plan.MoveMargin.Soften(36)));
+        });
     }
 
     private static void AssertSameColoursAndMechanics(LevelPlan expected, LevelPlan actual)

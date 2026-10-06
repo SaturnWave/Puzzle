@@ -22,7 +22,10 @@ namespace Puzzle.Bot
 
         public static SkillProfile Expert { get; } = new SkillProfile { Name = "expert", NoticePercent = 100, Temperature = 0 };
 
-        /// <summary>Weakest first; <see cref="BotPolicies.Names"/> keeps this order.</summary>
+        /// <summary>
+        /// The named profiles, weakest first; <see cref="BotPolicies.Names"/> keeps this order. <see cref="SkillLadder"/>
+        /// has the players between and below them.
+        /// </summary>
         public static IReadOnlyList<SkillProfile> All { get; } = new[] { Novice, Casual, Average, Expert };
 
         public string Name { get; init; } = "custom";
@@ -43,6 +46,11 @@ namespace Puzzle.Bot
                 : throw new ArgumentOutOfRangeException(nameof(Temperature), value, "Temperature must be zero or positive.");
         }
 
+        /// <summary>Whether <paramref name="other"/> plays exactly like this profile: the same settings, whatever the names.</summary>
+        public bool PlaysLike(SkillProfile other) => NoticePercent == other.NoticePercent && Temperature == other.Temperature;
+
+        /// <summary>The named profile <paramref name="name"/> names (case-insensitive); a ladder rung is found by <see cref="SkillLadder.TryFind"/>.</summary>
+        /// <param name="profile">The named profile; <see cref="Average"/> when the name is not one, so it is never null.</param>
         public static bool TryFind(string name, out SkillProfile profile)
         {
             foreach (SkillProfile candidate in All)

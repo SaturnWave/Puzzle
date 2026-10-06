@@ -3,6 +3,7 @@ using Puzzle.Bot.Simulation;
 using Puzzle.Core.Levels;
 using Puzzle.Generator;
 using Puzzle.Generator.Calibration;
+using Puzzle.Generator.Planning;
 using Puzzle.Generator.Profiles;
 
 namespace Puzzle.Core.Tests;
@@ -193,6 +194,45 @@ public class MoveMarginTests
         Assert.Null(cut.WinRateWithExtraMoves);   // five more moves are past the cap, where no game was followed
         Assert.Equal((2 * whole.CalibratedMoves, false), (whole.MoveLimit, whole.MarginCutByMoveCap));
     }
+
+    [Fact]
+    public void A_band_names_its_own_move_margin_and_later_bands_inherit_it()
+    {
+        GenerationProfile profile = TestProfiles.LoadEdited(RepoFiles.ProfileBeforeOnboardingPath, json =>
+        {
+            json["calibration"]!["moveMargin"] = 0.25m;
+            BandFrom(json, 51)["moveMargin"] = 0;
+        });
+        var planner = new LevelPlanner(profile);
+
+        Assert.Equal(TestProfiles.Margin(0.25m), planner.Plan(50).MoveMargin);   // before that band: the profile's margin
+        Assert.All(new[] { 51, 121, 301, 1000 }, level => Assert.True(planner.Plan(level).MoveMargin.IsNone));
+    }
+
+    [Fact]
+    public void A_band_move_margin_that_is_not_a_share_is_a_profile_error_naming_the_band()
+    {
+        ProfileFormatException rejected = Assert.Throws<ProfileFormatException>(() =>
+            TestProfiles.LoadEdited(RepoFiles.ProfileBeforeOnboardingPath, json => BandFrom(json, 51)["moveMargin"] = 1.5m));
+
+        Assert.Contains("band fromLevel 51: moveMargin must be between 0 and 1", rejected.Message);
+    }
+
+    [Fact]
+    public void A_level_is_softened_by_the_margin_of_its_own_band()
+    {
+        GenerationProfile profile = TestProfiles.Tiny.WithoutFloors().WithMoveMargin(0.25m) with
+        {
+            Bands = TestProfiles.Tiny.WithoutFloors().Bands.Select(band => band with { MoveMargin = MoveMargin.None }).ToArray(),
+        };
+
+        LevelMetrics metrics = Generate(profile, 9).Metrics;
+
+        Assert.Equal((metrics.CalibratedMoves, MoveMargin.None), (metrics.MoveLimit, metrics.MoveMargin));
+    }
+
+    private static JsonNode BandFrom(JsonNode profile, int fromLevel) =>
+        profile["bands"]!.AsArray().First(band => (int)band!["fromLevel"]! == fromLevel)!;
 
     private static GeneratedLevel Generate(GenerationProfile profile, int number) => new LevelGenerator(profile).Generate(number, []);
 

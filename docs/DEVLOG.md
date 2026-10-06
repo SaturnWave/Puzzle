@@ -4,6 +4,47 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-06 · Oturum 13 — Onaylanan paylar: 51–1000 ortalama oyuncuya göre yeniden üretildi
+
+**Kullanıcı kararları**
+- "Admin hesabı ortalama oyuncu profili gibi düşünülebilir, daha fazla veri gelecektir." Admin'in kayıtları merdivende en iyi 55. basamağa uyuyor (40–60 makul, 65 ve üstü bağdaşmıyor).
+- Önerilen ilk deneme payları onaylandı: 51. bölümden itibaren ortalama oyuncu (55. basamak) Kolay %90, Normal %75, Zor %55, Süper Zor %40 kazanır.
+
+**Yapılanlar**
+- **Bant başına hamle payı:** `bands[].moveMargin` (yoksa `calibration.moveMargin`). İlk oda 0,25'te kaldı; 51 ve sonrasının bandı 0 yazıyor, çünkü onaylanan paylar limitin kendisinde tutulmalı.
+- **Profil:** 51. bölümün bandı `calibrationBot: skill-55`, yeni hedefler, casual koruması yok; 301. bölümdeki sıkılaşma kaldırıldı. Hamle aralıkları, renkler, boyutlar, mekanik takvimi aynı.
+- **Üretici, ikinci arama:** ilk üretimde 31 bölüm hamle aralığının dışında kaldı (969. bölüm: 4 kutu, 5 hamle). Neden: engel miktarı adaydan adaya tek çarpanla taşınıyor; malzeme ve jöle bandı tahtaları art arda uzun çıkınca çarpan çöküyor. Düzeltme: hiçbir adayı oturmayan bölümde aynı sekiz tahta tek tek, kendi miktarıyla yeniden denenir. Gevşetilen bölümün limiti de artık yeni tohumlarla denetlenip gerekirse oradan okunur. Öteki bölümler bayt bayt aynı kalır (iki üretim arasında 26 dosya değişti).
+- **Yeniden üretim:** 1000 bölüm 41 dakikada; 1000/1000 geçerli; ilk oda 50/50 bayt bayt aynı. 55. basamak botu limitte Kolay %91, Normal %76, Zor %56, Süper Zor %41. Ortalama limitler 30/35/39/44'ten 25/29/32/36'ya indi; hedefler küçüldü. Gevşetilen 9 bölüm, hedeften 7 puandan fazla sapan 1 bölüm (ayrıntı: GAME_DESIGN §13).
+- **Bağımsız ölçüm:** `puzzle ladder` yeni bölümlerde yeniden çalıştırıldı (10 dakika; `reports/ladder.csv`). 55. basamak üreticinin görmediği oyunlarda %90 / %76 / %55 / %40; 50. basamak (novice) %88 / %72 / %50 / %36; casual %98 / %91 / %77 / %65. `reports/expert_moves.csv` de yenilendi.
+- **Yayın:** sunucu durduruldu (yarım kalmış deneme yoktu), Release derlendi, WMI ile yeniden başlatıldı. Açık adres yanıt veriyor; laboratuvarın bot listesinde artık merdiven botları da var. `humans`: 62 kayıt, klasörde olmayan 0.
+
+**Bulgular**
+- **Çeşitlilik düştü.** Zayıf botla engelli tahtalar aralığa daha zor oturuyor; yalnızca renk toplanan bölümler 335'ten 528'e çıktı, malzeme indirilen bölümler 223'ten 70'e, jöleli bölümler 187'den 78'e indi. Çare adayı (ilk aramada da tahta başına miktar) bütün bölümleri değiştirir; karar bekliyor.
+- **Tahtalar değişti:** 950 bölümün 406'sı eski tahta stilini korudu. 51 ve sonrasını kimse oynamadığı için kayıt kaybı yok.
+- **Yeni insan verisi:** Admin yumuşatılmış ilk odada 10–26. bölümleri oynadı: 17 ilk denemenin 16'sı kazanıldı (tek kayıp 23. bölüm), çoğu limitin yarısına yakın hamleyle. Bütün kayıtlarda insan %61,7, novice bot aynı oyunlarda %62,3.
+- `generate --repair` 899. bölümü her seferinde yeniden üretiyor (limit doğrulama oyunlarından okunmuş, oran hedefin 7,5 puan üstünde; sonuç hep aynı dosya). Zararsız; bilinen bir pürüz.
+
+**Açık**
+- Çeşitlilik için ilk aramanın değiştirilmesi (yukarıda). 730 (65 hamle) ve 795 (54 hamle) elle gözden geçirilebilir.
+- Daha çok oyuncu verisiyle ortalama oyuncunun basamağı yeniden kestirilecek.
+
+## 2026-10-06 · Oturum 12 — Beceri merdiveni: ara botlar ve 1000 bölümün ölçümü
+
+**Kullanıcı gözlemi ve kararı**
+- Zorluk bir botun kazanma oranına bağlı, oyuncuların yüzdesine değil; bot çeşitliliği de az. Öneri: novice, casual ve average arasını yüzde 5'lik basamaklarla doldurmak ve **bölümleri yeniden üretmeden** mevcut 1000 bölümü bu botlarla ölçmek.
+- Token harcaması ölçülü tutulacak: bir script yetiyorsa yalnızca o çalıştırılır.
+
+**Yapılanlar**
+- `skill-30` … `skill-100` basamakları (15 bot) eklendi; dört adlı profil merdivenin 50, 70, 85 ve 100. basamaklarıyla aynı ve değişmedi. Üreticinin profil yükleyicisi basamak adlarını kalibrasyon ve koruma botu olarak kabul ediyor; test panelinin bot listesi de basamakları sunuyor (sunucu bir sonraki derleme ve yeniden başlatmada gösterir).
+- Yeni komut `puzzle ladder`: mevcut bölümleri merdivenle ölçer; her bot aynı oyunlarda oynar; çıktı parça parça alınabilir. 633 test (91'i yeni). Kodun kendi kontrolleri geçti; başlatılan bağımsız inceleme turu token tasarrufu için yarıda kesildi.
+- 1000 bölüm × 15 bot × 60 oyun, Release derlemesiyle 15 dakikada ölçüldü: `reports/ladder.csv` (15.000 satır). Tablo GAME_DESIGN §7'nin sonunda.
+- Sonuç: basamak başına Normal bölümlerde kabaca 6–9 puan kazanma oranı; novice (50) ile casual (70) arası %39 → %72. Zayıf oyuncu için Zor ve Süper Zor bölümleri yalnızca hamle ekleyerek düzeltmek mümkün değil (50. basamak için ortalama 72 hamle gerekirdi; bugün 39).
+- İkinci oyuncu (Admin1) yeni bölümlerde 1, 2 ve 3. bölümleri kazandı.
+
+**Sıradaki:** hangi basamağın "tipik oyuncu" sayılacağı ve kademe başına hedef yüzdeler (kullanıcı kararı); ona göre limitlerin, gerekiyorsa Zor kademelerde hedeflerin yeniden yazılması.
+
+---
+
 ## 2026-10-05 · Oturum 11 — Kararlar: yüzde 25 yumuşatma, beyaz papatya, tema web testine, doğrudan dünya yayını
 
 **Kullanıcı kararları**
