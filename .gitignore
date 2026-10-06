@@ -21,3 +21,7 @@ unity/Builds/
 unity/*.csproj
 unity/*.sln
 unity/*.slnx
+
+# Derived from the repository by tools/unity/sync-engine.js (engine assemblies, packed levels).
+unity/Assets/Generated/
+unity/Assets/Generated.meta

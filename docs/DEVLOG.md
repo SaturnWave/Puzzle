@@ -17,6 +17,8 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - **Karar:** iki Editor'a disk yetmediği için kurulu olan Unity 6.6 ile devam ediliyor (LTS değil, "Supported" kolu).
 - **Proje:** oyunun Unity projesi depoda `unity/` altında komut satırından oluşturuldu (`Unity.exe -batchmode -quit -createProject`; 77 saniye, hatasız). Lisans Unity Personal, etkin. Web testindeki 41 çizim `unity/Assets/Art/Pieces` altında, `.meta` dosyalarıyla.
 - `.gitignore`: Unity'nin ürettiği klasörler (Library, Temp, Logs, UserSettings, Build) depoya girmiyor.
+- **Motor Unity içinde doğrulandı.** `node tools/unity/sync-engine.js` motor derlemelerini (`Puzzle.Core`, `Puzzle.Bot`) ve 1000 bölümün tek dosyalık paketini (0,7 MB) projeye koyar; bunlar depodan türetildiği için `unity/Assets/Generated` depoya girmez. Unity içinde 1000 bölümün hepsi okunuyor (`LevelPack`, Unity'nin kendi JSON okuyucusuyla).
+- **Çalışma ortamları arası eşitlik:** el yapımı 4 örnek bölüm üçer tohumla rastgele botla sonuna kadar oynatılıyor; Unity'nin içindeki sonuç araçlardaki .NET 10 sonucuyla satır satır aynı (kazanma durumu, hamle sayısı, her hamleden sonraki tahta özeti). Sabitlenen dosya `tests/fixtures/engine-trace.txt`; .NET tarafını `EngineTraceTests`, Unity tarafını `EngineSmokeTest` (komut satırından `-executeMethod`) denetliyor. Bölümler bir ortamda ayarlanıp başka bir ortamda oynanacağı için bu denetim kalıcı.
 
 **Açık**
 - Android modülleri (Android Build Support, NDK r27c ve SDK araçları, OpenJDK 17; 2,41 GB indirme, diskte 8,5 GB): kullanıcının onayı ve UAC için bilgisayar başında olması bekleniyor.

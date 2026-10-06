@@ -27,6 +27,15 @@ internal static class RepoFiles
     /// </summary>
     public static GenerationProfile ProfileBeforeOnboarding => LoadedProfileBeforeOnboarding.Value;
 
+    /// <summary>What the engine prints for the sample levels on the tools' runtime (see <c>EngineTraceTests</c>).</summary>
+    public static string EngineTracePath => Find("tests", "fixtures", "engine-trace.txt");
+
+    /// <summary>The hand-made sample levels (levels/samples), in file-name order.</summary>
+    public static string[] SampleLevelPaths => Directory
+        .GetFiles(Path.GetDirectoryName(Find("levels", "samples", "s01_basic.json"))!, "*.json")
+        .OrderBy(path => path, StringComparer.Ordinal)
+        .ToArray();
+
     /// <exception cref="FileNotFoundException">No directory above the test binaries holds the file.</exception>
     private static string Find(params string[] parts)
     {

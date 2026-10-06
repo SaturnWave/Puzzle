@@ -19,6 +19,10 @@
     <Using Include="System.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The Unity project's engine trace has no Unity dependency; the tests pin what it prints on this runtime. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Engine\EngineTrace.cs" Link="Unity\EngineTrace.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bot\Puzzle.Bot.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Generator\Puzzle.Generator.csproj" />
