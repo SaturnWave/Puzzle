@@ -51,6 +51,19 @@ internal sealed class Candidate
 
     public bool IsScalable => CollectColors.Count > 0 || Families.Contains(ObstacleFamily.Items);
 
+    /// <summary>Whether <paramref name="other"/> builds the same level at every scale: calibrating it would repeat this one's games.</summary>
+    public bool IsSameLevelAs(Candidate other) =>
+        _layers.Cells.SequenceEqual(other._layers.Cells)
+        && SameLayer(_layers.Tiles, other._layers.Tiles)
+        && SameLayer(_layers.Jelly, other._layers.Jelly)
+        && SameLayer(_layers.Chains, other._layers.Chains)
+        && Families.SequenceEqual(other.Families)
+        && CollectColors.SequenceEqual(other.CollectColors)
+        && (CollectBase, PresetItems, ItemSpawnBase) == (other.CollectBase, other.PresetItems, other.ItemSpawnBase);
+
+    private static bool SameLayer(IReadOnlyList<string>? layer, IReadOnlyList<string>? other) =>
+        layer is null || other is null ? layer is null && other is null : layer.SequenceEqual(other);
+
     /// <exception cref="LevelFormatException">The layout or goals are inconsistent (a generator bug).</exception>
     public LevelDefinition Build(LevelPlan plan, double scale)
     {

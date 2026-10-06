@@ -4,6 +4,29 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-06 · Oturum 14 — Çeşitlilik: tahta başına engel miktarı; APK işine başlangıç
+
+**Kullanıcı kararları**
+- "Çeşitlilik önerini onaylıyorum, uygula": tahta başına engel miktarı araması ilk aramada da kullanılacak.
+- "Bir yandan da APK yapımına başlanmalı": Unity istemcisi ve Android APK işi, bölüm ayarıyla paralel başlıyor.
+
+**Çeşitlilik**
+- **Üretici:** her tahta kendi engel miktarını arar (en çok dört adım, planlanan miktarın üçte biri ile üç katı arası); adaydan adaya taşınan çarpan ve ayrı "ikinci arama" kaldırıldı. Miktar değişince aynı kalan tahta yeniden oynatılmaz (`Candidate.IsSameLevelAs`).
+- **Sonuç (51–1000, 950 bölüm):** yalnızca renk toplama 528 → 400; kutulu 158 → 223; zincirli 185 → 272; jöleli 78 → 110; malzeme indirme 70 → 61. Paylar yerinde: 55. basamak %90 / %76 / %56 / %41. Ortalama limitler 25,2 / 29,3 / 31,9 / 36,8. Gevşetilen 9 bölüm ve hedeften sapan 899 aynı. 303 dosya değişti, 647'si bayt bayt aynı.
+- **Malzeme bölümleri geri gelmedi.** 55. basamak botu bir malzemeyi 15–20 hamlede indiriyor; üç malzemeli tahta Normal aralığına oturmuyor. Malzeme sayısını ve jöle bandını miktara bağlamak 51–250 örneğinde denendi: 200 bölümde 4 malzeme bölümü kazandırdı, jölede fark yok; tek sıralık jöle bantları ve düşük miktarda kullanılamayan tahtalar getirdiği için geri alındı.
+- **İlk oda** dosyaları eski aramayla üretilmiş hâliyle duruyor (kayıtları var); bugünkü kodla yeniden üretilirse değişir (GAME_DESIGN §9).
+- **Yayın:** sunucu durduruldu (devam eden deneme yoktu; Admin 30. bölümde), Release derlendi, WMI ile başlatıldı; açık adres yanıt veriyor. `reports/ladder.csv` ve `reports/expert_moves.csv` yeni bölümlerde yenilendi: 55. basamak bağımsız ölçümde %90 / %76 / %55 / %39, novice %87 / %72 / %50 / %35, casual %98 / %91 / %77 / %65. `humans`: 66 kayıt, klasörde olmayan 0.
+- Testler: 637 (ikinci aramanın testi, tahta başına aramanın testiyle değişti: 114. bölümün ilk tahtası planlanan kutularla uzun, daha az kutuyla oturuyor).
+
+**APK işine başlangıç**
+- Bu bilgisayarda Unity Hub ve Editor kurulu değil; Android SDK ve NDK var; C: sürücüsünde 17 GB boş. Kurulum ve hesap girişi kullanıcıda: Unity 6.3 LTS + Android Build Support (OpenJDK, SDK ve NDK araçları).
+- Önerilen ilk APK kapsamı: bölüm haritası, seçilen tasarımdaki çerçeveli tahta, kazandın/kaybettin panelleri; 1000 bölüm pakette; meta, mağaza, booster ve hesap sonraya.
+- Motor hazır: `Puzzle.Core` ve `Puzzle.Bot` netstandard2.1; animasyon için olay günlüğü (`GameEvent`); bölüm dosyası modeli Unity'nin JSON okuyucusuna uygun.
+
+**Açık**
+- Malzeme bölümleri: daha uzun hamle aralığı mı, insan verisini beklemek mi.
+- Unity kurulumu (kullanıcı), ardından proje iskeleti, çizimlerin PNG'ye aktarımı, ilk APK.
+
 ## 2026-10-06 · Oturum 13 — Onaylanan paylar: 51–1000 ortalama oyuncuya göre yeniden üretildi
 
 **Kullanıcı kararları**

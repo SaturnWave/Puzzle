@@ -16,7 +16,12 @@ internal static class CandidateFactory
     private const int MaxShapeTries = 12;
     private const ulong CandidateStream = 100;
 
-    /// <param name="density">Obstacle amount multiplier; the generator lowers it after too-long candidates and raises it after too-short ones.</param>
+    /// <param name="attempt">
+    /// Which board of the plan: its shape and its obstacle families follow from it alone. Everything drawn after the
+    /// first obstacle is placed (where obstacles go, a second family's pattern, an added collect goal) can come out
+    /// differently at another <paramref name="density"/>, because placing more or fewer obstacles moves the draws.
+    /// </param>
+    /// <param name="density">Obstacle amount multiplier; the generator searches it for each board, less after a too-long level and more after a too-short one.</param>
     /// <returns>A candidate, or absent when this attempt could not draw a usable board.</returns>
     public static Candidate? TryCreate(LevelPlan plan, int attempt, double density)
     {

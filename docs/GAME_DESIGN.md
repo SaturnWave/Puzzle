@@ -175,19 +175,19 @@ Bölümler merdivenle ölçülür (`puzzle ladder`; bölüm ve bot başına 60 o
 | Basamak | 1–50 | 51+ Kolay | 51+ Normal | 51+ Zor | 51+ Süper Zor |
 |---|---|---|---|---|---|
 | 30 | %81 | %74 | %54 | %33 | %21 |
-| 40 | %86 | %81 | %62 | %41 | %27 |
-| 50 (novice) | %90 | %88 | %72 | %50 | %36 |
-| 55 | %92 | %90 | %76 | %55 | %40 |
-| 60 | %94 | %93 | %81 | %62 | %47 |
-| 65 | %96 | %96 | %86 | %69 | %56 |
+| 40 | %86 | %81 | %63 | %42 | %27 |
+| 50 (novice) | %90 | %87 | %72 | %50 | %35 |
+| 55 | %92 | %90 | %76 | %55 | %39 |
+| 60 | %94 | %93 | %81 | %61 | %46 |
+| 65 | %96 | %96 | %86 | %69 | %55 |
 | 70 (casual) | %98 | %98 | %91 | %77 | %65 |
 | 75 | %99 | %99 | %94 | %83 | %73 |
-| 80 | %99 | %99 | %97 | %89 | %81 |
+| 80 | %99 | %99 | %97 | %89 | %80 |
 | 85 (average) | %100 | %100 | %99 | %94 | %88 |
-| 90 | %100 | %100 | %99 | %97 | %94 |
+| 90 | %100 | %100 | %99 | %97 | %93 |
 | 100 (expert) | %100 | %100 | %100 | %99 | %97 |
 
-- 55. basamak satırı üreticinin görmediği oyunlarda da hedefi tutuyor: %90 / %76 / %55 / %40 (hedef 90 / 75 / 55 / 40).
+- 55. basamak satırı üreticinin görmediği oyunlarda da hedefi tutuyor: %90 / %76 / %55 / %39 (hedef 90 / 75 / 55 / 40).
 - Tablo, bölümleri yeniden üretmeden "şu basamaktaki oyuncu şu oranı tutsun" sorusunu cevaplar: dosyada her bölüm ve basamak için o botun %70, %80, %90 ve %95 kazandığı en küçük limit de var.
 - **Önceki bölümlerde** (51+ average bota göre, yüzde 25 payla) aynı ölçüm 55. basamak için Kolay %72, Normal %46, Zor %17, Süper Zor %8 veriyordu; 50. basamaktaki bir oyuncunun Zor bölümlerde %70 kazanması için ortalama 72 hamle gerekiyordu (limit 39). Yalnızca limiti uzatmak yetmediği için bölümler yeniden üretildi; hedefler de küçüldü.
 
@@ -287,15 +287,19 @@ Profil dosyasında biçimde olmayan bir alan (yazım hatası, yanlış yere konm
 1. **Plan** (`LevelPlanner`).
 2. **Aday:** portföyden şekil stili, engel ailesi ve desen seçilir; her deneme farklı bir kombinasyon.
 3. **Beslenebilirlik analizi:** kutu ve zincir hiç kırılmasa bile her hücreye yukarıdan veya çaprazdan taş gelebilmeli. Kenara dayalı bir kutu çifti köşedeki alt hücreyi kapattığı için reddedilir.
-4. **Kalibrasyon:** bot sınırsız oynar → hedef kazanma oranını veren limit. Limit aralık dışındaysa ölçeklenebilir hedefler (renk toplama, malzeme) büyütülür veya küçültülür. Engel yoğunluğu adaydan adaya uyarlanır: uzun gelirse azaltılır, kısa gelirse artırılır. Sekiz adayın hiçbiri oturmazsa **ikinci arama** yapılır: aynı sekiz tahta tek tek ele alınır ve her birinin engel miktarı, limitin kaçırdığı yöne doğru en çok dört adımda ayarlanır (planlanan miktarın üçte biri ile üç katı arasında).
+4. **Kalibrasyon:** bot sınırsız oynar → hedef kazanma oranını veren limit. Limit aralık dışındaysa ölçeklenebilir hedefler (renk toplama, malzeme) büyütülür veya küçültülür. **Engel miktarı tahta başına aranır (2026-10-06):** bir tahta ilk ıskada bırakılmaz; engel miktarı, limitin kaçırdığı yöne doğru en çok dört adımda ayarlanır (planlanan miktarın üçte biri ile üç katı arasında). Tahta yine oturmazsa sıradaki tahtaya geçilir (bölüm başına en çok sekiz tahta).
 5. **Doğrulama:** kalibrasyonda hiç kullanılmamış seed'lerle; sapma toleranstan büyükse limit yeniden okunur.
 6. **Eşit zorluk havuzu:** seed'ler **bölümün doğrulanmış kazanma oranını** hedefleyerek seçilir. Medyan seed'i hedeflemek yanlıştı: zor bölümlerde seed zorluğu çarpık dağılıyor; ortanca seed ortalamadan çok daha zor çıkabiliyor (#310: kazanma %26, ortanca seed'lerin %0–8'i).
 7. **Hamle payı** (§8 madde 8): limit, kalibre limitin bandın payı kadar üstüne çıkarılır (ilk odada yüzde 25, sonrasında 0); havuz (6. adım) ve rapor botları (8. adım) bu son limitte ölçülür.
 8. **Rapor botları:** casual ve expert kazanma oranları ölçülür; dosya ve rapor satırı yazılır.
 
-İkinci arama da sonuç vermezse limiti aralığa en yakın aday tutulur ve rapora `relaxed` diye işaretlenir. Bu limit de yeni tohumlarla denetlenir; hedefi tolerans içinde tutmuyorsa o oyunlardan yeniden okunur. Gevşetilen bölüm hamle aralığından çıkar, kazanma oranından çıkmaz.
+Sekiz tahtanın hiçbiri oturmazsa limiti aralığa en yakın aday tutulur ve rapora `relaxed` diye işaretlenir. Bu limit de yeni tohumlarla denetlenir; hedefi tolerans içinde tutmuyorsa o oyunlardan yeniden okunur. Gevşetilen bölüm hamle aralığından çıkar, kazanma oranından çıkmaz.
 
-**İkinci arama neden gerekti (2026-10-06):** engel miktarı adaydan adaya tek bir çarpanla taşınıyordu. Uzunluğu bu çarpana bağlı olmayan bir aile (indirilecek malzeme, jöle bandı) art arda "uzun" çıkınca çarpan çöküyor, sıra kutu ya da zincir tahtasına geldiğinde tahtada neredeyse hiçbir şey kalmıyordu. 55. basamak botuyla ilk üretimde 31 bölüm bu yüzden aralık dışında kaldı (ör. 969: 4 kutu, 5 hamle; 127: 2 zincir, 6 hamle). İkinci arama yalnızca hiçbir adayı oturmayan bölümde çalışır; öteki bölümler bayt bayt aynı kalır.
+**Arama neden değişti (2026-10-06, iki adımda):**
+- Eskiden engel miktarı adaydan adaya tek bir çarpanla taşınıyordu: aday uzun gelirse sıradaki aday daha az engelle çiziliyordu. Uzunluğu bu çarpana bağlı olmayan bir aile (indirilecek malzeme, jöle bandı) art arda "uzun" çıkınca çarpan çöküyor, sıra kutu ya da zincir tahtasına geldiğinde tahtada neredeyse hiçbir şey kalmıyordu. 55. basamak botuyla ilk üretimde 31 bölüm bu yüzden aralık dışında kaldı (ör. 969: 4 kutu, 5 hamle; 127: 2 zincir, 6 hamle). İlk düzeltme, yalnızca hiçbir adayı oturmayan bölümde tahtaları tek tek kendi miktarıyla yeniden denemekti.
+- Aynı gün ikinci adım (sahibinin onayıyla): her tahta baştan beri kendi miktarını arar; taşınan çarpan kaldırıldı. Gerekçe çeşitlilik: zayıf botla engelli tahta planlanan miktarda çoğu zaman uzun gelir; tahta hemen bırakılınca sıra, her miktarda oturan yalnızca renk toplamalı tahtalara geliyordu (sonuçlar §13).
+- Bir tahtanın şekli ve engel aileleri sabittir; engellerin yeri, ikinci ailenin deseni ve eklenen renk hedefi miktarla değişebilir (çizim sırası engel sayısına bağlı). Miktar değişince aynı kalan tahta yeniden oynatılmaz: kutular sütun ve küme hâlinde gelir, malzeme sayısı ve en küçük jöle desenleri miktarı izlemez.
+- **İlk oda eski aramayla üretildi** ve dosyaları olduğu gibi duruyor (kayıtları var). Bugünkü kodla yeniden üretilirse değişir; `generate` var olan dosyaya dokunmaz, `--repair` de satırı hâlâ geçerli olan bölümü yeniden üretmez. İlk oda yeniden ayarlanacağı zaman eski dosyalar `levels/archive/` altına alınır.
 
 ### Zorluk eğrisi — 10'luk testere dişi
 
@@ -520,7 +524,7 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 - Expert her bölümü 30 denemenin 30'unda 150 hamle içinde bitirdi. Medyanların toplamı 20.930 hamle; limitlerin toplamı 27.515.
 - 26 bölümde expert'in medyanı limiti aşıyor (23'ü Süper Zor, 3'ü Zor). Çoğunda fark 1–3 hamle. En büyük fark #780: medyan 44, limit 33.
 - Bu ölçümler özel taş biriktirme düzeltmesinden önce alındı (§7).
-- **Bugünkü bölümlerde (2026-10-06, onaylanan paylar; `reports/expert_moves.csv` yenilendi):** ortalama limit / expert medyanı / expert p90 / limitle kazanma: Kolay 24,6 / 8,9 / 12,5 / %100; Normal 28,7 / 13,0 / 17,7 / %100; Zor 31,5 / 16,0 / 22,7 / %99; Süper Zor 35,8 / 19,2 / 28,1 / %97. Hiçbir bölümde expert'in medyanı limiti aşmıyor; medyanların toplamı 13.296 hamle, limitlerin toplamı 29.086. Güçlü bir oyuncu için oyun artık kolay: limitin yarısından azı yetiyor.
+- **Bugünkü bölümlerde (2026-10-06, onaylanan paylar; `reports/expert_moves.csv` yenilendi):** ortalama limit / expert medyanı / expert p90 / limitle kazanma: Kolay 25,0 / 8,8 / 12,6 / %100; Normal 29,3 / 12,9 / 17,9 / %100; Zor 31,9 / 16,0 / 22,8 / %99; Süper Zor 36,7 / 19,6 / 29,0 / %97. Hiçbir bölümde expert'in medyanı limiti aşmıyor; medyanların toplamı 13.279 hamle, limitlerin toplamı 29.603. Güçlü bir oyuncu için oyun artık kolay: limitin yarısından azı yetiyor.
 
 **Usta ve expert** (2026-10-03; 1000 bölüm × 30 oyun, üst sınır 150, `botstats` tohumlarıyla eşleştirilmiş; expert 0,25 cezasıyla). Limitler hâlâ eski ayarla kalibre edilmiş limitler; 6. adımda yeniden üretilecek.
 
@@ -623,18 +627,28 @@ Novice bot (ilk oyuncunun en çok benzediği model) 51. bölümden sonra, yeni l
 
 | 51–1000 | Adet | Ort. limit (önce → sonra) | 55. basamak (hedef) | Casual | Expert |
 |---|---|---|---|---|---|
-| Kolay | 190 | 30,4 → 24,8 | %91 (%90) | %98 | %100 |
-| Normal | 475 | 35,2 → 28,7 | %76 (%75) | %91 | %100 |
-| Zor | 190 | 39,2 → 31,5 | %56 (%55) | %77 | %99 |
-| Süper Zor | 95 | 44,3 → 35,8 | %41 (%40) | %65 | %98 |
+| Kolay | 190 | 30,4 → 25,2 | %90 (%90) | %98 | %100 |
+| Normal | 475 | 35,2 → 29,3 | %76 (%75) | %91 | %100 |
+| Zor | 190 | 39,2 → 31,9 | %56 (%55) | %77 | %99 |
+| Süper Zor | 95 | 44,3 → 36,8 | %41 (%40) | %64 | %98 |
 
-- Her havuzda en az 8 tohum var. Limitler 18 ile 65 hamle arasında; 45'in üstünde 3 bölüm var. Near-miss oranı (kaybedilip hedefin en az %80'ine ulaşılan oyunlar) ortalama %10'dan %18'e çıktı.
+- Her havuzda en az 8 tohum var. Limitler 18 ile 65 hamle arasında; 45'in üstünde 3 bölüm var. Near-miss oranı (kaybedilip hedefin en az %80'ine ulaşılan oyunlar) ortalama %10'dan %19'a çıktı. Tablo ve aşağıdaki sayılar yayındaki son üretime aittir (tahta başına engel miktarı aramasıyla, aynı gün).
 - **Hedefler küçüldü, limitler kısaldı.** Örnek: 100. bölüm "88 turuncu, 34 hamle" yerine "60 turuncu, 32 hamle"; 1000. bölüm "36 pembe + 36 sarı, 49 hamle" yerine "23 + 23, 34 hamle"; 55. bölüm "4 malzeme + 21 sarı, 39 hamle" yerine "3 malzeme, 31 hamle".
-- **Tahtalar da değişti:** 950 bölümün 406'sı önceki tahta stilini korudu, 43'ü aynı hedefleri. 51 ve sonrasını henüz kimse oynamadığı için kayıt kaybı yok.
-- **Çeşitlilik bedeli:** zayıf botla engelli tahtalar hamle aralığına daha zor oturuyor ve üretici ilk oturan adayı aldığı için yalnızca renk toplanan bölümlere kayıyor: bu tür bölümler 335'ten 528'e çıktı; malzeme indirilen bölümler 223'ten 70'e, jöleli bölümler 187'den 78'e, kutulu 212'den 158'e, zincirli 218'den 185'e indi. Çare adayı: ikinci aramadaki "her tahtaya kendi miktarı" yöntemini ilk aramada da kullanmak; bu, bütün bölümleri değiştirir ve ayrı bir karar ister.
+- **Tahtalar da değişti:** 950 bölümün 401'i average bot dönemindeki tahta stilini korudu, 35'i aynı hedefleri. 51 ve sonrasını henüz kimse oynamadığı için kayıt kaybı yok.
+- **Çeşitlilik:** zayıf botla engelli tahtalar hamle aralığına daha zor oturur. İlk üretimde üretici oturmayan tahtayı hemen bıraktığı için bölümler yalnızca renk toplamaya kaymıştı; tahta başına engel miktarı araması (§9) kutu, zincir ve kısmen jöleyi geri getirdi:
+
+  | 51–1000 içinde (950 bölüm) | Average bot dönemi | İlk üretim (55. basamak) | Yayındaki üretim |
+  |---|---|---|---|
+  | Yalnızca renk toplama | 335 | 528 | 400 |
+  | Kutulu | 212 | 158 | 223 |
+  | Zincirli | 218 | 185 | 272 |
+  | Jöleli | 187 | 78 | 110 |
+  | Malzeme indirme | 223 | 70 | 61 |
+
+- **Malzeme bölümleri geri gelmedi.** Nedeni arama değil, mekaniğin kendisi: 55. basamak botu bir malzemeyi indirmek için 15–20 hamle harcıyor; üç malzemeli bir tahta Normal aralığına (20–33 hamle) oturmuyor ve malzeme sayısı engel miktarını izlemiyor (51–250 örneğinde izletmek 200 bölümde yalnızca 4 bölüm kazandırdı, uygulanmadı). Seçenekler: malzemeli bölümlere daha uzun hamle aralığı vermek ya da insanların malzeme bölümlerini nasıl oynadığını görmek (51 ve sonrası oynandıkça). Karar bekliyor.
 - **Gevşetilen 9 bölüm** (limit hamle aralığının dışında, pay hedefte): 52 (44 hamle), 53 (45), 358 (36), 730 (65), 771 (33), 795 (54), 813 (37), 841 (44), 980 (48). Altısı malzeme indirme ya da jöle bandı bölümü: 55. basamak botu üç malzemeyi bu tahtalarda aralıktaki hamleyle indiremiyor. 730 ve 795 elle gözden geçirilmeye aday.
 - Hedeften 7 puandan fazla sapan tek bölüm 899 (%62,5; hedef %55): limit bir hamle azalınca oran hedefin altına düşüyor.
-- İlk üretimde 31 bölüm gevşetilmiş, 14 bölüm hedeften 7 puandan fazla sapmıştı (5 ve 6 hamlelik iki bölüm dahil). Nedeni ve düzeltmesi §9'da ("ikinci arama"); düzeltmeden sonra bu 31 bölümün 26'sı değişti, öteki 969 dosya iki üretimde bayt bayt aynı.
+- İlk üretimde 31 bölüm gevşetilmiş, 14 bölüm hedeften 7 puandan fazla sapmıştı (5 ve 6 hamlelik iki bölüm dahil). Nedeni ve düzeltmesi §9'da ("ikinci arama"); düzeltmeden sonra bu 31 bölümün 26'sı değişti. Tahta başına aramaya geçilince gevşetilen 9 bölüm ve 899 aynı kaldı; 950 bölümün 303'ü değişti, 647'si bayt bayt aynı.
 
 ## 14. Açık sorular
 

@@ -119,16 +119,16 @@ public sealed class GenerationFailedException(string message) : Exception(messag
 
 /// <summary>
 /// Produces one level: plan it, draw candidates from the portfolio, calibrate them with the plan's calibration bot
-/// (and the floor bot on a tier with a casual floor), keep the first that fits (searching a second time, board by
-/// board, when none does; the closest when that fails too), add the plan's move margin to its calibrated limit, then
-/// build its equal-difficulty seed pool and report bot win rates at that final limit.
+/// (and the floor bot on a tier with a casual floor), each with the obstacle amount it needs, keep the first that fits
+/// (or the closest), add the plan's move margin to its calibrated limit, then build its equal-difficulty seed pool and
+/// report bot win rates at that final limit.
 /// </summary>
 public sealed class LevelGenerator(GenerationProfile profile)
 {
     private const ulong ReportStream = 500;
     private const ulong ClosestCheckStream = 401;
 
-    /// <summary>The obstacle amounts the second search may give a board, as multiples of the planned amount.</summary>
+    /// <summary>The obstacle amounts the search may give a board, as multiples of the planned amount.</summary>
     private const double SparsestAmount = 1.0 / 3;
     private const double DensestAmount = 3.0;
     private const int AmountSteps = 4;
@@ -145,61 +145,21 @@ public sealed class LevelGenerator(GenerationProfile profile)
         var clock = Stopwatch.StartNew();
         LevelPlan plan = _planner.Plan(number);
         var misses = new Misses(plan);
-        KeptCandidate kept = FirstFit(plan, recent, misses) ?? FirstFitAtItsOwnAmount(plan, misses) ?? Closest(plan, misses);
+        KeptCandidate kept = FirstFit(plan, recent, misses) ?? Closest(plan, misses);
         return Finish(plan, kept, clock);
     }
 
     /// <summary>
-    /// The first search: one board per attempt, the obstacle amount handed on from each to the next (less after a
-    /// too-long one, more after a too-short one). The first half of the attempts also turns down a board too similar
-    /// to a recent level.
+    /// The search: board after board, each given the obstacle amount it needs (<see cref="FitByAmount"/>), until one
+    /// fits. The first half of the boards is also turned down when too similar to a recent level.
     /// </summary>
     private KeptCandidate? FirstFit(LevelPlan plan, IReadOnlyList<LevelSignature> recent, Misses misses)
     {
-        double density = 1.0;
-        int maxCandidates = profile.Calibration.MaxCandidates;
-        for (int attempt = 0; attempt < maxCandidates; attempt++)
+        int boards = profile.Calibration.MaxCandidates;
+        for (int board = 0; board < boards; board++)
         {
-            if (CandidateFactory.TryCreate(plan, attempt, density) is not Candidate candidate)
-            {
-                misses.Add("unusable board");
-                continue;
-            }
-
-            switch (_calibrator.Calibrate(candidate, plan))
-            {
-                case CalibrationOutcome.Accepted accepted when attempt >= maxCandidates / 2 || !recent.Contains(LevelSignature.Of(accepted.Level)):
-                    return Fit(accepted, candidate, misses);
-                case CalibrationOutcome.Accepted:
-                    misses.Add("too similar to a recent level");
-                    break;
-                case CalibrationOutcome.OutOfRange outOfRange:
-                    misses.Add(outOfRange, candidate.Style);
-                    density *= outOfRange.TooLong ? 0.7 : 1.35;
-                    break;
-                case CalibrationOutcome.Rejected rejected:
-                    misses.Add(rejected.Reason);
-                    break;
-                default:
-                    throw new InvalidOperationException("Unhandled calibration outcome.");
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// The second search, for a level whose first one found nothing. The first hands one obstacle amount from board
-    /// to board, and a family whose length that amount does not decide (items to drop, a jelly band) can drive it down
-    /// until every other board has next to nothing on it. Here each of those boards gets an amount of its own
-    /// (<see cref="FitByAmount"/>). A board like a recent level's is taken too: better that than a level out of its
-    /// move range.
-    /// </summary>
-    private KeptCandidate? FirstFitAtItsOwnAmount(LevelPlan plan, Misses misses)
-    {
-        for (int attempt = 0; attempt < profile.Calibration.MaxCandidates; attempt++)
-        {
-            if (FitByAmount(plan, attempt, misses) is KeptCandidate fit)
+            IReadOnlyList<LevelSignature> tooFamiliar = board < boards / 2 ? recent : [];
+            if (FitByAmount(plan, board, tooFamiliar, misses) is KeptCandidate fit)
             {
                 return fit;
             }
@@ -209,39 +169,50 @@ public sealed class LevelGenerator(GenerationProfile profile)
     }
 
     /// <summary>
-    /// One board of the second search: starting from the planned obstacle amount, the amount moves halfway (as a
-    /// ratio) toward the side its limit missed, until the board fits or the steps run out.
+    /// One board of the search: starting from the planned obstacle amount, the amount moves halfway (as a ratio) toward
+    /// the side the limit missed, until the board fits or the steps run out. A board is not given up for the next one
+    /// at its first miss: the boards that fit at any amount are the ones with little on them, and levels that only
+    /// collect colours would crowd the others out. An amount that leaves the board as it was is not played again
+    /// (boxes come in whole pillars and clusters; items to drop and the smallest jelly patterns do not follow it).
     /// </summary>
-    private KeptCandidate? FitByAmount(LevelPlan plan, int attempt, Misses misses)
+    private KeptCandidate? FitByAmount(LevelPlan plan, int board, IReadOnlyList<LevelSignature> tooFamiliar, Misses misses)
     {
         (double tooShortAt, double tooLongAt) = (SparsestAmount, DensestAmount);
+        Candidate? calibrated = null;
+        bool tooLong = false;
         for (int step = 0; step < AmountSteps; step++)
         {
-            double density = Math.Sqrt(tooShortAt * tooLongAt);
-            if (CandidateFactory.TryCreate(plan, attempt, density) is not Candidate candidate)
+            double amount = Math.Sqrt(tooShortAt * tooLongAt);
+            if (CandidateFactory.TryCreate(plan, board, amount) is not Candidate candidate)
             {
                 misses.Add("unusable board");
                 return null;
             }
 
-            switch (_calibrator.Calibrate(candidate, plan))
+            if (calibrated is null || !candidate.IsSameLevelAs(calibrated))
             {
-                case CalibrationOutcome.Accepted accepted:
-                    return Fit(accepted, candidate, misses);
-                case CalibrationOutcome.OutOfRange { TooLong: true } tooLong:
-                    misses.Add(tooLong, candidate.Style);
-                    tooLongAt = density;
-                    break;
-                case CalibrationOutcome.OutOfRange tooShort:
-                    misses.Add(tooShort, candidate.Style);
-                    tooShortAt = density;
-                    break;
-                case CalibrationOutcome.Rejected rejected:
-                    misses.Add(rejected.Reason);
-                    return null;
-                default:
-                    throw new InvalidOperationException("Unhandled calibration outcome.");
+                switch (_calibrator.Calibrate(candidate, plan))
+                {
+                    case CalibrationOutcome.Accepted accepted when tooFamiliar.Contains(LevelSignature.Of(accepted.Level)):
+                        misses.Add("too similar to a recent level");
+                        return null;
+                    case CalibrationOutcome.Accepted accepted:
+                        return Fit(accepted, candidate, misses);
+                    case CalibrationOutcome.OutOfRange outOfRange:
+                        misses.Add(outOfRange, candidate.Style);
+                        tooLong = outOfRange.TooLong;
+                        break;
+                    case CalibrationOutcome.Rejected rejected:
+                        misses.Add(rejected.Reason);
+                        return null;
+                    default:
+                        throw new InvalidOperationException("Unhandled calibration outcome.");
+                }
+
+                calibrated = candidate;
             }
+
+            (tooShortAt, tooLongAt) = tooLong ? (tooShortAt, amount) : (amount, tooLongAt);
         }
 
         return null;

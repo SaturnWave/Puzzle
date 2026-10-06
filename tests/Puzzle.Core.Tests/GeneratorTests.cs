@@ -230,19 +230,26 @@ public class GeneratorTests
     }
 
     [Fact]
-    public void A_level_no_board_fits_at_the_handed_on_obstacle_amount_is_searched_again_board_by_board()
+    public void A_board_too_long_at_the_planned_obstacle_amount_gets_fewer_obstacles_before_the_next_board_is_tried()
     {
-        // Level 952: the first search's eight boards all miss 22-35 moves, the amount sinking after each too-long one
-        // until the last boards have next to nothing on them. Given an amount of its own, one of the same boards fits.
+        // Level 114 is Normal (20-33 moves, rung 55 to win 75 %). Its first board is a full rectangle with scattered
+        // boxes and no goal the calibrator can rescale: with the planned boxes it takes too many moves.
         GenerationProfile profile = RepoFiles.DefaultProfile;
+        LevelPlan plan = new LevelPlanner(profile).Plan(114);
+        Candidate planned = Assert.IsType<Candidate>(CandidateFactory.TryCreate(plan, attempt: 0, density: 1.0));
+        var tooLong = Assert.IsType<CalibrationOutcome.OutOfRange>(new LevelCalibrator(profile).Calibrate(planned, plan));
+        Assert.True(tooLong.TooLong, $"the planned board needs {tooLong.Level.MoveLimit} moves, under the range");
 
-        LevelMetrics fit = new LevelGenerator(profile).Generate(952, []).Metrics;
+        GeneratedLevel fit = new LevelGenerator(profile).Generate(114, []);
 
-        Assert.True(fit.CandidatesTried > profile.Calibration.MaxCandidates, $"fit after {fit.CandidatesTried} candidates, within the first search");
-        Assert.False(fit.Relaxed);
-        Assert.True(fit.MoveRange.Contains(fit.CalibratedMoves), $"{fit.CalibratedMoves} moves are outside {fit.MoveRange.Min}-{fit.MoveRange.Max}");
-        Assert.InRange(fit.WinRate - fit.TargetWinRate, -0.07, 0.07);
+        Assert.Equal(planned.Style, fit.Metrics.Style);
+        Assert.Equal(2, fit.Metrics.CandidatesTried);
+        Assert.False(fit.Metrics.Relaxed);
+        Assert.True(plan.Moves.Contains(fit.Metrics.CalibratedMoves), $"{fit.Metrics.CalibratedMoves} moves are outside the range");
+        Assert.True(BoxesToBreak(fit.Level) < BoxesToBreak(tooLong.Level), $"{BoxesToBreak(fit.Level)} boxes, not fewer than the planned {BoxesToBreak(tooLong.Level)}");
     }
+
+    private static int BoxesToBreak(LevelDefinition level) => level.Goals.OfType<GoalSpec.BreakBoxes>().Single().Target;
 
     private static int CollectTarget(LevelDefinition level) => level.Goals.OfType<GoalSpec.CollectColor>().Single().Target;
 
