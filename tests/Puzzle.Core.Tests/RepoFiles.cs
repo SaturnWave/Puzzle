@@ -30,6 +30,16 @@ internal static class RepoFiles
     /// <summary>What the engine prints for the sample levels on the tools' runtime (see <c>EngineTraceTests</c>).</summary>
     public static string EngineTracePath => Find("tests", "fixtures", "engine-trace.txt");
 
+    /// <summary>The museum's rooms and paintings, as the game and the tools read them.</summary>
+    public static string MuseumCataloguePath => Find("museum", "catalogue.json");
+
+    /// <summary>The fingerprints of a few jigsaw cuts on the tools' runtime (see <c>JigsawCutTests</c>).</summary>
+    public static string JigsawCutsPath => Find("tests", "fixtures", "jigsaw-cuts.txt");
+
+    /// <summary>The folder the Unity game loads a painting's picture from; the catalogue names files below it.</summary>
+    public static string PaintingPicturesFolder =>
+        Path.Combine(Path.GetDirectoryName(Find("unity", "ProjectSettings", "ProjectVersion.txt"))!, "..", "Assets", "Resources", "Paintings");
+
     /// <summary>The hand-made sample levels (levels/samples), in file-name order.</summary>
     public static string[] SampleLevelPaths => Directory
         .GetFiles(Path.GetDirectoryName(Find("levels", "samples", "s01_basic.json"))!, "*.json")

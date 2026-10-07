@@ -15,7 +15,9 @@ namespace Puzzle.Client.Boards
     /// its shade on the tray. The frame is as wide on a board of small cells as on one of large cells, so it is drawn
     /// in points and built again whenever the size of a cell or of a pixel changes. All of it follows the web test
     /// page's frame (framed-board.js), which strokes one path with one line per rail: here the same path is the
-    /// outline 6 points inside the cells, and a rail is a band at its distance from that path.
+    /// outline 6 points inside the cells, and a rail is a band at its distance from that path. The rails are the
+    /// page's in their order and paints, each about three quarters as wide: a phone's board is as wide as the screen
+    /// lets it be, so what the frame does not take, the cells get.
     /// </summary>
     public sealed class BoardFrame : IDisposable
     {
@@ -23,20 +25,20 @@ namespace Puzzle.Client.Boards
         private const float PathInsideCells = 6f;
 
         /// <summary>The beads' ring, past the cells: the middle of the widest rail.</summary>
-        private const float BeadsPastCells = 5.6f;
+        private const float BeadsPastCells = 4.6f;
 
         /// <summary>
-        /// The rails from the tray outwards, each up to its outer edge in points past the cells, as the web page's
-        /// strokes leave them visible (half a stroke's width less the 6 points the path lies inside the cells).
+        /// The rails from the tray outwards, each up to its outer edge in points past the cells. The last one ends
+        /// where the layout expects the frame to end (<see cref="ScreenLayout.FrameReach"/>, less the soft edge).
         /// </summary>
         private static readonly Rail[] Rails =
         {
-            new Rail(RailPaint.InnerLine, 1f),
-            new Rail(RailPaint.PaleGilt, 2.7f),
-            new Rail(RailPaint.MiddleLine, 3.5f),
-            new Rail(RailPaint.Gilt, 8.4f),
-            new Rail(RailPaint.EdgeLight, 9.4f),
-            new Rail(RailPaint.OuterLine, 10.6f),
+            new Rail(RailPaint.InnerLine, 0.8f),
+            new Rail(RailPaint.PaleGilt, 2.1f),
+            new Rail(RailPaint.MiddleLine, 2.7f),
+            new Rail(RailPaint.Gilt, 6.5f),
+            new Rail(RailPaint.EdgeLight, 7.2f),
+            new Rail(RailPaint.OuterLine, 8.1f),
         };
 
         private static readonly Color InnerLine = Tint.Of(0x6B3E08);
@@ -68,14 +70,17 @@ namespace Puzzle.Client.Boards
 
         /// <summary>The shadow on the wall: full up to its first distance from the frame's path, gone at the second, and dropped.</summary>
         private static readonly Color WallShadow = Tint.Of(0x031E24, 0.4f);
-        private const float WallShadowFullUntil = 11f;
-        private const float WallShadowGoneAt = 23f;
-        private const float WallShadowDrop = 9f;
+        private const float WallShadowFullUntil = 10f;
+        private const float WallShadowGoneAt = 21f;
+        private const float WallShadowDrop = 8f;
 
-        /// <summary>The shade the frame throws on the tray, from the cells' edge inwards.</summary>
-        private static readonly Color TrayShade = Tint.Of(0x0B4C52);
+        /// <summary>
+        /// The shade the frame throws on the tray, from the cells' edge inwards. The tray is dark teal, so the shade
+        /// is nearly black and strong: the teal shade of the light tray this frame was first drawn for would not show.
+        /// </summary>
+        private static readonly Color TrayShade = Tint.Of(0x03161C);
         private static readonly float[] TrayShadeDistances = { 0f, -2.5f, -6.5f };
-        private static readonly float[] TrayShadeStrengths = { 0.3f, 0.15f, 0f };
+        private static readonly float[] TrayShadeStrengths = { 0.55f, 0.28f, 0f };
 
         private readonly IReadOnlyList<IReadOnlyList<GridCorner>> _outline;
         private readonly BoardShape _shape;

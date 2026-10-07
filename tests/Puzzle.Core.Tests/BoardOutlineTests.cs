@@ -23,6 +23,9 @@ public class BoardOutlineTests
         return new BoardShape(rows[0].Length, rows.Length, playable);
     }
 
+    /// <summary>A phone's board is as wide as the screen: a line of wall is left beside its frame, and no lamp hangs there.</summary>
+    private const float WallBesideAPhonesBoard = 1f;
+
     private static GridCorner[] Corners(params (int X, int Y)[] corners) => corners.Select(corner => new GridCorner(corner.X, corner.Y)).ToArray();
 
     /// <summary>Twice the area a loop encloses: positive when it runs clockwise on the screen, where y grows downwards.</summary>
@@ -115,8 +118,8 @@ public class BoardOutlineTests
     {
         BoardShape plain = BoardShape.Rectangle(10, 10);
 
-        Assert.Equal(SconcePlace.AboveTheFrame, Sconces.PlaceBeside(plain, Sconces.RoomAboveTheFrame));
-        Assert.Equal(SconcePlace.None, Sconces.PlaceBeside(plain, Sconces.RoomAboveTheFrame - 1f));
+        Assert.Equal(SconcePlace.AboveTheFrame, Sconces.PlaceBeside(plain, Sconces.RoomAboveTheFrame, WallBesideAPhonesBoard));
+        Assert.Equal(SconcePlace.None, Sconces.PlaceBeside(plain, Sconces.RoomAboveTheFrame - 1f, WallBesideAPhonesBoard));
     }
 
     [Fact]
@@ -131,8 +134,28 @@ public class BoardOutlineTests
             "########",
             "########");
 
-        Assert.Equal(SconcePlace.InTheCutCorners, Sconces.PlaceBeside(cut, Sconces.RoomInTheCutCorners));
-        Assert.Equal(SconcePlace.None, Sconces.PlaceBeside(cut, Sconces.RoomInTheCutCorners - 1f));
-        Assert.Equal(SconcePlace.AboveTheFrame, Sconces.PlaceBeside(cutOnOneSide, Sconces.RoomAboveTheFrame));
+        Assert.Equal(SconcePlace.InTheCutCorners, Sconces.PlaceBeside(cut, Sconces.RoomInTheCutCorners, WallBesideAPhonesBoard));
+        Assert.Equal(SconcePlace.None, Sconces.PlaceBeside(cut, Sconces.RoomInTheCutCorners - 1f, WallBesideAPhonesBoard));
+        Assert.Equal(SconcePlace.AboveTheFrame, Sconces.PlaceBeside(cutOnOneSide, Sconces.RoomAboveTheFrame, WallBesideAPhonesBoard));
+    }
+
+    [Fact]
+    public void Lamps_hang_beside_the_frame_where_a_wide_screen_has_no_wall_above_the_board_but_wall_at_its_sides()
+    {
+        // The open foldable: the board takes all the height between the plaques and the shelf, 13 points of wall
+        // are left above its cells, and 50 to 90 at each side of its frame.
+        const float wallAboveOnAWideScreen = 13f;
+        BoardShape plain = BoardShape.Rectangle(10, 10);
+        BoardShape cut = Shape(
+            "..####..",
+            "########",
+            "########");
+
+        Assert.Equal(SconcePlace.BesideTheFrame, Sconces.PlaceBeside(plain, wallAboveOnAWideScreen, Sconces.RoomBesideTheFrame));
+        Assert.Equal(SconcePlace.BesideTheFrame, Sconces.PlaceBeside(cut, wallAboveOnAWideScreen, Sconces.RoomBesideTheFrame));
+        Assert.Equal(SconcePlace.None, Sconces.PlaceBeside(plain, wallAboveOnAWideScreen, Sconces.RoomBesideTheFrame - 1f));
+
+        // Where the wall above is high enough, that is where they hang, as on a phone, however wide the screen.
+        Assert.Equal(SconcePlace.AboveTheFrame, Sconces.PlaceBeside(plain, Sconces.RoomAboveTheFrame, Sconces.RoomBesideTheFrame));
     }
 }

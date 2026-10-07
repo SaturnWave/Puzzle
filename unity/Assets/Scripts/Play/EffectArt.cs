@@ -8,10 +8,11 @@ namespace Puzzle.Client.Play
 {
     /// <summary>
     /// The pictures of what special pieces throw over the board, painted in code when a stage opens: light, sparks,
-    /// and the violet ink of the painter's tools (a brush's stroke for a rocket, a blot for a bomb), in the colours
-    /// and proportions of the web test page's effects (gallery.css, .fx). They are small and few, so they are painted
-    /// into one picture at run time, and no file has to be exported, imported and packed for them. Every sprite is one unit wide,
-    /// which on the board is one cell, unless it says otherwise.
+    /// and the violet ink of the painter's tools (a brush's stroke for a rocket, a blot for a bomb), in the
+    /// proportions of the web test page's effects (gallery.css, .fx). The ink is lighter than the page's: on the dark
+    /// tray the page's ink is about as dark as the ground, and a stroke of it hardly shows. They are small and few,
+    /// so they are painted into one picture at run time, and no file has to be exported, imported and packed for
+    /// them. Every sprite is one unit wide, which on the board is one cell, unless it says otherwise.
     /// </summary>
     public sealed class EffectArt : IDisposable
     {
@@ -36,13 +37,17 @@ namespace Puzzle.Client.Play
         private const int MarkPixelsPerCell = 128;
         private const float MarkCells = 1.5f;
 
-        private static readonly Color DeepInk = Tint.Of(0x2A1D5E);
-        private static readonly Color Ink = Tint.Of(0x4A3792);
+        private static readonly Color DeepInk = Tint.Of(0x3A2A86);
+        private static readonly Color Ink = Tint.Of(0x6550C6);
         private static readonly Color WetInk = Tint.Of(0xEFEAFF);
+
+        /// <summary>Where a stroke or a blot ends: its own ink, thinned to nothing, so that no other colour shows in its soft edge.</summary>
+        private static readonly Color NoDeepInk = new Color(DeepInk.r, DeepInk.g, DeepInk.b, 0f);
+        private static readonly Color NoInk = new Color(Ink.r, Ink.g, Ink.b, 0f);
 
         /// <summary>A brush's stroke across its width, as the web page's gradient has it: dark edges, a wet light middle.</summary>
         private static readonly ColourRamp StrokeAcross = new ColourRamp(
-            (0.17f, Tint.Of(0x2A1D5E, 0f)),
+            (0.17f, NoDeepInk),
             (0.27f, DeepInk),
             (0.34f, Ink),
             (0.44f, Ink),
@@ -50,13 +55,21 @@ namespace Puzzle.Client.Play
             (0.56f, Ink),
             (0.66f, Ink),
             (0.73f, DeepInk),
-            (0.83f, Tint.Of(0x2A1D5E, 0f)));
+            (0.83f, NoDeepInk));
 
-        /// <summary>The light in the middle of a blot, from its centre to its rim.</summary>
+        /// <summary>The shine on a blot's body, from its centre to where it is gone: a small wet light, not a glow.</summary>
         private static readonly ColourRamp BlotLight = new ColourRamp(
-            (0f, WetInk),
-            (0.45f, Tint.Of(0x8E7BD6, 0.9f)),
-            (1f, Tint.Of(0x4A3792, 0f)));
+            (0f, Tint.Of(0xEFEAFF, 0.92f)),
+            (0.5f, Tint.Of(0xA796EC, 0.55f)),
+            (1f, NoInk));
+
+        /// <summary>
+        /// In shares of the blot's picture, which is painted from its top down: the shine lies up and to the left
+        /// of the body's middle and is this large; the dark rim of thick ink along the blot's edge is this wide.
+        /// </summary>
+        private static readonly Vector2 BlotShineAt = new Vector2(0.415f, 0.4f);
+        private const float BlotShineRadius = 0.085f;
+        private const float BlotRimWidth = 0.045f;
 
         /// <summary>
         /// The discs a blot is made of, as the web page places them: the place of each in hundredths of the picture
@@ -266,30 +279,33 @@ namespace Puzzle.Client.Play
 
             float widthLeft = Mathf.Sqrt(1f - intoTheEnd * intoTheEnd);
             float across = 0.5f + (at.y - 0.5f) / Mathf.Max(widthLeft, 0.0001f);
-            return across < 0f || across > 1f ? Tint.Of(0x2A1D5E, 0f) : StrokeAcross.At(across);
+            return across < 0f || across > 1f ? NoDeepInk : StrokeAcross.At(across);
         }
 
         private static Color BlotAt(Vector2 at)
         {
             float pixel = 1f / SplatPixels;
-            float ink = 0f;
+            float insideTheEdge = float.NegativeInfinity;
             foreach ((float x, float y, float size) in BlotDiscs)
             {
                 // A stylesheet places a background so that the same hundredth of the picture and of its box meet.
                 float radius = size / 200f;
                 var middle = new Vector2(x / 100f * (1f - 2f * radius) + radius, y / 100f * (1f - 2f * radius) + radius);
-                ink = Mathf.Max(ink, Inside(radius * 0.95f - (at - middle).magnitude, 2f * pixel));
+                insideTheEdge = Mathf.Max(insideTheEdge, radius * 0.95f - (at - middle).magnitude);
             }
 
-            Color blot = Ink;
-            blot.a = ink;
-            const float LightRadius = 0.17f;
-            return Tint.Over(BlotLight.At((at - new Vector2(0.5f, 0.5f)).magnitude / LightRadius), blot);
+            // Thrown ink is wet: it stands thickest, and so darkest, along its edge, which is crisp (a pixel of
+            // softness), and it shines where the light from the upper left meets its body. A blot of one flat
+            // tone with a wide glow in its middle read as a puff of smoke.
+            Color blot = Color.Lerp(DeepInk, Ink, Mathf.SmoothStep(0f, 1f, insideTheEdge / BlotRimWidth));
+            blot.a = Inside(insideTheEdge, pixel);
+            return Tint.Over(BlotLight.At((at - BlotShineAt).magnitude / BlotShineRadius), blot);
         }
 
         /// <summary>
         /// The picked piece's mark, from the outside in: a glow, a dark line, a gilt ring, a pale line, and light
-        /// that fills the cell. The shape is the web test page's: a square with round corners a little inside the
+        /// that fills the cell. The light is nearly solid cream: a thinner one lets the dark tray through and comes
+        /// out a dull grey. The shape is the web test page's: a square with round corners a little inside the
         /// cell's edges, with the pale line inside that square and the gilt and the dark line around it. So the gilt
         /// lies on the cell's own edge and the dark line just past it, in the gaps between the pieces, where the
         /// largest piece (the square gem, grown as a picked piece is) does not cover them.
@@ -316,7 +332,7 @@ namespace Puzzle.Client.Play
             paint = Tint.Over(Tint.Of(0xF6B93C, Inside(GiltLine - outside, pixel)), paint);
             paint = Tint.Over(Tint.Of(0xFFF6CC, Inside(-outside, pixel)), paint);
             float fill = Inside(-outside - PaleLine, pixel);
-            return Color.Lerp(paint, Tint.Of(0xFFFBE6, 0.5f), fill);
+            return Color.Lerp(paint, Tint.Of(0xFFF2C4, 0.85f), fill);
         }
     }
 }

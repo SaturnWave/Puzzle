@@ -13,10 +13,14 @@ namespace Puzzle.Client.Painting
     {
         private static readonly int MainTexture = Shader.PropertyToID("_MainTex");
         private static readonly int MainTextureTiling = Shader.PropertyToID("_MainTex_ST");
+        private static readonly int WholeShapeTint = Shader.PropertyToID("_Tint");
 
         private readonly MeshFilter _filter;
         private readonly MeshRenderer _renderer;
         private readonly Texture? _texture;
+
+        /// <summary>What this shape alone tells the paint material: its texture and how it repeats, and how strongly the shape is drawn.</summary>
+        private readonly MaterialPropertyBlock _properties = new MaterialPropertyBlock();
 
         /// <summary>Held here too, not only by the filter: when a scene closes, the filter may be gone before the shape is disposed of.</summary>
         private Mesh? _mesh;
@@ -30,6 +34,7 @@ namespace Puzzle.Client.Painting
             _renderer.sharedMaterial = paint;
             _renderer.sortingOrder = (int)order;
             _texture = texture;
+            _properties.SetColor(WholeShapeTint, Color.white);
             RepeatTexture(Vector2.one);
         }
 
@@ -38,6 +43,9 @@ namespace Puzzle.Client.Painting
         /// <param name="texture">What the shape is painted with; none for plain colours. The shape does not own it.</param>
         public static PaintedShape Create(string name, Transform parent, Material paint, DrawOrder order, Texture? texture = null) =>
             new PaintedShape(name, parent, paint, order, texture);
+
+        /// <summary>Moves the shape to another place in the drawing order.</summary>
+        public void DrawAt(DrawOrder order) => _renderer.sortingOrder = (int)order;
 
         /// <summary>Takes the mesh over and draws it from now on.</summary>
         public void Show(Mesh mesh)
@@ -53,14 +61,23 @@ namespace Puzzle.Client.Painting
         /// </summary>
         public void RepeatTexture(Vector2 timesPerUnit)
         {
-            var properties = new MaterialPropertyBlock();
             if (_texture != null)
             {
-                properties.SetTexture(MainTexture, _texture);
+                _properties.SetTexture(MainTexture, _texture);
             }
 
-            properties.SetVector(MainTextureTiling, new Vector4(timesPerUnit.x, timesPerUnit.y, 0f, 0f));
-            _renderer.SetPropertyBlock(properties);
+            _properties.SetVector(MainTextureTiling, new Vector4(timesPerUnit.x, timesPerUnit.y, 0f, 0f));
+            _renderer.SetPropertyBlock(_properties);
+        }
+
+        /// <summary>
+        /// Draws the whole shape at a share of its strength, from 0 (not seen) to 1 (as its corners are painted),
+        /// without touching its mesh: how something fades in or out frame by frame.
+        /// </summary>
+        public void Fade(float strength)
+        {
+            _properties.SetColor(WholeShapeTint, new Color(1f, 1f, 1f, Mathf.Clamp01(strength)));
+            _renderer.SetPropertyBlock(_properties);
         }
 
         public void Dispose()

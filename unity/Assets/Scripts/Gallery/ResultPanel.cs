@@ -1,10 +1,12 @@
 #nullable enable
 using System;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Painting;
 using Puzzle.Client.Play;
+using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using TMPro;
 using UnityEngine;
@@ -14,14 +16,16 @@ namespace Puzzle.Client.Gallery
     /// <summary>
     /// The card that is hung in front of the darkened room once a game is decided, as the web test page shows its
     /// result panel (result-panel.js, gallery.css): a brass nameplate that says what happened, an alcove with what
-    /// the game left behind, two lines about the level, and the one green button that leads on. The card hangs on
-    /// two picture wires and comes down and goes up on them. Sizes are in points around the middle of the card at
-    /// its full size; a screen too small for that draws the whole card smaller.
+    /// the game left behind, two lines about the level, and two buttons: the green one leads on with the levels;
+    /// the other is the blue one that leads to the jigsaw while pieces the player has won wait to be placed, as on
+    /// the design canvas (WinTR), and otherwise the teal one that leads back to the museum's hall. The card hangs
+    /// on two picture wires and comes down and goes up on them. Sizes are in points around the middle of the card
+    /// at its full size; a screen too small for that draws the whole card smaller.
     /// </summary>
     /// <remarks>
     /// The panel has no clock of its own. The stage tells it how far it has come down (<see cref="ComeDown"/>), how
     /// long its exhibits have been coming (<see cref="ShowExhibits"/>), what moment its sparkles are at
-    /// (<see cref="Twinkle"/>), and where a finger is; the panel answers whether the finger pressed the button.
+    /// (<see cref="Twinkle"/>), and where a finger is; the panel answers which button the finger pressed.
     /// </remarks>
     public sealed class ResultPanel : IDisposable
     {
@@ -68,26 +72,25 @@ namespace Puzzle.Client.Gallery
         private static readonly Color DiamondGilt = Tint.Of(0xF6B93C);
         private static readonly Color DiamondDark = Tint.Of(0xC8841A);
 
-        /// <summary>The button's pill, and the lip under it that is part of what a finger may hit.</summary>
-        private const float ButtonWidth = 290f;
-        private const float ButtonHeight = 72f;
-        private const float ButtonLip = 7f;
+        /// <summary>
+        /// The two buttons stand side by side over the width the design's row of buttons has: the green one, the
+        /// wider, at the left, the teal one at the right, with a gap between them.
+        /// </summary>
+        private const float ButtonsWidth = 290f;
+        private const float GapBetweenButtons = 8f;
+        private const float MuseumButtonWidth = 108f;
+        private const float GoOnButtonWidth = ButtonsWidth - GapBetweenButtons - MuseumButtonWidth;
+        private const float GoOnLabelSize = 27f;
+        private const float MuseumLabelSize = 21f;
 
-        /// <summary>The button's picture is its pill and the room around it for its rim, lip and shadow: 40 points wider, 112 high.</summary>
-        private const float ButtonPictureMargin = 40f;
-        private const float ButtonPictureHeight = 112f;
-        private const float ButtonLabelSize = 28f;
-
-        /// <summary>The label is drawn in an outline, which brings its letters closer: they stand apart by this many hundredths of their size.</summary>
-        private const float ButtonLabelSpacing = 3f;
-        private const float ButtonLabelRoom = ButtonWidth - 2f * 26f;
-
-        /// <summary>The label stands a little above the pill's middle: the pill's foot is its dark edge.</summary>
-        private const float ButtonLabelAboveMiddle = 2.5f;
-
-        /// <summary>A pressed button goes down towards its lip and loses a little of its light.</summary>
-        private const float PressedDown = 3f;
-        private static readonly Color PressedShade = new Color(0.88f, 0.88f, 0.88f, 1f);
+        /// <summary>
+        /// While pieces wait, the blue button takes the wider share of the row, for its mark and its two lines,
+        /// and the green one beside it is as narrow as its short word allows.
+        /// </summary>
+        private const float PlaceButtonWidth = 166f;
+        private const float GoOnBesidePlaceWidth = ButtonsWidth - GapBetweenButtons - PlaceButtonWidth;
+        private const float PlaceLabelSize = 18.5f;
+        private const float GoOnBesidePlaceLabelSize = 23f;
 
         /// <summary>The card's two wires end in the nameplate's pins, this far to each side of the middle.</summary>
         private const float WireFromMiddle = 54f;
@@ -102,8 +105,14 @@ namespace Puzzle.Client.Gallery
         private readonly PaintedShape _wires;
         private readonly PaintedShape _rule;
         private readonly ResultAlcove _alcove;
-        private readonly Transform _button;
-        private readonly SpriteRenderer _buttonFace;
+        private readonly ArtCatalogue _art;
+        private readonly LevelResult _result;
+        private readonly PressSet<ResultChoice> _presses = new PressSet<ResultChoice>();
+
+        /// <summary>The green button, and the button beside it with where it leads: to the jigsaw, or to the museum.</summary>
+        private PushButton _goOn;
+        private PushButton _other;
+        private ResultChoice _otherLeadsTo;
 
         /// <summary>Where the panel was last placed, in the layout's points, and how large it is drawn there.</summary>
         private Vector2 _place;
@@ -115,12 +124,10 @@ namespace Puzzle.Client.Gallery
         /// <summary>How far up the card hangs now.</summary>
         private float _raised;
 
-        /// <summary>A finger came down on the button and has not lifted; and whether it is still on the button.</summary>
-        private bool _isFingerHeld;
-        private bool _isFingerOnButton;
-
-        private ResultPanel(Transform parent, ArtCatalogue art, EffectArt effects, LevelResult result)
+        private ResultPanel(Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, int piecesWaiting)
         {
+            _art = art;
+            _result = result;
             _root = new GameObject("Result").transform;
             _root.SetParent(parent, worldPositionStays: false);
             _hanging = new GameObject("Card").transform;
@@ -131,7 +138,7 @@ namespace Puzzle.Client.Gallery
             body.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its rim and corners keep their shape
             body.size = new Vector2(CardWidth + CardPictureMargin, CardHeight + CardPictureMargin);
 
-            _alcove = ResultAlcove.Create(_hanging, art, effects, result);
+            _alcove = ResultAlcove.Create(_hanging, art, effects, paintings, result);
             _alcove.Transform.localPosition = At(AlcoveDown);
 
             WriteLine("Headline", ResultWords.Headline(result), art, HeadlineSize, Lettering.Ink, HeadlineDown);
@@ -140,19 +147,35 @@ namespace Puzzle.Client.Gallery
             _rule.Transform.localPosition = At(RuleDown);
             _rule.Show(Rule());
 
-            _button = new GameObject("Button").transform;
-            _button.SetParent(_hanging, worldPositionStays: false);
-            _buttonFace = AddButtonFace(art, ResultWords.GoOn(result));
+            (_goOn, _other, _otherLeadsTo) = BuildTheButtons(piecesWaiting);
             AddNameplate(art, ResultWords.Title(result));
-            ShowButton();
         }
 
-        /// <summary>The middle of the button, in the layout's points: where a finger presses it.</summary>
-        public Vector2 ButtonMiddle => _place + _scale * (Vector2)(At(ButtonDown) + new Vector3(0f, _raised, 0f));
+        /// <summary>The middle of the green button, in the layout's points: where a finger presses it to go on with the levels.</summary>
+        public Vector2 GoOnButtonMiddle => InTheLayout(_goOn.Middle);
+
+        /// <summary>The middle of the teal button, in the layout's points: where a finger presses it to go back to the museum. Nothing while the blue button stands there.</summary>
+        public Vector2? MuseumButtonMiddle => _otherLeadsTo == ResultChoice.ToTheMuseum ? InTheLayout(_other.Middle) : (Vector2?)null;
+
+        /// <summary>The middle of the blue button, in the layout's points: where a finger presses it to place the pieces that wait. Nothing while none waits.</summary>
+        public Vector2? PlaceButtonMiddle => _otherLeadsTo == ResultChoice.PlaceThePieces ? InTheLayout(_other.Middle) : (Vector2?)null;
 
         /// <summary>Builds the card of a result, out of sight above the screen. Call <see cref="Place"/> before the first picture.</summary>
-        public static ResultPanel Create(Transform parent, ArtCatalogue art, EffectArt effects, LevelResult result) =>
-            new ResultPanel(parent, art, effects, result);
+        /// <param name="paintings">Where the picture of a piece that was won comes from.</param>
+        /// <param name="piecesWaiting">How many pieces of the painting the level belongs to wait to be placed; while any does, a won level's card leads to the jigsaw.</param>
+        public static ResultPanel Create(Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, int piecesWaiting) =>
+            new ResultPanel(parent, art, effects, paintings, result, piecesWaiting);
+
+        /// <summary>
+        /// Tells the card anew how many pieces wait, when the player comes back from the jigsaw: once none does,
+        /// the teal button that leads to the museum stands where the blue one stood.
+        /// </summary>
+        public void OfferThePlacing(int piecesWaiting)
+        {
+            _goOn.Remove();
+            _other.Remove();
+            (_goOn, _other, _otherLeadsTo) = BuildTheButtons(piecesWaiting);
+        }
 
         /// <summary>Hangs the card where the layout has room for it; call again whenever the screen changes.</summary>
         public void Place(ScreenLayout layout)
@@ -189,42 +212,57 @@ namespace Puzzle.Client.Gallery
         public void Twinkle(float clockSeconds) => _alcove.Twinkle(clockSeconds);
 
         /// <summary>A finger came down at a point of the layout.</summary>
-        public void FingerDown(Vector2 point)
-        {
-            _isFingerHeld = IsOnButton(point);
-            _isFingerOnButton = _isFingerHeld;
-            ShowButton();
-        }
+        public void FingerDown(Vector2 point) => _presses.FingerDown(OnTheCard(point));
 
         /// <summary>The finger moved while it was down: a button it has slid off is not pressed, one it came back to is.</summary>
-        public void FingerMovedTo(Vector2 point)
-        {
-            _isFingerOnButton = IsOnButton(point);
-            ShowButton();
-        }
+        public void FingerMovedTo(Vector2 point) => _presses.FingerMovedTo(OnTheCard(point));
 
         /// <summary>The finger lifted.</summary>
-        /// <returns>True when that pressed the button: the finger came down on it and lifted on it.</returns>
-        public bool FingerUp()
-        {
-            bool isPressed = _isFingerHeld && _isFingerOnButton;
-            FingerGone();
-            return isPressed;
-        }
+        /// <returns>True when that pressed a button: the finger came down on it and lifted on it. <paramref name="choice"/> is then where that button leads.</returns>
+        public bool FingerUp(out ResultChoice choice) => _presses.FingerUp(out choice);
 
         /// <summary>The touch ended without a lift the game saw: nothing is pressed.</summary>
-        public void FingerGone()
-        {
-            _isFingerHeld = false;
-            _isFingerOnButton = false;
-            ShowButton();
-        }
+        public void FingerGone() => _presses.FingerGone();
 
         public void Dispose()
         {
+            _alcove.Dispose();
             _wires.Dispose();
             _rule.Dispose();
             SceneObjects.DestroyObjectOf(_root);
+        }
+
+        /// <summary>
+        /// The row of two buttons, and what the finger can press: the green one at the left (on with the levels,
+        /// or on with the game for a player who asked to leave it), and at the right the blue one while a won
+        /// level's pieces wait, or else the teal one.
+        /// </summary>
+        private (PushButton GoOn, PushButton Other, ResultChoice OtherLeadsTo) BuildTheButtons(int piecesWaiting)
+        {
+            bool offersThePlacing = _result is LevelResult.Won && piecesWaiting > 0;
+            ResultChoice greenLeadsTo = _result is LevelResult.Leaving ? ResultChoice.Stay : ResultChoice.GoOn;
+            float goOnWidth = offersThePlacing ? GoOnBesidePlaceWidth : GoOnButtonWidth;
+            float otherWidth = offersThePlacing ? PlaceButtonWidth : MuseumButtonWidth;
+            string goOnLabel = offersThePlacing ? ResultWords.GoOnOnANarrowButton(_result) : ResultWords.GoOn(_result);
+            bool isOnTwoLines = goOnLabel.Contains("\n");
+            float goOnLabelSize = !offersThePlacing ? GoOnLabelSize : isOnTwoLines ? PlaceLabelSize : GoOnBesidePlaceLabelSize;
+            var goOn = new PushButton(
+                "Go on", _hanging, _art, ButtonLook.Green, goOnLabel, goOnWidth, goOnLabelSize, DrawOrder.CardArt, DrawOrder.CardLettering);
+            PushButton other = offersThePlacing
+                ? new PushButton(
+                    "Place the pieces", _hanging, _art, ButtonLook.Blue, MuseumWords.PlaceWhatWasWon(piecesWaiting), otherWidth, PlaceLabelSize,
+                    DrawOrder.CardArt, DrawOrder.CardLettering, GalleryArt.IconPiece)
+                : new PushButton(
+                    "To the museum", _hanging, _art, ButtonLook.Teal, MuseumWords.BackToTheMuseum, otherWidth, MuseumLabelSize,
+                    DrawOrder.CardArt, DrawOrder.CardLettering);
+            goOn.Place((Vector2)At(ButtonDown) + new Vector2(-ButtonsWidth / 2f + goOnWidth / 2f, 0f));
+            other.Place((Vector2)At(ButtonDown) + new Vector2(ButtonsWidth / 2f - otherWidth / 2f, 0f));
+
+            ResultChoice otherLeadsTo = offersThePlacing ? ResultChoice.PlaceThePieces : ResultChoice.ToTheMuseum;
+            _presses.Clear();
+            _presses.Add(goOn, greenLeadsTo);
+            _presses.Add(other, otherLeadsTo);
+            return (goOn, other, otherLeadsTo);
         }
 
         /// <summary>Where something lies on the card, in the card's own points, that is this far under its top edge.</summary>
@@ -236,34 +274,11 @@ namespace Puzzle.Client.Gallery
             _hanging.localPosition = new Vector3(0f, by, 0f);
         }
 
-        private bool IsOnButton(Vector2 point)
-        {
-            Vector2 onCard = (point - _place) / _scale - new Vector2(0f, _raised);
-            Vector2 fromButton = onCard - (Vector2)At(ButtonDown);
-            bool isBesideIt = Mathf.Abs(fromButton.x) > ButtonWidth / 2f;
-            bool isOverOrUnderIt = fromButton.y > ButtonHeight / 2f || fromButton.y < -ButtonHeight / 2f - ButtonLip;
-            return !isBesideIt && !isOverOrUnderIt;
-        }
+        /// <summary>Where a point of the layout lies on the card as it hangs now, in the card's own points.</summary>
+        private Vector2 OnTheCard(Vector2 point) => (point - _place) / _scale - new Vector2(0f, _raised);
 
-        private void ShowButton()
-        {
-            bool isPressed = _isFingerHeld && _isFingerOnButton;
-            _button.localPosition = At(ButtonDown) + new Vector3(0f, isPressed ? -PressedDown : 0f, 0f);
-            _buttonFace.color = isPressed ? PressedShade : Color.white;
-        }
-
-        private SpriteRenderer AddButtonFace(ArtCatalogue art, string label)
-        {
-            SpriteRenderer face = SceneObjects.AddSprite("Face", _button, art.Of(GalleryArt.Button), art.SpriteMaterial, DrawOrder.CardArt);
-            face.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its round ends keep their shape
-            face.size = new Vector2(ButtonWidth + ButtonPictureMargin, ButtonPictureHeight);
-
-            TextMeshPro line = Lettering.Write("Label", _button, art, LetteringStyle.OnButton, ButtonLabelSize, Color.white, DrawOrder.CardLettering);
-            line.transform.localPosition = new Vector3(0f, ButtonLabelAboveMiddle, 0f);
-            line.characterSpacing = ButtonLabelSpacing;
-            Lettering.SayWithin(line, label, ButtonLabelSize, ButtonLabelRoom);
-            return face;
-        }
+        /// <summary>Where a point of the card as it hangs now lies in the layout.</summary>
+        private Vector2 InTheLayout(Vector2 onTheCard) => _place + _scale * (onTheCard + new Vector2(0f, _raised));
 
         private void AddNameplate(ArtCatalogue art, string title)
         {

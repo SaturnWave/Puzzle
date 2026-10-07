@@ -41,6 +41,14 @@ namespace Puzzle.Client.Painting
             _triangles.Add(fourth);
         }
 
+        /// <summary>The three-sided face between three corners.</summary>
+        public void AddTriangle(int first, int second, int third)
+        {
+            _triangles.Add(first);
+            _triangles.Add(second);
+            _triangles.Add(third);
+        }
+
         /// <summary>An upright rectangle whose colour runs from its lower edge to its upper edge.</summary>
         public void AddRectangle(Rect area, Color32 lowerColour, Color32 upperColour, Rect inTexture)
         {

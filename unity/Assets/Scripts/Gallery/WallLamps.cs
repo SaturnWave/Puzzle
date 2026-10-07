@@ -34,7 +34,7 @@ namespace Puzzle.Client.Gallery
         /// <summary>Hangs the lamps beside the board as the layout places it, or takes them down where the wall is too short.</summary>
         public void Place(ScreenLayout layout, BoardShape board)
         {
-            SconcePlace place = Sconces.PlaceBeside(board, layout.WallAboveBoard);
+            SconcePlace place = Sconces.PlaceBeside(board, layout.WallAboveBoard, layout.WallBesideBoard);
             _hasRoom = place != SconcePlace.None;
             _root.gameObject.SetActive(_hasRoom && !_isPutOut);
             if (!_hasRoom)
@@ -42,17 +42,15 @@ namespace Puzzle.Client.Gallery
                 return;
             }
 
-            float foot = place == SconcePlace.InTheCutCorners
-                ? layout.BoardTop - Sconces.FootBelowTheCellsTop
-                : layout.BoardTop + Sconces.FootAboveTheCells;
+            (float inFromTheSide, float foot) = FootOfALamp(place, layout, board);
             float boardRight = layout.BoardLeft + board.Width * layout.CellSize;
-            _left.localPosition = new Vector3(layout.BoardLeft + Sconces.MiddleInFromTheSide, foot, 0f);
-            _right.localPosition = new Vector3(boardRight - Sconces.MiddleInFromTheSide, foot, 0f);
+            _left.localPosition = new Vector3(layout.BoardLeft + inFromTheSide, foot, 0f);
+            _right.localPosition = new Vector3(boardRight - inFromTheSide, foot, 0f);
         }
 
         /// <summary>
-        /// Puts the lamps out for good: under a result the room is dark, and a lit lamp beside the card would be the
-        /// one thing in it that is not, as the web test page has it too.
+        /// Puts the lamps out: under a card the room is dark, and a lit lamp beside the card would be the one thing
+        /// in it that is not, as the web test page has it too.
         /// </summary>
         public void PutOut()
         {
@@ -60,7 +58,28 @@ namespace Puzzle.Client.Gallery
             _root.gameObject.SetActive(false);
         }
 
+        /// <summary>Lights the lamps again, where the wall has room for them: the card is gone and the game goes on.</summary>
+        public void LightAgain()
+        {
+            _isPutOut = false;
+            _root.gameObject.SetActive(_hasRoom);
+        }
+
         public void Dispose() => SceneObjects.DestroyObjectOf(_root);
+
+        /// <summary>
+        /// Where a lamp's foot is: how far in from its side of the board's cells (less than nothing for a lamp out
+        /// on the wall beside the board, midway between the frame and the screen's side), and how high.
+        /// </summary>
+        private static (float InFromTheSide, float Height) FootOfALamp(SconcePlace place, ScreenLayout layout, BoardShape board) => place switch
+        {
+            SconcePlace.AboveTheFrame => (Sconces.MiddleInFromTheSide, layout.BoardTop + Sconces.FootAboveTheCells),
+            SconcePlace.InTheCutCorners => (Sconces.MiddleInFromTheSide, layout.BoardTop - Sconces.FootBelowTheCellsTop),
+            SconcePlace.BesideTheFrame => (
+                -(ScreenLayout.FrameReach + layout.WallBesideBoard / 2f),
+                layout.BoardTop - Sconces.FootDownTheBoard * board.Height * layout.CellSize),
+            _ => throw new ArgumentOutOfRangeException(nameof(place), place, "No lamp hangs there."),
+        };
 
         private Transform AddLamp(string name, ArtCatalogue art)
         {

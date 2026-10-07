@@ -1,0 +1,16 @@
+<!-- The dark teal bar in which the progress pips of a painting stand, in a gilt ring, as the design canvas draws it
+     under the brass plate of a painting (JigsawTR). One unit is one point of the design. The bar is 52 x 22 at
+     (6, 4); the game stretches the middle of the picture sideways to the width a row of pips needs, so nothing
+     between x = 20 and x = 44 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 64 32">
+<defs>
+<linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="26"><stop offset="0" stop-color="#0C4650"/><stop offset="1" stop-color="#136069"/></linearGradient>
+<linearGradient id="hollow" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="10"><stop offset="0" stop-color="#031E24" stop-opacity=".55"/><stop offset="1" stop-color="#031E24" stop-opacity="0"/></linearGradient>
+<clipPath id="in-face"><rect x="6" y="4" width="52" height="22" rx="11"/></clipPath>
+</defs>
+<rect x="3.2" y="4.2" width="57.6" height="27.6" rx="13.8" fill="#04242B" fill-opacity=".4"/>
+<rect x="3.2" y="1.2" width="57.6" height="27.6" rx="13.8" fill="#5E3305"/>
+<rect x="4.4" y="2.4" width="55.2" height="25.2" rx="12.6" fill="#F6B93C"/>
+<rect x="6" y="4" width="52" height="22" rx="11" fill="url(#teal)"/>
+<rect x="6" y="4" width="52" height="6" fill="url(#hollow)" clip-path="url(#in-face)"/>
+</svg>

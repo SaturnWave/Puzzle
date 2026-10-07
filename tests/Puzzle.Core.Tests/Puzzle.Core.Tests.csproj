@@ -22,6 +22,7 @@
     <!-- The Unity project's engine trace has no Unity dependency; the tests pin what it prints on this runtime. -->
     <Compile Include="..\..\unity\Assets\Scripts\Engine\EngineTrace.cs" Link="Unity\EngineTrace.cs" />
     <!-- Nor have the game's screen layout and its stage clock: where a board lies, and how animations take their time. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenView.cs" Link="Unity\ScreenView.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenLayout.cs" Link="Unity\ScreenLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Stage\Tween.cs" Link="Unity\Tween.cs" />
     <!-- Nor have the outline the gilt frame is drawn along and the rule that hangs the wall lamps. -->
@@ -38,14 +39,30 @@
     <Compile Include="..\..\unity\Assets\Scripts\Play\BoardPointer.cs" Link="Unity\Play\BoardPointer.cs" />
     <!-- Nor has the way from one level to the next: a player's progress, a decided game's result and its words (with the plaque's figures and the list of drawings they name). -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PlayerProgress.cs" Link="Unity\Flow\PlayerProgress.cs" />
+    <!-- Nor has the document the progress is saved as, with the rule that reads the layout of the game before the museum. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ProgressDocument.cs" Link="Unity\Flow\ProgressDocument.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelResult.cs" Link="Unity\Flow\LevelResult.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\PieceArt.cs" Link="Unity\Art\PieceArt.cs" />
+    <!-- Nor have the museum's screens in what they show and say of a player's progress (the room's wall, the map's floor plan, the pieces a win gives), and where they put it on a screen. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\MuseumWords.cs" Link="Unity\Flow\MuseumWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PieceReward.cs" Link="Unity\Flow\PieceReward.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\RoomWall.cs" Link="Unity\Flow\RoomWall.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\FloorPlan.cs" Link="Unity\Flow\FloorPlan.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\PageLayout.cs" Link="Unity\Layout\PageLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\HallLayout.cs" Link="Unity\Layout\HallLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\MapLayout.cs" Link="Unity\Layout\MapLayout.cs" />
+    <!-- Nor have the jigsaw a painting is restored with (what lies on its table and its tray, when a piece drops in) and the collection, in what they hold and where they put it. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\JigsawTable.cs" Link="Unity\Flow\JigsawTable.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\FramePlace.cs" Link="Unity\Layout\FramePlace.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\JigsawLayout.cs" Link="Unity\Layout\JigsawLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\CollectionLayout.cs" Link="Unity\Layout\CollectionLayout.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bot\Puzzle.Bot.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Museum\Puzzle.Museum.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Generator\Puzzle.Generator.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Tooling\Puzzle.Tooling.csproj" />
     <!-- The attempt recorder's session lifecycle lives in the web lab. -->

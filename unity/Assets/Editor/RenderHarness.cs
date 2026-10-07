@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Puzzle.Bot;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
@@ -15,6 +16,7 @@ using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
+using Puzzle.Museum.Catalogue;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -52,17 +54,18 @@ namespace Puzzle.Client.EditorTools
                 ShotPlan plan = ShotPlan.FromCommandLine(Environment.GetCommandLineArgs());
                 ArtCatalogue art = LoadArt();
                 IReadOnlyList<LevelDefinition> levels = LevelPack.LoadPacked();
+                PaintingGallery paintings = PaintingGallery.OfThePackedMuseum();
                 foreach (int levelNumber in plan.LevelNumbers)
                 {
                     LevelDefinition level = LevelPack.Numbered(levels, levelNumber);
                     foreach (ScreenShape screen in plan.Screens)
                     {
-                        Shoot(level, screen, plan, art);
+                        Shoot(level, screen, plan, art, paintings);
                     }
                 }
             }
             catch (Exception failure) when (failure is ArgumentException || failure is InvalidOperationException
-                || failure is IOException || failure is LevelFormatException)
+                || failure is IOException || failure is LevelFormatException || failure is CatalogueFormatException)
             {
                 Debug.LogError($"Render harness failed: {failure.Message}");
                 EditorApplication.Exit(1);
@@ -81,12 +84,12 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>One stage on one screen, pictured at every moment of the plan in turn.</summary>
-        private static void Shoot(LevelDefinition level, ScreenShape screen, ShotPlan plan, ArtCatalogue art)
+        private static void Shoot(LevelDefinition level, ScreenShape screen, ShotPlan plan, ArtCatalogue art, PaintingGallery paintings)
         {
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using EffectArt effectArt = EffectArt.Paint();
-            using GameStage stage = GameStage.Open(GameAfter(plan.MovesPlayed, level), art, effectArt, AttemptBrief.FirstTry);
+            using GameStage stage = GameStage.Open(GameAfter(plan.MovesPlayed, level), art, effectArt, paintings, AttemptBrief.FirstTry);
             stage.Fit(screen);
             float clock = 0f;
             foreach (Moment moment in plan.Moments)

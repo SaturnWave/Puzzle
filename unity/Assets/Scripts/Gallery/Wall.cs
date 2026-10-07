@@ -55,10 +55,10 @@ namespace Puzzle.Client.Gallery
 
         public static Wall Create(Transform parent, ArtCatalogue art) => new Wall(parent, art);
 
-        /// <summary>Paints the wall for a screen of the layout's size.</summary>
-        public void Fit(ScreenLayout layout)
+        /// <summary>Paints the wall for a screen.</summary>
+        public void Fit(ScreenView view)
         {
-            var screen = new Rect(-layout.ViewWidth / 2f, -layout.ViewHeight / 2f, layout.ViewWidth, layout.ViewHeight);
+            var screen = new Rect(view.Left, view.Bottom, view.Width, view.Height);
             _paint.Show(BuildPaint(screen));
             _damask.Show(BuildDamask(screen));
             _light.Show(BuildLight(screen));

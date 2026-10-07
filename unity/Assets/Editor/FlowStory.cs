@@ -68,7 +68,7 @@ namespace Puzzle.Client.EditorTools
             string folder = Path.Combine(ProgressFolder, name);
             StartTheProgressFile(folder, StoryStudio.StandingOn(level, levels));
 
-            using var session = new GameSession(levels, art, new ProgressFile(folder), screen);
+            using GameSession session = StoryStudio.AtTheBoard(levels, art, new ProgressFile(folder), screen);
             var reel = new Reel(session, screen, name);
             reel.Advance(EntranceMoment);
             reel.Shoot($"start-t{StoryStudio.Seconds(EntranceMoment)}");
@@ -129,7 +129,7 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>Plays the open game to its end, every turn to rest but the last; returns the last turn's script.</summary>
-        private static TurnScript PlayTheGame(GameSession session, IBotPolicy player, Rng rng)
+        internal static TurnScript PlayTheGame(GameSession session, IBotPolicy player, Rng rng)
         {
             GameStage stage = session.Stage;
             while (true)
@@ -203,8 +203,8 @@ namespace Puzzle.Client.EditorTools
         /// <exception cref="InvalidOperationException">The session keeps its stage: the button was not pressed.</exception>
         private static void AdvanceToTheNextStage(GameSession session)
         {
-            GameStage left = session.Stage;
-            for (float waited = 0f; ReferenceEquals(session.Stage, left); waited += StoryStudio.FrameSeconds)
+            IStage left = session.Front;
+            for (float waited = 0f; ReferenceEquals(session.Front, left); waited += StoryStudio.FrameSeconds)
             {
                 if (waited > 2f * Tempo.CardGoesUp)
                 {
@@ -244,7 +244,7 @@ namespace Puzzle.Client.EditorTools
                 throw new InvalidOperationException($"The progress file holds \"{onFile}\" while the session stands at \"{session.Progress}\".");
             }
 
-            using var restarted = new GameSession(levels, art, new ProgressFile(folder), screen);
+            using GameSession restarted = StoryStudio.AtTheBoard(levels, art, new ProgressFile(folder), screen);
             if (restarted.Stage.Game.Level.Id.Value != session.Stage.Game.Level.Id.Value)
             {
                 throw new InvalidOperationException($"A restart opens level {restarted.Stage.Game.Level.Id.Value}, not level {session.Stage.Game.Level.Id.Value}.");

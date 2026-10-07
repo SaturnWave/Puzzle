@@ -7,6 +7,8 @@ Shader "Puzzle/Paint"
     Properties
     {
         _MainTex("Texture", 2D) = "white" {}
+        // What a whole shape is multiplied by: how a shape fades in or out without its corners being painted anew.
+        _Tint("Tint", Color) = (1, 1, 1, 1)
     }
 
     SubShader
@@ -46,6 +48,7 @@ Shader "Puzzle/Paint"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _MainTex_ST;
+                half4 _Tint;
             CBUFFER_END
 
             Varyings PaintVertex(Attributes input)
@@ -60,7 +63,7 @@ Shader "Puzzle/Paint"
 
             half4 PaintFragment(Varyings input) : SV_Target
             {
-                return input.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+                return input.color * _Tint * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
             }
             ENDHLSL
         }

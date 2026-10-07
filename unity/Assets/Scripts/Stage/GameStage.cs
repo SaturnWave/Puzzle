@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Boards;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
+using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
@@ -45,24 +47,33 @@ namespace Puzzle.Client.Stage
     /// </para>
     /// <para>
     /// A stage shows one attempt and no more. When its game is decided it darkens the room and hangs the result's
-    /// card; once the player has pressed the card's button and the card is gone, <see cref="PlayerWentOn"/> is true,
-    /// and whoever owns the stage opens the next one.
+    /// card; once the player has pressed one of the card's buttons and the card is gone, <see cref="PlayerChose"/>
+    /// says where they go on to, and whoever owns the stage opens what comes next: another board, or the museum.
+    /// </para>
+    /// <para>
+    /// A level can be left at any time. The round button on the shelf's left end, and the device's way back
+    /// (<see cref="GoBack"/>), ask first: a card comes down that says what leaving costs, and the player stays or
+    /// goes to the museum. Asking first matters on a phone, where a swipe from the screen's edge is the way back
+    /// and the board reaches that edge. Under a result's card the same round button stays lit and leads to the
+    /// museum, so every card has that way out whatever its two buttons offer.
     /// </para>
     /// </remarks>
-    public sealed class GameStage : IDisposable
+    public sealed class GameStage : IStage
     {
-        /// <summary>The camera looks at the plane the game is drawn on from this far; any distance inside its range shows the same.</summary>
-        private const float CameraDistance = 10f;
-
         /// <summary>How far two pieces go towards each other's cell when their trade is refused, and how far a piece that has no partner to trade with.</summary>
         private const float RefusedTradeReach = 0.42f;
         private const float RefusedNudgeReach = 0.14f;
 
-        /// <summary>What the camera clears to: the wall's own colour, though the wall covers every pixel of it.</summary>
-        private static readonly Color WallColour = new Color32(0x17, 0x66, 0x6F, 0xFF);
+        /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set.</summary>
+        private enum StageControl
+        {
+            /// <summary>The round button on the shelf: out of the level.</summary>
+            Leave,
+        }
 
         private readonly GameObject _root;
         private readonly ArtCatalogue _art;
+        private readonly PaintingGallery _paintings;
         private readonly AttemptBrief _brief;
         private readonly Game _game;
         private readonly PieceLedger _ledger;
@@ -82,11 +93,19 @@ namespace Puzzle.Client.Stage
         private readonly BoardPointer _pointer;
         private readonly TweenSet _tweens = new TweenSet();
         private readonly Timeline _timeline = new Timeline();
+        private readonly RoundButton _leave;
+        private readonly PressSet<StageControl> _controls = new PressSet<StageControl>();
 
         private ScreenLayout? _layout;
 
-        /// <summary>The card of the game's result; nothing while the game is being played.</summary>
+        /// <summary>The card that hangs in front of the board: the game's result, or the question whether the player means to leave. Nothing while the game is simply being played.</summary>
         private ResultPanel? _result;
+
+        /// <summary>True while the card hangs in its place: from the moment it has come down until a button of it is pressed.</summary>
+        private bool _isCardDown;
+
+        /// <summary>True when the player asked to leave while the board was still moving: the question is put once it has come to rest.</summary>
+        private bool _isAskedToLeave;
         private HudFigures _figures;
         private bool _isShowingATurn;
         private float _clock;
@@ -97,10 +116,11 @@ namespace Puzzle.Client.Stage
         /// <summary>What went wrong in the showing of the turn that is on, for <see cref="LastTurnFaults"/>.</summary>
         private readonly List<string> _faultsOfTheTurn = new List<string>();
 
-        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, AttemptBrief brief)
+        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief)
         {
             bool hasItemsToDrop = game.Level.Goals.Any(goal => goal is GoalSpec.DropItems);
             _art = art;
+            _paintings = paintings;
             _brief = brief;
             _game = game;
             _ledger = PieceLedger.Of(game.Board);
@@ -108,7 +128,7 @@ namespace Puzzle.Client.Stage
             _footprint = new BoardFootprint(_shape.Width, _shape.Height, hasExits: hasItemsToDrop);
             _figures = HudFigures.Of(game);
             _root = new GameObject("Stage");
-            Camera = AddCamera(_root.transform);
+            Camera = StageCamera.Add(_root.transform);
             _wall = Wall.Create(_root.transform, art);
             _lamps = WallLamps.Create(_root.transform, art);
             _hud = Hud.Create(_root.transform, art, game.Level.Id.Value);
@@ -117,6 +137,8 @@ namespace Puzzle.Client.Stage
             _board = BoardView.Create(_root.transform, art, _ledger, showExits: hasItemsToDrop);
             _shelf = Shelf.Create(_root.transform, art);
             _shelf.Say(AttemptWords.OnTheShelf(brief));
+            _leave = new RoundButton("Leave", _root.transform, art, ArrowWay.Back, DrawOrder.ShelfButton);
+            _controls.Add(_leave, StageControl.Leave);
             _veil = Veil.Create(_root.transform, art);
             _effectArt = effectArt;
             _pickedMark = new PickedMark(_board.Root, _effectArt, art);
@@ -138,29 +160,40 @@ namespace Puzzle.Client.Stage
         public bool IsSettled => _tweens.IsIdle && _timeline.IsDone;
 
         /// <summary>
-        /// True once the player has pressed the button of the result's card and the card has gone up out of sight:
-        /// this stage is over, and the room is dark for the next one to come out of.
+        /// Where the player goes on to, once they have pressed a button of the result's card and the card has gone up
+        /// out of sight: this stage is then over, and the room is dark for what comes next to come out of. Nothing
+        /// before that.
         /// </summary>
-        public bool PlayerWentOn { get; private set; }
+        public ResultChoice? PlayerChose { get; private set; }
+
+        /// <summary>True once the player has chosen where to go on to and the result's card is gone.</summary>
+        public bool PlayerWentOn => PlayerChose.HasValue;
+
+        /// <summary>True while the card that asks whether the player means to leave hangs in front of the board, or is coming or going.</summary>
+        public bool IsAskingWhetherToLeave => _result != null && _game.Status == GameStatus.Playing;
 
         /// <summary>
-        /// The pixel of the screen in the middle of the result card's button, counted from the screen's lower left
-        /// corner: where a finger presses it. Nothing while no card hangs at rest in its place.
+        /// The pixel of the screen in the middle of the round button on the shelf, which leads out of the level:
+        /// while the game is played it asks first, under a result's card it leads to the museum. Nothing while the
+        /// button is not listening.
         /// </summary>
-        public Vector2? ResultButtonPixel
-        {
-            get
-            {
-                if (_result == null || !ListensToTheCard || _layout is not ScreenLayout layout)
-                {
-                    return null;
-                }
+        public Vector2? LeaveButtonPixel => ListensForTheLeaveButton ? PixelOf(_leave.Middle) : null;
 
-                Vector2 middle = _result.ButtonMiddle;
-                (float pixelX, float pixelY) = layout.PixelOfPoint(middle.x, middle.y);
-                return new Vector2(pixelX, pixelY);
-            }
-        }
+        /// <summary>
+        /// The pixel of the screen in the middle of the result card's green button, which leads on with the levels,
+        /// counted from the screen's lower left corner: where a finger presses it. Nothing while no card hangs at
+        /// rest in its place.
+        /// </summary>
+        public Vector2? ResultButtonPixel => _result != null && ListensToTheCard ? PixelOf(_result.GoOnButtonMiddle) : null;
+
+        /// <summary>The same for the card's teal button, which leads back to the museum.</summary>
+        public Vector2? MuseumButtonPixel => _result?.MuseumButtonMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
+
+        /// <summary>
+        /// The pixel of the screen in the middle of the card's blue button, which leads to the jigsaw where the
+        /// pieces just won are placed; nothing while the card has no such button, or is not listening.
+        /// </summary>
+        public Vector2? PlaceButtonPixel => _result?.PlaceButtonMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
 
         /// <summary>The script of the turn that was played last; nothing before the first move.</summary>
         public TurnScript? LastTurn { get; private set; }
@@ -177,8 +210,19 @@ namespace Puzzle.Client.Stage
         /// <summary>The board listens to the player while the game goes on and nothing is moving.</summary>
         private bool TakesInput => IsSettled && _game.Status == GameStatus.Playing;
 
-        /// <summary>The result's card listens to the player while it hangs at rest in its place.</summary>
-        private bool ListensToTheCard => _result != null && IsSettled && !PlayerWentOn;
+        /// <summary>
+        /// The card listens to the player from the moment it hangs in its place: what is still popping up in its
+        /// alcove does not hold up a finger that already knows where it wants to go.
+        /// </summary>
+        private bool ListensToTheCard => _result != null && _isCardDown && !PlayerWentOn;
+
+        /// <summary>
+        /// The shelf's round button listens while the game is played (also while pieces move: the question then
+        /// waits for them) and under a result's card. Under the card that asks whether to leave it does not: that
+        /// card's own buttons answer.
+        /// </summary>
+        private bool ListensForTheLeaveButton =>
+            !PlayerWentOn && (_result == null ? _game.Status == GameStatus.Playing : ListensToTheCard && !IsAskingWhetherToLeave);
 
         /// <summary>Builds the stage of a game and starts the board's entrance. Call <see cref="Fit"/> before the first picture.</summary>
         /// <param name="game">A game that records its events (GameOptions.RecordEvents): the stage plays them back.</param>
@@ -187,10 +231,11 @@ namespace Puzzle.Client.Stage
         /// a second to paint, so whoever opens stages paints them once and lends them to each; the stage does not
         /// dispose of them.
         /// </param>
+        /// <param name="paintings">The museum's paintings: the result's card shows the jigsaw pieces a win gives.</param>
         /// <param name="brief">What the player's progress knows about this attempt, for the shelf and the result's card.</param>
-        public static GameStage Open(Game game, ArtCatalogue art, EffectArt effectArt, AttemptBrief brief, StageOpening opening = StageOpening.InTheLitRoom)
+        public static GameStage Open(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, StageOpening opening = StageOpening.InTheLitRoom)
         {
-            var stage = new GameStage(game, art, effectArt, brief);
+            var stage = new GameStage(game, art, effectArt, paintings, brief);
             BoardEntrance.Play(stage._board, stage._tweens);
             if (opening == StageOpening.OutOfTheDark)
             {
@@ -205,14 +250,15 @@ namespace Puzzle.Client.Stage
         {
             ScreenLayout layout = ScreenLayout.Of(screen, _footprint);
             _layout = layout;
-            Camera.orthographicSize = layout.ViewHeight / 2f;
-            _wall.Fit(layout);
+            StageCamera.Show(Camera, layout.View);
+            _wall.Fit(layout.View);
             _lamps.Place(layout, _shape);
             _hud.Place(layout);
             _frame.Place(layout);
             _board.Place(layout);
             _shelf.Place(layout);
-            _veil.Fit(layout);
+            _leave.Place(new Vector2(layout.LeaveButton.MiddleX, layout.LeaveButton.MiddleY), layout.LeaveButton.Width / RoundButton.Size);
+            _veil.Fit(layout.View);
             _result?.Place(layout);
         }
 
@@ -234,6 +280,29 @@ namespace Puzzle.Client.Stage
             }
 
             ActOnTheWaitingGesture();
+            AskWhetherToLeaveOnceAtRest();
+        }
+
+        /// <summary>
+        /// The player asked for the way back, by the device's back button or gesture. While the game is played that
+        /// asks whether they mean to leave; under that question it means "no"; under a result's card it leads to
+        /// the museum.
+        /// </summary>
+        public void GoBack()
+        {
+            if (PlayerWentOn)
+            {
+                return;
+            }
+
+            if (_result == null)
+            {
+                AskToLeave();
+            }
+            else if (ListensToTheCard)
+            {
+                SendTheCardUp(_result, IsAskingWhetherToLeave ? ResultChoice.Stay : ResultChoice.ToTheMuseum);
+            }
         }
 
         /// <summary>
@@ -300,6 +369,16 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
+            if (ListensForTheLeaveButton)
+            {
+                _controls.FingerDown(PointAt(pixel, layout));
+            }
+
+            if (_controls.IsHolding)
+            {
+                return; // the finger is the round button's until it lifts
+            }
+
             if (_result != null)
             {
                 if (ListensToTheCard)
@@ -319,6 +398,12 @@ namespace Puzzle.Client.Stage
         {
             if (_layout is not ScreenLayout layout)
             {
+                return;
+            }
+
+            if (_controls.IsHolding)
+            {
+                _controls.FingerMovedTo(PointAt(pixel, layout));
                 return;
             }
 
@@ -342,11 +427,21 @@ namespace Puzzle.Client.Stage
         /// <summary>The finger lifted.</summary>
         public void PointerUp()
         {
+            if (_controls.IsHolding)
+            {
+                if (_controls.FingerUp(out StageControl _))
+                {
+                    GoBack(); // the round button and the device's way back mean the same, on every card and on none
+                }
+
+                return;
+            }
+
             if (_result != null)
             {
-                if (ListensToTheCard && _result.FingerUp())
+                if (ListensToTheCard && _result.FingerUp(out ResultChoice choice))
                 {
-                    SendTheCardUp(_result);
+                    SendTheCardUp(_result, choice);
                 }
             }
             else if (_pointer.Up() is BoardGesture tap)
@@ -360,6 +455,7 @@ namespace Puzzle.Client.Stage
         {
             _pointer.Cancel();
             _waiting = null;
+            _controls.FingerGone();
             _result?.FingerGone();
         }
 
@@ -491,23 +587,145 @@ namespace Puzzle.Client.Stage
         /// </summary>
         private void HangTheResult()
         {
-            ResultPanel card = ResultPanel.Create(_root.transform, _art, _effectArt, LevelResult.Of(_game, _brief));
+            // The button to the jigsaw speaks of every piece that waits on the painting's tray once the level's own are won.
+            int piecesWaiting = _game.Status == GameStatus.Won ? _brief.Reward?.WaitingWithThem ?? 0 : 0;
+            _isAskedToLeave = false;
+            _controls.FingerGone();
+
+            // The round button stays lit in the dark room: under a result it is the way to the museum.
+            _leave.DrawAt(DrawOrder.ShelfButtonOverTheDark);
+            HangACard(LevelResult.Of(_game, _brief), piecesWaiting, comesIn: Tempo.PauseBeforeResult);
+        }
+
+        /// <summary>The room goes dark and a card comes down on its wires; what it shows in its alcove pops up as it settles.</summary>
+        /// <param name="comesIn">How long the board is left to be seen before the room darkens.</param>
+        private void HangACard(LevelResult tells, int piecesWaiting, float comesIn)
+        {
+            ResultPanel card = ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, tells, piecesWaiting);
             if (_layout is ScreenLayout layout)
             {
                 card.Place(layout);
             }
 
             _result = card;
-            float cardComes = Tempo.PauseBeforeResult + Tempo.CardAfterDark;
+            _isCardDown = false;
+            float cardComes = comesIn + Tempo.CardAfterDark;
             float exhibitsSeconds = card.ExhibitsSeconds;
-            _timeline.Add(Tempo.PauseBeforeResult, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)), _lamps.PutOut);
-            _timeline.Add(cardComes, Tempo.CardComesDown, card.ComeDown);
+            _timeline.Add(comesIn, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)), _lamps.PutOut);
+            _timeline.Add(cardComes, Tempo.CardComesDown, card.ComeDown, () => _isCardDown = true);
             _timeline.Add(cardComes + Tempo.ExhibitsAfterCard, exhibitsSeconds, progress => card.ShowExhibits(progress * exhibitsSeconds));
         }
 
-        /// <summary>The player pressed the card's button: the card goes up out of sight, and then this stage is over.</summary>
-        private void SendTheCardUp(ResultPanel card) =>
-            _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerWentOn = true);
+        /// <summary>
+        /// The player wants to leave the level. If the board is at rest the question is put at once; if pieces are
+        /// still moving it waits for them, and is dropped if their move decides the game.
+        /// </summary>
+        private void AskToLeave()
+        {
+            _isAskedToLeave = true;
+            AskWhetherToLeaveOnceAtRest();
+        }
+
+        private void AskWhetherToLeaveOnceAtRest()
+        {
+            if (!_isAskedToLeave || !IsSettled)
+            {
+                return;
+            }
+
+            _isAskedToLeave = false;
+            if (_result != null || _game.Status != GameStatus.Playing)
+            {
+                return;
+            }
+
+            _pointer.Cancel();
+            _pointer.ClearSelection();
+            _waiting = null;
+            HangACard(LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0, comesIn: 0f);
+        }
+
+        /// <summary>
+        /// The player stays: while the card goes up the room lights again, and once it is gone the card is taken
+        /// down and the board is the player's as before.
+        /// </summary>
+        private void GoOnWithTheGame(ResultPanel card)
+        {
+            _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp);
+            _timeline.Add(
+                Tempo.CardGoesUp / 2f,
+                Tempo.RoomLightens,
+                progress => _veil.Darken(1f - Easing.Out(progress)),
+                () =>
+                {
+                    card.Dispose();
+                    _result = null;
+                    _lamps.LightAgain();
+                });
+        }
+
+        /// <summary>
+        /// Takes the stage out of sight while the player is at the jigsaw the card led to: nothing of it is drawn,
+        /// and it stays as it is, dark and with its card drawn up, until <see cref="ComeBackToTheCard"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The player did not ask for the jigsaw.</exception>
+        public void StepAside()
+        {
+            if (PlayerChose != ResultChoice.PlaceThePieces)
+            {
+                throw new InvalidOperationException("A board steps aside only for the jigsaw its card led to.");
+            }
+
+            _root.SetActive(false);
+        }
+
+        /// <summary>
+        /// The player is back from the jigsaw: the stage is seen again, and its card comes down once more, with
+        /// the button to the jigsaw only if pieces still wait there.
+        /// </summary>
+        /// <param name="piecesWaiting">How many pieces of the level's painting still wait to be placed.</param>
+        /// <exception cref="InvalidOperationException">The stage did not step aside for a jigsaw.</exception>
+        public void ComeBackToTheCard(int piecesWaiting)
+        {
+            if (PlayerChose != ResultChoice.PlaceThePieces || !(_result is ResultPanel card))
+            {
+                throw new InvalidOperationException("Only a board that stepped aside for a jigsaw comes back to its card.");
+            }
+
+            _root.SetActive(true);
+            PlayerChose = null;
+            card.OfferThePlacing(piecesWaiting);
+            _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.ComeDown, () => _isCardDown = true);
+        }
+
+        /// <summary>
+        /// The player pressed one of the card's buttons: the card goes up out of sight, and then this stage is over,
+        /// unless the choice was to stay in the game.
+        /// </summary>
+        private void SendTheCardUp(ResultPanel card, ResultChoice choice)
+        {
+            _isCardDown = false;
+            if (choice == ResultChoice.Stay)
+            {
+                GoOnWithTheGame(card);
+            }
+            else
+            {
+                _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerChose = choice);
+            }
+        }
+
+        /// <summary>The pixel of the screen at which a point of the layout lies; nothing before the stage has a screen.</summary>
+        private Vector2? PixelOf(Vector2 point)
+        {
+            if (_layout is not ScreenLayout layout)
+            {
+                return null;
+            }
+
+            (float pixelX, float pixelY) = layout.PixelOfPoint(point.x, point.y);
+            return new Vector2(pixelX, pixelY);
+        }
 
         /// <summary>Where a pixel of the screen lies in the layout's points, which are the stage's own.</summary>
         private static Vector2 PointAt(Vector2 pixel, ScreenLayout layout)
@@ -611,19 +829,6 @@ namespace Puzzle.Client.Stage
             public BoardGesture Gesture { get; }
 
             public float MadeAt { get; }
-        }
-
-        private static Camera AddCamera(Transform parent)
-        {
-            var camera = new GameObject("Camera").AddComponent<Camera>();
-            camera.transform.SetParent(parent, worldPositionStays: false);
-            camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
-            camera.orthographic = true;
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = WallColour;
-            camera.allowHDR = false;
-            camera.allowMSAA = false;
-            return camera;
         }
     }
 }

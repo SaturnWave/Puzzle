@@ -122,7 +122,21 @@ public class GameFlowTests
         Assert.Equal("Bölüm tamamlandı!", ResultWords.Title(result));
         Assert.Equal("Bölüm 1 · 1 hamlede", ResultWords.Headline(result));
         Assert.Equal("4 hamle arttı", ResultWords.Footnote(result));
-        Assert.Equal("Sonraki bölüm", ResultWords.GoOn(result));
+        Assert.Equal("Devam", ResultWords.GoOn(result));
+    }
+
+    [Fact]
+    public void A_won_game_that_gave_a_jigsaw_piece_says_so_first_and_its_moves_under_it()
+    {
+        Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 5);
+        PieceReward? reward = PieceReward.ForWinning(new PlayerProgress(levelsWon: 46, attemptsOnLevel: 0), levelCount: 1000, TestMuseums.Shipped);
+
+        LevelResult result = LevelResult.Of(game, new AttemptBrief(attemptNumber: 1, isOnLastLevel: false, reward));
+
+        LevelResult.Won won = Assert.IsType<LevelResult.Won>(result);
+        Assert.Same(reward, won.Reward);
+        Assert.Equal("Yeni parça: 7 / 10", ResultWords.Headline(result));
+        Assert.Equal("Bölüm 1 · 1 hamlede", ResultWords.Footnote(result));
     }
 
     [Fact]
@@ -156,6 +170,54 @@ public class GameFlowTests
         Assert.Equal("Hamle bitti!", ResultWords.Title(result));
         Assert.Equal("Bölüm 1 · 3. deneme", ResultWords.Headline(result));
         Assert.Equal("Tekrar dene", ResultWords.GoOn(result));
+    }
+
+    [Fact]
+    public void A_player_who_asks_to_leave_is_told_what_is_left_to_do_and_what_leaving_costs()
+    {
+        var goals = new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3), new GoalSpec.CollectColor(GemColor.Red, 999) };
+        Game untouched = Start(Level(BoardWithAMatchInReach(), goals: goals, moves: 5));
+        Game played = PlayedOut(goals, moves: 5);
+        Assert.Equal(GameStatus.Playing, played.Status);
+
+        LevelResult first = LevelResult.ForLeaving(untouched, new AttemptBrief(attemptNumber: 1, isOnLastLevel: false));
+        LevelResult later = LevelResult.ForLeaving(played, new AttemptBrief(attemptNumber: 3, isOnLastLevel: false));
+
+        LevelResult.Leaving leaving = Assert.IsType<LevelResult.Leaving>(later);
+        Assert.True(leaving.HasPlayed);
+        Assert.False(Assert.IsType<LevelResult.Leaving>(first).HasPlayed);
+
+        // The purple goal was met by the one move; the red one is what is left to do.
+        var open = Assert.Single(leaving.OpenGoals);
+        Assert.Equal(PieceArt.GoalRed, open.Icon);
+        Assert.Equal("Bölümden çık?", ResultWords.Title(later));
+        Assert.Equal("Bölüm 1 · 3. deneme", ResultWords.Headline(later));
+        Assert.Equal("Çıkarsan bu deneme sayılır", ResultWords.Footnote(later));
+        Assert.Equal("Henüz hamle yapmadın", ResultWords.Footnote(first));
+        Assert.Equal("Oyna", ResultWords.GoOn(later));
+    }
+
+    [Fact]
+    public void On_the_narrow_button_beside_the_jigsaw_button_no_line_of_the_green_label_is_longer_than_a_short_word()
+    {
+        Game won = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 5);
+        LevelResult onTheLastLevel = LevelResult.Of(won, new AttemptBrief(attemptNumber: 1, isOnLastLevel: true));
+        LevelResult onAnyOther = LevelResult.Of(won, new AttemptBrief(attemptNumber: 1, isOnLastLevel: false));
+
+        Assert.Equal("Tekrar\noyna", ResultWords.GoOnOnANarrowButton(onTheLastLevel));
+        Assert.Equal("Devam", ResultWords.GoOnOnANarrowButton(onAnyOther));
+
+        // The blue button's own lines are "Parçayı" and "yerleştir": the green one's are no longer, so both are lettered alike.
+        Assert.All(ResultWords.GoOnOnANarrowButton(onTheLastLevel).Split('\n'), line => Assert.True(line.Length <= 6));
+    }
+
+    [Fact]
+    public void Only_a_game_that_is_still_played_can_be_left()
+    {
+        Game decided = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 5);
+        Assert.Equal(GameStatus.Won, decided.Status);
+
+        Assert.Throws<InvalidOperationException>(() => LevelResult.ForLeaving(decided, AttemptBrief.FirstTry));
     }
 
     [Fact]

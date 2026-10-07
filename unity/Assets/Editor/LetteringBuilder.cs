@@ -25,7 +25,7 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// Letters are sampled 72 px high with 9 px of room around each: the room is how far a style may thicken a
-        /// stroke or throw a shadow, and an eighth of the letter's size is enough for all three styles.
+        /// stroke or throw a shadow, and an eighth of the letter's size is enough for every style.
         /// </summary>
         private const int SamplingSize = 72;
         private const int RoomAroundALetter = 9;
@@ -45,6 +45,16 @@ namespace Puzzle.Client.EditorTools
         private static readonly Outline OutlineOnButton = new Outline(ButtonGreen, width: 0.5f);
         private static readonly Shade ShadeOnButton = new Shade(ButtonGreen, drop: 0.55f, wider: 0.62f, softness: 0f);
 
+        /// <summary>The same on the gallery's teal: white in a dark teal outline.</summary>
+        private static readonly Color DarkTeal = new Color32(0x0A, 0x36, 0x40, 0xFF);
+        private static readonly Outline OutlineOnTeal = new Outline(DarkTeal, width: 0.5f);
+        private static readonly Shade ShadeOnTeal = new Shade(DarkTeal, drop: 0.55f, wider: 0.62f, softness: 0f);
+
+        /// <summary>The same on the blue of the buttons that lead to a jigsaw: white in a dark blue outline.</summary>
+        private static readonly Color DarkBlue = new Color32(0x0F, 0x26, 0x70, 0xFF);
+        private static readonly Outline OutlineOnBlue = new Outline(DarkBlue, width: 0.5f);
+        private static readonly Shade ShadeOnBlue = new Shade(DarkBlue, drop: 0.55f, wider: 0.62f, softness: 0f);
+
         /// <summary>How each style changes the drawing of the typeface: how much heavier the strokes are, what is drawn around them and under them.</summary>
         private static readonly IReadOnlyDictionary<LetteringStyle, Look> Looks = new Dictionary<LetteringStyle, Look>
         {
@@ -52,6 +62,8 @@ namespace Puzzle.Client.EditorTools
             [LetteringStyle.Label] = new Look("Lettering Label", heavier: 0.14f),
             [LetteringStyle.OnWood] = new Look("Lettering On Wood", heavier: 0.06f, shade: EdgeOnWood),
             [LetteringStyle.OnButton] = new Look("Lettering On Button", heavier: 0.4f, shade: ShadeOnButton, outline: OutlineOnButton),
+            [LetteringStyle.OnTeal] = new Look("Lettering On Teal", heavier: 0.4f, shade: ShadeOnTeal, outline: OutlineOnTeal),
+            [LetteringStyle.OnBlue] = new Look("Lettering On Blue", heavier: 0.4f, shade: ShadeOnBlue, outline: OutlineOnBlue),
         };
 
         /// <summary>Makes what is missing and returns the typeface with its materials, for the art catalogue.</summary>

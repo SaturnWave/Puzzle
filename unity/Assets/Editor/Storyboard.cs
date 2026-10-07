@@ -99,7 +99,7 @@ namespace Puzzle.Client.EditorTools
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // The game's own session, on progress that is forgotten with it: a first try at the level.
-            using var session = new GameSession(levels, art, new ProgressInMemory(StoryStudio.StandingOn(level, levels)), plan.Screen);
+            using GameSession session = StoryStudio.AtTheBoard(levels, art, new ProgressInMemory(StoryStudio.StandingOn(level, levels)), plan.Screen);
             GameStage stage = session.Stage;
             StoryStudio.AdvanceUntilSettled(session);
 

@@ -1,0 +1,11 @@
+<!-- The red badge with a count of what waits for the player, in a white ring, as the design canvas draws it on the
+     buttons that lead to the jigsaw of a painting (HomeTR, CollectionTR). One unit is one point of the design. The
+     badge is 22 x 22 at (5, 4); the game stretches the middle of the picture sideways for a number of two figures,
+     so nothing between x = 15 and x = 17 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 32 32">
+<defs><linearGradient id="red" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="26"><stop offset="0" stop-color="#FF8A6B"/><stop offset=".55" stop-color="#F4472F"/><stop offset="1" stop-color="#D62E1F"/></linearGradient></defs>
+<rect x="1.8" y="3.8" width="28.4" height="28.4" rx="14.2" fill="#052830" fill-opacity=".35"/>
+<rect x="1.8" y=".8" width="28.4" height="28.4" rx="14.2" fill="#5E0A0C"/>
+<rect x="3" y="2" width="26" height="26" rx="13" fill="#fff"/>
+<rect x="5" y="4" width="22" height="22" rx="11" fill="url(#red)"/>
+</svg>

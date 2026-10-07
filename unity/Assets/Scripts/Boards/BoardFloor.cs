@@ -5,17 +5,16 @@ using UnityEngine;
 namespace Puzzle.Client.Boards
 {
     /// <summary>
-    /// The tray under the pieces: a square of light teal per playable cell, every second one a shade darker, lighter
-    /// at the top of the board than at its foot, and over it a fine weave like linen. The squares are plain: the
-    /// frame is drawn over their outer edge and gives the tray its round corners. Both meshes are in cells: the
-    /// board's top left corner is the origin, x grows to the right and a row down is -1.
+    /// The tray under the pieces: a square of dark teal per playable cell, every second one a shade darker, and over
+    /// it a fine weave like linen. The dark ground is the owner's choice (2026-10-07): the pieces' rich colours stand
+    /// out on it, and the web test page's tray has the same two colours. The squares are plain: the frame is drawn
+    /// over their outer edge and gives the tray its round corners. Both meshes are in cells: the board's top left
+    /// corner is the origin, x grows to the right and a row down is -1.
     /// </summary>
     public static class BoardFloor
     {
         /// <summary>The weave repeats every so many points, whatever the size of a cell.</summary>
         public const float WeavePitch = 5f;
-
-        private const float CheckerStrength = 0.085f;
 
         /// <summary>The weave's picture is one repeat, this many pixels a side: 8 for each of its 5 points.</summary>
         private const int WeavePixels = 40;
@@ -25,11 +24,12 @@ namespace Puzzle.Client.Boards
         private const float ThreadFrom = 0.7f;
         private const float ThreadUntil = 1.7f;
 
-        private static readonly Color TrayTop = Tint.Of(0xA3D6CF);
-        private static readonly Color TrayFoot = Tint.Of(0x8CC4BD);
-        private static readonly Color CheckerShade = Tint.Of(0x0D545A);
-        private static readonly Color LightThread = Tint.Of(0xFFFFFF, 0.13f);
-        private static readonly Color DarkThread = Tint.Of(0x0B4C52, 0.07f);
+        private static readonly Color Ground = Tint.Of(0x124652);
+        private static readonly Color ShadedGround = Tint.Of(0x0F3E49);
+
+        /// <summary>The threads are faint, and the dark one is darker than the ground: on the dark tray a teal thread would not show.</summary>
+        private static readonly Color LightThread = Tint.Of(0xFFFFFF, 0.04f);
+        private static readonly Color DarkThread = Tint.Of(0x03161C, 0.13f);
 
         /// <summary>The tray's paint. The caller owns the mesh and destroys it.</summary>
         public static Mesh BuildPaint(BoardShape shape)
@@ -38,11 +38,7 @@ namespace Puzzle.Client.Boards
             foreach (Position cell in BoardCells.Of(shape))
             {
                 bool isShaded = (cell.X + cell.Y) % 2 == 1;
-                sketch.AddRectangle(
-                    new Rect(cell.X, -(cell.Y + 1), 1f, 1f),
-                    PaintAt((cell.Y + 1f) / shape.Height, isShaded),
-                    PaintAt((float)cell.Y / shape.Height, isShaded),
-                    new Rect(MeshSketch.AnywhereInTheTexture, Vector2.zero));
+                sketch.AddRectangle(new Rect(cell.X, -(cell.Y + 1), 1f, 1f), isShaded ? ShadedGround : Ground);
             }
 
             return sketch.ToMesh("Board floor");
@@ -95,12 +91,6 @@ namespace Puzzle.Client.Boards
         {
             float point = (pixel + 0.5f) / WeavePixelsPerPoint;
             return point >= ThreadFrom && point < ThreadUntil;
-        }
-
-        private static Color32 PaintAt(float downTheBoard, bool isShaded)
-        {
-            Color tray = Color.Lerp(TrayTop, TrayFoot, downTheBoard);
-            return isShaded ? Color.Lerp(tray, CheckerShade, CheckerStrength) : tray;
         }
     }
 }

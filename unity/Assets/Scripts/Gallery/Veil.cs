@@ -37,10 +37,10 @@ namespace Puzzle.Client.Gallery
 
         public static Veil Create(Transform parent, ArtCatalogue art) => new Veil(parent, art);
 
-        /// <summary>Spreads the veil over a screen of the layout's size, at the strength it has.</summary>
-        public void Fit(ScreenLayout layout)
+        /// <summary>Spreads the veil over a screen, at the strength it has.</summary>
+        public void Fit(ScreenView view)
         {
-            _screen = new Rect(-layout.ViewWidth / 2f, -layout.ViewHeight / 2f, layout.ViewWidth, layout.ViewHeight);
+            _screen = new Rect(view.Left, view.Bottom, view.Width, view.Height);
             Paint();
         }
 

@@ -254,7 +254,8 @@ namespace Puzzle.Client.Play
         {
             Vector2 origin = PieceSprite.MiddleOf(effect.Origin);
             float across = 2f * effect.Radius + 2f;
-            Flash(effect.Start, origin, across, Light, 0.95f);
+            // The flash lies over the blot: at full strength it washed the ink out to a pale cloud for as long as it lasted.
+            Flash(effect.Start, origin, across, Light, 0.5f);
             Wave(effect.Start, origin, across + 1f);
             Show(effect.Start, effect.Seconds, _art.Splat, DrawOrder.Effect, isCutAtTheEdge: true, (blot, progress) =>
             {
@@ -377,16 +378,20 @@ namespace Puzzle.Client.Play
             }
         }
 
+        /// <summary>
+        /// A gem's chips have the main colour of its piece in the rich palette the pieces are exported in: each is
+        /// what tools/web-theme/gem-palette.js makes of the colour the piece was first drawn with.
+        /// </summary>
         private static Color ChipColourOf(GemColor colour) => colour switch
         {
-            GemColor.Red => Tint.Of(0xE2403F),
-            GemColor.Green => Tint.Of(0x3DB54E),
-            GemColor.Blue => Tint.Of(0x3489EA),
-            GemColor.Yellow => Tint.Of(0xF8CB3A),
-            GemColor.Purple => Tint.Of(0x9460DA),
-            GemColor.Orange => Tint.Of(0xF28C30),
-            GemColor.Cyan => Tint.Of(0x3CC8DA),
-            GemColor.Pink => Tint.Of(0xF072AC),
+            GemColor.Red => Tint.Of(0xEF0125),
+            GemColor.Green => Tint.Of(0x15B60B),
+            GemColor.Blue => Tint.Of(0x0384F8),
+            GemColor.Yellow => Tint.Of(0xF8C707),
+            GemColor.Purple => Tint.Of(0x984AF0),
+            GemColor.Orange => Tint.Of(0xF4850E),
+            GemColor.Cyan => Tint.Of(0x15C5E4),
+            GemColor.Pink => Tint.Of(0xFD5BAB),
             _ => throw new ArgumentOutOfRangeException(nameof(colour), colour, "A gem colour without a chip colour."),
         };
     }

@@ -14,6 +14,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The sheet's own pixels between two pictures and around them.</summary>
         private const int Gap = 8;
 
+        /// <summary>A sheet is no wider than this many pixels: half the largest texture every graphics card takes.</summary>
+        private const int WidestSheet = 8192;
+
         private static readonly Color32 Paper = new Color32(0x12, 0x1A, 0x1C, 0xFF);
 
         private readonly int _shrinkBy;
@@ -49,16 +52,22 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The whole sheet. The caller owns the picture and destroys it.</summary>
         public Texture2D ToPicture()
         {
-            int sheetWidth = Gap + _shrunk.Count * (_width + Gap);
-            int sheetHeight = _height + 2 * Gap;
+            // Side by side while the sheet stays a picture a graphics card takes; a longer story goes on in a row below.
+            int perRow = Math.Min(_shrunk.Count, Math.Max(1, (WidestSheet - Gap) / (_width + Gap)));
+            int rows = (_shrunk.Count + perRow - 1) / perRow;
+            int sheetWidth = Gap + perRow * (_width + Gap);
+            int sheetHeight = Gap + rows * (_height + Gap);
             var pixels = new Color32[sheetWidth * sheetHeight];
             Array.Fill(pixels, Paper);
             for (int picture = 0; picture < _shrunk.Count; picture++)
             {
-                int left = Gap + picture * (_width + Gap);
+                int left = Gap + picture % perRow * (_width + Gap);
+
+                // A texture's rows are counted from its foot: the first row of pictures is the highest.
+                int foot = Gap + (rows - 1 - picture / perRow) * (_height + Gap);
                 for (int row = 0; row < _height; row++)
                 {
-                    Array.Copy(_shrunk[picture], row * _width, pixels, (Gap + row) * sheetWidth + left, _width);
+                    Array.Copy(_shrunk[picture], row * _width, pixels, (foot + row) * sheetWidth + left, _width);
                 }
             }
 

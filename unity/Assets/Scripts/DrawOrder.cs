@@ -1,8 +1,9 @@
 namespace Puzzle.Client
 {
     /// <summary>
-    /// What is drawn over what on the board screen, from the wall up: the sorting order of every renderer. Everything
-    /// is flat and drawn by one camera, so this one list decides all overlaps. Pieces, tapes and exit marks add their
+    /// What is drawn over what on a screen of the game, from the wall up: the sorting order of every renderer.
+    /// Everything is flat and drawn by one camera, so this one list decides all overlaps. The board screen and the
+    /// museum's pages share the wall, the wires, the plaques and the dark; between those each has its own stretch. Pieces, tapes and exit marks add their
     /// row to their value: a lower row is drawn over the row above it, so the shadow under a piece never covers the
     /// head of the piece below. A piece that is carried or flies adds <see cref="PieceLift"/> as well. The gaps leave
     /// room for that, and for what later screens put between.
@@ -12,9 +13,55 @@ namespace Puzzle.Client
         WallPaint = -1000,
         WallDamask = -999,
         WallLight = -998,
+
+        /// <summary>The museum's hall: its floor, and the mouldings along the wall (cornice, picture rail, skirting).</summary>
+        RoomFloor = -980,
+        RoomTrim = -970,
         Sconce = -900,
         Wire = -800,
         FrameShadow = -700,
+
+        /// <summary>
+        /// What hangs in a picture frame on a page of the museum, from its ground up: a painting's canvas (the
+        /// picture as a ghost under the linen, the linen, the marks of the places that are asked for, the pieces
+        /// in place, the cut lines over them, and the light that runs over a painting just restored), or the map's
+        /// sheet with its floors, walls, marks and lettering; small framed pictures on it with their marks, labels
+        /// on it, and the pin over everything.
+        /// </summary>
+        CanvasGhost = -660,
+        Canvas = -658,
+        CanvasMark = -656,
+        CanvasPicture = -654,
+        CanvasLines = -652,
+        CanvasShine = -650,
+        SheetWalls = -647,
+        SheetArt = -646,
+        SheetLettering = -645,
+        SheetPictureFrame = -644,
+        SheetPicture = -643,
+        SheetPictureMark = -642,
+        SheetLabel = -641,
+        SheetLabelLettering = -640,
+        SheetPin = -639,
+
+        /// <summary>The picture frame over what hangs in it, its light over the frame, the brass plate that names it, the workbench on the floor.</summary>
+        PictureFrame = -620,
+        PictureLight = -619,
+        /// <summary>The cloth thrown over the frame of a painting that is not reached yet: over the frame, under its brass plate.</summary>
+        DustSheet = -615,
+        Caption = -610,
+        CaptionLettering = -609,
+
+        /// <summary>The bar of progress pips under a painting's plate, and the pips in it.</summary>
+        PipBar = -608,
+        Pip = -607,
+        Bench = -605,
+
+        /// <summary>What is pinned to a painting of the collection: the pill that says how far it is restored, and the badge of the pieces that wait for it.</summary>
+        ExhibitLabel = -604,
+        ExhibitLabelLettering = -603,
+        ExhibitBadge = -602,
+        ExhibitBadgeLettering = -601,
         Floor = 0,
         FloorWeave = 1,
         TrayShade = 2,
@@ -42,23 +89,67 @@ namespace Puzzle.Client
         Flight = 600,
         Shelf = 1000,
         ShelfLettering = 1001,
+
+        /// <summary>The round button on the shelf's left end that leads out of the level.</summary>
+        ShelfButton = 1002,
+
+        /// <summary>
+        /// The jigsaw's wooden tray, the pieces that wait in it (a piece takes three places from <see cref="TrayPiece"/>
+        /// up: its cardboard, its face, its rim), and the labels that ride on the tray.
+        /// </summary>
+        Tray = 1010,
+        TrayPiece = 1020,
+        TrayLabel = 1030,
+        TrayLabelLettering = 1031,
         Plaque = 1100,
         PlaqueArt = 1101,
         PlaqueLettering = 1102,
+
+        /// <summary>A small framed picture on a plaque: its frame is plaque art, its picture and the mark on it come over that.</summary>
+        PlaquePicture = 1103,
+        PlaquePictureMark = 1104,
+
+        /// <summary>
+        /// A button that stands on a page by itself, and the navigation bar at a page's foot with the chosen
+        /// destination's plate, the marks and their names. A button's badge takes the two places above its lettering.
+        /// </summary>
+        PageButton = 1200,
+        PageButtonLettering = 1201,
+
+        /// <summary>
+        /// A jigsaw piece in the player's hand or on its way to its place, over everything of the page: its shadow
+        /// takes the place below, the piece three places from here up. Over it, the sparkles of a painting just restored.
+        /// </summary>
+        Carried = 1310,
+        Celebration = 1320,
+        Bar = 1500,
+        BarTab = 1501,
+        BarIcon = 1502,
+        BarLettering = 1503,
 
         /// <summary>The dark that falls over the whole room, plaques and shelf included, when a game is decided.</summary>
         Veil = 2000,
 
         /// <summary>The result's card in front of the dark, from its wires up to what stands and is written on it.</summary>
+        /// <summary>The shelf's round button while a result's card hangs: it stays lit in the dark room, as the way out to the museum.</summary>
+        ShelfButtonOverTheDark = 2050,
         CardWire = 2090,
         Card = 2100,
         CardArt = 2110,
         CardLight = 2111,
+
+        /// <summary>What stands in the card's alcove. A jigsaw piece takes three places from here up: its cardboard, its face, its rim.</summary>
         CardExhibit = 2120,
-        CardBadge = 2121,
-        CardBadgeLettering = 2122,
+        CardBadge = 2125,
+        CardBadgeLettering = 2126,
         CardLettering = 2130,
         CardNameplate = 2140,
         CardNameplateLettering = 2141,
+
+        /// <summary>
+        /// Added to the order of a painting that is hung in front of the dark to be looked at by itself: its canvas,
+        /// wires, frame and plate keep their order among themselves and all come over the <see cref="Veil"/>.
+        /// </summary>
+        OverTheDark = 2900,
     }
 }

@@ -103,6 +103,42 @@ namespace Puzzle.Client.Play
         public const float CardGoesUp = 0.22f;
         public const float RoomLightens = 0.32f;
 
+        /// <summary>A page of the museum is turned: the next one slides in from its side while the one shown slides out.</summary>
+        public const float PageTurns = 0.3f;
+
+        /// <summary>
+        /// A jigsaw piece is picked up from the tray and grows to its size in the painting; let go near its place it
+        /// drops in, and its edge lights up for a moment; let go anywhere else it goes back to the tray. The place
+        /// it left in the tray is filled by the next piece that waited behind.
+        /// </summary>
+        public const float PieceLifts = 0.1f;
+        public const float PieceDropsIn = 0.13f;
+        public const float PieceGoesBack = 0.2f;
+        public const float PieceLightsUp = 0.34f;
+        public const float TrayRefills = 0.22f;
+
+        /// <summary>
+        /// All waiting pieces are placed for the player: each flies from the tray to its place in <see cref="PieceFlies"/>,
+        /// one after another at <see cref="PiecesLeaveEvery"/>, or closer when there are many, so that the last
+        /// one leaves within <see cref="PiecesLeaveWithin"/>.
+        /// </summary>
+        public const float PieceFlies = 0.36f;
+        public const float PiecesLeaveEvery = 0.09f;
+        public const float PiecesLeaveWithin = 1.3f;
+
+        /// <summary>
+        /// A painting is whole again: after a breath a light runs over it, the frame swells once, and sparkles
+        /// burst around it one after another.
+        /// </summary>
+        public const float PauseBeforeRestored = 0.12f;
+        public const float RestoredLight = 0.7f;
+        public const float RestoredSwell = 0.4f;
+        public const float SparkleBursts = 0.5f;
+        public const float SparkleEvery = 0.07f;
+
+        /// <summary>A painting of the collection is brought forward to be looked at, and put back.</summary>
+        public const float PaintingComesForward = 0.24f;
+
         /// <summary>
         /// A tap or a swipe made while the board is still moving waits for the board to come to rest and is acted
         /// on then, if that is no later than this. Long enough for a player who is ahead of the last pieces coming

@@ -1,0 +1,19 @@
+<!-- A cream pill in a gilt rim: the label that says where the player stands on the museum's map, or when a locked
+     room opens, as the design canvas draws them (MapTR). One unit is one point of the design. The pill is 112 x 24
+     at (8, 5); the game stretches the middle of the picture sideways to the width a line needs, so nothing between
+     x = 26 and x = 102 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="160" viewBox="0 0 128 40">
+<defs>
+<linearGradient id="face" gradientUnits="userSpaceOnUse" x1="0" y1="5" x2="0" y2="29"><stop offset="0" stop-color="#FFFDF4"/><stop offset=".55" stop-color="#FBF0D6"/><stop offset="1" stop-color="#F0DFBB"/></linearGradient>
+<clipPath id="in-face"><rect x="8" y="5" width="112" height="24" rx="12"/></clipPath>
+</defs>
+<!-- the drop under the pill, the dark line around it, the gilt rim, the face with light along its top and a darker lip -->
+<rect x="5.2" y="5.2" width="117.6" height="29.6" rx="14.8" fill="#5C3810" fill-opacity=".34"/>
+<rect x="5.2" y="2.2" width="117.6" height="29.6" rx="14.8" fill="#5E3305"/>
+<rect x="6.4" y="3.4" width="115.2" height="27.2" rx="13.6" fill="#F6B93C"/>
+<rect x="8" y="5" width="112" height="24" rx="12" fill="url(#face)"/>
+<g clip-path="url(#in-face)">
+<path fill="#fff" fill-rule="evenodd" d="M0 0H128V40H0Z M20 7H108A12 12 0 0 1 120 19A12 12 0 0 1 108 31H20A12 12 0 0 1 8 19A12 12 0 0 1 20 7Z"/>
+<path fill="#E3CC9C" fill-rule="evenodd" d="M0 0H128V40H0Z M20 3H108A12 12 0 0 1 120 15A12 12 0 0 1 108 27H20A12 12 0 0 1 8 15A12 12 0 0 1 20 3Z"/>
+</g>
+</svg>

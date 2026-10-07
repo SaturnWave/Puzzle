@@ -1,0 +1,181 @@
+{
+  "formatVersion": 1,
+  "rooms": [
+    {
+      "number": 1,
+      "movement": "Empresyonizm",
+      "provisionalName": false,
+      "paintings": [
+        {
+          "id": "monet-beach-at-sainte-adresse",
+          "title": "Sainte-Adresse Plajı",
+          "originalTitle": "The Beach at Sainte-Adresse",
+          "artist": "Claude Monet",
+          "year": "1867",
+          "orientation": "landscape",
+          "image": "room-01/beach-at-sainte-adresse.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/14598",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "renoir-two-sisters-on-the-terrace",
+          "title": "İki Kız Kardeş (Terasta)",
+          "originalTitle": "Two Sisters (On the Terrace)",
+          "artist": "Pierre-Auguste Renoir",
+          "year": "1881",
+          "orientation": "portrait",
+          "image": "room-01/two-sisters-on-the-terrace.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/14655",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "caillebotte-paris-street-rainy-day",
+          "title": "Paris Sokağı; Yağmurlu Gün",
+          "originalTitle": "Paris Street; Rainy Day",
+          "artist": "Gustave Caillebotte",
+          "year": "1877",
+          "orientation": "landscape",
+          "image": "room-01/paris-street-rainy-day.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/20684",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "monet-water-lilies-1906",
+          "title": "Nilüferler",
+          "originalTitle": "Water Lilies",
+          "artist": "Claude Monet",
+          "year": "1906",
+          "orientation": "landscape",
+          "image": "room-01/water-lilies.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/16568",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "monet-stacks-of-wheat-end-of-summer",
+          "title": "Buğday Yığınları (Yaz Sonu)",
+          "originalTitle": "Stacks of Wheat (End of Summer)",
+          "artist": "Claude Monet",
+          "year": "1890–91",
+          "orientation": "landscape",
+          "image": "room-01/stacks-of-wheat-end-of-summer.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/64818",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "movement": "Post-empresyonizm",
+      "provisionalName": false,
+      "paintings": []
+    },
+    {
+      "number": 3,
+      "movement": "Barok",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 4,
+      "movement": "Rönesans",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 5,
+      "movement": "Romantizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 6,
+      "movement": "Realizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 7,
+      "movement": "Hollanda Altın Çağı",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 8,
+      "movement": "Rokoko",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 9,
+      "movement": "Ukiyo-e",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 10,
+      "movement": "Neoklasizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 11,
+      "movement": "Sembolizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 12,
+      "movement": "Puantilizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 13,
+      "movement": "Barbizon Okulu",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 14,
+      "movement": "Art Nouveau",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 15,
+      "movement": "Kuzey Rönesansı",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 16,
+      "movement": "Venedik Okulu",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 17,
+      "movement": "Maniyerizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 18,
+      "movement": "Ön-Rafaelocular",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 19,
+      "movement": "Oryantalizm",
+      "provisionalName": true,
+      "paintings": []
+    },
+    {
+      "number": 20,
+      "movement": "Natürmort Ustaları",
+      "provisionalName": true,
+      "paintings": []
+    }
+  ]
+}

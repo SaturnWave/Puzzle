@@ -5,10 +5,18 @@
 //   wall.svg     one repeat of the wall's damask, which the stylesheet lays as a background
 //   icon.svg     one piece as a picture of its own: the page's icon in a browser's tab
 //
+// Two things are not shown as the design's sources draw them, by the owner's choice of 2026-10-07:
+//   the palette step  puts every gem colour's piece, its goal icon and the kit's gradients only it paints with into
+//                     the rich palette (gem-palette.js holds the rule). The page's icon is a gem piece and goes
+//                     through the same step.
+//   the tray step     deepens the ground shadow under every piece, which was drawn for a light tray, so that it
+//                     shows on the dark one.
+//
 // usage (from the repository root):
 //   node tools/web-theme/build-sprite.js [--design <folder>] [--check]
-// With --check nothing is written: the three files are built in memory and compared with the ones in the page's
-// folder, and the run fails, naming them, when a source was changed without building again.
+// With --check nothing is written: the three files are built in memory, both steps included, and compared with the
+// ones in the page's folder, and the run fails, naming them, when a source, the palette or this script was changed
+// without building again.
 // Reads  <design>/chosen/Board.dc.html       the kit: the shared gradients, the first symbols and the wall
 //         <design>/next/sym/final/<id>.svg    the later symbols: one <symbol> per file, its own definitions in front
 //         src/Puzzle.Web/wwwroot/tiles.svg    the lab's sprite: the shape of a gem colour that has no piece yet
@@ -18,6 +26,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { inRichPalette, paintsNotRead } = require("./gem-palette.js");
 
 const REPOSITORY = path.join(__dirname, "..", "..");
 const WEB_ROOT = path.join(REPOSITORY, "src", "Puzzle.Web", "wwwroot");
@@ -67,8 +76,16 @@ const OTHER_ART = {
 /** Names of the page that show a symbol the sprite already has under another name. */
 const SAME_AS = { "goal-items": "item" };
 
-/** The piece that stands for the game in a browser's tab. */
-const ICON_PIECE = "p-ladybug";
+/**
+ * The shadow a piece throws on its ground: the kit's gradient of that name, and what the build paints it with. The
+ * kit draws it for the light tray of the first canvas, a teal shade at .42 and .2 that cannot be seen on the dark tray
+ * the owner chose. Its three stops keep their places and take this colour, each at its own strength, from the middle
+ * outwards. The goal icons on the cream plaques throw the same shadow and were looked at with it.
+ */
+const GROUND_SHADOW = { id: "g-shadow", colour: "#02141A", strengths: [".6", ".32", "0"] };
+
+/** The gem colour whose piece stands for the game in a browser's tab. */
+const ICON_GEM = "red";
 
 /** The lab's symbol for a tile kind the page does not know; the page keeps it as it is. */
 const UNKNOWN_TILE = "unknown";
@@ -251,6 +268,54 @@ function wallTile(board) {
   return `<svg xmlns="${SVG_NAMESPACE}" width="${size[1]}" height="${size[2]}" viewBox="0 0 ${size[1]} ${size[2]}">\n${drawing}\n</svg>\n`;
 }
 
+// ---------- the palette step and the tray step ----------
+/**
+ * The palette step for one piece: the art of gem colour `colour`, its symbol and the definitions it brings along, in
+ * the rich palette. A paint the palette cannot read would stay in the old colours beside the new ones, so it is
+ * refused here by name.
+ */
+function inPaletteOf(colour, { defs, symbol }) {
+  const notRead = paintsNotRead([...defs, symbol].join("\n"));
+  if (notRead.length > 0) {
+    throw new ArtSourceError(`The ${colour} piece is painted with ${notRead.join(", ")}: the palette reads only hex colours.`);
+  }
+  return { defs: defs.map((definitions) => inRichPalette(definitions, colour)), symbol: inRichPalette(symbol, colour) };
+}
+
+/**
+ * The palette step for the kit's gradients. A gradient that the pieces of one gem colour alone paint with is that
+ * colour's and goes into the palette with it; whatever else is painted with it (a drop of that colour on the colour
+ * bomb's palette) follows. A gradient that pieces of several colours share is the kit's common shadow or light, and
+ * one that no piece uses belongs to something else: both stay as drawn.
+ */
+function kitGradientsInPalette(sources) {
+  const usedBy = new Map();
+  for (const colour of Object.keys(GEM_ART)) {
+    const drawn = [gemArt(sources, colour), gemGoalArt(sources, colour)].flatMap((art) => [...art.defs, art.symbol]).join("\n");
+    for (const id of referencedIds(drawn)) usedBy.set(id, [...(usedBy.get(id) ?? []), colour]);
+  }
+  const inItsColour = ([id, gradient]) => {
+    const colours = usedBy.get(id) ?? [];
+    return [id, colours.length === 1 ? inRichPalette(gradient, colours[0]) : gradient];
+  };
+  return new Map([...sources.kit.gradients].map(inItsColour));
+}
+
+/** The tray step: the kit's gradients with the pieces' ground shadow made deep enough to show on the dark tray. */
+function withShadowForTheDarkTray(gradients) {
+  const drawn = gradients.get(GROUND_SHADOW.id);
+  if (drawn === undefined) throw new ArtSourceError(`The kit has no gradient "${GROUND_SHADOW.id}", the pieces' ground shadow.`);
+  const stops = [...drawn.matchAll(/<stop offset="([^"]+)"[^>]*>/g)];
+  if (stops.length !== GROUND_SHADOW.strengths.length) {
+    throw new ArtSourceError(`The kit's ground shadow has ${stops.length} stops; the build knows the strengths of ${GROUND_SHADOW.strengths.length}.`);
+  }
+  const deepStops = stops.map(([, offset], stop) =>
+    `<stop offset="${offset}" stop-color="${GROUND_SHADOW.colour}" stop-opacity="${GROUND_SHADOW.strengths[stop]}"/>`);
+  const [opening] = /^<radialGradient [^>]*>/.exec(drawn) ?? [];
+  if (opening === undefined) throw new ArtSourceError("The kit's ground shadow is not a radial gradient.");
+  return new Map(gradients).set(GROUND_SHADOW.id, `${opening}${deepStops.join("")}</radialGradient>`);
+}
+
 // ---------- the sprite ----------
 const renamedSymbol = (symbol, from, to) => symbol.replace(`<symbol id="${from}"`, `<symbol id="${to}"`);
 const sameAs = (name, shown) => `<symbol id="${name}" viewBox="0 0 100 100"><use href="#${shown}"/></symbol>`;
@@ -266,7 +331,10 @@ function fittedLikeAPiece(symbol) {
   return `${opening}<g transform="${LAB_GEM_FIT}">${drawing}</g></symbol>`;
 }
 
-/** The art of one gem colour under its page name: the design's piece, or the lab's shape while there is none. */
+/**
+ * The art of one gem colour under its page name: the design's piece in the rich palette, or the lab's shape while
+ * there is none. The lab's shape is a stand-in with paints of its own and stays as the lab has it.
+ */
 function gemArt(sources, colour) {
   const name = `gem-${colour}`;
   const piece = designArt(sources, GEM_ART[colour]);
@@ -274,16 +342,20 @@ function gemArt(sources, colour) {
     const shape = labArt(sources.labSprite, name);
     return { defs: shape.defs, symbol: fittedLikeAPiece(shape.symbol), fromLab: true };
   }
-  return { defs: piece.defs, symbol: renamedSymbol(piece.symbol, GEM_ART[colour], name), fromLab: false };
+  const drawn = { defs: piece.defs, symbol: renamedSymbol(piece.symbol, GEM_ART[colour], name) };
+  return { ...inPaletteOf(colour, drawn), fromLab: false };
 }
 
-/** A colour's goal icon: the design's icon of the piece where one is drawn, the piece itself where not. */
+/**
+ * A colour's goal icon: the design's icon of the piece, in the piece's palette, where one is drawn; the piece itself
+ * where not.
+ */
 function gemGoalArt(sources, colour) {
   const name = `goal-${colour}`;
   const iconId = GEM_ART[colour].replace(/^p-/, "i-");
   const icon = readFragment(sources.fragments, iconId);
   if (icon === undefined) return { defs: [], symbol: sameAs(name, `gem-${colour}`) };
-  return { defs: icon.defs, symbol: renamedSymbol(icon.symbol, iconId, name) };
+  return inPaletteOf(colour, { defs: icon.defs, symbol: renamedSymbol(icon.symbol, iconId, name) });
 }
 
 function otherArt(sources, name) {
@@ -328,13 +400,12 @@ function buildSprite(sources) {
   return { text, fromLab: colours.filter((_, index) => gems[index].fromLab) };
 }
 
-/** One symbol of the design as a picture of its own, with the paints it needs. */
-function pictureOf(sources, id) {
-  const piece = designArt(sources, id);
-  if (piece === undefined) throw new ArtSourceError(`The design has no symbol "${id}" to make a picture of.`);
+/** The piece of one gem colour as a picture of its own, as the sprite shows it, with the paints it needs. */
+function gemPicture(sources, colour) {
+  const piece = gemArt(sources, colour);
   const { opening, drawing } = partsOf(piece.symbol);
   const viewBox = / viewBox="[^"]+"/.exec(opening);
-  if (!viewBox) throw new ArtSourceError(`The symbol "${id}" has no viewBox: its picture would have no size.`);
+  if (!viewBox) throw new ArtSourceError(`The ${colour} piece has no viewBox: its picture would have no size.`);
   const shared = usedGradients(sources.kit.gradients, [...piece.defs, drawing].join("\n"));
   return [`<svg xmlns="${SVG_NAMESPACE}"${viewBox[0]}>`, "<defs>", ...shared, ...piece.defs, "</defs>", drawing, "</svg>", ""].join("\n");
 }
@@ -392,17 +463,18 @@ function designFolder(args) {
  */
 function buildArt(design) {
   const board = readSource(path.join(design, "chosen", "Board.dc.html"));
-  const sources = {
+  const drawn = {
     board,
     kit: readKit(board),
     fragments: path.join(design, "next", "sym", "final"),
     labSprite: readSource(LAB_SPRITE),
   };
+  const sources = { ...drawn, kit: { ...drawn.kit, gradients: withShadowForTheDarkTray(kitGradientsInPalette(drawn)) } };
   const sprite = buildSprite(sources);
   const files = [
     { file: path.join(PLAYER_PAGE, "pieces.svg"), svg: sprite.text },
     { file: path.join(PLAYER_PAGE, "wall.svg"), svg: wallTile(board) },
-    { file: path.join(PLAYER_PAGE, "icon.svg"), svg: pictureOf(sources, ICON_PIECE) },
+    { file: path.join(PLAYER_PAGE, "icon.svg"), svg: gemPicture(sources, ICON_GEM) },
   ];
   return { files, fromLab: sprite.fromLab };
 }

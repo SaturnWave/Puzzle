@@ -61,7 +61,7 @@ namespace Puzzle.Client.EditorTools
                 LevelDefinition level = LevelPack.Numbered(levels, LevelNumber);
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
                 var progress = new ProgressInMemory(StoryStudio.StandingOn(level, levels));
-                using var session = new GameSession(levels, art, progress, Screen);
+                using GameSession session = StoryStudio.AtTheBoard(levels, art, progress, Screen);
                 if (!BotPolicies.TryCreate(SkillProfile.Expert.Name, out IBotPolicy bot))
                 {
                     throw new InvalidOperationException($"The bots' list has no {SkillProfile.Expert.Name}.");

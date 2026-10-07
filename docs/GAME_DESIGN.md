@@ -400,6 +400,9 @@ src/Puzzle.Tooling  net10.0 — bölüm JSON'u ve bölüm kütüphanesi (CLI, we
 src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de generate)
 src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
 tests/Puzzle.Core.Tests  net10.0, xUnit
+src/Puzzle.Museum   netstandard2.1, C# 9 — müzenin kuralları: odalar, tablolar, yapboz kesimi, ilerleme (Unity'ye girer)
+museum/catalogue.json   odaların ve tabloların veri dosyası (başlık, ressam, yıl, görüntü, kaynak, lisans)
+art/paintings       tabloların lisans listesi (oda oda); görüntüler unity/Assets/Resources/Paintings altında
 unity/              Unity 6.6 projesi — oyunun istemcisi (Android; iOS sonra). Motoru derlenmiş hâliyle kullanır
 art/unity           istemcinin galeri görselleri için SVG kaynakları (duvar, plaket, madalyon, raf, aplik)
 tools/unity         motoru ve bölümleri Unity projesine taşıyan, çizimleri PNG'ye çeviren betikler
@@ -775,6 +778,8 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 
 10 parçayı düz ızgarayla bölmenin tek yolu 5×2; yaygın tablo oranlarında ince uzun parçalar veriyor. 3-4-3 diziliminde parçalar kareye yakın kalıyor (prototipte karşılaştırıldı, kullanıcı 3-4-3'ü seçti). Dikey tablolarda dizilimler 90 derece döner. Prototip atılabilir bir JS denemesi; gerçek kesim kodu C# ile yazılacak (§12, Faz 3).
 
+**Uygulama durumu (2026-10-08).** Bu bölümdeki yapı, yapboz tablosu ve 3-4-3 dizilimi Unity istemcisinde çalışıyor (§23). İlk odanın tabloları: Sainte-Adresse Plajı (Monet, 1867), Kız Kardeş (Terasta) (Renoir, 1881), Yağmurlu Gün (Caillebotte, 1877), Nilüferler (Monet, 1906), Buğday Yığınları (Yaz Sonu) (Monet, 1890–91); hepsi Art Institute of Chicago'da kamu malı, lisans listesi `art/paintings/room-01/licences.json`. 2–20. odaların tabloları seçilmedi; o bölümlerin parçaları tablolar gelene kadar bekler. Yan koleksiyon, coinle parça ve etkinlik tabloları yok.
+
 **Müze:** hafif. Tamamlanan tablo duvara asılır, oda adım adım onarılır (çatlaklar kapanır, ışıklar yanar). Oyuncu seçim yapmaz. Seçenekli dekorasyon ve müze işletmesi ileride eklenebilir.
 
 **Tema eşlemesi.** Motordaki adlar değişmez; yalnızca görünüşler ve oyuncunun gördüğü adlar değişir.
@@ -861,6 +866,8 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 - Yazı tipleri: Gabarito (arayüz), Paytone One (büyük düğmeler), Young Serif (oda ve tablo adları).
 - **Taş tarifi:** her taş tek, sade ve iri bir siluettir; hepsi aynı ışığı paylaşır (sol üstten ışık, alt kenarda kalınlık, içte hafif kabartma, iki kenar parıltısı, tek beyaz yansıma). Ayrıntılı nesne çizimi bu dile yabancı kalır.
 
+**Renk kararı (2026-10-07).** Kullanıcı telefonda oynadıktan sonra taşları daha canlı ve uyumlu istedi; altı panelli karşılaştırmadan doygun taşlar ve **koyu camgöbeği tepsi** seçildi (açık camgöbeği tepsi bırakıldı: yeşil, mavi ve elmas ona karışıyordu). Kural tek yerde: `tools/web-theme/gem-palette.js` (OKLCH'de doygunluk 1,3 katı, açıklık artmaz, yeşil 140° ve elmas 220° yönüne kayar, beyazlar değişmez). Tepsi #124652 / #0f3e49 dama. Web testi ve Unity aynı derlemeden beslenir.
+
 **Taş seti**
 
 | Motordaki | Görsel | Durum |
@@ -901,7 +908,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 
 ## 23. Unity istemcisi
 
-**Durum (2026-10-07).** İlk oynanabilir sürüm Android'de çalışıyor: tahta, hamle animasyonları, sonuç kartı, sonraki bölüm, ilerlemenin kaydı. Harita, meta, mağaza, booster ve hesap yok.
+**Durum (2026-10-08).** Android'de çalışan sürümde: müzenin salonu, harita, koleksiyon, yapboz, tahta, hamle animasyonları, sonuç kartı, bölümden çıkış, ilerlemenin kaydı. İlk odanın beş tablosu var; müze tabloların bittiği yerde biter. Mağaza, altın, can, booster ve hesap yok.
 
 **Kararlar**
 - **Unity 6.6 (6000.6.4f1), URP 2B.** Unity Personal lisansı. LTS olmayan "Supported" koluyla başlandı, çünkü bilgisayarın diski iki Editor'ı kaldırmıyor.
@@ -922,6 +929,13 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Motor denetimi | `... -executeMethod Puzzle.Client.EditorTools.EngineSmokeTest.Run` |
 | Görüntü al | `... -executeMethod Puzzle.Client.EditorTools.RenderHarness.Run -shotLevels 40 -shotSizes 1080x2340 -shotTimes settled` |
 | Botla oynat, kareleri çıkar | `... -executeMethod Puzzle.Client.EditorTools.Storyboard.Run -storyLevels 40 -storyBot expert -storyTurns 6` |
+| Müze ekranlarının görüntüsü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run` (salon, harita, koleksiyon, yapboz; oyuncu durumu ve ekran boyu seçilir) |
+| Baştan sona bir yürüyüş | `... -executeMethod Puzzle.Client.EditorTools.GameWalk.Run` (bölüm kazan, parçayı gör, yerleştir, salona dön) |
+| Müzenin durumu ve kesimler | `... -executeMethod Puzzle.Client.EditorTools.MuseumReport.Run` |
+| Tabloları indir | `node tools/unity/fetch-paintings.js` (yeni oda eklemek için betikteki listeye yazılır) |
+| Önbellekleri başka sürücüye taşı | `.\tools\unity\Move-CachesToDrive.ps1 -Drive D` |
 | APK derle | `Unity.exe -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run` → `unity/Build/Android/puzzle.apk` |
+
+**Müze tarafı (2026-10-08).** Kurallar `src/Puzzle.Museum` projesinde, Unity'ye bağlı değil ve testli; `sync-engine.js` bu derlemeyi ve kataloğu da projeye koyar. Ekranlar tahtayla aynı ilkeleri izler: açık saat, her şey oyun kamerasında, komut satırından görüntü. Salon, harita ve koleksiyon `MuseumStage`'in sayfalarıdır; yapboz ve tahta kendi sahneleridir (`JigsawStage`, `GameStage`); üçü de `IStage` sözleşmesini uygular. İlerleme dosyası sürümlüdür: eski dosya okunur, kazanılmış bölümlerin parçaları bekler.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası, Roboto Bold yazı tipi.

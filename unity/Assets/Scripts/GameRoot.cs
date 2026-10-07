@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
@@ -12,8 +13,8 @@ using UnityEngine;
 namespace Puzzle.Client
 {
     /// <summary>
-    /// The one object of the game's scene. It opens the player's session when the game starts and then only passes
-    /// on what the device tells it: the time of each frame, the shape of the screen, where a finger touches it, and
+    /// The one object of the game's scene. It opens the player's session, in the museum's hall, when the game starts
+    /// and then only passes on what the device tells it: the time of each frame, the shape of the screen, where a finger touches it, and
     /// when the game is put away. Everything that is seen is built in code by the session's stage, so the scene file
     /// stays a few lines and the Editor can build the same pictures without it.
     /// </summary>
@@ -22,7 +23,8 @@ namespace Puzzle.Client
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
     /// a finger that was down, and to save progress that could not be saved before. If the device closes the game
-    /// while it is away, the attempt in progress is gone, and the level starts again with its next board.
+    /// while it is away, the attempt in progress is gone: the game comes back in the museum, and the level starts
+    /// again with its next board.
     /// </remarks>
     public sealed class GameRoot : MonoBehaviour
     {
@@ -61,7 +63,7 @@ namespace Puzzle.Client
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
             _fittedTo = CurrentScreen();
-            _session = OpenSession(LevelPack.LoadPacked(), _art, _fittedTo);
+            _session = OpenSession(LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), _fittedTo);
         }
 
         private void Update()
@@ -80,6 +82,7 @@ namespace Puzzle.Client
 
             ReadTouches(_session);
             ReadMouse(_session);
+            ReadTheWayBack(_session);
             _session.Advance(Mathf.Min(Time.deltaTime, LongestStepSeconds));
         }
 
@@ -111,22 +114,22 @@ namespace Puzzle.Client
         /// on from where that file says the player stands, as far as this version can read it, and likewise leaves
         /// the file alone: the later game finds its progress as it left it.
         /// </summary>
-        private static GameSession OpenSession(IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, ScreenShape screen)
+        private static GameSession OpenSession(IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, ScreenShape screen)
         {
             try
             {
-                return new GameSession(levels, art, new ProgressFile(Application.persistentDataPath), screen);
+                return new GameSession(levels, art, paintings, new ProgressFile(Application.persistentDataPath), screen, SessionOpening.InTheMuseum);
             }
             catch (ProgressOfALaterGameException later)
             {
                 PlayerProgress start = later.Understood ?? PlayerProgress.None;
                 Debug.LogError($"{later.Message} This run goes on from \"{start}\" and does not save.");
-                return new GameSession(levels, art, new ProgressInMemory(start), screen);
+                return new GameSession(levels, art, paintings, new ProgressInMemory(start), screen, SessionOpening.InTheMuseum);
             }
             catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
             {
                 Debug.LogError($"The saved progress cannot be read, so this run starts at the first level and does not save: {failure.Message}");
-                return new GameSession(levels, art, new ProgressInMemory(PlayerProgress.None), screen);
+                return new GameSession(levels, art, paintings, new ProgressInMemory(PlayerProgress.None), screen, SessionOpening.InTheMuseum);
             }
         }
 
@@ -174,6 +177,18 @@ namespace Puzzle.Client
                     break; // the finger is already followed; a device does not begin it twice
                 default:
                     throw new InvalidOperationException($"A touch in the phase {touch.phase} is not known to the game.");
+            }
+        }
+
+        /// <summary>
+        /// Android reports its back button and its back gesture as the Escape key; on a desktop it is that key
+        /// itself. The game never closes on it: in the hall, where there is no way back, it does nothing.
+        /// </summary>
+        private static void ReadTheWayBack(GameSession session)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                session.GoBack();
             }
         }
 

@@ -32,9 +32,16 @@ const RAILS = [
  */
 const SHADOW = { colour: "#031E24", drop: 9, narrowest: 22, widest: 46, strokes: 10, opacity: 0.05 };
 
-/** The tray is the frame path filled, with a stroke that carries the fill out to the cells' edge. */
+/**
+ * The tray is the frame path filled, with a stroke that carries the fill out to the cells' edge. Its ground is the
+ * dark teal the owner chose for the rich pieces to stand on (2026-10-07); the stylesheet makes every second cell a
+ * shade darker still. The weave's threads and the shade the frame throws on the tray are faint on that ground, and
+ * darker than it: the teal they had on the light tray would not show.
+ */
 const TRAY_STROKE = 2 * FRAME_INSET;
-const TRAY_SHADE = { colour: "#0B4C52", opacity: 0.2, width: 21, drop: 2.5 };
+const TRAY_GROUND = "#124652";
+const TRAY_SHADE = { colour: "#03161C", opacity: 0.42, width: 21, drop: 2.5 };
+const WEAVE = { light: { colour: "#fff", opacity: 0.04 }, dark: { colour: "#03161C", opacity: 0.13 } };
 const BEADS = { ring: 5.6, pitch: 5.41, dot: 0.01, shade: "#9C5C0B", light: "#FFF6CC" };
 
 /** Tiles are drawn a little larger than their cell, so the edge they are cut off at lies this far outside the cells. */
@@ -70,8 +77,8 @@ function gradient(id, { x1 = 0, y1, x2 = 0, y2 }, stops) {
 function weave() {
   const pattern = svgElement("pattern", { id: "board-weave", width: 5, height: 5, patternUnits: "userSpaceOnUse" });
   pattern.append(
-    svgElement("path", { d: "M0 1.2H5", stroke: "#fff", "stroke-opacity": 0.13, "stroke-width": 1 }),
-    svgElement("path", { d: "M1.2 0V5", stroke: "#0B4C52", "stroke-opacity": 0.07, "stroke-width": 1 }),
+    svgElement("path", { d: "M0 1.2H5", stroke: WEAVE.light.colour, "stroke-opacity": WEAVE.light.opacity, "stroke-width": 1 }),
+    svgElement("path", { d: "M1.2 0V5", stroke: WEAVE.dark.colour, "stroke-opacity": WEAVE.dark.opacity, "stroke-width": 1 }),
   );
   return pattern;
 }
@@ -92,7 +99,6 @@ function definitions({ width, height }, paths) {
       stop(0.1, "#fff", 0), stop(0.2, "#fff", 0.65), stop(0.3, "#fff", 0),
       stop(0.62, "#fff", 0), stop(0.7, "#fff", 0.4), stop(0.78, "#fff", 0),
     ]),
-    gradient("board-tray", { y1: 0, y2: height }, [stop(0, "#A3D6CF"), stop(1, "#8CC4BD")]),
     weave(),
     clipOf("board-tray-edge", paths.outline),
     clipOf("board-tile-edge", paths.tileEdge),
@@ -127,7 +133,7 @@ function tray(paths) {
     stroke: TRAY_SHADE.colour, "stroke-opacity": TRAY_SHADE.opacity, "stroke-width": TRAY_SHADE.width, transform: `translate(0 ${TRAY_SHADE.drop})`,
   }));
   return [
-    svgElement("path", { d: paths.frame, fill: "url(#board-tray)", stroke: "url(#board-tray)", "stroke-width": TRAY_STROKE, "stroke-linejoin": "round" }),
+    svgElement("path", { d: paths.frame, fill: TRAY_GROUND, stroke: TRAY_GROUND, "stroke-width": TRAY_STROKE, "stroke-linejoin": "round" }),
     svgElement("path", { d: paths.outline, fill: "url(#board-weave)" }),
     shade,
   ];

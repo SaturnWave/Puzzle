@@ -4,6 +4,61 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-08 · Oturum 17 — Renkler, daha büyük tahta ve müze tarafı
+
+**Kullanıcı kararları (2026-10-07 akşamı, telefonda oynadıktan sonra)**
+- Taş renkleri daha canlı ve uyumlu olsun: altı panelli karşılaştırmadan **4. panel** seçildi (doygun taşlar, koyu camgöbeği zemin).
+- Oyun alanı biraz daha büyük olsun ("küçük olunca göz yorma ihtimali yüksek").
+- Müze tarafına başlansın; kurallar §18'deki kararlar.
+- "İndir ve bu küçük işlemler için izin isteme": küçük ve gerekli işlemler sorulmadan yapılır, sonra bildirilir.
+- Harici disk bağlandı (D:, 720 GB boş).
+
+**Nasıl yapıldı**
+- Yedi aşamalı sıralı iş akışı: renkler → daha büyük tahta → müzenin kuralları → gezinme, ana ekran, harita → yapboz ve koleksiyon → bağımsız eleştiri → düzeltme. Yaklaşık 4,5 saat, 7 ajan, 3,5 milyon token.
+- Depolama: `tools/unity/Move-CachesToDrive.ps1 -Drive D` Unity'nin derleme ara dosyalarını (`Library/Bee`, 4,4 GB), derleme çıktısını ve görüntü klasörünü D: sürücüsüne taşıyıp yerlerine bağlantı bıraktı. Disk takılı değilken derleme ve görüntü alma çalışmaz.
+
+**Renkler (4. panel)**
+- Kural OKLCH'de: renkli tonların doygunluğu 1,3 katı (koyu tonlarda 1,15), açıklık hafifçe düşer; yeşil sarıya (140°), elmas maviye (220°) doğru kayar; beyazlar ve nötrler aynı kalır. İlk denemede renkleri açmak pastel sonuç verdi ve atıldı.
+- Kaynakta uygulandı: `tools/web-theme/gem-palette.js` (testli) ve çizim derlemesindeki iki adım (palet, koyu zemin için gölge). Web testindeki `pieces.svg` ve Unity'nin PNG'leri aynı derlemeden çıkar.
+- Tepsi: koyu camgöbeği dama (#124652 / #0f3e49), web sayfasında ve Unity'de. Koyu zeminde okunmayan şeyler ayarlandı: taş gölgesi, mürekkep (fırça darbesi ve leke), seçili taş işareti. Web sayfası değişiklikleri kaydedildiği anda oyunculara yansıdı.
+
+**Daha büyük tahta**
+- Düzen üç ekran biçimine göre ayarlanıyor; çerçeve payı daraldı, plaketler ve raf gerektiğinde küçülüyor.
+
+| Ekran | Tahta | Taş boyu: önce → sonra |
+|---|---|---|
+| Dış ekran (1080×2424) | 10 sütun | 99 px (5,96 mm) → 102 px (6,14 mm) |
+| Dış ekran | 11 sütun | 90 px (5,42 mm) → 93 px (5,60 mm) |
+| İç ekran (2076×2152) | 10 satır | 151 px (10,3 mm) → 167 px (11,4 mm) |
+| İç ekran | 13 satır | 116 px (7,9 mm) → 128 px (8,7 mm) |
+
+- **Dış ekranda sınır genişlik.** Tahta zaten genişliğin %92'sini kullanıyordu, şimdi %94–95. Daha iri taş için daha dar tahta gerekir (9 sütun 113 px, 8 sütun 127 px); bu bölüm tasarımı kararıdır.
+
+**Müze**
+- **Kurallar `src/Puzzle.Museum` (netstandard2.1, yeni proje):** 20 oda × 5 tablo × 10 bölüm, yapboz boyutları (10 / 20 / 30 / 40 parça; 3-4-3, 5×4, 6×5, 8×5), dikey tabloda dönen dizilim, aynı tohumla aynı kesim (girintili çıkıntılı klasik parçalar), ilerleme (kazanılan parçalar kazanılan bölümlerden türetilir; yerleştirilenler ayrı tutulur; bir parça iki kez kazanılamaz ya da yerleştirilemez). Sunucu ve araçlar da kullanabilsin diye Unity'nin dışında.
+- **Katalog veri dosyası:** `museum/catalogue.json` (20 oda; 1. oda Empresyonizm beş tablosuyla; 2. oda Post-empresyonizm; sonrakilerin adı geçici).
+- **Tablolar:** 1. odanın beş tablosu tam boyda indirildi (`tools/unity/fetch-paintings.js`; Art Institute of Chicago'nun kendi çekimleri, Wikimedia Commons üzerinden; müzenin kendi sunucusu otomatik istekleri reddediyor). Görüntüler oyunun içinde (`unity/Assets/Resources/Paintings/room-01`), kaynak ve lisans listesi `art/paintings/room-01/licences.json` içinde.
+- **Ekranlar:** oyun artık müzenin salonuna açılıyor (odanın duvarı, onarılan tablo, büyük "Bölüm N" düğmesi). Alt çubuk: Koleksiyon, Müze, Harita. Harita 20 odanın kat planını gösterir. Koleksiyonda tamamlanan tablolar büyük açılır, ulaşılmayanlar örtülüdür.
+- **Yapboz:** tablo yaldız çerçevede; parçalar tepsiden sürüklenir, kendi yerine yaklaşınca oturur; "Otomatik tamamla" hepsini yerleştirir. Tablo tamamlanınca kutlama, oda tamamlanınca "Oda onarıldı!".
+- **Akış:** kazanılan bölümün sonuç kartı kazanılan parçayı gösterir ("Parçaları yerleştir" / "Devam"). Bölümden çıkış eklendi: rafın solundaki geri düğmesi ve telefonun geri tuşu önce sorar; hamle yapıldıysa deneme sayılır.
+- **Eski kayıt:** önceki sürümün ilerleme dosyası okunuyor; kazanılmış bölümlerin parçaları yerleştirilmeyi bekler.
+- **Müze tabloların bittiği yerde biter:** 51. bölümden sonra parça verilmez, salon "Yeni tablolar hazırlanıyor" der. Çalışmayan hiçbir şey gösterilmiyor (altın, can, mağaza, takvim yok).
+
+**Bağımsız eleştirinin bulduğu ve düzeltilenler**
+- Engelleyici: oyun küçük önizleme resimleriyle derlenecekti (tam boy dosyalar kullanıldı); 51. bölümden sonrası boş bej panellerdi (müze tabloların bittiği yerde bitiyor).
+- Bölümden çıkılamıyordu; yapboz her parçadan sonra yarım saniye dokunuşu yutuyordu; koleksiyon rozetleri ekran kenarında kesiliyordu; örtü kumaş gibi durmuyordu; oda tamamlanmasının kendi anı yoktu.
+- Web sayfasında mürekkep lekesi koyu zeminde neredeyse görünmüyordu (karşıtlık 1,1 : 1): renkler Unity'dekilerle eşitlendi (bu oturumda, iş akışından sonra).
+
+**Doğrulama (benim yaptığım)**
+- `dotnet test`: 2489 test geçiyor (824'ten).
+
+**Açık**
+- 2–20. odaların tabloları: seçim ve indirme.
+- Dış ekranda daha iri taş: daha dar tahtalar (bölümlerin yeniden üretimi) kararı.
+- Yeni oyuncunun kazandığı ilk parça düz gökyüzü; küçük yazılar (ressam ve yıl, "ODA 1 / 20") dış ekranda yaklaşık 1 mm.
+- Telefonda ölçülmedi: 40 parçalı otomatik tamamlama, geri tuşu, uzun oynama.
+- Yazı tipleri hâlâ geçici (Roboto Bold).
+
 ## 2026-10-07 · Oturum 16 — Unity istemcisi: oynanabilir tahta telefonda
 
 **Kullanıcı kararı**

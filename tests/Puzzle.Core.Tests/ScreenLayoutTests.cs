@@ -5,12 +5,20 @@ namespace Puzzle.Core.Tests;
 /// <summary>
 /// Where the Unity game puts a board on a screen. <c>ScreenLayout</c> is the Unity project's source file, compiled
 /// into these tests: it has no Unity dependency, so the screens the game must support are checked here in numbers.
+/// The screens are a tall phone (1080 x 2340, and 1080 x 2424: the cover display of the foldable the game is tried
+/// on), the 9:16 phone of the design (1080 x 1920, 720 x 1280), and that foldable opened (2076 x 2152, nearly square).
 /// </summary>
 public class ScreenLayoutTests
 {
+    /// <summary>The shapes the game's 1000 levels have: 9 to 11 columns, 10 to 13 rows, never wider than high.</summary>
+    private static readonly (int Columns, int Rows)[] BoardsOfTheGame =
+    {
+        (9, 10), (9, 11), (9, 12), (10, 10), (10, 11), (10, 12), (10, 13), (11, 11), (11, 12), (11, 13),
+    };
+
     public static TheoryData<int, int, int, int, bool> ScreensAndBoards()
     {
-        (int Width, int Height)[] screens = { (1080, 2340), (1080, 1920), (2076, 2152), (1038, 1076), (720, 1280) };
+        (int Width, int Height)[] screens = { (1080, 2424), (1080, 2340), (1080, 1920), (1200, 1920), (2076, 2152), (1038, 1076), (720, 1280) };
         (int Columns, int Rows, bool HasExits)[] boards = { (10, 10, false), (11, 13, false), (10, 11, true), (16, 16, true), (5, 5, false), (16, 4, false) };
         var cases = new TheoryData<int, int, int, int, bool>();
         foreach ((int width, int height) in screens)
@@ -42,11 +50,14 @@ public class ScreenLayoutTests
     }
 
     [Theory]
+    [InlineData(1080, 2424, 0, 0)]
+    [InlineData(1080, 2424, 96, 48)]
     [InlineData(1080, 2340, 0, 0)]
     [InlineData(1080, 2340, 110, 60)]
     [InlineData(1080, 1920, 0, 0)]
     [InlineData(1080, 1920, 90, 48)]
     [InlineData(2076, 2152, 0, 0)]
+    [InlineData(2076, 2152, 80, 60)]
     [InlineData(1038, 1076, 0, 0)]
     public void The_plaques_and_the_shelf_stay_on_the_usable_screen(int width, int height, int topInset, int bottomInset)
     {
@@ -54,27 +65,54 @@ public class ScreenLayoutTests
 
         float usableTop = layout.ViewHeight / 2 - topInset / layout.PixelsPerPoint;
         float usableBottom = -layout.ViewHeight / 2 + bottomInset / layout.PixelsPerPoint;
-        float hudTop = layout.HudMiddle + ScreenLayout.HudHeight * layout.ChromeScale / 2;
-        float shelfBottom = layout.ShelfMiddle - ScreenLayout.ShelfHeight * layout.ChromeScale / 2;
-        Assert.True(hudTop <= usableTop - 12f + 0.001f, "the plaques touch the top of the usable screen");
-        Assert.True(shelfBottom >= usableBottom + 10f - 0.001f, "the shelf touches the foot of the usable screen");
+        float hudTop = layout.HudMiddle + ScreenLayout.HudHeight * layout.HudScale / 2;
+        float shelfBottom = layout.ShelfMiddle - ScreenLayout.ShelfHeight * layout.ShelfScale / 2;
+        Assert.True(hudTop <= usableTop - ScreenLayout.LeastWallAtTheEdges + 0.001f, "the plaques touch the top of the usable screen");
+        Assert.True(shelfBottom >= usableBottom + ScreenLayout.LeastWallAtTheEdges - 0.001f, "the shelf touches the foot of the usable screen");
         Assert.True(layout.HudBottom > layout.ShelfTop, "the plaques and the shelf overlap");
-        Assert.InRange(layout.HudWidth, 300f, layout.ViewWidth - 2 * ScreenLayout.HudSideMargin);
+        Assert.True(layout.HudWidth <= layout.ViewWidth - 2 * ScreenLayout.HudSideMargin + 0.001f, "the plaques are cut off at the sides");
         Assert.InRange(layout.ShelfWidth, 300f, layout.ViewWidth - 2 * ScreenLayout.ShelfSideMargin);
+
+        // In its own points the row of plaques is between a tall phone's (the screen's 360 less the wall at its sides)
+        // and the widest: each plaque is then 113 to 158 points wide and 84 high, room for three goals and no more.
+        Assert.InRange(layout.HudWidth / layout.HudScale, 340f - 0.001f, ScreenLayout.WidestHud + 0.001f);
     }
 
     [Fact]
-    public void A_short_screen_draws_the_plaques_and_the_shelf_smaller_and_a_tall_one_at_full_size()
+    public void A_tall_phone_draws_the_plaques_and_the_shelf_at_full_size_a_9_to_16_phone_smaller_and_a_wide_screen_smallest()
     {
         var board = new BoardFootprint(10, 10, hasExits: false);
 
-        ScreenLayout shortest = ScreenLayout.Of(new ScreenShape(1080, 1920), board);
-        ScreenLayout square = ScreenLayout.Of(new ScreenShape(2076, 2152), board);
-        ScreenLayout tall = ScreenLayout.Of(new ScreenShape(1080, 2340), board);
+        ScreenLayout roomy = ScreenLayout.Of(new ScreenShape(1080, 2424), board);
+        ScreenLayout tight = ScreenLayout.Of(new ScreenShape(1080, 1920), board);
+        ScreenLayout compact = ScreenLayout.Of(new ScreenShape(2076, 2152), board);
 
-        Assert.Equal(ScreenLayout.SmallestChromeScale, shortest.ChromeScale, 0.0001f);
-        Assert.Equal(ScreenLayout.SmallestChromeScale, square.ChromeScale, 0.0001f);
-        Assert.Equal(1f, tall.ChromeScale, 0.0001f);
+        // A tall phone's board is as wide as the screen whatever the plaques take, so they keep their full size.
+        Assert.Equal(1f, roomy.HudScale, 0.0001f);
+        Assert.Equal(1f, roomy.ShelfScale, 0.0001f);
+        Assert.Equal(ScreenLayout.TightChromeScale, tight.HudScale, 0.0001f);
+        Assert.Equal(ScreenLayout.TightChromeScale, tight.ShelfScale, 0.0001f);
+
+        // On the open foldable the height decides every board, so every point the plaques and the shelf give up
+        // goes to the cells. The shelf holds one line of lettering and gives up more than the plaques do.
+        Assert.Equal(ScreenLayout.CompactHudScale, compact.HudScale, 0.0001f);
+        Assert.Equal(ScreenLayout.CompactShelfScale, compact.ShelfScale, 0.0001f);
+    }
+
+    [Fact]
+    public void A_screen_between_two_shapes_draws_the_plaques_between_their_sizes()
+    {
+        var board = new BoardFootprint(10, 10, hasExits: false);
+
+        // 1080 x 2100 is 700 points high: halfway from the 9:16 phone's 640 to the roomy 760.
+        ScreenLayout tallish = ScreenLayout.Of(new ScreenShape(1080, 2100), board);
+
+        // 1260 x 1920 is 420 points wide: halfway from the 9:16 phone's 360 to the wide 480.
+        ScreenLayout widish = ScreenLayout.Of(new ScreenShape(1260, 1920), board);
+
+        Assert.Equal((ScreenLayout.TightChromeScale + 1f) / 2, tallish.HudScale, 0.0001f);
+        Assert.Equal((ScreenLayout.TightChromeScale + ScreenLayout.CompactHudScale) / 2, widish.HudScale, 0.0001f);
+        Assert.Equal((ScreenLayout.TightChromeScale + ScreenLayout.CompactShelfScale) / 2, widish.ShelfScale, 0.0001f);
     }
 
     [Theory]
@@ -88,31 +126,117 @@ public class ScreenLayoutTests
         Assert.InRange(layout.CellSize, 1f, ScreenLayout.LargestCell);
     }
 
-    [Fact]
-    public void A_9_to_16_phone_shows_level_40_with_the_web_test_pages_cells()
+    /// <summary>
+    /// The cells of the foldable the game is tried on, in pixels. Its cover display is a tall phone at about 422
+    /// pixels to the inch, where the width decides the cell; opened, it is nearly square at about 373, where the
+    /// height does. In millimetres, and beside what the same boards had while the frame was 10.6 points wide with
+    /// 4 points of wall beside it and the open screen drew the plaques and the shelf at the 9:16 phone's size:
+    /// <code>
+    /// cover, 1080 x 2424        before           now
+    ///    9 columns           110 px  6.6 mm   113 px  6.8 mm
+    ///   10 columns            99 px  6.0 mm   102 px  6.1 mm
+    ///   11 columns            90 px  5.4 mm    93 px  5.6 mm
+    /// open, 2076 x 2152
+    ///   10 rows              151 px 10.3 mm   167 px 11.4 mm
+    ///   11 rows              137 px  9.3 mm   152 px 10.4 mm
+    ///   12 rows              126 px  8.6 mm   139 px  9.5 mm
+    ///   13 rows              116 px  7.9 mm   128 px  8.7 mm
+    /// </code>
+    /// On the cover a board of 11 columns cannot have cells of more than 98 pixels even with no frame at all: a
+    /// larger cell there takes a board of fewer columns, which is the levels' business and not the layout's.
+    /// </summary>
+    [Theory]
+    [InlineData(1080, 2424, 9, 11, 113)]
+    [InlineData(1080, 2424, 9, 12, 113)]
+    [InlineData(1080, 2424, 10, 10, 102)]
+    [InlineData(1080, 2424, 10, 13, 102)]
+    [InlineData(1080, 2424, 11, 11, 93)]
+    [InlineData(1080, 2424, 11, 13, 93)]
+    [InlineData(1080, 2424, 12, 13, 85)]
+    [InlineData(1080, 2424, 13, 13, 78)]
+    [InlineData(2076, 2152, 9, 10, 167)]
+    [InlineData(2076, 2152, 10, 10, 167)]
+    [InlineData(2076, 2152, 9, 11, 152)]
+    [InlineData(2076, 2152, 11, 11, 152)]
+    [InlineData(2076, 2152, 10, 12, 139)]
+    [InlineData(2076, 2152, 10, 13, 128)]
+    [InlineData(2076, 2152, 11, 13, 128)]
+    [InlineData(2076, 2152, 13, 13, 128)]
+    public void The_foldable_the_game_is_tried_on_shows_a_board_with_cells_of_this_many_pixels(int width, int height, int columns, int rows, int cellPixels)
     {
-        // The web test page draws this 11 x 13 board with 30 px cells on a 360 x 640 px page (out/web-theme/screens).
+        ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height), new BoardFootprint(columns, rows, hasExits: false));
+
+        Assert.Equal(cellPixels, layout.CellSize * layout.PixelsPerPoint, 0.001f);
+    }
+
+    [Fact]
+    public void A_phone_gives_the_board_all_its_width_but_the_frames()
+    {
+        // The web test page draws level 40's 11 x 13 board with 30 px cells on a 360 x 640 px page: its frame is a
+        // third wider and stands 4 points off the page's sides. Here the cells get that room: 31 points.
         ScreenLayout layout = ScreenLayout.Of(new ScreenShape(720, 1280), new BoardFootprint(11, 13, hasExits: false));
 
         Assert.Equal(360f, layout.ViewWidth);
         Assert.Equal(640f, layout.ViewHeight);
-        Assert.Equal(30f, layout.CellSize);
+        Assert.Equal(31f, layout.CellSize);
+
+        // What is left of the width beside the cells is the frame, the line of wall beside it, and less than the
+        // pixel per column that whole-pixel cells cost.
+        float besideTheCells = layout.ViewWidth - 11 * layout.CellSize;
+        Assert.InRange(besideTheCells, 2 * ScreenLayout.BoardMargin, 2 * ScreenLayout.BoardMargin + 11 / layout.PixelsPerPoint);
     }
 
     [Fact]
-    public void A_tall_phone_sizes_the_board_by_its_width_and_a_square_screen_by_its_height()
+    public void A_tall_phone_sizes_the_board_by_its_width_and_a_wide_screen_by_its_height()
     {
         var board = new BoardFootprint(10, 10, hasExits: false);
 
         ScreenLayout tall = ScreenLayout.Of(new ScreenShape(1080, 2340), board);
         ScreenLayout square = ScreenLayout.Of(new ScreenShape(2076, 2152), board);
 
-        Assert.Equal(tall.ViewWidth - 2 * ScreenLayout.BoardMargin, 10 * tall.CellSize, 0.5f);
+        // Whole-pixel cells cost less than a pixel per column.
+        Assert.Equal(tall.ViewWidth - 2 * ScreenLayout.BoardMargin, 10 * tall.CellSize, 10f / tall.PixelsPerPoint);
+
         // Between the plaques and the shelf the board leaves room for its frame on both sides, the frame's shadow,
-        // and the two gaps of the shortest screen (6 points under the plaques, 4 over the shelf).
-        float roomForTheCells = square.HudBottom - square.ShelfTop - 2 * ScreenLayout.FrameReach - ScreenLayout.FrameShadowDrop - 10f;
+        // and the two gaps of a wide screen (5 points under the plaques, 3 over the shelf).
+        float roomForTheCells = square.HudBottom - square.ShelfTop - 2 * ScreenLayout.FrameReach - ScreenLayout.FrameShadowDrop - 8f;
         Assert.Equal(roomForTheCells, 10 * square.CellSize, 10f / square.PixelsPerPoint);
         Assert.True(10 * square.CellSize < square.ViewWidth - 2 * ScreenLayout.BoardMargin);
+    }
+
+    [Fact]
+    public void On_the_open_foldable_every_board_of_the_game_leaves_wall_for_a_lamp_at_each_side()
+    {
+        // The height decides the cell there, and no board of the game is wider than it is high: wall is left at
+        // both sides of the frame, and the lamps hang in it (Sconces), so it is not left bare. Above the board
+        // there is no wall for them, as there is on a phone.
+        foreach ((int columns, int rows) in BoardsOfTheGame)
+        {
+            ScreenLayout layout = ScreenLayout.Of(new ScreenShape(2076, 2152), new BoardFootprint(columns, rows, hasExits: false));
+
+            Assert.True(layout.WallBesideBoard >= Sconces.RoomBesideTheFrame, $"a {columns} x {rows} board leaves {layout.WallBesideBoard} points beside its frame");
+            Assert.True(layout.WallAboveBoard < Sconces.RoomInTheCutCorners, $"a {columns} x {rows} board has {layout.WallAboveBoard} points of wall above it");
+        }
+    }
+
+    [Fact]
+    public void On_a_phone_the_width_decides_every_board_of_the_game()
+    {
+        // So nothing the plaques and the shelf could give up would make a phone's cells larger, and they keep
+        // their size there. Only the frame and the line of wall beside it stand between the cells and the screen's
+        // sides (and less than the pixel per column that whole-pixel cells cost, half of it at each side; the
+        // board's left edge is put on a whole pixel, which may take most of a pixel from the wall there).
+        foreach ((int width, int height) in new[] { (1080, 2424), (1080, 2340), (1080, 1920) })
+        {
+            foreach ((int columns, int rows) in BoardsOfTheGame)
+            {
+                ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height), new BoardFootprint(columns, rows, hasExits: false));
+
+                float wallBesideTheFrame = ScreenLayout.BoardMargin - ScreenLayout.FrameReach;
+                float onePixel = 1f / layout.PixelsPerPoint;
+                Assert.InRange(layout.WallBesideBoard, wallBesideTheFrame - onePixel, wallBesideTheFrame + columns * onePixel / 2);
+            }
+        }
     }
 
     [Fact]
@@ -135,7 +259,7 @@ public class ScreenLayoutTests
         Assert.Equal(plain.CellSize, withCutout.CellSize);
         Assert.True(withCutout.HudMiddle < plain.HudMiddle);
         Assert.True(withCutout.BoardTop < plain.BoardTop);
-        Assert.True(withCutout.ChromeScale < plain.ChromeScale, "less usable height draws the plaques smaller");
+        Assert.True(withCutout.HudScale < plain.HudScale, "less usable height draws the plaques smaller");
     }
 
     [Fact]

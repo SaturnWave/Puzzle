@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Puzzle.Museum;
 
 namespace Puzzle.Client.Flow
 {
@@ -8,13 +9,22 @@ namespace Puzzle.Client.Flow
     /// the same level again. It is the web test server's rule (Puzzle.Tooling.Players.PlayerProgress), so a level's
     /// retries meet the same boards here as there: the player stands on the level after the ones they won, and
     /// <see cref="AttemptsOnLevel"/> counts their attempts on that level only. An attempt counts once a move is
-    /// played in it; a board that was only looked at uses up no retry number. This file has no Unity dependency, so
-    /// the repository's tests compile it too.
+    /// played in it; a board that was only looked at uses up no retry number. The levels won also give the player the
+    /// jigsaw pieces of the museum's paintings (<see cref="Museum"/>); which of them the player has put in place is
+    /// kept here with the rest. This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class PlayerProgress : IEquatable<PlayerProgress>
     {
+        /// <summary>Progress with no jigsaw piece in place yet.</summary>
         /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
         public PlayerProgress(int levelsWon, int attemptsOnLevel)
+            : this(levelsWon, attemptsOnLevel, PlacedPieces.None)
+        {
+        }
+
+        /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
+        /// <exception cref="ArgumentException">A piece is said to be in place that the levels won have not given yet.</exception>
+        public PlayerProgress(int levelsWon, int attemptsOnLevel, PlacedPieces placed)
         {
             if (levelsWon < 0)
             {
@@ -28,6 +38,7 @@ namespace Puzzle.Client.Flow
 
             LevelsWon = levelsWon;
             AttemptsOnLevel = attemptsOnLevel;
+            Museum = new MuseumProgress(levelsWon, placed);
         }
 
         /// <summary>Where every player starts: the first level, never tried.</summary>
@@ -41,6 +52,9 @@ namespace Puzzle.Client.Flow
         /// from 0, of their next attempt there, which picks that attempt's seed from the level's calibrated pool.
         /// </summary>
         public int AttemptsOnLevel { get; }
+
+        /// <summary>The museum as the player has restored it: the pieces their levels gave them, and the ones they have put in place.</summary>
+        public MuseumProgress Museum { get; }
 
         /// <summary>
         /// Which level of a pack the player stands on, counted from 0 in the pack's order: the one after the levels
@@ -61,24 +75,72 @@ namespace Puzzle.Client.Flow
         public bool IsOnLastLevelOf(int levelCount) => LevelIndexIn(levelCount) == levelCount - 1;
 
         /// <summary>The first move of an attempt on the level was played: the attempt now counts.</summary>
-        public PlayerProgress WithAttemptStarted() => new PlayerProgress(LevelsWon, AttemptsOnLevel + 1);
+        public PlayerProgress WithAttemptStarted() => new PlayerProgress(LevelsWon, AttemptsOnLevel + 1, Museum.Placed);
 
         /// <summary>
-        /// The level the player stands on is won: they stand on the next one, never tried. Winning the last level of
-        /// the pack again does not count it twice.
+        /// The level the player stands on is won: they stand on the next one, never tried, and the won level's jigsaw
+        /// pieces lie on their painting's tray. Winning the last level of the pack again does not count it twice.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">The pack has no level.</exception>
         public PlayerProgress WithLevelWon(int levelCount) =>
-            new PlayerProgress(Math.Min(LevelIndexIn(levelCount) + 1, levelCount), attemptsOnLevel: 0);
+            new PlayerProgress(Math.Min(LevelIndexIn(levelCount) + 1, levelCount), attemptsOnLevel: 0, Museum.Placed);
+
+        /// <summary>The player put a jigsaw piece from a painting's tray in its place.</summary>
+        /// <exception cref="ArgumentOutOfRangeException">The painting has no piece of that number.</exception>
+        /// <exception cref="InvalidOperationException">The piece is not on the tray: not won yet, or in place already.</exception>
+        public PlayerProgress WithPiecePlaced(PaintingNumber painting, int piece) =>
+            new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.WithPiecePlaced(painting, piece).Placed);
+
+        /// <summary>Every piece on a painting's tray went to its place at once.</summary>
+        public PlayerProgress WithTrayPlaced(PaintingNumber painting) =>
+            new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.WithTrayPlaced(painting).Placed);
+
+        /// <summary>
+        /// This progress with a number of the waiting pieces put in place, in the museum's order: painting by
+        /// painting, each painting's pieces by their numbers. It is how a picture command or a test says "a player
+        /// who has won so many levels and placed so many pieces".
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Fewer than no pieces, or more than are waiting.</exception>
+        public PlayerProgress WithWaitingPiecesPlaced(int count)
+        {
+            if (count < 0 || count > Museum.PiecesWaiting)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), count, $"{Museum.PiecesWaiting} pieces are waiting to be placed.");
+            }
+
+            MuseumProgress museum = Museum;
+            int left = count;
+            foreach (PaintingNumber painting in PaintingNumber.All)
+            {
+                if (left == 0)
+                {
+                    break;
+                }
+
+                foreach (int piece in museum.WaitingIn(painting))
+                {
+                    if (left == 0)
+                    {
+                        break;
+                    }
+
+                    museum = museum.WithPiecePlaced(painting, piece);
+                    left--;
+                }
+            }
+
+            return new PlayerProgress(LevelsWon, AttemptsOnLevel, museum.Placed);
+        }
 
         public bool Equals(PlayerProgress? other) =>
-            other is not null && LevelsWon == other.LevelsWon && AttemptsOnLevel == other.AttemptsOnLevel;
+            other is not null && LevelsWon == other.LevelsWon && AttemptsOnLevel == other.AttemptsOnLevel && Museum.Placed.Equals(other.Museum.Placed);
 
         public override bool Equals(object? obj) => Equals(obj as PlayerProgress);
 
-        public override int GetHashCode() => HashCode.Combine(LevelsWon, AttemptsOnLevel);
+        public override int GetHashCode() => HashCode.Combine(LevelsWon, AttemptsOnLevel, Museum.Placed);
 
-        public override string ToString() => $"{LevelsWon} levels won, {AttemptsOnLevel} attempts on the next";
+        public override string ToString() =>
+            $"{LevelsWon} levels won, {AttemptsOnLevel} attempts on the next, {Museum.PiecesPlaced} of {Museum.PiecesWon} jigsaw pieces placed";
     }
 
     /// <summary>Where a player's progress is kept between two runs of the game.</summary>

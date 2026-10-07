@@ -87,6 +87,28 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.Alcove] = "alcove",
             [GalleryArt.Sparkle] = "sparkle",
             [GalleryArt.CountBadge] = "count-badge",
+            [GalleryArt.PictureFrame] = "picture-frame",
+            [GalleryArt.PictureLight] = "picture-light",
+            [GalleryArt.CaptionPlate] = "caption-plate",
+            [GalleryArt.Pill] = "pill",
+            [GalleryArt.RoomBadge] = "room-badge",
+            [GalleryArt.Tab] = "tab",
+            [GalleryArt.IconMuseum] = "icon-museum",
+            [GalleryArt.IconMap] = "icon-map",
+            [GalleryArt.IconLock] = "icon-lock",
+            [GalleryArt.IconPin] = "icon-pin",
+            [GalleryArt.Workbench] = "workbench",
+            [GalleryArt.TealButton] = "button-teal",
+            [GalleryArt.BlueButton] = "button-blue",
+            [GalleryArt.BackButton] = "button-back",
+            [GalleryArt.IconCollection] = "icon-collection",
+            [GalleryArt.IconPiece] = "icon-piece",
+            [GalleryArt.Tray] = "tray",
+            [GalleryArt.PipBar] = "pip-bar",
+            [GalleryArt.PipOn] = "pip-on",
+            [GalleryArt.PipOff] = "pip-off",
+            [GalleryArt.PipNext] = "pip-next",
+            [GalleryArt.RedBadge] = "badge-red",
         };
 
         /// <exception cref="InvalidOperationException">The drawings and the files do not agree, or a material is missing.</exception>
@@ -105,6 +127,7 @@ namespace Puzzle.Client.EditorTools
                 AssetDatabase.CreateAsset(catalogue, CataloguePath);
             }
 
+            Debug.Log($"Art catalogue: {pieces.Count + gallery.Count} drawings, packed into {PieceAtlasBuilder.TexturesOf(pieces.Values.Concat(gallery.Values))} atlas texture(s).");
             catalogue.FillDrawings(pieces, gallery, Damask(), SpriteMaterial(), PaintMaterial());
             catalogue.FillLettering(typeface, letteringMaterials);
             EditorUtility.SetDirty(catalogue);

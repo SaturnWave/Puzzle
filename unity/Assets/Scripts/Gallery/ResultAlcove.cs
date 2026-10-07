@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Painting;
 using Puzzle.Client.Play;
@@ -14,11 +15,12 @@ namespace Puzzle.Client.Gallery
 {
     /// <summary>
     /// The lit alcove of a result's card: a piece of the gallery wall in a beaded gilt frame, with a shelf on which
-    /// stands what the game left behind. A level won leaves its star, in a warm light and among sparkles; a lost one
-    /// leaves the goals it did not reach, each with what was left of it on a teal badge. Sizes and places are the web
+    /// stands what the game left behind. A level won leaves the jigsaw pieces it gave, in a warm light and among
+    /// sparkles (or its star, where it gave none); a lost one leaves the goals it did not reach, each with what was
+    /// left of it on a teal badge, and so does a level its player asks to leave: what is still to do. Sizes and places are the web
     /// test page's (gallery.css, .alcove), in points around the middle of the frame.
     /// </summary>
-    public sealed class ResultAlcove
+    public sealed class ResultAlcove : IDisposable
     {
         /// <summary>The frame, and the wall and shelf inside its band.</summary>
         public const float Width = 302f;
@@ -33,6 +35,20 @@ namespace Puzzle.Client.Gallery
         private const float ShadowInAPiece = 0.08f;
 
         private const float StarSize = 139f;
+
+        /// <summary>
+        /// A jigsaw piece that was won stands in a box this large, leaning a little, as the design canvas shows it
+        /// (WinTR); several stand smaller, side by side, leaning one way and the other in turn.
+        /// </summary>
+        private static readonly Vector2 LonePieceBox = new Vector2(124f, 104f);
+        private const float TallestPieceInARow = 74f;
+        private const float PieceLeansBy = 7f;
+
+        /// <summary>A piece's knobs reach past its cell: it stands this share of its cell's height above the shelf.</summary>
+        private const float PieceOverShelf = 0.3f;
+
+        /// <summary>The width of a pixel on a phone, in the card's points: a piece's rim fades out over it.</summary>
+        private const float PieceSoftEdge = 0.33f;
 
         /// <summary>
         /// The light a won level adds to the alcove's own, behind the star: its size (it fades out before the
@@ -88,6 +104,7 @@ namespace Puzzle.Client.Gallery
         /// <summary>What pops up on the shelf, in the order it does; each grows from nothing to its own size.</summary>
         private readonly List<Transform> _exhibits = new List<Transform>();
         private readonly List<(Transform Sparkle, float Size, float Phase)> _sparkles = new List<(Transform, float, float)>();
+        private readonly List<LoosePiece> _pieces = new List<LoosePiece>();
         private SpriteRenderer? _winLight;
 
         private ResultAlcove(Transform card, ArtCatalogue art)
@@ -103,16 +120,23 @@ namespace Puzzle.Client.Gallery
         public float PopSeconds => Tempo.ExhibitPop + Tempo.ExhibitEvery * Math.Max(0, _exhibits.Count - 1);
 
         /// <summary>Builds the alcove of a result with its exhibits, which are not seen until <see cref="Pop"/> shows them.</summary>
-        public static ResultAlcove Create(Transform card, ArtCatalogue art, EffectArt effects, LevelResult result)
+        /// <param name="paintings">Where the picture of a piece that was won comes from.</param>
+        public static ResultAlcove Create(Transform card, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result)
         {
             var alcove = new ResultAlcove(card, art);
             switch (result)
             {
+                case LevelResult.Won { Reward: PieceReward reward }:
+                    alcove.StandThePieces(reward, paintings.LookOf(reward.Painting), art, effects);
+                    break;
                 case LevelResult.Won _:
                     alcove.StandTheStar(art, effects);
                     break;
                 case LevelResult.Lost lost:
                     alcove.StandWhatWasLeft(lost.OpenGoals, art);
+                    break;
+                case LevelResult.Leaving leaving:
+                    alcove.StandWhatWasLeft(leaving.OpenGoals, art);
                     break;
                 default:
                     throw new InvalidOperationException($"A result of the kind {result.GetType().Name} has nothing to show in the alcove.");
@@ -155,14 +179,66 @@ namespace Puzzle.Client.Gallery
             }
         }
 
+        public void Dispose()
+        {
+            foreach (LoosePiece piece in _pieces)
+            {
+                piece.Dispose();
+            }
+        }
+
         private void StandTheStar(ArtCatalogue art, EffectArt effects)
         {
             Transform stand = AddExhibit("Star", new Vector2(0f, StandingHeight(StarSize)));
+            AddWinLight(stand, art, effects);
+            SceneObjects.AddSprite("Star", stand, art.Of(PieceArt.Star), art.SpriteMaterial, DrawOrder.CardExhibit).transform.localScale = new Vector3(StarSize, StarSize, 1f);
+            AddSparkles(art);
+        }
+
+        /// <summary>The jigsaw pieces a won level gave, side by side on the shelf, centred as a row, each as large as its share of the row allows.</summary>
+        private void StandThePieces(PieceReward reward, PaintingLook look, ArtCatalogue art, EffectArt effects)
+        {
+            int count = reward.Pieces.Count;
+            var box = count == 1
+                ? LonePieceBox
+                : new Vector2((NicheWidth - 2f * RoomBesideTheRow - GapBetweenPieces * (count - 1)) / count, TallestPieceInARow);
+            float left = -(count * box.x + (count - 1) * GapBetweenPieces) / 2f;
+            for (int index = 0; index < count; index++)
+            {
+                float paintingWidth = PaintingWidthForAPieceIn(box, look, reward.Pieces[index]);
+                var middle = new Vector2(left + index * (box.x + GapBetweenPieces) + box.x / 2f, -ShelfUnderMiddle + (0.5f + PieceOverShelf) * box.y);
+                Transform stand = AddExhibit("Piece won", middle);
+                if (index == count / 2)
+                {
+                    AddWinLight(stand, art, effects);
+                }
+
+                LoosePiece piece = LoosePiece.Create(stand, art, look, reward.Pieces[index], paintingWidth, PieceSoftEdge, DrawOrder.CardExhibit);
+                piece.Transform.localRotation = Quaternion.Euler(0f, 0f, index % 2 == 0 ? PieceLeansBy : -PieceLeansBy);
+                _pieces.Add(piece);
+            }
+
+            AddSparkles(art);
+        }
+
+        /// <summary>How wide the whole painting is when one of its pieces is drawn so that its cell just fits a box.</summary>
+        private static float PaintingWidthForAPieceIn(Vector2 box, PaintingLook look, int pieceNumber)
+        {
+            // A cut is the same at every size: the piece's cell on a painting one point wide tells its share of any width.
+            var cell = look.CutAt(new Vector2(1f, 1f / look.Aspect)).Pieces[pieceNumber].Cell;
+            return Mathf.Min(box.x / (float)cell.Width, box.y / (float)cell.Height);
+        }
+
+        /// <summary>The warm light of a won level behind what stands on the shelf.</summary>
+        private void AddWinLight(Transform stand, ArtCatalogue art, EffectArt effects)
+        {
             _winLight = SceneObjects.AddSprite("Light", stand, effects.Glow, art.SpriteMaterial, DrawOrder.CardLight);
             _winLight.transform.localPosition = new Vector3(0f, WinLightAboveStar, 0f);
             _winLight.transform.localScale = new Vector3(WinLightSize.x, WinLightSize.y, 1f);
-            SceneObjects.AddSprite("Star", stand, art.Of(PieceArt.Star), art.SpriteMaterial, DrawOrder.CardExhibit).transform.localScale = new Vector3(StarSize, StarSize, 1f);
+        }
 
+        private void AddSparkles(ArtCatalogue art)
+        {
             foreach ((float across, float down, float size, float phase) in Sparkles)
             {
                 var place = new Vector2((across - 0.5f) * NicheWidth, (0.5f - down) * NicheHeight);

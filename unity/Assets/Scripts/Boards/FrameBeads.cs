@@ -11,18 +11,21 @@ namespace Puzzle.Client.Boards
     public static class FrameBeads
     {
         /// <summary>Beads lie about this far apart, in points; on every stretch of the ring the spacing is evened out to a whole number of beads.</summary>
-        private const float Pitch = 5.41f;
+        private const float Pitch = 4.4f;
 
-        private const float BeadRadius = 1.15f;
-        private const float ShadeRadius = 1.25f;
+        private const float BeadRadius = 0.95f;
+        private const float ShadeRadius = 1.03f;
 
         /// <summary>The picture is this square around the bead's middle, in points: wide enough for the shade beside the bead.</summary>
-        private const float PictureHalfSide = 2.25f;
+        private const float PictureHalfSide = 1.9f;
         private const int PictureSize = 64;
 
+        /// <summary>The white spot where the light strikes a bead is this far across from its middle.</summary>
+        private const float GlintRadius = 0.29f;
+
         /// <summary>The shade lies to the lower right of its bead (the page's y grows downwards): the light comes from the upper left.</summary>
-        private static readonly Vector2 ShadeOffset = new Vector2(0.5f, 0.9f);
-        private static readonly Vector2 GlintOffset = new Vector2(-0.3f, -0.35f);
+        private static readonly Vector2 ShadeOffset = new Vector2(0.4f, 0.72f);
+        private static readonly Vector2 GlintOffset = new Vector2(-0.25f, -0.29f);
 
         private static readonly Color Pearl = Tint.Of(0xFFF6CC);
         private static readonly Color PearlInShade = Tint.Of(0xF3D58A);
@@ -107,7 +110,7 @@ namespace Puzzle.Client.Boards
             float Covered(float radius, Vector2 from) => Mathf.Clamp01((radius - from.magnitude) * pixelsPerPoint + 0.5f);
 
             // The pearl is lightest where the light strikes it and takes a warmer tone towards its far rim.
-            float towardsFarRim = Mathf.Clamp01(((fromBead - GlintOffset).magnitude - 0.35f) / (2f * BeadRadius));
+            float towardsFarRim = Mathf.Clamp01(((fromBead - GlintOffset).magnitude - GlintRadius) / (2f * BeadRadius));
             Color pearl = Color.Lerp(Color.white, Color.Lerp(Pearl, PearlInShade, towardsFarRim), Mathf.Clamp01(towardsFarRim * 4f));
             pearl.a = Covered(BeadRadius, fromBead);
             Color shade = Shade;

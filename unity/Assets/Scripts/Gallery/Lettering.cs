@@ -57,6 +57,23 @@ namespace Puzzle.Client.Gallery
             Say(line, words);
         }
 
+        /// <summary>
+        /// Says something so that it begins at a place instead of being centred on it: the line is moved to where
+        /// its middle then lies. <paramref name="left"/> and <paramref name="height"/> are in the points of what the line stands on.
+        /// </summary>
+        public static void SayFromLeft(TextMeshPro line, string words, float left, float height)
+        {
+            Say(line, words);
+            line.transform.localPosition = new Vector3(left + WidthOf(line, words) / 2f, height, 0f);
+        }
+
+        /// <summary>Says something so that it ends at a place instead of being centred on it.</summary>
+        public static void SayUpToRight(TextMeshPro line, string words, float right, float height)
+        {
+            Say(line, words);
+            line.transform.localPosition = new Vector3(right - WidthOf(line, words) / 2f, height, 0f);
+        }
+
         /// <summary>How wide the line would be saying this, at its current size.</summary>
         public static float WidthOf(TextMeshPro line, string words) => line.GetPreferredValues(words).x;
     }

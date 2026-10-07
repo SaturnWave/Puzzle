@@ -12,8 +12,8 @@ namespace Puzzle.Client.Gallery
     /// <summary>
     /// What hangs on the wall above the board: the level's plaque (BÖLÜM), the round moves medallion (HAMLE) and the
     /// goals' plaque (HEDEF), each on thin picture wires that run up out of the screen. Sizes and places are the web
-    /// test page's HUD (gallery.css) at its full size, in points around the medallion's middle; a short screen draws
-    /// the whole row smaller, by the layout's chrome scale.
+    /// test page's HUD (gallery.css) at its full size, in points around the medallion's middle; a screen on
+    /// which the board needs the height draws the whole row smaller (<see cref="ScreenLayout.HudScale"/>).
     /// </summary>
     public sealed class Hud : IDisposable
     {
@@ -63,7 +63,7 @@ namespace Puzzle.Client.Gallery
         private readonly TextMeshPro _movesNumber;
         private readonly TextMeshPro _goalsLabel;
 
-        /// <summary>The three labels. They keep their size on the screen when the row is drawn smaller, as the web page keeps them.</summary>
+        /// <summary>The three labels. They keep their size on the screen when a phone draws the row smaller, as the web page keeps them.</summary>
         private readonly TextMeshPro[] _labels;
         private readonly GoalRow _goals;
 
@@ -107,7 +107,7 @@ namespace Puzzle.Client.Gallery
         /// <summary>Hangs the row where the layout has it: centred on the screen, as wide and as large as the screen allows.</summary>
         public void Place(ScreenLayout layout)
         {
-            float scale = layout.ChromeScale;
+            float scale = layout.HudScale;
             _root.localPosition = new Vector3(0f, layout.HudMiddle, 0f);
             _root.localScale = new Vector3(scale, scale, 1f);
 
@@ -117,9 +117,13 @@ namespace Puzzle.Client.Gallery
             float plaqueMiddle = MedallionSize / 2f + GapBetween + plaqueWidth / 2f;
             _levelPlaque.Hang(-plaqueMiddle, plaqueWidth);
             _goalsPlaque.Hang(plaqueMiddle, plaqueWidth);
+
+            // Down to the tight phone's row the labels keep their size on the screen. A compact screen draws the
+            // row smaller than that; there they shrink with it from that size on, or they would crowd the numbers.
+            float labelSize = LabelSize / Mathf.Max(scale, ScreenLayout.TightChromeScale);
             foreach (TextMeshPro label in _labels)
             {
-                label.fontSize = LabelSize / scale;
+                label.fontSize = labelSize;
                 label.ForceMeshUpdate();
             }
 

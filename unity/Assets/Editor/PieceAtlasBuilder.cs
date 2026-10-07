@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.U2D;
 using UnityEngine;
@@ -16,9 +17,10 @@ namespace Puzzle.Client.EditorTools
         private const string AtlasPath = "Assets/Art/Pieces.spriteatlasv2";
 
         /// <summary>
-        /// Forty-one pieces of 512 px and the gallery's eleven sprites, with their margins, need about five sixths of a
-        /// 4096 px square and are packed into one. A further large drawing may not fit: the atlas then gets a second
-        /// texture, which works but costs the one-texture draw.
+        /// Forty-one pieces of 512 px and the board screen's eleven gallery sprites, with their margins, need about
+        /// five sixths of a 4096 px square. The museum's pages brought twelve more drawings; what does not fit one
+        /// square goes to a second texture, which works but costs the one-texture draw where sprites of both are
+        /// on a screen. <see cref="TexturesOf"/> counts them, and the project's setup says the number in its log.
         /// </summary>
         private const int AtlasSize = 4096;
 
@@ -27,6 +29,18 @@ namespace Puzzle.Client.EditorTools
         /// 8 px the three copies a phone uses for a piece stay free of the drawing next door.
         /// </summary>
         private const int MarginPixels = 8;
+
+        /// <summary>How many textures the atlas packed some sprites into: 1 while every drawing fits one square.</summary>
+        public static int TexturesOf(IEnumerable<Sprite> sprites)
+        {
+            var textures = new HashSet<Texture2D>();
+            foreach (Sprite sprite in sprites)
+            {
+                textures.Add(UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(sprite, getAtlasData: true));
+            }
+
+            return textures.Count;
+        }
 
         public static void Ensure()
         {
