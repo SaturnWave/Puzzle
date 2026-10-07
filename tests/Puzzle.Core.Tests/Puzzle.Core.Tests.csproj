@@ -21,6 +21,27 @@
   <ItemGroup>
     <!-- The Unity project's engine trace has no Unity dependency; the tests pin what it prints on this runtime. -->
     <Compile Include="..\..\unity\Assets\Scripts\Engine\EngineTrace.cs" Link="Unity\EngineTrace.cs" />
+    <!-- Nor have the game's screen layout and its stage clock: where a board lies, and how animations take their time. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenLayout.cs" Link="Unity\ScreenLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Stage\Tween.cs" Link="Unity\Tween.cs" />
+    <!-- Nor have the outline the gilt frame is drawn along and the rule that hangs the wall lamps. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Boards\BoardOutline.cs" Link="Unity\BoardOutline.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\SconcePlace.cs" Link="Unity\SconcePlace.cs" />
+    <!-- Nor has what turns a move's events into a timed script for the view, the clock that plays it, and what a finger on the board means. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Timeline.cs" Link="Unity\Play\Timeline.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\FallLaw.cs" Link="Unity\Play\FallLaw.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Tempo.cs" Link="Unity\Play\Tempo.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Cue.cs" Link="Unity\Play\Cue.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\PieceLedger.cs" Link="Unity\Play\PieceLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Strike.cs" Link="Unity\Play\Strike.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\TurnChoreographer.cs" Link="Unity\Play\TurnChoreographer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\BoardPointer.cs" Link="Unity\Play\BoardPointer.cs" />
+    <!-- Nor has the way from one level to the next: a player's progress, a decided game's result and its words (with the plaque's figures and the list of drawings they name). -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PlayerProgress.cs" Link="Unity\Flow\PlayerProgress.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelResult.cs" Link="Unity\Flow\LevelResult.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\PieceArt.cs" Link="Unity\Art\PieceArt.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

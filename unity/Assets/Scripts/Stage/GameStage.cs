@@ -1,0 +1,629 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Puzzle.Client.Art;
+using Puzzle.Client.Boards;
+using Puzzle.Client.Flow;
+using Puzzle.Client.Gallery;
+using Puzzle.Client.Layout;
+using Puzzle.Client.Play;
+using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
+using Puzzle.Core.Model;
+using UnityEngine;
+
+namespace Puzzle.Client.Stage
+{
+    /// <summary>How a stage is first seen.</summary>
+    public enum StageOpening
+    {
+        /// <summary>In the lit room, as the game's first board is.</summary>
+        InTheLitRoom,
+
+        /// <summary>Out of the dark a result's card left behind: the room lights up while the board comes on.</summary>
+        OutOfTheDark,
+    }
+
+    /// <summary>
+    /// Everything of one game that is seen and touched: the camera, the gallery wall with its lamps, the plaques, the
+    /// board in its frame, the shelf, and the game they show. The stage has a clock of its own that only
+    /// <see cref="Advance"/> moves. The running game feeds it the time of every frame; the Editor's screenshot and
+    /// storyboard commands feed it whatever moment they want a picture of, with no game running. Both see the same stage.
+    /// </summary>
+    /// <remarks>
+    /// A move is played on the engine at once and shown afterwards: the engine's events of the move become a script
+    /// (<see cref="TurnChoreographer"/>) that is played on the stage's timeline. While a turn is shown no move is
+    /// played, but the finger is still followed: what it does then waits, and is acted on the moment the board has
+    /// come to rest, so a player who is a little ahead of the pieces does not have to touch twice
+    /// (<see cref="Tempo.TouchWaits"/>).
+    /// <para>
+    /// When a turn is over, what is seen must be the engine's board and the engine's numbers. That is checked after
+    /// every turn, and it is also the stage's last resort: a turn that could not be shown, or that did not end on
+    /// the engine's board, is reported (<see cref="LastTurnFaults"/>, and an error in the log) and the board is laid
+    /// out anew from the engine's. A mistake in the showing of a turn costs that turn's picture, never the game.
+    /// </para>
+    /// <para>
+    /// A stage shows one attempt and no more. When its game is decided it darkens the room and hangs the result's
+    /// card; once the player has pressed the card's button and the card is gone, <see cref="PlayerWentOn"/> is true,
+    /// and whoever owns the stage opens the next one.
+    /// </para>
+    /// </remarks>
+    public sealed class GameStage : IDisposable
+    {
+        /// <summary>The camera looks at the plane the game is drawn on from this far; any distance inside its range shows the same.</summary>
+        private const float CameraDistance = 10f;
+
+        /// <summary>How far two pieces go towards each other's cell when their trade is refused, and how far a piece that has no partner to trade with.</summary>
+        private const float RefusedTradeReach = 0.42f;
+        private const float RefusedNudgeReach = 0.14f;
+
+        /// <summary>What the camera clears to: the wall's own colour, though the wall covers every pixel of it.</summary>
+        private static readonly Color WallColour = new Color32(0x17, 0x66, 0x6F, 0xFF);
+
+        private readonly GameObject _root;
+        private readonly ArtCatalogue _art;
+        private readonly AttemptBrief _brief;
+        private readonly Game _game;
+        private readonly PieceLedger _ledger;
+        private readonly BoardShape _shape;
+        private readonly BoardFootprint _footprint;
+        private readonly Wall _wall;
+        private readonly WallLamps _lamps;
+        private readonly Hud _hud;
+        private readonly BoardFrame _frame;
+        private readonly BoardView _board;
+        private readonly Shelf _shelf;
+        private readonly Veil _veil;
+        private readonly EffectArt _effectArt;
+        private readonly PickedMark _pickedMark;
+        private readonly BoardEffects _effects;
+        private readonly TurnPlayer _turnPlayer;
+        private readonly BoardPointer _pointer;
+        private readonly TweenSet _tweens = new TweenSet();
+        private readonly Timeline _timeline = new Timeline();
+
+        private ScreenLayout? _layout;
+
+        /// <summary>The card of the game's result; nothing while the game is being played.</summary>
+        private ResultPanel? _result;
+        private HudFigures _figures;
+        private bool _isShowingATurn;
+        private float _clock;
+
+        /// <summary>What the finger did while the board was still moving, and when; nothing when no gesture waits.</summary>
+        private WaitingGesture? _waiting;
+
+        /// <summary>What went wrong in the showing of the turn that is on, for <see cref="LastTurnFaults"/>.</summary>
+        private readonly List<string> _faultsOfTheTurn = new List<string>();
+
+        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, AttemptBrief brief)
+        {
+            bool hasItemsToDrop = game.Level.Goals.Any(goal => goal is GoalSpec.DropItems);
+            _art = art;
+            _brief = brief;
+            _game = game;
+            _ledger = PieceLedger.Of(game.Board);
+            _shape = game.Board.Shape;
+            _footprint = new BoardFootprint(_shape.Width, _shape.Height, hasExits: hasItemsToDrop);
+            _figures = HudFigures.Of(game);
+            _root = new GameObject("Stage");
+            Camera = AddCamera(_root.transform);
+            _wall = Wall.Create(_root.transform, art);
+            _lamps = WallLamps.Create(_root.transform, art);
+            _hud = Hud.Create(_root.transform, art, game.Level.Id.Value);
+            _hud.Show(_figures);
+            _frame = BoardFrame.Create(_root.transform, art, _shape);
+            _board = BoardView.Create(_root.transform, art, _ledger, showExits: hasItemsToDrop);
+            _shelf = Shelf.Create(_root.transform, art);
+            _shelf.Say(AttemptWords.OnTheShelf(brief));
+            _veil = Veil.Create(_root.transform, art);
+            _effectArt = effectArt;
+            _pickedMark = new PickedMark(_board.Root, _effectArt, art);
+            _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
+            _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal);
+            _pointer = new BoardPointer(game);
+        }
+
+        /// <summary>The one camera everything is drawn by, text included, so its picture is the whole screen.</summary>
+        public Camera Camera { get; }
+
+        /// <summary>The game this stage shows. Moves are made through the stage (<see cref="TryPlay"/>), never on the game itself.</summary>
+        public Game Game => _game;
+
+        /// <summary>
+        /// True when nothing on the stage is moving any more: the board's entrance and the last turn are over, and
+        /// the result's card, if there is one, hangs in its place. What only twinkles does not count.
+        /// </summary>
+        public bool IsSettled => _tweens.IsIdle && _timeline.IsDone;
+
+        /// <summary>
+        /// True once the player has pressed the button of the result's card and the card has gone up out of sight:
+        /// this stage is over, and the room is dark for the next one to come out of.
+        /// </summary>
+        public bool PlayerWentOn { get; private set; }
+
+        /// <summary>
+        /// The pixel of the screen in the middle of the result card's button, counted from the screen's lower left
+        /// corner: where a finger presses it. Nothing while no card hangs at rest in its place.
+        /// </summary>
+        public Vector2? ResultButtonPixel
+        {
+            get
+            {
+                if (_result == null || !ListensToTheCard || _layout is not ScreenLayout layout)
+                {
+                    return null;
+                }
+
+                Vector2 middle = _result.ButtonMiddle;
+                (float pixelX, float pixelY) = layout.PixelOfPoint(middle.x, middle.y);
+                return new Vector2(pixelX, pixelY);
+            }
+        }
+
+        /// <summary>The script of the turn that was played last; nothing before the first move.</summary>
+        public TurnScript? LastTurn { get; private set; }
+
+        /// <summary>
+        /// Where the stage did not show the game in the last turn, one line per fault: a turn that could not be
+        /// shown at all, a cell that showed another piece than the engine has there when the turn was over, a piece
+        /// not at rest, a plaque counted wrong. Empty when the turn ended on the engine's board, as every turn must.
+        /// After a fault the board was laid out anew from the engine's, so the game goes on; the fault is a mistake
+        /// to be found all the same, and is written to the log as an error.
+        /// </summary>
+        public IReadOnlyList<string> LastTurnFaults { get; private set; } = Array.Empty<string>();
+
+        /// <summary>The board listens to the player while the game goes on and nothing is moving.</summary>
+        private bool TakesInput => IsSettled && _game.Status == GameStatus.Playing;
+
+        /// <summary>The result's card listens to the player while it hangs at rest in its place.</summary>
+        private bool ListensToTheCard => _result != null && IsSettled && !PlayerWentOn;
+
+        /// <summary>Builds the stage of a game and starts the board's entrance. Call <see cref="Fit"/> before the first picture.</summary>
+        /// <param name="game">A game that records its events (GameOptions.RecordEvents): the stage plays them back.</param>
+        /// <param name="effectArt">
+        /// The pictures of what is thrown over the board. They are the same for every stage and take a quarter of
+        /// a second to paint, so whoever opens stages paints them once and lends them to each; the stage does not
+        /// dispose of them.
+        /// </param>
+        /// <param name="brief">What the player's progress knows about this attempt, for the shelf and the result's card.</param>
+        public static GameStage Open(Game game, ArtCatalogue art, EffectArt effectArt, AttemptBrief brief, StageOpening opening = StageOpening.InTheLitRoom)
+        {
+            var stage = new GameStage(game, art, effectArt, brief);
+            BoardEntrance.Play(stage._board, stage._tweens);
+            if (opening == StageOpening.OutOfTheDark)
+            {
+                stage._tweens.Start(new Tween(0f, Tempo.RoomLightens, Easing.Out, lit => stage._veil.Darken(1f - lit)));
+            }
+
+            return stage;
+        }
+
+        /// <summary>Lays the stage out for a screen; call again whenever the screen changes (a fold opens, a bar appears).</summary>
+        public void Fit(ScreenShape screen)
+        {
+            ScreenLayout layout = ScreenLayout.Of(screen, _footprint);
+            _layout = layout;
+            Camera.orthographicSize = layout.ViewHeight / 2f;
+            _wall.Fit(layout);
+            _lamps.Place(layout, _shape);
+            _hud.Place(layout);
+            _frame.Place(layout);
+            _board.Place(layout);
+            _shelf.Place(layout);
+            _veil.Fit(layout);
+            _result?.Place(layout);
+        }
+
+        /// <summary>
+        /// Moves the stage's clock on. Nothing on the stage changes with time in any other way. A gesture that was
+        /// made while the board was moving is acted on here, in the step that brings the board to rest, so this can
+        /// play a move (<see cref="Game.MovesUsed"/> tells).
+        /// </summary>
+        public void Advance(float deltaSeconds)
+        {
+            _clock += deltaSeconds;
+            _tweens.Advance(deltaSeconds);
+            ShowThePickedPiece();
+            _result?.Twinkle(_clock);
+            _timeline.Advance(deltaSeconds);
+            if (_isShowingATurn && _timeline.IsDone)
+            {
+                FinishTheTurn();
+            }
+
+            ActOnTheWaitingGesture();
+        }
+
+        /// <summary>
+        /// Plays a move and starts showing it. A move the engine refuses costs nothing: two pieces that cannot be
+        /// traded go towards each other and back.
+        /// </summary>
+        /// <returns>False when the move was not played: the stage is busy, the game is over, or the engine refused it.</returns>
+        public bool TryPlay(Move move)
+        {
+            if (!TakesInput)
+            {
+                return false;
+            }
+
+            _pointer.ClearSelection();
+            ShowThePickedPiece();
+            if (!_game.TryPlay(move))
+            {
+                ShowRefused(move);
+                return false;
+            }
+
+            _isShowingATurn = true;
+            try
+            {
+                TurnScript script = TurnChoreographer.Compose(_ledger, _game.Level.Goals, _game.LastEvents, _game.Board);
+                LastTurn = script;
+                _turnPlayer.Play(script);
+            }
+            catch (InvalidOperationException fault)
+            {
+                // The engine has played the move, so it counts. Only its picture is lost: the turn ends at once on
+                // the engine's board, and the next step of the clock finishes it as it finishes every turn.
+                _faultsOfTheTurn.Add($"the turn could not be shown: {fault.Message}");
+                _timeline.Clear();
+                ShowTheEnginesBoardAnew();
+            }
+
+            return true;
+        }
+
+        /// <summary>The pixel of the screen in the middle of a cell, counted from the screen's lower left corner: where a finger touches that cell.</summary>
+        /// <exception cref="InvalidOperationException">The stage was not fitted to a screen yet.</exception>
+        public Vector2 PixelOf(Position cell)
+        {
+            if (_layout is not ScreenLayout layout)
+            {
+                throw new InvalidOperationException("The stage has no screen yet; call Fit first.");
+            }
+
+            (float pixelX, float pixelY) = layout.PixelAt(cell.X + 0.5f, cell.Y + 0.5f);
+            return new Vector2(pixelX, pixelY);
+        }
+
+        /// <summary>
+        /// A finger came down on the screen. Pixels are counted from the screen's lower left corner. While the game
+        /// goes on the finger is the board's, whether the pieces are at rest or not; once the result's card hangs,
+        /// it is the card's.
+        /// </summary>
+        public void PointerDown(Vector2 pixel)
+        {
+            if (_layout is not ScreenLayout layout)
+            {
+                return;
+            }
+
+            if (_result != null)
+            {
+                if (ListensToTheCard)
+                {
+                    _result.FingerDown(PointAt(pixel, layout));
+                }
+            }
+            else if (_game.Status == GameStatus.Playing)
+            {
+                (float column, float row) = layout.BoardPointAt(pixel.x, pixel.y);
+                _pointer.Down(column, row);
+            }
+        }
+
+        /// <summary>The finger moved while it was down.</summary>
+        public void PointerMoved(Vector2 pixel)
+        {
+            if (_layout is not ScreenLayout layout)
+            {
+                return;
+            }
+
+            if (_result != null)
+            {
+                if (ListensToTheCard)
+                {
+                    _result.FingerMovedTo(PointAt(pixel, layout));
+                }
+            }
+            else
+            {
+                (float column, float row) = layout.BoardPointAt(pixel.x, pixel.y);
+                if (_pointer.MovedTo(column, row) is BoardGesture swipe)
+                {
+                    Take(swipe);
+                }
+            }
+        }
+
+        /// <summary>The finger lifted.</summary>
+        public void PointerUp()
+        {
+            if (_result != null)
+            {
+                if (ListensToTheCard && _result.FingerUp())
+                {
+                    SendTheCardUp(_result);
+                }
+            }
+            else if (_pointer.Up() is BoardGesture tap)
+            {
+                Take(tap);
+            }
+        }
+
+        /// <summary>The touch was taken away by the device, or the game lost the screen while a finger was down.</summary>
+        public void PointerCancelled()
+        {
+            _pointer.Cancel();
+            _waiting = null;
+            _result?.FingerGone();
+        }
+
+        public void Dispose()
+        {
+            _wall.Dispose();
+            _lamps.Dispose();
+            _hud.Dispose();
+            _frame.Dispose();
+            _board.Dispose();
+            _shelf.Dispose();
+            _veil.Dispose();
+            _result?.Dispose();
+            SceneObjects.Destroy(_root);
+        }
+
+        private void CountTheMove()
+        {
+            _figures = _figures.AfterAMove();
+            _hud.Show(_figures);
+        }
+
+        private void CountForAGoal(int goalIndex)
+        {
+            _figures = _figures.WithOneCounted(goalIndex);
+            _hud.Show(_figures);
+        }
+
+        /// <summary>
+        /// A gesture the finger made on the board: acted on now when the board is at rest, kept for the moment it
+        /// comes to rest otherwise. Only the latest gesture waits; in a game that is decided none does.
+        /// </summary>
+        private void Take(BoardGesture gesture)
+        {
+            if (TakesInput)
+            {
+                ActOn(gesture);
+            }
+            else if (_game.Status == GameStatus.Playing)
+            {
+                _waiting = new WaitingGesture(gesture, _clock);
+            }
+        }
+
+        private void ActOn(BoardGesture gesture)
+        {
+            if (_pointer.MoveMeantBy(gesture) is Move move)
+            {
+                TryPlay(move);
+            }
+        }
+
+        /// <summary>
+        /// Once the board has come to rest: what the finger did while it moved is acted on, unless that was too
+        /// long ago to be meant for the board as it now lies, or the game is decided.
+        /// </summary>
+        private void ActOnTheWaitingGesture()
+        {
+            if (_waiting is not WaitingGesture waiting || !IsSettled)
+            {
+                return;
+            }
+
+            _waiting = null;
+            if (TakesInput && _clock - waiting.MadeAt <= Tempo.TouchWaits)
+            {
+                ActOn(waiting.Gesture);
+            }
+        }
+
+        private void FinishTheTurn()
+        {
+            _isShowingATurn = false;
+            _board.ClearAwayWhatWasTaken();
+            _effects.ClearAway();
+            LastTurnFaults = FaultsOfTheTurnMadeGood();
+            if (LastTurnFaults.Count > 0)
+            {
+                Debug.LogError(
+                    $"Move {_game.MovesUsed} of level {_game.Level.Id} was not shown as the game played it; the board was laid out anew from the engine's. "
+                    + string.Join("; ", LastTurnFaults));
+            }
+
+            // Whether the move decided the game is only known now: few moves stop being a warning, a decided game gets its card.
+            _figures = HudFigures.Of(_game);
+            _hud.Show(_figures);
+            if (_game.Status != GameStatus.Playing)
+            {
+                HangTheResult();
+            }
+        }
+
+        /// <summary>
+        /// What went wrong in the turn that is over: what was noted while it was shown, and where the stage does not
+        /// show the game now. In the second case the board is laid out anew, so that the next move is played on what
+        /// the engine has.
+        /// </summary>
+        private IReadOnlyList<string> FaultsOfTheTurnMadeGood()
+        {
+            var faults = new List<string>(_faultsOfTheTurn);
+            _faultsOfTheTurn.Clear();
+            string[] differences = WhereTheStageDoesNotShowTheGame().ToArray();
+            if (differences.Length > 0)
+            {
+                faults.AddRange(differences);
+                ShowTheEnginesBoardAnew();
+            }
+
+            return faults;
+        }
+
+        /// <summary>
+        /// The stage's last resort: whatever it showed of the board is taken away, and the engine's board and
+        /// numbers are shown as they stand, every piece at rest. Nothing may be left on the timeline that still
+        /// holds a piece of the board that is given up here.
+        /// </summary>
+        private void ShowTheEnginesBoardAnew()
+        {
+            _effects.ClearAway();
+            _ledger.StartAgainFrom(_game.Board);
+            _board.ShowAnew(_ledger);
+            _figures = HudFigures.Of(_game);
+            _hud.Show(_figures);
+        }
+
+        /// <summary>
+        /// The game is decided: the board is left to be seen for a moment, then the room goes dark, the result's
+        /// card comes down on its wires, and what it shows in its alcove pops up as it settles.
+        /// </summary>
+        private void HangTheResult()
+        {
+            ResultPanel card = ResultPanel.Create(_root.transform, _art, _effectArt, LevelResult.Of(_game, _brief));
+            if (_layout is ScreenLayout layout)
+            {
+                card.Place(layout);
+            }
+
+            _result = card;
+            float cardComes = Tempo.PauseBeforeResult + Tempo.CardAfterDark;
+            float exhibitsSeconds = card.ExhibitsSeconds;
+            _timeline.Add(Tempo.PauseBeforeResult, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)), _lamps.PutOut);
+            _timeline.Add(cardComes, Tempo.CardComesDown, card.ComeDown);
+            _timeline.Add(cardComes + Tempo.ExhibitsAfterCard, exhibitsSeconds, progress => card.ShowExhibits(progress * exhibitsSeconds));
+        }
+
+        /// <summary>The player pressed the card's button: the card goes up out of sight, and then this stage is over.</summary>
+        private void SendTheCardUp(ResultPanel card) =>
+            _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerWentOn = true);
+
+        /// <summary>Where a pixel of the screen lies in the layout's points, which are the stage's own.</summary>
+        private static Vector2 PointAt(Vector2 pixel, ScreenLayout layout)
+        {
+            (float x, float y) = layout.PointAt(pixel.x, pixel.y);
+            return new Vector2(x, y);
+        }
+
+        /// <summary>
+        /// The check at the end of a turn: the board that is seen is the engine's board with every piece at rest, the
+        /// view's ledger says the same, and the plaques were counted down to the engine's numbers.
+        /// </summary>
+        private IEnumerable<string> WhereTheStageDoesNotShowTheGame()
+        {
+            foreach (string fault in _board.DifferencesFrom(_game.Board))
+            {
+                yield return fault;
+            }
+
+            foreach (string fault in _ledger.DifferencesFrom(_game.Board))
+            {
+                yield return $"ledger: {fault}";
+            }
+
+            HudFigures engines = HudFigures.Of(_game);
+            if (_figures.MovesLeft != engines.MovesLeft)
+            {
+                yield return $"plaques: {_figures.MovesLeft} moves left, the engine has {engines.MovesLeft}";
+            }
+
+            for (int goal = 0; goal < engines.Goals.Count; goal++)
+            {
+                if (_figures.Goals[goal].Remaining != engines.Goals[goal].Remaining)
+                {
+                    yield return $"plaques: {_figures.Goals[goal].Remaining} left of goal {goal + 1}, the engine has {engines.Goals[goal].Remaining}";
+                }
+            }
+        }
+
+        private void ShowThePickedPiece()
+        {
+            PieceSprite? picked = _pointer.Selected is Position cell && _ledger.PieceAt(cell) != PieceLedger.NoPiece
+                ? _board.Piece(_ledger.PieceAt(cell))
+                : null;
+            _pickedMark.Show(picked, _clock);
+        }
+
+        /// <summary>
+        /// The engine refused a trade: the two pieces go towards each other's cell and come back. A piece that
+        /// cannot be traded at all (a crate, a piece under tape) stays, and the other only nudges it.
+        /// </summary>
+        private void ShowRefused(Move move)
+        {
+            if (move.Kind != MoveKind.Swap)
+            {
+                return;
+            }
+
+            bool bothMove = CanBeMoved(move.From) && CanBeMoved(move.To);
+            float reach = bothMove ? RefusedTradeReach : RefusedNudgeReach;
+            NudgeAndReturn(move.From, move.To, reach, isCarried: true);
+            if (bothMove)
+            {
+                NudgeAndReturn(move.To, move.From, reach, isCarried: false);
+            }
+        }
+
+        private bool CanBeMoved(Position cell) =>
+            _ledger.PieceAt(cell) != PieceLedger.NoPiece && _ledger.TileAt(cell).Kind.IsSwappable() && _ledger.TapeAt(cell) == 0;
+
+        private void NudgeAndReturn(Position cell, Position toward, float reach, bool isCarried)
+        {
+            if (!CanBeMoved(cell))
+            {
+                return;
+            }
+
+            PieceSprite piece = _board.Piece(_ledger.PieceAt(cell));
+            Vector2 from = PieceSprite.MiddleOf(cell);
+            Vector2 to = PieceSprite.MiddleOf(toward);
+            _timeline.Add(
+                0f,
+                2f * Tempo.RefusedSwap,
+                progress =>
+                {
+                    piece.Lift(isCarried);
+                    piece.Place = Vector2.Lerp(from, to, reach * Easing.Arch(progress));
+                },
+                () => piece.Rest(cell));
+        }
+
+        /// <summary>A gesture that waits for the board to come to rest, and when on the stage's clock it was made.</summary>
+        private readonly struct WaitingGesture
+        {
+            public WaitingGesture(BoardGesture gesture, float madeAt)
+            {
+                Gesture = gesture;
+                MadeAt = madeAt;
+            }
+
+            public BoardGesture Gesture { get; }
+
+            public float MadeAt { get; }
+        }
+
+        private static Camera AddCamera(Transform parent)
+        {
+            var camera = new GameObject("Camera").AddComponent<Camera>();
+            camera.transform.SetParent(parent, worldPositionStays: false);
+            camera.transform.localPosition = new Vector3(0f, 0f, -CameraDistance);
+            camera.orthographic = true;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = WallColour;
+            camera.allowHDR = false;
+            camera.allowMSAA = false;
+            return camera;
+        }
+    }
+}

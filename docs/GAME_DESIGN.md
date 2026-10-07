@@ -400,6 +400,9 @@ src/Puzzle.Tooling  net10.0 — bölüm JSON'u ve bölüm kütüphanesi (CLI, we
 src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de generate)
 src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
 tests/Puzzle.Core.Tests  net10.0, xUnit
+unity/              Unity 6.6 projesi — oyunun istemcisi (Android; iOS sonra). Motoru derlenmiş hâliyle kullanır
+art/unity           istemcinin galeri görselleri için SVG kaynakları (duvar, plaket, madalyon, raf, aplik)
+tools/unity         motoru ve bölümleri Unity projesine taşıyan, çizimleri PNG'ye çeviren betikler
 levels/samples      el yapımı örnek bölümler
 recordings/         web test uygulamasının oyun kayıtları (attempts.jsonl); git'e girmez
 tools/docs-pdf      belgelerin PDF baskısını üreten betik (pandoc + Chrome)
@@ -418,7 +421,7 @@ docs/pdf            üretilmiş PDF'ler; kaynak her zaman Markdown dosyasıdır
 | 2.5 (sıradaki) | Motoru "hazır" yapmak: bot düzeltmesi, usta bot, casual koruması, booster'lar, bitiş şöleni, düzeltme paketleri, 1000 bölümün yeniden üretimi (§21) |
 | 3 | Tema ve meta tasarımı: yapboz kesimi (C#), ekonomi simülatörü, 20 odanın ve 100 tablonun listesi (§18, §19) |
 | 4 | Arayüz. Oyunun adı en sona bırakıldı (karar 2026-10-05) |
-| 5 | Unity: görsel katman, animasyon event'leri, ipucu, analiz; görseller en son |
+| 5 | Unity: görsel katman, animasyon event'leri, ipucu, analiz; görseller en son. **Başladı 2026-10-06** (kullanıcı kararıyla öne alındı); ilk oynanabilir sürüm telefonda 2026-10-07 (§23) |
 | 6 | Yayın: APK testi → doğrudan dünya geneli (karar 2026-10-05; sınırlı ülke yayını yok, §20) |
 
 Sıra kararı (2026-10-02): tema arayüzden önce gelir, çünkü engellerin görünüşü, renk paleti ve oyunun adı temadan çıkar.
@@ -895,3 +898,30 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
 
 Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hedefi için önerilen 44 pt'nin altında. Tahta genişliği arayüz fazında ayrıca konuşulacak (§2).
+
+## 23. Unity istemcisi
+
+**Durum (2026-10-07).** İlk oynanabilir sürüm Android'de çalışıyor: tahta, hamle animasyonları, sonuç kartı, sonraki bölüm, ilerlemenin kaydı. Harita, meta, mağaza, booster ve hesap yok.
+
+**Kararlar**
+- **Unity 6.6 (6000.6.4f1), URP 2B.** Unity Personal lisansı. LTS olmayan "Supported" koluyla başlandı, çünkü bilgisayarın diski iki Editor'ı kaldırmıyor.
+- **Motor derlenmiş girer.** `Puzzle.Core` ve `Puzzle.Bot` derlemeleri ile 1000 bölümün tek dosyalık paketi `node tools/unity/sync-engine.js` ile projeye konur (`unity/Assets/Generated`, depoya girmez). Oyun, bölümlerin ayarlandığı kodun aynısını çalıştırır.
+- **Çalışma ortamları arası eşitlik sabitlenmiştir.** El yapımı dört örnek bölüm üçer tohumla sonuna kadar oynatılır; araçlardaki .NET ile Unity aynı satırları vermek zorundadır (`tests/fixtures/engine-trace.txt`, `EngineTraceTests`, `EngineSmokeTest`).
+- **Editor penceresi kullanılmaz.** Sahne, çizim hattı ayarları, atlas ve varlık kataloğu Editor betikleriyle komut satırından üretilir (`ProjectSetup.Run`). Sahne dosyası tek nesnedir (`GameRoot`); görünen her şey çalışırken koddan kurulur.
+- **Açık saat.** Sahnenin bütün animasyonları `GameStage.Advance(saniye)` ile ilerler; oyun buna kare süresini verir. Aynı saat sayesinde Editor, oynatma moduna girmeden herhangi bir anın görüntüsünü çıkarabilir (`RenderHarness`, `Storyboard`).
+- **Ekran motoru izler.** Hamle önce motorda oynanır; olay günlüğü zamanlı bir senaryoya çevrilir (`TurnChoreographer`); senaryo bitince ekrandaki tahta motorun tahtasıyla karşılaştırılır. Uyuşmazlıkta tahta motorun durumuna döndürülür.
+- **Saf kod testlenir.** Düzen hesabı, çerçeve hattı, zaman çizelgesi, hamle senaryosu, dokunma yorumu ve akış Unity'ye bağlı değildir; depo testleri bu dosyaları doğrudan derler.
+- **Deneme tohumu web testiyle aynı kuraldır:** k. deneme bölümün ayarlanmış havuzundaki k. tohumu kullanır; sayaç yalnızca oyuncunun bulunduğu bölüm için tutulur ve kazanınca sıfırlanır.
+
+**Komutlar** (depo kökünden; Unity yolu `C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe`)
+
+| İş | Komut |
+|---|---|
+| Motoru ve bölümleri projeye al | `node tools/unity/sync-engine.js` |
+| Projeyi kur (çizim hattı, atlas, katalog, sahne) | `Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ProjectSetup.Run` |
+| Motor denetimi | `... -executeMethod Puzzle.Client.EditorTools.EngineSmokeTest.Run` |
+| Görüntü al | `... -executeMethod Puzzle.Client.EditorTools.RenderHarness.Run -shotLevels 40 -shotSizes 1080x2340 -shotTimes settled` |
+| Botla oynat, kareleri çıkar | `... -executeMethod Puzzle.Client.EditorTools.Storyboard.Run -storyLevels 40 -storyBot expert -storyTurns 6` |
+| APK derle | `Unity.exe -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run` → `unity/Build/Android/puzzle.apk` |
+
+**Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası, Roboto Bold yazı tipi.

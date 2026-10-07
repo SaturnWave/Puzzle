@@ -1,0 +1,16 @@
+<!-- The damask printed on the gallery wall: the web test page's wall.svg (a 48 x 72 motif), laid six across and
+     four down, so the picture is a square the game can repeat. It is white at low strength and nothing else: the
+     paint of the wall, its light and its dark corners are the game's. One unit is one point of the design. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 288 288">
+<defs>
+<pattern id="motif" width="48" height="72" patternUnits="userSpaceOnUse">
+<path d="M24 0C36 12 48 24 48 36C48 48 36 60 24 72C12 60 0 48 0 36C0 24 12 12 24 0Z" fill="none" stroke="#fff" stroke-opacity=".075" stroke-width="1.4"/>
+<path d="M24 22C28.5 28 28.5 33 24 39C19.5 33 19.5 28 24 22Z" fill="#fff" fill-opacity=".07"/>
+<path d="M24 40C18 40 14.5 36 15.5 31M24 40C30 40 33.5 36 32.5 31" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="1.6" stroke-linecap="round"/>
+<circle cx="24" cy="46" r="1.8" fill="#fff" fill-opacity=".08"/>
+<path d="M0 -5L3.5 0L0 5L-3.5 0Z" fill="#fff" fill-opacity=".06"/><path d="M48 -5L51.5 0L48 5L44.5 0Z" fill="#fff" fill-opacity=".06"/>
+<path d="M0 67L3.5 72L0 77L-3.5 72Z" fill="#fff" fill-opacity=".06"/><path d="M48 67L51.5 72L48 77L44.5 72Z" fill="#fff" fill-opacity=".06"/>
+</pattern>
+</defs>
+<rect width="288" height="288" fill="url(#motif)"/>
+</svg>

@@ -4,6 +4,46 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-07 · Oturum 16 — Unity istemcisi: oynanabilir tahta telefonda
+
+**Kullanıcı kararı**
+- "Evet başla": tahta sahnesi yapılacak (ilk APK kapsamı: tahta, kazandın/kaybettin, sonraki bölüm, kayıt; harita, meta, mağaza sonraya).
+
+**Nasıl yapıldı**
+- Altı aşamalı, sıralı bir iş akışı (Unity projesini aynı anda tek işlem kullanabildiği için paralel değil): altyapı → galeri görünümü → oynanış → akış → bağımsız eleştiri → düzeltme. Yaklaşık 4 saat 20 dakika, 6 ajan, 2,7 milyon token. Ajanlar depoya yazmadı, APK derlemedi; sonuç gözden geçirilip tek seferde işlendi.
+- Editor penceresi hiç açılmadı: sahne, ayarlar ve varlıklar Editor betikleriyle komut satırından üretiliyor (`ProjectSetup.Run`).
+
+**Ne var**
+- **Çizim hattı:** proje URP 2B'de. SRP Batcher kapalı: açıkken taşlar başka taşların resmiyle çiziliyordu (Editor'ın toplu çiziminde görüldü).
+- **Görseller:** 41 taş çizimi tek atlasta (4096 px, Android'de ASTC). Duvar deseni, plaket, madalyon, raf ve aplik için SVG kaynakları `art/unity/` altında; `tools/unity/export-gallery-art.js` PNG'ye çeviriyor.
+- **Görünüm:** camgöbeği damask duvar, aplikler, tele asılı BÖLÜM / HAMLE / HEDEF plaketleri, tahtanın çevresini ve iç deliklerini izleyen basamaklı ve boncuklu yaldız çerçeve, dokulu tepsi, alt raf. Web testindeki sayfayla yan yana çok yakın.
+- **Yazı:** TextMesh Pro; tasarımın yazı tipleri indirilmediği için Unity ile gelen Roboto Bold kullanılıyor (geçici).
+- **Düzen:** uzun telefon (1080×2340, 1080×1920) ve katlanır telefonun kare iç ekranı (2076×2152); güvenli alan payları hesaba katılıyor. Düzen hesabı Unity'siz saf kod (`ScreenLayout`), testli.
+- **Oynanış:** sürükleyerek ya da iki taşa sırayla dokunarak takas; özel taşa dokunmak onu patlatır; geçersiz takas geri seker. Her hamle motorun olay günlüğünden zamanlı bir animasyona çevriliyor (`TurnChoreographer`, `Timeline`): patlama, düşme (tek düşme yasası, hafif esneme), roket, bomba, büyük bomba, renk bombası, kelebek, kutu/bant/jöle hasarı, malzemenin çıkışı, karıştırma. Düz bir hamle 0,5–0,7 saniye.
+- **Güvence:** her hamleden sonra ekrandaki tahta motorun tahtasıyla karşılaştırılıyor. Botlarla 70'ten fazla bölüm baştan sona oynatıldı; hepsinde ekran motorla aynı bitti.
+- **Akış:** bölüm bitince oda kararır, sonuç kartı tellerle iner ("Bölüm tamamlandı!", "Hamle bitti!"), yeşil düğme sonraki bölüme ya da aynı bölümün sıradaki tahtasına götürür. Deneme sayımı web sunucusunun kuralıyla aynı (k. deneme havuzun k. tohumunu kullanır).
+- **Kayıt:** ilerleme telefonda bir JSON dosyasında; bozuk dosya kenara alınır, daha yeni bir sürümün dosyasına dokunulmaz.
+- **Komut satırı araçları:** `RenderHarness` (istenen bölüm, ekran boyu ve andaki görüntü), `Storyboard` (botla oynatıp animasyon karelerini çıkarır), `FlowStory`, `PlayModeCheck`, `TouchWhileMovingCheck`, `ProgressFileCheck`.
+
+**Bağımsız eleştirinin bulduğu ve düzeltilenler**
+- **Engelleyici:** derin bir zincirlemede taşın "konma" animasyonu taşın kendisinden uzun yaşayabiliyor, hata verip tahtayı kalıcı donduruyordu (285. bölüm, expert bot, 5. hamle). Senaryo ve görüntü düzeyinde iki ayrı yerden kapatıldı; aynı sınıftan bir hata daha geniş taramada bulunup giderildi.
+- Hata veren bir hamleden geri dönüş yoktu: artık tahta motorun durumuna döndürülüyor.
+- Animasyon sürerken yapılan dokunuş atılıyordu: tahta durmadan en çok 0,8 saniye önce yapılan kaydırma bekletilip oynanıyor.
+- Seçili taş işareti yeşil taşta görünmüyordu; iç çerçevenin köşe birleşimleri; rakamların fazla kalınlığı; bölüm geçişindeki takılma.
+
+**Doğrulama (benim yaptığım)**
+- `dotnet test`: 824 test geçiyor (639'dan; yeni testler düzen, çerçeve hattı, zaman çizelgesi, hamle senaryosu, dokunma, akış).
+- Unity içinde: proje kurulumu güncel, motor denetimi geçiyor (1000 bölüm, 12 sabit oyun aynı), oyun sahnesi hatasız açılıyor.
+- **APK:** 36 MB, 13,6 dakikada derlendi. **Telefonda (Pixel 9 Pro Fold, dış ekran 1080×2424) çalışıyor:** 1. bölüm doğru görünümle açıldı; komutla yapılan bir kaydırma hamleyi oynattı (HAMLE 24 → 23); cihaz günlüğünde oyun hatası yok.
+
+**Açık**
+- Gerçek parmakla uzun oynama, arka plana alma, iç (kare) ekran ve ucuz telefonlarda akıcılık henüz denenmedi.
+- Yazı tipleri (tasarımdaki Gabarito, Paytone One, Young Serif) indirilmedi; Roboto Bold geçici.
+- Ses, titreşim, ipucu, uzun zincirlemeyi atlama yok. Bir renk bombasının bombayla birleşmesi 5 saniyeyi buluyor.
+- Harita ekranı, tasarım tuvalindeki zengin kazanma/kaybetme ekranları, booster rafı yok.
+- Bölüm geçişinde duvar, plaketler ve çerçeve yeniden kuruluyor; telefonda süresi ölçülmedi.
+- Disk: 5,9 GB boş.
+
 ## 2026-10-07 · Oturum 15 — Unity kurulumu ve proje iskeleti
 
 **Kullanıcı kararları**

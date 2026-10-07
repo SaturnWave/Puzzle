@@ -13,7 +13,38 @@ namespace Puzzle.Client.Engine
     [Serializable]
     public sealed class LevelPack
     {
+        /// <summary>The pack inside a built game: Resources/Levels.json, named without its extension.</summary>
+        private const string PackResource = "Levels";
+
         public LevelFile[] levels = Array.Empty<LevelFile>();
+
+        /// <summary>The levels the game carries with it.</summary>
+        /// <exception cref="LevelFormatException">The pack is missing, or one of its levels is not a valid level.</exception>
+        public static IReadOnlyList<LevelDefinition> LoadPacked()
+        {
+            TextAsset? pack = Resources.Load<TextAsset>(PackResource);
+            if (pack == null)
+            {
+                throw new LevelFormatException("The game carries no level pack; run node tools/unity/sync-engine.js from the repository root.");
+            }
+
+            return Read(pack.text);
+        }
+
+        /// <summary>The level a player knows by this number.</summary>
+        /// <exception cref="LevelFormatException">No level has the number.</exception>
+        public static LevelDefinition Numbered(IReadOnlyList<LevelDefinition> levels, int number)
+        {
+            foreach (LevelDefinition level in levels)
+            {
+                if (level.Id.Value == number)
+                {
+                    return level;
+                }
+            }
+
+            throw new LevelFormatException($"The level pack has no level {number}.");
+        }
 
         /// <exception cref="LevelFormatException">The document holds no level, or one of its levels is not a valid level.</exception>
         public static IReadOnlyList<LevelDefinition> Read(string json)
