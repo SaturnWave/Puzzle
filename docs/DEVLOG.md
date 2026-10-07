@@ -20,10 +20,16 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - **Motor Unity içinde doğrulandı.** `node tools/unity/sync-engine.js` motor derlemelerini (`Puzzle.Core`, `Puzzle.Bot`) ve 1000 bölümün tek dosyalık paketini (0,7 MB) projeye koyar; bunlar depodan türetildiği için `unity/Assets/Generated` depoya girmez. Unity içinde 1000 bölümün hepsi okunuyor (`LevelPack`, Unity'nin kendi JSON okuyucusuyla).
 - **Çalışma ortamları arası eşitlik:** el yapımı 4 örnek bölüm üçer tohumla rastgele botla sonuna kadar oynatılıyor; Unity'nin içindeki sonuç araçlardaki .NET 10 sonucuyla satır satır aynı (kazanma durumu, hamle sayısı, her hamleden sonraki tahta özeti). Sabitlenen dosya `tests/fixtures/engine-trace.txt`; .NET tarafını `EngineTraceTests`, Unity tarafını `EngineSmokeTest` (komut satırından `-executeMethod`) denetliyor. Bölümler bir ortamda ayarlanıp başka bir ortamda oynanacağı için bu denetim kalıcı.
 
+- **Android modülleri kuruldu** (Android Build Support, OpenJDK 17, Android SDK platform 34/36/37, NDK r27c). Hub'ın komut satırı her kurulumda yeni bir Windows izin penceresi açıyor ve kimse basmazsa iki dakikada iptal ediyor; o pencereye hiçbir program basamaz. Çözüm: kullanıcının ekran izniyle Hub'ın kendi penceresinden kurmak (Installs → Manage modules). Hub'ın daha önce onaylanmış yetkili yardımcısı açık olduğu için yeni izin sorulmadı. Varsayılan işaretli gelen Visual Studio Community seçilmedi; Google'ın Android SDK ve NDK lisans şartları kullanıcının verdiği yetkiyle kabul edildi.
+- **İlk Android paketi derlendi:** `Unity.exe -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run` → `unity/Build/Android/puzzle.apk`, 15 MB, 5,4 dakika (IL2CPP, ARM64, dikey, Unity'nin deneme imzasıyla). İçinde henüz oyun yok, boş bir sahne var; amaç derleme hattını uçtan uca görmekti. Geçici kimlik: `com.saturnwave.puzzle` (oyunun adı en sona kaldığı için).
+- `AndroidToolchainCheck`: Unity'nin Android'i görüp görmediğini ve hangi SDK, NDK, JDK'yı kullanacağını komut satırından söyler.
+- Bilgisayara USB ile bir telefon bağlı (Pixel 9 Pro Fold); USB hata ayıklama izni telefonda henüz onaylanmamış.
+
 **Açık**
-- Android modülleri (Android Build Support, NDK r27c ve SDK araçları, OpenJDK 17; 2,41 GB indirme, diskte 8,5 GB): kullanıcının onayı ve UAC için bilgisayar başında olması bekleniyor.
-- Disk: 13 GB boş; Android modüllerinden sonra dar kalacak.
-- İstemci kodu: motor DLL'leri, bölüm paketi, tahta sahnesi.
+- Tahta sahnesi: bölümü seçilen tasarımdaki çerçeveli tahtayla göstermek, dokunarak takas, motor olaylarının animasyonu. Kullanıcının onayı bekleniyor.
+- Unity 6.5 ve sonrasında yerleşik çizim hattı (Built-In Render Pipeline) kullanımdan kalkıyor; tahta sahnesine başlamadan proje URP 2B'ye alınmalı.
+- Telefona kurulum: kullanıcı telefonda USB hata ayıklamayı onaylayınca `adb install` ile denenecek.
+- Disk: 13 GB boş.
 
 ## 2026-10-06 · Oturum 14 — Çeşitlilik: tahta başına engel miktarı; APK işine başlangıç
 
