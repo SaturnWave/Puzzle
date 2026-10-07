@@ -49,8 +49,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Bölümden çıkılamıyordu; yapboz her parçadan sonra yarım saniye dokunuşu yutuyordu; koleksiyon rozetleri ekran kenarında kesiliyordu; örtü kumaş gibi durmuyordu; oda tamamlanmasının kendi anı yoktu.
 - Web sayfasında mürekkep lekesi koyu zeminde neredeyse görünmüyordu (karşıtlık 1,1 : 1): renkler Unity'dekilerle eşitlendi (bu oturumda, iş akışından sonra).
 
+**Paket boyutu bulgusu (iş akışından sonra)**
+- İlk derleme 87 MB çıktı (önceki 36 MB): beş tablo pakete sıkıştırılmadan girmişti. Neden: Unity, kenarları ikinin kuvveti olmayan bir resmi mipmap'i varsa sıkıştırmıyor (RGBA32 bırakıyor); her tablo 10–18 MB tutuyordu.
+- Mipmap'i kapatmak sıkıştırmayı getirdi ama koleksiyon duvarındaki küçük tablolar kumlu göründü. Kalıcı çözüm: tablolar ikinin kuvvetine gerilerek, mipmap'li ve ASTC 6×6 sıkıştırmalı saklanıyor; tablonun gerçek oranı dokudan değil, Editor'ın resim dosyalarından yazdığı listeden okunuyor (`Resources/Paintings/sizes.json`, `PaintingSizesBuilder`, `PaintingSizes`). Yapboz kesimleri aynı kaldı.
+- `PaintingFormatCheck`: her tablonun Android için sıkıştırılmış ve mipmap'li olduğunu komut satırından denetler. Son paket 46,8 MB.
+
 **Doğrulama (benim yaptığım)**
-- `dotnet test`: 2489 test geçiyor (824'ten).
+- `dotnet test`: 2489 test geçiyor (824'ten). Unity içinde: proje kurulumu, motor denetimi, ilerleme dosyası denetimi, müze raporu ve oyun sahnesi hatasız.
+- APK derlendi (46,8 MB). Telefon o sırada bağlı değildi; müze ekranları cihazda henüz denenmedi.
 
 **Açık**
 - 2–20. odaların tabloları: seçim ve indirme.

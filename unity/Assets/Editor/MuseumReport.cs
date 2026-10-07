@@ -96,21 +96,23 @@ namespace Puzzle.Client.EditorTools
                 : throw new ArgumentException($"{name} needs a whole number.");
         }
 
-        /// <summary>One line for every painting the catalogue names: its picture's size as the game loads it.</summary>
+        /// <summary>
+        /// One line for every painting the catalogue names: its picture's own size. The size is read from the picture
+        /// file, not from the texture the game loads, which is stretched to powers of two (see PaintingImport).
+        /// </summary>
         /// <exception cref="InvalidOperationException">A picture is not in the game, or lies the other way than the catalogue says.</exception>
         private static IEnumerable<string> CheckedPictures(MuseumCatalogue catalogue)
         {
             var lines = new List<string>();
             foreach (Artwork painting in catalogue.Rooms.SelectMany(room => room.Artworks))
             {
-                Texture2D? picture = Resources.Load<Texture2D>(MuseumPack.PictureResourceOf(painting));
-                if (picture == null)
+                string picturePath = $"{PaintingImport.PaintingsFolder}/{painting.ImageFile}";
+                if (!(AssetImporter.GetAtPath(picturePath) is TextureImporter importer))
                 {
-                    throw new InvalidOperationException($"The picture of \"{painting.Id}\" is not in the game: {PaintingImport.PaintingsFolder}/{painting.ImageFile} is missing.");
+                    throw new InvalidOperationException($"The picture of \"{painting.Id}\" is not in the game: {picturePath} is missing.");
                 }
 
-                (int width, int height) = (picture.width, picture.height);
-                Resources.UnloadAsset(picture);
+                importer.GetSourceTextureWidthAndHeight(out int width, out int height);
                 if (OrientationOf(width, height) != painting.Orientation)
                 {
                     throw new InvalidOperationException($"The picture of \"{painting.Id}\" is {width}x{height}, but the catalogue says the painting hangs {painting.Orientation}.");

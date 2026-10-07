@@ -30,11 +30,18 @@ namespace Puzzle.Client.Canvases
         private const int CutsKept = 3;
         private readonly List<JigsawCut> _cutsKept = new List<JigsawCut>(CutsKept);
 
-        public PaintingLook(PaintingNumber number, Artwork? artwork, Texture2D? picture)
+        private readonly float? _recordedAspect;
+
+        /// <param name="recordedAspect">
+        /// The picture's true width over height when the game's size list knows it; nothing for a picture that comes
+        /// from elsewhere, whose texture then has the picture's own proportions.
+        /// </param>
+        public PaintingLook(PaintingNumber number, Artwork? artwork, Texture2D? picture, float? recordedAspect = null)
         {
             Number = number;
             Artwork = artwork;
             Picture = picture;
+            _recordedAspect = recordedAspect;
         }
 
         public PaintingNumber Number { get; }
@@ -48,8 +55,11 @@ namespace Puzzle.Client.Canvases
         /// <summary>Which way the canvas lies; a canvas whose painting is not chosen yet lies like a landscape.</summary>
         public PaintingOrientation Orientation => Artwork?.Orientation ?? PaintingOrientation.Landscape;
 
-        /// <summary>The canvas' width over its height.</summary>
-        public float Aspect => Picture != null ? (float)Picture.width / Picture.height : BlankCanvasAspect;
+        /// <summary>
+        /// The canvas' width over its height. The game's own pictures are stored stretched to powers of two, so their
+        /// proportions come from the recorded list; a texture is asked only where no size is recorded.
+        /// </summary>
+        public float Aspect => Picture == null ? BlankCanvasAspect : _recordedAspect ?? (float)Picture.width / Picture.height;
 
         /// <summary>
         /// The painting's jigsaw at a size: the same pieces at every size, as a painting is cut once and for all.
@@ -93,6 +103,9 @@ namespace Puzzle.Client.Canvases
     {
         private readonly Func<Artwork, Texture2D?> _pictureOf;
 
+        /// <summary>The true sizes of the game's own pictures; absent when the pictures come from elsewhere.</summary>
+        private readonly PaintingSizes? _sizes;
+
         /// <param name="pictureOf">
         /// Where a work's picture comes from; nothing for the game's own resources. The Editor's picture commands
         /// give another source to show the screens with pictures the game does not carry yet.
@@ -101,6 +114,7 @@ namespace Puzzle.Client.Canvases
         {
             Catalogue = catalogue;
             _pictureOf = pictureOf ?? (artwork => Resources.Load<Texture2D>(MuseumPack.PictureResourceOf(artwork)));
+            _sizes = pictureOf == null ? PaintingSizes.LoadPacked() : null;
         }
 
         public MuseumCatalogue Catalogue { get; }
@@ -118,7 +132,8 @@ namespace Puzzle.Client.Canvases
                 Debug.LogError($"The game carries no picture \"{artwork.ImageFile}\" for painting {number} ({artwork.Id}); its canvas is shown blank.");
             }
 
-            return new PaintingLook(number, artwork, picture);
+            float? recordedAspect = artwork == null ? null : _sizes?.AspectOf(artwork.ImageFile);
+            return new PaintingLook(number, artwork, picture, recordedAspect);
         }
 
         /// <summary>Frees the pictures that nothing on any screen shows any more.</summary>

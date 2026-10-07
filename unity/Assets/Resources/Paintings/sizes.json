@@ -1,0 +1,29 @@
+{
+    "pictures": [
+        {
+            "image": "room-01/beach-at-sainte-adresse.jpg",
+            "width": 1920,
+            "height": 1407
+        },
+        {
+            "image": "room-01/paris-street-rainy-day.jpg",
+            "width": 1920,
+            "height": 1491
+        },
+        {
+            "image": "room-01/stacks-of-wheat-end-of-summer.jpg",
+            "width": 1920,
+            "height": 1138
+        },
+        {
+            "image": "room-01/two-sisters-on-the-terrace.jpg",
+            "width": 1280,
+            "height": 1589
+        },
+        {
+            "image": "room-01/water-lilies.jpg",
+            "width": 1920,
+            "height": 1848
+        }
+    ]
+}

@@ -21,6 +21,7 @@ namespace Puzzle.Client.EditorTools
                 RenderPipelineSetup.Ensure();
                 PieceAtlasBuilder.Ensure();
                 ArtCatalogueBuilder.Build();
+                PaintingSizesBuilder.Build();
                 MainSceneBuilder.Build();
                 AssetDatabase.SaveAssets();
                 Debug.Log("Project setup: the render pipeline, the art catalogue and the main scene are up to date.");
