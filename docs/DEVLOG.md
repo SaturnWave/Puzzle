@@ -49,8 +49,18 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Derlenen bölümler kendi havuzlarında hedefin 1,5–2 puan üstünde (biraz kolay).
 - Zamanlamaya duyarlı bir kayıt testi (`AttemptRecordingTests`) bütün paket birlikte koşarken ara sıra düşüyor, tek başına geçiyor; bu işle ilgisi yok.
 
+**Bankanın büyütülmesi (aynı gün, 12:14–14:36)**
+- Büyütme oturumdan bağımsız bir işlem olarak, makinenin yarı gücüyle (6 iş parçacığı) ve aracın bankanın yanına alınmış bir kopyasıyla başlatıldı (`D:\puzzle-bank-tools`), böylece depodaki araç bu sırada yeniden derlenebiliyor.
+- 141,7 dakikada kendiliğinden bitti: "banka, çizimlerin verebildiği kadar derin". 2.955 yeni aday saklandı (dakikada 20,9).
+- **Banka şimdi:** 5.420 aday, 5.142 tahta, 14,5 milyon oyun, 151 MB, 29 parça dosya. Yarım kayıt ya da hasar yok; `bank verify` saklı oyunları yeniden oynatıp bayt bayt aynı buldu.
+- **Zamanla dolmayan tek yer:** malzemenin tanıtıldığı bölümlerin sınıfları (Normal, 20–33 hamle, 45 / 55 / 60. basamaklar). Çizimler bu aralığa oturan malzeme tahtası vermiyor; aracın kendi sonucu: "daha çok zaman değil, tür için daha uzun bir hamle aralığı gerekir".
+- Kullanıcının isteğiyle bu noktada duruldu: derleme yapılmadı, hiçbir şey yayına alınmadı.
+
+**CI düzeltmesi**
+- PR'daki denetim bir testte düştü: bankanın "aynı anda tek yazıcı" kilidi Windows'ta çalışıyor, Linux'ta ikinci yazıcıyı da içeri alıyordu (.NET, okumaya açık bırakılan dosyayı Unix'te paylaşılan kilide çeviriyor). Kilit dosyası artık hiçbir şekilde paylaşılmıyor; kimin tuttuğu yanındaki not dosyasına yazılıyor. Denetim geçti.
+
 **Açık**
-- Bankayı büyütmek (gece boyunca yaklaşık 11.000 aday, 250 MB) ve hangi kümenin yayına alınacağı.
+- Hangi kümenin yayına alınacağı (banka büyüdü; yeniden derlemek gerekir).
 - Malzeme bölümlerinin hamle aralığı.
 - Dar tahtalar (8–9 sütun) bankaya aynı yolla eklenebilir; istenirse.
 
