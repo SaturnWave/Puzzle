@@ -5,6 +5,7 @@ using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
 using Puzzle.Core.Randomness;
 using Puzzle.Tooling.Ladder;
+using Puzzle.Tooling.Simulation;
 
 namespace Puzzle.Core.Tests;
 
@@ -95,6 +96,44 @@ public sealed class LadderTests : IDisposable
         LevelDefinition unpooled = Level(id: 5, DifficultyTier.Normal, redToCollect: 30, moves: 14);
 
         Assert.Equal(Lines(Measure([unpooled], Bots, Quick)), Lines(Measure([pooled], Bots, Quick)));
+    }
+
+    [Fact]
+    public void Measured_on_a_players_attempts_every_bot_plays_the_levels_retry_pool_in_turn_with_bot_choices_of_each_runs_own()
+    {
+        uint[] pool = [11, 22, 33];
+        LevelDefinition level = Level(id: 5, DifficultyTier.Normal, redToCollect: 30, moves: 14, pool);
+        LadderSettings onAttempts = Quick with { Games = BatchGames.PlayerAttempts };
+
+        // Run i is attempt i of the level, whichever bot plays it; the run's own seed moves the bot alone.
+        RunResult[] GamesOf(SkillProfile bot) => Enumerable.Range(0, onAttempts.Runs)
+            .Select(run => SimulationRunner.Play(
+                level,
+                new GreedyPolicy(bot),
+                level.Attempts.SeedsFor(run, unpooledSeed: 0),
+                Rng.Derive(Rng.Derive(onAttempts.Seed, (ulong)level.Id.Value), (ulong)run),
+                onAttempts.MoveCap))
+            .ToArray();
+        RunResult[][] games = Bots.Select(GamesOf).ToArray();
+        string[] expected = Bots.Zip(games, (bot, played) => LadderCsv.Line(LadderRow.From(level, bot, LevelReport.From(played, onAttempts.MoveCap)))).ToArray();
+
+        Assert.Equal(expected, Lines(Measure([level], Bots, onAttempts)));
+        Assert.Equal(Enumerable.Range(0, onAttempts.Runs).Select(run => (ulong)pool[run % pool.Length]), games[0].Select(game => game.Seed));
+        Assert.NotEqual(Lines(Measure([level], Bots, Quick)), Lines(Measure([level], Bots, onAttempts)));
+    }
+
+    [Fact]
+    public void A_level_without_a_retry_pool_is_measured_on_a_players_attempts_as_on_fresh_seeds_of_another_kind()
+    {
+        LevelDefinition unpooled = Level(id: 5, DifficultyTier.Normal, redToCollect: 30, moves: 14);
+        LadderSettings onAttempts = Quick with { Games = BatchGames.PlayerAttempts };
+
+        LadderRow[] rows = Measure([unpooled], Bots, onAttempts);
+
+        // Without a pool an attempt plays any seed, so the measurement still stands: every bot gets its row from all its runs.
+        Assert.Equal(Bots.Length, rows.Length);
+        Assert.All(rows, row => Assert.Equal(onAttempts.Runs, row.Runs));
+        Assert.Equal(Lines(rows), Lines(Measure([unpooled], Bots, onAttempts)));
     }
 
     [Fact]

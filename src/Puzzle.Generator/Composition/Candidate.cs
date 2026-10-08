@@ -65,11 +65,16 @@ internal sealed class Candidate
         layer is null || other is null ? layer is null && other is null : layer.SequenceEqual(other);
 
     /// <exception cref="LevelFormatException">The layout or goals are inconsistent (a generator bug).</exception>
-    public LevelDefinition Build(LevelPlan plan, double scale)
+    public LevelDefinition Build(LevelPlan plan, double scale) =>
+        Build(new LevelId(plan.Number), plan.Tier, plan.Moves.Max, plan.Palette, scale);
+
+    /// <summary>The level of this board at <paramref name="scale"/>, under a number, tier, move limit and palette that need no plan.</summary>
+    /// <exception cref="LevelFormatException">The layout or goals are inconsistent (a generator bug).</exception>
+    public LevelDefinition Build(LevelId id, DifficultyTier tier, int moveLimit, IReadOnlyList<GemColor> palette, double scale)
     {
         LevelLayout layout = LevelLayout.Parse(_layers);
         var goals = new List<GoalSpec>();
-        int spawnedItems = Math.Clamp((int)Math.Round(ItemSpawnBase * scale), 1, 20);
+        int spawnedItems = AmountRules.SpawnedItems(ItemSpawnBase, scale);
         foreach (ObstacleFamily family in Families)
         {
             switch (family)
@@ -93,18 +98,31 @@ internal sealed class Candidate
 
         foreach (GemColor color in CollectColors)
         {
-            goals.Add(new GoalSpec.CollectColor(color, Math.Max(6, (int)Math.Round(CollectBase * scale))));
+            goals.Add(new GoalSpec.CollectColor(color, AmountRules.CollectTarget(CollectBase, scale)));
         }
 
-        ItemSpawnRules items = Families.Contains(ObstacleFamily.Items)
-            ? new ItemSpawnRules { Total = spawnedItems, MaxOnBoard = spawnedItems > 6 ? 3 : 2, ChancePercent = 7 }
-            : ItemSpawnRules.None;
-        return new LevelDefinition(
-            new LevelId(plan.Number),
-            plan.Tier,
-            layout,
-            goals,
-            plan.Moves.Max,
-            new SpawnRules { Palette = plan.Palette, Items = items });
+        ItemSpawnRules items = Families.Contains(ObstacleFamily.Items) ? AmountRules.ItemRules(spawnedItems) : ItemSpawnRules.None;
+        return new LevelDefinition(id, tier, layout, goals, moveLimit, new SpawnRules { Palette = palette, Items = items });
     }
+}
+
+/// <summary>
+/// How the goals that measure an amount follow a scale. One place for the rules, so a level the calibrator stretched
+/// and the same board given another amount later (a sibling in the level bank) are sized alike.
+/// </summary>
+internal static class AmountRules
+{
+    private const int ItemChancePercent = 7;
+
+    /// <summary>A collect goal's target: the board's amount at scale 1 times the scale, never so few that the first cascade meets it.</summary>
+    public static int CollectTarget(int collectBase, double scale) => Math.Max(6, (int)Math.Round(collectBase * scale));
+
+    /// <summary>Items spawned during play: at least one, so a drop goal always has something falling in.</summary>
+    public static int SpawnedItems(int itemSpawnBase, double scale) => Math.Clamp((int)Math.Round(itemSpawnBase * scale), 1, 20);
+
+    /// <summary>How many items may lie on the board at once: a long item level shows three.</summary>
+    public static int MaxItemsOnBoard(int spawnedItems) => spawnedItems > 6 ? 3 : 2;
+
+    public static ItemSpawnRules ItemRules(int spawnedItems) =>
+        new() { Total = spawnedItems, MaxOnBoard = MaxItemsOnBoard(spawnedItems), ChancePercent = ItemChancePercent };
 }

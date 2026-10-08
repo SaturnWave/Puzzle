@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Puzzle.Bank/Puzzle.Bank.csproj" />
     <Project Path="src/Puzzle.Bot/Puzzle.Bot.csproj" />
     <Project Path="src/Puzzle.Cli/Puzzle.Cli.csproj" />
     <Project Path="src/Puzzle.Core/Puzzle.Core.csproj" />

@@ -71,7 +71,7 @@ public static class GenerationReport
         }
 
         IReadOnlyList<string> bots = rows[0].BotWinRates.Keys.OrderBy(b => b, StringComparer.Ordinal).ToArray();
-        string[] columns = LeadingColumns.Concat(bots.Select(b => b + "Win")).Concat(TrailingColumns).ToArray();
+        string[] columns = ColumnsFor(bots);
 
         SortedDictionary<int, string> lines = ExistingRows(path, columns);
         foreach (LevelMetrics row in rows)
@@ -81,6 +81,11 @@ public static class GenerationReport
 
         File.WriteAllLines(path, lines.Values.Prepend(string.Join(',', columns)));
     }
+
+    /// <summary>The report's columns when these report bots are listed, in the order the file has them.</summary>
+    /// <param name="bots">The report bots in ordinal name order, as <see cref="Upsert"/> lists them.</param>
+    internal static string[] ColumnsFor(IEnumerable<string> bots) =>
+        LeadingColumns.Concat(bots.Select(b => b + "Win")).Concat(TrailingColumns).ToArray();
 
     /// <summary>
     /// The quality columns of existing report rows, keyed by level (for <c>generate --repair</c>). Columns are found
@@ -176,7 +181,10 @@ public static class GenerationReport
         return rows;
     }
 
-    private static string ToCsv(LevelMetrics row, IReadOnlyList<string> bots)
+    private static string ToCsv(LevelMetrics row, IReadOnlyList<string> bots) => string.Join(',', CellsOf(row, bots));
+
+    /// <summary>One level's cells, in the order of <see cref="ColumnsFor"/>: what another writer of report rows (the level assembler) lays out like this one.</summary>
+    internal static string[] CellsOf(LevelMetrics row, IReadOnlyList<string> bots)
     {
         IEnumerable<string> fields = new[]
         {
@@ -213,7 +221,7 @@ public static class GenerationReport
                 row.Relaxed ? "yes" : "no",
                 row.Seconds.ToString("0.0", Invariant),
             });
-        return string.Join(',', fields);
+        return fields.ToArray();
     }
 
     /// <summary>Whether two ratios read back alike from the report, which keeps three decimals.</summary>

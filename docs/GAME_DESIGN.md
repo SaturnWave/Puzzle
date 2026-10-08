@@ -400,6 +400,8 @@ src/Puzzle.Tooling  net10.0 — bölüm JSON'u ve bölüm kütüphanesi (CLI, we
 src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de generate)
 src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
 tests/Puzzle.Core.Tests  net10.0, xUnit
+src/Puzzle.Bank     net10.0 — bölüm bankası ve derleyici: adaylar, ölçüm, saklama, politika, seçim, yayına alma (§24)
+policies/           zorluk politikaları (default.json: oyuncu, paylar, tür hedefleri, sabitlenen bölümler)
 src/Puzzle.Museum   netstandard2.1, C# 9 — müzenin kuralları: odalar, tablolar, yapboz kesimi, ilerleme (Unity'ye girer)
 museum/catalogue.json   odaların ve tabloların veri dosyası (başlık, ressam, yıl, görüntü, kaynak, lisans)
 art/paintings       tabloların lisans listesi (oda oda); görüntüler unity/Assets/Resources/Paintings altında
@@ -939,3 +941,49 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 **Müze tarafı (2026-10-08).** Kurallar `src/Puzzle.Museum` projesinde, Unity'ye bağlı değil ve testli; `sync-engine.js` bu derlemeyi ve kataloğu da projeye koyar. Ekranlar tahtayla aynı ilkeleri izler: açık saat, her şey oyun kamerasında, komut satırından görüntü. Salon, harita ve koleksiyon `MuseumStage`'in sayfalarıdır; yapboz ve tahta kendi sahneleridir (`JigsawStage`, `GameStage`); üçü de `IStage` sözleşmesini uygular. İlerleme dosyası sürümlüdür: eski dosya okunur, kazanılmış bölümlerin parçaları bekler.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası, Roboto Bold yazı tipi.
+
+## 24. Bölüm bankası ve derleyici
+
+**Karar (2026-10-08).** Zorluk ayarının kalıcı çözümü: üretilen tahtalar atılmaz, ölçümleriyle birlikte saklanır; oyunun 1000 bölümü bu bankadan bir **politikayla** seçilir. Kullanıcının isteği: "kalıcı bir çözüm; üretilen bölümlerin çoğunu harddiske kaydedebiliriz". §8 ve §9'daki üretici (`generate`) duruyor; derleyici kendini kanıtladıkça onun yerini alır.
+
+**Neden.** Üretici her bölüm numarası için aday çizer, tek bir botla oynatır ve limiti o botun hedefine göre koyup gerisini atardı. Oyuncuyu temsil eden bot, pay, hamle payı ya da çeşitlilik değişince 1000 bölüm baştan üretiliyordu (40 dakika; tahtalar değişiyor; eski tahtalardaki kayıtlar boşta kalıyor).
+
+**İki parça**
+
+| | Banka | Derleyici |
+|---|---|---|
+| Ne yapar | Bölüm numarasına bağlı olmayan aday tahtaları çizer, merdivenin 15 botuyla limitsiz oynatır, oyunlarıyla saklar | Politika ve her numaranın planıyla bankadan tahta seçer, limiti ve tohum havuzunu saklı oyunlardan okur, yeni oyunlarla denetler, bölümleri yazar |
+| Maliyet | Pahalı, rastgele, bir kez (aday başına yaklaşık 2 saniye) | Ucuz, bilinçli, istenildiği kadar |
+| Ne zaman geçersiz olur | Yalnızca motor ya da bot kuralı değişince (yeniden ölçülür) | Hiç; politika değişince yeniden çalışır |
+
+**Kavramlar**
+- **Aday:** numarası, kademesi, limiti, havuzu ve renk adları olmayan bölüm içeriği. Kimliği içeriğinin özetidir; herhangi bir bölüm dosyasının arkasındaki aday aynı yolla bulunur.
+- **Tahta ailesi:** aynı şekil ve engel aileleri, farklı miktarlar. Bir aile bir derlemede en çok bir kez kullanılır. Miktarlar 1,25 oranlı bir ızgaranın adımlarıdır; her miktar ayrı ölçülür, çünkü bot hedefe göre oynar.
+- **Plan ve politika:** bir bölüm numarasının ne olduğu (kademe, boyut, renk sayısı, mekanikler, hamle aralığı) plandır ve `profiles/default.json` içinde kalır. Kimin için ve ne kadar zor olduğu politikadır (`policies/default.json`): oyuncu (bir basamak ya da basamakların karışımı), kademe başına ilk deneme payı, hamle payı, tür hedefleri, sabitlenen numaralar, kayıtlı bölümlere davranış, denetim boyutları.
+- **Seçim:** plana uymak şarttır (boyut, renk sayısı, açık mekanikler, öne çıkarılan mekanik gerçekten tahtada). Uyanlar arasında maliyet: limitin hamle aralığının ortasına uzaklığı, tür hedeflerinden açık, komşu bölümle aile tekrarı. Yerinde duran ve hâlâ uyan bölüm değişmez.
+- **Sabitleme ve kayıtlar:** `pinned` numaralar diskteki hâliyle, bayt bayt kalır (ilk oda). Üzerinde oyuncu kaydı olan bölüm varsayılan olarak tahtasını korur (`recorded: keepBoard`); yalnızca limiti ve havuzu politikayı izler.
+- **Denetim:** çok adayın en iyi görüneni şanslı ölçümdür; seçilen bölüm politika oyuncusuyla, kendi havuz tohumlarında yeniden oynatılır (oyuncu yalnızca havuz tohumlarını oynar; herkesin ilk denemesi havuzun ilk tohumudur). Rapordaki pay bu denetimden sonraki oyunlardan okunur.
+- **Damga ve dönem:** her kayıt hangi motor ve bot sürümüyle ölçüldüğünü taşır (dönem). Her derlenen bölüm hangi kurallarla karar verildiğinin damgasını taşır; damga değişmedikçe yerinde kalır. Kural değişince `bank remeasure` eksik oyunları oynatır.
+- **Açıklık:** aralığa oturmayan, eskimiş ya da hedefinden sapan bölümler özet ve dökümde adıyla yazılır; `promote` bunları ancak açıkça kabul edilirse yayına alır.
+
+**Depolama.** Varsayılan `D:\puzzle-bank` (seçenek ya da ortam değişkeniyle verilir; depoya girmez). Kayıtlar yalnızca eklenir; her kayıt sağlama toplamı taşır; yarım kalmış son kayıt atlanır; aynı anda tek yazıcı. Aday başına yaklaşık 37 KB (oyunlarıyla). `bank verify` saklı oyunları yeniden oynatıp bayt bayt karşılaştırır.
+
+**Deneme (2026-10-08; 2.465 aday, 8,85 milyon oyun, 87 MB).** 55. basamak, 51–1000: hedef 90 / 75 / 55 / 40; bağımsız ölçüm bölümün kendi havuzunda %91,6 / %76,5 / %57,1 / %40,7; yeni tohumlarda %91,6 / %77,5 / %58,1 / %43,6. Tür dağılımı hedeflerde (yalnızca toplama %35, kutu %25, zincir %26, jöle %18), malzeme %4 (hedef %6). İlk oda her derlemede bayt bayt aynı. Sıfırdan derleme 6,6 dakika, tekrarı 14–21 saniye ve oyunsuz. Ayrıntı: DEVLOG Oturum 18.
+
+**Bilinen sınırlar**
+- Yeni bir oyuncu basamağı ilk seferde bir yeniden üretim kadar oyun ister (tahtalar yerinde kalır); pay değişikliği dakikalar; hamle aralığı, hamle payı, tür hedefi ve ağırlık değişikliği oyunsuzdur.
+- Malzeme indirme bölümleri planın hamle aralıklarına nadiren oturur; politika türe özel aralık kabul eder (`kindMoves`), karar bekliyor.
+- Derlenen bölümler kendi havuzlarında hedefin 1,5–2 puan üstündedir.
+- Bir dönem geri açılamaz; yeni dönem açmak adıyla onay ister.
+
+**Komutlar** (`puzzle` = `src/Puzzle.Cli/bin/Release/net10.0/puzzle.exe`; uzun işlerde `DOTNET_PROCESSOR_COUNT=10`)
+
+| İş | Komut |
+|---|---|
+| Bankanın durumu ve bütünlüğü | `puzzle bank status --bank D:\puzzle-bank`, `puzzle bank verify --bank D:\puzzle-bank` |
+| Bankayı büyüt (kaldığı yerden sürer) | `puzzle bank grow --bank D:\puzzle-bank --policy policies/default.json --levels 51-1000 --also-aim skill-45,skill-60,skill-65 --spare 3.0 --minutes 480` |
+| Var olan bölümleri bankaya al | `puzzle bank import ...` |
+| Kural değişince yeniden ölç | `puzzle bank remeasure --bank D:\puzzle-bank --in-use levels/generated --new-epoch` |
+| Derle (deneme klasörüne) | `puzzle assemble --policy policies/default.json --base levels/generated --bank D:\puzzle-bank --out out/assemble/<ad>` |
+| İki bölüm kümesini karşılaştır | `puzzle compare levels/generated out/assemble/<ad> --from 51` |
+| Yayına al (sunucu durmuşken) | `puzzle promote out/assemble/<ad> [--accept <numaralar>] [--dry-run]` |

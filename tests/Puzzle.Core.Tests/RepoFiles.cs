@@ -16,6 +16,12 @@ internal static class RepoFiles
     /// <summary>The test settings file of the public test, beside the web app's settings.</summary>
     public static string ReadyMadePlayersPath => Find("src", "Puzzle.Web", "public-test-players.json");
 
+    /// <summary>The first difficulty policy: the rules the live levels were made under.</summary>
+    public static string DefaultPolicyPath => Find("policies", "default.json");
+
+    /// <summary>The levels the game ships and the test server reads; tests only ever read them.</summary>
+    public static string LiveLevelsFolder => Path.GetDirectoryName(Find("levels", "generated", "report.csv"))!;
+
     /// <summary>profiles/default.json, loaded once.</summary>
     public static GenerationProfile DefaultProfile => LoadedDefaultProfile.Value;
 

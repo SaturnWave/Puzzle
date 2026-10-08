@@ -4,14 +4,17 @@ using Puzzle.Bot;
 using Puzzle.Core.Levels;
 using Puzzle.Tooling;
 using Puzzle.Tooling.Ladder;
+using Puzzle.Tooling.Simulation;
 
 namespace Puzzle.Cli.Commands;
 
 /// <summary>
 /// <c>ladder &lt;dir|file&gt; [--from 1] [--to &lt;last&gt;] [--from-skill 30] [--to-skill 100] [--step 5] [--runs 60]
-/// [--cap 150] [--seed 7] [--out reports/ladder.csv]</c>: measures existing levels against the bots of the skill ladder
+/// [--cap 150] [--seed 7] [--games fresh|attempts] [--out reports/ladder.csv]</c>: measures existing levels against the bots of the skill ladder
 /// (<see cref="SkillLadder"/>), every bot of a level on the same fresh games, and writes one CSV row per level and bot
-/// (<see cref="LadderCsv"/>). No level is changed. A long measurement can be done in pieces with --from/--to: each run
+/// (<see cref="LadderCsv"/>). No level is changed. <c>--games attempts</c> plays the attempts a player meets (the level's
+/// retry pool in turn) instead of fresh seeds; the report does not say which, so keep the two in files of their own.
+/// A long measurement can be done in pieces with --from/--to: each run
 /// replaces the rows of its own levels in the report and keeps the others. Progress goes to stderr; the summary on
 /// stdout is each bot's mean win rate at the levels' move limits, overall and by tier.
 /// </summary>
@@ -61,8 +64,24 @@ internal static class LadderCommand
             throw new UsageException("--runs and --cap must be at least 1.");
         }
 
-        return defaults with { Runs = runs, MoveCap = cap, Seed = args.ULong("seed", defaults.Seed) };
+        return defaults with { Runs = runs, MoveCap = cap, Seed = args.ULong("seed", defaults.Seed), Games = GamesFrom(args) };
     }
+
+    /// <summary>--games: fresh seeds unless the attempts a player meets are asked for.</summary>
+    /// <exception cref="UsageException">The option names neither kind of games.</exception>
+    private static BatchGames GamesFrom(CliArgs args) => args.Text("games", "fresh") switch
+    {
+        "fresh" => BatchGames.FreshSeeds,
+        "attempts" => BatchGames.PlayerAttempts,
+        string other => throw new UsageException($"--games is 'fresh' (seeds of the run's own) or 'attempts' (each level's retry pool in turn), not '{other}'."),
+    };
+
+    private static string Described(BatchGames games) => games switch
+    {
+        BatchGames.FreshSeeds => "fresh seeds",
+        BatchGames.PlayerAttempts => "the levels' own attempts (their retry pools in turn)",
+        _ => throw new InvalidOperationException($"Unhandled batch games {games}."),
+    };
 
     /// <summary>The rungs from --from-skill to --to-skill, every --step points, weakest first.</summary>
     /// <exception cref="UsageException">The options do not name rungs of the ladder.</exception>
@@ -169,7 +188,7 @@ internal static class LadderCommand
         string levelsByTier = string.Join(", ", tiers.Select(tier => string.Create(Invariant, $"{tier} {first.ByTier[tier].Levels}")));
         Console.WriteLine(string.Create(
             Invariant,
-            $"levels {rows[0].Level}..{rows[^1].Level}: {first.Overall.Levels} ({levelsByTier}); {bots.Count} bots, {settings.Runs} games per bot and level, cap {settings.MoveCap}, seed {settings.Seed}"));
+            $"levels {rows[0].Level}..{rows[^1].Level}: {first.Overall.Levels} ({levelsByTier}); {bots.Count} bots, {settings.Runs} games per bot and level on {Described(settings.Games)}, cap {settings.MoveCap}, seed {settings.Seed}"));
         Console.WriteLine("mean share of games won within the level's move limit:");
         Console.WriteLine($"{"bot",-9} {"skill",5} {"all",7} {string.Join(' ', tiers.Select(tier => $"{tier,9}"))}  named");
         foreach (LadderBotSummary bot in bots)

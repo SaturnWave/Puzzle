@@ -1,3 +1,4 @@
+using Puzzle.Bank.Assembling;
 using Puzzle.Cli;
 using Puzzle.Cli.Commands;
 using Puzzle.Core.Engine;
@@ -20,10 +21,57 @@ const string Usage = """
                             --board varied|fixed  --board-seed N  --target 0.6  --candidates 64  --games 64  --pool 16  --tolerance 5  --write
       generate              Produce bot-calibrated levels from a generation profile.
                             --profile profiles/default.json  --from 1  --to 20  --out levels/generated  --quick  --overwrite  --repair
+      bank grow             Grow the level bank: candidate boards that belong to no level number, each stored with the
+                            games the whole skill ladder played on it, drawn where the bank is thinnest for the plan.
+                            --bank <folder> (or the environment variable PUZZLE_BANK; outside the repository)
+                            --policy policies/default.json (or --plan profiles/default.json: the plan's own difficulty)
+                            --levels 51-1000  --minutes N | --candidates N
+                            --also-aim skill-45,skill-65  --spare 0.25  --siblings 0  --seed N (new bank)  --accept-damage
+                            Depth is set by --spare (spare boards per level of a class). A run that ends before its
+                            budget has made the bank as deep as that asks or as draws can make it, and says which.
+                            Stop with Ctrl+C or let the budget run out; the same command goes on where it stopped.
+      bank remeasure        After a change of the engine or the bot: play the ladder games of the boards the bank holds
+                            again under the new rules (the boards behind --in-use levels first). Resumable.
+                            --bank <folder>  --in-use levels/generated  --minutes N  --candidates N
+                            --new-epoch  opens the epoch of this build when the bank has none for it; where the build
+                            already works in an epoch, name it (--new-epoch <epoch id>): its games stop counting.
+      bank status           What the bank holds; with --plan and --levels, what each class of levels still lacks.
+                            --bank <folder>  --policy ... | --plan ...  --levels ...  --also-aim ...  --spare 0.25  --out status.csv
+                            --draws draws.csv (every variant the grower tried: its target, probe limit and outcome)
+      bank verify           Check every record of the bank and replay stored games.   --bank <folder>  --candidates 24
+      bank import <dir|file>
+                            Take existing levels into the bank, each measured on the whole ladder like a drawn board,
+                            so a level can keep its board under another policy.   --bank <folder>  --from N  --to N
+                            A level held from before a rule change gets its ladder games again.
+      assemble              Make the levels a difficulty policy asks for: pinned levels and levels that still stand are
+                            copied byte for byte; every other number gets a bank candidate, its limit and seed pool read
+                            from stored games and checked on fresh ones. Writes level files, report.csv, assembly.csv and
+                            assembly.manifest into a staging folder (replaced whole), never into the base folder.
+                            A level stands only while policy, plan, engine rules and checks are what it was decided
+                            under, the plan admits its board and its limit lies in its range. The summary names every
+                            level that does not meet the policy and every kind that missed its target.
+                            --policy policies/default.json  --base levels/generated  --out out/assemble/<policy name>
+                            --bank <folder> (or PUZZLE_BANK)  --from 1  --to <last>  --accept-damage
+                            --recordings recordings/attempts.jsonl | none
+                            Seconds: a repeat, or a run in which nothing changed. Minutes: other shares for some tiers.
+                            Another player is as slow as a regeneration the first time (every level's confirm and
+                            audit games are new); what it saves is the boards, not the time.
+      promote <staging folder>
+                            Take an assembled set live, with the test server stopped: checks the folder against its
+                            manifest, that every pinned or kept level is the live file, and that every level short of
+                            the policy was accepted by number; archives replaced files that have recordings, backs up
+                            what it replaces, then copies levels, report, assembly.csv and manifest.
+                            --live levels/generated  --accept 52,53  --dry-run  --recordings <file> | none
+                            --archive levels/archive/before-<policy>-<date>  --backup out/promote/<time>
+                            --server-process Puzzle.Web | none
+      compare <folder> <other folder>
+                            Two folders of levels side by side: limits and shares per tier, the mix of level kinds, and
+                            how many numbers changed limit, amounts or board.   --from N  --to N  --out changes.csv
       botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert|usta|usta-<n>  --runs 30  --cap 150  --out reports/<bot>_moves.csv
       ladder <dir|file>     Existing levels against the skill ladder, every bot of a level on the same fresh games, as CSV:
                             win rate at the move limit, moves needed and the limit each win rate would take, per level and bot.
                             --from 1  --to <last>  --from-skill 30  --to-skill 100  --step 5  --runs 60  --cap 150  --seed 7
+                            --games fresh|attempts (attempts: each level's retry pool in turn, as a player meets it)
                             --out reports/ladder.csv   A run replaces the rows of its own levels there and keeps the others.
       validate <dir|file>   Parse every level file and build a starting board for it.
       humans [attempts.jsonl]
@@ -54,6 +102,10 @@ try
         "solve" => SolveCommand.Run(cli),
         "seeds" => SeedsCommand.Run(cli),
         "generate" => GenerateCommand.Run(cli),
+        "bank" => BankCommand.Run(cli),
+        "assemble" => AssembleCommand.Run(cli),
+        "compare" => AssembleCommand.Compare(cli),
+        "promote" => PromoteCommand.Run(cli),
         "botstats" => BotStatsCommand.Run(cli),
         "ladder" => LadderCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
@@ -82,6 +134,11 @@ catch (LevelInitializationException ex)
 catch (ProfileFormatException ex)
 {
     Console.Error.WriteLine($"Invalid profile: {ex.Message}");
+    return 1;
+}
+catch (PolicyFormatException ex)
+{
+    Console.Error.WriteLine(ex.Message);
     return 1;
 }
 catch (LadderReportFormatException ex)

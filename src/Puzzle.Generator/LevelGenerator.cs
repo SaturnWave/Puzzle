@@ -375,7 +375,8 @@ public sealed class LevelGenerator(GenerationProfile profile)
     private static bool IsCloser(CalibrationOutcome.OutOfRange candidate, CalibrationOutcome.OutOfRange current, LevelPlan plan) =>
         plan.Moves.DistanceTo(candidate.Level.MoveLimit) < plan.Moves.DistanceTo(current.Level.MoveLimit);
 
-    private static string Describe(GoalSpec goal) => goal switch
+    /// <summary>A goal as the report's goals column writes it: <c>Yellow:55</c>, <c>Boxes:12</c>.</summary>
+    internal static string Describe(GoalSpec goal) => goal switch
     {
         GoalSpec.CollectColor collect => $"{collect.Color}:{collect.Target}",
         GoalSpec.BreakBoxes _ => $"Boxes:{goal.Target}",

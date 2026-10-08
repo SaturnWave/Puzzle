@@ -8,13 +8,42 @@ using Puzzle.Core.Randomness;
 
 namespace Puzzle.Tooling.Simulation;
 
+/// <summary>Which games the runs of a batch play. Closed set.</summary>
+public enum BatchGames
+{
+    /// <summary>Run i plays a seed of its own, <c>Rng.Derive(Seed, i)</c>: the level on boards nobody picked.</summary>
+    FreshSeeds,
+
+    /// <summary>
+    /// Run i plays the level's attempt i as a player meets it (<see cref="AttemptPolicy.SeedsFor"/>): the seeds of its
+    /// retry pool in turn, or any seed where the level has no pool. <c>Rng.Derive(Seed, i)</c> then drives only the
+    /// bot's own choices, so the level is measured on the pool it ships with, in games no calibration has read.
+    /// </summary>
+    PlayerAttempts,
+}
+
 /// <summary>
-/// One batch of bot games: <paramref name="Level"/>, played by the bot <paramref name="CreatePolicy"/> makes. Run i plays
-/// the seed <see cref="BatchSimulator.Run"/> would give it, <c>Rng.Derive(Seed, i)</c>, so two batches of one level with
-/// the same seed play the same games: the same starting boards and the same falling tiles for both bots.
+/// One batch of bot games: <paramref name="Level"/>, played by the bot <paramref name="CreatePolicy"/> makes. With
+/// <see cref="BatchGames.FreshSeeds"/> run i plays the seed <see cref="BatchSimulator.Run"/> would give it,
+/// <c>Rng.Derive(Seed, i)</c>. Either way two batches of one level with the same seed play the same games: the same
+/// starting boards and the same falling tiles for both bots.
 /// </summary>
 /// <param name="CreatePolicy">Called once per game, on the thread that plays it: policies are not thread-safe.</param>
-public sealed record SimulationBatch(LevelDefinition Level, Func<IBotPolicy> CreatePolicy, ulong Seed);
+public sealed record SimulationBatch(LevelDefinition Level, Func<IBotPolicy> CreatePolicy, ulong Seed, BatchGames Games = BatchGames.FreshSeeds)
+{
+    /// <summary>Plays run <paramref name="run"/> of the batch with a policy of its own, followed to <paramref name="moveCap"/>.</summary>
+    /// <exception cref="LevelInitializationException">The level cannot produce a starting board.</exception>
+    public RunResult Play(int run, int moveCap)
+    {
+        ulong runSeed = Rng.Derive(Seed, (ulong)run);
+        return Games switch
+        {
+            BatchGames.FreshSeeds => SimulationRunner.Play(Level, CreatePolicy(), runSeed, moveCap),
+            BatchGames.PlayerAttempts => SimulationRunner.Play(Level, CreatePolicy(), Level.Attempts.SeedsFor(run, unpooledSeed: (uint)runSeed), runSeed, moveCap),
+            _ => throw new InvalidOperationException($"Unhandled batch games {Games}."),
+        };
+    }
+}
 
 /// <summary>Plays many batches of bot games as one queue across the CPU cores.</summary>
 public static class MultiBatchSimulator
@@ -85,8 +114,7 @@ public static class MultiBatchSimulator
         {
             try
             {
-                return new GameOutcome.Played(
-                    SimulationRunner.Play(Batch.Level, Batch.CreatePolicy(), Rng.Derive(Batch.Seed, (ulong)Run), moveCap));
+                return new GameOutcome.Played(Batch.Play(Run, moveCap));
             }
             catch (Exception ex) when (ex is LevelInitializationException or InvalidOperationException)
             {

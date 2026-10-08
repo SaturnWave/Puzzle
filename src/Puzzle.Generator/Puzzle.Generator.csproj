@@ -12,5 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+    <!-- The level bank draws its boards with the generator's composition and layout code. -->
+    <InternalsVisibleTo Include="Puzzle.Bank" />
   </ItemGroup>
 </Project>

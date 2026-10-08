@@ -4,6 +4,56 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-08 · Oturum 18 — İkinci oda ve zorluk için kalıcı çözüm: bölüm bankası
+
+**Kullanıcı kararları**
+- İkinci odanın beş tablosu onaylandı.
+- Telefonda deneme sonraya bırakıldı.
+- "Bölüm zorluk ayarlarına kalıcı bir çözüm bulmamız gerekiyor; üretilen bölümlerin çoğunu harddiske kaydedebiliriz."
+
+**İkinci oda (Post-empresyonizm)**
+- Otoportre (Van Gogh, 1887), Elma Sepeti (Cézanne, y. 1893), Moulin Rouge'da (Toulouse-Lautrec, 1892–95), Yatak Odası (Van Gogh, 1889) ve oda finali olarak Grande Jatte Adası'nda Bir Pazar Öğleden Sonrası (Seurat, 1884–86). Hepsi Art Institute of Chicago'da kamu malı; kaynak ve lisans `art/paintings/room-02/licences.json`. Müze artık 100. bölüme kadar gidiyor.
+- "Müze tabloların bittiği yerde biter" davranışını sınayan testler, oyunun büyüyen kataloğu yerine dondurulmuş tek odalı bir kataloğa bağlandı (`tests/fixtures/catalogue-one-room.json`).
+- APK: 58,6 MB (on tabloyla).
+
+**Bölüm bankası ve derleyici (GAME_DESIGN §24)**
+- **Neden:** zorlukla ilgili her karar (oyuncuyu hangi bot temsil ediyor, hangi pay, hamle payı, çeşitlilik) 1000 bölümün baştan üretilmesi demekti: 40 dakika, her seferinde başka tahtalar, eski tahtalardaki oyuncu kayıtları boşta.
+- **Ne yapıldı:** pahalı ve rastgele olan iş (tahta çizmek, botlarla oynatmak) ile ucuz ve bilinçli olan iş (hangi bölüm numarasına hangi tahta, hangi limit) ayrıldı.
+  - **Banka** (`D:\puzzle-bank`, depo dışında): bölüm numarasına bağlı olmayan aday tahtalar; her biri merdivendeki 15 botla limitsiz oynatılıp oyunlarıyla saklanıyor. "Şu oyuncu şu payı kazansın, limit kaç?" sorusu kayıttan okunuyor.
+  - **Derleyici** (`puzzle assemble`): bir politika dosyası (`policies/default.json`: oyuncu, kademe başına pay, hamle payı, tür hedefleri, sabitlenen bölümler) ve her bölüm numarasının planı ile bankadan tahta seçer; seçilen her bölümü yeni oyunlarla denetler; bölüm dosyalarını ve raporu yazar.
+  - **Yayına alma** (`puzzle promote`): sunucu çalışırken reddeder, klasörü kendi dökümüyle karşılaştırır, kaydı olan değiştirilen bölümleri arşive alır, her değişen dosyayı yedekler.
+- **Nasıl yapıldı:** sekiz ajanlı iş akışı: tasarım → iki tasarım eleştirisi (istatistik, mühendislik; kod yazılmadan) → banka → derleyici → deneme → bağımsız eleştiri → düzeltme. 7,8 saat, 3,0 milyon token. Yeni proje `src/Puzzle.Bank` (7.400 satır); testler 2489 → 2670.
+- **Tasarımda düzeltilen varsayımlar:** miktar hedefleri (N taş topla) tek uzun oyundan okunamıyor, çünkü bot hedefe göre oynuyor: her miktar ayrı ölçülen bir aday. Oyuncu yalnızca havuz tohumlarını oynadığı için denetim rastgele tohumlarda değil, bölümün kendi havuz tohumlarında yapılıyor. "Saniyeler içinde yeniden derleme" yalnızca hiçbir şey değişmediğinde doğru; pay değişikliği dakikalar, yeni bir oyuncu basamağı ilk seferde bir yeniden üretim kadar sürüyor, ama tahtalar yerinde kalıyor.
+
+**Deneme sonuçları (banka: 2.465 aday, 8,85 milyon oyun, 87 MB)**
+
+| 51–1000, 55. basamak | Kolay | Normal | Zor | Süper Zor |
+|---|---|---|---|---|
+| Hedef | %90 | %75 | %55 | %40 |
+| Derleyicinin kendi denetimi | %91,5 | %76,6 | %56,8 | %41,3 |
+| Bağımsız ölçüm, bölümün kendi havuzunda | %91,6 | %76,5 | %57,1 | %40,7 |
+| Bağımsız ölçüm, yeni tohumlarda | %91,6 | %77,5 | %58,1 | %43,6 |
+| Ortalama limit (yayındaki) | 24,7 (25,2) | 28,0 (29,3) | 31,3 (31,9) | 35,7 (36,8) |
+
+- **Tür dağılımı artık hedef:** yalnızca renk toplama 335 (hedef %35), kutulu 233, zincirli 243, jöleli 174 (yayında 110), malzeme indirme 41 (yayında 61; hedef %6).
+- **İki hazır küme** (ikisi de `out/assemble` altında, yayında değil): *sıfırdan* (948 yeni tahta; çeşitlilik hedeflerde) ve *yayındakinden* (941 bölüm bayt bayt aynı; aralık dışında kalmış 7 bölüm uygun tahtayla değişti: 358, 730, 771, 795, 813, 841, 980). İkisinde de 1–50 bayt bayt aynı.
+- **Politika değişikliği:** iki kademede pay değişince 285 bölüm için 3,7 dakika; çoğunda tahta aynı kaldı, yalnızca limit değişti.
+
+**Bağımsız eleştirinin bulduğu ve düzeltilenler**
+- Engelleyici: motor ya da bot kuralı değişince bankanın tamamı tek bayrakla devre dışı kalıyordu. Artık `bank remeasure` var, yeni dönem açmak adıyla onay istiyor, her bölüm hangi kurallarla ölçüldüğünün damgasını taşıyor.
+- Plan değişikliği yerinde duran bölümlerde fark edilmiyordu; aralık dışı ve eskimiş bölümler özetlerde görünmüyordu; kayıtlar bölüm numarasıyla korunuyordu (artık parmak iziyle); yayına alma ve iz sürme yoktu; hasarlı bankayı derleyici fark etmiyordu; çeşitlilik bir dilekti, denetim değildi.
+
+**Bulgular**
+- **Malzeme bölümleri hâlâ az.** 55. basamak botu için üç malzemeli bir tahta Normal aralığına (20–33) altı yüz çizimde bir oturuyor. Politika artık türe özel hamle aralığı kabul ediyor (`kindMoves`); malzeme için Normal 20–42 ve Zor 24–44 denemesinde bankadaki uygun malzeme tahtası 81'den 159'a çıkıyor. Karar kullanıcıda.
+- 52. ve 53. bölümler (malzemenin tanıtıldığı bölümler) aralığa oturmuyor; "eskimiş" olarak işaretli.
+- Derlenen bölümler kendi havuzlarında hedefin 1,5–2 puan üstünde (biraz kolay).
+- Zamanlamaya duyarlı bir kayıt testi (`AttemptRecordingTests`) bütün paket birlikte koşarken ara sıra düşüyor, tek başına geçiyor; bu işle ilgisi yok.
+
+**Açık**
+- Bankayı büyütmek (gece boyunca yaklaşık 11.000 aday, 250 MB) ve hangi kümenin yayına alınacağı.
+- Malzeme bölümlerinin hamle aralığı.
+- Dar tahtalar (8–9 sütun) bankaya aynı yolla eklenebilir; istenirse.
+
 ## 2026-10-08 · Oturum 17 — Renkler, daha büyük tahta ve müze tarafı
 
 **Kullanıcı kararları (2026-10-07 akşamı, telefonda oynadıktan sonra)**

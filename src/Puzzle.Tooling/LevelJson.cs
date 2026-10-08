@@ -36,15 +36,23 @@ public static class LevelJson
             throw new LevelFormatException($"Cannot read '{path}': {ex.Message}", ex);
         }
 
+        return Parse(json, $"'{path}'");
+    }
+
+    /// <summary>The level a level file's text holds.</summary>
+    /// <param name="source">Where the text comes from, for the message of a failure: a quoted path, or what holds it.</param>
+    /// <exception cref="LevelFormatException">The text is not JSON, or not a valid level.</exception>
+    public static LevelDefinition Parse(string json, string source)
+    {
         LevelFile file;
         try
         {
             file = JsonSerializer.Deserialize<LevelFile>(json, Options)
-                ?? throw new LevelFormatException($"'{path}' contains no level.");
+                ?? throw new LevelFormatException($"{source} contains no level.");
         }
         catch (JsonException ex)
         {
-            throw new LevelFormatException($"'{path}' is not valid level JSON: {ex.Message}", ex);
+            throw new LevelFormatException($"{source} is not valid level JSON: {ex.Message}", ex);
         }
 
         return LevelFileMapper.ToDefinition(file);
@@ -52,6 +60,13 @@ public static class LevelJson
 
     public static void Save(LevelDefinition level, string path) =>
         File.WriteAllText(path, JsonSerializer.Serialize(LevelFileMapper.ToFile(level), Options));
+
+    /// <summary>
+    /// The level as one line of level-file JSON, the same on every platform: what <see cref="Fingerprint"/> hashes, and
+    /// what a tool writes when it keeps a level inside a record of its own. <see cref="Parse"/> reads it back.
+    /// </summary>
+    public static string ToCanonicalJson(LevelDefinition level) =>
+        JsonSerializer.Serialize(LevelFileMapper.ToFile(level), CanonicalOptions);
 
     /// <summary>
     /// A short id of the level's exact content: 16 hex digits of a SHA-256 over its canonical file form. Attempt records
