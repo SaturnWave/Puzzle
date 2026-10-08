@@ -376,21 +376,34 @@ public sealed class BankWriter(ShardWriter shards, BankCatalog catalog) : IDispo
     public void Dispose() => shards.Dispose();
 }
 
-/// <summary>The grower's place in a bank, held for as long as this object lives.</summary>
+/// <summary>
+/// The grower's place in a bank, held for as long as this object lives. The place is an open handle on the lock file
+/// that shares nothing: the one way of opening a file that keeps a second opener out on every platform (on Unix,
+/// .NET turns every other share mode into a shared lock, which two growers would both be given). Because nobody else
+/// can then read the lock file, the holder says who it is in a note beside it.
+/// </summary>
 public sealed class GrowLock : IDisposable
 {
-    private readonly FileStream _file;
+    private const string HolderNoteSuffix = ".holder";
 
-    private GrowLock(FileStream file) => _file = file;
+    private readonly FileStream _file;
+    private readonly string _holderNote;
+
+    private GrowLock(FileStream file, string holderNote)
+    {
+        _file = file;
+        _holderNote = holderNote;
+    }
 
     internal static GrowLock Acquire(string path)
     {
+        string holderNote = path + HolderNoteSuffix;
         FileStream file;
         try
         {
-            file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+            file = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
         }
-        catch (IOException ex) when (HolderOf(path) is string holder)
+        catch (IOException ex) when (HolderOf(holderNote) is string holder)
         {
             throw new BankBusyException($"The bank is being grown by {holder}; one grower at a time ({ex.Message})");
         }
@@ -399,25 +412,44 @@ public sealed class GrowLock : IDisposable
             throw new BankWriteException($"Could not take the grower's lock '{path}': {ex.Message}", ex);
         }
 
-        using (var writer = new StreamWriter(file, leaveOpen: true))
+        try
         {
-            writer.Write($"process {Environment.ProcessId} on {Environment.MachineName}, since {DateTime.UtcNow:u}");
+            File.WriteAllText(holderNote, $"process {Environment.ProcessId} on {Environment.MachineName}, since {DateTime.UtcNow:u}");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            file.Dispose();
+            throw new BankWriteException($"Could not write the grower's note '{holderNote}': {ex.Message}", ex);
         }
 
-        file.Flush();
-        return new GrowLock(file);
+        return new GrowLock(file, holderNote);
     }
 
-    public void Dispose() => _file.Dispose();
-
-    /// <summary>What the holder wrote into the lock; absent when the file cannot even be read (then the disk is the trouble, not a holder).</summary>
-    private static string? HolderOf(string path)
+    /// <summary>
+    /// Leaves the place. The note goes first, while the handle still keeps a newcomer out, so nobody reads the note
+    /// of a holder that has left. A note that cannot be removed (the disk was pulled) is a stale line of text and
+    /// holds nobody back: the lock is the handle, and the next grower writes the note anew.
+    /// </summary>
+    public void Dispose()
     {
         try
         {
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
+            File.Delete(_holderNote);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Deliberately not rethrown: see the summary. Leaving the place must not fail on a note.
+        }
+
+        _file.Dispose();
+    }
+
+    /// <summary>What the holder wrote into its note; absent when there is no note to read (then the disk is the trouble, not a holder).</summary>
+    private static string? HolderOf(string holderNote)
+    {
+        try
+        {
+            return File.ReadAllText(holderNote);
         }
         catch (IOException)
         {
