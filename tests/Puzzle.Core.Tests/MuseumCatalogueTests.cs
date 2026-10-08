@@ -55,7 +55,7 @@ public class MuseumCatalogueTests
     [Fact]
     public void The_second_room_is_named_and_the_rooms_after_it_carry_provisional_names()
     {
-        MuseumCatalogue catalogue = Shipped.Value;
+        MuseumCatalogue catalogue = Shipped.Value;   // rooms whose paintings are chosen later keep provisional names until then
 
         Assert.Equal(("Post-empresyonizm", false), (catalogue.Room(new RoomNumber(2)).Movement, catalogue.Room(new RoomNumber(2)).IsNameProvisional));
         Assert.All(catalogue.Rooms.Skip(2), room => Assert.True(room.IsNameProvisional, $"Room {room.Number} is not marked provisional."));
@@ -67,9 +67,9 @@ public class MuseumCatalogueTests
     {
         var sixth = new PaintingNumber(6);
 
-        Assert.Null(Shipped.Value.ArtworkAt(sixth));
+        Assert.Null(TestMuseums.EndingAfterRoomOne.ArtworkAt(sixth));
         Assert.Equal((51, 60, 10), (sixth.FirstLevel.Value, sixth.LastLevel.Value, sixth.Size.PieceCount));
-        Assert.Equal("monet-stacks-of-wheat-end-of-summer", Shipped.Value.ArtworkAt(new PaintingNumber(5))!.Id.Value);
+        Assert.Equal("monet-stacks-of-wheat-end-of-summer", TestMuseums.EndingAfterRoomOne.ArtworkAt(new PaintingNumber(5))!.Id.Value);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class MuseumCatalogueTests
     [Fact]
     public void An_open_room_without_paintings_lists_its_places_as_not_chosen_yet()
     {
-        IReadOnlyList<string> lines = MuseumSummary.Of(new MuseumProgress(levelsWon: 101, PlacedPieces.None), Shipped.Value);
+        IReadOnlyList<string> lines = MuseumSummary.Of(new MuseumProgress(levelsWon: 101, PlacedPieces.None), TestMuseums.EndingAfterRoomOne);
 
         Assert.Contains("  painting 6, levels 51-60, 10 pieces (3-4-3): 10 won, 0 placed, 10 waiting; not chosen yet", lines);
         Assert.Contains("  painting 11, levels 101-110, 20 pieces (5x4): 2 won, 0 placed, 2 waiting; not chosen yet", lines);

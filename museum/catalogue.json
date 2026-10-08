@@ -67,7 +67,63 @@
       "number": 2,
       "movement": "Post-empresyonizm",
       "provisionalName": false,
-      "paintings": []
+      "paintings": [
+        {
+          "id": "van-gogh-self-portrait-1887",
+          "title": "Otoportre",
+          "originalTitle": "Self-Portrait",
+          "artist": "Vincent van Gogh",
+          "year": "1887",
+          "orientation": "portrait",
+          "image": "room-02/van-gogh-self-portrait.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/80607",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "cezanne-basket-of-apples",
+          "title": "Elma Sepeti",
+          "originalTitle": "The Basket of Apples",
+          "artist": "Paul Cézanne",
+          "year": "y. 1893",
+          "orientation": "landscape",
+          "image": "room-02/basket-of-apples.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/111436",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "toulouse-lautrec-at-the-moulin-rouge",
+          "title": "Moulin Rouge'da",
+          "originalTitle": "At the Moulin Rouge",
+          "artist": "Henri de Toulouse-Lautrec",
+          "year": "1892–95",
+          "orientation": "landscape",
+          "image": "room-02/at-the-moulin-rouge.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/61128",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "van-gogh-the-bedroom",
+          "title": "Yatak Odası",
+          "originalTitle": "The Bedroom",
+          "artist": "Vincent van Gogh",
+          "year": "1889",
+          "orientation": "landscape",
+          "image": "room-02/the-bedroom.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/28560",
+          "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)."
+        },
+        {
+          "id": "seurat-sunday-on-la-grande-jatte",
+          "title": "Grande Jatte Adası'nda Bir Pazar Öğleden Sonrası",
+          "originalTitle": "A Sunday on La Grande Jatte — 1884",
+          "artist": "Georges Seurat",
+          "year": "1884–86",
+          "orientation": "landscape",
+          "image": "room-02/sunday-on-la-grande-jatte.jpg",
+          "source": "Art Institute of Chicago, https://www.artic.edu/artworks/27992",
+          "licence": "Public domain work; the photograph is Google Arts & Culture's faithful reproduction of it (public domain), taken from Wikimedia Commons."
+        }
+      ]
     },
     {
       "number": 3,

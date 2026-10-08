@@ -16,14 +16,18 @@ internal static class TestMuseums
 {
     private static readonly JsonSerializerOptions AsUnityMapsIt = new() { IncludeFields = true };
 
-    private static readonly Lazy<MuseumCatalogue> ShippedCatalogue = new(() => CatalogueFileMapper.ToCatalogue(
-        JsonSerializer.Deserialize<CatalogueFile>(File.ReadAllText(RepoFiles.MuseumCataloguePath), AsUnityMapsIt)!));
+    private static readonly Lazy<MuseumCatalogue> OneRoomCatalogue = new(() => CatalogueFileMapper.ToCatalogue(
+        JsonSerializer.Deserialize<CatalogueFile>(File.ReadAllText(RepoFiles.OneRoomCataloguePath), AsUnityMapsIt)!));
 
     private static readonly Lazy<MuseumCatalogue> FullCatalogue = new(() => new MuseumCatalogue(
         RoomNumber.All.Select(room => new MuseumRoom(room, $"Akım {room}", isNameProvisional: false, room.Paintings.Select(Work).ToArray())).ToArray()));
 
-    /// <summary>The catalogue the game carries today.</summary>
-    public static MuseumCatalogue Shipped => ShippedCatalogue.Value;
+    /// <summary>
+    /// A museum whose paintings end after its first room (room 2 is named and empty, later rooms carry provisional
+    /// names): the game's catalogue as it once was, frozen, so that what happens where the paintings end stays tested
+    /// while the game's own catalogue grows.
+    /// </summary>
+    public static MuseumCatalogue EndingAfterRoomOne => OneRoomCatalogue.Value;
 
     /// <summary>A catalogue with a work at each of the museum's hundred places.</summary>
     public static MuseumCatalogue Full => FullCatalogue.Value;

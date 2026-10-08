@@ -75,7 +75,7 @@ public class MuseumScreensTests
     [Fact]
     public void A_room_whose_paintings_are_not_chosen_yet_is_shown_with_empty_places()
     {
-        RoomWall room = RoomWall.Of(new RoomNumber(2), Player(levelsWon: 50, piecesPlaced: 50).Museum, Shipped.Value);
+        RoomWall room = RoomWall.Of(new RoomNumber(2), Player(levelsWon: 50, piecesPlaced: 50).Museum, TestMuseums.EndingAfterRoomOne);
 
         Assert.Equal("Post-empresyonizm", room.Name);
         Assert.All(room.Paintings, painting => Assert.Null(painting.Artwork));

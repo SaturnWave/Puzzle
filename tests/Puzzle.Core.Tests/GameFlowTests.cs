@@ -129,7 +129,7 @@ public class GameFlowTests
     public void A_won_game_that_gave_a_jigsaw_piece_says_so_first_and_its_moves_under_it()
     {
         Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 5);
-        PieceReward? reward = PieceReward.ForWinning(new PlayerProgress(levelsWon: 46, attemptsOnLevel: 0), levelCount: 1000, TestMuseums.Shipped);
+        PieceReward? reward = PieceReward.ForWinning(new PlayerProgress(levelsWon: 46, attemptsOnLevel: 0), levelCount: 1000, TestMuseums.EndingAfterRoomOne);
 
         LevelResult result = LevelResult.Of(game, new AttemptBrief(attemptNumber: 1, isOnLastLevel: false, reward));
 

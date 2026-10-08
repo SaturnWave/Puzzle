@@ -39,10 +39,10 @@ public class MuseumEndsTests
     [InlineData(1000, 50, 5, HallTask.WaitingForPaintings)]  // every level won, but most of the museum is still to come: not "restored"
     public void Where_the_paintings_end_the_hall_keeps_the_last_one_restored_and_says_that_more_are_coming(int levelsWon, int placed, int painting, HallTask task)
     {
-        MuseumStanding standing = MuseumStanding.Of(Player(levelsWon, placed).Museum, TestMuseums.Shipped);
+        MuseumStanding standing = MuseumStanding.Of(Player(levelsWon, placed).Museum, TestMuseums.EndingAfterRoomOne);
 
         Assert.Equal((new PaintingNumber(painting), task), (standing.Painting, standing.Task));
-        Assert.NotNull(TestMuseums.Shipped.ArtworkAt(standing.Painting));
+        Assert.NotNull(TestMuseums.EndingAfterRoomOne.ArtworkAt(standing.Painting));
     }
 
     [Fact]
@@ -51,14 +51,14 @@ public class MuseumEndsTests
         Assert.Equal(HallTask.MuseumRestored, MuseumStanding.Of(Player(1000, 3000).Museum, TestMuseums.Full).Task);
         Assert.Equal(new PaintingNumber(100), MuseumStanding.Of(Player(1000, 3000).Museum, TestMuseums.Full).Painting);
         Assert.Equal(HallTask.Restoring, MuseumStanding.Of(Player(1000, 2999).Museum, TestMuseums.Full).Task);
-        Assert.Equal(HallTask.WaitingForPaintings, MuseumStanding.Of(Player(1000, 3000).Museum, TestMuseums.Shipped).Task);
+        Assert.Equal(HallTask.WaitingForPaintings, MuseumStanding.Of(Player(1000, 3000).Museum, TestMuseums.EndingAfterRoomOne).Task);
     }
 
     [Fact]
     public void A_visit_with_nothing_to_restore_rings_no_painting_and_knows_when_every_level_is_won()
     {
-        var resting = new MuseumVisit(Player(60, 50).Museum, TestMuseums.Shipped, levelToPlay: 61);
-        var atTheEnd = new MuseumVisit(Player(1000, 50).Museum, TestMuseums.Shipped, levelToPlay: 1000, hasWonEveryLevel: true);
+        var resting = new MuseumVisit(Player(60, 50).Museum, TestMuseums.EndingAfterRoomOne, levelToPlay: 61);
+        var atTheEnd = new MuseumVisit(Player(1000, 50).Museum, TestMuseums.EndingAfterRoomOne, levelToPlay: 1000, hasWonEveryLevel: true);
 
         Assert.Null(resting.BeingRestored);
         Assert.Equal((new PaintingNumber(5), new RoomNumber(1)), (resting.Painting, resting.Room));
@@ -73,7 +73,7 @@ public class MuseumEndsTests
     [InlineData(640, false)]
     public void A_level_of_a_painting_that_is_not_there_gives_no_piece_to_hold(int levelsWon, bool givesAPiece)
     {
-        PieceReward? reward = PieceReward.ForWinning(new PlayerProgress(levelsWon, attemptsOnLevel: 0), LevelCount, TestMuseums.Shipped);
+        PieceReward? reward = PieceReward.ForWinning(new PlayerProgress(levelsWon, attemptsOnLevel: 0), LevelCount, TestMuseums.EndingAfterRoomOne);
 
         Assert.Equal(givesAPiece, reward != null);
     }
@@ -91,9 +91,9 @@ public class MuseumEndsTests
     [Fact]
     public void A_reward_knows_every_piece_that_waits_on_its_painting_once_it_is_won()
     {
-        PieceReward first = PieceReward.ForWinning(new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0), LevelCount, TestMuseums.Shipped)!;
-        PieceReward tenth = PieceReward.ForWinning(new PlayerProgress(levelsWon: 9, attemptsOnLevel: 0), LevelCount, TestMuseums.Shipped)!;
-        PieceReward afterPlacing = PieceReward.ForWinning(Player(levelsWon: 9, piecesPlaced: 9), LevelCount, TestMuseums.Shipped)!;
+        PieceReward first = PieceReward.ForWinning(new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0), LevelCount, TestMuseums.EndingAfterRoomOne)!;
+        PieceReward tenth = PieceReward.ForWinning(new PlayerProgress(levelsWon: 9, attemptsOnLevel: 0), LevelCount, TestMuseums.EndingAfterRoomOne)!;
+        PieceReward afterPlacing = PieceReward.ForWinning(Player(levelsWon: 9, piecesPlaced: 9), LevelCount, TestMuseums.EndingAfterRoomOne)!;
 
         Assert.Equal((1, 10, 1), (first.WaitingWithThem, tenth.WaitingWithThem, afterPlacing.WaitingWithThem));
         Assert.Equal("Parçayı\nyerleştir", MuseumWords.PlaceWhatWasWon(first.WaitingWithThem));
@@ -106,8 +106,8 @@ public class MuseumEndsTests
         // A player far beyond the first room, with pieces said to be in place where no painting hangs.
         MuseumProgress museum = Player(levelsWon: 640, piecesPlaced: 1500).Museum;
 
-        RoomWall second = RoomWall.Of(new RoomNumber(2), museum, TestMuseums.Shipped);
-        RoomWall first = RoomWall.Of(new RoomNumber(1), museum, TestMuseums.Shipped);
+        RoomWall second = RoomWall.Of(new RoomNumber(2), museum, TestMuseums.EndingAfterRoomOne);
+        RoomWall first = RoomWall.Of(new RoomNumber(1), museum, TestMuseums.EndingAfterRoomOne);
 
         Assert.True(second.IsToCome);
         Assert.False(second.IsRestored);
@@ -119,7 +119,7 @@ public class MuseumEndsTests
         Assert.Equal(0, second.PaintingsWhole);
         Assert.True(first.IsRestored);
         Assert.False(first.IsToCome);
-        Assert.Equal(5, CollectionRooms.PaintingsWhole(museum, TestMuseums.Shipped));
+        Assert.Equal(5, CollectionRooms.PaintingsWhole(museum, TestMuseums.EndingAfterRoomOne));
         Assert.Equal(62, CollectionRooms.PaintingsWhole(museum, TestMuseums.Full));
     }
 
@@ -132,16 +132,16 @@ public class MuseumEndsTests
     {
         MuseumProgress museum = Player(levelsWon, piecesPlaced: 0).Museum;
 
-        Assert.Equal(new RoomNumber(2), CollectionRooms.LastToVisit(museum, TestMuseums.Shipped));
-        Assert.True(CollectionRooms.Shows(new RoomNumber(2), museum, TestMuseums.Shipped));
-        Assert.False(CollectionRooms.Shows(new RoomNumber(3), museum, TestMuseums.Shipped));
+        Assert.Equal(new RoomNumber(2), CollectionRooms.LastToVisit(museum, TestMuseums.EndingAfterRoomOne));
+        Assert.True(CollectionRooms.Shows(new RoomNumber(2), museum, TestMuseums.EndingAfterRoomOne));
+        Assert.False(CollectionRooms.Shows(new RoomNumber(3), museum, TestMuseums.EndingAfterRoomOne));
     }
 
     [Fact]
     public void On_the_map_a_room_without_paintings_is_to_come_and_closed_whatever_levels_are_won()
     {
         MuseumProgress museum = Player(levelsWon: 120, piecesPlaced: 50).Museum;
-        MuseumCatalogue shipped = TestMuseums.Shipped;
+        MuseumCatalogue shipped = TestMuseums.EndingAfterRoomOne;
 
         Assert.Equal(RoomAccess.Restored, FloorPlan.AccessOf(new RoomNumber(1), museum, shipped));
         Assert.Equal(RoomAccess.ToCome, FloorPlan.AccessOf(new RoomNumber(2), museum, shipped));
@@ -155,7 +155,7 @@ public class MuseumEndsTests
     [Fact]
     public void A_room_whose_name_is_only_pencilled_in_is_not_named_to_the_player()
     {
-        MuseumCatalogue shipped = TestMuseums.Shipped;
+        MuseumCatalogue shipped = TestMuseums.EndingAfterRoomOne;
 
         Assert.Equal("Empresyonizm", MuseumWords.NameOf(shipped.Room(new RoomNumber(1))));
         Assert.Equal("Post-empresyonizm", MuseumWords.NameOf(shipped.Room(new RoomNumber(2))));
@@ -168,7 +168,7 @@ public class MuseumEndsTests
     {
         Assert.Equal("Oda onarıldı!", MuseumWords.RoomRestored);
         Assert.Equal("Empresyonizm · 5 / 5 tablo", MuseumWords.RoomAndItsPaintings("Empresyonizm"));
-        Assert.Equal("Yeni tablolar hazırlanıyor", MuseumWords.AfterTheRoom(new RoomNumber(1), TestMuseums.Shipped));
+        Assert.Equal("Yeni tablolar hazırlanıyor", MuseumWords.AfterTheRoom(new RoomNumber(1), TestMuseums.EndingAfterRoomOne));
         Assert.Equal("Sıradaki oda: Akım 2", MuseumWords.AfterTheRoom(new RoomNumber(1), TestMuseums.Full));
         Assert.Equal("Müzenin tamamı onarıldı!", MuseumWords.AfterTheRoom(new RoomNumber(20), TestMuseums.Full));
     }
@@ -180,8 +180,8 @@ public class MuseumEndsTests
 
         PlayerProgress after = before.WithPiecePlaced(new PaintingNumber(5), piece: 9);
 
-        Assert.False(RoomWall.Of(new RoomNumber(1), before.Museum, TestMuseums.Shipped).IsRestored);
-        Assert.True(RoomWall.Of(new RoomNumber(1), after.Museum, TestMuseums.Shipped).IsRestored);
+        Assert.False(RoomWall.Of(new RoomNumber(1), before.Museum, TestMuseums.EndingAfterRoomOne).IsRestored);
+        Assert.True(RoomWall.Of(new RoomNumber(1), after.Museum, TestMuseums.EndingAfterRoomOne).IsRestored);
     }
 
     public static TheoryData<int, int, int, int> EveryScreen()

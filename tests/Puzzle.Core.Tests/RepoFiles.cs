@@ -33,6 +33,9 @@ internal static class RepoFiles
     /// <summary>The museum's rooms and paintings, as the game and the tools read them.</summary>
     public static string MuseumCataloguePath => Find("museum", "catalogue.json");
 
+    /// <summary>The catalogue as it was when only the first room had its paintings: a museum that ends after room 1.</summary>
+    public static string OneRoomCataloguePath => Find("tests", "fixtures", "catalogue-one-room.json");
+
     /// <summary>The fingerprints of a few jigsaw cuts on the tools' runtime (see <c>JigsawCutTests</c>).</summary>
     public static string JigsawCutsPath => Find("tests", "fixtures", "jigsaw-cuts.txt");
 

@@ -24,6 +24,31 @@
             "image": "room-01/water-lilies.jpg",
             "width": 1920,
             "height": 1848
+        },
+        {
+            "image": "room-02/at-the-moulin-rouge.jpg",
+            "width": 1920,
+            "height": 1679
+        },
+        {
+            "image": "room-02/basket-of-apples.jpg",
+            "width": 1920,
+            "height": 1537
+        },
+        {
+            "image": "room-02/sunday-on-la-grande-jatte.jpg",
+            "width": 1920,
+            "height": 1278
+        },
+        {
+            "image": "room-02/the-bedroom.jpg",
+            "width": 1920,
+            "height": 1507
+        },
+        {
+            "image": "room-02/van-gogh-self-portrait.jpg",
+            "width": 1280,
+            "height": 1623
         }
     ]
 }

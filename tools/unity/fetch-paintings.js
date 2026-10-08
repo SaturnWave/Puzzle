@@ -10,6 +10,8 @@ const fs = require("fs");
 const path = require("path");
 
 const USER_AGENT = "PuzzleGameDev/1.0 (museum-themed game; fetches a handful of public-domain paintings)";
+/** The licence note of a picture that is the museum's own open-access photograph; other pictures name theirs. */
+const MUSEUM_PHOTOGRAPH_LICENCE = "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)";
 const ROOMS = {
   "room-01": [
     { file: "beach-at-sainte-adresse.jpg", title: "The Beach at Sainte-Adresse", titleTr: "Sainte-Adresse Plajı", artist: "Claude Monet", year: "1867",
@@ -22,6 +24,19 @@ const ROOMS = {
       museumId: 16568, commons: "Claude Monet - Water Lilies - 1933.1157 - Art Institute of Chicago.jpg", width: 1920 },
     { file: "stacks-of-wheat-end-of-summer.jpg", title: "Stacks of Wheat (End of Summer)", titleTr: "Buğday Yığınları (Yaz Sonu)", artist: "Claude Monet", year: "1890–91",
       museumId: 64818, commons: "Claude Monet - Stacks of Wheat (End of Summer) - 1985.1103 - Art Institute of Chicago.jpg", width: 1920 },
+  ],
+  "room-02": [
+    { file: "van-gogh-self-portrait.jpg", title: "Self-Portrait", titleTr: "Otoportre", artist: "Vincent van Gogh", year: "1887",
+      museumId: 80607, commons: "Vincent van Gogh - Self-Portrait - 1954.326 - Art Institute of Chicago.jpg", width: 1280 },
+    { file: "basket-of-apples.jpg", title: "The Basket of Apples", titleTr: "Elma Sepeti", artist: "Paul Cézanne", year: "y. 1893",
+      museumId: 111436, commons: "Paul Cézanne - The Basket of Apples - 1926.252 - Art Institute of Chicago.jpg", width: 1920 },
+    { file: "at-the-moulin-rouge.jpg", title: "At the Moulin Rouge", titleTr: "Moulin Rouge'da", artist: "Henri de Toulouse-Lautrec", year: "1892–95",
+      museumId: 61128, commons: "Henri de Toulouse-Lautrec - At the Moulin Rouge - 1928.610 - Art Institute of Chicago.jpg", width: 1920 },
+    { file: "the-bedroom.jpg", title: "The Bedroom", titleTr: "Yatak Odası", artist: "Vincent van Gogh", year: "1889",
+      museumId: 28560, commons: "Vincent van Gogh - The Bedroom - 1926.417 - Art Institute of Chicago.jpg", width: 1920 },
+    { file: "sunday-on-la-grande-jatte.jpg", title: "A Sunday on La Grande Jatte — 1884", titleTr: "Grande Jatte Adası'nda Bir Pazar Öğleden Sonrası", artist: "Georges Seurat", year: "1884–86",
+      museumId: 27992, commons: "Georges Seurat - A Sunday on La Grande Jatte -- 1884 - Google Art Project.jpg", width: 1920,
+      licence: "Public domain work; the photograph is Google Arts & Culture's faithful reproduction of it (public domain), taken from Wikimedia Commons." },
   ],
 };
 
@@ -55,7 +70,7 @@ async function fetchPainting(folder, painting) {
     width: size.width, height: size.height,
     museum: "Art Institute of Chicago", museumPage: `https://www.artic.edu/artworks/${painting.museumId}`,
     fetchedFrom: `https://commons.wikimedia.org/wiki/File:${painting.commons.replace(/ /g, "_")}`,
-    licence: "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)",
+    licence: painting.licence ?? MUSEUM_PHOTOGRAPH_LICENCE,
   };
 }
 
