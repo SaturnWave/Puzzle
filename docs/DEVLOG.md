@@ -4,6 +4,36 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-12 · Oturum 19 — Bankadan derlenen bölümler yayında
+
+**Kullanıcı kararları**
+- Malzeme bölümlerinin hamle aralığı şimdilik değişmiyor.
+- Yayına alınacak küme: büyüyen bankadan yeni derlenen ("en sonuncu").
+- Telefonda deneme şimdilik yok; kalan işlerle devam.
+
+**Yapılanlar**
+- **Derleme:** büyüyen bankadan (5.420 aday) 1000 bölüm sıfırdan derlendi: `puzzle assemble --policy policies/default.json --base out/assemble/pilot-base --bank D:\puzzle-bank` (9,9 dakika; 665 bin oyun bankadan okundu, 773 bin denetim oyunu oynandı).
+- **Sonuç:** 50 bölüm sabit (ilk oda, bayt bayt aynı), 948 yeni tahta, 2 bölüm (52, 53) aralığa oturmadığı için eski hâliyle ve "eskimiş" işaretiyle kaldı (açıkça kabul edilerek). 1000/1000 geçerli.
+
+| 51–1000, 55. basamak | Kolay | Normal | Zor | Süper Zor |
+|---|---|---|---|---|
+| Hedef | %90 | %75 | %55 | %40 |
+| Derleyici, bölümü kabul eden oyunlar | %91,4 | %76,2 | %55,7 | %41,0 |
+| Derleyici, kabulden sonra oynanan oyunlar | %91,6 | %76,8 | %56,0 | %41,5 |
+| Bağımsız ölçüm (`ladder`), bölümün kendi havuzunda | %91,4 | %76,7 | %56,6 | %40,7 |
+| Ortalama limit | 23,9 | 27,5 | 31,0 | 35,2 |
+
+- **Tür dağılımı (1000 bölüm):** yalnızca renk toplama %34,8 (hedef %35), kutulu %25,1 (%25), zincirli %24,1 (%25), jöleli %18,3 (%18), malzeme indirme %3,6 (hedef %6; hamle aralığı değişmediği için).
+- **Yayın:** devam eden deneme yoktu (en ilerideki oyuncu 40. bölümü kazanmış; 50'nin üstünde kayıt yok). Sunucu durduruldu, `puzzle promote ... --accept 52,53` çalıştırıldı (52 dosya yerinde, 948 değişti; değişen her dosyanın yedeği `out/promote/2026-10-12T151154Z`), sunucu WMI ile yeniden başlatıldı. Açık adres yanıt veriyor; `humans`: 77 kayıt, klasörde olmayan 0.
+- `levels/generated` artık `assembly.csv` ve `assembly.manifest` de taşıyor: her bölümün bankadaki hangi kayıttan geldiği ve hangi kurallarla karar verildiği. Bundan sonra derlemeler `--base levels/generated` ile yapılır: hâlâ uyan bölüm yerinde kalır.
+- `reports/ladder.csv` ve `reports/expert_moves.csv` yeni bölümlerde yenilendi; Unity'nin bölüm paketi de (`sync-engine.js`).
+
+**İnsan verisi (77 kayıt, 62'si karşılaştırılabilir):** insanlar %69,4; aynı oyunlarda novice bot %66,6, casual %81,3. Oyuncu hâlâ en çok novice bota benziyor.
+
+**Açık**
+- Malzeme bölümleri az (36); 52 ve 53 eskimiş. Türe özel hamle aralığı kararı ertelendi.
+- Yeni bölümlerle APK derlenmedi (telefon denemesi ertelendi).
+
 ## 2026-10-08 · Oturum 18 — İkinci oda ve zorluk için kalıcı çözüm: bölüm bankası
 
 **Kullanıcı kararları**

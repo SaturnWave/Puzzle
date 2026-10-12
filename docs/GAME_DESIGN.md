@@ -170,24 +170,24 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 
 **Beceri merdiveni (2026-10-06).** Dört greedy profilin arası 5 puanlık basamaklarla dolduruldu: `skill-30` … `skill-100` (15 bot). Basamak numarası botun fark ettiği hamle yüzdesidir; yargı hatası dört profilden geçen doğrularla belirlenir. `skill-50`, `skill-70`, `skill-85` ve `skill-100` tam olarak novice, casual, average ve expert'tir; adlı profiller değişmedi. Basamak adları bot adı geçen her yerde kullanılabilir (CLI, profil, test paneli).
 
-Bölümler merdivenle ölçülür (`puzzle ladder`; bölüm ve bot başına 60 oyun, her bot aynı oyunlarda; hiçbir bölüm dosyası değişmez; sonuç `reports/ladder.csv`). Onaylanan paylarla üretilen bugünkü bölümlerde (2026-10-06, §8 madde 9), limitte kazanma oranı:
+Bölümler merdivenle ölçülür (`puzzle ladder`; bölüm ve bot başına 60 oyun, her bot aynı oyunlarda; hiçbir bölüm dosyası değişmez; sonuç `reports/ladder.csv`). Bankadan derlenen bugünkü bölümlerde (2026-10-12, §24; paylar §8 madde 9), limitte kazanma oranı:
 
 | Basamak | 1–50 | 51+ Kolay | 51+ Normal | 51+ Zor | 51+ Süper Zor |
 |---|---|---|---|---|---|
-| 30 | %81 | %74 | %54 | %33 | %21 |
-| 40 | %86 | %81 | %63 | %42 | %27 |
-| 50 (novice) | %90 | %87 | %72 | %50 | %35 |
-| 55 | %92 | %90 | %76 | %55 | %39 |
-| 60 | %94 | %93 | %81 | %61 | %46 |
-| 65 | %96 | %96 | %86 | %69 | %55 |
-| 70 (casual) | %98 | %98 | %91 | %77 | %65 |
-| 75 | %99 | %99 | %94 | %83 | %73 |
-| 80 | %99 | %99 | %97 | %89 | %80 |
-| 85 (average) | %100 | %100 | %99 | %94 | %88 |
-| 90 | %100 | %100 | %99 | %97 | %93 |
-| 100 (expert) | %100 | %100 | %100 | %99 | %97 |
+| 30 | %81 | %76 | %56 | %35 | %23 |
+| 40 | %86 | %83 | %64 | %44 | %30 |
+| 50 (novice) | %90 | %88 | %73 | %53 | %37 |
+| 55 | %92 | %91 | %77 | %58 | %43 |
+| 60 | %94 | %94 | %83 | %64 | %50 |
+| 65 | %96 | %96 | %88 | %71 | %58 |
+| 70 (casual) | %98 | %98 | %92 | %79 | %68 |
+| 75 | %99 | %99 | %95 | %85 | %76 |
+| 80 | %99 | %99 | %97 | %90 | %83 |
+| 85 (average) | %100 | %100 | %99 | %94 | %89 |
+| 90 | %100 | %100 | %99 | %97 | %94 |
+| 100 (expert) | %100 | %100 | %100 | %99 | %98 |
 
-- 55. basamak satırı üreticinin görmediği oyunlarda da hedefi tutuyor: %90 / %76 / %55 / %39 (hedef 90 / 75 / 55 / 40).
+- Tablo yeni tohumlarda ölçülür; 55. basamak: %91 / %77 / %58 / %43 (hedef 90 / 75 / 55 / 40). Oyuncunun gerçekten oynadığı havuz tohumlarında aynı basamak %91,4 / %76,7 / %56,6 / %40,7 verir (§24); yeni tohumlardaki oran havuzdakinden 1–3 puan yüksektir.
 - Tablo, bölümleri yeniden üretmeden "şu basamaktaki oyuncu şu oranı tutsun" sorusunu cevaplar: dosyada her bölüm ve basamak için o botun %70, %80, %90 ve %95 kazandığı en küçük limit de var.
 - **Önceki bölümlerde** (51+ average bota göre, yüzde 25 payla) aynı ölçüm 55. basamak için Kolay %72, Normal %46, Zor %17, Süper Zor %8 veriyordu; 50. basamaktaki bir oyuncunun Zor bölümlerde %70 kazanması için ortalama 72 hamle gerekiyordu (limit 39). Yalnızca limiti uzatmak yetmediği için bölümler yeniden üretildi; hedefler de küçüldü.
 
@@ -970,10 +970,12 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 
 **Deneme (2026-10-08; 2.465 aday, 8,85 milyon oyun, 87 MB).** 55. basamak, 51–1000: hedef 90 / 75 / 55 / 40; bağımsız ölçüm bölümün kendi havuzunda %91,6 / %76,5 / %57,1 / %40,7; yeni tohumlarda %91,6 / %77,5 / %58,1 / %43,6. Tür dağılımı hedeflerde (yalnızca toplama %35, kutu %25, zincir %26, jöle %18), malzeme %4 (hedef %6). İlk oda her derlemede bayt bayt aynı. Sıfırdan derleme 6,6 dakika, tekrarı 14–21 saniye ve oyunsuz. Ayrıntı: DEVLOG Oturum 18.
 
+**Yayın (2026-10-12; 5.420 aday, 14,5 milyon oyun, 151 MB).** Yayındaki 51–1000. bölümler büyüyen bankadan derlendi; ilk oda (1–50) bayt bayt aynı kaldı. 55. basamak, 51–1000: hedef 90 / 75 / 55 / 40; bağımsız ölçüm bölümün kendi havuzunda %91,4 / %76,7 / %56,6 / %40,7. Tür dağılımı: yalnızca toplama %34,8, kutu %25,1, zincir %24,1, jöle %18,3, malzeme %3,6 (hedef %6). 52 ve 53. bölümler aralığa oturan aday olmadığı için eski hâlleriyle ve "eskimiş" işaretiyle yayında. `levels/generated` her bölümün bankadaki kaydını ve karar damgasını `assembly.csv` ile `assembly.manifest` içinde taşır; sonraki derlemeler `--base levels/generated` ile yapılır, hâlâ uyan bölüm yerinde kalır. Ayrıntı: DEVLOG Oturum 19.
+
 **Bilinen sınırlar**
 - Yeni bir oyuncu basamağı ilk seferde bir yeniden üretim kadar oyun ister (tahtalar yerinde kalır); pay değişikliği dakikalar; hamle aralığı, hamle payı, tür hedefi ve ağırlık değişikliği oyunsuzdur.
-- Malzeme indirme bölümleri planın hamle aralıklarına nadiren oturur; politika türe özel aralık kabul eder (`kindMoves`), karar bekliyor.
-- Derlenen bölümler kendi havuzlarında hedefin 1,5–2 puan üstündedir.
+- Malzeme indirme bölümleri planın hamle aralıklarına nadiren oturur; politika türe özel aralık kabul eder (`kindMoves`). Karar (2026-10-12): aralık şimdilik değişmiyor.
+- Derlenen bölümler kendi havuzlarında hedefin 1–2 puan üstündedir.
 - Bir dönem geri açılamaz; yeni dönem açmak adıyla onay ister.
 
 **Komutlar** (`puzzle` = `src/Puzzle.Cli/bin/Release/net10.0/puzzle.exe`; uzun işlerde `DOTNET_PROCESSOR_COUNT=10`)
