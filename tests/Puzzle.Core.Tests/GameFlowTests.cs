@@ -1,5 +1,6 @@
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Gallery;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
@@ -123,6 +124,117 @@ public class GameFlowTests
         Assert.Equal("Bölüm 1 · 1 hamlede", ResultWords.Headline(result));
         Assert.Equal("4 hamle arttı", ResultWords.Footnote(result));
         Assert.Equal("Devam", ResultWords.GoOn(result));
+    }
+
+    [Fact]
+    public void A_won_games_card_tells_its_moves_and_the_moves_it_left_over_also_after_its_finale()
+    {
+        Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 5);
+
+        FinaleOutcome finale = game.PlayFinale();
+
+        // The finale turns the four moves left into rockets; the card still says what the player left over.
+        Assert.Equal(4, finale.RocketsFired);
+        LevelResult result = LevelResult.Of(game, AttemptBrief.FirstTry);
+        LevelResult.Won won = Assert.IsType<LevelResult.Won>(result);
+        Assert.Equal((1, 4), (won.MovesUsed, won.MovesLeft));
+        Assert.Equal("Bölüm 1 · 1 hamlede", ResultWords.Headline(result));
+        Assert.Equal("4 hamle arttı", ResultWords.Footnote(result));
+    }
+
+    [Fact]
+    public void The_plaque_counts_one_move_down_for_each_rocket_and_never_warns_of_few_moves_in_the_finale()
+    {
+        Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 6);
+        HudFigures won = HudFigures.Of(game);
+        Assert.Equal((5, false), (won.MovesLeft, won.MovesAreFew));
+
+        HudFigures figures = won;
+        var shown = new List<int>();
+        for (int rocket = 0; rocket < 7; rocket++)
+        {
+            figures = figures.WithMovesTurnedIntoRockets(1);
+            shown.Add(figures.MovesLeft);
+
+            // A move counted down while the game is played turns the number red at three; a decided game has nothing to warn of.
+            Assert.False(figures.MovesAreFew);
+        }
+
+        Assert.Equal(new[] { 4, 3, 2, 1, 0, 0, 0 }, shown);
+        Assert.Same(won.Goals, figures.Goals);
+        Assert.Throws<ArgumentOutOfRangeException>(() => figures.WithMovesTurnedIntoRockets(-1));
+    }
+
+    [Fact]
+    public void After_a_finale_that_made_a_rocket_of_every_move_the_plaque_shows_none_left_and_every_goal_still_met()
+    {
+        // Purple keeps falling in and the rockets keep bursting it: the goal must stay where the winning move left it.
+        Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 21);
+        HudFigures won = HudFigures.Of(game);
+
+        FinaleOutcome finale = game.PlayFinale();
+
+        // The game goes on saying what was left; the plaque is what the player saw counted down, one move at a time.
+        HudFigures ofTheGame = HudFigures.Of(game).WithMovesTurnedIntoRockets(finale.RocketsFired);
+        HudFigures countedDown = Enumerable.Range(0, finale.RocketsFired).Aggregate(won, (figures, _) => figures.WithMovesTurnedIntoRockets(1));
+        Assert.Equal(20, HudFigures.Of(game).MovesLeft);
+        Assert.Equal(20, finale.RocketsFired);
+        Assert.Equal(0, ofTheGame.MovesLeft);
+        Assert.Equal(won.Goals.Select(goal => goal.Remaining), ofTheGame.Goals.Select(goal => goal.Remaining));
+        Assert.All(ofTheGame.Goals, goal => Assert.Equal(0, goal.Remaining));
+        Assert.Empty(countedDown.DifferencesFrom(ofTheGame));
+    }
+
+    [Fact]
+    public void A_board_that_ran_out_of_gems_leaves_the_moves_no_rocket_was_made_of_on_the_plaque_without_a_warning()
+    {
+        // The engine stops when a board has no free gem left: it then made fewer rockets than moves were left.
+        Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 21);
+        HudFigures won = HudFigures.Of(game);
+
+        HudFigures ofTheGame = won.WithMovesTurnedIntoRockets(18);
+        HudFigures countedDown = Enumerable.Range(0, 18).Aggregate(won, (figures, _) => figures.WithMovesTurnedIntoRockets(1));
+
+        Assert.Equal((2, false, 18), (ofTheGame.MovesLeft, ofTheGame.MovesAreFew, ofTheGame.MovesTurnedIntoRockets));
+        Assert.Empty(countedDown.DifferencesFrom(ofTheGame));
+        Assert.Equal(
+            new[] { "plaques: 0 moves left, the engine has 2", "plaques: 20 moves were counted down into rockets, the engine made 18" },
+            countedDown.WithMovesTurnedIntoRockets(2).DifferencesFrom(ofTheGame));
+    }
+
+    [Fact]
+    public void A_move_counted_down_once_too_often_or_too_seldom_in_the_finale_is_told_although_the_number_on_the_plaque_stops_at_none()
+    {
+        Game game = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) }, moves: 6);
+        HudFigures won = HudFigures.Of(game);
+        HudFigures ofTheGame = won.WithMovesTurnedIntoRockets(5);
+        HudFigures CountedDown(int times) => Enumerable.Range(0, times).Aggregate(won, (figures, _) => figures.WithMovesTurnedIntoRockets(1));
+
+        // Six moves thrown where five were left: the number reads 0 either way, and only the count tells.
+        Assert.Equal(ofTheGame.MovesLeft, CountedDown(6).MovesLeft);
+        Assert.Equal(new[] { "plaques: 6 moves were counted down into rockets, the engine made 5" }, CountedDown(6).DifferencesFrom(ofTheGame));
+        Assert.Equal(
+            new[] { "plaques: 1 moves left, the engine has 0", "plaques: 4 moves were counted down into rockets, the engine made 5" },
+            CountedDown(4).DifferencesFrom(ofTheGame));
+        Assert.Empty(CountedDown(5).DifferencesFrom(ofTheGame));
+    }
+
+    [Fact]
+    public void The_plaques_are_compared_with_the_game_by_its_moves_and_by_what_is_left_of_every_goal()
+    {
+        var goals = new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 9), new GoalSpec.CollectColor(GemColor.Red, 2) };
+        Game game = PlayedOut(goals, moves: 6);
+        HudFigures ofTheGame = HudFigures.Of(game);
+        HudFigures before = new HudFigures(6, movesAreFew: false, new[] { new GoalFigure(ofTheGame.Goals[0].Icon, 9), ofTheGame.Goals[1] });
+
+        // The move's three purple gems, counted one by one as they burst, and the move itself.
+        HudFigures counted = before.AfterAMove().WithOneCounted(0).WithOneCounted(0).WithOneCounted(0);
+
+        Assert.Equal(6, ofTheGame.Goals[0].Remaining);
+        Assert.Empty(counted.DifferencesFrom(ofTheGame));
+        Assert.Equal(new[] { "plaques: 6 moves left, the engine has 5" }, before.WithOneCounted(0).WithOneCounted(0).WithOneCounted(0).DifferencesFrom(ofTheGame));
+        Assert.Equal(new[] { "plaques: 7 left of goal 1, the engine has 6" }, before.AfterAMove().WithOneCounted(0).WithOneCounted(0).DifferencesFrom(ofTheGame));
+        Assert.Throws<ArgumentException>(() => counted.DifferencesFrom(new HudFigures(5, movesAreFew: false, Array.Empty<GoalFigure>())));
     }
 
     [Fact]

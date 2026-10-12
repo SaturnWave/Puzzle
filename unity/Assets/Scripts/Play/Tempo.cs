@@ -88,6 +88,52 @@ namespace Puzzle.Client.Play
         public const float Reshuffle = 0.55f;
 
         /// <summary>
+        /// The finale of a won game with moves left over. Light opens at the moves medallion
+        /// (<see cref="MedallionLights"/>) for <see cref="FinaleLead"/> before the first move leaves it.
+        /// </summary>
+        public const float FinaleLead = 0.22f;
+        public const float MedallionLights = 0.3f;
+
+        /// <summary>
+        /// A move left over flies from the medallion to its gem in <see cref="MoveFlies"/>. The moves leave one
+        /// after another at <see cref="MovesLeaveEvery"/>, or closer when there are many, so that the last one
+        /// leaves within <see cref="MovesLeaveWithin"/>. The number on the medallion swells with each of them
+        /// and comes back in <see cref="MovesSwell"/>. A few moves leave far enough apart for the number to be
+        /// read as it counts down; many roll down.
+        /// </summary>
+        public const float MoveFlies = 0.24f;
+        public const float MovesLeaveEvery = 0.11f;
+        public const float MovesLeaveWithin = 0.9f;
+        public const float MovesSwell = 0.12f;
+
+        /// <summary>
+        /// The rockets of the finale stand for this long after the last move has landed, then go off one after
+        /// another at <see cref="ArmedEvery"/>, or closer when there are many, so that the last one goes off within
+        /// <see cref="RocketsFireWithin"/>. The rest is never shorter than <see cref="Appear"/> less
+        /// <see cref="Fire"/>: a rocket has popped up by the time its flare is over, so nothing outlasts the piece.
+        /// </summary>
+        public const float RocketsRest = 0.24f;
+        public const float RocketsFireWithin = 0.6f;
+
+        /// <summary>
+        /// How long a finale may be shown (<see cref="FinaleMayTake"/>): <see cref="FinaleOfAFewMoves"/> for up to
+        /// <see cref="AFewMovesLeft"/> moves left, <see cref="FinalePerMove"/> more for every move beyond those,
+        /// and never more than <see cref="FinaleLongest"/> however many are left. The rockets themselves keep well
+        /// inside that: one move is thrown, fired and at rest within two seconds, ten within three and a half. What the
+        /// pieces that fall in happen to set off afterwards is luck, and can take a script far beyond it. That
+        /// aftermath is then played faster than written, up to <see cref="FinaleAftermathFastest"/> times, a pace
+        /// it picks up over its first <see cref="FinaleHurriesWithin"/> (<see cref="FinalePace"/>). A finale of
+        /// a few moves is seldom hurried at all: its cascade is as much of the reward as its rockets, and a
+        /// burst played at twice the pace is over in four frames.
+        /// </summary>
+        public const float FinaleOfAFewMoves = 4f;
+        public const int AFewMovesLeft = 10;
+        public const float FinalePerMove = 0.2f;
+        public const float FinaleLongest = 5.5f;
+        public const float FinaleAftermathFastest = 1.5f;
+        public const float FinaleHurriesWithin = 0.25f;
+
+        /// <summary>
         /// A decided game: the board is seen at rest for a moment, then the room goes dark while the result's card
         /// comes down on its wires; what the card shows in its alcove pops up as the card settles, one after another.
         /// </summary>
@@ -157,5 +203,19 @@ namespace Puzzle.Client.Play
         /// less for every round after it, so a long cascade picks up speed instead of dragging.
         /// </summary>
         public static float PaceOfRound(int round) => Math.Max(FastestPace, 1f - QuickerPerRound * round);
+
+        /// <summary>
+        /// What the bursts and pauses of the finale are multiplied by: the fastest a cascade gets, from its first
+        /// burst on. The engine counts the rounds of every wave from nothing, so <see cref="PaceOfRound"/> would
+        /// slow each wave down to a player's own move.
+        /// </summary>
+        public const float FinaleBurstPace = FastestPace;
+
+        /// <summary>
+        /// How long the finale of so many moves left over may be shown before its aftermath is hurried: four
+        /// seconds for up to ten moves, a little more for every move beyond, never more than <see cref="FinaleLongest"/>.
+        /// </summary>
+        public static float FinaleMayTake(int moves) =>
+            Math.Min(FinaleLongest, FinaleOfAFewMoves + FinalePerMove * Math.Max(0, moves - AFewMovesLeft));
     }
 }

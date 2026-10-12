@@ -258,6 +258,14 @@ namespace Puzzle.Client.Layout
         /// <summary>The top edge of the board's first row.</summary>
         public float BoardTop { get; }
 
+        /// <summary>
+        /// Where the moves medallion hangs as the board counts: the column and the row of its middle, and how many
+        /// cells it is across. It hangs over the middle of the screen's width and above the board's first row, so
+        /// the row is negative. What flies from the medallion to a cell starts from here.
+        /// </summary>
+        public (float Column, float Row, float Across) MovesMedallionOnTheBoard =>
+            (-BoardLeft / CellSize, (BoardTop - HudMiddle) / CellSize, HudHeight * HudScale / CellSize);
+
         /// <summary>The bare wall between the plaques and the board's cells: where the wall lamps hang, when it is enough.</summary>
         public float WallAboveBoard => HudBottom - BoardTop;
 

@@ -25,6 +25,16 @@ namespace Puzzle.Client.Play
     /// has gone. And what takes several hits (a crate, a tape, a slab) is hit in the script in the order the engine
     /// counted its hits, even when the effect of a later hit reaches the cell first: each cue says what is left
     /// after it, and the view lays exactly that.
+    /// <para>
+    /// The finale of a won game is written by the same rules, with a few of its own (<see cref="ComposeFinale"/>).
+    /// The engine turns gems into rockets wave by wave and fires each wave on the board as it lay. So the moves of
+    /// a wave leave the medallion one after another, each gem turns as its move lands, the rockets stand for a
+    /// moment and then go off in the order they were thrown, or sooner when another's stroke reaches them, which
+    /// is not the order the engine fired them in (<see cref="Volley"/> says why). Nothing falls before the last
+    /// hit of the wave is shown: a piece that fell earlier would lie in the way of a stroke that the engine never
+    /// sent through it. The finale spends no move and counts toward no goal, and all of it runs at the quickest
+    /// pace.
+    /// </para>
     /// </remarks>
     public sealed class TurnChoreographer
     {
@@ -56,7 +66,10 @@ namespace Puzzle.Client.Play
         /// <summary>When the special piece that lay in a cell goes off there; several when several are due in one cell.</summary>
         private readonly Dictionary<Position, Queue<float>> _goesOffAt = new Dictionary<Position, Queue<float>>();
 
-        /// <summary>When the special pieces a colour bomb made go off, by their cell.</summary>
+        /// <summary>
+        /// When the special pieces go off that do so at a moment of their own and not when the engine destroyed
+        /// them, by their cell: the ones a colour bomb made, and the rockets of a wave of the finale.
+        /// </summary>
         private readonly Dictionary<Position, float> _armedAt = new Dictionary<Position, float>();
 
         /// <summary>From when on each cell is empty, by row and column.</summary>
@@ -64,15 +77,36 @@ namespace Puzzle.Client.Play
 
         private readonly ColumnEntry[] _entries;
 
-        private Strike _strike = Strike.AllAtOnce(0f);
+        /// <summary>True when the script is a won game's finale and not a move's.</summary>
+        private readonly bool _isTheFinale;
+
+        private Strike _strike;
         private Gathering? _gathering;
+
+        /// <summary>The wave of the finale that is on: its moves are thrown and its rockets fire. Nothing in a turn, and once the hits of the wave are over.</summary>
+        private Volley? _volley;
+
+        /// <summary>The wave, while the hits that are worked through are those of one of its rockets' strokes; nothing for any other hit.</summary>
+        private Volley? _strokeOfTheVolley;
         private float _phaseStart;
-        private float _pace = 1f;
+        private float _pace;
         private float _motionEnd;
+
+        /// <summary>When the latest hit since the hits began is shown: a piece that goes, a crate, a tape or a slab that takes one.</summary>
+        private float _lastHitAt;
+
+        /// <summary>In the finale nothing falls before this: the last hit of the wave has been shown by then. Never set in a turn.</summary>
+        private float _fallsNotBefore;
+
+        /// <summary>
+        /// In the finale, when the board has come down after the latest wave and its pieces begin to burst by
+        /// themselves: where the finale's aftermath begins. Nothing while the latest wave has had none.
+        /// </summary>
+        private float? _aftermathBegins;
         private bool _isSettling;
         private bool _nextSeekerCarriesASpecial;
 
-        private TurnChoreographer(PieceLedger ledger, IReadOnlyList<GoalSpec> goals, IReadOnlyList<GameEvent> events, Board boardAfterwards)
+        private TurnChoreographer(PieceLedger ledger, IReadOnlyList<GoalSpec> goals, IReadOnlyList<GameEvent> events, Board boardAfterwards, bool isTheFinale)
         {
             _ledger = ledger;
             _goals = goals;
@@ -80,6 +114,11 @@ namespace Puzzle.Client.Play
             _boardAfterwards = boardAfterwards;
             _freeAt = new float[ledger.Shape.Height, ledger.Shape.Width];
             _entries = new ColumnEntry[ledger.Shape.Width];
+            _isTheFinale = isTheFinale;
+            _phaseStart = isTheFinale ? Tempo.FinaleLead : 0f;
+            _pace = isTheFinale ? Tempo.FinaleBurstPace : 1f;
+            _lastHitAt = _phaseStart;
+            _strike = Strike.AllAtOnce(_phaseStart);
         }
 
         /// <summary>
@@ -92,14 +131,40 @@ namespace Puzzle.Client.Play
         /// <exception cref="InvalidOperationException">An event does not fit the ledger: the view and the engine have come apart.</exception>
         public static TurnScript Compose(PieceLedger ledger, IReadOnlyList<GoalSpec> goals, IReadOnlyList<GameEvent> events, Board boardAfterwards)
         {
-            var choreographer = new TurnChoreographer(ledger, goals, events, boardAfterwards);
+            var choreographer = new TurnChoreographer(ledger, goals, events, boardAfterwards, isTheFinale: false);
             choreographer.Emit(new Cue.MoveSpent(0f));
-            for (int index = 0; index < events.Count; index++)
+            choreographer.TimeEveryEvent();
+            return choreographer.ToScript();
+        }
+
+        /// <summary>
+        /// The script of a won game's finale (Game.PlayFinale), and the ledger brought forward to the board after
+        /// it: every move left over is thrown from the medallion onto a gem, which turns into a rocket; the
+        /// rockets fire, and the board settles. No move is spent in it and no goal is counted, as the engine
+        /// counts none.
+        /// </summary>
+        /// <param name="ledger">The board as the view shows it when the winning move has come to rest; changed to what it shows after the finale.</param>
+        /// <param name="events">The engine's events of the finale, in the engine's order. None, when no move was left: the script is then empty.</param>
+        /// <param name="boardAfterwards">The engine's board after the finale.</param>
+        /// <exception cref="InvalidOperationException">An event does not fit the ledger: the view and the engine have come apart.</exception>
+        public static TurnScript ComposeFinale(PieceLedger ledger, IReadOnlyList<GameEvent> events, Board boardAfterwards)
+        {
+            var choreographer = new TurnChoreographer(ledger, Array.Empty<GoalSpec>(), events, boardAfterwards, isTheFinale: true);
+            if (events.Count > 0)
             {
-                choreographer.Time(events[index], index);
+                choreographer.Emit(new Cue.FinaleOpens(0f, Tempo.MedallionLights));
+                choreographer.TimeEveryEvent();
             }
 
             return choreographer.ToScript();
+        }
+
+        private void TimeEveryEvent()
+        {
+            for (int index = 0; index < _events.Count; index++)
+            {
+                Time(_events[index], index);
+            }
         }
 
         private TurnScript ToScript()
@@ -107,7 +172,7 @@ namespace Puzzle.Client.Play
             // OrderBy keeps cues that begin together in the order they were made, which is the engine's order.
             Cue[] inOrder = _cues.OrderBy(cue => cue.Start).ToArray();
             float seconds = inOrder.Length == 0 ? 0f : inOrder.Max(cue => cue.End);
-            return new TurnScript(inOrder, seconds);
+            return new TurnScript(inOrder, seconds, showSeconds: _aftermathBegins);
         }
 
         private void Time(GameEvent gameEvent, int index)
@@ -130,7 +195,7 @@ namespace Puzzle.Client.Play
                     Launch(launch);
                     break;
                 case GameEvent.SpecialCreated created:
-                    MakeSpecial(created);
+                    MakeSpecial(created, index);
                     break;
                 case GameEvent.TileDestroyed destroyed:
                     Destroy(destroyed);
@@ -201,7 +266,13 @@ namespace Puzzle.Client.Play
 
         private void StartRound(int round)
         {
-            _pace = Tempo.PaceOfRound(round);
+            // The first round of matches after a wave of the finale: the board has come down, and what bursts now is luck.
+            if (_volley != null)
+            {
+                _aftermathBegins = _motionEnd;
+            }
+
+            _pace = _isTheFinale ? Tempo.FinaleBurstPace : Tempo.PaceOfRound(round);
             StartHitting(Math.Max(_phaseStart, _motionEnd));
         }
 
@@ -214,6 +285,9 @@ namespace Puzzle.Client.Play
             _goesOffAt.Clear();
             _armedAt.Clear();
             _gathering = null;
+            _volley = null;
+            _strokeOfTheVolley = null;
+            _lastHitAt = _phaseStart;
             _strike = Strike.AllAtOnce(_phaseStart);
         }
 
@@ -226,6 +300,7 @@ namespace Puzzle.Client.Play
 
             float start = TakeGoingOffAt(effect.Origin) ?? _phaseStart;
             _strike = Strike.Of(effect, start, _ledger.Shape, _nextSeekerCarriesASpecial, CellsReachedBeforeTheStrikeEnds(index + 1));
+            _strokeOfTheVolley = _volley != null && _volley.Fires(effect.Origin) ? _volley : null;
             _nextSeekerCarriesASpecial = false;
             _gathering = null;
             Free(effect.Origin, Math.Max(FreeAt(effect.Origin), _strike.OriginIsTakenUntil));
@@ -242,27 +317,98 @@ namespace Puzzle.Client.Play
             }
         }
 
-        private void MakeSpecial(GameEvent.SpecialCreated created)
+        /// <summary>
+        /// A special piece comes onto the board. What the view has in its cell says how: a colour bomb at work
+        /// turns the gem that lies there, a match leaves its special piece in a cell it has just emptied, and in
+        /// the finale a move left over lands on the gem that lies there.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The cell holds a piece that nothing turns into a special piece.</exception>
+        private void MakeSpecial(GameEvent.SpecialCreated created, int index)
         {
-            Tile special = Tile.Special(created.Kind);
-            int id = _ledger.NewId();
-            float start;
             if (_strike.MakesSpecials)
             {
-                // A colour bomb turns a gem into a special piece where it lies: the gem goes as the special comes.
-                start = HitTimeAt(created.At);
-                PlacedPiece gem = TakeFromTheBoard(created.At, start);
-                Emit(new Cue.Leave(start, Tempo.Pop * _pace, gem.Id, gem.Tile, created.At, LeaveManner.Pop, created.At));
-                _armedAt[created.At] = _strike.NextArmedTime();
+                TurnTheGemInto(created, HitTimeAt(created.At), _strike.NextArmedTime());
+            }
+            else if (_ledger.PieceAt(created.At) == PieceLedger.NoPiece)
+            {
+                LetAppear(created, _strike.Start + Tempo.AppearAfterGather * _pace);
+            }
+            else if (_isTheFinale && created.Kind.IsRocket() && _ledger.TileAt(created.At).IsGem)
+            {
+                LandAMove(created, index);
             }
             else
             {
-                start = _strike.Start + Tempo.AppearAfterGather * _pace;
+                throw new InvalidOperationException($"The engine made a {created.Kind} in {created.At}, where the view has {_ledger.TileAt(created.At)} and nothing that turns it.");
             }
+        }
 
+        /// <summary>
+        /// A gem turns into a special piece where it lies: the gem goes as the special piece comes, and the special
+        /// piece goes off at a moment of its own, whenever the engine got round to it or another hit reached it.
+        /// </summary>
+        private void TurnTheGemInto(GameEvent.SpecialCreated created, float start, float goesOffAt)
+        {
+            PlacedPiece gem = TakeFromTheBoard(created.At, start);
+            Emit(new Cue.Leave(start, Tempo.Pop * _pace, gem.Id, gem.Tile, created.At, LeaveManner.Pop, created.At));
+            _armedAt[created.At] = goesOffAt;
+            LetAppear(created, start);
+        }
+
+        private void LetAppear(GameEvent.SpecialCreated created, float start)
+        {
+            Tile special = Tile.Special(created.Kind);
+            int id = _ledger.NewId();
             _ledger.Put(created.At, id, special);
             _readyAt[id] = start + Tempo.AppearBeforeFalling;
             Emit(new Cue.Appear(start, Tempo.Appear, id, special, created.At));
+        }
+
+        /// <summary>
+        /// A move of the finale: it leaves the medallion, the next of its wave, and the gem turns into a rocket as
+        /// it lands. From there on the rocket is a special piece that goes off at a moment of its own.
+        /// </summary>
+        private void LandAMove(GameEvent.SpecialCreated created, int index)
+        {
+            if (_volley == null || _volley.IsThrown)
+            {
+                _volley = StartAVolley(index);
+            }
+
+            (float leaves, float lands) = _volley.Next();
+            Emit(new Cue.MoveThrown(leaves, Tempo.MoveFlies, created.At));
+            TurnTheGemInto(created, lands, _volley.GoesOffAt(created.At));
+        }
+
+        /// <summary>
+        /// A wave of the finale begins at an event: the board has landed, and the engine names every rocket of the
+        /// wave before it fires the first. A rocket that already stood on the board goes off in the wave too, the
+        /// moment a stroke reaches it (one under tape does not: the tape takes the hit).
+        /// </summary>
+        private Volley StartAVolley(int index)
+        {
+            StartHitting(Math.Max(_phaseStart, _motionEnd));
+            _aftermathBegins = null; // whatever burst after the wave before is part of the show: more rockets follow it
+            var thrown = new List<RocketPlace>();
+            for (int next = index; next < _events.Count && _events[next] is GameEvent.SpecialCreated made; next++)
+            {
+                thrown.Add(new RocketPlace(made.At, made.Kind));
+            }
+
+            RocketPlace[] standing = _ledger.Pieces
+                .Where(piece => piece.Tile.Kind.IsRocket() && _ledger.TapeAt(piece.Cell) == 0)
+                .Select(piece => new RocketPlace(piece.Cell, piece.Tile.Kind))
+                .ToArray();
+            var volley = new Volley(_phaseStart, thrown, standing);
+            foreach (RocketPlace rocket in standing)
+            {
+                if (volley.IsSetOff(rocket.Cell))
+                {
+                    _armedAt[rocket.Cell] = volley.GoesOffAt(rocket.Cell);
+                }
+            }
+
+            return volley;
         }
 
         private void Destroy(GameEvent.TileDestroyed destroyed)
@@ -377,10 +523,26 @@ namespace Puzzle.Client.Play
             return time;
         }
 
-        /// <summary>When the hit that is being worked through reaches a cell; a colour bomb's light gets there as a ray.</summary>
+        /// <summary>
+        /// When the hit that is being worked through reaches a cell; a colour bomb's light gets there as a ray. The
+        /// strokes of a wave of the finale are told in the view's own order (<see cref="Volley.HitIsShownAt"/>),
+        /// and what such a stroke set off (a bomb, a seeker, a colour bomb) never shows a hit later than the next
+        /// stroke of the wave gets to the cell: the stroke would pass over a piece that stands, and only goes
+        /// when the blast, the seeker or the ray arrives. No ray is sent for a piece a stroke takes first.
+        /// </summary>
         private float HitTimeAt(Position cell)
         {
+            if (_strokeOfTheVolley is Volley strokeOfTheWave)
+            {
+                return strokeOfTheWave.HitIsShownAt(cell);
+            }
+
             float time = _strike.TimeAt(cell, out bool isANewRay);
+            if (_volley?.NextStrokeReaches(cell) is float strokeGetsThere && strokeGetsThere < time)
+            {
+                return strokeGetsThere;
+            }
+
             if (isANewRay)
             {
                 Emit(new Cue.Zap(time - Tempo.Ray, Tempo.Ray, _strike.Origin, cell));
@@ -406,10 +568,41 @@ namespace Puzzle.Client.Play
 
         // ---------- falls ----------
 
+        /// <summary>
+        /// From here on events are falls. In the finale the first of them says how long everything waits: the
+        /// engine fired the whole wave on the board as it lay, so no piece may fall into the way of a hit that is
+        /// still to be shown, nor into a cell that a stroke of the wave has yet to run through.
+        /// </summary>
         private void StartSettling()
         {
+            if (_isTheFinale && !_isSettling)
+            {
+                _fallsNotBefore = _lastHitAt + Tempo.CellFreeAfterHit * _pace;
+                KeepCellsUntilTheStrokesHavePassed();
+            }
+
             _isSettling = true;
             _gathering = null;
+        }
+
+        /// <summary>
+        /// A stroke runs on to the ends of its line after its last hit, over cells that are empty by then: each
+        /// cell of the wave's lines is taken until the last stroke through it has got there.
+        /// </summary>
+        private void KeepCellsUntilTheStrokesHavePassed()
+        {
+            if (!(_volley is Volley wave))
+            {
+                return;
+            }
+
+            foreach (Position cell in _ledger.Cells())
+            {
+                if (wave.LastStrokeReaches(cell) is float reached)
+                {
+                    Free(cell, Math.Max(FreeAt(cell), reached));
+                }
+            }
         }
 
         private void MoveDown(GameEvent.TileMoved moved)
@@ -418,7 +611,7 @@ namespace Puzzle.Client.Play
             int id = _ledger.PieceAt(moved.From);
             bool isStraight = moved.From.X == moved.To.X;
             float wayIsFree = isStraight ? FreeAlong(moved.To.X, moved.From.Y + 1, moved.To.Y) : FreeAt(moved.To);
-            float start = Math.Max(ReadyAt(id), wayIsFree);
+            float start = Math.Max(Math.Max(ReadyAt(id), wayIsFree), _fallsNotBefore);
             _ledger.Move(moved.From, moved.To);
             Free(moved.From, start + Tempo.FollowLag);
             Travel(id, isStraight
@@ -431,7 +624,7 @@ namespace Puzzle.Client.Play
             StartSettling();
             Position to = spawned.At;
             int top = TopRowOf(to.X);
-            float wayIsFree = FreeAlong(to.X, top, to.Y);
+            float wayIsFree = Math.Max(FreeAlong(to.X, top, to.Y), _fallsNotBefore);
             (int fromRow, float start) = _entries[to.X].Next(top, wayIsFree);
             float seconds = FallLaw.SecondsFor(to.Y - fromRow);
             _entries[to.X].Entered(start, seconds);
@@ -444,7 +637,7 @@ namespace Puzzle.Client.Play
         private void Collect(GameEvent.ItemCollected collected)
         {
             StartSettling();
-            float start = Math.Max(ReadyAt(_ledger.PieceAt(collected.At)), _phaseStart);
+            float start = Math.Max(Math.Max(ReadyAt(_ledger.PieceAt(collected.At)), _phaseStart), _fallsNotBefore);
             PlacedPiece item = TakeFromTheBoard(collected.At, start);
             Emit(new Cue.Leave(start, Tempo.Collect, item.Id, item.Tile, collected.At, LeaveManner.Collect, collected.At));
             Count(goal => goal is GoalSpec.DropItems, start + Tempo.Collect);
@@ -551,10 +744,16 @@ namespace Puzzle.Client.Play
         private void Emit(Cue cue)
         {
             _cues.Add(cue);
-            bool isOnlyLight = cue is Cue.Effect || cue is Cue.Zap || cue is Cue.Flight;
+            bool isOnlyLight = cue is Cue.Effect || cue is Cue.Zap || cue is Cue.Flight || cue is Cue.FinaleOpens || cue is Cue.MoveThrown;
             if (!isOnlyLight)
             {
                 _motionEnd = Math.Max(_motionEnd, cue.End);
+            }
+
+            bool isAHit = cue is Cue.Leave || cue is Cue.Reface || cue is Cue.TapeHit || cue is Cue.SlabHit;
+            if (isAHit)
+            {
+                _lastHitAt = Math.Max(_lastHitAt, cue.Start);
             }
         }
 

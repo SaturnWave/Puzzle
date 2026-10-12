@@ -23,7 +23,10 @@ namespace Puzzle.Client.Gallery
     /// <summary>
     /// The numbers the plaques show at one moment of a game. They are a copy, not the game itself: while a move is
     /// played back step by step, the plaques are shown the numbers of each step (<see cref="AfterAMove"/>,
-    /// <see cref="WithOneCounted"/>), and at the end of the move they must be the game's own again.
+    /// <see cref="WithOneCounted"/>), and at the end of the move they must be the game's own again. In the finale
+    /// of a won game the moves are counted down as they turn into rockets (<see cref="WithMovesTurnedIntoRockets"/>),
+    /// which the game itself does not do: it keeps saying what was left. What the plaques were counted to and what
+    /// the game says are compared when nothing moves any more (<see cref="DifferencesFrom"/>).
     /// </summary>
     public sealed class HudFigures
     {
@@ -31,13 +34,26 @@ namespace Puzzle.Client.Gallery
         private const int FewMoves = 3;
 
         public HudFigures(int movesLeft, bool movesAreFew, IReadOnlyList<GoalFigure> goals)
+            : this(movesLeft, movesAreFew, goals, movesTurnedIntoRockets: 0)
+        {
+        }
+
+        private HudFigures(int movesLeft, bool movesAreFew, IReadOnlyList<GoalFigure> goals, int movesTurnedIntoRockets)
         {
             MovesLeft = movesLeft;
             MovesAreFew = movesAreFew;
             Goals = goals;
+            MovesTurnedIntoRockets = movesTurnedIntoRockets;
         }
 
         public int MovesLeft { get; }
+
+        /// <summary>
+        /// How many moves left over were counted down into rockets on the way to these numbers; none while a game
+        /// is played. Kept beside <see cref="MovesLeft"/> because that number stops at none: a move counted
+        /// down once too often would not show in it.
+        /// </summary>
+        public int MovesTurnedIntoRockets { get; }
 
         /// <summary>True while the game goes on with few moves left: a warning, which a decided game no longer needs.</summary>
         public bool MovesAreFew { get; }
@@ -65,7 +81,23 @@ namespace Puzzle.Client.Gallery
         public HudFigures AfterAMove()
         {
             int left = Math.Max(0, MovesLeft - 1);
-            return new HudFigures(left, left <= FewMoves, Goals);
+            return new HudFigures(left, left <= FewMoves, Goals, MovesTurnedIntoRockets);
+        }
+
+        /// <summary>
+        /// The numbers of a won game in its finale, once so many of the moves left over have turned into rockets:
+        /// the moves less those, never below none, and the goals as they are. The game is decided, so few moves
+        /// are no warning here; that is why <see cref="AfterAMove"/> does not serve.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The count of rockets is negative.</exception>
+        public HudFigures WithMovesTurnedIntoRockets(int rockets)
+        {
+            if (rockets < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rockets), rockets, "Moves turn into rockets, never rockets into moves.");
+            }
+
+            return new HudFigures(Math.Max(0, MovesLeft - rockets), movesAreFew: false, Goals, MovesTurnedIntoRockets + rockets);
         }
 
         /// <summary>The numbers with one more of a goal done; a goal that is met stays met.</summary>
@@ -78,7 +110,45 @@ namespace Puzzle.Client.Gallery
                 goals[goal] = new GoalFigure(Goals[goal].Icon, Math.Max(0, Goals[goal].Remaining - counted));
             }
 
-            return new HudFigures(MovesLeft, MovesAreFew, goals);
+            return new HudFigures(MovesLeft, MovesAreFew, goals, MovesTurnedIntoRockets);
+        }
+
+        /// <summary>
+        /// Where these numbers, as the plaques were counted to them step by step, are not the game's own, one
+        /// line for each: the moves left, how many of them were counted down into rockets, and what is left of
+        /// every goal. Whether few moves are a warning is not compared: that is only known when a move is over.
+        /// </summary>
+        /// <param name="ofTheGame">The numbers of the game as it stands (<see cref="Of"/>, and after a finale with its rockets counted down).</param>
+        /// <exception cref="ArgumentException">The two have not the same goals.</exception>
+        public IEnumerable<string> DifferencesFrom(HudFigures ofTheGame)
+        {
+            if (Goals.Count != ofTheGame.Goals.Count)
+            {
+                throw new ArgumentException($"These numbers have {Goals.Count} goals and the game's {ofTheGame.Goals.Count}: they are not of one game.", nameof(ofTheGame));
+            }
+
+            return DifferencesOfTheSameGoalsFrom(ofTheGame);
+        }
+
+        private IEnumerable<string> DifferencesOfTheSameGoalsFrom(HudFigures ofTheGame)
+        {
+            if (MovesLeft != ofTheGame.MovesLeft)
+            {
+                yield return $"plaques: {MovesLeft} moves left, the engine has {ofTheGame.MovesLeft}";
+            }
+
+            if (MovesTurnedIntoRockets != ofTheGame.MovesTurnedIntoRockets)
+            {
+                yield return $"plaques: {MovesTurnedIntoRockets} moves were counted down into rockets, the engine made {ofTheGame.MovesTurnedIntoRockets}";
+            }
+
+            for (int goal = 0; goal < ofTheGame.Goals.Count; goal++)
+            {
+                if (Goals[goal].Remaining != ofTheGame.Goals[goal].Remaining)
+                {
+                    yield return $"plaques: {Goals[goal].Remaining} left of goal {goal + 1}, the engine has {ofTheGame.Goals[goal].Remaining}";
+                }
+            }
         }
     }
 }

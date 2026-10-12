@@ -35,6 +35,8 @@
     <Compile Include="..\..\unity\Assets\Scripts\Play\Cue.cs" Link="Unity\Play\Cue.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\PieceLedger.cs" Link="Unity\Play\PieceLedger.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\Strike.cs" Link="Unity\Play\Strike.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Volley.cs" Link="Unity\Play\Volley.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\FinalePace.cs" Link="Unity\Play\FinalePace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\TurnChoreographer.cs" Link="Unity\Play\TurnChoreographer.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\BoardPointer.cs" Link="Unity\Play\BoardPointer.cs" />
     <!-- Nor has the way from one level to the next: a player's progress, a decided game's result and its words (with the plaque's figures and the list of drawings they name). -->
@@ -58,6 +60,8 @@
     <Compile Include="..\..\unity\Assets\Scripts\Layout\FramePlace.cs" Link="Unity\Layout\FramePlace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\JigsawLayout.cs" Link="Unity\Layout\JigsawLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\CollectionLayout.cs" Link="Unity\Layout\CollectionLayout.cs" />
+    <!-- Nor has the list of what is drawn over what: the tests pin the places that a mistake has shown to matter. -->
+    <Compile Include="..\..\unity\Assets\Scripts\DrawOrder.cs" Link="Unity\DrawOrder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

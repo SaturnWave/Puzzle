@@ -187,6 +187,13 @@ namespace Puzzle.Client.Flow
             KeepWhatWasPlayed();
         }
 
+        /// <summary>
+        /// One more finger came down while the finger the game follows is still on the screen. The game follows one
+        /// finger and listens to no other, with one exception: a touch anywhere ends a won game's finale, and that
+        /// holds while the finger of the winning move still rests on the glass (<see cref="GameStage.AnotherFingerDown"/>).
+        /// </summary>
+        public void AnotherFingerDown() => Board?.AnotherFingerDown();
+
         /// <summary>The touch was taken away by the device, or the game lost the screen while a finger was down.</summary>
         public void PointerCancelled() => _front.PointerCancelled();
 

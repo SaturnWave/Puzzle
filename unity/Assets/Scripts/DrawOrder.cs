@@ -14,6 +14,13 @@ namespace Puzzle.Client
         WallDamask = -999,
         WallLight = -998,
 
+        /// <summary>
+        /// Light on the wall behind a plaque: the moves medallion glows as a won game's finale opens. It lies on
+        /// the wall itself, over the lamps' light and under everything that hangs or stands in front of the wall,
+        /// so on a screen where the plaques hang close over the board it falls behind the frame, not on it.
+        /// </summary>
+        PlaqueHalo = -997,
+
         /// <summary>The museum's hall: its floor, and the mouldings along the wall (cornice, picture rail, skirting).</summary>
         RoomFloor = -980,
         RoomTrim = -970,
@@ -101,6 +108,7 @@ namespace Puzzle.Client
         TrayPiece = 1020,
         TrayLabel = 1030,
         TrayLabelLettering = 1031,
+
         Plaque = 1100,
         PlaqueArt = 1101,
         PlaqueLettering = 1102,
@@ -108,6 +116,17 @@ namespace Puzzle.Client
         /// <summary>A small framed picture on a plaque: its frame is plaque art, its picture and the mark on it come over that.</summary>
         PlaquePicture = 1103,
         PlaquePictureMark = 1104,
+
+        /// <summary>The ring of light that widens from a plaque's rim as a won game's finale opens: over the plaques, under what then leaves them.</summary>
+        PlaqueRing = 1140,
+
+        /// <summary>
+        /// What leaves a plaque for the board: a move left over on its way to a gem, over the plaques, the wall and
+        /// the frame. It is made of several pictures that lie on one another, and each takes a place of its own
+        /// from here up (<see cref="ThrownMovePart"/>): pictures that share a place are drawn in whatever order
+        /// the device happens to take them, and the same move then looks different from one game to the next.
+        /// </summary>
+        ThrownMove = 1150,
 
         /// <summary>
         /// A button that stands on a page by itself, and the navigation bar at a page's foot with the chosen
@@ -151,5 +170,28 @@ namespace Puzzle.Client
         /// wires, frame and plate keep their order among themselves and all come over the <see cref="Veil"/>.
         /// </summary>
         OverTheDark = 2900,
+    }
+
+    /// <summary>
+    /// The pictures a move is made of that flies from a plaque to the board, from the one that lies lowest up.
+    /// Each is drawn at <see cref="DrawOrder.ThrownMove"/> plus its own value, so of two moves that cross, every
+    /// star lies over every light. A closed set.
+    /// </summary>
+    public enum ThrownMovePart
+    {
+        /// <summary>The tail the move draws behind it.</summary>
+        Tail = 0,
+
+        /// <summary>The gilt light around it.</summary>
+        GiltLight = 1,
+
+        /// <summary>The pale light inside the gilt.</summary>
+        PaleLight = 2,
+
+        /// <summary>The two rays of its star.</summary>
+        Star = 3,
+
+        /// <summary>The white core of the star.</summary>
+        Core = 4,
     }
 }

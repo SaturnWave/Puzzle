@@ -38,10 +38,10 @@ namespace Puzzle.Client.Play
     }
 
     /// <summary>
-    /// One thing the view does in the course of a turn, with the moment it begins (seconds after the player's move)
-    /// and how long it takes. A closed set: the private constructor keeps every kind inside this file. Cues are what
-    /// the engine's events become once each has a time; the view only plays them and decides nothing about order.
-    /// This file has no Unity dependency, so the repository's tests compile it too.
+    /// One thing the view does in the course of a turn, with the moment it begins (seconds after the player's move,
+    /// or after the finale began) and how long it takes. A closed set: the private constructor keeps every kind
+    /// inside this file. Cues are what the engine's events become once each has a time; the view only plays them
+    /// and decides nothing about order. This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public abstract class Cue
     {
@@ -186,7 +186,7 @@ namespace Puzzle.Client.Play
             public Slip LandingFor(float seconds) => new Slip(Start, Seconds, PieceId, From, To, seconds);
         }
 
-        /// <summary>A special piece appears in a cell: left by a match, or made of a gem by a colour bomb.</summary>
+        /// <summary>A special piece appears in a cell: left by a match, or made of a gem by a colour bomb or by a move of the finale.</summary>
         public sealed class Appear : Cue
         {
             public Appear(float start, float seconds, int pieceId, Tile tile, Position at)
@@ -346,20 +346,61 @@ namespace Puzzle.Client.Play
             /// <summary>Every piece that was dealt, with the cell it lies in and what it shows from now on.</summary>
             public IReadOnlyList<PlacedPiece> Dealt { get; }
         }
+
+        /// <summary>The finale of a won game opens: light widens at the moves medallion.</summary>
+        public sealed class FinaleOpens : Cue
+        {
+            public FinaleOpens(float start, float seconds)
+                : base(start, seconds)
+            {
+            }
+        }
+
+        /// <summary>
+        /// A move left over leaves the medallion for a cell, where a gem turns into a rocket as it arrives. The
+        /// moves left drop by one as it leaves.
+        /// </summary>
+        public sealed class MoveThrown : Cue
+        {
+            public MoveThrown(float start, float seconds, Position to)
+                : base(start, seconds)
+            {
+                To = to;
+            }
+
+            /// <summary>The cell of the gem the move lands on.</summary>
+            public Position To { get; }
+        }
     }
 
-    /// <summary>A turn as the view plays it: its cues in the order they begin, and when the last of them is over.</summary>
+    /// <summary>
+    /// A turn as the view plays it, or the finale of a won game: its cues in the order they begin, and when the
+    /// last of them is over.
+    /// </summary>
     public sealed class TurnScript
     {
-        public TurnScript(IReadOnlyList<Cue> cues, float seconds)
+        /// <param name="showSeconds">Only a finale's script has it; see <see cref="ShowSeconds"/>.</param>
+        public TurnScript(IReadOnlyList<Cue> cues, float seconds, float? showSeconds = null)
         {
             Cues = cues;
             Seconds = seconds;
+            ShowSeconds = showSeconds;
         }
 
         public IReadOnlyList<Cue> Cues { get; }
 
-        /// <summary>From the player's move to the end of the last cue. The give of a piece that has landed is not counted.</summary>
+        /// <summary>
+        /// From the player's move, or from the finale's beginning, to the end of the last cue. The give of a piece
+        /// that has landed is not counted.
+        /// </summary>
         public float Seconds { get; }
+
+        /// <summary>
+        /// In a finale's script, how long its show takes: from its beginning until the board has come down after
+        /// the last of its rockets. What the pieces that fell in set off after that is the finale's aftermath,
+        /// which may be played faster (<see cref="FinalePace"/>). Nothing in a turn's script, and in a finale's
+        /// that has no aftermath: all of it is then its show.
+        /// </summary>
+        public float? ShowSeconds { get; }
     }
 }

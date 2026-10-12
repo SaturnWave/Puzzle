@@ -7,6 +7,7 @@ using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Stage;
 using Puzzle.Core.Levels;
 using UnityEngine;
 
@@ -88,19 +89,30 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>Writes what the game's camera sees now as a file in the shots folder, and adds it to a sheet.</summary>
-        public static void Shoot(GameSession session, ScreenShape screen, ContactSheet sheet, string file)
+        public static void Shoot(GameSession session, ScreenShape screen, ContactSheet sheet, string file) => Shoot(session.Front, screen, sheet, file);
+
+        /// <summary>Writes what a stage's camera sees now as a file in the shots folder (or in a folder under it, named with the file), and adds it to a sheet.</summary>
+        public static void Shoot(IStage stage, ScreenShape screen, ContactSheet sheet, string file)
         {
-            Texture2D picture = CameraPicture.Take(session.Front.Camera, screen.PixelWidth, screen.PixelHeight);
+            Texture2D picture = Take(stage, screen);
             try
             {
-                CameraPicture.WritePng(picture, Path.Combine(ShotsFolder, file));
-                sheet.Add(picture);
+                Keep(picture, sheet, file);
             }
             finally
             {
                 UnityEngine.Object.DestroyImmediate(picture);
             }
+        }
 
+        /// <summary>What a stage's camera sees now, as a picture that is not written anywhere yet. The caller owns it and destroys it.</summary>
+        public static Texture2D Take(IStage stage, ScreenShape screen) => CameraPicture.Take(stage.Camera, screen.PixelWidth, screen.PixelHeight);
+
+        /// <summary>Writes a picture that was taken earlier as a file in the shots folder, and adds it to a sheet. The picture stays the caller's.</summary>
+        public static void Keep(Texture2D picture, ContactSheet sheet, string file)
+        {
+            CameraPicture.WritePng(picture, Path.Combine(ShotsFolder, file));
+            sheet.Add(picture);
             Debug.Log($"Storyboard: {file}");
         }
 

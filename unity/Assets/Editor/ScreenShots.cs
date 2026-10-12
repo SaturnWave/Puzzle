@@ -10,6 +10,7 @@ using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Levels;
@@ -447,6 +448,34 @@ namespace Puzzle.Client.EditorTools
     internal static class StageSteps
     {
         private const float LongestSettleSeconds = 30f;
+
+        /// <summary>
+        /// How long a turn is shown at the most when so much of its script is still to come: the script, and the
+        /// give of the pieces that landed last, which a script does not count; a few frames more is no turn any longer.
+        /// </summary>
+        public static float ATurnIsOverWithin(float scriptSeconds) => scriptSeconds + Tempo.Land + 4f * StoryStudio.FrameSeconds;
+
+        /// <summary>
+        /// Moves a clock frame by frame to the step in which the winning move's turn ends and the won game's
+        /// finale begins: the finale's first frame.
+        /// </summary>
+        /// <param name="stepAFrame">Moves the clock one frame on: the stage's own, or that of the session that owns the stage.</param>
+        /// <param name="turnStillTakes">How much of the winning turn's script is still to come.</param>
+        /// <exception cref="InvalidOperationException">The turn came to its end and no finale began.</exception>
+        public static void AdvanceToTheFinale(GameStage stage, Action stepAFrame, float turnStillTakes)
+        {
+            float longest = ATurnIsOverWithin(turnStillTakes);
+            for (float waited = 0f; !stage.IsShowingTheFinale; waited += StoryStudio.FrameSeconds)
+            {
+                if (waited > longest)
+                {
+                    throw new InvalidOperationException(
+                        $"The winning move of level {stage.Game.Level.Id.Value} came to rest and no finale began: the game is {stage.Game.Status} with {stage.Game.MovesLeft} moves left.");
+                }
+
+                stepAFrame();
+            }
+        }
 
         public static void Advance(IStage stage, float seconds)
         {

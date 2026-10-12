@@ -29,6 +29,9 @@ namespace Puzzle.Client.EditorTools
     /// presses its button, and the next board comes out of the dark. It is the game's own session on a progress file
     /// of its own (out/unity/flow-progress), so what is pictured is what a phone does, saving included; at the end
     /// the progress is read back from the file and a second session is opened on it, as after a restart.
+    /// A level that is won with moves left over has its finale before the card: a few moments of it are pictured
+    /// too, and the story requires that the win is on file the moment the winning move is played and that a
+    /// restart as the finale begins opens the next level, so closing the game during the finale loses nothing.
     /// Pictures go to out/unity/shots/flow-level-NNNN-SIZE-won-NN-what.png (or -lost-), with one sheet of them all.
     /// </summary>
     internal static class FlowStory
@@ -49,6 +52,12 @@ namespace Puzzle.Client.EditorTools
         /// the card on its way down, the card landing, its exhibits popping up.
         /// </summary>
         private static readonly float[] ResultMoments = { 0.3f, 0.52f, 0.62f, 0.74f, 0.9f, 1.06f };
+
+        /// <summary>
+        /// The moments of a won game's finale that are pictured, in seconds after its first frame: moves on their
+        /// way to the board, the rockets firing, the board coming down. Its own storyboard is FinaleStory's.
+        /// </summary>
+        private static readonly float[] FinaleMoments = { 0.6f, 1.4f, 2.2f };
 
         /// <summary>A button is pictured this long after the finger came down on it, a card this long after the finger lifted.</summary>
         private const float PressedMoment = 2f * StoryStudio.FrameSeconds;
@@ -78,7 +87,20 @@ namespace Puzzle.Client.EditorTools
             TurnScript decidingTurn = PlayToTheEnding(session, ending, player);
             PlayerProgress decidedWith = session.Progress;
             LevelDefinition decided = session.Stage.Game.Level;
-            PictureTheResult(reel, decidingTurn);
+            var restart = new Restart(folder, levels, art, screen);
+            if (ending == FlowEnding.Won)
+            {
+                // The clock stands at the winning move: nothing of it was shown yet, and the win must be on file already.
+                restart.RequireTheLevelAfter(decided, "right after the winning move, before any of it was shown");
+            }
+
+            reel.Advance(decidingTurn.Seconds);
+            if (session.Stage.Game.Status == GameStatus.Won && session.Stage.Game.MovesLeft > 0)
+            {
+                PictureTheFinale(reel, restart, decided);
+            }
+
+            PictureTheResult(reel);
             PictureGoingOn(reel);
 
             CheckWhereThePlayerStands(session, decided, decidedWith, ending, levels);
@@ -150,10 +172,47 @@ namespace Puzzle.Client.EditorTools
             }
         }
 
-        /// <summary>The end of the deciding turn and what follows it: the room goes dark, the card comes down, its exhibits pop up.</summary>
-        private static void PictureTheResult(Reel reel, TurnScript decidingTurn)
+        /// <summary>
+        /// The finale of a game that was won with moves left over: a few of its moments, and in the middle of it
+        /// what a player finds who closes the game there and opens it again. The clock is left at the finale's end.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">No finale began, it was at fault, or a restart in the middle of it lost the win.</exception>
+        private static void PictureTheFinale(Reel reel, Restart restart, LevelDefinition won)
         {
-            reel.Advance(decidingTurn.Seconds);
+            GameStage stage = reel.Session.Stage;
+
+            // The clock stands at the end of the winning turn's script: only the give of its last landings is still to come.
+            StageSteps.AdvanceToTheFinale(stage, () => reel.Session.Advance(StoryStudio.FrameSeconds), turnStillTakes: 0f);
+            restart.RequireTheLevelAfter(won, "as the finale began");
+            float clock = 0f;
+            foreach (float moment in FinaleMoments)
+            {
+                // Step by step and no further than the finale's end: the card's moments are counted from there.
+                for (; stage.IsShowingTheFinale && clock + StoryStudio.FrameSeconds / 2f < moment; clock += StoryStudio.FrameSeconds)
+                {
+                    reel.Session.Advance(StoryStudio.FrameSeconds);
+                }
+
+                if (stage.IsShowingTheFinale)
+                {
+                    reel.Shoot($"finale-t{StoryStudio.Seconds(moment)}");
+                }
+            }
+
+            while (stage.IsShowingTheFinale)
+            {
+                reel.Session.Advance(StoryStudio.FrameSeconds);
+            }
+
+            RefuseFaults(stage);
+        }
+
+        /// <summary>
+        /// The end of the deciding turn, or of the finale that followed it, and what comes then: the room goes dark,
+        /// the card comes down, its exhibits pop up.
+        /// </summary>
+        private static void PictureTheResult(Reel reel)
+        {
             float clock = 0f;
             foreach (float moment in ResultMoments)
             {
@@ -257,6 +316,47 @@ namespace Puzzle.Client.EditorTools
             if (stage.LastTurnFaults.Count > 0)
             {
                 throw new InvalidOperationException($"After move {stage.Game.MovesUsed} the stage did not show the engine's board: {string.Join("; ", stage.LastTurnFaults)}");
+            }
+        }
+
+        /// <summary>
+        /// What a player finds who closes the game and opens it again, while the story's own session goes on: the
+        /// story's progress file as it stands, and a session of its own opened on it and closed again at once.
+        /// </summary>
+        private sealed class Restart
+        {
+            private readonly string _folder;
+            private readonly IReadOnlyList<LevelDefinition> _levels;
+            private readonly ArtCatalogue _art;
+            private readonly ScreenShape _screen;
+
+            public Restart(string folder, IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, ScreenShape screen)
+            {
+                _folder = folder;
+                _levels = levels;
+                _art = art;
+                _screen = screen;
+            }
+
+            /// <summary>A win is the player's from the move that won it: the file holds it, and a restart opens the level after it.</summary>
+            /// <exception cref="InvalidOperationException">The file does not hold the win, or a restart opens another level.</exception>
+            public void RequireTheLevelAfter(LevelDefinition won, string when)
+            {
+                int levelsWon = Math.Min(StoryStudio.StandingOn(won, _levels).LevelsWon + 1, _levels.Count);
+                PlayerProgress onFile = new ProgressFile(_folder).Load();
+                if (onFile.LevelsWon != levelsWon)
+                {
+                    throw new InvalidOperationException($"Level {won.Id.Value} is won, and {when} the progress file holds \"{onFile}\": a player who closed the game now would lose the win.");
+                }
+
+                int next = _levels[onFile.LevelIndexIn(_levels.Count)].Id.Value;
+                using GameSession restarted = StoryStudio.AtTheBoard(_levels, _art, new ProgressFile(_folder), _screen);
+                if (restarted.Stage.Game.Level.Id.Value != next)
+                {
+                    throw new InvalidOperationException($"Level {won.Id.Value} is won, and a restart {when} opens level {restarted.Stage.Game.Level.Id.Value}, not level {next}.");
+                }
+
+                Debug.Log($"Storyboard: flow: level {won.Id.Value} is won; {when} the progress file holds \"{onFile}\" and a restart opens level {next}.");
             }
         }
 

@@ -53,6 +53,9 @@ namespace Puzzle.Client.Gallery
         /// <summary>The moves stand this far above the foot of the medallion's dial, more than above its head.</summary>
         private const float RoomUnderMoves = 3f;
 
+        /// <summary>At the height of its swell the number of moves is drawn this much larger than at rest.</summary>
+        private const float MovesSwellBy = 0.18f;
+
         /// <summary>Where a plaque's two wires meet its top edge.</summary>
         private const float WireInFromPlaqueSide = 27f;
 
@@ -102,6 +105,16 @@ namespace Puzzle.Client.Gallery
             (float labelAt, float rowAt) = Stacked(FaceMiddle, GapUnderGoalsLabel, _goals.Height);
             _goalsLabel.transform.localPosition = new Vector3(0f, labelAt, 0f);
             _goals.Transform.localPosition = new Vector3(0f, rowAt, 0f);
+        }
+
+        /// <summary>
+        /// Swells the number of moves around its middle: 0 is its size at rest, 1 the height of the swell. In a won
+        /// game's finale it swells with every move that leaves the medallion for the board.
+        /// </summary>
+        public void SwellTheMoves(float swell)
+        {
+            float size = 1f + MovesSwellBy * swell;
+            _movesNumber.transform.localScale = new Vector3(size, size, 1f);
         }
 
         /// <summary>Hangs the row where the layout has it: centred on the screen, as wide and as large as the screen allows.</summary>

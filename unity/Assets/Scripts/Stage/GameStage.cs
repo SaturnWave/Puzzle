@@ -51,6 +51,16 @@ namespace Puzzle.Client.Stage
     /// says where they go on to, and whoever owns the stage opens what comes next: another board, or the museum.
     /// </para>
     /// <para>
+    /// A game that is won with moves left over has a finale before its card: when the winning move has come to
+    /// rest, every move left flies from the medallion onto a gem, which turns into a rocket; the rockets fire, the
+    /// board settles, and then the card comes as after any win. It is shown as a turn is: the engine plays it at
+    /// once (Game.PlayFinale), and its events become a script on the same timeline, so the game is in its final
+    /// state from the finale's first moment. That is why a finger that comes down anywhere, or the way back, ends
+    /// it on the spot at no loss: the engine's board is laid out and the card comes. A finale that cannot be shown,
+    /// or does not end on the engine's board, is a fault like a turn's and costs its picture, never the card. The
+    /// win itself is kept by whoever owns the stage the moment the winning move is played, long before any of this.
+    /// </para>
+    /// <para>
     /// A level can be left at any time. The round button on the shelf's left end, and the device's way back
     /// (<see cref="GoBack"/>), ask first: a card comes down that says what leaving costs, and the player stays or
     /// goes to the museum. Asking first matters on a phone, where a swipe from the screen's edge is the way back
@@ -64,11 +74,27 @@ namespace Puzzle.Client.Stage
         private const float RefusedTradeReach = 0.42f;
         private const float RefusedNudgeReach = 0.14f;
 
+        /// <summary>The skipped finale's board is shown under one blink of light, this many times the tray's longer side across.</summary>
+        private const float SkipBlinkAcross = 1.5f;
+
         /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set.</summary>
         private enum StageControl
         {
             /// <summary>The round button on the shelf: out of the level.</summary>
             Leave,
+        }
+
+        /// <summary>What the stage's timeline is showing of the game. A closed set.</summary>
+        private enum Playback
+        {
+            /// <summary>Nothing of the game: the board is at rest, or only a card comes and goes.</summary>
+            Nothing,
+
+            /// <summary>The move that was played last.</summary>
+            ATurn,
+
+            /// <summary>The finale of the won game.</summary>
+            TheFinale,
         }
 
         private readonly GameObject _root;
@@ -107,7 +133,14 @@ namespace Puzzle.Client.Stage
         /// <summary>True when the player asked to leave while the board was still moving: the question is put once it has come to rest.</summary>
         private bool _isAskedToLeave;
         private HudFigures _figures;
-        private bool _isShowingATurn;
+        private Playback _playing = Playback.Nothing;
+
+        /// <summary>What the engine did in the won game's finale; nothing until it has played it.</summary>
+        private FinaleOutcome? _finale;
+
+        /// <summary>How fast the finale's script is played against the stage's clock, and where on the timeline that script began; nothing until a finale is shown.</summary>
+        private FinalePace? _finalePace;
+        private float _finaleBeganAt;
         private float _clock;
 
         /// <summary>What the finger did while the board was still moving, and when; nothing when no gesture waits.</summary>
@@ -143,7 +176,7 @@ namespace Puzzle.Client.Stage
             _effectArt = effectArt;
             _pickedMark = new PickedMark(_board.Root, _effectArt, art);
             _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
-            _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal);
+            _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal, CountAMoveThrown);
             _pointer = new BoardPointer(game);
         }
 
@@ -154,10 +187,11 @@ namespace Puzzle.Client.Stage
         public Game Game => _game;
 
         /// <summary>
-        /// True when nothing on the stage is moving any more: the board's entrance and the last turn are over, and
-        /// the result's card, if there is one, hangs in its place. What only twinkles does not count.
+        /// True when nothing on the stage is moving any more: the board's entrance, the last turn and a won game's
+        /// finale are over, and the result's card, if there is one, hangs in its place. What only twinkles does
+        /// not count. A turn or a finale that has run out counts as moving until the stage has finished it.
         /// </summary>
-        public bool IsSettled => _tweens.IsIdle && _timeline.IsDone;
+        public bool IsSettled => _tweens.IsIdle && _timeline.IsDone && _playing == Playback.Nothing;
 
         /// <summary>
         /// Where the player goes on to, once they have pressed a button of the result's card and the card has gone up
@@ -195,15 +229,28 @@ namespace Puzzle.Client.Stage
         /// </summary>
         public Vector2? PlaceButtonPixel => _result?.PlaceButtonMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
 
-        /// <summary>The script of the turn that was played last; nothing before the first move.</summary>
+        /// <summary>The script of the turn that was played last; nothing before the first move. A finale is not a turn: after a win this stays the winning move's.</summary>
         public TurnScript? LastTurn { get; private set; }
 
+        /// <summary>The script of the won game's finale; nothing while the game has had none, and for a game that has none (lost, or won with its last move).</summary>
+        public TurnScript? Finale { get; private set; }
+
+        /// <summary>True while a won game's finale is shown: from the step that ends the winning move's turn until its last piece has landed, or a touch has ended it.</summary>
+        public bool IsShowingTheFinale => _playing == Playback.TheFinale;
+
         /// <summary>
-        /// Where the stage did not show the game in the last turn, one line per fault: a turn that could not be
-        /// shown at all, a cell that showed another piece than the engine has there when the turn was over, a piece
-        /// not at rest, a plaque counted wrong. Empty when the turn ended on the engine's board, as every turn must.
-        /// After a fault the board was laid out anew from the engine's, so the game goes on; the fault is a mistake
-        /// to be found all the same, and is written to the log as an error.
+        /// The line on the shelf under the board: how the game is played, or which try this is. No words at all
+        /// from the moment a won game's finale begins.
+        /// </summary>
+        public string WordsOnTheShelf => _shelf.Words;
+
+        /// <summary>
+        /// Where the stage did not show the game in the last turn and, after a win, in its finale, one line per
+        /// fault: a turn that could not be shown at all, a cell that showed another piece than the engine has there
+        /// when the turn was over, a piece not at rest, a plaque counted wrong. A finale's faults begin with
+        /// "finale:". Empty when the turn ended on the engine's board, as every turn must. After a fault the board
+        /// was laid out anew from the engine's, so the game goes on; the fault is a mistake to be found all the
+        /// same, and is written to the log as an error.
         /// </summary>
         public IReadOnlyList<string> LastTurnFaults { get; private set; } = Array.Empty<string>();
 
@@ -256,6 +303,7 @@ namespace Puzzle.Client.Stage
             _hud.Place(layout);
             _frame.Place(layout);
             _board.Place(layout);
+            _effects.Place(layout);
             _shelf.Place(layout);
             _leave.Place(new Vector2(layout.LeaveButton.MiddleX, layout.LeaveButton.MiddleY), layout.LeaveButton.Width / RoundButton.Size);
             _veil.Fit(layout.View);
@@ -273,10 +321,10 @@ namespace Puzzle.Client.Stage
             _tweens.Advance(deltaSeconds);
             ShowThePickedPiece();
             _result?.Twinkle(_clock);
-            _timeline.Advance(deltaSeconds);
-            if (_isShowingATurn && _timeline.IsDone)
+            _timeline.Advance(deltaSeconds * PaceOfTheTimeline());
+            if (_timeline.IsDone)
             {
-                FinishTheTurn();
+                FinishWhatWasShown();
             }
 
             ActOnTheWaitingGesture();
@@ -286,7 +334,7 @@ namespace Puzzle.Client.Stage
         /// <summary>
         /// The player asked for the way back, by the device's back button or gesture. While the game is played that
         /// asks whether they mean to leave; under that question it means "no"; under a result's card it leads to
-        /// the museum.
+        /// the museum; and a won game's finale it ends, as a touch does.
         /// </summary>
         public void GoBack()
         {
@@ -295,7 +343,11 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            if (_result == null)
+            if (IsShowingTheFinale)
+            {
+                SkipTheFinale();
+            }
+            else if (_result == null)
             {
                 AskToLeave();
             }
@@ -325,7 +377,7 @@ namespace Puzzle.Client.Stage
                 return false;
             }
 
-            _isShowingATurn = true;
+            _playing = Playback.ATurn;
             try
             {
                 TurnScript script = TurnChoreographer.Compose(_ledger, _game.Level.Goals, _game.LastEvents, _game.Board);
@@ -360,10 +412,17 @@ namespace Puzzle.Client.Stage
         /// <summary>
         /// A finger came down on the screen. Pixels are counted from the screen's lower left corner. While the game
         /// goes on the finger is the board's, whether the pieces are at rest or not; once the result's card hangs,
-        /// it is the card's.
+        /// it is the card's. While a won game's finale is shown, a finger that comes down anywhere ends it, and is
+        /// given to nothing else: it presses no button of the card that then comes.
         /// </summary>
         public void PointerDown(Vector2 pixel)
         {
+            if (IsShowingTheFinale)
+            {
+                SkipTheFinale();
+                return;
+            }
+
             if (_layout is not ScreenLayout layout)
             {
                 return;
@@ -390,6 +449,19 @@ namespace Puzzle.Client.Stage
             {
                 (float column, float row) = layout.BoardPointAt(pixel.x, pixel.y);
                 _pointer.Down(column, row);
+            }
+        }
+
+        /// <summary>
+        /// One more finger came down while the one the stage follows is still on the screen. It is given to
+        /// nothing, as ever; but a won game's finale ends for it as for the first, so a touch anywhere skips the
+        /// finale also while the finger that made the winning move rests on the glass.
+        /// </summary>
+        public void AnotherFingerDown()
+        {
+            if (IsShowingTheFinale)
+            {
+                SkipTheFinale();
             }
         }
 
@@ -485,6 +557,19 @@ namespace Puzzle.Client.Stage
         }
 
         /// <summary>
+        /// A move left over leaves the medallion in the finale: the number drops by one, and jumps up as it does
+        /// and comes back. Many moves in quick succession keep it up, each jump beginning where the last one was.
+        /// </summary>
+        private void CountAMoveThrown()
+        {
+            _figures = _figures.WithMovesTurnedIntoRockets(1);
+            _hud.Show(_figures);
+
+            // A tween and not an act: this is called by an act, which may not add acts to the timeline it is shown by.
+            _tweens.Start(new Tween(0f, Tempo.MovesSwell, progress => 1f - Easing.In(progress), _hud.SwellTheMoves));
+        }
+
+        /// <summary>
         /// A gesture the finger made on the board: acted on now when the board is at rest, kept for the moment it
         /// comes to rest otherwise. Only the latest gesture waits; in a game that is decided none does.
         /// </summary>
@@ -526,12 +611,28 @@ namespace Puzzle.Client.Stage
             }
         }
 
+        /// <summary>The timeline has run out: if it was showing a turn or a finale, that is finished now.</summary>
+        private void FinishWhatWasShown()
+        {
+            switch (_playing)
+            {
+                case Playback.Nothing:
+                    break;
+                case Playback.ATurn:
+                    FinishTheTurn();
+                    break;
+                case Playback.TheFinale:
+                    FinishTheFinale();
+                    break;
+                default:
+                    throw new InvalidOperationException($"The stage does not know how to finish showing {_playing}.");
+            }
+        }
+
         private void FinishTheTurn()
         {
-            _isShowingATurn = false;
-            _board.ClearAwayWhatWasTaken();
-            _effects.ClearAway();
-            LastTurnFaults = FaultsOfTheTurnMadeGood();
+            _playing = Playback.Nothing;
+            LastTurnFaults = ComeToRestOnTheEnginesBoard();
             if (LastTurnFaults.Count > 0)
             {
                 Debug.LogError(
@@ -539,14 +640,122 @@ namespace Puzzle.Client.Stage
                     + string.Join("; ", LastTurnFaults));
             }
 
-            // Whether the move decided the game is only known now: few moves stop being a warning, a decided game gets its card.
-            _figures = HudFigures.Of(_game);
-            _hud.Show(_figures);
-            if (_game.Status != GameStatus.Playing)
+            if (_game.Status == GameStatus.Playing)
+            {
+                return;
+            }
+
+            // Whether the engine has played a finale already is not asked: it would refuse a second one, and the
+            // stage would then go to the card by the way every finale's fault goes.
+            if (_game.Status == GameStatus.Won && _game.MovesLeft > 0)
+            {
+                BeginTheFinale();
+            }
+            else
             {
                 HangTheResult();
             }
         }
+
+        /// <summary>
+        /// What every turn and every finale ends with: what was taken from the board is cleared away, what is seen
+        /// is compared with the engine's board and made good where it differs, and the plaques show the game's own
+        /// numbers again. Whether a move decided the game is only known by now: few moves stop being a warning.
+        /// </summary>
+        /// <returns>What went wrong in the showing, one line per fault; empty when it ended on the engine's board.</returns>
+        private IReadOnlyList<string> ComeToRestOnTheEnginesBoard()
+        {
+            _board.ClearAwayWhatWasTaken();
+            _effects.ClearAway();
+            IReadOnlyList<string> faults = FaultsOfTheTurnMadeGood();
+            _figures = FiguresOfTheGame();
+            _hud.Show(_figures);
+            return faults;
+        }
+
+        /// <summary>
+        /// The game is won with moves left over and the winning move has come to rest: the engine plays its finale
+        /// at once, and the stage starts showing it. If that cannot be done, the finale ends before it began, on
+        /// whatever board the engine has, and the card comes.
+        /// </summary>
+        private void BeginTheFinale()
+        {
+            // First of all: whatever goes wrong below, the next step of the clock finds a finale to finish, and the card comes.
+            _playing = Playback.TheFinale;
+            _isAskedToLeave = false;
+            _controls.FingerGone();
+
+            // The shelf told how to play, or which try this is. The game is decided, and a touch now ends the finale:
+            // the plank is left bare rather than asking for the very touch that throws the reward away.
+            _shelf.Say(string.Empty);
+            try
+            {
+                FinaleOutcome finale = _game.PlayFinale();
+                _finale = finale;
+                TurnScript script = TurnChoreographer.ComposeFinale(_ledger, _game.LastEvents, _game.Board);
+                Finale = script;
+                _finalePace = FinalePace.Of(script, finale.RocketsFired);
+                _finaleBeganAt = _timeline.Now;
+                _turnPlayer.Play(script);
+            }
+            catch (InvalidOperationException fault)
+            {
+                _faultsOfTheTurn.Add($"the finale could not be shown: {fault.Message}");
+                EndTheFinaleOnTheEnginesBoard();
+            }
+        }
+
+        /// <summary>
+        /// A touch or the way back ends the finale where it is: the engine's final board is laid out at rest under
+        /// one blink of light, and the card comes as after any win. Nothing is lost by it: the engine played the
+        /// whole finale before its first picture. Skipping is no fault, and nothing is written of it.
+        /// </summary>
+        private void SkipTheFinale()
+        {
+            EndTheFinaleOnTheEnginesBoard();
+            var middleOfTheTray = new Vector2(_shape.Width / 2f, _shape.Height / 2f);
+            _effects.Flash(0f, middleOfTheTray, SkipBlinkAcross * Mathf.Max(_shape.Width, _shape.Height), BoardEffects.WarmLight, 0.55f);
+        }
+
+        /// <summary>The one way a finale ends before its time, skipped or at fault: nothing of it stays on the timeline, and the engine's board is shown.</summary>
+        private void EndTheFinaleOnTheEnginesBoard()
+        {
+            _timeline.Clear();
+            ShowTheEnginesBoardAnew();
+            FinishTheFinale();
+        }
+
+        /// <summary>
+        /// How much faster than the stage's clock the timeline runs. Only a finale is ever hurried, and only where
+        /// it would take too long as written (<see cref="FinalePace"/>); the card that follows it on the same
+        /// timeline comes at the clock's own pace again.
+        /// </summary>
+        private float PaceOfTheTimeline() => IsShowingTheFinale && _finalePace is FinalePace pace
+            ? pace.At(_timeline.Now - _finaleBeganAt)
+            : 1f;
+
+        private void FinishTheFinale()
+        {
+            _playing = Playback.Nothing;
+            IReadOnlyList<string> faults = ComeToRestOnTheEnginesBoard();
+            if (faults.Count > 0)
+            {
+                Debug.LogError(
+                    $"The finale of level {_game.Level.Id} was not shown as the game played it; the board was laid out anew from the engine's. "
+                    + string.Join("; ", faults));
+                LastTurnFaults = LastTurnFaults.Concat(faults.Select(fault => $"finale: {fault}")).ToArray();
+            }
+
+            HangTheResult();
+        }
+
+        /// <summary>
+        /// The numbers the plaques must show when nothing moves: the game's own, and after a finale the game's
+        /// with the moves counted down that turned into rockets, which the game itself goes on counting as left.
+        /// </summary>
+        private HudFigures FiguresOfTheGame() => _finale is FinaleOutcome finale
+            ? HudFigures.Of(_game).WithMovesTurnedIntoRockets(finale.RocketsFired)
+            : HudFigures.Of(_game);
 
         /// <summary>
         /// What went wrong in the turn that is over: what was noted while it was shown, and where the stage does not
@@ -577,7 +786,7 @@ namespace Puzzle.Client.Stage
             _effects.ClearAway();
             _ledger.StartAgainFrom(_game.Board);
             _board.ShowAnew(_ledger);
-            _figures = HudFigures.Of(_game);
+            _figures = FiguresOfTheGame();
             _hud.Show(_figures);
         }
 
@@ -736,7 +945,8 @@ namespace Puzzle.Client.Stage
 
         /// <summary>
         /// The check at the end of a turn: the board that is seen is the engine's board with every piece at rest, the
-        /// view's ledger says the same, and the plaques were counted down to the engine's numbers.
+        /// view's ledger says the same, and the plaques were counted down to the engine's numbers. After a finale
+        /// that includes the count of moves that left the medallion: as many as the engine made rockets of.
         /// </summary>
         private IEnumerable<string> WhereTheStageDoesNotShowTheGame()
         {
@@ -750,18 +960,9 @@ namespace Puzzle.Client.Stage
                 yield return $"ledger: {fault}";
             }
 
-            HudFigures engines = HudFigures.Of(_game);
-            if (_figures.MovesLeft != engines.MovesLeft)
+            foreach (string fault in _figures.DifferencesFrom(FiguresOfTheGame()))
             {
-                yield return $"plaques: {_figures.MovesLeft} moves left, the engine has {engines.MovesLeft}";
-            }
-
-            for (int goal = 0; goal < engines.Goals.Count; goal++)
-            {
-                if (_figures.Goals[goal].Remaining != engines.Goals[goal].Remaining)
-                {
-                    yield return $"plaques: {_figures.Goals[goal].Remaining} left of goal {goal + 1}, the engine has {engines.Goals[goal].Remaining}";
-                }
+                yield return fault;
             }
         }
 

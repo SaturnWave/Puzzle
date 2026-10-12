@@ -18,9 +18,19 @@ namespace Puzzle.Client.Engine
         /// through), so a player who failed meets another measured board and not the same one again.
         /// </summary>
         /// <param name="attempt">How many times the level was tried before: 0 for the first try.</param>
-        public static Game Attempt(LevelDefinition level, int attempt) => Game.Start(
-            level,
-            level.Attempts.SeedsFor(attempt, unpooledSeed: (uint)(level.Id.Value + attempt)),
-            new GameOptions { RecordEvents = true });
+        public static Game Attempt(LevelDefinition level, int attempt) =>
+            Game.Start(level, SeedsOf(level, attempt), new GameOptions { RecordEvents = true });
+
+        /// <summary>
+        /// The same attempt with another count of moves than the level gives: the same board and the same pieces
+        /// falling in, so the same moves play the same game, which only ends at another move. The Editor's studies
+        /// use it to bring a game to a win with a chosen count of moves left over; a player never gets one.
+        /// </summary>
+        /// <param name="moves">The moves the attempt has; one at least.</param>
+        public static Game AttemptWithMoves(LevelDefinition level, int attempt, int moves) =>
+            Game.Start(level, SeedsOf(level, attempt), new GameOptions { RecordEvents = true, MoveLimitOverride = moves });
+
+        private static AttemptSeeds SeedsOf(LevelDefinition level, int attempt) =>
+            level.Attempts.SeedsFor(attempt, unpooledSeed: (uint)(level.Id.Value + attempt));
     }
 }

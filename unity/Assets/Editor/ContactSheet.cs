@@ -7,7 +7,8 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// Several pictures of one size side by side in one, each shrunk: the frames of a turn at a glance, in the order
     /// they were added. A picture is shrunk by a whole number, every pixel of the sheet being the mean of a square
-    /// of the picture's pixels, so small things stay where they are and nothing shimmers.
+    /// of the picture's pixels, so small things stay where they are and nothing shimmers. A sheet of many pictures
+    /// can be told to begin a new row after so many, so that it stays a picture one can take in as a whole.
     /// </summary>
     public sealed class ContactSheet
     {
@@ -20,16 +21,21 @@ namespace Puzzle.Client.EditorTools
         private static readonly Color32 Paper = new Color32(0x12, 0x1A, 0x1C, 0xFF);
 
         private readonly int _shrinkBy;
+        private readonly int _mostInARow;
         private readonly List<Color32[]> _shrunk = new List<Color32[]>();
         private int _width;
         private int _height;
 
-        /// <exception cref="ArgumentOutOfRangeException">The pictures would not be shrunk but enlarged.</exception>
-        public ContactSheet(int shrinkBy)
+        /// <param name="mostInARow">A row holds no more pictures than this; left out, a row is as long as a graphics card takes.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The pictures would not be shrunk but enlarged, or a row would hold none.</exception>
+        public ContactSheet(int shrinkBy, int mostInARow = int.MaxValue)
         {
             _shrinkBy = shrinkBy >= 1
                 ? shrinkBy
                 : throw new ArgumentOutOfRangeException(nameof(shrinkBy), shrinkBy, "A sheet shrinks its pictures by a whole number from 1 up.");
+            _mostInARow = mostInARow >= 1
+                ? mostInARow
+                : throw new ArgumentOutOfRangeException(nameof(mostInARow), mostInARow, "A row of a sheet holds a picture at least.");
         }
 
         public bool IsEmpty => _shrunk.Count == 0;
@@ -53,7 +59,7 @@ namespace Puzzle.Client.EditorTools
         public Texture2D ToPicture()
         {
             // Side by side while the sheet stays a picture a graphics card takes; a longer story goes on in a row below.
-            int perRow = Math.Min(_shrunk.Count, Math.Max(1, (WidestSheet - Gap) / (_width + Gap)));
+            int perRow = Math.Min(Math.Min(_shrunk.Count, _mostInARow), Math.Max(1, (WidestSheet - Gap) / (_width + Gap)));
             int rows = (_shrunk.Count + perRow - 1) / perRow;
             int sheetWidth = Gap + perRow * (_width + Gap);
             int sheetHeight = Gap + rows * (_height + Gap);

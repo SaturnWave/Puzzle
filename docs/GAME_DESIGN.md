@@ -967,11 +967,23 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Müze ekranlarının görüntüsü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run` (salon, harita, koleksiyon, yapboz; oyuncu durumu ve ekran boyu seçilir) |
 | Baştan sona bir yürüyüş | `... -executeMethod Puzzle.Client.EditorTools.GameWalk.Run` (bölüm kazan, parçayı gör, yerleştir, salona dön) |
 | Müzenin durumu ve kesimler | `... -executeMethod Puzzle.Client.EditorTools.MuseumReport.Run` |
+| Bitiş şöleninin kareleri | `... -executeMethod Puzzle.Client.EditorTools.FinaleStory.Run -finaleLevels 40 -finaleLeft 3,12,30 -finaleSize 1080x2340` (kalan hamle sayısı, ekran boyu, atlama anı seçilir; görüntüler `out/unity/shots/finale`) |
+| Bitiş şöleninin denetimi | `... -executeMethod Puzzle.Client.EditorTools.FinaleCheck.Run` (sonuna kadar izleme, dokunuşla ve geri tuşuyla atlama, şölensiz kazanma ve kaybetme, hata durumunda kartın yine gelmesi) |
 | Tabloları indir | `node tools/unity/fetch-paintings.js` (yeni oda eklemek için betikteki listeye yazılır) |
 | Önbellekleri başka sürücüye taşı | `.\tools\unity\Move-CachesToDrive.ps1 -Drive D` |
 | APK derle | `Unity.exe -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run` → `unity/Build/Android/puzzle.apk` |
 
 **Müze tarafı (2026-10-08).** Kurallar `src/Puzzle.Museum` projesinde, Unity'ye bağlı değil ve testli; `sync-engine.js` bu derlemeyi ve kataloğu da projeye koyar. Ekranlar tahtayla aynı ilkeleri izler: açık saat, her şey oyun kamerasında, komut satırından görüntü. Salon, harita ve koleksiyon `MuseumStage`'in sayfalarıdır; yapboz ve tahta kendi sahneleridir (`JigsawStage`, `GameStage`); üçü de `IStage` sözleşmesini uygular. İlerleme dosyası sürümlüdür: eski dosya okunur, kazanılmış bölümlerin parçaları bekler.
+
+**Bitiş şöleni (2026-10-13).** Kazandıran hamle sonuna kadar gösterilip tahta durduktan sonra, hamle kaldıysa şölen oynar (§19); kaybedilen oyunda ve son hamlede kazanılan bölümde şölen yoktur.
+
+- **Oyuncunun gördüğü:** HAMLE madalyonunda ışık açılır; kalan her hamle için madalyondan bir yaldız kıvılcımı çıkıp bir taşa uçar, sayı birer birer düşer. Kıvılcımın konduğu taş fırça kovanına döner; kovanlar kısa bir an durur, sırayla patlar; tahta çöker ve dolar; sonra sonuç kartı bugünkü gibi gelir. Hedef sayaçları kıpırdamaz. Coin gösterilmez (ekonomi kararı bekliyor).
+- **Süre:** 1 hamle için yaklaşık 1,3–1,7 saniye, 3 hamle için 2–3, 5 hamle için 2,5–3,5, 12 hamle için 4–4,6, 30 hamle için yaklaşık 4 saniye; kaç hamle kalırsa kalsın 5,5 saniyeyi geçmez (uzun şölenin dolma kısmı hızlandırılır, motorun yaptığı hiçbir şey atlanmaz). Tahtada taş hamleden azsa şölen dalga dalga sürer.
+- **Atlama:** ekrana dokunmak (ikinci bir parmak dahil) ya da geri tuşu şöleni o anda bitirir; tahta motorun son hâlini gösterir ve kart gelir. Şölen sürerken raf yazı göstermez.
+- **Kazanım güvende:** ilerleme kazandıran hamle oynandığı anda kaydedilir; şölen izlenmese ya da uygulama o sırada kapansa da kazanım durur.
+- **Nasıl kurulu:** motor şöleni tek seferde oynar (`Game.PlayFinale`); olayları `TurnChoreographer.ComposeFinale` ile zamanlı bir senaryoya çevrilir ve hamlelerle aynı zaman çizelgesinde oynatılır. Motorun bir dalgası, renk bombasının taşları rokete çevirmesiyle aynı olay biçimindedir; o yol yeniden kullanıldı. Şölen bitince ekran yine motorla karşılaştırılır; gösterimde hata olursa tahta motorun durumuna döner ve kart yine gelir.
+- **Doğrulama:** senaryo için düz C# testleri (gerçek bölümlerin gerçek motor olaylarıyla), Unity'de `FinaleCheck` ve `FinaleStory`; üç ekran boyunda (1080×2340, 1080×1920, 2076×2152) karelerine bakıldı.
+- **Ölçülmedi:** telefonda kare hızı ve gerçek parmakla atlama. Ses ve titreşim yok.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası, Roboto Bold yazı tipi.
 

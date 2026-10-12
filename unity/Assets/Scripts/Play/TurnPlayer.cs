@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using Puzzle.Client.Boards;
-using Puzzle.Client.Painting;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Model;
 using UnityEngine;
@@ -11,7 +10,8 @@ namespace Puzzle.Client.Play
     /// <summary>
     /// Plays a turn's script on the board: every cue becomes an act on the stage's timeline that moves, sizes, fades
     /// or changes what the cue names. When and in what order things happen was decided when the script was written
-    /// (<see cref="TurnChoreographer"/>); here is only how each of them looks.
+    /// (<see cref="TurnChoreographer"/>); here is only how each of them looks. The finale of a won game is a script
+    /// of the same kind and is played the same way.
     /// </summary>
     /// <remarks>
     /// Pieces that come and go are settled with the board at once: a piece that will enter is added now and kept out
@@ -34,26 +34,27 @@ namespace Puzzle.Client.Play
         /// <summary>The gems of a reshuffle turn over one diagonal after another, this long apart.</summary>
         private const float ReshuffleSecondsPerDiagonal = 0.012f;
 
-        private static readonly Color WarmLight = Tint.Of(0xFFEDB0);
-
         private readonly BoardView _board;
         private readonly BoardEffects _effects;
         private readonly Timeline _timeline;
         private readonly Action _whenAMoveIsSpent;
         private readonly Action<int> _whenAGoalCounts;
+        private readonly Action _whenAMoveIsThrown;
 
         /// <param name="whenAMoveIsSpent">Called at the moment of the turn at which the move is counted.</param>
         /// <param name="whenAGoalCounts">Called with a goal's place in the level's list whenever one more of it is done.</param>
-        public TurnPlayer(BoardView board, BoardEffects effects, Timeline timeline, Action whenAMoveIsSpent, Action<int> whenAGoalCounts)
+        /// <param name="whenAMoveIsThrown">Called in a won game's finale whenever a move left over leaves the medallion for the board.</param>
+        public TurnPlayer(BoardView board, BoardEffects effects, Timeline timeline, Action whenAMoveIsSpent, Action<int> whenAGoalCounts, Action whenAMoveIsThrown)
         {
             _board = board;
             _effects = effects;
             _timeline = timeline;
             _whenAMoveIsSpent = whenAMoveIsSpent;
             _whenAGoalCounts = whenAGoalCounts;
+            _whenAMoveIsThrown = whenAMoveIsThrown;
         }
 
-        /// <summary>Puts a whole turn on the timeline, beginning now.</summary>
+        /// <summary>Puts a whole turn, or a won game's finale, on the timeline, beginning now.</summary>
         /// <exception cref="InvalidOperationException">A cue names a piece the board does not show.</exception>
         public void Play(TurnScript script)
         {
@@ -111,6 +112,13 @@ namespace Puzzle.Client.Play
                     break;
                 case Cue.Reshuffle reshuffle:
                     Reshuffle(reshuffle);
+                    break;
+                case Cue.FinaleOpens opens:
+                    _effects.LightTheMedallion(opens);
+                    break;
+                case Cue.MoveThrown thrown:
+                    _timeline.At(thrown.Start, _whenAMoveIsThrown);
+                    _effects.Throw(thrown);
                     break;
                 default:
                     throw new InvalidOperationException($"The view cannot play a {cue.GetType().Name}.");
@@ -218,7 +226,7 @@ namespace Puzzle.Client.Play
         private void Appear(Cue.Appear appear)
         {
             PieceSprite piece = Hidden(_board.AddPiece(appear.PieceId, appear.Tile, appear.At));
-            _effects.Flash(appear.Start, PieceSprite.MiddleOf(appear.At), 2.2f, WarmLight, 0.9f);
+            _effects.Flash(appear.Start, PieceSprite.MiddleOf(appear.At), 2.2f, BoardEffects.WarmLight, 0.9f);
             _timeline.Add(
                 appear.Start,
                 appear.Seconds,
@@ -305,7 +313,7 @@ namespace Puzzle.Client.Play
             {
                 Vector3 atRest = exit.localScale;
                 _timeline.Add(leave.Start + leave.Seconds / 2f, Tempo.Bump, progress => exit.localScale = atRest * (1f + 0.3f * Easing.Arch(progress)), () => exit.localScale = atRest);
-                _effects.Flash(leave.End, from + new Vector2(0f, 0.9f), 1.8f, WarmLight, 0.9f);
+                _effects.Flash(leave.End, from + new Vector2(0f, 0.9f), 1.8f, BoardEffects.WarmLight, 0.9f);
             }
         }
 

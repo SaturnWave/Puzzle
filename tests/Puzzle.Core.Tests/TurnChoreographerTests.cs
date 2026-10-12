@@ -16,7 +16,7 @@ namespace Puzzle.Core.Tests;
 /// board while doing so. <c>TurnChoreographer</c> and <c>PieceLedger</c> are the Unity project's source files,
 /// compiled into these tests: they have no Unity dependency.
 /// </summary>
-public class TurnChoreographerTests
+public partial class TurnChoreographerTests
 {
     private const float Tolerance = 0.0005f;
 
@@ -33,10 +33,22 @@ public class TurnChoreographerTests
 
         public PieceLedger Ledger { get; }
 
+        /// <summary>The numbers of the pieces the ledger held before the script that was written last.</summary>
+        public IReadOnlyCollection<int> HeldBefore { get; private set; } = Array.Empty<int>();
+
         public TurnScript Play(Move move)
         {
             Assert.True(Game.TryPlay(move), $"{move} is not legal");
+            HeldBefore = Ledger.Pieces.Select(piece => piece.Id).ToArray();
             return TurnChoreographer.Compose(Ledger, Game.Level.Goals, Game.LastEvents, Game.Board);
+        }
+
+        /// <summary>Plays the won game's finale on the engine and writes its script, as the stage does.</summary>
+        public (FinaleOutcome Outcome, TurnScript Script) PlayTheFinale()
+        {
+            FinaleOutcome outcome = Game.PlayFinale();
+            HeldBefore = Ledger.Pieces.Select(piece => piece.Id).ToArray();
+            return (outcome, TurnChoreographer.ComposeFinale(Ledger, Game.LastEvents, Game.Board));
         }
     }
 
@@ -436,6 +448,7 @@ public class TurnChoreographerTests
 
                 Assert.Empty(table.Ledger.DifferencesFrom(table.Game.Board));
                 AssertCanBePlayed(script, table.Ledger);
+                AssertWhatWentHasALeaving(script, table);
             }
         }
     }
@@ -475,6 +488,7 @@ public class TurnChoreographerTests
 
                 Assert.Empty(table.Ledger.DifferencesFrom(table.Game.Board));
                 AssertCanBePlayed(script, table.Ledger);
+                AssertWhatWentHasALeaving(script, table);
                 int[] leftOnThePlaque = leftBefore
                     .Select((left, goal) => Math.Max(0, left - Of<Cue.GoalTick>(script).Count(tick => tick.GoalIndex == goal)))
                     .ToArray();
@@ -546,6 +560,17 @@ public class TurnChoreographerTests
             Assert.True(!busyUntil.TryGetValue(pieceId, out float busy) || travel.Start >= busy - Tolerance, "a piece is in one place at a time");
             busyUntil[pieceId] = travel.End;
         }
+    }
+
+    /// <summary>
+    /// A piece goes from the view by a leaving and in no other way: every piece the ledger held before the script
+    /// and no longer holds has a leaving in it. One without would stay on the screen where the board has none.
+    /// </summary>
+    private static void AssertWhatWentHasALeaving(TurnScript script, Table table)
+    {
+        HashSet<int> held = table.Ledger.Pieces.Select(piece => piece.Id).ToHashSet();
+        HashSet<int> left = Of<Cue.Leave>(script).Select(leave => leave.PieceId).ToHashSet();
+        Assert.All(table.HeldBefore.Where(piece => !held.Contains(piece)), piece => Assert.Contains(piece, left));
     }
 
     /// <summary>

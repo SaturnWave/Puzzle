@@ -48,7 +48,10 @@ namespace Puzzle.Client
         private GameSession? _session;
         private ScreenShape _fittedTo;
 
-        /// <summary>The finger the game follows; a second finger that comes down meanwhile is not listened to.</summary>
+        /// <summary>
+        /// The finger the game follows. A second finger that comes down meanwhile is not followed; the session is
+        /// only told that it came down, which ends a won game's finale as any touch does.
+        /// </summary>
         private int? _finger;
 
         private void Start()
@@ -152,6 +155,10 @@ namespace Puzzle.Client
                 else if (touch.fingerId == _finger)
                 {
                     FollowTheFinger(touch, session);
+                }
+                else if (touch.phase == TouchPhase.Began)
+                {
+                    session.AnotherFingerDown();
                 }
             }
         }

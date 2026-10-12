@@ -2,6 +2,7 @@
 using System;
 using Puzzle.Client.Art;
 using Puzzle.Client.Boards;
+using Puzzle.Client.Layout;
 using Puzzle.Client.Painting;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Engine.Events;
@@ -12,15 +13,56 @@ namespace Puzzle.Client.Play
 {
     /// <summary>
     /// What is thrown over the board while a turn is played back: the chips of a bursting piece, a rocket's stroke of
-    /// ink, a bomb's blot, a colour bomb's rays, a seeker on its way. Each is a sprite or a few that live for a
-    /// moment on the turn's timeline and are then removed. Nothing here changes the board: the
-    /// pieces themselves are moved by <see cref="TurnPlayer"/>. Places are in cells, rows growing downwards.
+    /// ink, a bomb's blot, a colour bomb's rays, a seeker on its way, and in a won game's finale the moves left
+    /// over that fly from their medallion to the board. Each is a sprite or a few that live for a moment on the
+    /// turn's timeline and are then removed. Nothing here changes the board: the pieces themselves are moved by
+    /// <see cref="TurnPlayer"/>. Places are in cells, rows growing downwards; the medallion hangs above the first
+    /// row, so its row is less than nothing.
     /// </summary>
     public sealed class BoardEffects
     {
+        /// <summary>The name of the object every effect's sprite hangs under, for the Editor's checks that look at what is drawn.</summary>
+        public const string LayerName = "Effects";
+
         private const float BurstSeconds = 0.3f;
         private const float FlashSeconds = 0.2f;
         private const int ChipsPerBurst = 6;
+
+        /// <summary>
+        /// The ring of the ring's picture is this part of the picture across, so a ring drawn that much larger
+        /// lies where it is meant to.
+        /// </summary>
+        private const float RingShareOfItsPicture = 0.78f;
+
+        /// <summary>
+        /// A thrown move, in cells: the gilt light around it, the pale light in that, the star of two rays in its
+        /// middle and the star's core; the tail it draws behind it (as wide as this, and as long as the way it
+        /// came in the last third of its flight); and how far to the side its arc bulges on a way that leads
+        /// straight down.
+        /// </summary>
+        private const float MoteGlow = 2.6f;
+        private const float MoteInnerGlow = 1.3f;
+        private const float MoteStar = 1.15f;
+        private const float MoteCore = 0.3f;
+        private const float MoteTailWidth = 0.7f;
+        private const float MoteTailOfTheFlight = 0.34f;
+        private const float MoteLeastBulge = 0.5f;
+
+        /// <summary>The star of a thrown move turns this many degrees on its way.</summary>
+        private const float MoteStarTurns = 70f;
+
+        /// <summary>
+        /// A thrown move is not seen over the number it leaves, which must stay readable while it counts down: it
+        /// comes into sight between these parts of the medallion's width from the medallion's middle.
+        /// </summary>
+        private const float MoteUnseenWithin = 0.3f;
+        private const float MoteSeenFrom = 0.56f;
+
+        /// <summary>The streak's picture is this wide where it is one cell long.</summary>
+        private const float StreakWidthOfItsPicture = 0.25f;
+
+        /// <summary>The medallion glows this long behind a move that leaves it.</summary>
+        private const float HaloSeconds = 0.24f;
 
         /// <summary>A stroke and a blot may run this far over the tray's edge, under the frame's lip, before the mask cuts them.</summary>
         private const float OverTheEdge = 0.3f;
@@ -28,8 +70,13 @@ namespace Puzzle.Client.Play
         /// <summary>A seeker beats its wings this often per second on its way.</summary>
         private const float WingBeatsPerSecond = 7f;
 
+        /// <summary>The warm light of the gallery's lamps: whatever glows on the stage without a colour of its own glows in it.</summary>
+        public static readonly Color WarmLight = Tint.Of(0xFFEDB0);
+
         private static readonly Color Light = Tint.Of(0xFFFFFF);
-        private static readonly Color WarmLight = Tint.Of(0xFFEDB0);
+
+        /// <summary>The light of a thrown move: gilt, so it shows on the cream plaques it leaves as well as on the wall.</summary>
+        private static readonly Color GiltLight = Tint.Of(0xFFC43D);
 
         /// <summary>The object every effect's sprite hangs under: a layer of the board's own, with the board's unit and origin.</summary>
         private readonly Transform _layer;
@@ -38,15 +85,31 @@ namespace Puzzle.Client.Play
         private readonly ArtCatalogue _catalogue;
         private readonly Timeline _timeline;
 
+        /// <summary>Where the moves medallion hangs, as the board counts; nothing until the effects are placed on a screen.</summary>
+        private MedallionPlace? _medallion;
+
+        /// <summary>Until when, on the timeline's clock, the medallion glows too brightly behind a thrown move for the next one to add a glow of its own.</summary>
+        private float _medallionGlowsBrightlyUntil;
+
         /// <param name="board">The board's own object: its unit is a cell, its origin the board's top left corner.</param>
         public BoardEffects(Transform board, BoardShape shape, EffectArt art, ArtCatalogue catalogue, Timeline timeline)
         {
-            _layer = new GameObject("Effects").transform;
+            _layer = new GameObject(LayerName).transform;
             _layer.SetParent(board, worldPositionStays: false);
             _shape = shape;
             _art = art;
             _catalogue = catalogue;
             _timeline = timeline;
+        }
+
+        /// <summary>
+        /// Where the moves medallion hangs on the screen the stage is laid out for; call again whenever the screen
+        /// changes. What is on its way from the medallion then goes on from where the medallion now hangs.
+        /// </summary>
+        public void Place(ScreenLayout layout)
+        {
+            (float column, float row, float across) = layout.MovesMedallionOnTheBoard;
+            _medallion = new MedallionPlace(new Vector2(column, row), across);
         }
 
         /// <summary>
@@ -180,6 +243,143 @@ namespace Puzzle.Client.Play
             Flash(zap.End, PieceSprite.MiddleOf(zap.To), 1.5f, WarmLight, 0.8f);
         }
 
+        /// <summary>A won game's finale opens: light gathers on the wall behind the moves medallion, and a ring of it widens from the medallion's rim.</summary>
+        /// <exception cref="InvalidOperationException">The effects were not placed on a screen yet.</exception>
+        public void LightTheMedallion(Cue.FinaleOpens opens)
+        {
+            RequireTheMedallionsPlace();
+            GlowBehindTheMedallion(opens.Start, opens.Seconds, strength: 1f);
+            Show(opens.Start, opens.Seconds, _art.Ring, DrawOrder.PlaqueRing, isCutAtTheEdge: false, (ring, progress) =>
+            {
+                MedallionPlace medallion = Medallion;
+                Put(ring, medallion.Middle, medallion.Across * Mathf.Lerp(0.9f, 1.5f, Easing.Out(progress)) / RingShareOfItsPicture);
+                ring.color = Faded(WarmLight, 0.9f * (1f - Easing.In(progress)));
+            });
+        }
+
+        /// <summary>
+        /// A move left over leaves the medallion for a cell: a star in a mote of gilt light, on an arc over the
+        /// wall and the frame, drawing a tail behind it. It needs no light of its own where it lands: the gem that
+        /// bursts there and the rocket that pops up are its landing.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The effects were not placed on a screen yet.</exception>
+        public void Throw(Cue.MoveThrown thrown)
+        {
+            RequireTheMedallionsPlace();
+            Vector2 to = PieceSprite.MiddleOf(thrown.To);
+            float side = Scatter(to, 0) < 0.5f ? -1f : 1f;
+
+            // Asked anew in every step: a screen that changes while the move flies moves the medallion.
+            Vector2 PlaceAfter(float progress)
+            {
+                Vector2 from = Medallion.Middle;
+                Vector2 way = to - from;
+
+                // Thrown outwards first and coming down onto its gem: the arc turns where the way has gone most
+                // of its width and little of its height. A way that leads straight down is given a bulge to a side.
+                float outwards = Mathf.Abs(way.x) < MoteLeastBulge ? side * MoteLeastBulge : 0.8f * way.x;
+                Vector2 turningPoint = from + new Vector2(outwards, 0.12f * way.y);
+                float along = Mathf.Lerp(progress, Easing.In(progress), 0.6f);
+                return (1f - along) * (1f - along) * from + 2f * (1f - along) * along * turningPoint + along * along * to;
+            }
+
+            float SeenAt(Vector2 place)
+            {
+                MedallionPlace medallion = Medallion;
+                return Easing.Within((place - medallion.Middle).magnitude, MoteUnseenWithin * medallion.Across, MoteSeenFrom * medallion.Across);
+            }
+
+            // Every part lies at a place of its own in the draw order: the star over the lights, its core over the star.
+            void ShowOnTheWay(ThrownMovePart part, Sprite picture, Color colour, Action<SpriteRenderer, Vector2, float> pose) =>
+                Show(thrown.Start, thrown.Seconds, picture, DrawOrder.ThrownMove + (int)part, isCutAtTheEdge: false, (sprite, progress) =>
+                {
+                    Vector2 place = PlaceAfter(progress);
+                    pose(sprite, place, progress);
+                    sprite.color = Faded(colour, SeenAt(place));
+                });
+
+            LetTheMedallionGlowFor(thrown);
+            ShowOnTheWay(ThrownMovePart.Tail, _art.Streak, GiltLight, (tail, head, progress) =>
+            {
+                Vector2 drawn = OutsideTheMedallion(PlaceAfter(Mathf.Max(0f, progress - MoteTailOfTheFlight)), head);
+                float turn = Mathf.Atan2(-drawn.y, drawn.x) * Mathf.Rad2Deg;
+                Put(tail, head - drawn / 2f, drawn.magnitude + MoteTailWidth, MoteTailWidth / StreakWidthOfItsPicture, turn);
+            });
+            ShowOnTheWay(ThrownMovePart.GiltLight, _art.Glow, GiltLight, (glow, place, progress) => Put(glow, place, MoteGlow));
+            ShowOnTheWay(ThrownMovePart.PaleLight, _art.Glow, WarmLight, (glow, place, progress) => Put(glow, place, MoteInnerGlow));
+            foreach (float ray in new[] { 0f, 90f })
+            {
+                ShowOnTheWay(ThrownMovePart.Star, _art.Streak, Light, (star, place, progress) => Put(star, place, MoteStar, 1f, ray + MoteStarTurns * progress));
+            }
+
+            ShowOnTheWay(ThrownMovePart.Core, _art.Dot, Light, (core, place, progress) => Put(core, place, MoteCore));
+        }
+
+        /// <summary>
+        /// The medallion glows behind a move that leaves it, unless it still glows brightly behind the one before:
+        /// many moves that leave in quick succession keep one glow up, where a glow each would pile up to a white
+        /// blot on the wall.
+        /// </summary>
+        private void LetTheMedallionGlowFor(Cue.MoveThrown thrown)
+        {
+            float leaves = _timeline.Now + thrown.Start;
+            if (leaves < _medallionGlowsBrightlyUntil)
+            {
+                return;
+            }
+
+            _medallionGlowsBrightlyUntil = leaves + HaloSeconds / 3f;
+            GlowBehindTheMedallion(thrown.Start, HaloSeconds, strength: 0.7f);
+        }
+
+        /// <summary>
+        /// The straight way from a place to a thrown move's head, less the part of it that lies over the medallion:
+        /// the tail a move draws begins at the medallion's rim, and the number stays readable under any count of
+        /// moves that leave together. Nothing is left of the way while the head itself is still over the medallion.
+        /// </summary>
+        private Vector2 OutsideTheMedallion(Vector2 from, Vector2 head)
+        {
+            MedallionPlace medallion = Medallion;
+            float rim = MoteSeenFrom * medallion.Across;
+            Vector2 way = head - from;
+            Vector2 fromTheMiddle = from - medallion.Middle;
+            if (fromTheMiddle.magnitude >= rim || way.sqrMagnitude <= 0f)
+            {
+                return way;
+            }
+
+            // Where the way crosses the rim, as the part of the way gone by then: the root of
+            // |fromTheMiddle + part * way| = rim that lies ahead. The place it starts from is inside the rim, so there is one.
+            float twiceAlong = 2f * Vector2.Dot(fromTheMiddle, way);
+            float inside = fromTheMiddle.sqrMagnitude - rim * rim;
+            float part = (-twiceAlong + Mathf.Sqrt(twiceAlong * twiceAlong - 4f * way.sqrMagnitude * inside)) / (2f * way.sqrMagnitude);
+            return way * (1f - Mathf.Clamp01(part));
+        }
+
+        /// <summary>Light on the wall behind the moves medallion that swells and fades: the medallion glows as it gives a move away.</summary>
+        private void GlowBehindTheMedallion(float startsIn, float seconds, float strength)
+        {
+            Show(startsIn, seconds, _art.Glow, DrawOrder.PlaqueHalo, isCutAtTheEdge: false, (halo, progress) =>
+            {
+                MedallionPlace medallion = Medallion;
+                Put(halo, medallion.Middle, medallion.Across * Mathf.Lerp(2.2f, 2.9f, Easing.Out(progress)));
+                halo.color = Faded(WarmLight, strength * (1f - Easing.In(progress)));
+            });
+        }
+
+        /// <exception cref="InvalidOperationException">The effects were not placed on a screen yet.</exception>
+        private MedallionPlace Medallion =>
+            _medallion ?? throw new InvalidOperationException("The effects do not know where the moves medallion hangs; place them on a screen first.");
+
+        /// <summary>
+        /// Where the medallion hangs is asked anew in every step of what leaves it, since a screen that changes
+        /// moves it. Whether that is known at all is asked here, when the effect is put on the timeline: whoever
+        /// stages a finale can still do without its picture then. An effect that only found out in its first
+        /// step would throw out of the stage's clock, one sprite a frame, where nobody is left to catch it.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The effects were not placed on a screen yet.</exception>
+        private void RequireTheMedallionsPlace() => _ = Medallion;
+
         /// <summary>
         /// Brush strokes of ink that grow from the piece along its row or column, then dry away: one for a rocket, and
         /// for a rocket pushed onto a bomb one for every row or column of the band, side by side.
@@ -299,8 +499,12 @@ namespace Puzzle.Client.Play
         /// removed when the time is over.
         /// </summary>
         /// <remarks>
-        /// Each gets a sprite of its own, which is not kept for the next one: a few dozen short-lived objects in a
-        /// turn have not been measured to matter, and a sprite that is never used again carries nothing over.
+        /// Each gets a sprite of its own, which is not kept for the next one: a sprite that is never used again
+        /// carries nothing over, and the few dozen short-lived objects of a turn have not been measured to matter.
+        /// A won game's finale is beyond that premise. A move thrown is six sprites and its landing eight, a
+        /// rocket's stroke five and every piece it bursts seven, so thirty moves left make well over a thousand
+        /// objects in about three seconds. What that costs on a phone has not been measured; if a finale drops
+        /// frames there, this is where the sprites are to be kept and used again.
         /// </remarks>
         private void Show(float startsIn, float seconds, Sprite sprite, DrawOrder order, bool isCutAtTheEdge, Action<SpriteRenderer, float> pose)
         {
@@ -360,6 +564,20 @@ namespace Puzzle.Client.Play
                 mixed ^= mixed >> 15;
                 return (mixed & 0xFFFF) / 65536f;
             }
+        }
+
+        /// <summary>The moves medallion as the board counts: the place of its middle in cells, and how many cells it is across.</summary>
+        private readonly struct MedallionPlace
+        {
+            public MedallionPlace(Vector2 middle, float across)
+            {
+                Middle = middle;
+                Across = across;
+            }
+
+            public Vector2 Middle { get; }
+
+            public float Across { get; }
         }
 
         /// <summary>The colour of what flies off a piece: its own main colour.</summary>

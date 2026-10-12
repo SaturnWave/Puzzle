@@ -4,6 +4,36 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-13 · Oturum 20 — Unity'de bitiş şöleni; oda önerisi, UI planı ve ekonomi simülatörü yolda
+
+**Kullanıcı kararları (2026-10-12 akşamı)**
+- Kalan işlerin sırası onaylandı: Unity'de bitiş şöleni, 3–20. odaların tablo önerisi, ekonomi simülatörü.
+- Ekonomi simülatörü önerdiğim varsayımlarla başlasın: ücretsiz ortalama oyuncu 100. bölüme 10–14 günde; günde 3 oturum; reklamla "+5" günde 3 kez; booster hem coin'le hem ödül olarak.
+- "UI tarafı da tamamlansın": tasarım tuvalindeki bütün ekranlar Unity istemcisine gelecek.
+
+**Bitiş şöleni Unity'de (§23)**
+- Kazanınca kalan her hamle madalyondan bir kıvılcım olarak tahtaya uçuyor, taşı fırça kovanına çeviriyor, kovanlar patlıyor; sonra sonuç kartı geliyor. Dokunmak ya da geri tuşu atlatıyor.
+- Süreler: 1 hamle 1,3–1,7 s; 3 hamle 2–3 s; 12 hamle 4–4,6 s; 30 hamle yaklaşık 4 s; üst sınır 5,5 s.
+- İş akışı: iki bağımsız tasarım önerisi, tek tasarım, uygulama, üç bağımsız eleştiri (akış, görünüm, kod), düzeltme. Eleştiri 15 bulgu çıkardı; 13'ü düzeltildi. En önemlileri: uçan kıvılcımın parçaları aynı çizim sırasını paylaştığı için görünüşü şölenden şölene değişiyordu; bir roketin fırça darbesi, başka bir etkinin sonradan patlattığı taşın üstünden geçiyordu (gerçek şölenlerin yaklaşık yüzde 3'ünde); raf, şölen sırasında "sürükle ya da dokun" demeye devam ediyordu; ikinci parmak şöleni atlatamıyordu.
+- Motor değişmedi. Kazanım, kazandıran hamle oynandığı anda kaydediliyor; şölen bunu etkilemiyor (akış denetimi ilerleme dosyasına bakarak kanıtlıyor).
+- Doğrulama: 2.839 test geçti (118'i yeni). Unity'de `FinaleCheck`, `FinaleStory` (üç ekran boyu, engelli tahtalar, iki dalgalı şölen, atlama), `TouchWhileMovingCheck`, `EngineSmokeTest`, `PlayModeCheck` ve ekran yürüyüşü hatasız. Karelere bakıldı.
+- Yapılmadı: APK ve telefon denemesi (ertelenmişti); kare hızı ve gerçek parmakla atlama ölçülmedi. Ses yok.
+- Ayrı iş olarak not edildi (şölenden eski): yere konup hemen yeniden düşen parçanın esnemesi bir sonraki hareketiyle çakışabiliyor; görünür bir etkisi bulunmadı.
+
+**3–20. odaların tablo önerisi (onay bekliyor)**
+- Oda planı, altı araştırma ve üç bağımsız denetimle 18 akım ve 90 tablo önerildi; her tablonun Commons dosyası, boyutu, müzesi ve lisansı tek tek doğrulandı. 22 tablo notsuz uygun, 64'ü notlu, 4'ü fazla karanlık bulunup reddedildi (yedekleri önerildi). 25 tablonun dosyası müzenin kendi açık erişim fotoğrafı değil, "kamu malı reprodüksiyon".
+- Geçici listedeki Barok, Neoklasizm, Maniyerizm, Puantilizm, Barbizon ve Venedik Okulu kurallardan geçemedi; yerlerine Hudson Nehri Okulu, Amerikan Empresyonizmi, ikinci bir Japon baskı odası, Venedik manzaraları, İspanyol ustaları ve ikinci bir Empresyonizm odası önerildi.
+- Öneri küçük görselli tek bir sayfa olarak kullanıcıya sunuldu. Onaylanmadan kataloğa bir şey girmiyor, tam boy görüntü inmiyor. Veri ve sayfa üreticisi `out/museum-proposal` altında (depoya girmez).
+- Bulgu: Mauritshuis görüntülerini ticari kullanım için serbest bırakmıyor; §18'deki açık erişim müzeleri listesine girmez.
+
+**UI tamamlama planı (hazır, başlamadı)**
+- Tasarım tuvali, istemci ve kurallar ayrı ayrı envanterlendi; 15 aşamalı bir plan çıktı: önce kurallar (can, coin, booster envanteri, ödüller; düz C#), sonra yazı tipleri ve ortak parçalar, sonra ekranlar oyuncunun karşılaştığı sırayla. 23 kararın her birinin bir önerisi var.
+- Hesap ya da para gerektiren hiçbir şey planda yok: gerçek para paketleri "Yakında" olarak, reklam "test sürümü" etiketli bir canlandırma olarak duracak; fiyatlar ekonomi ayar dosyasından okunacak.
+- Başlaması için ekonomi simülatörünün ana dala alınması gerekiyor.
+
+**Ekonomi simülatörü (sürüyor)**
+- Deponun ayrı bir kopyasında (`economy-simulator` dalı) kuruluyor; tasarımı hazır, uygulaması sürüyor.
+
 ## 2026-10-12 · Oturum 19 — Bankadan derlenen bölümler yayında
 
 **Kullanıcı kararları**

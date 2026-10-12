@@ -126,6 +126,26 @@ public class ScreenLayoutTests
         Assert.InRange(layout.CellSize, 1f, ScreenLayout.LargestCell);
     }
 
+    [Theory]
+    [MemberData(nameof(ScreensAndBoards))]
+    public void The_moves_medallion_hangs_above_the_boards_first_row_over_the_middle_of_the_screen(int width, int height, int columns, int rows, bool hasExits)
+    {
+        ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height), new BoardFootprint(columns, rows, hasExits));
+
+        (float column, float row, float across) = layout.MovesMedallionOnTheBoard;
+
+        // Counted in cells from the board's own corner, it is where the plaques' row has it in points.
+        (float pixelX, float pixelY) = layout.PixelAt(column, row);
+        (float middleX, float middleY) = layout.PixelOfPoint(0f, layout.HudMiddle);
+        Assert.Equal(middleX, pixelX, 0.01f);
+        Assert.Equal(middleY, pixelY, 0.01f);
+        Assert.Equal(ScreenLayout.HudHeight * layout.HudScale, across * layout.CellSize, 0.001f);
+
+        // The board is centred on the screen but for a pixel, and the medallion's foot stays clear of its first row.
+        Assert.Equal(columns / 2f, column, 1f / (layout.CellSize * layout.PixelsPerPoint) + 0.001f);
+        Assert.True(row + across / 2 < 0f, $"the medallion reaches down to row {row + across / 2}");
+    }
+
     /// <summary>
     /// The cells of the foldable the game is tried on, in pixels. Its cover display is a tall phone at about 422
     /// pixels to the inch, where the width decides the cell; opened, it is nearly square at about 373, where the

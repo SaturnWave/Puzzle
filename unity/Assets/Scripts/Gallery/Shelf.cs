@@ -83,7 +83,10 @@ namespace Puzzle.Client.Gallery
             WriteLine();
         }
 
-        /// <summary>Changes what the shelf says.</summary>
+        /// <summary>What the shelf says now; no words at all when its plank is bare.</summary>
+        public string Words => _words;
+
+        /// <summary>Changes what the shelf says; no words at all leave the plank bare.</summary>
         public void Say(string words)
         {
             _words = words;
@@ -93,6 +96,12 @@ namespace Puzzle.Client.Gallery
         /// <summary>The line is set at its size for this shelf, or smaller on a plank too short for it.</summary>
         private void WriteLine()
         {
+            if (_words.Length == 0)
+            {
+                Lettering.Say(_line, _words); // a bare plank: there are no words to fit to it
+                return;
+            }
+
             float left = -_plankWidth / 2f + _lineBeginsIn;
             float right = _plankWidth / 2f - LineInFromEnds;
             _line.transform.localPosition = new Vector3((left + right) / 2f, LineAboveMiddle, 0f);
