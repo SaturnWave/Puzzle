@@ -1,0 +1,174 @@
+{
+  // The economy settings the tests of the simulator's rules start from: economy/default.json as it was when the
+  // simulator was first built. It is a fixture, not a proposal: the shipped file holds placeholders its owner is
+  // meant to change, and a test of a rule (lives, sessions, offers, rewards) must not move when a price does.
+  // Tests lay their own changes over this file; only the tests of the shipped files read economy/*.json.
+
+  // Names the folder the reports go to (letters, digits and '-'). [tool]
+  "name": "fixture",
+
+  "players": {
+    // How many players are simulated. The shares below must split it into whole players. [tool]
+    "count": 4000,
+    // Player i's own luck is derived from this seed and i; the same seed gives the same reports byte for byte. [tool]
+    "seed": 1,
+    // Percent of the players on each rung of the skill ladder; must sum to 100. A share of 0 leaves a rung out
+    // (how a variant file simulates one rung alone). [assumed 5]
+    "skillMixPercent": { "skill-45": 25, "skill-55": 50, "skill-65": 25 },
+    // The rung every report shows on its own as the average player. [decided]
+    "averageRung": "skill-55",
+    // Days a player is followed at most; nobody quits and no day is skipped. [tool]
+    "horizonDays": 365
+  },
+
+  "habit": {
+    // Times of day a session starts, in order. Three sessions a day. [assumed 2]
+    "sessionStarts": ["08:30", "13:00", "21:30"],
+    // Minutes after which no new attempt starts in a session (a session otherwise lasts until the lives are gone,
+    // and wins cost no life). The recorded sessions had a median of 5 attempts, about 10 minutes. [assumed 2]
+    "sessionCeilingMinutes": 20,
+    // Milliseconds a player takes per move: 5.3 s in the recordings of two players. [recorded]
+    "millisecondsPerMove": 5300,
+    // Seconds between the end of one attempt and the first move of the next (result, finale, map, start). [proposed]
+    "secondsBetweenAttempts": 20,
+    // Seconds an ad for extra moves takes. [proposed]
+    "secondsPerAd": 30
+  },
+
+  "lives": {
+    // Lives a player can hold. [decided]
+    "max": 5,
+    // Minutes until one life comes back; a life is lost only on a lost attempt. [decided]
+    "minutesPerLife": 30
+  },
+
+  "coins": {
+    // Coins for every move left when a level is won (the finale turns each into a rocket). This sets the scale of
+    // every price; 10 leaves room for 8 or 12 without fractions. A skill-55 win leaves about 7 to 10 moves. [placeholder]
+    "perMoveLeftInFinale": 10,
+    // Coins for winning a level, whatever is left. No flat reward was decided. [placeholder]
+    "perLevelWon": 0
+  },
+
+  "rewards": {
+    // Given when a painting is completed (its tenth level won). Nothing is random: reward number n gives the next
+    // boosters of the rotation.
+    "paintingCompleted": {
+      // Coins with it; only reward boosters were approved. [placeholder]
+      "coins": 0,
+      // Boosters each time. [assumed 3]
+      "boostersEachTime": 1,
+      // The boosters given, in turn; here all seven in the engine's order. [assumed 3]
+      "boosterRotation": ["start-rocket-and-bomb", "start-color-bomb", "start-extra-moves", "hit-cell", "hit-row", "hit-column", "shuffle"]
+    },
+    // Given at the first session of a day.
+    "daily": {
+      // Coins with it; only reward boosters were approved. [placeholder]
+      "coins": 0,
+      // Given every this many days, from the first day on. [assumed 3]
+      "everyDays": 1,
+      // Boosters each time. [assumed 3]
+      "boostersEachTime": 1,
+      // The boosters given, in turn. [assumed 3]
+      "boosterRotation": ["start-rocket-and-bomb", "start-color-bomb", "start-extra-moves", "hit-cell", "hit-row", "hit-column", "shuffle"]
+    }
+  },
+
+  "extraMovesOffer": {
+    // Times a day the +5 moves cost an ad and no coins. [assumed 4]
+    "freeAdsPerDay": 3,
+    // Coins the +5 moves cost beyond the free ads: about eleven average wins at 10 coins a move left. It must be
+    // above 4 moves' worth of coins, or the finale would pay the purchase back. [placeholder]
+    "priceCoins": 900
+  },
+
+  "prices": {
+    // Coins a booster costs. The numbers were set before the full measurement; offers.csv says what each start
+    // booster is worth (for skill-55 over all levels: the color bomb about 17 points of win chance, the +3 moves
+    // about 8, the rocket and bomb about 6), so their order here is one of the things to read from the reports
+    // and change. The start-extra-moves price must be above 3 moves' worth of coins. [placeholder]
+    "boosters": {
+      "start-rocket-and-bomb": 600,
+      "start-color-bomb": 1000,
+      "start-extra-moves": 500,
+      "hit-cell": 400,
+      "hit-row": 700,
+      "hit-column": 700,
+      "shuffle": 300
+    },
+    // Coins a piece of the side collection costs. Nothing buys one in this version: balances are also shown as the
+    // pieces they would buy. Pieces of the main paintings are never sold. [placeholder]
+    "sideCollectionPiece": 300
+  },
+
+  "player": {
+    "extraMoves": {
+      // The +5 is wanted when the moves run out with at least this percent of the goals done; 0 means always, any
+      // other value must be a measured mark. 80 is the near-miss line the level reports use. The player decides on
+      // what they see, never on whether the extra moves would win. On a level whose goals move in big steps (three
+      // items to drop) 80 percent is reached only with the win, so this player never takes the +5 there. [proposed]
+      "takeWhenGoalsDonePercent": 80,
+      // Whether the player watches an ad for it while a free one is left today. [proposed]
+      "watchesAds": true,
+      // Whether the player pays coins for it when no free ad is left and the coins cover it. [proposed]
+      "paysCoins": true
+    },
+    "startBoosters": {
+      // An owned start booster is used after this many losses on the level; null means never. [proposed]
+      "useAfterLossesOnLevel": 2,
+      // With none owned, one is bought after this many losses on the level; null means never. [proposed]
+      "buyAfterLossesOnLevel": 4,
+      // The start boosters in the order the player reaches for them. [proposed]
+      "preference": ["start-color-bomb", "start-rocket-and-bomb", "start-extra-moves"],
+      // Start boosters per attempt; only 1 in this version (two board boosters together are not measured). [proposed]
+      "perAttempt": 1
+    },
+    "inLevelBoosters": {
+      // NOT MEASURED. No bot knows when to use an in-level booster, so none was played. A worth above 0 is a rule
+      // of thumb: the booster is read as this many more moves of the stored game. 0 means never used, no effect:
+      // the boosters are then only received and held. [proposed]
+      "assumedMovesWorth": { "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 },
+      // One is used when the moves run out with at least this percent of the goals done (0 or a measured mark). [proposed]
+      "useWhenGoalsDonePercent": 80,
+      // In-level boosters per attempt; only 1 in this version. [proposed]
+      "perAttempt": 1
+    }
+  },
+
+  "measurement": {
+    // Moves every measured game is followed to; no game is read past it. [tool]
+    "moveCap": 150,
+    // Game j of a pool seed is played with bot repeat firstRepeat + j. It must lie outside the level bank's repeats
+    // (0..3999), so no economy game is one a limit or a seed pool was chosen from. [tool]
+    "firstRepeat": 10000,
+    // Percent of the goals whose first move is kept for every game; what the player rules above can wait for. [tool]
+    "progressMarksPercent": [50, 80, 90],
+    // Games on a plain board per pool position: the first seed is everyone's first attempt, each later one is met
+    // less often. The last number holds for every later position. Even numbers. [tool]
+    "plainGamesBySeedPosition": [64, 32, 16, 8],
+    // Games per pool seed on a board that starts with a booster's special. Even. [tool]
+    "boostedGamesPerSeed": 4,
+    // The first boards that are measured; a start booster a player can use needs its start here. [tool]
+    "boardStarts": ["plain", "start-rocket-and-bomb", "start-color-bomb"]
+  },
+
+  "report": {
+    // Levels whose arrival is reported. [tool]
+    "milestones": [100, 300, 1000],
+    // The pace the owner wants a free, average player to have: this level between these days. The report says
+    // where the settings land against it; nothing is adjusted to meet it. [assumed 1]
+    "paceTarget": { "level": 100, "fromDays": 10, "toDays": 14 },
+    // Days at whose end coin balances are listed. [tool]
+    "balanceAtDays": [1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90]
+  },
+
+  // What the recordings showed. Never used by the simulation; printed beside what the model implies. [recorded]
+  "observed": {
+    // People recorded so far.
+    "players": 2,
+    // The median length of a recorded attempt, in seconds.
+    "medianAttemptSeconds": 115,
+    // The median number of attempts in a recorded session.
+    "medianAttemptsPerSession": 5
+  }
+}

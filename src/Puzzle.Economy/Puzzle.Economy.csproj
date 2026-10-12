@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The economy simulator: bot games of every level measured once past their limits, a settings file that holds
+       every assumption about players and prices, and a simulation that walks players through days, sessions, lives,
+       coins and boosters by looking the measured games up. It models players and prices; nothing in it changes,
+       suggests or needs a change of a level's difficulty (docs/GAME_DESIGN.md section 17 and 19). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Puzzle.Economy</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+    <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
+    <ProjectReference Include="..\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+    <ProjectReference Include="..\Puzzle.Museum\Puzzle.Museum.csproj" />
+    <!-- For the engine fingerprint, the stored player model and the bank's ranges of bot repeats. -->
+    <ProjectReference Include="..\Puzzle.Bank\Puzzle.Bank.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+  </ItemGroup>
+</Project>

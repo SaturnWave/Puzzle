@@ -66,6 +66,7 @@
     <ProjectReference Include="..\..\src\Puzzle.Generator\Puzzle.Generator.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Tooling\Puzzle.Tooling.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bank\Puzzle.Bank.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Economy\Puzzle.Economy.csproj" />
     <!-- The attempt recorder's session lifecycle lives in the web lab. -->
     <ProjectReference Include="..\..\src\Puzzle.Web\Puzzle.Web.csproj" />
   </ItemGroup>
