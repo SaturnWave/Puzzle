@@ -16,7 +16,7 @@ public class AttemptRecordTests
     [Fact]
     public void Record_survives_its_json_line()
     {
-        var start = new AttemptStart(new LevelId(12), 22, AttemptSeeds.WithFixedBoard(7, 99), attempt: 3, Phone, "web-lab", Noon);
+        var start = new AttemptStart(new LevelId(12), ContentVersion.First, 22, AttemptSeeds.WithFixedBoard(7, 99), attempt: 3, Phone, "web-lab", Noon);
         GoalOutcome[] goals =
         {
             new GoalOutcome(new GoalSpec.CollectColor(GemColor.Red, 40), done: 41),
@@ -175,7 +175,8 @@ public class AttemptRecordTests
     /// </summary>
     internal static AttemptRecord[] WireFormatExamples()
     {
-        var labStart = new AttemptStart(new LevelId(12), 22, AttemptSeeds.WithFixedBoard(7, 99), attempt: 3, Phone, "web-lab", Noon.AddTicks(5_987_647));
+        var labStart = new AttemptStart(
+            new LevelId(12), ContentVersion.First, 22, AttemptSeeds.WithFixedBoard(7, 99), attempt: 3, Phone, "web-lab", Noon.AddTicks(5_987_647));
         GoalOutcome[] labGoals =
         {
             new GoalOutcome(new GoalSpec.CollectColor(GemColor.Red, 40), done: 41),
@@ -186,7 +187,7 @@ public class AttemptRecordTests
         var lab = new LabDetails("generated/level_0012", "00ff00ff00ff00ff", assistPercent: 0, hintsShown: 1, botMoves: 2, moves);
 
         var gameStart = new AttemptStart(
-            new LevelId(37), 30, AttemptSeeds.From(2_800_535_473), attempt: null, new DeviceId("3f2b8c1e-9d4a-4f6b-8e2c-1a7d5b9c0e3f"), "unity", Noon);
+            new LevelId(37), ContentVersion.First, 30, AttemptSeeds.From(2_800_535_473), attempt: null, new DeviceId("3f2b8c1e-9d4a-4f6b-8e2c-1a7d5b9c0e3f"), "unity", Noon);
         GoalOutcome[] gameGoals = { new GoalOutcome(new GoalSpec.BreakBoxes(20), done: 7) };
         var gameOutcome = new AttemptOutcome(AttemptResult.Abandoned, 33, gameGoals, extraMovesBought: true, boostersUsed: new[] { "hammer" }, Noon.AddMinutes(5));
 

@@ -14,6 +14,12 @@ namespace Puzzle.Core.Levels
 
         public int formatVersion = CurrentFormatVersion;
         public int id;
+
+        /// <summary>
+        /// The revision of this level's content (<see cref="ContentVersion"/>). The tools leave the first version out
+        /// of the files they write, so the file of a level no patch has touched is what it was before versions existed.
+        /// </summary>
+        public int contentVersion = ContentVersion.FirstValue;
         public string difficulty = string.Empty;
         public int width;
         public int height;

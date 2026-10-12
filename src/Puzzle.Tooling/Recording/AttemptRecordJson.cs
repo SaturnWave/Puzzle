@@ -65,6 +65,7 @@ public static class AttemptRecordJson
         {
             Schema = AttemptRecord.SchemaVersion,
             Level = start.Level.Value,
+            ContentVersion = start.ContentVersion.IsFirst ? null : start.ContentVersion.Value,
             Attempt = start.Attempt,
             BoardSeed = start.Seeds.Board,
             PlaySeed = start.Seeds.Play,
@@ -86,6 +87,7 @@ public static class AttemptRecordJson
     {
         var start = new AttemptStart(
             level: new LevelId(line.Level),
+            contentVersion: line.ContentVersion is int version ? new ContentVersion(version) : ContentVersion.First,
             moveLimit: line.MoveLimit,
             seeds: SeedsOf(line.BoardSeed, line.PlaySeed),
             attempt: line.Attempt,
@@ -163,6 +165,9 @@ public static class AttemptRecordJson
         public required int Schema { get; init; }
 
         public required int Level { get; init; }
+
+        /// <summary>Absent for the first version of the level's content, which is every record from before patches existed.</summary>
+        public int? ContentVersion { get; init; }
 
         /// <summary>Absent for hand-chosen seeds.</summary>
         public int? Attempt { get; init; }

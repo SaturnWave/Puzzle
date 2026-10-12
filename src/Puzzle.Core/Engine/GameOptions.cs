@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Puzzle.Core.Engine
 {
@@ -6,6 +8,7 @@ namespace Puzzle.Core.Engine
     {
         private readonly int? _moveLimitOverride;
         private readonly int _assistPercent;
+        private readonly IReadOnlyList<StartBooster> _startBoosters = Array.Empty<StartBooster>();
 
         public static GameOptions Default { get; } = new GameOptions();
 
@@ -37,6 +40,39 @@ namespace Puzzle.Core.Engine
             init => _assistPercent = value >= 0 && value <= 100
                 ? value
                 : throw new ArgumentOutOfRangeException(nameof(AssistPercent), value, "Assist must be 0..100.");
+        }
+
+        /// <summary>
+        /// The boosters the player takes into the attempt, each at most once; none by default. Calibration and reports
+        /// always play without them.
+        /// </summary>
+        public IReadOnlyList<StartBooster> StartBoosters
+        {
+            get => _startBoosters;
+            init => _startBoosters = CheckedStartBoosters(value);
+        }
+
+        private static StartBooster[] CheckedStartBoosters(IReadOnlyList<StartBooster> boosters)
+        {
+            if (boosters is null)
+            {
+                throw new ArgumentNullException(nameof(boosters));
+            }
+
+            StartBooster[] taken = boosters.ToArray();
+            if (taken.Any(booster => !Enum.IsDefined(typeof(StartBooster), booster)))
+            {
+                throw new ArgumentException("Unknown start booster.", nameof(boosters));
+            }
+
+            if (taken.Distinct().Count() != taken.Length)
+            {
+                throw new ArgumentException("A start booster can be taken once per attempt.", nameof(boosters));
+            }
+
+            // One order whatever order they were named in: the same boosters always give the same start.
+            Array.Sort(taken);
+            return taken;
         }
     }
 }

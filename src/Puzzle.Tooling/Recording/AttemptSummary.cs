@@ -7,6 +7,7 @@ namespace Puzzle.Tooling.Recording;
 /// One version of a level at one move limit, as people played it; no bot is involved. <see cref="Play"/> covers the
 /// comparable attempts and counts them exactly as the bot comparison does; the attempts it leaves out are only counted.
 /// </summary>
+/// <param name="ContentVersion">Which revision of the level's content the attempts were played on.</param>
 /// <param name="LevelKey">The lab's name for the level file, from the latest lab record; absent for the released game's records.</param>
 /// <param name="Play">The comparable attempts' figures, without bot rates (<see cref="ComparisonFigures.Bots"/> is empty).</param>
 /// <param name="MedianWinMoves">The median moves of the comparable attempts won within the limit; absent without such a win.</param>
@@ -15,6 +16,7 @@ namespace Puzzle.Tooling.Recording;
 /// <param name="LastPlayedUtc">When the latest attempt ended.</param>
 public sealed record LevelAttempts(
     LevelId Level,
+    ContentVersion ContentVersion,
     string? LevelKey,
     int MoveLimit,
     ComparisonFigures Play,
@@ -31,14 +33,15 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
 {
     /// <summary>
     /// Sums <paramref name="records"/> up by level version and move limit: what the players did, before any bot plays.
-    /// A level version is its id and, for lab records, its fingerprint, so a sample never merges with a generated level.
+    /// A level version is its id, its content version and, for lab records, its fingerprint, so a sample never merges
+    /// with a generated level and attempts from before a patch never merge with attempts after it.
     /// </summary>
     public static AttemptSummary Of(IEnumerable<AttemptRecord> records)
     {
         AttemptRecord[] all = records.ToArray();
         LevelAttempts[] levels = all
-            .GroupBy(record => (record.Start.Level, Version: record.Lab?.LevelFingerprint, record.Start.MoveLimit))
-            .Select(group => SummarizeLevel(group.Key.Level, group.Key.MoveLimit, group.ToArray()))
+            .GroupBy(record => (record.Start.Level, record.Start.ContentVersion, Fingerprint: record.Lab?.LevelFingerprint, record.Start.MoveLimit))
+            .Select(group => SummarizeLevel(group.Key.Level, group.Key.ContentVersion, group.Key.MoveLimit, group.ToArray()))
             .OrderByDescending(level => level.LastPlayedUtc)
             .ToArray();
         ILookup<AttemptStanding, AttemptRecord> byStanding = all.ToLookup(AttemptCounting.Standing);
@@ -49,7 +52,7 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
             byStanding[AttemptStanding.ChosenSeeds].Count());
     }
 
-    private static LevelAttempts SummarizeLevel(LevelId level, int moveLimit, IReadOnlyList<AttemptRecord> records)
+    private static LevelAttempts SummarizeLevel(LevelId level, ContentVersion contentVersion, int moveLimit, IReadOnlyList<AttemptRecord> records)
     {
         ILookup<AttemptStanding, AttemptRecord> byStanding = records.ToLookup(AttemptCounting.Standing);
         AttemptRecord[] comparable = byStanding[AttemptStanding.Comparable].ToArray();
@@ -58,6 +61,7 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
         string? key = records.Where(record => record.Lab is not null).MaxBy(record => record.Outcome.EndedUtc)?.Lab?.LevelKey;
         return new LevelAttempts(
             level,
+            contentVersion,
             key,
             moveLimit,
             ComparisonFigures.Of(comparable, []),

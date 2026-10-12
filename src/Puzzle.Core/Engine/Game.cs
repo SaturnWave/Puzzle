@@ -22,6 +22,7 @@ namespace Puzzle.Core.Engine
         private const ulong SpawnStream = 2;
         private const ulong EffectStream = 3;
         private const ulong ShuffleStream = 4;
+        private const ulong StartBoosterStream = 5;
 
         private readonly GameOptions _options;
         private readonly Mode _mode;
@@ -37,6 +38,12 @@ namespace Puzzle.Core.Engine
         private readonly TurnResolver _resolver;
         private readonly Shuffler _shuffler;
         private IReadOnlyList<GameEvent> _lastEvents = Array.Empty<GameEvent>();
+
+        /// <summary>Moves a start booster or the extra-moves offer added to the level's limit.</summary>
+        private int _bonusMoves;
+
+        /// <summary>Replaced on every use and never changed in place, so a copy of the game may share it.</summary>
+        private string[] _boostersUsed = Array.Empty<string>();
 
         private Game(
             LevelDefinition level,
@@ -98,15 +105,29 @@ namespace Puzzle.Core.Engine
 
         public int MovesUsed { get; private set; }
 
-        public int MoveLimit => _options.MoveLimitOverride ?? Level.MoveLimit;
+        /// <summary>The moves the player has in this attempt: the level's limit and whatever a booster or the extra-moves offer added.</summary>
+        public int MoveLimit => (_options.MoveLimitOverride ?? Level.MoveLimit) + _bonusMoves;
 
         public int MovesLeft => Math.Max(0, MoveLimit - MovesUsed);
 
-        /// <summary>What the most recent move did.</summary>
+        /// <summary>What the most recent action of the player did: a move, a booster, or taking the extra moves (nothing, unless the board had to be shuffled).</summary>
         public PlayStats LastMove { get; private set; } = PlayStats.None;
 
-        /// <summary>Events of the most recent move, in order; empty unless <see cref="GameOptions.RecordEvents"/> is on.</summary>
+        /// <summary>
+        /// Events of the most recent action, in order: a move, a booster, the extra moves taken, the finale; right after
+        /// the start, the specials the start boosters put on the board. Empty unless
+        /// <see cref="GameOptions.RecordEvents"/> is on.
+        /// </summary>
         public IReadOnlyList<GameEvent> LastEvents => _lastEvents;
+
+        /// <summary>The boosters used so far by their record names (<see cref="BoosterNames"/>), in order; start boosters come first.</summary>
+        public IReadOnlyList<string> BoostersUsed => Array.AsReadOnly(_boostersUsed);
+
+        /// <summary>Whether the "+5 moves" offer was taken in this attempt.</summary>
+        public bool ExtraMovesTaken { get; private set; }
+
+        /// <summary>Whether <see cref="PlayFinale"/> has run.</summary>
+        public bool FinalePlayed { get; private set; }
 
         public PlayStats TotalStats => _totalStats.ToSnapshot();
 
@@ -140,6 +161,7 @@ namespace Puzzle.Core.Engine
 
             var initializer = new BoardInitializer(board, game._matches, game._moves, options.Rules);
             initializer.Fill(level.Layout, level.Spawn.Palette, new Rng(Rng.Derive(seeds.Board, InitialStream)));
+            game.TakeStartBoosters(seed);
             return game;
         }
 
@@ -159,11 +181,7 @@ namespace Puzzle.Core.Engine
                 HiddenTileSource.Instance,
                 new Rng(Rng.Derive(seed, EffectStream)),
                 new Rng(Rng.Derive(seed, ShuffleStream)),
-                _totalStats.Clone())
-            {
-                Status = Status,
-                MovesUsed = MovesUsed,
-            };
+                _totalStats.Clone()).ContinuingFrom(this);
 
         /// <summary>
         /// An exact copy, including every random stream: playing the same moves on it reproduces this game's
@@ -183,10 +201,8 @@ namespace Puzzle.Core.Engine
                 _shuffleRng.Clone(),
                 _totalStats.Clone())
             {
-                Status = Status,
-                MovesUsed = MovesUsed,
                 LastMove = LastMove,
-            };
+            }.ContinuingFrom(this);
 
         /// <summary>
         /// A sampled future for a fair search bot: this game's present state under live rules, with every random
@@ -217,11 +233,7 @@ namespace Puzzle.Core.Engine
                 _tiles.Reseed(new Rng(Rng.Derive(seed, SpawnStream))),
                 new Rng(Rng.Derive(seed, EffectStream)),
                 new Rng(Rng.Derive(seed, ShuffleStream)),
-                _totalStats.Clone())
-            {
-                Status = Status,
-                MovesUsed = MovesUsed,
-            };
+                _totalStats.Clone()).ContinuingFrom(this);
 
         public IReadOnlyList<Move> FindLegalMoves()
         {
@@ -274,11 +286,247 @@ namespace Puzzle.Core.Engine
                 _resolver.ResolveSwap(from, Board.Shape.IndexOf(move.To));
             }
 
+            FinishAction();
+            return true;
+        }
+
+        /// <summary>
+        /// Uses a booster. It costs no move. A booster that would change nothing (a strike on cells with nothing to hit,
+        /// a shuffle of a board that cannot be rearranged) is rejected and the board stays as it was. A rejected shuffle
+        /// has still drawn from the shuffle stream, so asking again may find an arrangement the first try missed.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The game is already over.</exception>
+        public bool TryUseBooster(BoosterUse booster)
+        {
+            if (booster is null)
+            {
+                throw new ArgumentNullException(nameof(booster));
+            }
+
+            if (Status.IsOver())
+            {
+                throw new InvalidOperationException($"The game is over ({Status}).");
+            }
+
+            _moveStats.Reset();
+            _events.Clear();
+            if (_events.IsEnabled)
+            {
+                _events.Add(new GameEvent.BoosterUsed(booster));
+            }
+
+            bool changedTheBoard = booster is BoosterUse.Shuffle
+                ? _shuffler.TryRearrangeOrLeave()
+                : TryStrike(CellsStruckBy(booster));
+            if (!changedTheBoard)
+            {
+                return false;
+            }
+
+            _boostersUsed = Appended(_boostersUsed, BoosterNames.Of(booster));
+            FinishAction();
+            return true;
+        }
+
+        /// <summary>
+        /// Takes the "+5 moves" offer (docs/GAME_DESIGN.md §19): a game that ran out of moves goes on with
+        /// <see cref="ExtraMovesOffer.Moves"/> more. Once per attempt. A client that records attempts writes the record
+        /// only once the player has turned the offer down or the attempt has ended for good.
+        /// </summary>
+        /// <returns>
+        /// False when there is nothing to take, and nothing changed: the game did not run out of moves, the offer was
+        /// taken before, or the board has no move left that a shuffle could bring back.
+        /// </returns>
+        public bool TryTakeExtraMoves()
+        {
+            if (Status != GameStatus.LostOutOfMoves || ExtraMovesTaken)
+            {
+                return false;
+            }
+
+            _moveStats.Reset();
+            _events.Clear();
+
+            // The last move ended the game before anyone asked whether the board still had a move in it. A lookahead
+            // copy never asks (see NextStatus); any other game does not sell moves nobody could play.
+            if (_mode != Mode.Lookahead && !_moves.HasAny() && !_shuffler.TryShuffleOrLeave(Level.Spawn.Palette))
+            {
+                return false;
+            }
+
+            _bonusMoves += ExtraMovesOffer.Moves;
+            ExtraMovesTaken = true;
+            FinishAction();
+            return true;
+        }
+
+        /// <summary>
+        /// The celebration after a win (docs/GAME_DESIGN.md §19): every move left turns a free gem into a rocket that
+        /// fires. It runs only when asked for and changes neither the result, the moves used, the totals nor the goals'
+        /// counts, so no measurement and no attempt record sees it. Its events are in <see cref="LastEvents"/>;
+        /// <see cref="MovesLeft"/> still tells what was left.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The game is not won, or its finale has already run.</exception>
+        public FinaleOutcome PlayFinale()
+        {
+            if (Status != GameStatus.Won)
+            {
+                throw new InvalidOperationException($"Only a won game has a finale ({Status}).");
+            }
+
+            if (FinalePlayed)
+            {
+                throw new InvalidOperationException("The finale has already run.");
+            }
+
+            FinalePlayed = true;
+            _moveStats.Reset();
+            _events.Clear();
+            GoalTracker reached = Goals.Clone();
+            int rockets = _resolver.ResolveFinale(MovesLeft, new FreeGems(Board), _effectRng);
+            Goals.RestoreFrom(reached);
+            _lastEvents = _events.Snapshot();
+            return new FinaleOutcome(rockets, _moveStats.ToSnapshot());
+        }
+
+        /// <summary>Puts the start boosters' specials on the freshly filled board and adds their moves.</summary>
+        /// <exception cref="LevelInitializationException">The board has too few free gems for the specials.</exception>
+        private void TakeStartBoosters(ulong playSeed)
+        {
+            IReadOnlyList<StartBooster> boosters = _options.StartBoosters;
+            if (boosters.Count == 0)
+            {
+                return;
+            }
+
+            // A stream of its own: the board and everything that falls later are the same with and without boosters.
+            var rng = new Rng(Rng.Derive(playSeed, StartBoosterStream));
+            var gems = new FreeGems(Board);
+            gems.Collect();
+            foreach (StartBooster booster in boosters)
+            {
+                switch (booster)
+                {
+                    case StartBooster.RocketAndBomb:
+                        PlaceOnFreeGem(rng.NextInt(2) == 0 ? TileKind.RocketH : TileKind.RocketV, gems, rng);
+                        PlaceOnFreeGem(TileKind.Bomb, gems, rng);
+                        break;
+                    case StartBooster.ColorBomb:
+                        PlaceOnFreeGem(TileKind.ColorBomb, gems, rng);
+                        break;
+                    case StartBooster.ExtraMoves:
+                        _bonusMoves += _options.Rules.StartBoosterExtraMoves;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unhandled start booster {booster}.");
+                }
+
+                _boostersUsed = Appended(_boostersUsed, BoosterNames.Of(booster));
+            }
+
+            _lastEvents = _events.Snapshot();
+        }
+
+        private void PlaceOnFreeGem(TileKind special, FreeGems gems, Rng rng)
+        {
+            if (gems.Count == 0)
+            {
+                throw new LevelInitializationException($"The starting board has no free gem left to put a {special} on.");
+            }
+
+            int cell = gems.Take(rng);
+            Board.Set(cell, Tile.Special(special));
+            if (_events.IsEnabled)
+            {
+                _events.Add(new GameEvent.SpecialCreated(Board.Shape.PositionOf(cell), special));
+            }
+        }
+
+        /// <summary>The cells a striking booster hits; none when it aims outside the board.</summary>
+        private List<int> CellsStruckBy(BoosterUse booster)
+        {
+            BoardShape shape = Board.Shape;
+            var cells = new List<int>();
+            switch (booster)
+            {
+                case BoosterUse.HitCell cell:
+                    AddIfPlayable(cells, cell.At);
+                    break;
+                case BoosterUse.HitRow row:
+                    for (int x = 0; x < shape.Width && shape.IsPlayable(row.At); x++)
+                    {
+                        AddIfPlayable(cells, new Position(x, row.At.Y));
+                    }
+
+                    break;
+                case BoosterUse.HitColumn column:
+                    for (int y = 0; y < shape.Height && shape.IsPlayable(column.At); y++)
+                    {
+                        AddIfPlayable(cells, new Position(column.At.X, y));
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unhandled booster {booster.GetType().Name}.");
+            }
+
+            return cells;
+        }
+
+        private void AddIfPlayable(List<int> cells, Position position)
+        {
+            if (Board.Shape.IsPlayable(position))
+            {
+                cells.Add(Board.Shape.IndexOf(position));
+            }
+        }
+
+        /// <summary>Strikes the cells unless none of them has anything a hit would change.</summary>
+        private bool TryStrike(List<int> cells)
+        {
+            if (!cells.Exists(HasSomethingToHit))
+            {
+                return false;
+            }
+
+            _resolver.ResolveStrike(cells);
+            return true;
+        }
+
+        /// <summary>Whether a hit changes the cell: a chain, a jelly layer, or any tile but an item (a hit never harms an item).</summary>
+        private bool HasSomethingToHit(int cell)
+        {
+            TileKind kind = Board.Get(cell).Kind;
+            return Board.Chain(cell) > 0 || Board.Jelly(cell) > 0 || (kind != TileKind.Empty && kind != TileKind.Item);
+        }
+
+        /// <summary>Closes an action that changed the board: the game's new status, the totals, and what the view is told.</summary>
+        private void FinishAction()
+        {
             Status = NextStatus();
             _moveStats.AddTo(_totalStats);
             LastMove = _moveStats.ToSnapshot();
             _lastEvents = _events.Snapshot();
-            return true;
+        }
+
+        /// <summary>Hands a fresh copy what <paramref name="source"/> has reached; board, goals and randomness came through the constructor.</summary>
+        private Game ContinuingFrom(Game source)
+        {
+            Status = source.Status;
+            MovesUsed = source.MovesUsed;
+            _bonusMoves = source._bonusMoves;
+            _boostersUsed = source._boostersUsed;
+            ExtraMovesTaken = source.ExtraMovesTaken;
+            FinalePlayed = source.FinalePlayed;
+            return this;
+        }
+
+        private static string[] Appended(string[] names, string name)
+        {
+            var longer = new string[names.Length + 1];
+            names.CopyTo(longer, 0);
+            longer[names.Length] = name;
+            return longer;
         }
 
         private GameStatus NextStatus()

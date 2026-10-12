@@ -35,6 +35,9 @@ namespace Puzzle.Core.Engine.Events
 
         public sealed record Swapped(Position From, Position To) : GameEvent;
 
+        /// <summary>The player used a booster; what it did to the board follows.</summary>
+        public sealed record BoosterUsed(BoosterUse Booster) : GameEvent;
+
         /// <summary>Marks the start of a match round; round 0 follows the player's move, later rounds are cascades.</summary>
         public sealed record RoundStarted(int Round) : GameEvent;
 

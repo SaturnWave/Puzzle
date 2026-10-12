@@ -32,8 +32,8 @@ namespace Puzzle.Core.Recording
         /// <param name="goals">Each goal of the level in level order, with its progress at the end.</param>
         /// <param name="extraMovesBought">Whether the "+5 moves" offer was taken.</param>
         /// <param name="boostersUsed">
-        /// Names of the boosters used, in order. Names rather than a closed type: the engine has no boosters yet, and a
-        /// record written by a newer game must stay readable by an older tool.
+        /// Names of the boosters used, in order (<see cref="BoosterNames"/>). Names rather than a closed type: a record
+        /// written by a newer game, with a booster this build does not know, must stay readable by an older tool.
         /// </param>
         /// <param name="endedUtc">When the attempt ended; stored in UTC.</param>
         /// <exception cref="ArgumentException">A value is out of range or missing.</exception>
@@ -65,15 +65,14 @@ namespace Puzzle.Core.Recording
         /// <summary>Whether the "+5 moves" offer was taken.</summary>
         public bool ExtraMovesBought { get; }
 
-        /// <summary>Names of the boosters used, in order.</summary>
+        /// <summary>Names of the boosters used, in order; start boosters come first.</summary>
         public IReadOnlyList<string> BoostersUsed { get; }
 
         public DateTimeOffset EndedUtc { get; }
 
         /// <summary>
         /// The outcome of <paramref name="game"/> as it stands at <paramref name="endedUtc"/>: a game still being played
-        /// is an abandoned attempt. The engine has neither boosters nor the "+5 moves" offer yet (docs/GAME_DESIGN.md §21,
-        /// step 4), so none are recorded.
+        /// is an abandoned attempt.
         /// </summary>
         public static AttemptOutcome Of(Game game, DateTimeOffset endedUtc)
         {
@@ -88,8 +87,8 @@ namespace Puzzle.Core.Recording
                 AttemptResults.AtEnd(game.Status),
                 game.MovesUsed,
                 goals,
-                extraMovesBought: false,
-                boostersUsed: Array.Empty<string>(),
+                extraMovesBought: game.ExtraMovesTaken,
+                boostersUsed: game.BoostersUsed,
                 endedUtc);
         }
 

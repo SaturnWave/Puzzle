@@ -10,6 +10,7 @@ namespace Puzzle.Core.Recording
         public const int MaxClientLength = 32;
 
         /// <param name="level">The level played.</param>
+        /// <param name="contentVersion">Which revision of that level's content was played.</param>
         /// <param name="moveLimit">The level's move limit, without any "+5 moves" purchase.</param>
         /// <param name="seeds">The attempt's seeds; with the level and the moves they reproduce the game exactly.</param>
         /// <param name="attempt">
@@ -21,9 +22,18 @@ namespace Puzzle.Core.Recording
         /// <param name="client">The program that played, e.g. "web-lab": lowercase letters, digits and '-'.</param>
         /// <param name="startedUtc">When the attempt started; stored in UTC.</param>
         /// <exception cref="ArgumentException">A value is out of range or malformed.</exception>
-        public AttemptStart(LevelId level, int moveLimit, AttemptSeeds seeds, int? attempt, DeviceId device, string client, DateTimeOffset startedUtc)
+        public AttemptStart(
+            LevelId level,
+            ContentVersion contentVersion,
+            int moveLimit,
+            AttemptSeeds seeds,
+            int? attempt,
+            DeviceId device,
+            string client,
+            DateTimeOffset startedUtc)
         {
             Level = level;
+            ContentVersion = contentVersion;
             MoveLimit = moveLimit >= 1 && moveLimit <= LevelDefinition.MaxMoveLimit
                 ? moveLimit
                 : throw new ArgumentOutOfRangeException(nameof(moveLimit), moveLimit, $"A move limit is 1..{LevelDefinition.MaxMoveLimit}.");
@@ -39,6 +49,12 @@ namespace Puzzle.Core.Recording
         }
 
         public LevelId Level { get; }
+
+        /// <summary>
+        /// Which revision of the level's content was played: after a patch, attempts of the old and the new version of
+        /// a level number are told apart by it.
+        /// </summary>
+        public ContentVersion ContentVersion { get; }
 
         /// <summary>The level's move limit, without any "+5 moves" purchase.</summary>
         public int MoveLimit { get; }

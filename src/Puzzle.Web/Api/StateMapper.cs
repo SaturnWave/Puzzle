@@ -93,6 +93,7 @@ internal static class StateMapper
     public static EventDto ToEvent(GameEvent gameEvent) => gameEvent switch
     {
         GameEvent.Swapped e => new EventDto("swapped") { From = ToPosition(e.From), To = ToPosition(e.To) },
+        GameEvent.BoosterUsed e => new EventDto("boosterUsed") { Kind = BoosterNames.Of(e.Booster), At = AimOf(e.Booster) },
         GameEvent.RoundStarted e => new EventDto("roundStarted") { Round = e.Round },
         GameEvent.MatchCleared e => new EventDto("matchCleared") { Color = e.Color.ToString(), Cells = e.Cells.Select(ToPosition).ToArray() },
         GameEvent.SpecialCreated e => new EventDto("specialCreated") { At = ToPosition(e.At), Tile = ToTile(Tile.Special(e.Kind)) },
@@ -107,6 +108,16 @@ internal static class StateMapper
         GameEvent.ItemCollected e => new EventDto("itemCollected") { At = ToPosition(e.At) },
         GameEvent.Shuffled _ => new EventDto("shuffled"),
         _ => throw new InvalidOperationException($"Unmapped event {gameEvent.GetType().Name}."),
+    };
+
+    /// <summary>The cell a booster was aimed at; absent for one that takes no aim.</summary>
+    private static PositionDto? AimOf(BoosterUse booster) => booster switch
+    {
+        BoosterUse.HitCell cell => ToPosition(cell.At),
+        BoosterUse.HitRow row => ToPosition(row.At),
+        BoosterUse.HitColumn column => ToPosition(column.At),
+        BoosterUse.Shuffle _ => null,
+        _ => throw new InvalidOperationException($"Unmapped booster {booster.GetType().Name}."),
     };
 
     private static TileDto? ToTile(Tile tile) => tile.Kind switch

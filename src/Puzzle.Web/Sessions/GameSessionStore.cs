@@ -234,7 +234,8 @@ public sealed class GameSession
         SequenceBreak? sequenceBreak = origin.SequenceBreakOn(level.Level);
         var start = new AttemptStart(
             level: level.Level.Id,
-            moveLimit: game.MoveLimit,
+            contentVersion: level.Level.ContentVersion,
+            moveLimit: level.Level.MoveLimit,
             seeds: seeds,
             attempt: sequenceBreak is null ? origin.Attempt : null,
             device: device,

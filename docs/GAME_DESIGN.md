@@ -385,6 +385,8 @@ Katmanlar karakter ızgarası olarak tutulur (elle de düzenlenebilir):
 
 `palette` verilirse `colors` yok sayılır; verilmezse palet ilk `colors` renktir.
 
+`contentVersion` (isteğe bağlı): bölümün içerik sürümü. Yazılmamışsa 1'dir; araçlar 1. sürümü dosyaya yazmaz. Yalnızca düzeltme paketleri daha yüksek bir sürüm verir (§20).
+
 | Katman | Karakterler |
 |---|---|
 | `cells` | `#` oynanabilir, `.` boşluk |
@@ -423,8 +425,8 @@ docs/pdf            üretilmiş PDF'ler; kaynak her zaman Markdown dosyasıdır
 | 1 ✅ | Çekirdek motor, bot, CLI, testler, örnek bölümler |
 | 1.5 ✅ | İki bomba, 8 renk + palet, spawn yönetmeni, mükemmel bilgi çözücüsü, web test laboratuvarı |
 | 2 ✅ | Bölüm üretici, 1000 bölüm, zorluk raporu |
-| 2.5 (sıradaki) | Motoru "hazır" yapmak: bot düzeltmesi, usta bot, casual koruması, booster'lar, bitiş şöleni, düzeltme paketleri, 1000 bölümün yeniden üretimi (§21) |
-| 3 | Tema ve meta tasarımı: yapboz kesimi (C#), ekonomi simülatörü, 20 odanın ve 100 tablonun listesi (§18, §19) |
+| 2.5 ✅ | Motoru "hazır" yapmak: bot düzeltmesi, usta bot, casual koruması, booster'lar, bitiş şöleni, düzeltme paketleri, 1000 bölümün yeniden üretimi (§21). Bitti: 2026-10-12 |
+| 3 (sürüyor) | Tema ve meta tasarımı: yapboz kesimi (C#) ✅, ilk iki odanın tabloları ✅; kalan: ekonomi simülatörü, 18 odanın tabloları (§18, §19) |
 | 4 | Arayüz. Oyunun adı en sona bırakıldı (karar 2026-10-05) |
 | 5 | Unity: görsel katman, animasyon event'leri, ipucu, analiz; görseller en son. **Başladı 2026-10-06** (kullanıcı kararıyla öne alındı); ilk oynanabilir sürüm telefonda 2026-10-07 (§23) |
 | 6 | Yayın: APK testi → doğrudan dünya geneli (karar 2026-10-05; sınırlı ülke yayını yok, §20) |
@@ -813,6 +815,26 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 | Bölüm içi | Dikey fırça | Bir sütunu vurur |
 | Bölüm içi | Paleti karıştır | Tahtayı karıştırır |
 
+**Motorda (2026-10-12).** Motor kendi adlarını kullanır; tablodaki adlar temanındır.
+
+| Booster | Motordaki adı | Kayıttaki adı |
+|---|---|---|
+| Fırça + sıçrama | `StartBooster.RocketAndBomb` | `start-rocket-and-bomb` |
+| Gökkuşağı paleti | `StartBooster.ColorBomb` | `start-color-bomb` |
+| +3 hamle | `StartBooster.ExtraMoves` | `start-extra-moves` |
+| Spatula | `BoosterUse.HitCell` | `hit-cell` |
+| Yatay fırça | `BoosterUse.HitRow` | `hit-row` |
+| Dikey fırça | `BoosterUse.HitColumn` | `hit-column` |
+| Paleti karıştır | `BoosterUse.Shuffle` | `shuffle` |
+
+- **Bölüm öncesi** booster'lar oyunun seçeneğidir (`GameOptions.StartBoosters`), her biri denemede en çok bir kez. Özel taşlar başlangıç tahtasındaki rastgele serbest taşların (zincirsiz düz taş) yerine konur. Kendi rastgelelik akışlarını kullanırlar: tahtanın geri kalanı ve sonradan düşen her şey booster'sız oyunla aynıdır. "+3 hamle" yalnızca limiti uzatır (sayı `RuleSet.StartBoosterExtraMoves`).
+- **Bölüm içi** booster'lar oyuncunun hamle saymayan eylemidir (`Game.TryUseBooster`). Vuruşlar (hücre, satır, sütun) her hücreye bir kez, bir eşleşmenin vurduğu gibi vurur: zincir bir can kaybeder ve altındaki taşı korur, kutu bir can, jöle bir kat kaybeder, vurulan özel taş patlar, malzeme zarar görmez. Sonra tahta bir hamleden sonraki gibi oturur (düşme, zincirleme eşleşmeler, gerekirse karıştırma). Booster bölümü kazandırabilir.
+- **Boşa giden booster olmaz:** hiçbir şeyi değiştirmeyecek kullanım reddedilir ve tahta olduğu gibi kalır (vurulacak bir şey olmayan hücre, tahtanın dışı ya da boşluğu, yeniden dizilemeyen tahta). İstemci booster'ı ancak kabul edilen kullanımda harcar.
+- **Karıştırma** yalnızca gerçek bir yeniden dizilişi kabul eder: serbest taşlar yer değiştirir, hiçbiri yeniden boyanmaz, en az bir hücrede başka bir taş durur, tahtada eşleşme oluşmaz ve hamle kalır. Kutu, zincirli taş, özel taş ve malzeme yerinde kalır. Böyle bir diziliş bulunamazsa (örneğin tek serbest taş) kullanım reddedilir. Hamle kalmadığında oyunun kendi yaptığı karıştırma bundan farklıdır: oyun sürsün diye son çare olarak taşları yeniden boyayabilir.
+- Kaç booster'ın bulunduğu ve nasıl kazanıldığı motorun değil meta katmanın işidir. Kullanılan booster'lar deneme kaydına sırasıyla yazılır.
+- **Bilinen sınır:** kayıt, kullanılan booster'ların adlarını tutar; hangi hücreye ve hangi hamleden sonra kullanıldıklarını tutmaz. Booster'lı bir deneme kayıttan birebir yeniden oynatılamaz. İstemciye booster gelmeden önce hamle, booster ve "+5 hamle"yi aynı sırada tutan tek bir eylem kaydı eklenmeli (kayıt biçimine eklemeli değişiklik).
+- İstemcide (Unity) booster düğmeleri ve animasyonları yok; sıradaki istemci işi.
+
 ## 19. Ürün kararları
 
 **Karar (2026-10-02).**
@@ -820,8 +842,8 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Hedef oyuncu:** 30 yaş üstü, kısa oturumlarla oynayan rahat oyuncu. İçerik aileye uygun.
 - **İş modeli:** ücretsiz oyun + uygulama içi satın alma (booster, ekstra hamle, coin) + isteğe bağlı ödüllü reklam.
 - **Can sistemi:** 5 can, yarım saatte bir can dolar, yalnızca kaybedince can gider. Etkinlik ödülü olarak sınırsız can süreleri. Yalnızca meta katmanı; motoru etkilemez.
-- **"+5 hamle" teklifi:** hamle bitince coinle ya da reklam izleyerek alınır. Zorluk ayarı teklifsiz limite göre yapılır; raporlar limit+5'teki kazanma oranını da gösterir (§8).
-- **Bitiş şöleni:** bölüm kazanılınca kalan her hamle tahtada bir rokete dönüşüp patlar ve coin verir. Kazanma kesinleştikten sonra çalıştığı için zorluk ölçümünü etkilemez.
+- **"+5 hamle" teklifi:** hamle bitince coinle ya da reklam izleyerek alınır. Zorluk ayarı teklifsiz limite göre yapılır; raporlar limit+5'teki kazanma oranını da gösterir (§8). Motorda (2026-10-12): `Game.TryTakeExtraMoves`; hamlesi biten oyun 5 hamleyle sürer, **bir denemede bir kez** (deneme kaydındaki tek alanla uyumlu; birden çok alım istenirse ayrıca karar gerekir). Tahtada hamle kalmamışsa önce karıştırılır; karıştırmayla da hamle çıkmayan tahtaya teklif satılmaz (istek reddedilir, hiçbir şey değişmez). İstemci deneme kaydını ancak oyuncu teklifi geri çevirdikten ya da deneme kesin bittikten sonra yazar.
+- **Bitiş şöleni:** bölüm kazanılınca kalan her hamle tahtada bir rokete dönüşüp patlar ve coin verir. Kazanma kesinleştikten sonra çalıştığı için zorluk ölçümünü etkilemez. Motorda (2026-10-12): `Game.PlayFinale` yalnızca istemci isteyince çalışır; kalan her hamle rastgele bir serbest taşı rokete çevirir, roketler patlar, tahta oturur; taş yetmezse dalga dalga sürer. Sonucu, kullanılan hamleyi, oyunun toplamlarını ve hedef sayaçlarını değiştirmez (şölenden sonra yazılan kayıt da oyunu anlatır); aynı oyunun şöleni her zaman aynıdır. Tahtada kalmış başka özel taşlar patlatılmaz. Coin miktarı motorun değil ekonominin kararıdır: kalan hamle sayısından hesaplanır (simülatör belirleyecek).
 - **Coin:** booster, ekstra hamle ve yan koleksiyon parçaları için. Ana tabloların parçaları coinle alınmaz.
 - **Fiyatlar:** elle tahmin edilmeyecek. Bir **ekonomi simülatörü** botların 1000 bölümdeki kazanma oranlarını ve hamle dağılımlarını kullanarak can, "+5" teklifi ve coin akışını ölçecek; "ücretsiz oynayan biri 100. bölüme kaç günde gelir, nerede tıkanır" sorusunu cevaplayacak.
 - **Etik sınırlar** (§17'ye ek): oyuncunun para harcama eğilimi zorluğu etkilemez, zorluk gizlice ayarlanmaz, gerçek parayla rastgele kutu satılmaz.
@@ -842,7 +864,18 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
 - **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
 - **Yayın sırası (karar 2026-10-05):** APK testi → doğrudan dünya geneli. Önceki plandaki birkaç küçük ülkede sınırlı yayın adımı kaldırıldı. Sonucu: limitleri gerçek oyuncu verisiyle ayarlama fırsatı yayından önce yalnızca web testi ve APK testidir; yayından sonraki ayar düzeltme paketleriyle yapılır (aşağıda). Bu yüzden yayın öncesi kalibrasyon bilerek yumuşak tutulur (§8 madde 7 ve 8). Yayında 1000 bölümün tamamı bulunur.
-- **Düzeltme paketleri:** bölümler uygulamanın içinde gelir; sunucudan küçük düzeltme paketleri inebilir (örneğin bir bölümün hamle limiti ya da seed havuzu). Oyun internetsiz de oynanır. Bölüm dosyasındaki `formatVersion` dosya biçimini sürümler; düzeltme paketleri için bölüm başına bir içerik sürümü alanı eklenecek (eklemeli değişiklik).
+- **Düzeltme paketleri:** bölümler uygulamanın içinde gelir; sunucudan küçük düzeltme paketleri inebilir (örneğin bir bölümün hamle limiti ya da seed havuzu). Oyun internetsiz de oynanır. Bölüm dosyasındaki `formatVersion` dosya biçimini sürümler; bölümün içeriğini `contentVersion` sürümler.
+- **İçerik sürümü ve paket (uygulandı, 2026-10-12):**
+  - Yayınlanan her bölüm 1. içerik sürümündedir. 1. sürüm dosyaya yazılmaz: dokunulmamış bölümün dosyası ve parmak izi sürümlerden önceki hâliyle aynıdır, eski kayıtlar ve banka kayıtları bölümlerini tanımaya devam eder.
+  - Paket, düzeltilen bölümlerin **tamamını** taşır (bölüm başına yaklaşık 0,7 KB; alan alan yama değil). Böylece paketteki her bölüm, uygulamadaki bölümlerle aynı denetimden geçer ve tahta düzeltmesi de limit düzeltmesi de aynı yoldan gider.
+  - **Tek paket her uygulama sürümüne hizmet eder:** paket, bugüne kadar 1. sürümün üstüne çıkmış her bölümü en son sürümüyle içerir. Cihaz paketi uygulamanın içindeki bölümlerin üstüne serer: paketteki sürüm daha yüksekse o oynanır, değilse uygulamadaki (yeni uygulama sürümü düzeltmeyi zaten içerir). Eski ve yeni uygulama aynı paketi okur; en son paket tek başına yeter. Paket bölüm eklemez; uygulamada olmayan numara atlanır.
+  - **Paketin sıra numarası** vardır (`sequence`, 1'den başlar, her yayınlanan pakette bir artar). Cihaz gördüğü en yüksek numaralı paketi tutar; geç gelen eski bir kopya hiçbir bölümü geri götürmez. Sıra numarası olmayan dosya paket sayılmaz.
+  - **Bir sürüm numarası bir içeriği sonsuza dek adlandırır.** En son yayınlanan içeriğinden farklı olan bölüm bir sonraki sürümü alır; yayındaki içeriğe geri döndürülen bölüm de. Yayınlanmış düzeltme, yenisi gelene kadar sonraki her pakette kalır (ondan önceki uygulamaların ona ihtiyacı var).
+  - Neyin yayınlandığı iki yerden okunur: önceki paket ve yayın klasöründe 1. sürümün üstünde duran bölümler. İkisi aynı sürüm için farklı içerik gösterirse paket üretilmez. `patch make` önceki paketi ister (`--previous`) ya da hiç paket yayınlanmadığının açıkça söylenmesini (`--first`).
+  - **Yeni uygulama sürümünün bölüm klasörü** `patch apply` ile üretilir (önceki yayın klasörü + son paket): dosyalar sürümlerini taşır. Çalışma klasörü `levels/generated` hiç sürüm taşımaz.
+  - Deneme kaydı oynanan içerik sürümünü taşır (`contentVersion`; 1. sürümde yazılmaz). Yayınlanan oyunun kayıtlarında bölüm parmak izi yoktur: bir bölümün düzeltmeden önceki ve sonraki denemelerini bu sürüm ayırır; özet ve insan–bot karşılaştırması kayıtları buna göre gruplar ve eşler.
+  - Komutlar: `puzzle patch make --shipped <yayın klasörü> --current levels/generated (--previous <önceki paket> | --first) --out pack.json` ve `puzzle patch apply pack.json --shipped <yayın klasörü> --out <klasör>`.
+  - Yapılmadı (istemci ve sunucu işi): paketin sunucudan indirilmesi, cihazda saklanması, oyun açılırken uygulanması; ilk yayında `levels/generated` klasörünün "yayın klasörü" olarak dondurulması ve Unity'nin bölüm paketinin o klasörden yapılması.
 
 ## 21. Motorun "hazır" tanımı ve iş sırası
 
@@ -853,9 +886,9 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 | 1 | Kararları bu belgeye ve geliştirme günlüğüne yaz | ✅ |
 | 2 | Botların özel taş biriktirme sorununu düzelt; usta botu yaz | ✅ 2026-10-03 |
 | 3 | Üreticiye casual korumasını, raporlara limit+5 sütununu ekle; mekanik takvimini tablo başlangıçlarına hizala | ✅ 2026-10-03 |
-| 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | |
+| 4 | Motora booster'ları, bitiş şölenini, bölüm içerik sürümünü ve düzeltme paketini ekle | ✅ 2026-10-12 (§18, §19, §20; "+5 hamle" teklifi de motorda) |
 | 5 | Web test uygulamasına oyun kaydını ekle | ✅ 2026-10-03 (kayıt, insan–bot karşılaştırması, yenilenen arayüz) |
-| 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | Bölümler yeniden üretildi ✅ 2026-10-04 (herkese açık test bu bölümlerle yapılsın diye öne alındı); motor 4. adım bitince "hazır" |
+| 6 | 1000 bölümü yeniden üret, raporları çıkar. Motor "hazır" | Bölümler yeniden üretildi ✅ 2026-10-04 (herkese açık test bu bölümlerle yapılsın diye öne alındı); 51–1000 bankadan derlendi ✅ 2026-10-12 (§24). **Motor "hazır": 2026-10-12** |
 
 Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına ve takvime bağlı; bölümler iki kez üretilmesin diye onlar önce gelir.
 

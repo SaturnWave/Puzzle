@@ -18,7 +18,8 @@ namespace Puzzle.Core.Levels
             IReadOnlyList<GoalSpec> goals,
             int moveLimit,
             SpawnRules spawn,
-            AttemptPolicy? attempts = null)
+            AttemptPolicy? attempts = null,
+            ContentVersion contentVersion = default)
         {
             Id = id;
             Difficulty = difficulty;
@@ -27,6 +28,7 @@ namespace Puzzle.Core.Levels
             MoveLimit = moveLimit;
             Spawn = spawn;
             Attempts = attempts ?? AttemptPolicy.Default;
+            ContentVersion = contentVersion;
             Validate();
         }
 
@@ -45,13 +47,20 @@ namespace Puzzle.Core.Levels
         /// <summary>How retries differ: starting-board rule and the calibrated seed pool.</summary>
         public AttemptPolicy Attempts { get; }
 
+        /// <summary>Which revision of this level number's content this is; the first unless a patch made it.</summary>
+        public ContentVersion ContentVersion { get; }
+
         /// <summary>The same level with a different move budget (set by the bot calibration).</summary>
         public LevelDefinition WithMoveLimit(int moveLimit) =>
-            new LevelDefinition(Id, Difficulty, Layout, Goals, moveLimit, Spawn, Attempts);
+            new LevelDefinition(Id, Difficulty, Layout, Goals, moveLimit, Spawn, Attempts, ContentVersion);
 
         /// <summary>The same level with a different attempt policy (e.g. after calibrating its seed pool).</summary>
         public LevelDefinition WithAttempts(AttemptPolicy attempts) =>
-            new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, attempts);
+            new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, attempts, ContentVersion);
+
+        /// <summary>The same content under another version number (set when a patch is made).</summary>
+        public LevelDefinition WithContentVersion(ContentVersion contentVersion) =>
+            new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, Attempts, contentVersion);
 
         private void Validate()
         {

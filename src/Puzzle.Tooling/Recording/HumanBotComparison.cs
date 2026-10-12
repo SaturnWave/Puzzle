@@ -107,7 +107,10 @@ public static class HumanBotComparison
     /// <summary>Bot run <c>k</c> of every game uses bot seed <c>Rng.Derive(BotSeed, k)</c>: only the bot's own choices differ between runs.</summary>
     public const ulong BotSeed = 1;
 
-    /// <param name="levels">The levels the records may belong to. A record matches by level id and, when it has lab details, by level fingerprint.</param>
+    /// <param name="levels">
+    /// The levels the records may belong to. A record matches by level id and by the revision of the level's content:
+    /// the level fingerprint when it has lab details, its content version when it has none (the released game's records).
+    /// </param>
     /// <param name="botRuns">Games each bot plays on each attempt's game.</param>
     /// <exception cref="LevelInitializationException">A matched level cannot produce a starting board.</exception>
     public static HumanBotReport Compare(IEnumerable<AttemptRecord> records, IReadOnlyList<LevelDefinition> levels, int botRuns)
@@ -153,7 +156,9 @@ public static class HumanBotComparison
     private static KnownLevel? LevelOf(AttemptRecord record, ILookup<LevelId, KnownLevel> known)
     {
         KnownLevel[] matches = known[record.Start.Level]
-            .Where(level => record.Lab is null || level.Fingerprint == record.Lab.LevelFingerprint)
+            .Where(level => record.Lab is null
+                ? level.Level.ContentVersion == record.Start.ContentVersion
+                : level.Fingerprint == record.Lab.LevelFingerprint)
             .ToArray();
         return matches.Length == 1 ? matches[0] : null;
     }

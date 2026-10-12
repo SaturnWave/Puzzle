@@ -32,7 +32,8 @@ internal static class TestRecords
         int? moveLimit = null,
         DateTimeOffset? endedUtc = null)
     {
-        var start = new AttemptStart(level.Id, moveLimit ?? level.MoveLimit, seeds ?? AttemptSeeds.From(42), attempt, device ?? Phone, "web-lab", Noon);
+        var start = new AttemptStart(
+            level.Id, level.ContentVersion, moveLimit ?? level.MoveLimit, seeds ?? AttemptSeeds.From(42), attempt, device ?? Phone, "web-lab", Noon);
         GoalOutcome[] goals = level.Goals
             .Select(goal => new GoalOutcome(goal, result == AttemptResult.Won ? goal.Target : goal.Target / 2))
             .ToArray();

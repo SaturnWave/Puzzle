@@ -71,10 +71,16 @@ namespace Puzzle.Client.Engine
 
         /// <summary>
         /// Unity's reader fills a field the document leaves out with an empty value, where the level format means
-        /// "absent": no preset tiles, no jelly, no chains, no explicit palette, no colour on a goal.
+        /// "absent": no preset tiles, no jelly, no chains, no explicit palette, no colour on a goal, and a content
+        /// version nobody stated, which is the first.
         /// </summary>
         private static LevelFile WithAbsentLayersAbsent(LevelFile file)
         {
+            if (file.contentVersion == 0)
+            {
+                file.contentVersion = ContentVersion.FirstValue;
+            }
+
             file.tiles = NullIfEmpty(file.tiles);
             file.jelly = NullIfEmpty(file.jelly);
             file.chains = NullIfEmpty(file.chains);

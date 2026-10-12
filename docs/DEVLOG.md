@@ -34,6 +34,45 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Malzeme bölümleri az (36); 52 ve 53 eskimiş. Türe özel hamle aralığı kararı ertelendi.
 - Yeni bölümlerle APK derlenmedi (telefon denemesi ertelendi).
 
+### Aynı gün: motorun "hazır" tanımındaki son adım (§21, 4. adım)
+
+**Yapılanlar**
+- **Booster'lar.** Bölüm öncesi üç booster oyun seçeneği oldu (roket + bomba, renk bombası, +3 hamle); bölüm içi dört booster oyuncunun hamle saymayan eylemi (hücre, satır, sütun vuruşu, karıştırma). Botlar kullanmaz; ölçümler booster'sız kalır.
+- **"+5 hamle" teklifi.** Hamlesi biten oyun 5 hamleyle sürebiliyor; tahtada hamle kalmadıysa önce karıştırılıyor.
+- **Bitiş şöleni.** Kazanılan oyunda istemci isteyince kalan her hamle bir rokete dönüşüp patlıyor; sonuç, kullanılan hamle ve oyun toplamları değişmiyor.
+- **İçerik sürümü.** Her bölümün bir içerik sürümü var; 1. sürüm dosyaya yazılmıyor, deneme kaydı oynanan sürümü taşıyor.
+- **Düzeltme paketi.** Değişen bölümleri bütün hâlinde ve yeni sürümleriyle taşıyan paket; cihazdaki bölümlerin üstüne serilir. `puzzle patch make` ve `puzzle patch apply` komutları.
+- Web sunucusunun olay eşlemesi booster olayını tanıyor; Unity'nin bölüm okuyucusu yazılmamış sürümü 1 sayıyor.
+
+**Benim verdiğim kural kararları (belgede yoktu; itiraz edilebilir)**
+- "+5 hamle" bir denemede bir kez alınır (deneme kaydında tek alan var).
+- Hiçbir şeyi değiştirmeyecek booster kullanımı reddedilir, booster harcanmaz. Karıştırma yalnızca gerçek bir yeniden dizilişi kabul eder (taş boyamaz).
+- Karıştırmayla da hamle çıkmayan tahtaya "+5 hamle" satılmaz.
+- Vuruş booster'ları roketin vurduğu gibi vurur: hücre başına bir vuruş, yanındaki kutulara yan hasar yok.
+- Bölüm öncesi özel taşlar rastgele serbest taşların yerine konur; aynı booster'lar hangi sırayla istenirse istensin aynı başlangıcı verir.
+- Şölende yalnızca kalan hamleler rokete döner; tahtada kalmış özel taşlar patlatılmaz. Coin miktarı motorun dışında.
+- Düzeltme paketi alan alan yama değil, bölümün tamamıdır. Tek paket her uygulama sürümüne hizmet eder, sıra numarası taşır; bir sürüm numarası bir içeriği sonsuza dek adlandırır.
+
+**Bağımsız inceleme (commit'ten önce) ve düzeltilenler**
+- *Sürüm bir içeriği tek başına adlandırmıyordu:* ikinci uygulama sürümünde ya da önceki paket unutulduğunda aynı numara iki içeriğe verilebiliyor, eski uygulama düzeltmesini kaybedebiliyordu. Paket yeniden tasarlandı: her sürüme hizmet eden tek paket, sıra numarası, önceki paketin zorunlu olması, yayın klasöründeki sürümlerin de okunması, çelişkide durma.
+- *İçerik sürümü kayda yazılıyor ama hiçbir yerde okunmuyordu:* özet ve insan–bot karşılaştırması artık sürüme göre grupluyor ve eşliyor.
+- *Şölen hedef sayaçlarını ilerletiyordu:* şölenden sonra yazılan kayıt yanlış olurdu. Sayaçlar şölenden önceki hâline döndürülüyor.
+- *Hiçbir şeyi değiştirmeyen karıştırma kabul ediliyordu* (az serbest taşlı tahtalarda üçte bire varan oranda). Artık yalnızca gerçek yeniden diziliş kabul ediliyor.
+- *Diriltilemeyen tahtaya "+5 hamle" satılıyordu* ve oyun hemen kaybediliyordu. İstek artık reddediliyor.
+- Paket dosyasındaki boş alanlar belgelenmemiş hatalarla düşüyordu; kopyalar booster listesini paylaşıyordu; kayıttaki hamle limiti booster'ın +3'ünü içerebilirdi. Hepsi düzeltildi.
+- Düzeltilmedi, sınır olarak belgelendi: booster'lı deneme kayıttan birebir yeniden oynatılamaz (tek bir eylem kaydı gerekir); "+5 hamle" istemciye bağlandığında kayıt, teklif sonuçlandıktan sonra yazılmalı.
+
+**Doğrulama**
+- 2.721 test geçti (51'i yeni). Motorun çalışma izi (`engine-trace.txt`) ve kayıt biçimi örnekleri bayt bayt aynı.
+- Gerçek veriyle: `puzzle humans` 87 kaydın hepsini bölümüyle eşledi (klasörde olmayan 0), yani parmak izleri değişmedi. `puzzle assemble --base levels/generated` yeni derlemeyle 36 saniyede 1000 bölümü olduğu gibi bıraktı (948 yerinde, 50 sabit, 52–53 eskimiş); bankanın dönemi aynı, saklı oyunlar bayt bayt aynı oynandı.
+- Düzeltme paketi dört bölümün kopyasında uçtan uca denendi: ilk paket, ondan üretilen ikinci yayın klasörü, ikinci yayına göre üretilen ikinci paketin ilk yayındaki üç bölümü de düzeltmesi.
+- Unity yeni motorla derlendi; kendi duman testi geçti (1000 bölüm okundu, 12 sabit oyun aynı).
+
+**Açık**
+- İstemci (Unity): booster düğmeleri ve animasyonları, şölenin oynatılması, paketin indirilip uygulanması.
+- İlk yayında bölüm klasörünü "yayın klasörü" olarak dondurmak (paketler ona göre üretilir).
+- Booster sayıları, coin ve fiyatlar: ekonomi simülatörü (Faz 3).
+
 ## 2026-10-08 · Oturum 18 — İkinci oda ve zorluk için kalıcı çözüm: bölüm bankası
 
 **Kullanıcı kararları**

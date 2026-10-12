@@ -67,6 +67,16 @@ const string Usage = """
       compare <folder> <other folder>
                             Two folders of levels side by side: limits and shares per tier, the mix of level kinds, and
                             how many numbers changed limit, amounts or board.   --from N  --to N  --out changes.csv
+      patch make            The next patch pack for a released game: every level that ever got a correction, whole,
+                            at its latest content version; a level that differs from its latest published content
+                            gets the next version. One pack serves every release, and the newest alone is enough.
+                            --shipped <folder of a release>  --current levels/generated  --out pack.json
+                            --previous <pack.json> | --first   the pack published before, or that there is none:
+                            without it content versions that are taken would be given out again
+      patch apply <pack.json>
+                            The levels a player of a release has with the pack, as level files with their content
+                            versions; also how the level folder of the next release is made.
+                            --shipped <folder of a release>  --out <folder>
       botstats <dir|file>   Moves one bot needs per level, as CSV.  --bot expert|usta|usta-<n>  --runs 30  --cap 150  --out reports/<bot>_moves.csv
       ladder <dir|file>     Existing levels against the skill ladder, every bot of a level on the same fresh games, as CSV:
                             win rate at the move limit, moves needed and the limit each win rate would take, per level and bot.
@@ -106,6 +116,7 @@ try
         "assemble" => AssembleCommand.Run(cli),
         "compare" => AssembleCommand.Compare(cli),
         "promote" => PromoteCommand.Run(cli),
+        "patch" => PatchCommand.Run(cli),
         "botstats" => BotStatsCommand.Run(cli),
         "ladder" => LadderCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),

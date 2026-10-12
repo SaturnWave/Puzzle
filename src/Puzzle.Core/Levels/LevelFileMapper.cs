@@ -17,6 +17,7 @@ namespace Puzzle.Core.Levels
             }
 
             LevelId id = WithLevelContext(file.id, () => new LevelId(file.id));
+            ContentVersion contentVersion = WithLevelContext(file.id, () => new ContentVersion(file.contentVersion));
             DifficultyTier difficulty = WithLevelContext(file.id, () => ParseDifficulty(file.difficulty));
             LevelLayout layout = WithLevelContext(file.id, () => ParseLayout(file));
             GoalSpec[] goals = WithLevelContext(file.id, () => file.goals.Select(ParseGoal).ToArray());
@@ -24,7 +25,7 @@ namespace Puzzle.Core.Levels
             AttemptPolicy attempts = WithLevelContext(file.id, () => ParseAttempts(file.attempts));
 
             // LevelDefinition reports cross-part inconsistencies with the level id already in the message.
-            return new LevelDefinition(id, difficulty, layout, goals, file.moves, spawn, attempts);
+            return new LevelDefinition(id, difficulty, layout, goals, file.moves, spawn, attempts, contentVersion);
         }
 
         public static LevelFile ToFile(LevelDefinition level)
@@ -33,6 +34,7 @@ namespace Puzzle.Core.Levels
             return new LevelFile
             {
                 id = level.Id.Value,
+                contentVersion = level.ContentVersion.Value,
                 difficulty = level.Difficulty.ToString(),
                 width = level.Layout.Shape.Width,
                 height = level.Layout.Shape.Height,

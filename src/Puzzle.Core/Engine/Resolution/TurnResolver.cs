@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Model;
+using Puzzle.Core.Randomness;
 
 namespace Puzzle.Core.Engine.Resolution
 {
@@ -89,6 +90,61 @@ namespace Puzzle.Core.Engine.Resolution
             Tile special = Consume(at);
             _pending.Enqueue(Effect.ForSpecial(special.Kind, at, _rules));
             RunRounds(PlayerMatch.None);
+        }
+
+        /// <summary>A booster's strike: every cell is hit once, then the board settles as it does after a move.</summary>
+        public void ResolveStrike(IReadOnlyList<int> cells)
+        {
+            foreach (int cell in cells)
+            {
+                _damage.Hit(cell);
+            }
+
+            RunRounds(PlayerMatch.None);
+        }
+
+        /// <summary>
+        /// The celebration after a win: free gems turn into rockets and fire, <paramref name="rockets"/> of them in
+        /// all. A board with fewer free gems than rockets left is served in waves, each on the board the wave before
+        /// it left behind.
+        /// </summary>
+        /// <returns>The rockets fired; fewer than asked only when the board ran out of free gems altogether.</returns>
+        public int ResolveFinale(int rockets, FreeGems gems, Rng rng)
+        {
+            int fired = 0;
+            while (fired < rockets)
+            {
+                gems.Collect();
+                if (gems.Count == 0)
+                {
+                    break;
+                }
+
+                for (int wave = Math.Min(rockets - fired, gems.Count); wave > 0; wave--)
+                {
+                    PlaceArmed(gems.Take(rng), rng.NextInt(2) == 0 ? TileKind.RocketH : TileKind.RocketV);
+                    fired++;
+                }
+
+                RunRounds(PlayerMatch.None);
+            }
+
+            return fired;
+        }
+
+        /// <summary>
+        /// Puts a special on the board and queues it to fire where it stands. Another effect may reach it first and
+        /// fire it; the queued entry then finds the tile gone and does nothing.
+        /// </summary>
+        private void PlaceArmed(int cell, TileKind special)
+        {
+            _board.Set(cell, Tile.Special(special));
+            if (_events.IsEnabled)
+            {
+                _events.Add(new GameEvent.SpecialCreated(_shape.PositionOf(cell), special));
+            }
+
+            _pending.Enqueue(Effect.ForSpecial(special, cell, _rules).RequiringTileAtOrigin(special));
         }
 
         /// <summary>Takes a special off the board as it fires (reported as destroyed so the view removes it).</summary>

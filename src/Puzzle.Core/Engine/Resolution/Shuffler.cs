@@ -68,6 +68,70 @@ namespace Puzzle.Core.Engine.Resolution
             return false;
         }
 
+        /// <summary>
+        /// The shuffle for a game that was over and may go on (the extra moves): a board without a move is revived as
+        /// <see cref="TryShuffle"/> revives it, and one that cannot be revived stays exactly as it was.
+        /// </summary>
+        /// <returns>False when nothing changed.</returns>
+        public bool TryShuffleOrLeave(IReadOnlyList<GemColor> palette)
+        {
+            CollectFreeGems();
+            Tile[] before = _gems.ToArray();
+            if (TryShuffle(palette))
+            {
+                return true;
+            }
+
+            PutBack(before);
+            return false;
+        }
+
+        /// <summary>
+        /// The shuffle as a booster. The board has moves, so nothing forces a result and only a true rearrangement
+        /// counts: the free gems trade places, none is repainted, and at least one cell holds another gem than
+        /// before. A board that offers no such arrangement stays exactly as it was.
+        /// </summary>
+        /// <returns>False when nothing changed.</returns>
+        public bool TryRearrangeOrLeave()
+        {
+            CollectFreeGems();
+            Tile[] before = _gems.ToArray();
+            for (int attempt = 0; attempt < _rules.ShuffleAttempts && before.Length > 1; attempt++)
+            {
+                Permute();
+                if (IsPlayable() && IsAnotherArrangementThan(before))
+                {
+                    return Succeed();
+                }
+            }
+
+            PutBack(before);
+            return false;
+        }
+
+        /// <summary>Whether a collected cell holds another gem than it did in <paramref name="before"/>.</summary>
+        private bool IsAnotherArrangementThan(Tile[] before)
+        {
+            for (int k = 0; k < before.Length; k++)
+            {
+                if (_gems[k] != before[k])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Writes the gems back to the collected cells as they lay in <paramref name="before"/>.</summary>
+        private void PutBack(Tile[] before)
+        {
+            for (int k = 0; k < _cells.Count; k++)
+            {
+                _board.Set(_cells[k], before[k]);
+            }
+        }
+
         private void CollectFreeGems()
         {
             _cells.Clear();

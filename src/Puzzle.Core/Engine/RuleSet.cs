@@ -13,6 +13,7 @@ namespace Puzzle.Core.Engine
         private readonly int _bigBombRadius = 2;
         private readonly int _seekerComboTargets = 3;
         private readonly int _minInitialMoves = 3;
+        private readonly int _startBoosterExtraMoves = 3;
 
         public static RuleSet Default { get; } = new RuleSet();
 
@@ -53,6 +54,13 @@ namespace Puzzle.Core.Engine
         {
             get => _minInitialMoves;
             init => _minInitialMoves = RequireRange(value, 1, 50, nameof(MinInitialMoves));
+        }
+
+        /// <summary>How many moves the <see cref="StartBooster.ExtraMoves"/> booster adds to the level's limit.</summary>
+        public int StartBoosterExtraMoves
+        {
+            get => _startBoosterExtraMoves;
+            init => _startBoosterExtraMoves = RequireRange(value, 1, 20, nameof(StartBoosterExtraMoves));
         }
 
         public int InitialFillAttempts { get; init; } = 60;
