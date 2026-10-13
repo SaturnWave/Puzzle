@@ -1,0 +1,13 @@
+{
+  // The default economy with sessions short enough for the average player to land inside the pace target (level 100
+  // between day 10 and day 14): about three attempts a session, three times a day. The default habit reaches level
+  // 100 on day 4, and no price, life or booster setting slows it into the target: only fewer attempts a day do. This
+  // file is there to be set beside the default (puzzle economy compare), because the coin picture turns over between
+  // the two: the three free ads of a day then cover nearly every +5 that is wanted, and coins have little to go to.
+  "extends": "default.json",
+  "name": "target-pace",
+  "habit": {
+    // Minutes after which no new attempt starts in a session. [proposed: the ceiling that meets assumption 1]
+    "sessionCeilingMinutes": 6
+  }
+}

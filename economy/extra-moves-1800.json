@@ -1,0 +1,10 @@
+{
+  // The default economy with the +5 moves at twice the price, to read what a price does: how often a free player
+  // still buys them, what is left in the purse, and whether the pace moves at all.
+  "extends": "default.json",
+  "name": "extra-moves-1800",
+  "extraMovesOffer": {
+    // Coins the +5 moves cost beyond the free ads. [placeholder]
+    "priceCoins": 1800
+  }
+}
