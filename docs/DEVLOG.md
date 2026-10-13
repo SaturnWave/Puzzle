@@ -4,6 +4,31 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-13 · Oturum 21 — Arayüzün ortak malzemesi Unity'de: yazı tipleri, çizimler, ortak parçalar
+
+**Kullanıcı kararları**
+- Kullanıcı komut vermedikçe her iş tek ajanla yapılır; çok ajanlı iş akışı yalnızca açık onayla. Kod sorularında önce kod grafiğine bakılır (graphify, yalnızca kod; `graphify-out`, depoya girmez).
+- Tablolarda odaların sırası önemli değil, dönem önemli (yeni yön Oturum 20'de yazılı). Sıra için seçimim: 1. ve 2. odadan geriye doğru.
+
+**Arayüz: planın 4–6. aşamaları (§23)**
+- Tasarımın üç yazı tipi (Gabarito, Paytone One, Young Serif) oyunda; Roboto kaldırıldı. Tuvalden 51 yeni çizim geldi; katalog 125 çizim, iki atlas. Asılı kart, yuvarlak düğme, booster diski, rozet, küçük düğme, bölüm başlığı, ilerleme sırası ve sayı yazımı ortak parça olarak yazıldı. Yeni ekran yok; var olan ekranlar yeni yazı tipleriyle çiziliyor.
+- İş, Unity lisansı düştüğü için Editor'sız yazılmış ve ayrı bir dalda (`ui-means-wip`) bekletilmişti. Kullanıcı Hub'ı yeniden başlatınca lisans geldi; bütün denetimler Unity'de tek tek çalıştırıldı: `ProjectSetup` (iki kez; ikincisi hiçbir dosyayı değiştirmedi), `EngineSmokeTest`, `FinaleCheck`, ekran yürüyüşü, yazı föyü, çizim föyü, ortak parçaların föyü, `DesignPairs`. Hepsi hatasız.
+- Bakılan görüntüler: yedi ekranın tasarım çizimiyle yan yana hâli, üç föy, koleksiyonun 2. odası ("Post-empresyonizm" iki düğmenin arasına sığıyor; "10. tablo" satır boyu rakamlarla). Yazılar ve var olan parçalar çizimle örtüşüyor; eksikler sonraki aşamaların işi.
+- Bir hata bulundu ve düzeltildi: `DesignPairs` önce çizimi yükleyip sonra oyunun görüntüsünü alıyordu; görüntü almak yeni sahne açtığı için yüklenen çizim yok oluyordu. Sıra değişti.
+- Testler: 3.061 testin 3.060'ı geçti. Kalan tek test (`PublicModeTests`, istek seli) arayüzle ilgili değil; bütün takım birlikte koşarken zamanlamaya takıldı, tek başına geçiyor. Ayrı iş olarak not edildi.
+- İş ana dala (`feature/bombs-colors-director-webui`) birleştirildi.
+
+**Tablo önerisi dönemlere göre yenilendi (onay bekliyor)**
+- 3–20. odalar için 18 dönem, 90 eser ve 52 yedek; hepsi müzenin kendi serbest bıraktığı görüntüler. 144 eser tek tek doğrulandı: 122'si sorunsuz, 20'si notlu, 2'si elendi. Sayfa güncellendi; kararlar K2 (bir tablonun kenarlarından yüzde 3 kırpma), K3 (üç eserde müzenin kendi beyanına güvenmek) ve K4 (üç eserde içerik notu). Onaysız kataloğa bir şey girmiyor.
+
+**Ekonomi: ayar araması (karar bekliyor)**
+- 5 canla ortalama ücretsiz oyuncu 100. bölüme, başka ne ayarlanırsa ayarlansın, 8. günde geliyor. 10–14 gün hedefini yalnızca 1 can (10. gün) ya da 16 saatlik can dolumu (11. gün) tutturuyor. Önerim: 5 can ve 8. gün; 10 dakikalık oturum esas alınsın. 5 canla altın dengesi için kalan hamle başına 4 altın, tablo başına 80 altın, "+5" 900, bölüm başı booster'ları 500 / 200 / 200 çıkıyor.
+- Öneri dosyaları (`economy/proposed*.json`, `economy/explore/`) depoya girmedi; karardan sonra girecek.
+
+**Diğer**
+- Yere konma esnemesi düzeltmesi ana dalda (§23).
+- Yapılmadı: APK ve telefon denemesi (ertelenmişti), ses, planın 1–3. ve 7–15. aşamaları.
+
 ## 2026-10-13 · Oturum 20 — Unity'de bitiş şöleni; oda önerisi, UI planı ve ekonomi simülatörü yolda
 
 **Kullanıcı kararları (2026-10-12 akşamı)**

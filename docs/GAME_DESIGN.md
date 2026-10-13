@@ -935,7 +935,7 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 | 5 | Bölüm başı (hedefler, bölüm öncesi booster'lar), kazanma (bitiş şöleni, parça ödülü), kaybetme ("+5 hamle" teklifi) | ✅ 2026-10-05 |
 | 6 | Müze haritası (kat planı), koleksiyon (salon duvarı), mağaza ve ayarlar | ✅ 2026-10-05 (fiyatlar `[fiyat]`; altın paket miktarları, set içerikleri ve oda planı örnek) |
 | 7 | Herkese açık web testindeki oyuncu sayfasına bu görünümün uygulanması | ✅ 2026-10-06, yayında; tasarımın yazı tipleriyle (Google Fonts üzerinden) |
-| 8 | Unity'ye aktarım (SVG'den sprite) | Arayüz fazında |
+| 8 | Unity'ye aktarım (SVG'den sprite) | Sürüyor: yazı tipleri, 51 yeni çizim ve ortak parçalar ✅ 2026-10-13 (§23); ekranlar sırada |
 
 Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
 
@@ -969,6 +969,12 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Müzenin durumu ve kesimler | `... -executeMethod Puzzle.Client.EditorTools.MuseumReport.Run` |
 | Bitiş şöleninin kareleri | `... -executeMethod Puzzle.Client.EditorTools.FinaleStory.Run -finaleLevels 40 -finaleLeft 3,12,30 -finaleSize 1080x2340` (kalan hamle sayısı, ekran boyu, atlama anı seçilir; görüntüler `out/unity/shots/finale`) |
 | Bitiş şöleninin denetimi | `... -executeMethod Puzzle.Client.EditorTools.FinaleCheck.Run` (sonuna kadar izleme, dokunuşla ve geri tuşuyla atlama, şölensiz kazanma ve kaybetme, hata durumunda kartın yine gelmesi) |
+| Yazı örnek föyü | `... -executeMethod Puzzle.Client.EditorTools.LetteringSheet.Run` (on bir yazı stili kendi zemininde, Türkçe harflerle; `out/unity/shots/lettering-sheet-2x.png`) |
+| Çizim föyü | `... -executeMethod Puzzle.Client.EditorTools.ArtSheet.Run` (kataloğun bütün çizimleri duvar, krem ve ahşap üstünde; `art-sheet-2x.png`) |
+| Ortak parçaların föyü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run -screens controls -screenSizes 1080x2340` (düğmeler ve diskler; duvar, krem kart ve ahşap üstünde) |
+| Tasarımla yan yana | `... -executeMethod Puzzle.Client.EditorTools.DesignPairs.Run` (yedi ekran, solda tasarım çizimi, sağda oyun; `pair-<ekran>-1080x2340.png`) |
+| Yazı tiplerini indir | `node tools/unity/fetch-fonts.js` (kaynaklar ve lisans metinleri `art/fonts/licences.json`) |
+| Tasarım tuvalinden simge çıkar | `node tools/unity/extract-design-symbols.js` (tuvaldeki simgeleri tek başına SVG olarak `art/unity` altına yazar) |
 | Tabloları indir | `node tools/unity/fetch-paintings.js` (yeni oda eklemek için betikteki listeye yazılır) |
 | Önbellekleri başka sürücüye taşı | `.\tools\unity\Move-CachesToDrive.ps1 -Drive D` |
 | APK derle | `Unity.exe -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run` → `unity/Build/Android/puzzle.apk` |
@@ -987,7 +993,15 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 
 **Yere konma esnemesi (2026-10-13).** Yere konan bir parçanın kısa esnemesi, parça esneme bitmeden yeniden hareket ettiğinde artık o anda biter. Önceden esneme sonraki düşüşün içine taşıyordu (hamle senaryolarının yaklaşık yüzde 11'inde, şölenlerin yüzde 36'sında); art arda çıkan malzemelerde parçanın alınışını bile geçebiliyordu. Hiçbir olayın başlangıcı ya da bitişi değişmedi; yalnızca taşan esnemelerin süresi kısaldı. Çok kısa kalan esneme atılmaz, kaldığı kadar oynar.
 
-**Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası, Roboto Bold yazı tipi.
+**Arayüzün araçları: yazı, çizimler, ortak parçalar (2026-10-13).** Tasarımdaki bütün ekranların istemciye gelmesi 15 aşamalı bir plandır (`out/unity/ui-plan.json`, depoya girmez). İlk yapılan, ekranların ortak malzemesidir (planın 4–6. aşamaları); yeni ekran henüz yoktur.
+
+- **Yazı tipleri.** Tasarımın üç yazı tipi oyundadır: Gabarito (etiketler ve arayüz), Paytone One (rakamlar ve düğme yazıları), Young Serif (başlıklar, oda ve tablo adları). Üçü de SIL Open Font License ile dağıtılır; lisans metinleri ve kaynak adresleri `art/fonts/licences.json` dosyasındadır. Roboto Bold kaldırıldı. Yazı on bir stille yazılır (`LetteringStyle`): stil yazı tipini, zemine göre rengi ve beyaz yazının koyu çevre çizgisini seçer. Young Serif'in rakamları satır boyundadır ("10. tablo", "Bölüm 51'de açılır"). Harf kümesi Türkçenin bütün harflerini ve arayüzde geçen işaretleri kapsar; küme ya da yazı tipi dosyası değişince `ProjectSetup` yazı varlığını kendiliğinden yeniden üretir.
+- **Çizimler.** Tasarım tuvalinden 51 yeni çizim geldi (altın, can, sandık, mağaza ve takvim simgeleri, booster diskleri, küçük düğmeler, rozetler, ahşap raflar, pirinç levhalar): 20'si tuvalden betikle çıkarıldı, 31'i tuvalin ölçülerine göre elle yazıldı. Katalog artık 125 çizimi iki atlasta tutar. Bir çizimin dört yeri (kaynak dosya, `GalleryArt` üyesi, katalog listesi, içe aktarma ölçüleri) birbirini tutmak zorundadır; bunu Unity'siz çalışan testler denetler.
+- **Ortak parçalar.** Asılı kart (`HangingCard`: her boyda gövde, pirinç isim levhası, teller, isteğe bağlı kapatma düğmesi; sonuç kartı artık bunun üstünde durur), yuvarlak düğme (`DiscButton`: geri, ileri, duraklat, kapat, ayarlar, artı; eski `RoundButton` silindi), booster diski (`BoosterDisc`: adetli, bitmiş ve artılı, seçili, kurulu), sayı rozeti (`CountBadge`), küçük düğme (`SmallButton`: yeşil ya da mavi, altın ya da oynat işaretli), fiyat haplı büyük düğme (`PushButton`), bölüm başlığı (`SectionHeader`), ilerleme sırası (`PipRow`), tek tip soluk görünüm (`Dimming`) ve sayıların yazımı (`NumberWords`: "1.250", "12:34", "1 sa 42 dk").
+- **Doğrulama.** `ProjectSetup`, `EngineSmokeTest`, `FinaleCheck`, ekran yürüyüşü, üç föy ve `DesignPairs` Unity'de hatasız çalıştı; `ProjectSetup` ikinci çalıştırmada hiçbir dosyayı değiştirmiyor. Yedi ekranın tasarım çizimiyle yan yana görüntüsüne, föylere ve koleksiyonun 2. odasına bakıldı: yazılar ve var olan parçalar çizimle örtüşüyor. Çizimlerde olup oyunda henüz olmayanlar sonraki aşamaların işidir: altın ve can satırı, mağaza ve takvim sekmeleri, hediye ve etkinlik çerçeveleri, tahta rafındaki booster diskleri, kazanma kartındaki altın satırı, kaybetme kartındaki "+5 hamle" teklifi.
+- **Bilinen küçük farklar.** Beyaz yazının çevre çizgisi her yanda eşit kalınlıkta; çizimlerde alt kenarı biraz daha kalın. Bölüm başlığının mürekkebi krem zemin içindir; ahşap üstünde soluk kalır (tasarımda ahşap üstünde başlık yok).
+
+**Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
 
