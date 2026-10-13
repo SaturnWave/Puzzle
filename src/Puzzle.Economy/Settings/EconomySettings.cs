@@ -27,6 +27,9 @@ public sealed record EconomySettings
 
     public required PriceSettings Prices { get; init; }
 
+    /// <summary>What the file states for the game alone; nothing of it is simulated.</summary>
+    public required GameOnlySettings Game { get; init; }
+
     public required PlayerRules Player { get; init; }
 
     public required MeasurementPlan Measurement { get; init; }
@@ -145,6 +148,55 @@ public sealed record PriceSettings
 
     /// <summary>Nothing buys one in this version; balances are also shown as the pieces they would buy.</summary>
     public required Coins SideCollectionPiece { get; init; }
+}
+
+/// <summary>How an ad is shown by the build of the game the settings are for. Closed set; the format knows one answer.</summary>
+public enum AdsInTheBuild
+{
+    /// <summary>A card stands in for the ad: nothing is advertised.</summary>
+    Simulated,
+}
+
+/// <summary>What the build of the game the settings are for sells for real money. Closed set; the format knows one answer.</summary>
+public enum RealMoneyInTheBuild
+{
+    /// <summary>Nothing: coin packs are shown and cannot be bought.</summary>
+    NotAvailable,
+}
+
+/// <summary>A set of boosters the game's shop sells for coins.</summary>
+public sealed record BoosterSetSettings(Coins Price, IReadOnlyDictionary<BoosterKind, int> Boosters);
+
+/// <summary>
+/// What the settings file states for the game alone (its start, startBoosters, shop and build sections). The file is
+/// the game's too, so these are read and checked here, and the reports list them apart; the simulation never reads
+/// one. A simulated player starts with no coin and no booster, takes one start booster per attempt, never opens the
+/// shop and watches no ad for coins, whatever these say.
+/// </summary>
+public sealed record GameOnlySettings
+{
+    /// <summary>Coins a new player of the game starts with.</summary>
+    public required Coins StartCoins { get; init; }
+
+    /// <summary>Boosters a new player of the game starts with: every kind is stated, a count may be 0.</summary>
+    public required IReadOnlyDictionary<BoosterKind, int> StartBoosters { get; init; }
+
+    /// <summary>Start boosters the game lets a player take into one attempt, each kind once.</summary>
+    public required int StartBoostersPerAttempt { get; init; }
+
+    /// <summary>Coins in each pack the shop shows for real money, by the pack's name.</summary>
+    public required IReadOnlyDictionary<string, Coins> CoinPacks { get; init; }
+
+    public required IReadOnlyDictionary<string, BoosterSetSettings> BoosterSets { get; init; }
+
+    /// <summary>Coins one watched ad gives in the shop.</summary>
+    public required Coins CoinsForAnAd { get; init; }
+
+    public required int AdsForCoinsPerDay { get; init; }
+
+    public required AdsInTheBuild Ads { get; init; }
+
+    public required RealMoneyInTheBuild RealMoneyPurchases { get; init; }
 }
 
 /// <summary>When a player takes the extra-moves offer.</summary>

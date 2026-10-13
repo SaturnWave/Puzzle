@@ -1,27 +1,32 @@
-// Brings the Unity project up to date with the engine, the museum's rules and the content:
-//   1. builds Puzzle.Bot and Puzzle.Museum (netstandard2.1; each builds the Puzzle.Core it depends on) and copies
-//      the three assemblies into unity/Assets/Generated/Engine;
+// Brings the Unity project up to date with the engine, the rules around it and the content:
+//   1. builds Puzzle.Bot, Puzzle.Museum and Puzzle.Meta (netstandard2.1; each builds the Puzzle.Core it depends
+//      on) and copies the four assemblies into unity/Assets/Generated/Engine;
 //   2. packs levels/generated/level_*.json into one document, unity/Assets/Generated/Resources/Levels.json;
-//   3. copies the museum's catalogue, museum/catalogue.json, to unity/Assets/Generated/Resources/Museum.json.
-// The engine and the museum's rules go in as compiled assemblies so that the game runs the very code the levels
-// were calibrated with and the tools and tests check.
+//   3. copies the museum's catalogue, museum/catalogue.json, to unity/Assets/Generated/Resources/Museum.json;
+//   4. packs the game's part of the economy settings, economy/default.json, into
+//      unity/Assets/Generated/Resources/Economy.json (tools/unity/economy-pack.js says how).
+// The engine, the museum's rules and the rules of lives, coins and boosters go in as compiled assemblies so that
+// the game runs the very code the levels were calibrated with and the tools and tests check.
 // Everything written here is derived from the repository, so unity/Assets/Generated is not committed: run this
-// script after cloning and whenever the engine, the museum's rules, the levels or the catalogue change.
+// script after cloning and whenever the engine, the rules, the levels, the catalogue or the economy settings change.
 //
 // usage (from the repository root): node tools/unity/sync-engine.js
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const { SETTINGS: ECONOMY, packedEconomy } = require("./economy-pack");
 
 const ENGINE = "unity/Assets/Generated/Engine";
 const LEVELS = "levels/generated";
 const LEVEL_PACK = "unity/Assets/Generated/Resources/Levels.json";
 const CATALOGUE = "museum/catalogue.json";
 const CATALOGUE_COPY = "unity/Assets/Generated/Resources/Museum.json";
+const ECONOMY_PACK = "unity/Assets/Generated/Resources/Economy.json";
 // Each project with the assemblies taken from its output folder. The core lands in both; it is taken once.
 const PROJECTS = [
   { project: "src/Puzzle.Bot", assemblies: ["Puzzle.Core.dll", "Puzzle.Bot.dll"] },
   { project: "src/Puzzle.Museum", assemblies: ["Puzzle.Museum.dll"] },
+  { project: "src/Puzzle.Meta", assemblies: ["Puzzle.Meta.dll"] },
 ];
 
 function main() {
@@ -32,7 +37,7 @@ function main() {
       fs.copyFileSync(path.join(project, "bin/Release/netstandard2.1", assembly), path.join(ENGINE, assembly));
     }
   }
-  console.log(`engine and museum assemblies -> ${ENGINE}`);
+  console.log(`engine, museum and meta assemblies -> ${ENGINE}`);
 
   const files = fs.readdirSync(LEVELS).filter(name => /^level_\d{4}\.json$/.test(name)).sort();
   if (files.length === 0) throw new Error(`no level file in ${LEVELS}`);
@@ -46,6 +51,11 @@ function main() {
   fs.writeFileSync(CATALOGUE_COPY, JSON.stringify(catalogue));
   const chosen = catalogue.rooms.reduce((count, room) => count + room.paintings.length, 0);
   console.log(`${catalogue.rooms.length} rooms, ${chosen} paintings chosen -> ${CATALOGUE_COPY}`);
+
+  // A settings file that leaves out a field the game reads stops here, by the field's name, and not inside the game.
+  const economy = packedEconomy(fs.readFileSync(ECONOMY, "utf8"), ECONOMY);
+  fs.writeFileSync(ECONOMY_PACK, JSON.stringify(economy));
+  console.log(`${ECONOMY}: ${economy.prices.boosters.length} booster prices, ${economy.shop.boosterSets.length} sets, ${economy.shop.coinPacks.length} coin packs -> ${ECONOMY_PACK}`);
 }
 
 main();

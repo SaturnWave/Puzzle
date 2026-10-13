@@ -4,6 +4,33 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-14 · Oturum 22 — Kurallar istemcide: can, coin, booster (arayüz planı 1. aşama)
+
+**Yapılan (§23)**
+- Yeni proje `src/Puzzle.Meta`: cüzdan, can sayacı, kazanma ödülü, "+5 hamle" teklifi, bölüm öncesi booster seçimi, tablo ve gün ödülleri, mağaza. Düz C#; saat dışarıdan verilir; her kuralın sonucu kapalı bir türdür. Ekranda bir şey değişmedi.
+- Oyun sayılarını `economy/default.json` dosyasından okuyor: `tools/unity/economy-pack.js` oyuna ait bölümleri paketliyor, `sync-engine.js` paketi ve `Puzzle.Meta` derlemesini Unity'ye koyuyor, istemcide `EconomyPack` okuyor.
+- Ayar dosyasına oyuna özel alanlar eklendi (başlangıç, bölüm öncesi booster sayısı, mağaza, derleme işaretleri); simülatör biçimlerini denetliyor, simüle etmiyor.
+- İş tek ajanla yapıldı; sonucu kendim denetledim.
+
+**Doğrulama**
+- 3.160 test geçti (99'u yeni); paket betiğinin 8 testi geçti.
+- Simülatörün yürüttüğü yolculuklar oyunun kurallarından geçirildi: can, coin ve booster her adımda aynı. Can kuralı bilerek bozulduğunda 13 test kırmızıya döndü.
+- `puzzle economy run`: 100. bölüm 8. gün, 300. bölüm 25. gün, 1000. bölüm 90. gün; yeni alanlar tek bir sayıyı değiştirmedi.
+- Unity: `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck`, ekran yürüyüşü hatasız. `EconomyCheck` bilerek bozulan iki pakette hata verdi.
+
+**Benim değiştirdiğim tek sayı**
+- Reklamla coin 50 yerine 20 (günde 3): 50, ortalama ücretsiz oyuncunun günlük gelirine (yaklaşık 420 coin) üçte bir ekliyordu ve dün okunan dengeyi bozardı; 20 yedide bir ekler. Yer tutucu.
+
+**Kullanıcıya soruldu (yer tutucular)**
+- Yeni oyuncunun başlangıcı: 0 coin ve her booster'dan bir tane.
+- Mağaza: coin paketleri 500 / 1.200 / 2.500 (fiyatsız, satışta değil); booster setleri `starter` 900 ve `master` 6.300 coin.
+- Bir denemede üç bölüm öncesi booster'ın üçü de alınabilir.
+
+**Bilinen açıklar**
+- Telefonda ve IL2CPP derlemesinde denenmedi.
+- İleri alınmış saat canları dolduruyor (sunucusuz oyunda kapanmaz); geri alınmış saat can getirmiyor.
+- Sıradaki aşama (cüzdanın kayıt dosyasına girmesi) için not: can sayacı zamanı tam tutuyor; kayıt tam saniyeye yuvarlarsa okunan değer eşit çıkmaz.
+
 ## 2026-10-13 · Oturum 21 — Arayüzün ortak malzemesi Unity'de: yazı tipleri, çizimler, ortak parçalar
 
 **Kullanıcı kararları**

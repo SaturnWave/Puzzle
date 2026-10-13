@@ -101,6 +101,55 @@
     "sideCollectionPiece": 300
   },
 
+  // FOR THE GAME ALONE, from here to "build": read and checked by the simulator, simulated by nothing. The fixture
+  // states them because a settings file must; no test of a simulator's rule counts with one.
+
+  "start": {
+    // Coins a new player starts with. [placeholder]
+    "coins": 0,
+    // Boosters a new player starts with; every booster is stated, 0 gives none. [placeholder]
+    "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1, "hit-cell": 1, "hit-row": 1, "hit-column": 1, "shuffle": 1 }
+  },
+
+  "startBoosters": {
+    // Start boosters a player may take into one attempt, each kind once: 1 to 3. [proposed]
+    "perAttempt": 3
+  },
+
+  "shop": {
+    // Packs of coins for real money; no build sells one, so a pack has no price. [placeholder]
+    "coinPacks": {
+      "small": { "coins": 500 },
+      "medium": { "coins": 1200 },
+      "large": { "coins": 2500 }
+    },
+    // Sets of boosters for coins, each at the sum of this file's single prices. [placeholder]
+    "boosterSets": {
+      "starter": {
+        "priceCoins": 2100,
+        "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 }
+      },
+      "master": {
+        "priceCoins": 6300,
+        "boosters": { "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
+      }
+    },
+    "adForCoins": {
+      // Coins one watched ad gives. [placeholder]
+      "coins": 50,
+      // Times a day an ad gives coins. [placeholder]
+      "perDay": 3
+    }
+  },
+
+  // What the build of the game can do; no other word is known.
+  "build": {
+    // How an ad is shown. [proposed]
+    "ads": "simulated",
+    // What is sold for real money. [proposed]
+    "realMoneyPurchases": "notAvailable"
+  },
+
   "player": {
     "extraMoves": {
       // The +5 is wanted when the moves run out with at least this percent of the goals done; 0 means always, any

@@ -405,6 +405,9 @@ tests/Puzzle.Core.Tests  net10.0, xUnit
 src/Puzzle.Bank     net10.0 — bölüm bankası ve derleyici: adaylar, ölçüm, saklama, politika, seçim, yayına alma (§24)
 policies/           zorluk politikaları (default.json: oyuncu, paylar, tür hedefleri, sabitlenen bölümler)
 src/Puzzle.Museum   netstandard2.1, C# 9 — müzenin kuralları: odalar, tablolar, yapboz kesimi, ilerleme (Unity'ye girer)
+src/Puzzle.Meta     netstandard2.1, C# 9 — can, coin, booster, ödül, teklif ve mağaza kuralları (Unity'ye girer; §23)
+src/Puzzle.Economy  net10.0 — ekonomi simülatörü (§25)
+economy/            ekonomi ayarları: default.json oyunun ve simülatörün ortak dosyası, yanında değişkenleri
 museum/catalogue.json   odaların ve tabloların veri dosyası (başlık, ressam, yıl, görüntü, kaynak, lisans)
 art/paintings       tabloların lisans listesi (oda oda); görüntüler unity/Assets/Resources/Paintings altında
 unity/              Unity 6.6 projesi — oyunun istemcisi (Android; iOS sonra). Motoru derlenmiş hâliyle kullanır
@@ -962,6 +965,8 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Motoru ve bölümleri projeye al | `node tools/unity/sync-engine.js` |
 | Projeyi kur (çizim hattı, atlas, katalog, sahne) | `Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ProjectSetup.Run` |
 | Motor denetimi | `... -executeMethod Puzzle.Client.EditorTools.EngineSmokeTest.Run` |
+| Ekonomi ayarını paketle ve sabitle | `node tools/unity/economy-pack.js --pin` (ayar dosyası değişince; sonra `sync-engine.js`) |
+| Ekonomi denetimi | `... -executeMethod Puzzle.Client.EditorTools.EconomyCheck.Run` (Unity paketi okuyabiliyor mu, kurallar ondan kuruluyor mu) |
 | Görüntü al | `... -executeMethod Puzzle.Client.EditorTools.RenderHarness.Run -shotLevels 40 -shotSizes 1080x2340 -shotTimes settled` |
 | Botla oynat, kareleri çıkar | `... -executeMethod Puzzle.Client.EditorTools.Storyboard.Run -storyLevels 40 -storyBot expert -storyTurns 6` |
 | Müze ekranlarının görüntüsü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run` (salon, harita, koleksiyon, yapboz; oyuncu durumu ve ekran boyu seçilir) |
@@ -1001,6 +1006,15 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Doğrulama.** `ProjectSetup`, `EngineSmokeTest`, `FinaleCheck`, ekran yürüyüşü, üç föy ve `DesignPairs` Unity'de hatasız çalıştı; `ProjectSetup` ikinci çalıştırmada hiçbir dosyayı değiştirmiyor. Yedi ekranın tasarım çizimiyle yan yana görüntüsüne, föylere ve koleksiyonun 2. odasına bakıldı: yazılar ve var olan parçalar çizimle örtüşüyor. Çizimlerde olup oyunda henüz olmayanlar sonraki aşamaların işidir: altın ve can satırı, mağaza ve takvim sekmeleri, hediye ve etkinlik çerçeveleri, tahta rafındaki booster diskleri, kazanma kartındaki altın satırı, kaybetme kartındaki "+5 hamle" teklifi.
 - **Bilinen küçük farklar.** Beyaz yazının çevre çizgisi her yanda eşit kalınlıkta; çizimlerde alt kenarı biraz daha kalın. Bölüm başlığının mürekkebi krem zemin içindir; ahşap üstünde soluk kalır (tasarımda ahşap üstünde başlık yok).
 
+**Kurallar istemcide: can, coin, booster (2026-10-14).** Arayüz planının 1. aşaması. Ekranda görünen bir şey değişmedi; ekranların dayanacağı kurallar yazıldı.
+
+- **`src/Puzzle.Meta`** (düz C#, Unity'ye derlenmiş girer; yalnızca `Puzzle.Core`'a bağlı): cüzdan (coin, can, booster rafı, günün reklam sayıları, ödül sayaçları; değişmez, değerce eşit), can sayacı, kazanma ödülü, "+5 hamle" teklifinin koşulları (coin'le ya da günün reklam hakkıyla), bölüm öncesi booster seçimi, tablo ve gün ödülleri (n. ödül sıradaki n. booster'dır; rastgelelik yok), mağaza (tek booster, set, reklamla coin; gerçek para paketleri "satışta değil"). Her kuralın sonucu kapalı bir türdür: alındı, coin yetmiyor, satışta değil gibi.
+- **Saat dışarıdan verilir.** Kurallar saati bilmez; her soruya zaman parametre olarak gelir. Geri alınmış bir saat can getirmez ve yeni gün hakkı açmaz. İleri alınmış saat canları doldurur: bilinen açık, sunucusuz bir oyunda kapanmaz.
+- **Tek ayar dosyası.** Oyun fiyatları ve miktarları `economy/default.json` dosyasından okur (§25). `tools/unity/economy-pack.js` dosyanın oyuna ait bölümlerini paketler (`unity/Assets/Generated/Resources/Economy.json`); paketin sabitlenmiş bir kopyası testlerdedir (`tests/fixtures/economy-pack.json`). **Ayar dosyası her değiştiğinde:** `node tools/unity/economy-pack.js --pin`, ardından `node tools/unity/sync-engine.js`; yoksa betiğin testi, `EconomyFileTests` ve `EconomyCheck` kırmızıya döner.
+- **Oyuna özel yeni alanlar** (simülatör biçimlerini denetler, simüle etmez; hepsi yer tutucu): yeni oyuncunun başlangıcı (0 coin, her booster'dan bir tane), bir denemeye alınabilecek bölüm öncesi booster sayısı (3), mağaza (coin paketleri 500 / 1.200 / 2.500, fiyatsız; booster setleri `starter` 900 ve `master` 6.300 coin, içindekilerin tek tek fiyatlarının toplamı; reklamla 20 coin, günde 3 kez), derlemenin işaretleri (reklam "canlandırma", gerçek para "yok").
+- **Simülatörle aynı cevap.** Simülatörün yürüttüğü oyuncu yolculukları oyunun kurallarından geçirilir; can, coin ve booster her adımda aynı çıkmak zorundadır (`MetaAgainstTheSimulatorTests`). Yeni alanlar simülasyonun tek bir sayısını değiştirmedi.
+- **Doğrulama:** 3.160 test (99'u yeni), paket betiğinin 8 testi; Unity'de `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck` (Unity'nin okuyucusu paketi yazıldığı gibi okuyor ve oyun kuralları ondan kuruyor) ve ekran yürüyüşü hatasız.
+- **Kanıtlanmadı:** telefonda ve IL2CPP derlemesinde çalışma; bölüm içi booster kullanımı ve aynı denemede iki bölüm öncesi booster simülatör karşılaştırmasında yok.
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
@@ -1084,7 +1098,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Can:** 5 can ve 30 dakika kalır. Ortalama oyuncunun 100. bölüme **8. günde** gelmesi kabul edildi (ilk dilek 10–14 gündü).
 - **Alışkanlık:** hesaplar günde 3 oturum ve **10 dakikalık oturuma** dayanır; iki gerçek oyuncunun kaydına en yakın alışkanlık budur.
 - **Coin sayıları** (simülatörden okundu, yürürlükte; her biri ayar dosyasında "öneri" olarak işaretli ve değiştirilebilir): kalan hamle başına **4**, tamamlanan tablo başına **80**, "+5 hamle" **900**, bölüm öncesi booster'lar: renk bombası **500**, roket ve bomba **200**, "+3 hamle" **200**. Bölüm kazanmanın sabit ödülü ve günlük coin ödülü yok.
-- **Yer tutucu kalanlar:** bölüm içi dört booster'ın fiyatı (ölçülmedi) ve yan koleksiyon parçasının fiyatı.
+- **Yer tutucu kalanlar:** bölüm içi dört booster'ın fiyatı (ölçülmedi), yan koleksiyon parçasının fiyatı ve oyuna özel alanlar (başlangıç, mağaza, reklamla coin; §23).
 
 **Neden 5 can.** 10 dakikalık oturumda 5 can hiçbir oturumu bitirmez; hızı yavaşlatmanın yolu oyuncuyu durdurmaktır. İlk dileği (10–14 gün) yalnızca iki ayar tutturuyor, ikisi de rahat oyuncu hedefiyle (§19) çelişiyor:
 

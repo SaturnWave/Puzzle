@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The rules of what a player holds and spends around the levels: lives, coins, boosters owned, rewards, the
+       extra-moves offer and the shop's goods. Every number comes from the economy settings file
+       (economy/default.json, packed for the game by tools/unity/sync-engine.js), and real time reaches a rule
+       only as a parameter. Same Unity constraints as Puzzle.Core (netstandard2.1, C# 9, no package
+       dependencies): this assembly is copied into the Unity project as-is, and the tools and tests can
+       reference it too. It does not reference the economy simulator, which keeps rules of its own; the tests
+       hold the two to the same answers. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Puzzle.Meta</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+  </ItemGroup>
+</Project>

@@ -198,6 +198,19 @@ public class EconomySettingsTests
     [InlineData("""{ "report": { "balanceAtDays": [1, 400] } }""", "within players.horizonDays")]
     [InlineData("""{ "name": "my settings" }""", "letters, digits and '-'")]
     [InlineData("""{ "lives": { "max": 0 } }""", "lives.max 0 must be at least 1")]
+    [InlineData("""{ "start": { "boosters": { "start-freeze": 1 } } }""", "start.boosters names 'start-freeze'")]
+    [InlineData("""{ "start": { "boosters": { "shuffle": -1 } } }""", "start.boosters.shuffle -1 must be at least 0")]
+    [InlineData("""{ "startBoosters": { "perAttempt": 0 } }""", "startBoosters.perAttempt 0 must be 1 to 3")]
+    [InlineData("""{ "startBoosters": { "perAttempt": 4 } }""", "startBoosters.perAttempt 4 must be 1 to 3")]
+    [InlineData("""{ "shop": { "coinPacks": { "big.one": { "coins": 100 } } } }""", "shop.coinPacks has an entry named 'big.one'")]
+    [InlineData("""{ "shop": { "coinPacks": { "small": { "coins": 0 } } } }""", "shop.coinPacks.small.coins 0 must be at least 1")]
+    [InlineData("""{ "shop": { "boosterSets": { "starter": { "priceCoins": 0 } } } }""", "shop.boosterSets.starter.priceCoins 0 must be at least 1")]
+    [InlineData("""{ "shop": { "boosterSets": { "starter": { "boosters": { "hit-diagonal": 1 } } } } }""", "shop.boosterSets.starter.boosters names 'hit-diagonal'")]
+    [InlineData("""{ "shop": { "boosterSets": { "starter": { "boosters": { "shuffle": 0 } } } } }""", "shop.boosterSets.starter.boosters.shuffle 0 must be at least 1")]
+    [InlineData("""{ "shop": { "boosterSets": { "none": { "priceCoins": 10, "boosters": {} } } } }""", "shop.boosterSets.none.boosters is empty")]
+    [InlineData("""{ "shop": { "adForCoins": { "perDay": -1 } } }""", "shop.adForCoins.perDay -1 must be at least 0")]
+    [InlineData("""{ "build": { "ads": "live" } }""", "build.ads is 'live'")]
+    [InlineData("""{ "build": { "realMoneyPurchases": "store" } }""", "build.realMoneyPurchases is 'store'")]
     public void Settings_that_contradict_themselves_are_refused(string change, string expectedInTheMessage) =>
         Assert.Contains(expectedInTheMessage, Refused(change).Message);
 
@@ -209,6 +222,10 @@ public class EconomySettingsTests
     [InlineData("""{ "extraMovesOffer": { "priceCoins": 1000001 } }""", "extraMovesOffer.priceCoins")]
     [InlineData("""{ "prices": { "boosters": { "shuffle": 1000001 } } }""", "prices.boosters.shuffle")]
     [InlineData("""{ "prices": { "sideCollectionPiece": 1000001 } }""", "prices.sideCollectionPiece")]
+    [InlineData("""{ "start": { "coins": 1000001 } }""", "start.coins")]
+    [InlineData("""{ "shop": { "coinPacks": { "large": { "coins": 1000001 } } } }""", "shop.coinPacks.large.coins")]
+    [InlineData("""{ "shop": { "boosterSets": { "master": { "priceCoins": 1000001 } } } }""", "shop.boosterSets.master.priceCoins")]
+    [InlineData("""{ "shop": { "adForCoins": { "coins": 1000001 } } }""", "shop.adForCoins.coins")]
     public void An_amount_of_coins_no_sum_could_hold_is_refused_by_its_field(string change, string field)
     {
         // Without the bound the loader, or the simulation halfway through its players, ended in an overflow with no field named.
@@ -251,6 +268,40 @@ public class EconomySettingsTests
             // And the catalogue describes nothing the format no longer has.
             Assert.All(SettingsCatalogue.Fields, field => Assert.Contains(settings.Stated, stated => field.Describes(stated.Path)));
         }
+    }
+
+    [Fact]
+    public void What_the_file_states_for_the_game_alone_is_read_whole_and_marked_as_not_simulated()
+    {
+        GameOnlySettings game = EconomySupport.Settings().Game;
+
+        // The fixture's start, cap, shop and build, as the file states them.
+        Assert.Equal(Coins.None, game.StartCoins);
+        Assert.Equal(BoosterKinds.All.Order(), game.StartBoosters.Keys.Order());
+        Assert.All(game.StartBoosters.Values, count => Assert.Equal(1, count));
+        Assert.Equal(3, game.StartBoostersPerAttempt);
+        Assert.Equal(new Coins(1200), game.CoinPacks["medium"]);
+        Assert.Equal(["large", "medium", "small"], game.CoinPacks.Keys.Order());
+        Assert.Equal(new Coins(2100), game.BoosterSets["starter"].Price);
+        Assert.Equal(BoosterKinds.All.Where(BoosterKinds.IsStart).Order(), game.BoosterSets["starter"].Boosters.Keys.Order());
+        Assert.Equal(3, game.BoosterSets["master"].Boosters[BoosterKind.HitColumn]);
+        Assert.Equal((new Coins(50), 3), (game.CoinsForAnAd, game.AdsForCoinsPerDay));
+        Assert.Equal((AdsInTheBuild.Simulated, RealMoneyInTheBuild.NotAvailable), (game.Ads, game.RealMoneyPurchases));
+
+        // The catalogue says of each of these that no simulated player meets it, and of nothing else.
+        string[] gameOnly = SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly).Select(field => field.Path.Split('.')[0]).Distinct().ToArray();
+        Assert.Equal(["start", "startBoosters", "shop", "build"], gameOnly);
+        Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("lives.max").Use);
+        Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("player.startBoosters.perAttempt").Use);
+        Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("startBoosters.perAttempt").Use);
+        Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("shop.boosterSets.starter.boosters.start-color-bomb").Use);
+        Assert.All(
+            SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly),
+            field => Assert.Contains(field.Provenance, new[] { Provenance.Placeholder, Provenance.Proposed }));
+
+        // The game may let a player take more start boosters than a simulated player takes: the two are stated apart.
+        EconomySettings oneForBoth = EconomySupport.Settings("""{ "startBoosters": { "perAttempt": 1 } }""");
+        Assert.Equal(1, oneForBoth.Game.StartBoostersPerAttempt);
     }
 
     [Fact]

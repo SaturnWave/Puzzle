@@ -1,0 +1,178 @@
+{
+  "formatVersion": 1,
+  "lives": {
+    "max": 5,
+    "minutesPerLife": 30
+  },
+  "coins": {
+    "perMoveLeftInFinale": 4,
+    "perLevelWon": 0
+  },
+  "rewards": {
+    "paintingCompleted": {
+      "coins": 80,
+      "boostersEachTime": 1,
+      "boosterRotation": [
+        "start-rocket-and-bomb",
+        "start-color-bomb",
+        "start-extra-moves",
+        "hit-cell",
+        "hit-row",
+        "hit-column",
+        "shuffle"
+      ]
+    },
+    "daily": {
+      "coins": 0,
+      "everyDays": 1,
+      "boostersEachTime": 1,
+      "boosterRotation": [
+        "start-rocket-and-bomb",
+        "start-color-bomb",
+        "start-extra-moves",
+        "hit-cell",
+        "hit-row",
+        "hit-column",
+        "shuffle"
+      ]
+    }
+  },
+  "extraMovesOffer": {
+    "freeAdsPerDay": 3,
+    "priceCoins": 900
+  },
+  "prices": {
+    "boosters": [
+      {
+        "booster": "start-rocket-and-bomb",
+        "coins": 200
+      },
+      {
+        "booster": "start-color-bomb",
+        "coins": 500
+      },
+      {
+        "booster": "start-extra-moves",
+        "coins": 200
+      },
+      {
+        "booster": "hit-cell",
+        "coins": 400
+      },
+      {
+        "booster": "hit-row",
+        "coins": 700
+      },
+      {
+        "booster": "hit-column",
+        "coins": 700
+      },
+      {
+        "booster": "shuffle",
+        "coins": 300
+      }
+    ]
+  },
+  "start": {
+    "coins": 0,
+    "boosters": [
+      {
+        "booster": "start-rocket-and-bomb",
+        "count": 1
+      },
+      {
+        "booster": "start-color-bomb",
+        "count": 1
+      },
+      {
+        "booster": "start-extra-moves",
+        "count": 1
+      },
+      {
+        "booster": "hit-cell",
+        "count": 1
+      },
+      {
+        "booster": "hit-row",
+        "count": 1
+      },
+      {
+        "booster": "hit-column",
+        "count": 1
+      },
+      {
+        "booster": "shuffle",
+        "count": 1
+      }
+    ]
+  },
+  "startBoosters": {
+    "perAttempt": 3
+  },
+  "shop": {
+    "coinPacks": [
+      {
+        "name": "small",
+        "coins": 500
+      },
+      {
+        "name": "medium",
+        "coins": 1200
+      },
+      {
+        "name": "large",
+        "coins": 2500
+      }
+    ],
+    "boosterSets": [
+      {
+        "name": "starter",
+        "priceCoins": 900,
+        "boosters": [
+          {
+            "booster": "start-rocket-and-bomb",
+            "count": 1
+          },
+          {
+            "booster": "start-color-bomb",
+            "count": 1
+          },
+          {
+            "booster": "start-extra-moves",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "name": "master",
+        "priceCoins": 6300,
+        "boosters": [
+          {
+            "booster": "hit-cell",
+            "count": 3
+          },
+          {
+            "booster": "hit-row",
+            "count": 3
+          },
+          {
+            "booster": "hit-column",
+            "count": 3
+          },
+          {
+            "booster": "shuffle",
+            "count": 3
+          }
+        ]
+      }
+    ],
+    "adForCoins": {
+      "coins": 20,
+      "perDay": 3
+    }
+  },
+  "build": {
+    "ads": "simulated",
+    "realMoneyPurchases": "notAvailable"
+  }
+}

@@ -22,8 +22,21 @@ public enum Provenance
     Tool,
 }
 
-/// <summary>What a field of the settings file is: its path ('*' stands for any one name), its unit and where its value comes from.</summary>
-public sealed record SettingDescription(string Path, string Unit, Provenance Provenance)
+/// <summary>Who plays by a setting. Closed set.</summary>
+public enum SettingUse
+{
+    /// <summary>The simulation reads it: the numbers of a report rest on it.</summary>
+    Simulated,
+
+    /// <summary>
+    /// Stated for the game alone. The settings file is the game's too, so the simulator reads the value, checks that
+    /// it is well formed and lists it; no simulated player ever meets it and no figure of a report moves with it.
+    /// </summary>
+    GameOnly,
+}
+
+/// <summary>What a field of the settings file is: its path ('*' stands for any one name), its unit, where its value comes from and who plays by it.</summary>
+public sealed record SettingDescription(string Path, string Unit, Provenance Provenance, SettingUse Use = SettingUse.Simulated)
 {
     public bool Describes(string path)
     {
@@ -47,6 +60,7 @@ public static class SettingsCatalogue
     private const string Boosters = "boosters";
     private const string ShareOfGoals = "percent of the goals";
     private const string YesOrNo = "yes or no";
+    private const string AdsADay = "ads a day";
 
     public static IReadOnlyList<SettingDescription> Fields { get; } =
     [
@@ -72,7 +86,7 @@ public static class SettingsCatalogue
         new("rewards.daily.everyDays", Days, Provenance.Assumed),
         new("rewards.daily.boostersEachTime", Boosters, Provenance.Assumed),
         new("rewards.daily.boosterRotation", "boosters in turn", Provenance.Assumed),
-        new("extraMovesOffer.freeAdsPerDay", "ads a day", Provenance.Assumed),
+        new("extraMovesOffer.freeAdsPerDay", AdsADay, Provenance.Assumed),
         new("extraMovesOffer.priceCoins", Coins, Provenance.Proposed),
 
         // The start boosters are measured, so their prices are read from the reports; the first entry that describes
@@ -82,6 +96,19 @@ public static class SettingsCatalogue
         new("prices.boosters.start-extra-moves", Coins, Provenance.Proposed),
         new("prices.boosters.*", Coins, Provenance.Placeholder),
         new("prices.sideCollectionPiece", Coins, Provenance.Placeholder),
+
+        // What the game reads and no simulated player meets: a simulated player starts with nothing, takes one start
+        // booster per attempt (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins.
+        new("start.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
+        new("start.boosters.*", Boosters, Provenance.Placeholder, SettingUse.GameOnly),
+        new("startBoosters.perAttempt", Boosters, Provenance.Proposed, SettingUse.GameOnly),
+        new("shop.coinPacks.*.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
+        new("shop.boosterSets.*.priceCoins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
+        new("shop.boosterSets.*.boosters.*", Boosters, Provenance.Placeholder, SettingUse.GameOnly),
+        new("shop.adForCoins.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
+        new("shop.adForCoins.perDay", AdsADay, Provenance.Placeholder, SettingUse.GameOnly),
+        new("build.ads", "how an ad is shown", Provenance.Proposed, SettingUse.GameOnly),
+        new("build.realMoneyPurchases", "what is sold for money", Provenance.Proposed, SettingUse.GameOnly),
         new("player.extraMoves.takeWhenGoalsDonePercent", ShareOfGoals, Provenance.Proposed),
         new("player.extraMoves.watchesAds", YesOrNo, Provenance.Proposed),
         new("player.extraMoves.paysCoins", YesOrNo, Provenance.Proposed),

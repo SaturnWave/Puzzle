@@ -30,12 +30,15 @@ public sealed class EconomySettingsFormatException : Exception
 /// and a field stated twice are refused, because either would load in silence and price a thousand levels with a
 /// number nobody meant. Comments and trailing commas are allowed. A variant file names the file beside it that it
 /// <c>extends</c> and states only what differs: objects merge by field, lists and values replace; the merged
-/// document is then read as strictly as a whole file.
+/// document is then read as strictly as a whole file. The file is the game's settings too: its sections for the
+/// game alone are read and checked like the rest and simulated by nothing (<see cref="GameOnlySettings"/>).
 /// </summary>
 public static class SettingsLoader
 {
     private const string ExtendsField = "extends";
     private const string NameField = "name";
+    private const string SimulatedAdsWord = "simulated";
+    private const string NoRealMoneyWord = "notAvailable";
 
     /// <summary>
     /// No amount of coins in a settings file may be above this. It is far above any price a game has and far below
@@ -228,7 +231,7 @@ public static class SettingsLoader
             RequireStartsARuleCanUse(measurement, player.StartBoosters);
             return new EconomySettings
             {
-                Name = file.Name.Length > 0 && file.Name.All(c => char.IsAsciiLetterOrDigit(c) || c == '-')
+                Name = IsPlainName(file.Name)
                     ? file.Name
                     : throw Invalid($"name '{file.Name}' must be letters, digits and '-' (it names the folder the reports go to)"),
                 Players = players,
@@ -247,6 +250,7 @@ public static class SettingsLoader
                 },
                 ExtraMovesOffer = OfferOf(file.ExtraMovesOffer, coins),
                 Prices = PricesOf(file.Prices, coins),
+                Game = GameOnlyOf(file),
                 Player = player,
                 Measurement = measurement,
                 Report = ReportOf(file.Report, players.HorizonDays),
@@ -354,6 +358,58 @@ public static class SettingsLoader
                 Boosters = boosters,
                 SideCollectionPiece = CoinsOf(AtLeast(file.SideCollectionPiece, 1L, "prices.sideCollectionPiece"), "prices.sideCollectionPiece"),
             };
+        }
+
+        /// <summary>The sections the game reads and the simulation does not: checked for their form, used by nothing here.</summary>
+        private GameOnlySettings GameOnlyOf(SettingsFile file)
+        {
+            int startKinds = BoosterKinds.All.Count(BoosterKinds.IsStart);
+            Require(
+                file.StartBoosters.PerAttempt >= 1 && file.StartBoosters.PerAttempt <= startKinds,
+                $"startBoosters.perAttempt {file.StartBoosters.PerAttempt} must be 1 to {startKinds}: each kind of start booster is taken once");
+            return new GameOnlySettings
+            {
+                StartCoins = CoinsOf(file.Start.Coins, "start.coins"),
+                StartBoosters = ByBooster(file.Start.Boosters, BoosterKinds.All, "start.boosters")
+                    .ToDictionary(held => held.Key, held => AtLeast(held.Value, 0, $"start.boosters.{held.Key.Name()}")),
+                StartBoostersPerAttempt = file.StartBoosters.PerAttempt,
+                CoinPacks = ByPlainName(file.Shop.CoinPacks, "shop.coinPacks")
+                    .ToDictionary(pack => pack.Key, pack => CoinsOf(AtLeast(pack.Value.Coins, 1L, $"shop.coinPacks.{pack.Key}.coins"), $"shop.coinPacks.{pack.Key}.coins")),
+                BoosterSets = ByPlainName(file.Shop.BoosterSets, "shop.boosterSets")
+                    .ToDictionary(set => set.Key, set => BoosterSetOf(set.Value, $"shop.boosterSets.{set.Key}")),
+                CoinsForAnAd = CoinsOf(file.Shop.AdForCoins.Coins, "shop.adForCoins.coins"),
+                AdsForCoinsPerDay = AtLeast(file.Shop.AdForCoins.PerDay, 0, "shop.adForCoins.perDay"),
+                Ads = file.Build.Ads == SimulatedAdsWord
+                    ? AdsInTheBuild.Simulated
+                    : throw Invalid($"build.ads is '{file.Build.Ads}'; the only way a build shows an ad is '{SimulatedAdsWord}'"),
+                RealMoneyPurchases = file.Build.RealMoneyPurchases == NoRealMoneyWord
+                    ? RealMoneyInTheBuild.NotAvailable
+                    : throw Invalid($"build.realMoneyPurchases is '{file.Build.RealMoneyPurchases}'; a build sells nothing for money, which is '{NoRealMoneyWord}'"),
+            };
+        }
+
+        private BoosterSetSettings BoosterSetOf(BoosterSetFile file, string field)
+        {
+            Require(file.Boosters.Count > 0, $"{field}.boosters is empty: a set gives at least one booster");
+            var boosters = new Dictionary<BoosterKind, int>();
+            foreach ((string name, int count) in file.Boosters)
+            {
+                BoosterKind kind = BoosterKinds.Find(name) ?? throw Invalid($"{field}.boosters names '{name}', which is no booster ({BoosterNamesListed(BoosterKinds.All)})");
+                boosters[kind] = AtLeast(count, 1, $"{field}.boosters.{name}");
+            }
+
+            return new BoosterSetSettings(CoinsOf(AtLeast(file.PriceCoins, 1L, $"{field}.priceCoins"), $"{field}.priceCoins"), boosters);
+        }
+
+        /// <summary>The entries of an object keyed by names of the owner's choosing: a name goes into the paths of the reports, where a dot would split it.</summary>
+        private Dictionary<string, TValue> ByPlainName<TValue>(Dictionary<string, TValue> stated, string field)
+        {
+            foreach (string name in stated.Keys)
+            {
+                Require(IsPlainName(name), $"{field} has an entry named '{name}'; a name is letters, digits and '-'");
+            }
+
+            return stated;
         }
 
         private PlayerRules RulesOf(PlayerFile file, MeasurementPlan measurement)
@@ -515,6 +571,8 @@ public static class SettingsLoader
 
         private static string BoosterNamesListed(IEnumerable<BoosterKind> boosters) => string.Join(", ", boosters.Select(BoosterKinds.Name));
 
+        private static bool IsPlainName(string name) => name.Length > 0 && name.All(c => char.IsAsciiLetterOrDigit(c) || c == '-');
+
         private void Require(bool condition, string message)
         {
             if (!condition)
@@ -543,6 +601,14 @@ public static class SettingsLoader
         public required ExtraMovesOfferFile ExtraMovesOffer { get; init; }
 
         public required PricesFile Prices { get; init; }
+
+        public required StartFile Start { get; init; }
+
+        public required StartBoostersAllowedFile StartBoosters { get; init; }
+
+        public required ShopFile Shop { get; init; }
+
+        public required BuildFile Build { get; init; }
 
         public required PlayerFile Player { get; init; }
 
@@ -632,6 +698,54 @@ public static class SettingsLoader
         public required Dictionary<string, long> Boosters { get; init; }
 
         public required long SideCollectionPiece { get; init; }
+    }
+
+    private sealed class StartFile
+    {
+        public required long Coins { get; init; }
+
+        public required Dictionary<string, int> Boosters { get; init; }
+    }
+
+    /// <summary>The game's own cap; what a simulated player takes is <see cref="StartBoostersFile.PerAttempt"/>.</summary>
+    private sealed class StartBoostersAllowedFile
+    {
+        public required int PerAttempt { get; init; }
+    }
+
+    private sealed class ShopFile
+    {
+        public required Dictionary<string, CoinPackFile> CoinPacks { get; init; }
+
+        public required Dictionary<string, BoosterSetFile> BoosterSets { get; init; }
+
+        public required AdForCoinsFile AdForCoins { get; init; }
+    }
+
+    private sealed class CoinPackFile
+    {
+        public required long Coins { get; init; }
+    }
+
+    private sealed class BoosterSetFile
+    {
+        public required long PriceCoins { get; init; }
+
+        public required Dictionary<string, int> Boosters { get; init; }
+    }
+
+    private sealed class AdForCoinsFile
+    {
+        public required long Coins { get; init; }
+
+        public required int PerDay { get; init; }
+    }
+
+    private sealed class BuildFile
+    {
+        public required string Ads { get; init; }
+
+        public required string RealMoneyPurchases { get; init; }
     }
 
     private sealed class PlayerFile

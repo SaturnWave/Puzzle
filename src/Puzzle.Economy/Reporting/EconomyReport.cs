@@ -9,8 +9,8 @@ namespace Puzzle.Economy.Reporting;
 /// <param name="Checked">What the guard found; absent when the run was told to trust the measurement.</param>
 public sealed record MeasurementIdentity(string Path, MeasurementSpec Spec, long Games, int LastLevel, GuardReport? Checked);
 
-/// <summary>One value of the settings as a report lists it: with its unit and with where it comes from.</summary>
-public sealed record SettingRow(string Field, string Value, string Unit, Provenance Provenance);
+/// <summary>One value of the settings as a report lists it: with its unit, with where it comes from and with who plays by it.</summary>
+public sealed record SettingRow(string Field, string Value, string Unit, Provenance Provenance, SettingUse Use);
 
 /// <summary>
 /// Everything a run reports: the rows of every table, read from one simulation and one measurement. The CSV files and
@@ -90,7 +90,7 @@ public sealed record EconomyReport
     /// <summary>Every value of the settings with what the catalogue says of its field.</summary>
     public static IReadOnlyList<SettingRow> SettingsOf(EconomySettings settings) => settings.Stated
         .Select(stated => (stated, Described: SettingsCatalogue.Describe(stated.Path)))
-        .Select(setting => new SettingRow(setting.stated.Path, setting.stated.Value, setting.Described.Unit, setting.Described.Provenance))
+        .Select(setting => new SettingRow(setting.stated.Path, setting.stated.Value, setting.Described.Unit, setting.Described.Provenance, setting.Described.Use))
         .ToArray();
 
     /// <summary>
@@ -99,7 +99,7 @@ public sealed record EconomyReport
     /// </summary>
     public static IReadOnlyList<SettingRow> MeasurementRead(MeasurementSpec spec)
     {
-        SettingRow Row(string name, string value, string unit) => new(MeasurementReadPrefix + name, value, unit, Provenance.Tool);
+        SettingRow Row(string name, string value, string unit) => new(MeasurementReadPrefix + name, value, unit, Provenance.Tool, SettingUse.Simulated);
         return
         [
             Row("engine", MeasurementSpec.Abbreviated(spec.Engine), "fingerprint"),
@@ -141,9 +141,17 @@ public sealed record EconomyReport
         var table = new CsvTable("field", "value", "unit", "provenance");
         foreach (SettingRow row in rows)
         {
-            table.Add(row.Field, row.Value, row.Unit, row.Provenance.ToString());
+            table.Add(row.Field, row.Value, UnitAsListed(row), row.Provenance.ToString());
         }
 
         return table;
     }
+
+    /// <summary>The list keeps its four columns, so a value no simulated player meets says so beside its unit.</summary>
+    private static string UnitAsListed(SettingRow row) => row.Use switch
+    {
+        SettingUse.Simulated => row.Unit,
+        SettingUse.GameOnly => $"{row.Unit} (the game's; not simulated)",
+        _ => throw new ArgumentOutOfRangeException(nameof(row), row.Use, "Unknown use of a setting."),
+    };
 }

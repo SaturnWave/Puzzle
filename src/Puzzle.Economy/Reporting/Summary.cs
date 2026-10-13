@@ -50,6 +50,7 @@ public static class Summary
         AppendSpending(text, report);
         AppendStalls(text, report);
         AppendAssumptions(text, report);
+        AppendGameOnlySettings(text, report);
         AppendLimits(text, report);
         return ReportFiles.WithLineFeeds(text);
     }
@@ -355,7 +356,7 @@ public static class Summary
         foreach (Provenance provenance in new[] { Provenance.Assumed, Provenance.Proposed, Provenance.Placeholder, Provenance.Recorded })
         {
             text.AppendLine(Invariant, $"  {Explained(provenance)}");
-            foreach (SettingRow row in report.SettingRows.Where(row => row.Provenance == provenance))
+            foreach (SettingRow row in report.SettingRows.Where(row => row.Provenance == provenance && row.Use == SettingUse.Simulated))
             {
                 text.AppendLine(Invariant, $"    {row.Field} = {row.Value}  ({row.Unit})");
             }
@@ -366,6 +367,25 @@ public static class Summary
         {
             string worths = string.Join(", ", inLevel.AssumedMovesWorth.Where(worth => worth.Value > MoveCount.None).Select(worth => $"{worth.Key.Name()} as {worth.Value} moves"));
             text.AppendLine(Line($"  ASSUMED, NOT MEASURED: an in-level booster is read as more moves of the stored game ({worths}), used when the moves run out with {inLevel.UseWhenGoalsDone} % of the goals done. No bot played one."));
+        }
+
+        text.AppendLine();
+    }
+
+    /// <summary>The settings file is the game's too; what it states for the game alone is listed apart, so that nobody reads a figure as resting on it.</summary>
+    private static void AppendGameOnlySettings(StringBuilder text, EconomyReport report)
+    {
+        SettingRow[] gameOnly = report.SettingRows.Where(row => row.Use == SettingUse.GameOnly).ToArray();
+        if (gameOnly.Length == 0)
+        {
+            return;
+        }
+
+        text.AppendLine("STATED FOR THE GAME, NOT SIMULATED: the game reads these from the same file; no figure above rests on one");
+        text.AppendLine("  (a simulated player starts with no coin and no booster, takes one start booster per attempt, never opens the shop and watches no ad for coins)");
+        foreach (SettingRow row in gameOnly)
+        {
+            text.AppendLine(Invariant, $"    {row.Field} = {row.Value}  ({row.Unit}; {row.Provenance})");
         }
 
         text.AppendLine();

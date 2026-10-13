@@ -75,6 +75,7 @@
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bot\Puzzle.Bot.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Museum\Puzzle.Museum.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Meta\Puzzle.Meta.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Generator\Puzzle.Generator.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Tooling\Puzzle.Tooling.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bank\Puzzle.Bank.csproj" />

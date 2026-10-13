@@ -91,6 +91,12 @@ internal static class RepoFiles
     /// </summary>
     public static string EconomySettingsFixturePath => Find("tests", "fixtures", "economy-settings.json");
 
+    /// <summary>
+    /// The game's part of economy/default.json as tools/unity/sync-engine.js packs it for the Unity client, pinned
+    /// by <c>node tools/unity/economy-pack.js --pin</c>: the file the game sees, for the tests to see too.
+    /// </summary>
+    public static string EconomyPackPath => Find("tests", "fixtures", "economy-pack.json");
+
     /// <exception cref="FileNotFoundException">No directory above the test binaries holds the file.</exception>
     private static string Find(params string[] parts)
     {

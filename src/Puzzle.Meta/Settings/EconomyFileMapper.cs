@@ -1,0 +1,288 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
+
+namespace Puzzle.Meta.Settings
+{
+    /// <summary>The packed economy settings are malformed or contradict themselves; the message names the field and the problem.</summary>
+    public sealed class EconomyFormatException : Exception
+    {
+        public EconomyFormatException(string message)
+            : base(message)
+        {
+        }
+
+        public EconomyFormatException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Turns the raw <see cref="EconomyFile"/> into checked <see cref="EconomyRules"/>. No number has a default
+    /// here: what the file does not state in a usable way is refused, by the name the settings file gives the field.
+    /// </summary>
+    public static class EconomyFileMapper
+    {
+        /// <summary>The settings' word for an ad that is only simulated.</summary>
+        public const string SimulatedAdsWord = "simulated";
+
+        /// <summary>The settings' word for a build that sells nothing for money.</summary>
+        public const string NoRealMoneyWord = "notAvailable";
+
+        /// <summary>
+        /// No amount of coins in the settings may be above this, the same bound the economy simulator holds its
+        /// settings to: far above any price a game has, far below what whole-number arithmetic holds.
+        /// </summary>
+        public const long LargestAmount = 1_000_000;
+
+        /// <exception cref="EconomyFormatException">The file is not a set of economy settings this code can play by.</exception>
+        public static EconomyRules ToRules(EconomyFile file)
+        {
+            if (file.formatVersion != EconomyFile.CurrentFormatVersion)
+            {
+                throw new EconomyFormatException($"The economy settings are in format version {file.formatVersion}; this code reads version {EconomyFile.CurrentFormatVersion}.");
+            }
+
+            WinReward win = new WinReward(
+                CoinsOf(file.coins.perMoveLeftInFinale, "coins.perMoveLeftInFinale"),
+                CoinsOf(file.coins.perLevelWon, "coins.perLevelWon"));
+            RealMoneySales realMoney = RealMoneyOf(file.build);
+            return new EconomyRules(
+                lives: new LifeRules(
+                    AtLeast(file.lives.max, 1, "lives.max"),
+                    TimeSpan.FromMinutes(AtLeast(file.lives.minutesPerLife, 1, "lives.minutesPerLife"))),
+                win: win,
+                paintingCompleted: new PaintingReward(RotationOf(
+                    file.rewards.paintingCompleted.coins, file.rewards.paintingCompleted.boostersEachTime, file.rewards.paintingCompleted.boosterRotation, "rewards.paintingCompleted")),
+                daily: new DailyReward(
+                    RotationOf(file.rewards.daily.coins, file.rewards.daily.boostersEachTime, file.rewards.daily.boosterRotation, "rewards.daily"),
+                    AtLeast(file.rewards.daily.everyDays, 1, "rewards.daily.everyDays")),
+                extraMoves: ExtraMovesOf(file.extraMovesOffer, win),
+                startBoosters: StartBoostersOf(file.startBoosters),
+                shop: ShopOf(file, win, realMoney),
+                startingWallet: StartingWalletOf(file.start),
+                ads: AdsOf(file.build));
+        }
+
+        private static RewardRotation RotationOf(long coins, int boostersEachTime, string[]? rotation, string field)
+        {
+            BoosterKind[] boosters = ListOrNone(rotation).Select(name => BoosterOf(name, $"{field}.boosterRotation")).ToArray();
+            int each = AtLeast(boostersEachTime, 0, $"{field}.boostersEachTime");
+            if (each > 0 && boosters.Length == 0)
+            {
+                throw Invalid($"{field}.boosterRotation is empty, so {field}.boostersEachTime must be 0");
+            }
+
+            return new RewardRotation(CoinsOf(coins, $"{field}.coins"), each, boosters);
+        }
+
+        /// <summary>A price the finale pays back is no price: the moves an offer adds would return more coins than they cost.</summary>
+        private static ExtraMovesRules ExtraMovesOf(ExtraMovesOfferFile file, WinReward win)
+        {
+            Coins price = CoinsOf(file.priceCoins, "extraMovesOffer.priceCoins");
+            int movesLeftAtBest = ExtraMovesOffer.Moves - 1;
+            Coins paidBack = win.PerMoveLeft * movesLeftAtBest;
+            if (price <= paidBack)
+            {
+                throw Invalid(
+                    $"extraMovesOffer.priceCoins {price} must be above {paidBack}: a win on the first of the {ExtraMovesOffer.Moves} bought moves leaves {movesLeftAtBest}, and the finale would pay the purchase back");
+            }
+
+            return new ExtraMovesRules(AtLeast(file.freeAdsPerDay, 0, "extraMovesOffer.freeAdsPerDay"), price);
+        }
+
+        private static StartBoosterRules StartBoostersOf(StartBoostersFile file)
+        {
+            if (file.perAttempt < 1 || file.perAttempt > StartBoosterRules.KindsOfStartBooster)
+            {
+                throw Invalid($"startBoosters.perAttempt {file.perAttempt} must be 1 to {StartBoosterRules.KindsOfStartBooster}: each kind of start booster is taken once");
+            }
+
+            return new StartBoosterRules(file.perAttempt);
+        }
+
+        private static Shop ShopOf(EconomyFile file, WinReward win, RealMoneySales realMoney)
+        {
+            ShopFile shop = file.shop;
+            return new Shop(
+                BoosterPricesOf(file.prices, win),
+                Named(ListOrNone(shop.boosterSets), set => set.name, "shop.boosterSets").Select(SetOf).ToArray(),
+                Named(ListOrNone(shop.coinPacks), pack => pack.name, "shop.coinPacks").Select(PackOf).ToArray(),
+                new AdForCoins(CoinsOf(shop.adForCoins.coins, "shop.adForCoins.coins"), AtLeast(shop.adForCoins.perDay, 0, "shop.adForCoins.perDay")),
+                realMoney);
+        }
+
+        private static Dictionary<BoosterKind, Coins> BoosterPricesOf(PricesFile file, WinReward win)
+        {
+            const string Field = "prices.boosters";
+            var prices = new Dictionary<BoosterKind, Coins>();
+            foreach (BoosterPriceFile entry in ListOrNone(file.boosters))
+            {
+                BoosterKind kind = BoosterOf(entry.booster, Field);
+                if (prices.ContainsKey(kind))
+                {
+                    throw Invalid($"{Field} states '{entry.booster}' twice");
+                }
+
+                prices[kind] = CoinsOf(entry.coins, $"{Field}.{entry.booster}");
+            }
+
+            RequireEveryBooster(prices.Keys, Field);
+            int addedMoves = RuleSet.Default.StartBoosterExtraMoves;
+            Coins paidBack = win.PerMoveLeft * addedMoves;
+            Coins extraMoves = prices[BoosterKind.StartExtraMoves];
+            if (extraMoves <= paidBack)
+            {
+                throw Invalid(
+                    $"{Field}.{BoosterKind.StartExtraMoves.Name()} {extraMoves} must be above {paidBack}: a win leaves the {addedMoves} added moves, and the finale would pay the purchase back");
+            }
+
+            return prices;
+        }
+
+        private static BoosterSet SetOf(BoosterSetFile file)
+        {
+            string field = $"shop.boosterSets.{file.name}";
+            Dictionary<BoosterKind, int> boosters = CountsOf(file.boosters, $"{field}.boosters", leastCount: 1);
+            if (boosters.Count == 0)
+            {
+                throw Invalid($"{field}.boosters is empty: a set gives at least one booster");
+            }
+
+            return new BoosterSet(file.name, CoinsOf(AtLeast(file.priceCoins, 1L, $"{field}.priceCoins"), $"{field}.priceCoins"), ShelfOf(boosters));
+        }
+
+        private static CoinPack PackOf(CoinPackFile file)
+        {
+            string field = $"shop.coinPacks.{file.name}.coins";
+            return new CoinPack(file.name, CoinsOf(AtLeast(file.coins, 1L, field), field));
+        }
+
+        private static Wallet StartingWalletOf(StartFile file)
+        {
+            const string Field = "start.boosters";
+            Dictionary<BoosterKind, int> boosters = CountsOf(file.boosters, Field, leastCount: 0);
+            RequireEveryBooster(boosters.Keys, Field);
+            return Wallet.Empty.WithCoins(CoinsOf(file.coins, "start.coins")).WithShelf(ShelfOf(boosters));
+        }
+
+        /// <summary>How many of each booster a list of names and counts states: no kind twice, no count below <paramref name="leastCount"/>.</summary>
+        private static Dictionary<BoosterKind, int> CountsOf(BoosterCountFile[]? stated, string field, int leastCount)
+        {
+            var counts = new Dictionary<BoosterKind, int>();
+            foreach (BoosterCountFile entry in ListOrNone(stated))
+            {
+                BoosterKind kind = BoosterOf(entry.booster, field);
+                if (counts.ContainsKey(kind))
+                {
+                    throw Invalid($"{field} states '{entry.booster}' twice");
+                }
+
+                counts[kind] = AtLeast(entry.count, leastCount, $"{field}.{entry.booster}");
+            }
+
+            return counts;
+        }
+
+        private static BoosterShelf ShelfOf(Dictionary<BoosterKind, int> counts)
+        {
+            BoosterShelf shelf = BoosterShelf.Empty;
+            foreach (KeyValuePair<BoosterKind, int> held in counts)
+            {
+                shelf = shelf.With(held.Key, held.Value);
+            }
+
+            return shelf;
+        }
+
+        private static AdSource AdsOf(BuildFile build)
+        {
+            switch (build.ads)
+            {
+                case SimulatedAdsWord:
+                    return AdSource.Simulated;
+                default:
+                    throw Invalid($"build.ads is \"{build.ads}\"; this build can only show an ad that is \"{SimulatedAdsWord}\"");
+            }
+        }
+
+        private static RealMoneySales RealMoneyOf(BuildFile build)
+        {
+            switch (build.realMoneyPurchases)
+            {
+                case NoRealMoneyWord:
+                    return RealMoneySales.NotAvailable;
+                default:
+                    throw Invalid($"build.realMoneyPurchases is \"{build.realMoneyPurchases}\"; this build sells nothing for money, which is \"{NoRealMoneyWord}\"");
+            }
+        }
+
+        /// <summary>The entries of a list that stands for an object keyed by name: every name is there, plain and used once.</summary>
+        private static T[] Named<T>(T[] entries, Func<T, string> nameOf, string field)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (T entry in entries)
+            {
+                string name = nameOf(entry);
+                if (!IsPlainName(name))
+                {
+                    throw Invalid($"{field} has an entry named '{name}'; a name is letters, digits and '-'");
+                }
+
+                if (!names.Add(name))
+                {
+                    throw Invalid($"{field} states '{name}' twice");
+                }
+            }
+
+            return entries;
+        }
+
+        /// <summary>A name the settings can use as a field: it is written into paths, where a dot would split it.</summary>
+        private static bool IsPlainName(string? name) =>
+            !string.IsNullOrEmpty(name) && name.All(letter => (letter >= 'a' && letter <= 'z') || (letter >= 'A' && letter <= 'Z') || (letter >= '0' && letter <= '9') || letter == '-');
+
+        private static BoosterKind BoosterOf(string name, string field) =>
+            BoosterKinds.Find(name) ?? throw Invalid($"{field} names '{name}', which is no booster ({BoosterNamesListed(BoosterKinds.All)})");
+
+        private static void RequireEveryBooster(IEnumerable<BoosterKind> stated, string field)
+        {
+            BoosterKind[] missing = BoosterKinds.All.Except(stated).ToArray();
+            if (missing.Length > 0)
+            {
+                throw Invalid($"{field} must state every booster; it lacks {BoosterNamesListed(missing)}");
+            }
+        }
+
+        private static Coins CoinsOf(long amount, string field)
+        {
+            if (amount < 0 || amount > LargestAmount)
+            {
+                throw Invalid($"{field} {amount} must be an amount of coins from 0 to {LargestAmount}");
+            }
+
+            return new Coins(amount);
+        }
+
+        private static T AtLeast<T>(T value, T least, string field)
+            where T : IComparable<T>
+        {
+            if (value.CompareTo(least) < 0)
+            {
+                throw Invalid($"{field} {value} must be at least {least}");
+            }
+
+            return value;
+        }
+
+        /// <summary>A JSON reader hands over nothing where the document writes null for a list; that reads as an empty list.</summary>
+        private static T[] ListOrNone<T>(T[]? list) => list ?? Array.Empty<T>();
+
+        private static string BoosterNamesListed(IEnumerable<BoosterKind> boosters) => string.Join(", ", boosters.Select(BoosterKinds.Name));
+
+        private static EconomyFormatException Invalid(string message) => new EconomyFormatException($"Invalid economy settings: {message}.");
+    }
+}

@@ -1,5 +1,8 @@
 {
-  // The economy simulator's settings: who plays, how they play, what the game gives and what things cost.
+  // The game's economy settings, which are the economy simulator's too: who plays, how they play, what the game
+  // gives and what things cost. The game reads lives, coins, rewards, extraMovesOffer, the booster prices, start,
+  // startBoosters, shop and build (tools/unity/sync-engine.js packs them for it); the simulator reads everything
+  // and simulates all but the last four.
   // Every field must be stated; the code holds no default. Each comment ends with where the value comes from:
   //   [decided]     a product decision (docs/GAME_DESIGN.md section 19) or a fact of the engine
   //   [assumed n]   starting assumption n, approved by the owner as a default
@@ -123,6 +126,66 @@
     // pieces they would buy. Pieces of the main paintings are never sold. Whether a free player is meant to afford
     // these from play is an open question to the owner. [placeholder]
     "sideCollectionPiece": 300
+  },
+
+  // FOR THE GAME ALONE, from here to "build". The simulator checks that these are well formed and simulates nothing
+  // with them: a simulated player starts with no coin and no booster, takes one start booster per attempt
+  // (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins. The amounts are stand-ins
+  // for a test build: nobody has decided one of them.
+
+  "start": {
+    // Coins a new player starts with. [placeholder]
+    "coins": 0,
+    // Boosters a new player starts with: one of each, so that a tester meets every booster once without coins.
+    // Every booster is stated; 0 gives none. [placeholder]
+    "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1, "hit-cell": 1, "hit-row": 1, "hit-column": 1, "shuffle": 1 }
+  },
+
+  "startBoosters": {
+    // Start boosters a player may take into one attempt, each kind once: 1 to 3. The game allows all three; the
+    // simulated player takes one, because two board boosters together are not measured. [proposed]
+    "perAttempt": 3
+  },
+
+  "shop": {
+    // Packs of coins for real money, in the order the shop shows them. This build sells nothing for money
+    // (build.realMoneyPurchases), so a pack has no price: it is shown and cannot be bought. The amounts are the
+    // samples of the design's drawing. [placeholder]
+    "coinPacks": {
+      "small": { "coins": 500 },
+      "medium": { "coins": 1200 },
+      "large": { "coins": 2500 }
+    },
+    // Sets of boosters for coins, in the order the shop shows them. Each costs what its boosters cost one by one
+    // under prices.boosters (200 + 500 + 200, and three times 400 + 700 + 700 + 300), so no discount is invented.
+    // A set's price does not follow when a single price changes. [placeholder]
+    "boosterSets": {
+      "starter": {
+        "priceCoins": 900,
+        "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 }
+      },
+      "master": {
+        "priceCoins": 6300,
+        "boosters": { "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
+      }
+    },
+    "adForCoins": {
+      // Coins one watched ad gives: about half an average win at 4 coins a move left, a +5 in forty-five ads.
+      // Three a day add about a seventh to what the average free player earns in a day (about 420 coins); at 50
+      // they would add a third and undo the balance the other amounts were read for. [placeholder]
+      "coins": 20,
+      // Times a day an ad gives coins. [placeholder]
+      "perDay": 3
+    }
+  },
+
+  // What this build of the game can do. The game refuses any other word here, so a build cannot claim real ads
+  // or real purchases it does not have.
+  "build": {
+    // How an ad is shown: "simulated" is a card that stands in for one; nothing is advertised. [proposed]
+    "ads": "simulated",
+    // What is sold for real money: "notAvailable" shows the coin packs and sells none. [proposed]
+    "realMoneyPurchases": "notAvailable"
   },
 
   "player": {
