@@ -148,8 +148,28 @@ namespace Puzzle.Client.EditorTools
 
         private static void WriteThePair(PairedScreen screen, PlayerState state, Studio studio, string drawings)
         {
-            Texture2D drawing = LoadTheDrawing(Path.Combine(drawings, DrawingOf(screen) + ".png"));
+            // The game's picture first: taking it opens a new scene, and that destroys every loose picture made before it.
             Texture2D game = Take(screen, state, studio);
+            try
+            {
+                Texture2D drawing = LoadTheDrawing(Path.Combine(drawings, DrawingOf(screen) + ".png"));
+                try
+                {
+                    WriteSideBySide(drawing, game, screen, state);
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(drawing);
+                }
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(game);
+            }
+        }
+
+        private static void WriteSideBySide(Texture2D drawing, Texture2D game, PairedScreen screen, PlayerState state)
+        {
             Texture2D pair = SideBySide(drawing, game);
             try
             {
@@ -159,8 +179,6 @@ namespace Puzzle.Client.EditorTools
             }
             finally
             {
-                UnityEngine.Object.DestroyImmediate(drawing);
-                UnityEngine.Object.DestroyImmediate(game);
                 UnityEngine.Object.DestroyImmediate(pair);
             }
         }
