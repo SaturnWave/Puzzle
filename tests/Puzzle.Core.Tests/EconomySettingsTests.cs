@@ -44,9 +44,11 @@ public class EconomySettingsTests
         Assert.Contains(standard.Players.AverageRung, standard.Players.Rungs);
 
         // What each variant is for, against the default beside it and not against a number.
-        Assert.True(Shipped("short-sessions.json").Habit.SessionCeiling < standard.Habit.SessionCeiling);
-        Assert.True(Shipped("target-pace.json").Habit.SessionCeiling < standard.Habit.SessionCeiling);
-        Assert.True(Shipped("long-sessions.json").Habit.SessionCeiling > standard.Habit.SessionCeiling);
+        Assert.True(Shipped("sessions-6-minutes.json").Habit.SessionCeiling < standard.Habit.SessionCeiling);
+        Assert.True(Shipped("sessions-20-minutes.json").Habit.SessionCeiling > standard.Habit.SessionCeiling);
+        Assert.True(Shipped("sessions-60-minutes.json").Habit.SessionCeiling > Shipped("sessions-20-minutes.json").Habit.SessionCeiling);
+        Assert.True(Shipped("one-life.json").Lives.Max.CompareTo(standard.Lives.Max) < 0);
+        Assert.True(Shipped("life-every-16-hours.json").Lives.PerLife > standard.Lives.PerLife);
         Assert.True(Shipped("extra-moves-1800.json").ExtraMovesOffer.Price > standard.ExtraMovesOffer.Price);
         ExtraMovesHabit takesNothing = Shipped("no-offers.json").Player.ExtraMoves;
         Assert.False(takesNothing.WatchesAds);

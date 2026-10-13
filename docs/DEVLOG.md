@@ -21,10 +21,17 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 **Tablo önerisi dönemlere göre yenilendi (onay bekliyor)**
 - 3–20. odalar için 18 dönem, 90 eser ve 52 yedek; hepsi müzenin kendi serbest bıraktığı görüntüler. 144 eser tek tek doğrulandı: 122'si sorunsuz, 20'si notlu, 2'si elendi. Sayfa güncellendi; kararlar K2 (bir tablonun kenarlarından yüzde 3 kırpma), K3 (üç eserde müzenin kendi beyanına güvenmek) ve K4 (üç eserde içerik notu). Onaysız kataloğa bir şey girmiyor.
 
-**Ekonomi: ayar araması (karar bekliyor)**
+**Ekonomi: ayar araması**
 - 5 canla ortalama ücretsiz oyuncu 100. bölüme, başka ne ayarlanırsa ayarlansın, 8. günde geliyor. 10–14 gün hedefini yalnızca 1 can (10. gün) ya da 16 saatlik can dolumu (11. gün) tutturuyor. Önerim: 5 can ve 8. gün; 10 dakikalık oturum esas alınsın. 5 canla altın dengesi için kalan hamle başına 4 altın, tablo başına 80 altın, "+5" 900, bölüm başı booster'ları 500 / 200 / 200 çıkıyor.
-- Öneri dosyaları (`economy/proposed*.json`, `economy/explore/`) depoya girmedi; karardan sonra girecek.
+- Arama sırasında yazılan öneri dosyaları depoya girmedi.
 
+**Ekonomi kararı (kullanıcı: önerilerle başla)**
+- 5 can ve 30 dakika kalıyor; ortalama oyuncunun 100. bölüme 8. günde gelmesi kabul edildi. Hesaplar 10 dakikalık oturuma dayanıyor.
+- `economy/default.json` artık oyunun ayarı: kalan hamle başına 4 coin, tablo başına 80, "+5 hamle" 900, renk bombası 500, roket ve bomba 200, "+3 hamle" 200. Coin sayıları dosyada "öneri" olarak işaretli; hız hedefi 7–9. gün olarak "karar". Bölüm içi booster fiyatları ve yan koleksiyon parçası yer tutucu.
+- Değişken dosyalar sayıyla adlandırıldı (`sessions-6-minutes`, `sessions-20-minutes`, `sessions-60-minutes`); bırakılan iki seçenek karşılaştırma için duruyor (`one-life`, `life-every-16-hours`). Tek canlı öneri dosyaları ve arama dosyaları depoya girmedi (`out/economy/settings-explored`).
+- Doğrulama: ölçüm bu derlemeyle ve bölüm dosyalarıyla denetlendi (48 saklı oyun yeniden oynandı); sekiz ayar dosyası simüle edildi; 112 ekonomi testi geçti. Sonuç: 100. bölüm 8. gün, 300. bölüm 25. gün, 1000. bölüm 90. gün; ortalama oyuncunun kesesi 4–7 "+5" değerinde (§25).
+- Duyarlılık: 20 dakikalık oturumda 100. bölüm 4. güne iner ve coin daralır (kese yaklaşık 900); 6 dakikalıkta 12. güne çıkar ve coin birikir.
+- Açık: yan koleksiyon parçaları oyun coin'iyle alınabilsin mi (önerim evet), coin sayılarının tek tek onayı, bölüm içi booster fiyatları.
 **Diğer**
 - Yere konma esnemesi düzeltmesi ana dalda (§23).
 - Yapılmadı: APK ve telefon denemesi (ertelenmişti), ses, planın 1–3. ve 7–15. aşamaları.

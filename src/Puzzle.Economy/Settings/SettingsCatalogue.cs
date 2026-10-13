@@ -9,7 +9,7 @@ public enum Provenance
     /// <summary>One of the starting assumptions the owner approved as a default.</summary>
     Assumed,
 
-    /// <summary>An assumption the simulator's design added; it waits for the owner's word.</summary>
+    /// <summary>An assumption the simulator's design added, or an amount read from its reports and put in use; it waits for the owner's word.</summary>
     Proposed,
 
     /// <summary>An amount or a price nobody has decided: it is there to be read from the reports and changed.</summary>
@@ -63,9 +63,9 @@ public static class SettingsCatalogue
         new("habit.secondsPerAd", "seconds", Provenance.Proposed),
         new("lives.max", "lives", Provenance.Decided),
         new("lives.minutesPerLife", "minutes", Provenance.Decided),
-        new("coins.perMoveLeftInFinale", Coins, Provenance.Placeholder),
+        new("coins.perMoveLeftInFinale", Coins, Provenance.Proposed),
         new("coins.perLevelWon", Coins, Provenance.Placeholder),
-        new("rewards.paintingCompleted.coins", Coins, Provenance.Placeholder),
+        new("rewards.paintingCompleted.coins", Coins, Provenance.Proposed),
         new("rewards.paintingCompleted.boostersEachTime", Boosters, Provenance.Assumed),
         new("rewards.paintingCompleted.boosterRotation", "boosters in turn", Provenance.Assumed),
         new("rewards.daily.coins", Coins, Provenance.Placeholder),
@@ -73,7 +73,13 @@ public static class SettingsCatalogue
         new("rewards.daily.boostersEachTime", Boosters, Provenance.Assumed),
         new("rewards.daily.boosterRotation", "boosters in turn", Provenance.Assumed),
         new("extraMovesOffer.freeAdsPerDay", "ads a day", Provenance.Assumed),
-        new("extraMovesOffer.priceCoins", Coins, Provenance.Placeholder),
+        new("extraMovesOffer.priceCoins", Coins, Provenance.Proposed),
+
+        // The start boosters are measured, so their prices are read from the reports; the first entry that describes
+        // a field is the one that counts, and the in-level boosters, which no bot plays, fall to the last one.
+        new("prices.boosters.start-rocket-and-bomb", Coins, Provenance.Proposed),
+        new("prices.boosters.start-color-bomb", Coins, Provenance.Proposed),
+        new("prices.boosters.start-extra-moves", Coins, Provenance.Proposed),
         new("prices.boosters.*", Coins, Provenance.Placeholder),
         new("prices.sideCollectionPiece", Coins, Provenance.Placeholder),
         new("player.extraMoves.takeWhenGoalsDonePercent", ShareOfGoals, Provenance.Proposed),
@@ -93,9 +99,9 @@ public static class SettingsCatalogue
         new("measurement.boostedGamesPerSeed", Games, Provenance.Tool),
         new("measurement.boardStarts", "board starts", Provenance.Tool),
         new("report.milestones", "levels", Provenance.Tool),
-        new("report.paceTarget.level", "level", Provenance.Assumed),
-        new("report.paceTarget.fromDays", Days, Provenance.Assumed),
-        new("report.paceTarget.toDays", Days, Provenance.Assumed),
+        new("report.paceTarget.level", "level", Provenance.Decided),
+        new("report.paceTarget.fromDays", Days, Provenance.Decided),
+        new("report.paceTarget.toDays", Days, Provenance.Decided),
         new("report.balanceAtDays", Days, Provenance.Tool),
         new("observed.players", "people", Provenance.Recorded),
         new("observed.medianAttemptSeconds", "seconds", Provenance.Recorded),

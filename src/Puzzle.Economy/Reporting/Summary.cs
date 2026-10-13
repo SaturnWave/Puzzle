@@ -417,7 +417,7 @@ public static class Summary
     private static string Explained(Provenance provenance) => provenance switch
     {
         Provenance.Assumed => "assumed (the owner's starting assumptions):",
-        Provenance.Proposed => "proposed (added by the simulator's design; waiting for the owner's word):",
+        Provenance.Proposed => "proposed (added by the simulator's design, or read from its reports and put in use; waiting for the owner's word):",
         Provenance.Placeholder => "placeholder (amounts and prices nobody has decided; read the reports, then change them):",
         Provenance.Recorded => "recorded (from the test server's recordings):",
         Provenance.Decided or Provenance.Tool => throw new ArgumentOutOfRangeException(nameof(provenance), provenance, "Not listed among the assumptions."),

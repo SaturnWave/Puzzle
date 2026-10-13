@@ -4,7 +4,7 @@
   "extends": "default.json",
   "name": "extra-moves-1800",
   "extraMovesOffer": {
-    // Coins the +5 moves cost beyond the free ads. [placeholder]
+    // Coins the +5 moves cost beyond the free ads. [the proposed price doubled]
     "priceCoins": 1800
   }
 }

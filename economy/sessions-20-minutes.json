@@ -1,0 +1,11 @@
+{
+  // The default economy with sessions twice as long as the recordings showed: the habit first assumed. It shows
+  // how far the amounts hold if players stay longer: the +5 is then wanted more often than the free ads of a day
+  // cover, and the purse is what pays.
+  "extends": "default.json",
+  "name": "sessions-20-minutes",
+  "habit": {
+    // Minutes after which no new attempt starts in a session. [assumed 2, the ceiling raised]
+    "sessionCeilingMinutes": 20
+  }
+}

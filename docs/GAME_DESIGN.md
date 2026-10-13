@@ -841,11 +841,11 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 
 - **Hedef oyuncu:** 30 yaş üstü, kısa oturumlarla oynayan rahat oyuncu. İçerik aileye uygun.
 - **İş modeli:** ücretsiz oyun + uygulama içi satın alma (booster, ekstra hamle, coin) + isteğe bağlı ödüllü reklam.
-- **Can sistemi:** 5 can, yarım saatte bir can dolar, yalnızca kaybedince can gider. Etkinlik ödülü olarak sınırsız can süreleri. Yalnızca meta katmanı; motoru etkilemez.
+- **Can sistemi:** 5 can, yarım saatte bir can dolar, yalnızca kaybedince can gider. 2026-10-13'te yeniden onaylandı: bu kuralla ortalama oyuncu 100. bölüme 8. günde gelir ve bu kabul edildi (§25). Etkinlik ödülü olarak sınırsız can süreleri. Yalnızca meta katmanı; motoru etkilemez.
 - **"+5 hamle" teklifi:** hamle bitince coinle ya da reklam izleyerek alınır. Zorluk ayarı teklifsiz limite göre yapılır; raporlar limit+5'teki kazanma oranını da gösterir (§8). Motorda (2026-10-12): `Game.TryTakeExtraMoves`; hamlesi biten oyun 5 hamleyle sürer, **bir denemede bir kez** (deneme kaydındaki tek alanla uyumlu; birden çok alım istenirse ayrıca karar gerekir). Tahtada hamle kalmamışsa önce karıştırılır; karıştırmayla da hamle çıkmayan tahtaya teklif satılmaz (istek reddedilir, hiçbir şey değişmez). İstemci deneme kaydını ancak oyuncu teklifi geri çevirdikten ya da deneme kesin bittikten sonra yazar.
-- **Bitiş şöleni:** bölüm kazanılınca kalan her hamle tahtada bir rokete dönüşüp patlar ve coin verir. Kazanma kesinleştikten sonra çalıştığı için zorluk ölçümünü etkilemez. Motorda (2026-10-12): `Game.PlayFinale` yalnızca istemci isteyince çalışır; kalan her hamle rastgele bir serbest taşı rokete çevirir, roketler patlar, tahta oturur; taş yetmezse dalga dalga sürer. Sonucu, kullanılan hamleyi, oyunun toplamlarını ve hedef sayaçlarını değiştirmez (şölenden sonra yazılan kayıt da oyunu anlatır); aynı oyunun şöleni her zaman aynıdır. Tahtada kalmış başka özel taşlar patlatılmaz. Coin miktarı motorun değil ekonominin kararıdır: kalan hamle sayısından hesaplanır (simülatör belirleyecek).
+- **Bitiş şöleni:** bölüm kazanılınca kalan her hamle tahtada bir rokete dönüşüp patlar ve coin verir. Kazanma kesinleştikten sonra çalıştığı için zorluk ölçümünü etkilemez. Motorda (2026-10-12): `Game.PlayFinale` yalnızca istemci isteyince çalışır; kalan her hamle rastgele bir serbest taşı rokete çevirir, roketler patlar, tahta oturur; taş yetmezse dalga dalga sürer. Sonucu, kullanılan hamleyi, oyunun toplamlarını ve hedef sayaçlarını değiştirmez (şölenden sonra yazılan kayıt da oyunu anlatır); aynı oyunun şöleni her zaman aynıdır. Tahtada kalmış başka özel taşlar patlatılmaz. Coin miktarı motorun değil ekonominin kararıdır: kalan hamle başına 4 coin (§25).
 - **Coin:** booster, ekstra hamle ve yan koleksiyon parçaları için. Ana tabloların parçaları coinle alınmaz.
-- **Fiyatlar:** elle tahmin edilmeyecek (simülatör kuruldu: §25). Bir **ekonomi simülatörü** botların 1000 bölümdeki kazanma oranlarını ve hamle dağılımlarını kullanarak can, "+5" teklifi ve coin akışını ölçecek; "ücretsiz oynayan biri 100. bölüme kaç günde gelir, nerede tıkanır" sorusunu cevaplayacak.
+- **Fiyatlar:** elle tahmin edilmeyecek (simülatör kuruldu: §25; ilk sayılar 2026-10-13'te ondan okundu ve yürürlükte). Bir **ekonomi simülatörü** botların 1000 bölümdeki kazanma oranlarını ve hamle dağılımlarını kullanarak can, "+5" teklifi ve coin akışını ölçecek; "ücretsiz oynayan biri 100. bölüme kaç günde gelir, nerede tıkanır" sorusunu cevaplayacak.
 - **Etik sınırlar** (§17'ye ek): oyuncunun para harcama eğilimi zorluğu etkilemez, zorluk gizlice ayarlanmaz, gerçek parayla rastgele kutu satılmaz.
 - **Ekip ve görseller:** kullanıcı ve Claude. Görseller en son, Claude Design ya da 3D araçlarla.
 
@@ -1060,16 +1060,16 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Parça | Ne yapar |
 |---|---|
 | Ölçüm (`puzzle economy measure`) | Beceri karışımındaki botlar her bölümü kendi tohum havuzunda limitin ötesine kadar oynar: düz, ve tahtaya özel taş koyan iki bölüm öncesi booster'la. Her oyunun kaç hamlede bittiği saklanır. 862.512 oyun, dört iş parçacığında yaklaşık 13 dakika, 11 MB (`out/economy/measurement.jsonl`, depoya girmez). "+3 hamle" ve "+5 hamle" ayrıca oynanmaz: saklı oyunun üstünde aritmetiktir |
-| Ayar dosyası (`economy/default.json`) | Oyuncu alışkanlığı ve ekonomi: can, ödüller, şölende hamle başına coin, fiyatlar, oyuncunun "+5"i ve booster'ı ne zaman istediği. Her alanın birimi ve kaynağı yazılıdır: karar, onaylanan varsayım, öneri, yer tutucu, kayıt |
+| Ayar dosyası (`economy/default.json` ve yanında tek alanı değiştiren yedi değişken: `sessions-6-minutes`, `sessions-20-minutes`, `sessions-60-minutes`, `one-life`, `life-every-16-hours`, `no-offers`, `extra-moves-1800`) | Oyuncu alışkanlığı ve ekonomi: can, ödüller, şölende hamle başına coin, fiyatlar, oyuncunun "+5"i ve booster'ı ne zaman istediği. Her alanın birimi ve kaynağı yazılıdır: karar, onaylanan varsayım, öneri, yer tutucu, kayıt |
 | Simülasyon (`puzzle economy run`, `compare`) | Binlerce sanal oyuncuyu gün, oturum, can, coin ve booster üzerinden yürütür; oyun oynamaz, saklı oyunlara bakar. İki ayar dosyasını yan yana koyar |
 
-**İlk sonuçlar (2026-10-13; varsayılan ayarlar, 4.000 ücretsiz oyuncu).** Bölüme varılan gün, ortalama oyuncu (55. basamak), günde 3 oturum:
+**İlk sonuçlar (2026-10-13; ilk varsayımlarla: 20 dakikalık oturum, kalan hamle başına 10 coin; 4.000 ücretsiz oyuncu).** Bölüme varılan gün, ortalama oyuncu (55. basamak), günde 3 oturum:
 
 | Oturum tavanı | 100. bölüm | 300. bölüm | 1000. bölüm |
 |---|---|---|---|
 | 6 dakika | 12. gün | 39. gün | 138. gün |
 | 10 dakika | 8. gün | 25. gün | 90. gün |
-| 20 dakika (varsayılan) | 4. gün | 14. gün | 48. gün |
+| 20 dakika (ilk varsayım) | 4. gün | 14. gün | 48. gün |
 | 60 dakika | 2. gün | 6. gün | 22. gün |
 
 - **Hızı oturum süresi belirliyor**, can ya da fiyat değil. 20 dakikalık oturumda canlar (5 can, 30 dakikada bir) hiç devreye girmiyor: her oturum 5 canla başlıyor, oturumların yüzde 98,6'sı süre tavanında bitiyor. 60 dakikalık oturumda oturumların yüzde 55'i canla bitiyor.
@@ -1079,13 +1079,53 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Coin tablosu oturum süresiyle tersine dönüyor.** Yer tutucu fiyatla ("+5" = 900 coin) 20 dakikalık oturumda oyuncu günde 5,1 kez "+5" istiyor (3'ü reklamla) ve coin yetmiyor; 6 dakikalıkta günde 1,7 kez istiyor ve coin birikiyor. Tek bir varsayımdan fiyat okunmaz.
 - İki gerçek oyuncunun kaydı: oturum başına 5 deneme, deneme başına yaklaşık 2 dakika; bu 10 dakikalık oturuma yakındır.
 
+**Karar (2026-10-13).** Kullanıcı önerilen ayarlarla ilerlemeyi seçti; `economy/default.json` artık oyunun ayarıdır (istemci de fiyatları buradan okuyacak).
+
+- **Can:** 5 can ve 30 dakika kalır. Ortalama oyuncunun 100. bölüme **8. günde** gelmesi kabul edildi (ilk dilek 10–14 gündü).
+- **Alışkanlık:** hesaplar günde 3 oturum ve **10 dakikalık oturuma** dayanır; iki gerçek oyuncunun kaydına en yakın alışkanlık budur.
+- **Coin sayıları** (simülatörden okundu, yürürlükte; her biri ayar dosyasında "öneri" olarak işaretli ve değiştirilebilir): kalan hamle başına **4**, tamamlanan tablo başına **80**, "+5 hamle" **900**, bölüm öncesi booster'lar: renk bombası **500**, roket ve bomba **200**, "+3 hamle" **200**. Bölüm kazanmanın sabit ödülü ve günlük coin ödülü yok.
+- **Yer tutucu kalanlar:** bölüm içi dört booster'ın fiyatı (ölçülmedi) ve yan koleksiyon parçasının fiyatı.
+
+**Neden 5 can.** 10 dakikalık oturumda 5 can hiçbir oturumu bitirmez; hızı yavaşlatmanın yolu oyuncuyu durdurmaktır. İlk dileği (10–14 gün) yalnızca iki ayar tutturuyor, ikisi de rahat oyuncu hedefiyle (§19) çelişiyor:
+
+| Ayar | 100. bölüm | 300. bölüm | 1000. bölüm | Oturumlar |
+|---|---|---|---|---|
+| 5 can, 30 dakikada bir (seçilen) | 8. gün | 25. gün | 90. gün | Can hiçbir oturumu bitirmiyor |
+| 1 can (`one-life.json`) | 10. gün | 34. gün | 121. gün | Yüzde 49'u ilk kayıpta bitiyor |
+| 5 can, 16 saatte bir (`life-every-16-hours.json`) | 11. gün | 40. gün | 147. gün | Yüzde 26'sı canla bitiyor, yüzde 25'i başlayamıyor; 45. basamak 100. bölüme 17. günde geliyor |
+
+2 can ya da 8 saatlik dolum 8. günü değiştirmiyor; denemeler arasına 50 saniyelik bekleme koymak ancak 9. güne çıkarıyor.
+
+**Seçilen ayarlarla sonuç** (4.000 ücretsiz oyuncu; ölçüm bu derlemeyle denetlendi):
+
+| Oyuncu | 100. bölüm | 300. bölüm | 1000. bölüm | Kese: 100. / 300. / 1000. bölümde (ortanca coin) |
+|---|---|---|---|---|
+| 45. basamak | 9. gün | 30. gün | 108. gün | 1.624 / 816 / 1.056 |
+| 55. basamak (ortalama) | 8. gün | 25. gün | 90. gün | 3.720 / 3.756 / 6.504 |
+| 65. basamak | 6. gün | 21. gün | 75. gün | 5.288 / 11.860 / 34.496 |
+
+- Ortalama oyuncu günde yaklaşık 34 dakika oynar; 1000 bölüm yaklaşık 13 hafta sürer.
+- Ortalama oyuncu "+5 hamle"yi günde 2,7 kez ister; günde 3'ü reklamla ücretsizdir. 1000 bölümde yaklaşık 205'ini reklamla, 34'ünü coin'le alır; 3'ünü alamaz. Kesesi her zaman 4–7 "+5" değerindedir.
+- 1000 bölümde ortalama oyuncu şölenden yaklaşık 30.000, tablolardan 8.000 coin kazanır; yaklaşık 30.700'ünü "+5"e harcar. Bölüm öncesi booster'ı neredeyse hiç satın almaz: ödül olarak gelenler yetiyor.
+- Zayıf oyuncunun (45. basamak) kesesi dar kalır ve 1000 bölümde yaklaşık 46 "+5" isteği karşılanmaz. İyi oyuncunun (65. basamak) coin'i birikir, çünkü harcayacağı yer yoktur.
+
+**Alışkanlık yanlışsa** (aynı sayılar, ortalama oyuncu):
+
+| Oturum tavanı | 100. bölüm | 300. bölüm | 1000. bölüm | Kese, 1000. bölümde | Ne olur |
+|---|---|---|---|---|---|
+| 6 dakika (`sessions-6-minutes.json`) | 12. gün | 39. gün | 138. gün | 28.884 | Reklamlar bütün "+5" isteklerini karşılar; coin birikir |
+| 10 dakika (seçilen) | 8. gün | 25. gün | 90. gün | 6.504 | |
+| 20 dakika (`sessions-20-minutes.json`) | 4. gün | 14. gün | 50. gün | 900 | Coin dar: 1000 bölümde yaklaşık 73 "+5" isteği karşılanmaz |
+| 60 dakika (`sessions-60-minutes.json`) | 2. gün | 7. gün | 23. gün | 664 | Oturumların yüzde 63'ü canla biter; yaklaşık 163 "+5" isteği karşılanmaz |
+
+Oyuncular kayıttakinden uzun oynarsa hız artar ve coin daralır; kısa oynarsa coin birikir. İlk gerçek veride bakılacak ilk sayı oturum süresidir.
 **Sınırlar**
 - Bölüm içi booster'lar ölçülmedi (hiçbir bot ne zaman kullanacağını bilmiyor). Gerçek para simüle edilmiyor; ücretsiz oyuncunun eksiği raporlanıyor.
 - Tek tek bölüm sıralaması gürültülüdür; yalnızca kademe bazındaki tablo sağlamdır.
 - Hedefi 2–4 adımda ilerleyen 71 bölümde "+5"in istenme kuralı ilerlemeyi göremiyor; bu bölümler raporda ayrı gösterilir.
 - Oyuncu can beklemez, erken dönmez: "bekleme" yerine canın kestiği oyun süresi raporlanır.
 
-**Açık kararlar:** hangi oturum alışkanlığı esas alınacak (öneri: 10 dakika); 1000 bölümün 7–13 haftada bitmesi kabul mü.
+**Açık kararlar:** yan koleksiyon parçaları oyunla kazanılan coin'le alınabilsin mi (öneri: evet; iyi oyuncunun biriken coin'inin gideceği yer olur, fiyatı koleksiyonun büyüklüğü belli olunca okunur); coin sayılarının tek tek onayı; bölüm içi booster fiyatları (ölçüm yok).
 
 **Komutlar**
 
@@ -1093,4 +1133,4 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 |---|---|
 | Ölç (bir kez; kaldığı yerden sürer) | `puzzle economy measure economy/default.json` |
 | Simüle et | `puzzle economy run economy/default.json` (raporlar `out/economy/<ad>`: `summary.txt`, hız, takılma, can, coin, harcama, booster, teklif CSV'leri) |
-| İki ayarı karşılaştır | `puzzle economy compare economy/default.json economy/target-pace.json` |
+| İki ayarı karşılaştır | `puzzle economy compare economy/default.json economy/sessions-20-minutes.json` |
