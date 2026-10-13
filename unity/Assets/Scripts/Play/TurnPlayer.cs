@@ -197,8 +197,8 @@ namespace Puzzle.Client.Play
 
         /// <summary>
         /// The piece gives under its own weight where it lands and stands up again, its foot staying where it is.
-        /// A landing of less than <see cref="Tempo.Land"/> is the beginning of a whole one: the piece is hit before
-        /// it stands again, and whatever takes it from the board goes on from there.
+        /// A landing of less than <see cref="Tempo.Land"/> is the beginning of a whole one: the piece falls on or is
+        /// hit before it stands again, and whatever moves it on or takes it from the board goes on from there.
         /// </summary>
         private void Land(PieceSprite piece, Position cell, float startsIn, float seconds)
         {

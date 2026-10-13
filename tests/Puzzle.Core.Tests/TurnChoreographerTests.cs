@@ -20,6 +20,9 @@ public partial class TurnChoreographerTests
 {
     private const float Tolerance = 0.0005f;
 
+    /// <summary>The choreographer's own measure: a travel that begins within this of the one before it follows it without a pause.</summary>
+    private const float NoPause = 0.001f;
+
     /// <summary>A game together with the view's record of its board, as the Unity stage keeps them.</summary>
     private sealed class Table
     {
@@ -395,13 +398,125 @@ public partial class TurnChoreographerTests
         // In a cascade the next match bursts a moment after the pieces have landed, sooner than a landing takes.
         (_, TurnScript script) = FirstTurnWith(e => e is GameEvent.RoundStarted { Round: 1 }, LevelJson.Load(RepoFiles.SampleLevelPaths[0]));
 
-        var leavesAt = Of<Cue.Leave>(script).ToDictionary(leave => leave.PieceId, leave => leave.Start);
-        (int PieceId, float Arrives, float LandingSeconds)[] landings = script.Cues.Select(LandingOf).OfType<(int, float, float)>().ToArray();
-        (int PieceId, float Arrives, float LandingSeconds)[] cutShort = landings.Where(landing => landing.LandingSeconds < Tempo.Land).ToArray();
+        // A landing is cut short as well when its piece falls on, and such a piece need not leave at all: the
+        // tests below are about that. Here only the pieces count whose next thing after they landed is the hit.
+        (Cue Landed, Cue Leaves)[] hitWhileTheyGave = TravelsWithWhatFollows(script)
+            .Where(followed => followed.Next is Cue.Leave leaves && RestsBefore(leaves, followed.Travel) < Tempo.Land)
+            .Select(followed => (followed.Travel, followed.Next!))
+            .ToArray();
 
-        Assert.NotEmpty(cutShort);
-        Assert.All(cutShort, landing => Assert.Equal(leavesAt[landing.PieceId], landing.Arrives + landing.LandingSeconds, Tolerance));
-        Assert.Contains(landings, landing => landing.LandingSeconds == Tempo.Land);
+        Assert.NotEmpty(hitWhileTheyGave);
+        Assert.All(hitWhileTheyGave, hit => Assert.Equal(hit.Leaves.Start, hit.Landed.End + LandingSecondsOf(hit.Landed), Tolerance));
+        Assert.Contains(script.Cues, cue => LandingOf(cue)?.LandingSeconds == Tempo.Land);
+    }
+
+    [Fact]
+    public void A_piece_that_falls_on_while_it_still_gives_under_its_landing_stops_giving_when_it_falls_on()
+    {
+        // The gem over an item follows it down a cell and waits there until the item has dropped out through the
+        // exit under it: that takes less long than a landing.
+        string[] tiles = Filler(6, 6).With(0, 5, 'p').With(1, 5, 'p').With(3, 5, 'p').With(2, 4, 'I');
+        Table table = TableOf(tiles, goals: new GoalSpec[] { new GoalSpec.DropItems(1) });
+        int gemOverTheItem = table.Ledger.PieceAt(P(2, 3));
+
+        TurnScript script = table.Play(Move.Swap(P(3, 5), P(2, 5)));
+
+        Cue[] travels = TravelsOf(gemOverTheItem, script);
+        var comesDown = Assert.IsType<Cue.Fall>(travels[0]);
+        var fallsOn = Assert.IsType<Cue.Fall>(travels[1]);
+        Assert.Equal((P(2, 4), P(2, 5)), (comesDown.To, fallsOn.To));
+        float waits = RestsBefore(fallsOn, comesDown);
+        Assert.Equal(Tempo.Collect / 2f - Tempo.FollowLag, waits, Tolerance);
+        Assert.InRange(waits, NoPause, Tempo.Land);
+        Assert.Equal(waits, comesDown.LandingSeconds, Tolerance);
+        AssertCanBePlayed(script, table.Ledger);
+    }
+
+    [Fact]
+    public void An_item_that_waits_a_moment_for_its_exit_and_drops_out_has_stopped_giving_under_every_landing_it_made()
+    {
+        // A rocket clears the column of two items. The lower one drops out. The upper one comes down two cells behind
+        // it, a moment before the exit is free again, drops into the exit and out of it. A whole landing where it
+        // waited would still give when it has dropped out a cell further down.
+        string[] tiles = Filler(6, 6).With(2, 1, 'V').With(2, 2, 'I').With(2, 4, 'I');
+        Table table = TableOf(tiles, goals: new GoalSpec[] { new GoalSpec.DropItems(2) });
+        int upperItem = table.Ledger.PieceAt(P(2, 2));
+
+        TurnScript script = table.Play(Move.Tap(P(2, 1)));
+
+        Cue[] travels = TravelsOf(upperItem, script);
+        Cue.Leave dropsOut = Of<Cue.Leave>(script).Single(leave => leave.PieceId == upperItem);
+        Assert.Equal(2, travels.Length);
+        Assert.Equal((P(2, 4), P(2, 5)), (((Cue.Fall)travels[0]).To, ((Cue.Fall)travels[1]).To));
+        float waits = RestsBefore(travels[1], travels[0]);
+        Assert.Equal(FallLaw.SecondsFor(1) + Tempo.Collect / 2f - Tempo.FollowLag - FallLaw.SecondsFor(2), waits, Tolerance);
+        Assert.InRange(waits, NoPause, Tempo.Land - travels[1].Seconds);
+        Assert.Equal(LeaveManner.Collect, dropsOut.Manner);
+        Assert.Equal(travels[1].End, dropsOut.Start, Tolerance);
+
+        Assert.Equal(waits, LandingSecondsOf(travels[0]), Tolerance);
+        Assert.Equal(0f, LandingSecondsOf(travels[1]));
+        AssertCanBePlayed(script, table.Ledger);
+        Assert.Empty(table.Ledger.DifferencesFrom(table.Game.Board));
+    }
+
+    [Fact]
+    public void A_piece_that_falls_again_in_the_next_round_of_a_cascade_while_it_still_gives_stops_giving_when_it_falls()
+    {
+        // The pieces that come down over the player's match line three orange gems up in the second row. They burst
+        // a quick pause after the board has landed, and the pieces that came in last over two of them fall on
+        // sooner than a landing takes.
+        string[] tiles = BoardWithAMatchInReach().With(1, 0, 'o').With(2, 0, 'o').With(3, 1, 'o');
+        Table table = TableOf(tiles);
+
+        TurnScript script = table.Play(Move.Swap(P(2, 2), P(2, 3)));
+
+        float pace = Tempo.PaceOfRound(1);
+        float fallsOnAfter = (Tempo.PauseBeforeCascade + Tempo.CellFreeAfterHit) * pace;
+        Assert.True(fallsOnAfter < Tempo.Land);
+        foreach (int column in new[] { 1, 2 })
+        {
+            Cue.Enter cameIn = Of<Cue.Enter>(script).First(enter => enter.To == P(column, 0));
+            var fallsOn = Assert.IsType<Cue.Fall>(TravelsOf(cameIn.PieceId, script)[1]);
+            Assert.Equal(P(column, 1), fallsOn.To);
+            Assert.Equal(fallsOnAfter, RestsBefore(fallsOn, cameIn), Tolerance);
+            Assert.Equal(fallsOnAfter, cameIn.LandingSeconds, Tolerance);
+        }
+
+        AssertCanBePlayed(script, table.Ledger);
+    }
+
+    [Fact]
+    public void A_piece_that_falls_on_in_the_very_moment_its_landing_is_over_keeps_its_whole_landing()
+    {
+        // A square of purple gems leaves a seeker and breaks the crate at the foot of the column on its left. That
+        // column comes down a cell at once; the seeker drops later, by as long as a landing happens to take. The
+        // gem over the seeker follows it and slips on into the cells the square left on its right, which a crate
+        // seals off from above, as another does the seeker's column. So the cell the gem left is filled from the
+        // column that came down: its gems move on one after another, each a whole landing after it landed, and
+        // the give of each is over in the very moment it falls on.
+        string[] tiles = Filler(6, 6)
+            .With(4, 3, 'p').With(5, 4, 'p').With(4, 5, 'p').With(5, 5, 'p')
+            .With(4, 2, '3').With(5, 3, '3').With(3, 5, '1');
+        Table table = TableOf(tiles);
+        int[] fallOnBehindTheFirst = { table.Ledger.PieceAt(P(3, 1)), table.Ledger.PieceAt(P(3, 0)) };
+
+        TurnScript script = table.Play(Move.Swap(P(4, 3), P(4, 4)));
+
+        foreach (int piece in fallOnBehindTheFirst)
+        {
+            Cue[] travels = TravelsOf(piece, script);
+            var cameDown = Assert.IsType<Cue.Fall>(travels[0]);
+            var fallsOn = Assert.IsType<Cue.Fall>(travels[1]);
+            Assert.Equal(Tempo.AppearAfterGather + Tempo.AppearBeforeFalling - Tempo.CellFreeAfterHit, RestsBefore(fallsOn, cameDown), Tolerance);
+            Assert.True(cameDown.End + Tempo.Land <= fallsOn.Start, "a whole landing would still give when the piece falls on: this proves nothing");
+
+            // Measured from the arrival, the rest comes out a rounding short of the landing that fits into it.
+            Assert.True(fallsOn.Start - cameDown.End < Tempo.Land, "the rest does not come out short of a landing: this proves nothing");
+            Assert.Equal(Tempo.Land, cameDown.LandingSeconds);
+        }
+
+        AssertCanBePlayed(script, table.Ledger);
     }
 
     /// <summary>The piece of a travel that lands, when it arrives and how long it gives; nothing for any other cue.</summary>
@@ -413,11 +528,21 @@ public partial class TurnChoreographerTests
         _ => null,
     };
 
+    /// <summary>How long a travel lets its piece give where it arrives: nothing when the piece does not land.</summary>
+    private static float LandingSecondsOf(Cue travel) => LandingOf(travel)?.LandingSeconds ?? 0f;
+
+    /// <summary>The travels of one piece in a script, in the order they begin.</summary>
+    private static Cue[] TravelsOf(int pieceId, TurnScript script) =>
+        script.Cues.Where(cue => IsATravel(cue) && PiecesPosedBy(cue).Single() == pieceId).ToArray();
+
     /// <summary>
     /// Levels of the game's own pack that stress the script. On 285 a strong player's fifth move set off a cascade
     /// deep enough for a burst to overtake a landing, which froze the board of the first build. On 206, 239, 644 and
     /// 257 two effects reached a slab, a crate or a tape in the other order than the engine had counted their hits,
-    /// which left a layer on the screen that the game no longer had.
+    /// which left a layer on the screen that the game no longer had. On 141, 83, 76 and 788 two items came down one
+    /// column: the upper one waited a moment for the exit to be free, dropped into it and out, and the landing it
+    /// had made a cell higher still gave when it left. On 251 a piece came down in one round's fall and fell on
+    /// in the next round's without a pause, and its whole landing gave all through that fall.
     /// </summary>
     public static TheoryData<int, string> PackLevelsAndBots() => new TheoryData<int, string>
     {
@@ -430,6 +555,11 @@ public partial class TurnChoreographerTests
         { 147, SkillProfile.Expert.Name },
         { 640, SkillProfile.Expert.Name },
         { 999, BotPolicies.Random },
+        { 141, SkillProfile.Expert.Name },
+        { 83, SkillProfile.Expert.Name },
+        { 76, BotPolicies.Random },
+        { 788, BotPolicies.Random },
+        { 251, SkillProfile.Expert.Name },
     };
 
     [Theory]
@@ -451,6 +581,82 @@ public partial class TurnChoreographerTests
                 AssertWhatWentHasALeaving(script, table);
             }
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(PackLevelsAndBots))]
+    public void Through_whole_games_of_the_pack_a_landed_piece_gives_until_it_does_its_next_thing_and_a_whole_landing_at_the_most(int levelNumber, string botName)
+    {
+        LevelDefinition level = LevelJson.Load(PackLevelPath(levelNumber));
+        Assert.True(BotPolicies.TryCreate(botName, out IBotPolicy bot));
+        int fellOnWhileTheyGave = 0;
+        foreach (ulong seed in new ulong[] { 1, 2, 3, 4 })
+        {
+            var table = new Table(Game.Start(level, seed, new GameOptions { RecordEvents = true }));
+            var rng = new Rng(seed, 7);
+            while (table.Game.Status == GameStatus.Playing)
+            {
+                TurnScript script = table.Play(bot.ChooseMove(table.Game, table.Game.FindLegalMoves(), rng));
+
+                AssertEveryLandingLastsAsLongAsItsPieceRests(script);
+                fellOnWhileTheyGave += TravelsWithWhatFollows(script).Count(followed => followed.Next is Cue next && IsATravel(next) && RestsBefore(next, followed.Travel) is > NoPause and < Tempo.Land);
+            }
+        }
+
+        Assert.True(fellOnWhileTheyGave > 0, $"no piece of level {levelNumber} fell on sooner than a landing takes: this row proves nothing");
+    }
+
+    /// <summary>
+    /// A landed piece gives for as long as it lies where it landed, and for a whole landing at the most. So the
+    /// landing of every travel is whole when its piece does nothing sooner; it ends where the piece's next travel
+    /// or its leaving begins when that is sooner; and there is none when the piece travels on without a pause.
+    /// </summary>
+    private static void AssertEveryLandingLastsAsLongAsItsPieceRests(TurnScript script)
+    {
+        foreach ((Cue travel, Cue? next) in TravelsWithWhatFollows(script))
+        {
+            if (next == null)
+            {
+                Assert.Equal(Tempo.Land, LandingSecondsOf(travel));
+                continue;
+            }
+
+            float rests = RestsBefore(next, travel);
+            bool travelsOnAtOnce = IsATravel(next) && rests <= NoPause;
+            float shouldGive = travelsOnAtOnce ? 0f : Math.Min(Tempo.Land, rests);
+            Assert.True(
+                Math.Abs(LandingSecondsOf(travel) - shouldGive) <= Tolerance,
+                $"piece {PiecesPosedBy(travel).Single()} arrives at {travel.End} and gives for {LandingSecondsOf(travel)}; it lies there for {rests}, until its {next.GetType().Name}");
+        }
+    }
+
+    /// <summary>How long a piece lies where a travel brought it before it does the next thing.</summary>
+    private static float RestsBefore(Cue next, Cue travel) => Math.Max(0f, next.Start - travel.End);
+
+    /// <summary>
+    /// Every travel of a script with the next thing its piece does in it: another travel, or its leaving. Nothing
+    /// follows a travel whose piece lies where it arrived for the rest of the script.
+    /// </summary>
+    private static List<(Cue Travel, Cue? Next)> TravelsWithWhatFollows(TurnScript script)
+    {
+        var followed = new List<(Cue Travel, Cue? Next)>();
+        var latestOf = new Dictionary<int, Cue>();
+        foreach (Cue cue in script.Cues.Where(cue => IsATravel(cue) || cue is Cue.Leave))
+        {
+            int pieceId = PiecesPosedBy(cue).Single();
+            if (latestOf.Remove(pieceId, out Cue? travel))
+            {
+                followed.Add((travel, cue));
+            }
+
+            if (IsATravel(cue))
+            {
+                latestOf[pieceId] = cue;
+            }
+        }
+
+        followed.AddRange(latestOf.Values.Select(travel => (travel, (Cue?)null)));
+        return followed;
     }
 
     /// <summary>A level of the generated pack, which lies beside the hand-made samples (levels/generated), by its number.</summary>
@@ -575,11 +781,17 @@ public partial class TurnChoreographerTests
 
     /// <summary>
     /// The view takes a piece off the stage when its leaving is over, so nothing else the script does with that
-    /// piece may still be going on then; and the give of a landing, which poses the piece as its leaving does,
-    /// must be over when the leaving begins.
+    /// piece may still be going on then; and the give of a landing, which poses the piece as its next travel and
+    /// its leaving do, must be over when either of them begins.
     /// </summary>
     private static void AssertNothingOutlastsItsPiece(TurnScript script)
     {
+        foreach ((Cue travel, Cue? next) in TravelsWithWhatFollows(script))
+        {
+            float givesUntil = travel.End + LandingSecondsOf(travel);
+            Assert.True(next == null || !IsATravel(next) || givesUntil <= next.Start + Tolerance, $"piece {PiecesPosedBy(travel).Single()} still gives under its landing until {givesUntil}, but travels on at {next?.Start}");
+        }
+
         Dictionary<int, Cue.Leave> leaving = Of<Cue.Leave>(script).ToDictionary(leave => leave.PieceId);
         foreach (Cue cue in script.Cues)
         {

@@ -20,11 +20,12 @@ namespace Puzzle.Client.Play
     /// an effect come as the effect reaches their cell (<see cref="Strike"/>); a special piece that is hit goes off
     /// when it is hit, not when the engine got round to it. A piece falls when every cell on its way is free and it
     /// has finished what it did before; a cell is free a moment after its piece was hit or let go. The next round
-    /// of matches waits until everything has landed. A piece that leaves the board is done with everything else by
-    /// then: the give of its landing ends the moment it is hit, so nothing in the script reaches for a piece that
-    /// has gone. And what takes several hits (a crate, a tape, a slab) is hit in the script in the order the engine
-    /// counted its hits, even when the effect of a later hit reaches the cell first: each cue says what is left
-    /// after it, and the view lays exactly that.
+    /// of matches waits until everything has landed. A landed piece gives where it lies, and no longer than it lies
+    /// there: the give ends the moment the piece falls on or is hit, and a piece that falls on without a pause
+    /// does not give at all. So a piece that leaves the board is done with everything else by then, and nothing in
+    /// the script reaches for a piece that has gone. And what takes several hits (a crate, a tape, a slab) is hit
+    /// in the script in the order the engine counted its hits, even when the effect of a later hit reaches the
+    /// cell first: each cue says what is left after it, and the view lays exactly that.
     /// <para>
     /// The finale of a won game is written by the same rules, with a few of its own (<see cref="ComposeFinale"/>).
     /// The engine turns gems into rockets wave by wave and fires each wave on the board as it lay. So the moves of
@@ -50,13 +51,11 @@ namespace Puzzle.Client.Play
         /// <summary>When each piece has finished what it last did, by its number.</summary>
         private readonly Dictionary<int, float> _readyAt = new Dictionary<int, float>();
 
-        /// <summary>Where in <see cref="_cues"/> each piece's latest travel of the current fall is, by its number.</summary>
-        private readonly Dictionary<int, int> _latestTravel = new Dictionary<int, int>();
-
         /// <summary>
-        /// Where in <see cref="_cues"/> the travel is that each piece last landed from, by its number. Unlike
-        /// <see cref="_latestTravel"/> it is kept from one fall to the next round of hits: a piece that is hit while
-        /// it still gives under its landing has that landing cut off (<see cref="TakeFromTheBoard"/>).
+        /// Where in <see cref="_cues"/> the travel is that each piece last landed from, by its number. It is kept
+        /// from one fall through the next round of hits to the fall after it: a piece that falls on or is hit while
+        /// it still gives under its landing has that landing cut off there (<see cref="Travel"/>,
+        /// <see cref="TakeFromTheBoard"/>).
         /// </summary>
         private readonly Dictionary<int, int> _landing = new Dictionary<int, int>();
 
@@ -281,7 +280,6 @@ namespace Puzzle.Client.Play
         {
             _phaseStart = _isSettling ? _motionEnd + Tempo.PauseBeforeCascade * _pace : notBefore;
             _isSettling = false;
-            _latestTravel.Clear();
             _goesOffAt.Clear();
             _armedAt.Clear();
             _gathering = null;
@@ -493,12 +491,7 @@ namespace Puzzle.Client.Play
             PlacedPiece piece = _ledger.Take(cell);
             if (_landing.Remove(piece.Id, out int landedFrom))
             {
-                Cue travel = _cues[landedFrom];
-                float untilItLeaves = Math.Max(0f, leavesAt - travel.End);
-                if (untilItLeaves < LandingSecondsOf(travel))
-                {
-                    _cues[landedFrom] = LandingFor(travel, untilItLeaves);
-                }
+                EndTheLandingBy(landedFrom, leavesAt);
             }
 
             return piece;
@@ -644,18 +637,50 @@ namespace Puzzle.Client.Play
             Free(collected.At, start + Tempo.Collect / 2f);
         }
 
-        /// <summary>Adds a piece's travel; the travel before it loses its landing when this one follows without a pause.</summary>
+        /// <summary>
+        /// Adds a piece's travel. The travel before it, in this fall or in one before it, loses its landing when
+        /// this one follows without a pause; when the piece still gives as this one begins, the landing ends
+        /// there. However short the piece's rest is, the give lasts as long as it: the view shows a landing cut
+        /// short as the beginning of a whole one, and of a few milliseconds of it nothing is seen. A landing that
+        /// is over by then is left as it is, and whether it is over is asked of the moment the give ends, not of
+        /// how long the piece rested: where the give ends in the very moment this travel begins, the rest can
+        /// come out a rounding short of the landing, and a landing that runs past nothing would be written anew
+        /// that much shorter.
+        /// </summary>
         private void Travel(int pieceId, Cue travel)
         {
-            if (_latestTravel.TryGetValue(pieceId, out int before) && _cues[before].End >= travel.Start - NoPause)
+            if (_landing.TryGetValue(pieceId, out int landedFrom))
             {
-                _cues[before] = LandingFor(_cues[before], 0f);
+                Cue landed = _cues[landedFrom];
+                bool travelsOnAtOnce = landed.End >= travel.Start - NoPause;
+                bool stillGives = landed.End + LandingSecondsOf(landed) > travel.Start;
+                if (travelsOnAtOnce)
+                {
+                    _cues[landedFrom] = LandingFor(landed, 0f);
+                }
+                else if (stillGives)
+                {
+                    EndTheLandingBy(landedFrom, travel.Start);
+                }
             }
 
-            _latestTravel[pieceId] = _cues.Count;
             _landing[pieceId] = _cues.Count;
             _readyAt[pieceId] = travel.End;
             Emit(travel);
+        }
+
+        /// <summary>
+        /// Lets the give of a travel's landing end at a moment, if it would go on beyond it: the piece does its
+        /// next thing then. Nothing is left of the landing when that is the moment the piece arrived.
+        /// </summary>
+        private void EndTheLandingBy(int landedFrom, float moment)
+        {
+            Cue travel = _cues[landedFrom];
+            float untilThen = Math.Max(0f, moment - travel.End);
+            if (untilThen < LandingSecondsOf(travel))
+            {
+                _cues[landedFrom] = LandingFor(travel, untilThen);
+            }
         }
 
         /// <summary>A travel with its landing cut to so many seconds; none makes the piece travel on at once.</summary>

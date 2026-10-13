@@ -773,6 +773,34 @@ public partial class TurnChoreographerTests
         Assert.True(itemsUnderAStroke > 0, "no stroke ran through an item's cell: this proves nothing");
     }
 
+    [Fact]
+    public void An_item_that_waits_a_moment_for_its_exit_in_a_finale_has_stopped_giving_when_it_drops_on_and_out()
+    {
+        // Level 316 with its goals cut to a fifth and seventy moves to spare, as the expert bot wins it on seed 2:
+        // two items stand in one column when the finale begins. The upper one comes down seven cells behind the
+        // lower one, a few milliseconds before the exit is free again, drops into it and out.
+        LevelDefinition level = WithGoalsCutTo(0.2f, LevelJson.Load(PackLevelPath(316)));
+        Table table = WonByTheExpertWithMovesLeft(level, movesToSpare: 70, seed: 2)
+            ?? throw new InvalidOperationException("The game of level 316 was not won with moves left: this proves nothing.");
+
+        TurnScript script = FinalePlayedAsWritten(table);
+
+        // The items that came to rest a cell over their exit before they dropped into it: their last two travels.
+        (Cue Landed, Cue DropsOn)[] waited = Of<Cue.Leave>(script)
+            .Where(leave => leave.Manner == LeaveManner.Collect)
+            .Select(dropsOut => TravelsOf(dropsOut.PieceId, script))
+            .Where(travels => travels.Length >= 2 && RestsBefore(travels[^1], travels[^2]) > NoPause)
+            .Select(travels => (travels[^2], travels[^1]))
+            .ToArray();
+
+        (Cue landed, Cue dropsOn) = Assert.Single(waited);
+        float waits = RestsBefore(dropsOn, landed);
+        Assert.True(waits + dropsOn.Seconds < Tempo.Land, "a whole landing would not outlast the item's way out: this proves nothing");
+        Assert.Equal(waits, LandingSecondsOf(landed), Tolerance);
+        Assert.Equal(0f, LandingSecondsOf(dropsOn));
+        AssertEveryLandingLastsAsLongAsItsPieceRests(script);
+    }
+
     /// <summary>
     /// Plays a whole game of a level with the expert bot and, if it is won with moves left, its finale; checks
     /// that every script of it, the finale's too, can be played as it is written.
