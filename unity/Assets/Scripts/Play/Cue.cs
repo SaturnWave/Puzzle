@@ -120,8 +120,9 @@ namespace Puzzle.Client.Play
 
             /// <summary>
             /// How long the piece gives under its own weight once it has arrived: <see cref="Tempo.Land"/> where it
-            /// comes to rest, nothing when it travels on at once, and less than the whole when it leaves the board
-            /// before it has stood up again. Nothing a piece does may go on after it has left.
+            /// comes to rest, nothing when it travels on at once, and less than the whole when it travels on or
+            /// leaves the board before it has stood up again: the give ends where the next thing the piece does
+            /// begins. Nothing a piece does may go on after it has left.
             /// </summary>
             public float LandingSeconds { get; }
 
