@@ -14,5 +14,6 @@
     <ProjectReference Include="..\Puzzle.Tooling\Puzzle.Tooling.csproj" />
     <ProjectReference Include="..\Puzzle.Generator\Puzzle.Generator.csproj" />
     <ProjectReference Include="..\Puzzle.Bank\Puzzle.Bank.csproj" />
+    <ProjectReference Include="..\Puzzle.Economy\Puzzle.Economy.csproj" />
   </ItemGroup>
 </Project>

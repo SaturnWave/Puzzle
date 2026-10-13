@@ -55,6 +55,15 @@ internal static class RepoFiles
         .OrderBy(path => path, StringComparer.Ordinal)
         .ToArray();
 
+    /// <summary>A shipped settings file of the economy simulator (economy/default.json and its variants): placeholders their owner changes.</summary>
+    public static string EconomySettingsPath(string name) => Find("economy", name);
+
+    /// <summary>
+    /// economy/default.json as it was when the simulator was first built. Tests of the simulator's rules start from
+    /// this fixture, so they do not move when a shipped price, amount or habit does.
+    /// </summary>
+    public static string EconomySettingsFixturePath => Find("tests", "fixtures", "economy-settings.json");
+
     /// <exception cref="FileNotFoundException">No directory above the test binaries holds the file.</exception>
     private static string Find(params string[] parts)
     {

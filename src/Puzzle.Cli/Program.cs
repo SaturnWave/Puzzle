@@ -99,6 +99,28 @@ const string Usage = """
                             Delete a player on request: the account, its progress and every attempt record of theirs.
                             Stop the public server first. All four: --data <folder> (default: data in the repository
                             root); list and delete: --records <attempts.jsonl> (default: recordings/attempts.jsonl there)
+      economy measure [settings.json]
+                            The economy simulator's measurement: bots of the settings' rungs play every level on its own
+                            pool seeds past its limit, plain and with each board booster; what each game needed is kept.
+                            A stopped run goes on where it stopped; unchanged levels are not played again.
+                            --levels levels/generated  --from 1  --to <last>  --out out/economy/measurement.jsonl
+                            --workers N  --restart (discard a measurement made with other settings or another engine)
+                            --low-priority (let everything else on the machine go first)
+      economy run [settings.json]
+                            Simulate the settings' free players from the measurement alone, through days, sessions,
+                            lives, coins and boosters: days to the milestone levels, where players stall, what lives
+                            cost, the coin balance, what a free player affords. Writes pace, stalls, lives, coins,
+                            spending, boosters, offers and settings as CSV and summary.txt (also printed).
+                            --measurement out/economy/measurement.jsonl  --levels levels/generated
+                            --out out/economy/<settings name>  --trust-measurement (skip the check against the engine
+                            and the level files; then no game is played at all)
+      economy compare <a.json> <b.json>
+                            Two settings files on the same measurement: the fields that differ, then the figures up to
+                            each milestone side by side, as compare.csv and differences.txt.
+                            --measurement ...  --levels ...  --out out/economy/compare-<a>-vs-<b>  --trust-measurement
+                            All three: the settings default to economy/default.json in the repository root; every
+                            economy value lives in the settings file, never in an option. --restart, --low-priority
+                            and --trust-measurement take no value: put the settings file before the options.
     """;
 
 CliArgs cli = CliArgs.Parse(args);
@@ -122,6 +144,7 @@ try
         "validate" => ValidateCommand.Run(cli),
         "humans" => HumansCommand.Run(cli),
         "players" => PlayersCommand.Run(cli),
+        "economy" => EconomyCommand.Run(cli),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => throw new UsageException($"Unknown command '{cli.Command}'."),
     };

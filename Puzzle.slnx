@@ -4,6 +4,7 @@
     <Project Path="src/Puzzle.Bot/Puzzle.Bot.csproj" />
     <Project Path="src/Puzzle.Cli/Puzzle.Cli.csproj" />
     <Project Path="src/Puzzle.Core/Puzzle.Core.csproj" />
+    <Project Path="src/Puzzle.Economy/Puzzle.Economy.csproj" />
     <Project Path="src/Puzzle.Generator/Puzzle.Generator.csproj" />
     <Project Path="src/Puzzle.Museum/Puzzle.Museum.csproj" />
     <Project Path="src/Puzzle.Tooling/Puzzle.Tooling.csproj" />
