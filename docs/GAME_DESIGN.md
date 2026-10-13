@@ -845,7 +845,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **"+5 hamle" teklifi:** hamle bitince coinle ya da reklam izleyerek alınır. Zorluk ayarı teklifsiz limite göre yapılır; raporlar limit+5'teki kazanma oranını da gösterir (§8). Motorda (2026-10-12): `Game.TryTakeExtraMoves`; hamlesi biten oyun 5 hamleyle sürer, **bir denemede bir kez** (deneme kaydındaki tek alanla uyumlu; birden çok alım istenirse ayrıca karar gerekir). Tahtada hamle kalmamışsa önce karıştırılır; karıştırmayla da hamle çıkmayan tahtaya teklif satılmaz (istek reddedilir, hiçbir şey değişmez). İstemci deneme kaydını ancak oyuncu teklifi geri çevirdikten ya da deneme kesin bittikten sonra yazar.
 - **Bitiş şöleni:** bölüm kazanılınca kalan her hamle tahtada bir rokete dönüşüp patlar ve coin verir. Kazanma kesinleştikten sonra çalıştığı için zorluk ölçümünü etkilemez. Motorda (2026-10-12): `Game.PlayFinale` yalnızca istemci isteyince çalışır; kalan her hamle rastgele bir serbest taşı rokete çevirir, roketler patlar, tahta oturur; taş yetmezse dalga dalga sürer. Sonucu, kullanılan hamleyi, oyunun toplamlarını ve hedef sayaçlarını değiştirmez (şölenden sonra yazılan kayıt da oyunu anlatır); aynı oyunun şöleni her zaman aynıdır. Tahtada kalmış başka özel taşlar patlatılmaz. Coin miktarı motorun değil ekonominin kararıdır: kalan hamle sayısından hesaplanır (simülatör belirleyecek).
 - **Coin:** booster, ekstra hamle ve yan koleksiyon parçaları için. Ana tabloların parçaları coinle alınmaz.
-- **Fiyatlar:** elle tahmin edilmeyecek. Bir **ekonomi simülatörü** botların 1000 bölümdeki kazanma oranlarını ve hamle dağılımlarını kullanarak can, "+5" teklifi ve coin akışını ölçecek; "ücretsiz oynayan biri 100. bölüme kaç günde gelir, nerede tıkanır" sorusunu cevaplayacak.
+- **Fiyatlar:** elle tahmin edilmeyecek (simülatör kuruldu: §25). Bir **ekonomi simülatörü** botların 1000 bölümdeki kazanma oranlarını ve hamle dağılımlarını kullanarak can, "+5" teklifi ve coin akışını ölçecek; "ücretsiz oynayan biri 100. bölüme kaç günde gelir, nerede tıkanır" sorusunu cevaplayacak.
 - **Etik sınırlar** (§17'ye ek): oyuncunun para harcama eğilimi zorluğu etkilemez, zorluk gizlice ayarlanmaz, gerçek parayla rastgele kutu satılmaz.
 - **Ekip ve görseller:** kullanıcı ve Claude. Görseller en son, Claude Design ya da 3D araçlarla.
 
@@ -985,6 +985,8 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Doğrulama:** senaryo için düz C# testleri (gerçek bölümlerin gerçek motor olaylarıyla), Unity'de `FinaleCheck` ve `FinaleStory`; üç ekran boyunda (1080×2340, 1080×1920, 2076×2152) karelerine bakıldı.
 - **Ölçülmedi:** telefonda kare hızı ve gerçek parmakla atlama. Ses ve titreşim yok.
 
+**Yere konma esnemesi (2026-10-13).** Yere konan bir parçanın kısa esnemesi, parça esneme bitmeden yeniden hareket ettiğinde artık o anda biter. Önceden esneme sonraki düşüşün içine taşıyordu (hamle senaryolarının yaklaşık yüzde 11'inde, şölenlerin yüzde 36'sında); art arda çıkan malzemelerde parçanın alınışını bile geçebiliyordu. Hiçbir olayın başlangıcı ya da bitişi değişmedi; yalnızca taşan esnemelerin süresi kısaldı. Çok kısa kalan esneme atılmaz, kaldığı kadar oynar.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası, Roboto Bold yazı tipi.
 
 ## 24. Bölüm bankası ve derleyici
@@ -1034,3 +1036,47 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Derle (deneme klasörüne) | `puzzle assemble --policy policies/default.json --base levels/generated --bank D:\puzzle-bank --out out/assemble/<ad>` |
 | İki bölüm kümesini karşılaştır | `puzzle compare levels/generated out/assemble/<ad> --from 51` |
 | Yayına al (sunucu durmuşken) | `puzzle promote out/assemble/<ad> [--accept <numaralar>] [--dry-run]` |
+
+## 25. Ekonomi simülatörü
+
+**Karar (2026-10-12).** Fiyatlar tahmin edilmez (§19); simülatörden okunur. Kullanıcı ilk varsayımları onayladı: ücretsiz ortalama oyuncu 100. bölüme 10–14 günde gelsin; günde 3 oturum; reklamla "+5 hamle" günde 3 kez ücretsiz; booster hem coin'le alınır hem ödül olarak gelir. Hepsi ayar dosyasındadır, hiçbiri kodda sabit değildir.
+
+**Üç parça**
+
+| Parça | Ne yapar |
+|---|---|
+| Ölçüm (`puzzle economy measure`) | Beceri karışımındaki botlar her bölümü kendi tohum havuzunda limitin ötesine kadar oynar: düz, ve tahtaya özel taş koyan iki bölüm öncesi booster'la. Her oyunun kaç hamlede bittiği saklanır. 862.512 oyun, dört iş parçacığında yaklaşık 13 dakika, 11 MB (`out/economy/measurement.jsonl`, depoya girmez). "+3 hamle" ve "+5 hamle" ayrıca oynanmaz: saklı oyunun üstünde aritmetiktir |
+| Ayar dosyası (`economy/default.json`) | Oyuncu alışkanlığı ve ekonomi: can, ödüller, şölende hamle başına coin, fiyatlar, oyuncunun "+5"i ve booster'ı ne zaman istediği. Her alanın birimi ve kaynağı yazılıdır: karar, onaylanan varsayım, öneri, yer tutucu, kayıt |
+| Simülasyon (`puzzle economy run`, `compare`) | Binlerce sanal oyuncuyu gün, oturum, can, coin ve booster üzerinden yürütür; oyun oynamaz, saklı oyunlara bakar. İki ayar dosyasını yan yana koyar |
+
+**İlk sonuçlar (2026-10-13; varsayılan ayarlar, 4.000 ücretsiz oyuncu).** Bölüme varılan gün, ortalama oyuncu (55. basamak), günde 3 oturum:
+
+| Oturum tavanı | 100. bölüm | 300. bölüm | 1000. bölüm |
+|---|---|---|---|
+| 6 dakika | 12. gün | 39. gün | 138. gün |
+| 10 dakika | 8. gün | 25. gün | 90. gün |
+| 20 dakika (varsayılan) | 4. gün | 14. gün | 48. gün |
+| 60 dakika | 2. gün | 6. gün | 22. gün |
+
+- **Hızı oturum süresi belirliyor**, can ya da fiyat değil. 20 dakikalık oturumda canlar (5 can, 30 dakikada bir) hiç devreye girmiyor: her oturum 5 canla başlıyor, oturumların yüzde 98,6'sı süre tavanında bitiyor. 60 dakikalık oturumda oturumların yüzde 55'i canla bitiyor.
+- **Hiçbir bölüm duvar değil.** Bölüm başına ortalama deneme: ilk oda 1,05, Kolay 1,05, Normal 1,15, Zor 1,43, Süper Zor 1,80.
+- **Tekliflerin etkisi** (ortalama oyuncu, bütün bölümler): limitte kazanma yüzde 73,1; "+5 hamle" ile yüzde 85,7; renk bombası +16,6 puan, "+3 hamle" +8,5, roket ve bomba +6,2.
+- **Bölümlerin ayarı doğrulandı:** herkesin ilk denemesi olan ilk tohumda 55. basamak Kolay yüzde 90,5, Normal 75,8, Zor 56,2, Süper Zor 41,6 kazanıyor (hedef 90 / 75 / 55 / 40).
+- **Coin tablosu oturum süresiyle tersine dönüyor.** Yer tutucu fiyatla ("+5" = 900 coin) 20 dakikalık oturumda oyuncu günde 5,1 kez "+5" istiyor (3'ü reklamla) ve coin yetmiyor; 6 dakikalıkta günde 1,7 kez istiyor ve coin birikiyor. Tek bir varsayımdan fiyat okunmaz.
+- İki gerçek oyuncunun kaydı: oturum başına 5 deneme, deneme başına yaklaşık 2 dakika; bu 10 dakikalık oturuma yakındır.
+
+**Sınırlar**
+- Bölüm içi booster'lar ölçülmedi (hiçbir bot ne zaman kullanacağını bilmiyor). Gerçek para simüle edilmiyor; ücretsiz oyuncunun eksiği raporlanıyor.
+- Tek tek bölüm sıralaması gürültülüdür; yalnızca kademe bazındaki tablo sağlamdır.
+- Hedefi 2–4 adımda ilerleyen 71 bölümde "+5"in istenme kuralı ilerlemeyi göremiyor; bu bölümler raporda ayrı gösterilir.
+- Oyuncu can beklemez, erken dönmez: "bekleme" yerine canın kestiği oyun süresi raporlanır.
+
+**Açık kararlar:** hangi oturum alışkanlığı esas alınacak (öneri: 10 dakika); 1000 bölümün 7–13 haftada bitmesi kabul mü.
+
+**Komutlar**
+
+| İş | Komut |
+|---|---|
+| Ölç (bir kez; kaldığı yerden sürer) | `puzzle economy measure economy/default.json` |
+| Simüle et | `puzzle economy run economy/default.json` (raporlar `out/economy/<ad>`: `summary.txt`, hız, takılma, can, coin, harcama, booster, teklif CSV'leri) |
+| İki ayarı karşılaştır | `puzzle economy compare economy/default.json economy/target-pace.json` |

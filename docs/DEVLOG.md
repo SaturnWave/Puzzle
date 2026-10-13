@@ -31,8 +31,27 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Hesap ya da para gerektiren hiçbir şey planda yok: gerçek para paketleri "Yakında" olarak, reklam "test sürümü" etiketli bir canlandırma olarak duracak; fiyatlar ekonomi ayar dosyasından okunacak.
 - Başlaması için ekonomi simülatörünün ana dala alınması gerekiyor.
 
-**Ekonomi simülatörü (sürüyor)**
-- Deponun ayrı bir kopyasında (`economy-simulator` dalı) kuruluyor; tasarımı hazır, uygulaması sürüyor.
+**Ekonomi simülatörü (ana dalda; §25)**
+- Ayrı bir kopyada kuruldu (iki tasarım önerisi, tek tasarım, uygulama, üç eleştiri, düzeltme) ve ana dala birleştirildi. `puzzle economy measure | run | compare`; ayarlar `economy/default.json` ve beş değişkeni.
+- İlk tam ölçüm: 862.512 oyun, yaklaşık 13 dakika. Varsayılan ayarlarla ortalama ücretsiz oyuncu 100. bölüme 4. günde, 1000. bölüme 48. günde geliyor; hedef (10–14 gün) ancak 6 dakikalık oturumla tutuyor. Hızı oturum süresi belirliyor; 20 dakikalık oturumda canlar hiç devreye girmiyor.
+- Bölümlerin ayarı bağımsız olarak doğrulandı: ilk tohumda 55. basamak yüzde 90,5 / 75,8 / 56,2 / 41,6.
+- Eleştiri 29 bulgu çıkardı; 22'si düzeltildi. En önemlileri: "eksik coin" sütunu gerçek açığın yarısını gösteriyordu; kural testleri ayarlanabilir dosyaya bağlıydı; koruma, ölçümdeki "+3" ve "+5" değerlerini bu derlemeyle karşılaştırmıyordu.
+- Kullanıcıya iki karar soruldu: hangi oturum alışkanlığı esas alınsın, 1000 bölümün 7–13 haftada bitmesi kabul mü.
+
+**Yere konma esnemesi düzeltildi (kullanıcının ilettiği görev)**
+- Şölen işi sırasında bulunan eski kusur: yere konan parça esneme bitmeden yeniden hareket ederse esneme sonraki hareketin içine taşıyordu. Görünenden yaygınmış: hamle senaryolarının yüzde 11'i, şölenlerin yüzde 36'sı. Testlerin kendi kuralını bozan durum nadirdi (356 bin senaryoda 8; hepsi art arda çıkan malzemeler).
+- Düzeltme `TurnChoreographer.Travel` içinde: parçanın son esnemesi, yeni hareket başladığı anda biter. Eski ve yeni kodla yazılan 1,29 milyon senaryo yan yana karşılaştırıldı: taşan esnemelerin süresi dışında hiçbir şey değişmedi.
+- Bağımsız inceleme iki küçük bulgu çıkardı (bir yuvarlama, şansa geçen bir test); ikisi de düzeltildi.
+- Ayrı iş olarak not edildi: bantlı bir parça, bandının çıktığı gösterilmeden hareket edebiliyor.
+
+**UI'ın ilk bölümü (4–6. aşamalar): yazıldı, Unity'de kanıtlanamadı**
+- Tasarımın üç yazı tipi (Gabarito, Paytone One, Young Serif), 51 yeni sembol ve yüzey, ortak parçalar (asılı kart, disk düğme, booster diski, küçük düğme, rozet, bölüm başlığı) yazıldı; iki eleştiri ve düzeltme yapıldı.
+- **Engel:** Unity Editor 13 Ekim 02:20'den beri lisans bulamıyor (çıkış kodu 198); Unity Hub'ın oturumu düşmüş. Yalnızca kullanıcı yeniden giriş yapabilir. 4. aşama o saatten önce Unity'de görüntülenmişti; 5 ve 6. aşamalar ile düzeltmeler Unity'ye hiç girmedi.
+- Bu yüzden iş ayrı bir dalda bekliyor (`ui-means-wip`); ana dalda değil. Yeni görsellerin Unity dosyaları ve varlık kataloğu `ProjectSetup` çalışınca oluşacak; o dalda iki test bu yüzden kırmızı.
+
+**Tablolar için yeni yön (kullanıcı, 2026-10-13)**
+- Yalnızca üzerinde telif olmayan eserler; müze dönem dönem ilerler ve her tablo odasının döneminden olur; tür serbest; ressamın ünlü olması gerekmez, ünlü portreler (Washington portresi gibi) aranır. 1. ve 2. odalar kalır.
+- İlk öneri (akımlara göre; 25 tablosu "kamu malı reprodüksiyon" dosyası) geçersiz. Yeni araştırma 3–20. odaları yaklaşık 1400–1900 arasında on sekiz dönem olarak, yalnızca müzesinin her kullanıma açıkça serbest bıraktığı görüntülerle kuruyor; ilk önerinin bu ölçüyü tutan 96 eseri başlangıç havuzu.
 
 ## 2026-10-12 · Oturum 19 — Bankadan derlenen bölümler yayında
 
