@@ -1,0 +1,16 @@
+<!-- A pip of a piece the player has won, on a cream card: gilt in a dark line, as the design canvas draws the row
+     under a won level's new piece (WinTR). One unit is one point of the design. The pip is 19 x 13 at (6.5, 6); the
+     pips of a painting in the jigsaw's dark bar are other pictures (pip-on.svg and its fellows). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="448" viewBox="0 0 32 28">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="6" x2="0" y2="19"><stop offset="0" stop-color="#FFF4C4"/><stop offset="1" stop-color="#F6B93C"/></linearGradient>
+<clipPath id="in-pip"><rect x="6.5" y="6" width="19" height="13" rx="4.5"/></clipPath>
+</defs>
+<!-- the drop on the card, the dark line around the pip, the gilt, light along its top -->
+<rect x="5.1" y="7.1" width="21.8" height="15.8" rx="5.9" fill="#5C3810" fill-opacity=".3"/>
+<rect x="5.1" y="4.6" width="21.8" height="15.8" rx="5.9" fill="#5E3305"/>
+<rect x="6.5" y="6" width="19" height="13" rx="4.5" fill="url(#gilt)"/>
+<g clip-path="url(#in-pip)">
+<path fill="#FFFBE6" fill-rule="evenodd" d="M0 0H32V28H0Z M11 7.5H21A4.5 4.5 0 0 1 25.5 12V16A4.5 4.5 0 0 1 21 20.5H11A4.5 4.5 0 0 1 6.5 16V12A4.5 4.5 0 0 1 11 7.5Z"/>
+</g>
+</svg>

@@ -36,8 +36,8 @@ namespace Puzzle.Client.Collections
         private readonly Wall _wall;
         private readonly RoomTrim _trim;
         private readonly CollectionPlaque _plaque;
-        private readonly RoundButton _previous;
-        private readonly RoundButton _next;
+        private readonly DiscButton _previous;
+        private readonly DiscButton _next;
         private readonly List<ExhibitFrame> _exhibits = new List<ExhibitFrame>();
         private readonly List<PaintingLook> _looks = new List<PaintingLook>();
 
@@ -58,9 +58,10 @@ namespace Puzzle.Client.Collections
             _root.SetParent(parent, worldPositionStays: false);
             _wall = Wall.Create(_root, art);
             _trim = RoomTrim.Create(_root, art);
-            _plaque = CollectionPlaque.Create(_root, art, CollectionRooms.PaintingsWhole(visit.Progress, paintings.Catalogue));
-            _previous = new RoundButton("Room before", _root, art, ArrowWay.Back, DrawOrder.PlaqueArt);
-            _next = new RoundButton("Room after", _root, art, ArrowWay.Forward, DrawOrder.PlaqueArt);
+            _plaque = CollectionPlaque.Create(
+                _root, art, CollectionRooms.PaintingsWhole(visit.Progress, paintings.Catalogue), paintings.Catalogue.Rooms.Select(MuseumWords.NameOf).ToArray());
+            _previous = new DiscButton("Room before", _root, art, DiscGlyph.Back, DrawOrder.PlaqueArt);
+            _next = new DiscButton("Room after", _root, art, DiscGlyph.Forward, DrawOrder.PlaqueArt);
             Room = room;
             HangTheRoom();
         }
@@ -242,7 +243,7 @@ namespace Puzzle.Client.Collections
             ? _exhibits[painting.PlaceInRoom - 1]
             : throw new ArgumentException($"Painting {painting} hangs in room {painting.Room}; the collection shows room {Room}.", nameof(painting));
 
-        private static void PlaceTheButton(RoundButton button, Box place) =>
-            button.Place(new Vector2(place.MiddleX, place.MiddleY), place.Width / RoundButton.Size);
+        private static void PlaceTheButton(DiscButton button, Box place) =>
+            button.Place(new Vector2(place.MiddleX, place.MiddleY), place.Width / DiscButton.Size);
     }
 }

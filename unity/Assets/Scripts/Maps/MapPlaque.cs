@@ -52,7 +52,7 @@ namespace Puzzle.Client.Maps
 
             TextMeshPro summary = PagePlaque.WriteLabel("Summary", content, art, DrawOrder.PlaqueLettering);
             Lettering.SayFromLeft(summary, MuseumWords.MapSummary, left, SummaryUp);
-            TextMeshPro title = Lettering.Write("Title", content, art, LetteringStyle.Label, PagePlaque.TitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
+            TextMeshPro title = Lettering.Write("Title", content, art, LetteringStyle.Title, PagePlaque.TitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
             Lettering.SayFromLeft(title, MuseumWords.MapTitle, left, -TitleDown);
 
             TextMeshPro whichRoom = PagePlaque.WriteLabel("Which room", content, art, DrawOrder.PlaqueLettering);

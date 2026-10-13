@@ -1,0 +1,27 @@
+<!-- The small blue button, 44 points high, as the design canvas draws it beside the shop's free coins (ShopTR):
+     button-small.svg in the blue of the buttons that play an advertisement. One unit is one point of the design.
+     The pill is 100 x 44 at (14, 6); the game stretches the middle of the picture sideways to the width a button
+     needs, so nothing between x = 32 and x = 96 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="288" viewBox="0 0 128 72">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="6" x2="0" y2="50"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".22" stop-color="#FFDB6E"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<linearGradient id="blue" gradientUnits="userSpaceOnUse" x1="0" y1="9" x2="0" y2="47"><stop offset="0" stop-color="#8FB6FF"/><stop offset=".4" stop-color="#4C86F5"/><stop offset=".66" stop-color="#2F68E2"/><stop offset="1" stop-color="#2452C8"/></linearGradient>
+<linearGradient id="gloss" gradientUnits="userSpaceOnUse" x1="0" y1="13" x2="0" y2="26"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset="1" stop-color="#fff" stop-opacity=".06"/></linearGradient>
+<filter id="soft" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="4.5"/></filter>
+<clipPath id="in-face"><rect x="17" y="9" width="94" height="38" rx="12"/></clipPath>
+</defs>
+<!-- the soft shadow under the button, the lip it is pressed down onto, the brown line around it, the gilt rim -->
+<rect x="14" y="15" width="100" height="44" rx="15" fill="#5C3810" fill-opacity=".28" filter="url(#soft)"/>
+<rect x="12" y="9" width="104" height="48" rx="17" fill="#3A1F05"/>
+<rect x="12" y="4" width="104" height="48" rx="17" fill="#5E3305"/>
+<rect x="14" y="6" width="100" height="44" rx="15" fill="url(#gilt)"/>
+<!-- the face: blue, a dark foot (the face less the face moved up), light along its top (the face less the face moved down) -->
+<g clip-path="url(#in-face)">
+<rect x="17" y="9" width="94" height="38" fill="url(#blue)"/>
+<path fill="#183C9C" fill-rule="evenodd" d="M0 0H128V72H0Z M29 5H99A11 11 0 0 1 110 16V30A11 11 0 0 1 99 41H29A11 11 0 0 1 18 30V16A11 11 0 0 1 29 5Z"/>
+<path fill="#fff" fill-opacity=".5" fill-rule="evenodd" d="M0 0H128V72H0Z M29 13H99A11 11 0 0 1 110 24V38A11 11 0 0 1 99 49H29A11 11 0 0 1 18 38V24A11 11 0 0 1 29 13Z"/>
+<rect x="17.8" y="9.8" width="92.4" height="36.4" rx="11.2" fill="none" stroke="#0F2670" stroke-width="1.6"/>
+</g>
+<!-- the gloss on the upper third -->
+<path fill="url(#gloss)" d="M28.32 13H99.68A5.32 5.32 0 0 1 105 18.32A7.68 7.68 0 0 1 97.32 26H30.68A7.68 7.68 0 0 1 23 18.32A5.32 5.32 0 0 1 28.32 13Z"/>
+</svg>

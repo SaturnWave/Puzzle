@@ -40,7 +40,7 @@ namespace Puzzle.Client.EditorTools
             ["caption-plate"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 23.5f), stretchesFrom: 24f),
             ["pill"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 17f), stretchesFrom: 26f),
             ["room-badge"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 24f), largestSide: 256),
-            ["tab"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 66f)),
+            ["tab"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 66f), stretchesFrom: 52f),
             ["icon-museum"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
             ["icon-map"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
             ["icon-lock"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
@@ -57,10 +57,68 @@ namespace Puzzle.Client.EditorTools
             ["pip-off"] = new Picture(pointsWide: 20f, pivot: new Vector2(10f, 7.5f), largestSide: 128),
             ["pip-next"] = new Picture(pointsWide: 20f, pivot: new Vector2(10f, 7.5f), largestSide: 128),
             ["badge-red"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 15f), stretchesFrom: 15f, largestSide: 256),
+
+            // The design canvas' symbols, each in its box of 100 points. A mark is stored no larger than the largest
+            // place that shows it needs on a phone's screen: the token of five more moves fills a card's alcove.
+            ["icon-coin"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-heart"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-gear"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-shop"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["picture-gift"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-back"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-pause"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-spatula"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-shuffle"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-moves-3"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-moves-5"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 512),
+            ["coins-pile"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["coins-pouch"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["coins-chest"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-sound"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-music"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-buzz"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-globe"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-shield"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-help"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+
+            // The strokes that stand on a round button or a badge, each as large as the canvas shows it.
+            ["glyph-plus"] = new Picture(pointsWide: 14f, pivot: new Vector2(7f, 7f), largestSide: 64),
+            ["glyph-close"] = new Picture(pointsWide: 22f, pivot: new Vector2(11f, 11f), largestSide: 128),
+            ["glyph-chevron"] = new Picture(pointsWide: 14f, pivot: new Vector2(7f, 7f), largestSide: 64),
+            ["glyph-tick"] = new Picture(pointsWide: 18f, pivot: new Vector2(9f, 9f), largestSide: 64),
+            ["glyph-play"] = new Picture(pointsWide: 24f, pivot: new Vector2(12f, 12f), largestSide: 128),
+
+            // The surfaces of the controls.
+            ["disc-cream"] = new Picture(pointsWide: 72f, pivot: new Vector2(36f, 35f), largestSide: 256),
+            ["ring-chosen"] = new Picture(pointsWide: 72f, pivot: new Vector2(36f, 35f), largestSide: 256),
+            ["disc-teal"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 30f), largestSide: 256),
+            ["disc-teal-small"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 23f), largestSide: 256),
+            ["disc-teal-tiny"] = new Picture(pointsWide: 36f, pivot: new Vector2(18f, 17f), largestSide: 128),
+            ["disc-green"] = new Picture(pointsWide: 36f, pivot: new Vector2(18f, 17f), largestSide: 128),
+            ["badge-teal"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 15f), stretchesFrom: 15f, largestSide: 128),
+            ["badge-green"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 15f), stretchesFrom: 15f, largestSide: 128),
+            ["button-small"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 28f), stretchesFrom: 32f, largestSide: 512),
+            ["button-small-blue"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 28f), stretchesFrom: 32f, largestSide: 512),
+            ["pill-price"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 15.5f), stretchesFrom: 22f, largestSide: 256),
+            ["toggle-on"] = new Picture(pointsWide: 72f, pivot: new Vector2(36f, 17.5f), largestSide: 256),
+            ["toggle-off"] = new Picture(pointsWide: 72f, pivot: new Vector2(36f, 17.5f), largestSide: 256),
+            ["toggle-knob"] = new Picture(pointsWide: 40f, pivot: new Vector2(20f, 18.5f), largestSide: 256),
+            ["frame-small"] = new Picture(pointsWide: 88f, pivot: new Vector2(44f, 58f), stretchesFrom: 30f, stretchesFromTop: 48f, stretchesFromFoot: 38f, largestSide: 512),
+            ["velvet"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 128),
+            ["plank"] = new Picture(pointsWide: 128f, pivot: new Vector2(64f, 74f), stretchesFrom: 40f, stretchesFromTop: 60f, stretchesFromFoot: 64f, largestSide: 512),
+            ["chip-well"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 22f), stretchesFrom: 24f, largestSide: 256),
+            ["chip"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 17f), stretchesFrom: 20f, largestSide: 256),
+            ["pip-card-on"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 12.5f), largestSide: 128),
+            ["pip-card-new"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 12.5f), largestSide: 128),
+            ["pip-card-off"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 12.5f), largestSide: 128),
+            ["brass-plate"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 32f), stretchesFrom: 22f, stretchesFromTop: 22f, stretchesFromFoot: 22f, largestSide: 256),
+            ["stud"] = new Picture(pointsWide: 8f, pivot: new Vector2(4f, 4f), largestSide: 64),
+            ["wire-pin"] = new Picture(pointsWide: 8f, pivot: new Vector2(4f, 4f), largestSide: 64),
+            ["wallet-pill"] = new Picture(pointsWide: 96f, pivot: new Vector2(48f, 23f), stretchesFrom: 34f, largestSide: 512),
         };
 
         /// <summary>Raise after changing the settings below: Unity then imports the pictures again.</summary>
-        public override uint GetVersion() => 4;
+        public override uint GetVersion() => 6;
 
         private void OnPreprocessTexture()
         {

@@ -1,6 +1,6 @@
 <!-- The raised plate behind the navigation bar's chosen destination, as the design canvas draws it (HomeTR, the
      museum's tab): a teal plate in a gilt rim, rounder at its top than at its foot. One unit is one point of the
-     design. The plate is 70 x 88 at (29, 22) and is never stretched. -->
+     design. The plate is 70 x 88 at (29, 22); its middle stretches sideways under a longer name. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
 <defs>
 <linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="22" x2="0" y2="110"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".22" stop-color="#FFDB6E"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>

@@ -1,10 +1,9 @@
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Puzzle.Client.EditorTools
 {
@@ -12,11 +11,12 @@ namespace Puzzle.Client.EditorTools
     /// Builds the Android package from the command line.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run
     /// The package lands in unity/Build/Android/puzzle.apk, signed with Unity's debug key: good for installing on a
-    /// test phone, not for a store.
+    /// test phone, not for a store. What the Editor derives (the atlas, the art catalogue, the typefaces, the scene)
+    /// is brought up to date first: the game reads the catalogue by the order of its lists of drawings, and a
+    /// package with a catalogue older than those lists would stop at the first drawing added since.
     /// </summary>
     public static class AndroidBuild
     {
-        private const string MainScenePath = "Assets/Scenes/Main.unity";
         private const string PackagePath = "Build/Android/puzzle.apk";
 
         /// <summary>Placeholders: the game's name is decided last, and the package id follows it.</summary>
@@ -26,12 +26,21 @@ namespace Puzzle.Client.EditorTools
 
         public static void Run()
         {
-            EnsureMainScene();
-            ApplyPlayerSettings();
+            try
+            {
+                ProjectSetup.BringUpToDate();
+            }
+            catch (Exception failure) when (failure is InvalidOperationException || failure is IOException)
+            {
+                Debug.LogError($"Android build: not started, because the project's setup failed: {failure.Message}");
+                EditorApplication.Exit(1);
+                return;
+            }
 
+            ApplyPlayerSettings();
             var options = new BuildPlayerOptions
             {
-                scenes = new[] { MainScenePath },
+                scenes = new[] { MainSceneBuilder.ScenePath },
                 locationPathName = PackagePath,
                 target = BuildTarget.Android,
                 options = BuildOptions.None,
@@ -45,18 +54,6 @@ namespace Puzzle.Client.EditorTools
             }
 
             Debug.Log($"Android build: succeeded, {summary.totalSize / (1024 * 1024)} MB at {summary.outputPath} in {summary.totalTime.TotalMinutes:F1} min.");
-        }
-
-        private static void EnsureMainScene()
-        {
-            if (File.Exists(MainScenePath))
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(MainScenePath));
-            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
-            EditorSceneManager.SaveScene(scene, MainScenePath);
         }
 
         /// <summary>A 64-bit ARM package in portrait: what current phones run and what the stores ask for.</summary>

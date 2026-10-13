@@ -62,6 +62,14 @@
     <Compile Include="..\..\unity\Assets\Scripts\Layout\CollectionLayout.cs" Link="Unity\Layout\CollectionLayout.cs" />
     <!-- Nor has the list of what is drawn over what: the tests pin the places that a mistake has shown to matter. -->
     <Compile Include="..\..\unity\Assets\Scripts\DrawOrder.cs" Link="Unity\DrawOrder.cs" />
+    <!-- Nor have the lettering's styles with the typeface each is set in, and the letters the game can write. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Art\GalleryArt.cs" Link="Unity\Art\GalleryArt.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\Typeface.cs" Link="Unity\Art\Typeface.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\LetterSet.cs" Link="Unity\Art\LetterSet.cs" />
+    <!-- Nor have the rules of the controls several screens share: what a booster's disc shows, how a row of pips is set out, how amounts and waits are written. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\BoosterFace.cs" Link="Unity\Screens\BoosterFace.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\PipRowPlan.cs" Link="Unity\Screens\PipRowPlan.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\NumberWords.cs" Link="Unity\Flow\NumberWords.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

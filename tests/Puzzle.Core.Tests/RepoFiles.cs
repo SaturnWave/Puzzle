@@ -49,6 +49,33 @@ internal static class RepoFiles
     public static string PaintingPicturesFolder =>
         Path.Combine(Path.GetDirectoryName(Find("unity", "ProjectSettings", "ProjectVersion.txt"))!, "..", "Assets", "Resources", "Paintings");
 
+    /// <summary>A source file of the Unity game, named from its Scripts folder down: tests that read what the game says read it there.</summary>
+    public static string ClientScriptPath(params string[] parts) => Find(new[] { "unity", "Assets", "Scripts" }.Concat(parts).ToArray());
+
+    /// <summary>A source file of the Unity game's Editor tools: tests that read the tables the Editor imports art by read them there.</summary>
+    public static string ClientEditorScriptPath(string file) => Find("unity", "Assets", "Editor", file);
+
+    /// <summary>The drawings of the gallery as they are written (art/unity): one .svg per sprite, and the wall's damask.</summary>
+    public static string GalleryArtSourcesFolder => Path.GetDirectoryName(Find("art", "unity", "plaque.svg"))!;
+
+    /// <summary>The same drawings as the game reads them: the pictures tools/unity/export-gallery-art.js writes from the sources.</summary>
+    public static string GalleryArtPicturesFolder => Path.GetDirectoryName(Find("unity", "Assets", "Art", "Gallery", "plaque.png"))!;
+
+    /// <summary>The Unity game's project folder; what the Editor derives and the repository keeps is named from here.</summary>
+    public static string ClientProjectFolder => Path.GetDirectoryName(Path.GetDirectoryName(Find("unity", "ProjectSettings", "ProjectVersion.txt"))!)!;
+
+    /// <summary>The art catalogue as the Editor's project setup last wrote it: the lists the game reads its sprites and typefaces from.</summary>
+    public static string ArtCataloguePath => Path.Combine(ClientProjectFolder, "Assets", "Art", "ArtCatalogue.asset");
+
+    /// <summary>The record of the game's font files (art/fonts/licences.json): where each came from, its licence, and the bytes it is kept with.</summary>
+    public static string FontRecordPath => Find("art", "fonts", "licences.json");
+
+    /// <summary>A font file of the game, as tools/unity/fetch-fonts.js keeps it.</summary>
+    public static string FontFilePath(string file) => Path.Combine(ClientProjectFolder, "Assets", "Art", "Fonts", file);
+
+    /// <summary>The typeface the Editor's project setup made from a font file, named as the font file is without its ending.</summary>
+    public static string TypefacePath(string fontFileName) => Path.Combine(ClientProjectFolder, "Assets", "Art", "Fonts", $"{fontFileName} Lettering.asset");
+
     /// <summary>The hand-made sample levels (levels/samples), in file-name order.</summary>
     public static string[] SampleLevelPaths => Directory
         .GetFiles(Path.GetDirectoryName(Find("levels", "samples", "s01_basic.json"))!, "*.json")

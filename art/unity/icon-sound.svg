@@ -1,0 +1,10 @@
+<!-- A loudspeaker: the mark of the settings' row for sound. As the design canvas draws it (SettingsTR): its symbol
+     st-sound with the paints it uses, written by tools/unity/extract-design-symbols.js. Change the canvas and run
+     that again; do not change this file by hand. One unit is one point where the symbol is drawn 100 points wide;
+     the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+</defs>
+<g transform="translate(0 4.5)"><path d="M13 39.5H29.5L52 21.5V78.5L29.5 60.5H13Z" fill="#0C4A53" stroke="#0C4A53" stroke-width="5" stroke-linejoin="round"/><path d="M64.5 38C70.5 45 70.5 55 64.5 62" fill="none" stroke="#0C4A53" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M75 27C88 40 88 60 75 73" fill="none" stroke="#0C4A53" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></g><path d="M13 39.5H29.5L52 21.5V78.5L29.5 60.5H13Z" fill="url(#f-ivory)" stroke="url(#f-ivory)" stroke-width="5" stroke-linejoin="round"/><path d="M64.5 38C70.5 45 70.5 55 64.5 62" fill="none" stroke="url(#f-ivory)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M75 27C88 40 88 60 75 73" fill="none" stroke="url(#f-ivory)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

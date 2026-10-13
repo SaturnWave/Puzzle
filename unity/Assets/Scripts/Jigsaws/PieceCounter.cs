@@ -22,6 +22,11 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>On the plaque, in the plaque's design points from its middle: the label over the mark and the figures.</summary>
         private const float LabelUp = 15.5f;
         private const float FiguresDown = 6.5f;
+
+        /// <summary>
+        /// The design sets the figures at 31 points on a plaque 84 points high (JigsawTR, "7 / 10"); the game's
+        /// plaque is the pages' own, 58 high, and its figures are as large as stand well under the label there.
+        /// </summary>
         private const float FigureSize = 25f;
         private const float MarkSize = 34f;
         private const float MarkBox = 100f;
@@ -73,7 +78,8 @@ namespace Puzzle.Client.Jigsaws
             float figuresWidth = Lettering.WidthOf(_figures, figures);
             float left = -(MarkSize + GapMarkToFigures + figuresWidth) / 2f;
             _mark.localPosition = new Vector3(left + MarkSize / 2f, -FiguresDown - MarkLower, 0f);
-            _figures.transform.localPosition = new Vector3(left + MarkSize + GapMarkToFigures + figuresWidth / 2f, -FiguresDown - Hud.FigureDrop * FigureSize, 0f);
+            _figures.transform.localPosition = new Vector3(
+                left + MarkSize + GapMarkToFigures + figuresWidth / 2f, -FiguresDown - Lettering.FigureDrop(LetteringStyle.Figure) * FigureSize, 0f);
         }
 
         public void Dispose()

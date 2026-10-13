@@ -28,7 +28,9 @@ namespace Puzzle.Client.Jigsaws
         private const float PillPictureMargin = 16f;
         private const float PillPictureHeight = 40f;
         private const float PillSideRoom = 14f;
-        private const float HintSize = 12.5f;
+
+        /// <summary>The hint, as the design sets it (JigsawTR, "Parçayı yerine sürükle": 13 points).</summary>
+        private const float HintSize = 13f;
 
         /// <summary>The pill of the pieces that wait behind rides on the tray's top edge, its right end this far in from the tray's right side.</summary>
         private const float BehindInFromSide = 16f;

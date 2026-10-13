@@ -1,15 +1,19 @@
+using System;
+using System.Collections.Generic;
 using Puzzle.Client.Art;
 using Puzzle.Client.Painting;
 using TMPro;
 using UnityEngine;
+using UnityEngine.TextCore;
 
 namespace Puzzle.Client.Gallery
 {
     /// <summary>
     /// The game's lettering: lines of text that stand in the scene like the sprites do and are drawn by the game's
-    /// camera, sorted with everything else. A line is centred on its object's place: sideways on its middle, upright
-    /// on the middle of its capital letters and figures, so a number sits where the design puts it whatever its
-    /// digits. Sizes are in points, as in the design.
+    /// camera, sorted with everything else. A line is set in the typeface of its style, with the spacing between
+    /// pairs of letters that the typeface asks for. It is centred on its object's place: sideways on its middle,
+    /// upright on the middle of its capital letters and figures, so a number sits where the design puts it whatever
+    /// its digits. Sizes are in points, as in the design.
     /// </summary>
     public static class Lettering
     {
@@ -19,13 +23,29 @@ namespace Puzzle.Client.Gallery
         public static readonly Color Danger = Tint.Of(0xB3162B);
         public static readonly Color OnDark = Tint.Of(0xFFF8E6);
 
+        /// <summary>The ink of the small capitals that label what stands under them, on cream.</summary>
+        public static readonly Color LabelInk = Tint.Of(0x8A5A2B);
+
+        /// <summary>The ink of a title on brass.</summary>
+        public static readonly Color BrassInk = Tint.Of(0x4B2A0F);
+
+        /// <summary>The cream of lettering that stands on the gallery's dark teal with no plate under it.</summary>
+        public static readonly Color CreamOnTeal = Tint.Of(0xFFF4C4);
+
+        /// <summary>TextMesh Pro counts the room between letters and between words in hundredths of the type size.</summary>
+        private const float HundredthsOfTheTypeSize = 100f;
+
         public static TextMeshPro Write(string name, Transform parent, ArtCatalogue art, LetteringStyle style, float size, Color colour, DrawOrder order)
         {
             var line = new GameObject(name).AddComponent<TextMeshPro>();
             line.transform.SetParent(parent, worldPositionStays: false);
             line.rectTransform.sizeDelta = Vector2.zero; // no box: the line is laid out around its own place
-            line.font = art.Typeface;
+            line.font = art.TypefaceOf(style);
             line.fontSharedMaterial = art.MaterialOf(style);
+            line.fontFeatures = new List<OTL_FeatureTag> { OTL_FeatureTag.kern };
+
+            // An outline takes its width from the gap between two words at each side; the design gives most gaps one width back.
+            SetWordsApart(line, LetteringOutlines.WidthOf(style));
             line.isOrthographic = true; // a font size is then a size in scene units, which are points
             line.fontSize = size;
             line.color = colour;
@@ -37,12 +57,52 @@ namespace Puzzle.Client.Gallery
         }
 
         /// <summary>
+        /// Sets the words of a line farther apart than its typeface does, by a part of the type size: a
+        /// stylesheet's word-spacing. A line is written with its style's outline width for this
+        /// (<see cref="Write"/>); a label whose drawing gives its words another gap states that one, before
+        /// anything is said or measured.
+        /// </summary>
+        public static void SetWordsApart(TextMeshPro line, float byPartOfTheTypeSize) => line.wordSpacing = HundredthsOfTheTypeSize * byPartOfTheTypeSize;
+
+        /// <summary>
+        /// How far under the middle of its line a style's capitals and figures stand where a stylesheet centres the
+        /// line on a height, as a part of the type size; less than nothing where they stand over it. The design
+        /// places its numbers by the line, the game by the middle of the digits: a number that is to stand as the
+        /// design has it is moved down by this.
+        /// </summary>
+        public static float FigureDrop(LetteringStyle style) => FigureDropOf(Typefaces.Of(style));
+
+        /// <summary>
+        /// Each family's drop, from the measures of its font file: half of what its ascent has over its descent and
+        /// the height of its capitals, all as parts of the type size (Gabarito 0.94, 0.26 and 0.681; Paytone One
+        /// 1.113, 0.283 and 0.688; Young Serif 1.046, 0.366 and 0.75).
+        /// </summary>
+        private static float FigureDropOf(Typeface typeface) => typeface switch
+        {
+            Typeface.GabaritoBold => 0f,
+            Typeface.GabaritoExtraBold => 0f,
+            Typeface.PaytoneOne => 0.071f,
+            Typeface.YoungSerif => -0.035f,
+            _ => throw new ArgumentOutOfRangeException(nameof(typeface), typeface, "A typeface whose measures are not listed."),
+        };
+
+        /// <summary>
         /// Changes what a line says and lays it out at once: the screenshot command pictures the stage with no game
         /// running, where no frame would do it later.
         /// </summary>
         public static void Say(TextMeshPro line, string words)
         {
             line.text = words;
+            line.ForceMeshUpdate();
+        }
+
+        /// <summary>
+        /// Changes the colour a line is drawn in and draws it so at once, for the same reason: white for a style's
+        /// own colours, a shade for a line on something that is dimmed.
+        /// </summary>
+        public static void DrawIn(TextMeshPro line, Color colour)
+        {
+            line.color = colour;
             line.ForceMeshUpdate();
         }
 

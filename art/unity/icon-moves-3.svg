@@ -1,0 +1,30 @@
+<!-- The gilt token that says +3: the booster of three more moves, chosen before a level. As the design canvas draws
+     it (LevelStartTR): its symbol i-moves3 with the paints it uses, written by
+     tools/unity/extract-design-symbols.js. Change the canvas and run that again; do not change this file by hand.
+     One unit is one point where the symbol is drawn 100 points wide; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<linearGradient id="g-form" x1=".2" y1="0" x2=".7" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+<linearGradient id="g-rim2" x1=".9" y1="1" x2=".3" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".3" stop-color="#fff" stop-opacity=".1"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<linearGradient id="g-rim" x1=".1" y1="0" x2=".75" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".42" stop-color="#fff" stop-opacity=".25"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<linearGradient id="i-moves3-s" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#9C5C0B"/><stop offset=".9" stop-color="#5E3305"/><stop offset="1" stop-color="#9C5C0B"/></linearGradient>
+<radialGradient id="i-moves3-f" cx=".34" cy=".26" r=".9"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".62" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></radialGradient>
+<clipPath id="i-moves3-cp"><path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z"/></clipPath>
+<radialGradient id="i-moves3-i" cx=".36" cy=".26" r=".85"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#FBF0D6"/><stop offset="1" stop-color="#EAD5A6"/></radialGradient>
+</defs>
+<ellipse cx="50" cy="92.5" rx="37" ry="7" fill="url(#g-shadow)"/>
+<path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z" transform="translate(0 6)" fill="url(#i-moves3-s)" stroke="#5E3305" stroke-opacity=".55" stroke-width="1.2"/>
+<path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z" fill="url(#i-moves3-f)"/>
+<path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z" fill="url(#g-form)"/>
+<g clip-path="url(#i-moves3-cp)">
+<circle cx="50" cy="45" r="32.3" fill="#8A5512"/>
+<circle cx="50" cy="45.9" r="31" fill="url(#i-moves3-i)"/>
+<path d="M77.6 56A29.4 29.4 0 0 1 44.9 74.9" fill="none" stroke="#E0C894" stroke-width="2.6" stroke-linecap="round"/>
+<path d="M26 47.5H43M34.5 39V56" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-opacity=".95" transform="translate(0 1.8)"/><path d="M54.4 36.6C57.6 31.8 69.6 31.6 69.6 39.6C69.6 44.6 65 47 60.6 47C65.8 47 71.2 49.4 71.2 55.2C71.2 64 58.6 65.6 52.6 60" fill="none" stroke="#fff" stroke-width="8.6" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".95" transform="translate(0 1.8)"/>
+<path d="M26 47.5H43M34.5 39V56" fill="none" stroke="#46260F" stroke-width="8" stroke-linecap="round"/><path d="M54.4 36.6C57.6 31.8 69.6 31.6 69.6 39.6C69.6 44.6 65 47 60.6 47C65.8 47 71.2 49.4 71.2 55.2C71.2 64 58.6 65.6 52.6 60" fill="none" stroke="#46260F" stroke-width="8.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z" fill="none" stroke="#5E3305" stroke-opacity=".3" stroke-width="2.4"/><path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z" fill="none" stroke="url(#g-rim2)" stroke-width="5"/><path d="M10 45A40 40 0 1 1 90 45A40 40 0 1 1 10 45Z" fill="none" stroke="url(#g-rim)" stroke-width="4.6"/>
+</g>
+<path d="M16 34.6A35.6 35.6 0 0 1 37.8 11.5" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="72.4" cy="16.6" rx="3" ry="2.2" fill="#fff" fill-opacity=".85" transform="rotate(38 72.4 16.6)"/>
+</svg>

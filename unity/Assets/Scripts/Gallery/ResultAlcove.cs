@@ -282,7 +282,7 @@ namespace Puzzle.Client.Gallery
             badge.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its round ends keep their shape
             badge.size = new Vector2(width + BadgePictureMargin, BadgePictureHeight);
             badge.transform.localPosition = middle;
-            number.transform.localPosition = middle + new Vector3(0f, -Hud.FigureDrop * BadgeNumberSize, 0f);
+            number.transform.localPosition = middle + new Vector3(0f, -Lettering.FigureDrop(LetteringStyle.Figure) * BadgeNumberSize, 0f);
         }
 
         /// <summary>The height of the middle of a piece of a given size that stands on the shelf.</summary>

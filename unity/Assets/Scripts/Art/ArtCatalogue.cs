@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Puzzle.Client.Art
 {
     /// <summary>
-    /// The game's drawings as sprites, its typeface, and the materials everything is drawn with. One asset that the
+    /// The game's drawings as sprites, its typefaces, and the materials everything is drawn with. One asset that the
     /// scene refers to, so a build carries exactly these sprites, fonts and shaders, and nothing is looked up by a
     /// name at run time. The asset (Assets/Art/ArtCatalogue.asset) is written by the Editor's ArtCatalogueBuilder,
     /// never by hand.
@@ -28,7 +28,8 @@ namespace Puzzle.Client.Art
 
         [SerializeField] private Material? _paintMaterial;
 
-        [SerializeField] private TMP_FontAsset? _typeface;
+        /// <summary>The typeface of each <see cref="LetteringStyle"/> member, in the enum's order; styles of one typeface name the same one.</summary>
+        [SerializeField] private TMP_FontAsset[] _typefaces = Array.Empty<TMP_FontAsset>();
 
         /// <summary>One material per <see cref="LetteringStyle"/> member, in the enum's order.</summary>
         [SerializeField] private Material[] _letteringMaterials = Array.Empty<Material>();
@@ -45,17 +46,17 @@ namespace Puzzle.Client.Art
         /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
         public Texture2D Damask => Built(_damask, "damask");
 
-        /// <summary>The one typeface all of the game's lettering is set in.</summary>
-        /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
-        public TMP_FontAsset Typeface => Built(_typeface, "typeface");
-
         /// <exception cref="InvalidOperationException">The catalogue is older than the list of drawings.</exception>
         public Sprite Of(PieceArt art) => Listed(_sprites, (int)art, art);
 
         /// <exception cref="InvalidOperationException">The catalogue is older than the list of drawings.</exception>
         public Sprite Of(GalleryArt art) => Listed(_gallerySprites, (int)art, art);
 
-        /// <summary>The material that draws the typeface in a style: how heavy its strokes are, whether it throws a shadow.</summary>
+        /// <summary>The typeface a style is set in, ready to draw: every letter of the game as a picture.</summary>
+        /// <exception cref="InvalidOperationException">The catalogue is older than the list of styles.</exception>
+        public TMP_FontAsset TypefaceOf(LetteringStyle style) => Listed(_typefaces, (int)style, style);
+
+        /// <summary>The material that draws a style's typeface as the style has it: what is drawn around its strokes and under them.</summary>
         /// <exception cref="InvalidOperationException">The catalogue is older than the list of styles.</exception>
         public Material MaterialOf(LetteringStyle style) => Listed(_letteringMaterials, (int)style, style);
 
@@ -85,10 +86,10 @@ namespace Puzzle.Client.Art
             _paintMaterial = paintMaterial;
         }
 
-        /// <summary>Editor only: replaces the typeface and the material of each lettering style.</summary>
-        public void FillLettering(TMP_FontAsset typeface, IReadOnlyDictionary<LetteringStyle, Material> materials)
+        /// <summary>Editor only: replaces the typeface and the material of each lettering style. Both lists must name every style.</summary>
+        public void FillLettering(IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> materials)
         {
-            _typeface = typeface;
+            _typefaces = InEnumOrder(typefaces);
             _letteringMaterials = InEnumOrder(materials);
         }
 

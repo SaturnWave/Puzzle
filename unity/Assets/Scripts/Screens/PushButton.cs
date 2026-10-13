@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
 using Puzzle.Client.Art;
 using Puzzle.Client.Gallery;
 using TMPro;
@@ -33,26 +35,35 @@ namespace Puzzle.Client.Screens
     /// A glossy pill with a label that a finger presses, as the web test page and the design canvas draw their
     /// buttons: the pill stands on a dark lip and goes down onto it while it is held. A label may have two lines
     /// (a line break in its words) and a mark at its left; a red badge with a count may sit on the pill's upper
-    /// right corner. Sizes are in points around the middle of the pill at its full size; whoever places the button
-    /// may draw it smaller.
+    /// right corner. A button that sells something has one line and under it a dark pill sunk into its face, with
+    /// a coin and the price (LoseTR, "+5 hamle"). What a button says can be said anew, and a button that cannot be
+    /// used just now is dimmed. Sizes are in points around the middle of the pill at its full size; whoever
+    /// places the button may draw it smaller.
     /// </summary>
+    /// <remarks>
+    /// Not here yet, because no screen of the game has it: the design's blue "Reklam izle" (LoseTR), whose white
+    /// triangle is drawn 24 points across and centred together with its words. A mark here is a drawing in a box
+    /// of 100 points, 46 across, at the pill's left end.
+    /// </remarks>
     public sealed class PushButton : IPressable
     {
         /// <summary>The pill's height, and the lip under it that is part of what a finger may hit.</summary>
         public const float Height = 72f;
         public const float Lip = 7f;
 
-        /// <summary>The button's picture is its pill and the room around it for its rim, lip and shadow: 40 points wider, 112 high.</summary>
-        private const float PictureMargin = 40f;
-        private const float PictureHeight = 112f;
+        /// <summary>
+        /// The button's picture is its pill and the room around it for its rim, lip and shadow: 40 points wider,
+        /// 112 high. A pressed button goes 3 points down towards its lip.
+        /// </summary>
+        private static readonly PillMeasures Measures = new PillMeasures(Height, Lip, pictureMargin: 40f, pictureHeight: 112f, pressedDown: 3f);
 
         /// <summary>The label keeps this far from each end of the pill, where the pill is round.</summary>
         private const float LabelInFromEnds = 22f;
 
-        /// <summary>The label is drawn in an outline, which brings its letters closer: they stand apart by this many hundredths of their size.</summary>
-        private const float LabelSpacing = 3f;
-
-        /// <summary>The label stands a little above the pill's middle: the pill's foot is its dark edge.</summary>
+        /// <summary>
+        /// The label's line is centred a little above the pill's middle, as the design has it (HomeTR, "Bölüm 47":
+        /// the line stands on the face with 5 points more under it than over it): the pill's foot is its dark edge.
+        /// </summary>
         private const float LabelAboveMiddle = 2.5f;
 
         /// <summary>The two lines of a label stand this far apart, as a share of their type size.</summary>
@@ -68,103 +79,281 @@ namespace Puzzle.Client.Screens
         private const float BadgeInFromEnd = 10f;
         private const float BadgeOverTop = 1f;
 
-        /// <summary>A pressed button goes down towards its lip and loses a little of its light.</summary>
-        private const float PressedDown = 3f;
-        private static readonly Color PressedShade = new Color(0.88f, 0.88f, 0.88f, 1f);
+        /// <summary>
+        /// The button that sells (LoseTR, "+5 hamle" over "[fiyat]"): the middle of the label's line and the
+        /// middle of the price's pill, from the middle of the button's pill. The design stacks a line of 20 points
+        /// and a pill of 21 with 5 between them, and centres that with 5 more under it than over it.
+        /// </summary>
+        private const float LabelAboveMiddleOverAPrice = 15.5f;
+        private const float PriceUnderMiddle = 10f;
 
-        private readonly Transform _root;
-        private readonly Transform _pill;
-        private readonly SpriteRenderer _face;
+        private readonly ButtonPill _pill;
+        private readonly SpriteRenderer? _mark;
+        private readonly PricePill? _price;
         private readonly ArtCatalogue _art;
+        private readonly ButtonLook _look;
         private readonly DrawOrder _letteringOrder;
         private readonly float _width;
+        private readonly float _labelSize;
+
+        /// <summary>How far apart the label's words stand, as a part of the type size; nothing where the label's style says it.</summary>
+        private readonly float? _wordsApart;
+
+        /// <summary>Where the label's lines are centred along the pill, and how much room they have there.</summary>
+        private readonly float _labelMiddle;
+        private readonly float _labelRoom;
+
+        /// <summary>The label's lines as they are written now, from the upper one down.</summary>
+        private readonly List<TextMeshPro> _lines = new List<TextMeshPro>();
 
         /// <param name="label">What the button says; a line break in it makes two lines.</param>
         /// <param name="width">The pill's width at full size.</param>
         /// <param name="labelSize">The label's type size; a line too long for the pill is set smaller.</param>
         /// <param name="mark">A drawing at the left of the label; none for a button of words alone.</param>
+        /// <param name="wordsApart">
+        /// How much farther apart than its typeface sets them the label's words stand, as a part of the type size,
+        /// where the label's drawing states a gap of its own (JigsawTR, "Otomatik tamamla"); nothing for the gap
+        /// of the label's style, which is what the design gives most labels.
+        /// </param>
         public PushButton(
             string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, float width, float labelSize,
-            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark = null)
+            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark = null, float? wordsApart = null)
+            : this(name, parent, art, look, label, price: null, width, labelSize, faceOrder, letteringOrder, mark, wordsApart)
+        {
+        }
+
+        private PushButton(
+            string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, string? price, float width, float labelSize,
+            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark, float? wordsApart)
         {
             _art = art;
+            _look = look;
             _letteringOrder = letteringOrder;
             _width = width;
-            _root = new GameObject(name).transform;
-            _root.SetParent(parent, worldPositionStays: false);
-            _pill = new GameObject("Pill").transform;
-            _pill.SetParent(_root, worldPositionStays: false);
-
-            _face = SceneObjects.AddSprite("Face", _pill, art.Of(look.Face), art.SpriteMaterial, faceOrder);
-            _face.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its round ends keep their shape
-            _face.size = new Vector2(width + PictureMargin, PictureHeight);
+            _labelSize = labelSize;
+            _wordsApart = wordsApart;
+            _pill = new ButtonPill(name, parent, art.Of(look.Face), art.SpriteMaterial, Measures, width, faceOrder);
 
             float labelLeft = -width / 2f + LabelInFromEnds;
             if (mark is GalleryArt drawing)
             {
-                Transform picture = SceneObjects.AddSprite("Mark", _pill, art.Of(drawing), art.SpriteMaterial, letteringOrder).transform;
-                picture.localPosition = new Vector3(-width / 2f + MarkInFromEnd + MarkSize / 2f, LabelAboveMiddle, 0f);
-                picture.localScale = new Vector3(MarkSize / MarkBox, MarkSize / MarkBox, 1f);
+                _mark = SceneObjects.AddSprite("Mark", _pill.Pill, art.Of(drawing), art.SpriteMaterial, letteringOrder);
+                _mark.transform.localPosition = new Vector3(-width / 2f + MarkInFromEnd + MarkSize / 2f, LabelAboveMiddle, 0f);
+                _mark.transform.localScale = new Vector3(MarkSize / MarkBox, MarkSize / MarkBox, 1f);
                 labelLeft = -width / 2f + MarkInFromEnd + MarkSize + GapMarkToLabel;
             }
 
             float labelRight = width / 2f - LabelInFromEnds;
-            WriteLabel(look, label.Split('\n'), labelSize, (labelLeft + labelRight) / 2f, labelRight - labelLeft);
+            _labelMiddle = (labelLeft + labelRight) / 2f;
+            _labelRoom = labelRight - labelLeft;
+            if (price != null)
+            {
+                _price = new PricePill(_pill.Pill, art, faceOrder, letteringOrder);
+                _price.Transform.localPosition = new Vector3(0f, -PriceUnderMiddle, 0f);
+                _price.Say(price, room: width - 2f * LabelInFromEnds);
+            }
+
+            Say(label);
         }
 
         /// <summary>The middle of the pill, in the points of what the button stands on.</summary>
-        public Vector2 Middle => _root.localPosition;
+        public Vector2 Middle => _pill.Middle;
 
-        /// <summary>Puts the middle of the pill at a place of what the button stands on, drawn at a share of its full size.</summary>
-        public void Place(Vector2 middle, float scale = 1f)
+        /// <summary>
+        /// A button that sells something for coins, as the design draws the offer of five more moves (LoseTR): its
+        /// label on one line, and under it a dark pill sunk into its face with a coin and the price. The pill and
+        /// its coin take the two places in the drawing order above the button's face, so the lettering must lie
+        /// higher than those: a card's places do (<see cref="DrawOrder.CardArt"/>, <see cref="DrawOrder.CardLettering"/>),
+        /// a page button's lie one apart and do not.
+        /// </summary>
+        /// <param name="label">What the button gives, on one line.</param>
+        /// <param name="price">What it costs, as it is written beside the coin.</param>
+        /// <exception cref="ArgumentException">The lettering's place leaves no two places between the face and itself.</exception>
+        public static PushButton WithAPrice(
+            string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, string price, float width, float labelSize,
+            DrawOrder faceOrder, DrawOrder letteringOrder)
         {
-            _root.localPosition = new Vector3(middle.x, middle.y, 0f);
-            _root.localScale = new Vector3(scale, scale, 1f);
+            if (letteringOrder <= faceOrder + PricePill.PlacesOverTheFace)
+            {
+                throw new ArgumentException(
+                    $"A price's pill and its coin take the {PricePill.PlacesOverTheFace} places over the button's face ({faceOrder}); lettering at {letteringOrder} would be drawn among them.",
+                    nameof(letteringOrder));
+            }
+
+            return new PushButton(name, parent, art, look, label, price, width, labelSize, faceOrder, letteringOrder, mark: null, wordsApart: null);
         }
 
+        /// <summary>Puts the middle of the pill at a place of what the button stands on, drawn at a share of its full size.</summary>
+        public void Place(Vector2 middle, float scale = 1f) => _pill.Place(middle, scale);
+
         /// <summary>Shows the button, or takes it out of sight; a button out of sight is not under any finger.</summary>
-        public void Show(bool isShown) => _root.gameObject.SetActive(isShown);
+        public void Show(bool isShown) => _pill.Show(isShown);
 
         /// <summary>Takes the button away for good.</summary>
-        public void Remove() => SceneObjects.DestroyObjectOf(_root);
+        public void Remove() => _pill.Remove();
+
+        /// <summary>
+        /// Changes what the button says, where it stands: a line break in the words makes two lines, and a line
+        /// too long for the pill is set smaller, as when the button was made. A button with a price says one line.
+        /// </summary>
+        /// <exception cref="ArgumentException">A button with a price is given two lines: there is room for one over the price.</exception>
+        public void Say(string label)
+        {
+            string[] words = label.Split('\n');
+            if (_price != null && words.Length > 1)
+            {
+                throw new ArgumentException("A button with a price has room for one line over the price.", nameof(label));
+            }
+
+            while (_lines.Count > words.Length)
+            {
+                SceneObjects.DestroyObjectOf(_lines[_lines.Count - 1]);
+                _lines.RemoveAt(_lines.Count - 1);
+            }
+
+            while (_lines.Count < words.Length)
+            {
+                _lines.Add(WriteALine($"Label {_lines.Count + 1}"));
+            }
+
+            float middleOfTheLines = _price != null ? LabelAboveMiddleOverAPrice : LabelAboveMiddle;
+            float top = middleOfTheLines + (words.Length - 1) * LineApart * _labelSize / 2f;
+            for (int line = 0; line < words.Length; line++)
+            {
+                // Its letters stand in their line as a stylesheet sets them.
+                TextMeshPro written = _lines[line];
+                Lettering.SayWithin(written, words[line], _labelSize, _labelRoom);
+                float lineMiddle = top - line * LineApart * _labelSize;
+                written.transform.localPosition = new Vector3(_labelMiddle, lineMiddle - Lettering.FigureDrop(_look.Lettering) * written.fontSize, 0f);
+            }
+        }
+
+        /// <summary>Changes the price the button states beside its coin; the dark pill widens or narrows with it.</summary>
+        /// <exception cref="InvalidOperationException">The button states no price.</exception>
+        public void SayPrice(string price)
+        {
+            if (_price == null)
+            {
+                throw new InvalidOperationException("Only a button that was made with a price states one.");
+            }
+
+            _price.Say(price, room: _width - 2f * LabelInFromEnds);
+        }
+
+        /// <summary>
+        /// Draws the button dimmed, or lit again: a dimmed button cannot be used just now. It stays where it is and
+        /// says what it says, and it is not under any finger.
+        /// </summary>
+        public void Dim(bool isDimmed)
+        {
+            _pill.Dim(isDimmed);
+            Color colour = Dimming.Of(isDimmed);
+            foreach (TextMeshPro line in _lines)
+            {
+                Lettering.DrawIn(line, colour);
+            }
+
+            if (_mark != null)
+            {
+                _mark.color = colour;
+            }
+
+            _price?.DrawIn(colour);
+        }
 
         /// <summary>Sets a red badge with a count on the pill's upper right corner.</summary>
         public void AddBadge(int count)
         {
-            Transform badge = CountBadge.Add("Badge", _pill, _art, count, _letteringOrder + 1);
+            Transform badge = CountBadge.Add("Badge", _pill.Pill, _art, BadgeFace.Waiting(count), _letteringOrder + 1).Transform;
             badge.localPosition = new Vector3(_width / 2f - BadgeInFromEnd, Height / 2f + BadgeOverTop, 0f);
         }
 
         /// <param name="point">A point of what the button stands on.</param>
-        public bool IsUnder(Vector2 point)
+        public bool IsUnder(Vector2 point) => _pill.IsUnder(point);
+
+        public void ShowPressed(bool isPressed) => _pill.ShowPressed(isPressed);
+
+        /// <summary>A line of the label, in the button's lettering and in the light the button has now.</summary>
+        private TextMeshPro WriteALine(string name)
         {
-            if (!_root.gameObject.activeSelf)
+            TextMeshPro line = Lettering.Write(name, _pill.Pill, _art, _look.Lettering, _labelSize, Dimming.Of(_pill.IsDimmed), _letteringOrder);
+            if (_wordsApart is float apart)
             {
-                return false;
+                Lettering.SetWordsApart(line, apart);
             }
 
-            Vector2 fromMiddle = (point - Middle) / _root.localScale.x;
-            bool isBesideIt = Mathf.Abs(fromMiddle.x) > _width / 2f;
-            bool isOverOrUnderIt = fromMiddle.y > Height / 2f || fromMiddle.y < -Height / 2f - Lip;
-            return !isBesideIt && !isOverOrUnderIt;
+            return line;
         }
 
-        public void ShowPressed(bool isPressed)
+        /// <summary>
+        /// The dark pill a price stands in, sunk into a button's face, as the design draws it (LoseTR): a coin at
+        /// its left end and the price after it, the pill as wide as both need. Sizes are in points around the
+        /// pill's middle.
+        /// </summary>
+        private sealed class PricePill
         {
-            _pill.localPosition = new Vector3(0f, isPressed ? -PressedDown : 0f, 0f);
-            _face.color = isPressed ? PressedShade : Color.white;
-        }
+            /// <summary>How many places of the drawing order above the button's face the pill takes: one for itself, one for its coin.</summary>
+            public const int PlacesOverTheFace = 2;
 
-        /// <summary>Writes the label's lines around a middle, each no wider than the room it has.</summary>
-        private void WriteLabel(ButtonLook look, string[] lines, float size, float middle, float room)
-        {
-            float top = LabelAboveMiddle + (lines.Length - 1) * LineApart * size / 2f;
-            for (int line = 0; line < lines.Length; line++)
+            /// <summary>The pill is 21 points high; its picture is the pill and the room around it: 20 points wider, 32 high.</summary>
+            private const float PictureMargin = 20f;
+            private const float PictureHeight = 32f;
+
+            /// <summary>
+            /// The coin's box of 100 points is 20 across and begins 3 from the pill's left end, a little above the
+            /// pill's middle; the price begins 3 after the coin and ends 9 before the pill's right end.
+            /// </summary>
+            private const float CoinBox = 100f;
+            private const float CoinSize = 20f;
+            private const float CoinInFromEnd = 3f;
+            private const float CoinAboveMiddle = 0.5f;
+            private const float GapCoinToPrice = 3f;
+            private const float PriceInFromEnd = 9f;
+
+            /// <summary>The price, as the design sets it ("[fiyat]": 13.5 points); a price too long for the button is set smaller.</summary>
+            private const float PriceSize = 13.5f;
+
+            private readonly SpriteRenderer _pill;
+            private readonly SpriteRenderer _coin;
+            private readonly TextMeshPro _words;
+
+            /// <param name="faceOrder">The place of the button's face in the drawing order: the pill takes the place above it, the coin the next.</param>
+            /// <param name="letteringOrder">The place of the price's words: above the coin's (<see cref="PlacesOverTheFace"/>).</param>
+            public PricePill(Transform button, ArtCatalogue art, DrawOrder faceOrder, DrawOrder letteringOrder)
             {
-                TextMeshPro written = Lettering.Write($"Label {line + 1}", _pill, _art, look.Lettering, size, Color.white, _letteringOrder);
-                written.transform.localPosition = new Vector3(middle, top - line * LineApart * size, 0f);
-                written.characterSpacing = LabelSpacing;
-                Lettering.SayWithin(written, lines[line], size, room);
+                _pill = SceneObjects.AddSprite("Price", button, art.Of(GalleryArt.PricePill), art.SpriteMaterial, faceOrder + 1);
+                _pill.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its round ends keep their shape
+                _coin = SceneObjects.AddSprite("Coin", _pill.transform, art.Of(GalleryArt.IconCoin), art.SpriteMaterial, faceOrder + PlacesOverTheFace);
+                _coin.transform.localScale = new Vector3(CoinSize / CoinBox, CoinSize / CoinBox, 1f);
+                _words = Lettering.Write("Amount", _pill.transform, art, LetteringStyle.OnPricePill, PriceSize, Color.white, letteringOrder);
+            }
+
+            public Transform Transform => _pill.transform;
+
+            /// <param name="room">The widest the pill may be: the button's face between its round ends.</param>
+            /// <exception cref="InvalidOperationException">The button is too narrow for a coin and a price.</exception>
+            public void Say(string price, float room)
+            {
+                float besideThePrice = CoinInFromEnd + CoinSize + GapCoinToPrice + PriceInFromEnd;
+                if (room <= besideThePrice)
+                {
+                    throw new InvalidOperationException($"A button with {room} points between its round ends has no room for a coin and a price.");
+                }
+
+                Lettering.SayWithin(_words, price, PriceSize, room - besideThePrice);
+                float priceWidth = Lettering.WidthOf(_words, price);
+                float width = besideThePrice + priceWidth;
+                _pill.size = new Vector2(width + PictureMargin, PictureHeight);
+                _coin.transform.localPosition = new Vector3(-width / 2f + CoinInFromEnd + CoinSize / 2f, CoinAboveMiddle, 0f);
+                _words.transform.localPosition = new Vector3(
+                    width / 2f - PriceInFromEnd - priceWidth / 2f, -Lettering.FigureDrop(LetteringStyle.OnPricePill) * _words.fontSize, 0f);
+            }
+
+            public void DrawIn(Color colour)
+            {
+                _pill.color = colour;
+                _coin.color = colour;
+                Lettering.DrawIn(_words, colour);
             }
         }
     }

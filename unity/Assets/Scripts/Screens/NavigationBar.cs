@@ -44,13 +44,20 @@ namespace Puzzle.Client.Screens
         private const float PlateDown = 32f;
         private const float NameDown = 47.5f;
         private const float NameSize = 14.5f;
-        private const float NameSpacing = 3f;
 
         /// <summary>
-        /// The chosen destination's name is no wider than the plate it stands on, less the plate's rim and a
-        /// letter's width of teal at each side of it: a longer name ("Koleksiyon") is set smaller.
+        /// The chosen destination's plate is 70 points wide, and wider under a name that needs it, up to 90. The
+        /// design draws "Müze" at 14.5 points on a plate of 70 (HomeTR) and "Koleksiyon" at 13 on one of 90
+        /// (CollectionTR): a name keeps this much of the plate at each side of it, and one too long for the
+        /// widest plate at its size is set smaller until it fits.
         /// </summary>
-        private const float NameRoom = 54f;
+        private const float PlateWidth = 70f;
+        private const float WidestPlate = 90f;
+        private const float PlateBesideTheName = 8f;
+
+        /// <summary>The plate's picture is the plate and the room around it for its rim and shadow: 58 points wider, 128 high.</summary>
+        private const float PlatePictureMargin = 58f;
+        private const float PlatePictureHeight = 128f;
 
         private readonly Transform _root;
         private readonly PaintedShape _band;
@@ -67,8 +74,8 @@ namespace Puzzle.Client.Screens
             _root.SetParent(parent, worldPositionStays: false);
             _band = PaintedShape.Create("Band", _root, art.PaintMaterial, DrawOrder.Bar);
             _plate = SceneObjects.AddSprite("Chosen plate", _root, art.Of(GalleryArt.Tab), art.SpriteMaterial, DrawOrder.BarTab);
+            _plate.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches under a longer name; its round corners keep their shape
             _name = Lettering.Write("Chosen name", _root, art, LetteringStyle.OnTeal, NameSize, Color.white, DrawOrder.BarLettering);
-            _name.characterSpacing = NameSpacing;
             foreach (Destination destination in Destinations.OnTheBar)
             {
                 SpriteRenderer mark = SceneObjects.AddSprite($"{destination} mark", _root, art.Of(Destinations.MarkOf(destination)), art.SpriteMaterial, DrawOrder.BarIcon);
@@ -154,9 +161,12 @@ namespace Puzzle.Client.Screens
                 _tabs[destination].Show(middle, isChosen ? ChosenMarkDown : MarkDown, (isChosen ? ChosenMarkSize : MarkSize) / MarkBox);
                 if (isChosen)
                 {
+                    string name = Destinations.NameOf(destination);
+                    Lettering.SayWithin(_name, name, NameSize, WidestPlate - 2f * PlateBesideTheName);
+                    float plateWidth = Mathf.Max(PlateWidth, Lettering.WidthOf(_name, name) + 2f * PlateBesideTheName);
+                    _plate.size = new Vector2(plateWidth + PlatePictureMargin, PlatePictureHeight);
                     _plate.transform.localPosition = new Vector3(middle, -PlateDown, 0f);
                     _name.transform.localPosition = new Vector3(middle, -NameDown, 0f);
-                    Lettering.SayWithin(_name, Destinations.NameOf(destination), NameSize, NameRoom);
                 }
             }
         }

@@ -1,0 +1,10 @@
+<!-- A phone that shakes: the mark of the settings' row for vibration. As the design canvas draws it (SettingsTR):
+     its symbol st-buzz with the paints it uses, written by tools/unity/extract-design-symbols.js. Change the canvas
+     and run that again; do not change this file by hand. One unit is one point where the symbol is drawn 100 points
+     wide; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+</defs>
+<g transform="translate(0 4.5)"><path d="M40 16H60A8 8 0 0 1 68 24V76A8 8 0 0 1 60 84H40A8 8 0 0 1 32 76V24A8 8 0 0 1 40 16Z" fill="#0C4A53" stroke="#0C4A53" stroke-width="5" stroke-linejoin="round"/><path d="M21 35L14.5 42.5L21 50L14.5 57.5L21 65" fill="none" stroke="#0C4A53" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M79 35L85.5 42.5L79 50L85.5 57.5L79 65" fill="none" stroke="#0C4A53" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/></g><path d="M40 16H60A8 8 0 0 1 68 24V76A8 8 0 0 1 60 84H40A8 8 0 0 1 32 76V24A8 8 0 0 1 40 16Z" fill="url(#f-ivory)" stroke="url(#f-ivory)" stroke-width="5" stroke-linejoin="round"/><path d="M21 35L14.5 42.5L21 50L14.5 57.5L21 65" fill="none" stroke="url(#f-ivory)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M79 35L85.5 42.5L79 50L85.5 57.5L79 65" fill="none" stroke="url(#f-ivory)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 27H59V66H41Z" fill="#136871"/><path d="M47 75.5H53" fill="none" stroke="#136871" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,9 @@
+<!-- The white cross that closes a card, on its dark teal edge, as the design canvas draws it on the round teal button
+     at a card's upper right corner (LevelStartTR, SettingsTR): the canvas' own strokes, which it writes in a box of
+     20 and shows 22 points across. One unit is one point of the design. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 22 22">
+<g transform="scale(1.1)" fill="none" stroke-linecap="round">
+<path d="M5.2 5.2L14.8 14.8M14.8 5.2L5.2 14.8" stroke="#0A3640" stroke-width="5.6"/>
+<path d="M5.2 5.2L14.8 14.8M14.8 5.2L5.2 14.8" stroke="#fff" stroke-width="3"/>
+</g>
+</svg>

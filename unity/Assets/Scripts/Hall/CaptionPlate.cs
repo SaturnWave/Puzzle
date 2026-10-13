@@ -23,13 +23,16 @@ namespace Puzzle.Client.Hall
         private const float BrassBesideTheLines = 22f;
         private const float Narrowest = 110f;
 
-        /// <summary>The two lines on the plate: their sizes, and how far over and under the plate's middle they stand.</summary>
+        /// <summary>
+        /// The two lines on the plate, as the design sets them (HomeTR): the title in the serif at 11 points, the
+        /// painter and year in capitals at 8.5, apart by 12 hundredths of their size; and how far over and under
+        /// the plate's middle they stand.
+        /// </summary>
         private const float TitleSize = 11f;
         private const float TitleAboveMiddle = 6f;
         private const float ByLineSize = 8.5f;
         private const float ByLineBelowMiddle = 7.5f;
         private const float ByLineSpacing = 12f;
-        private static readonly Color TitleInk = Tint.Of(0x4B2A0F);
         private static readonly Color ByLineInk = Tint.Of(0x6B3E08);
 
         private readonly SpriteRenderer _plate;
@@ -41,7 +44,7 @@ namespace Puzzle.Client.Hall
         {
             _plate = SceneObjects.AddSprite("Plate", parent, art.Of(GalleryArt.CaptionPlate), art.SpriteMaterial, DrawOrder.Caption + raisedBy);
             _plate.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its ends with their studs keep their shape
-            _title = Lettering.Write("Title", _plate.transform, art, LetteringStyle.Label, TitleSize, TitleInk, DrawOrder.CaptionLettering + raisedBy);
+            _title = Lettering.Write("Title", _plate.transform, art, LetteringStyle.Title, TitleSize, Lettering.BrassInk, DrawOrder.CaptionLettering + raisedBy);
             _title.transform.localPosition = new Vector3(0f, TitleAboveMiddle, 0f);
             _byLine = Lettering.Write("Painter", _plate.transform, art, LetteringStyle.Label, ByLineSize, ByLineInk, DrawOrder.CaptionLettering + raisedBy);
             _byLine.transform.localPosition = new Vector3(0f, -ByLineBelowMiddle, 0f);

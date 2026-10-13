@@ -1,0 +1,24 @@
+<!-- A brass nameplate of any size, with neither studs nor pins: the plate of nameplate.svg alone, as the design
+     canvas draws it 176 points wide over the settings and as the shop's sign (SettingsTR, ShopTR), 212 wide and 50
+     high with a second line before a level (LevelStartTR), and 280 wide on a result's card (WinTR, LoseTR). Its two
+     studs are a picture of their own (stud.svg), and so are the pins of the wires (wire-pin.svg). One unit is one
+     point of the design. The plate is 40 x 40 at (12, 12), in the middle of its picture, so that it stays there at
+     every size; the game stretches the middle of the picture both ways, so nothing between x = 22 and x = 42 may
+     change along x, and between y = 22 and y = 42 there is nothing but the brass' own shading. Its shadow is the
+     brown a thing throws on a cream card. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">
+<defs>
+<linearGradient id="brass" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="0" y2="52"><stop offset="0" stop-color="#FFE892"/><stop offset=".55" stop-color="#F6B93C"/><stop offset="1" stop-color="#DE9A22"/></linearGradient>
+<filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="in-plate"><rect x="12" y="12" width="40" height="40" rx="5"/></clipPath>
+</defs>
+<!-- the plate's shadow, the dark line around it, the brass -->
+<rect x="12" y="16" width="40" height="40" rx="5" fill="#5C3810" fill-opacity=".34" filter="url(#soft)"/>
+<rect x="10.6" y="10.6" width="42.8" height="42.8" rx="6.4" fill="#5E3305"/>
+<rect x="12" y="12" width="40" height="40" rx="5" fill="url(#brass)"/>
+<!-- light along the top edge, a darker line along the foot -->
+<g clip-path="url(#in-plate)">
+<rect x="12" y="12" width="40" height="1.5" fill="#FFF6CC"/>
+<rect x="12" y="50" width="40" height="2" fill="#C17E12"/>
+</g>
+</svg>

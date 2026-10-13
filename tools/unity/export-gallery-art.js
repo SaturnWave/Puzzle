@@ -1,11 +1,12 @@
-// Exports the Unity client's own drawings of the gallery (art/unity/*.svg: the plaque, the medallion, the shelf, the
-// wall's damask, the wall lamp, the seal of a met goal, and the result card with its nameplate, alcove, button,
-// sparkle and count badge) as transparent PNG files. Unity does not read SVG. Each
-// source says how large its picture is in its root tag's width and height; one unit of its viewBox is one point of
-// the design. export-sprites.js does the same for the pieces, from the web test page's sprite.
+// Exports the Unity client's own drawings of the gallery (art/unity/*.svg: plaques, cards, buttons, discs, badges,
+// frames, the marks of the wallet, the boosters, the shop and the settings, and the wall's damask) as transparent
+// PNG files. Unity does not read SVG. The surfaces are written by hand after the design canvas; the canvas' own
+// symbols are written out of it by extract-design-symbols.js. Each source says how large its picture is in its
+// root tag's width and height; one unit of its viewBox is one point of the design. export-sprites.js does the same
+// for the pieces, from the web test page's sprite.
 //
 // usage (from the repository root): node tools/unity/export-gallery-art.js [--out unity/Assets/Art/Gallery] [--sheet file.png]
-//   --sheet also writes every exported picture side by side on the gallery wall's colour, to look at the result.
+//   --sheet also writes every exported picture on the gallery wall's colour, ten to a row, to look at the result.
 // Requires Google Chrome or Microsoft Edge (set PUZZLE_BROWSER to the executable when neither is in its usual place).
 const fs = require("fs");
 const os = require("os");
@@ -18,6 +19,7 @@ const SOURCE_FOLDER = "art/unity";
 /** Headless Chrome on Windows cannot open a window narrower than about 500 px: a narrower picture would come out padded. */
 const NARROWEST_PICTURE = 512;
 const SHEET_CELL = 300;
+const SHEET_COLUMNS = 10;
 const WALL_COLOUR = "#17666f";
 const BROWSERS = [
   process.env.PUZZLE_BROWSER,
@@ -43,7 +45,8 @@ function main() {
     }
     console.log(`${drawings.length} pictures -> ${options.out}`);
     if (options.sheet) {
-      screenshot(browser, work, sheetPage(drawings, options.out), options.sheet, drawings.length * SHEET_CELL, SHEET_CELL);
+      const rows = Math.ceil(drawings.length / SHEET_COLUMNS);
+      screenshot(browser, work, sheetPage(drawings, options.out), options.sheet, SHEET_COLUMNS * SHEET_CELL, rows * SHEET_CELL);
       console.log(`contact sheet -> ${options.sheet}`);
     }
   } finally {
@@ -93,7 +96,7 @@ function sheetPage(drawings, folder) {
   return `<!doctype html><meta charset="utf-8">
 <style>
   html, body { margin: 0; background: ${WALL_COLOUR}; }
-  body { display: grid; grid-template-columns: repeat(${drawings.length}, ${SHEET_CELL}px); }
+  body { display: grid; grid-template-columns: repeat(${SHEET_COLUMNS}, ${SHEET_CELL}px); }
   figure { margin: 0; height: ${SHEET_CELL}px; display: grid; justify-items: center; align-content: center; }
   img { max-width: ${SHEET_CELL - 20}px; max-height: ${SHEET_CELL - 40}px; }
   figcaption { font: 12px sans-serif; color: #f4ead2; }

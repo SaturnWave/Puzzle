@@ -1,0 +1,33 @@
+<!-- The wooden plank a row of round discs stands on, as the design canvas draws the board's booster shelf (BoardTR,
+     78 points high), the shelf of the boosters to choose before a level (LevelStartTR, 88) and the shop's small
+     shelves (ShopTR, 58). One unit is one point of the design. The plank is 100 x 80 at (14, 34), in the middle of
+     its picture, so that it stays there at every size; the game stretches the middle of the picture both ways to
+     the size a shelf needs, so nothing between x = 40 and x = 88 may change along x, and between y = 60 and y = 84
+     there is nothing but the wood's own shading. The grain is drawn level and near the edges for that reason:
+     stretched, it stays what it is. Its drops are a dark that is neither warm nor cold: the canvas tints a drop with
+     its ground, and this plank lies on the teal wall and on cream cards alike. shelf.svg is the older plank of the
+     web test page, 58 high and stretched sideways only. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="592" viewBox="0 0 128 148">
+<defs>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="34" x2="0" y2="114"><stop offset="0" stop-color="#B5763F"/><stop offset=".38" stop-color="#8E5730"/><stop offset="1" stop-color="#6F4022"/></linearGradient>
+<filter id="soft" x="-40%" y="-40%" width="180%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+<clipPath id="in-plank"><rect x="14" y="34" width="100" height="80" rx="24"/></clipPath>
+</defs>
+<!-- the drops: a soft one far below, a hard one close under the plank; then the dark line around it -->
+<rect x="14" y="48" width="100" height="80" rx="24" fill="#14100A" fill-opacity=".34" filter="url(#soft)"/>
+<rect x="11.5" y="38.5" width="105" height="85" rx="26.5" fill="#14100A" fill-opacity=".36"/>
+<rect x="11.5" y="31.5" width="105" height="85" rx="26.5" fill="#4B2A0F"/>
+<g clip-path="url(#in-plank)">
+<rect x="14" y="34" width="100" height="80" fill="url(#wood)"/>
+<!-- the grain: two strokes under the top edge and two over the foot, the stronger ones with a lighter stroke under them -->
+<path d="M14 48H114" stroke="#3B200E" stroke-opacity=".2" stroke-width="1.2"/>
+<path d="M14 49.3H114" stroke="#FFDEAA" stroke-opacity=".07" stroke-width="1"/>
+<path d="M14 57H114" stroke="#3B200E" stroke-opacity=".13" stroke-width="1.2"/>
+<path d="M14 94H114" stroke="#3B200E" stroke-opacity=".17" stroke-width="1.2"/>
+<path d="M14 95.3H114" stroke="#FFDEAA" stroke-opacity=".05" stroke-width="1"/>
+<path d="M14 101H114" stroke="#3B200E" stroke-opacity=".12" stroke-width="1.2"/>
+<!-- light along the top edge and the dark lip along the foot: each is the plank less the plank moved down or up -->
+<path fill="#FFDEAA" fill-opacity=".6" fill-rule="evenodd" d="M0 0H128V148H0Z M38 36.5H90A24 24 0 0 1 114 60.5V92.5A24 24 0 0 1 90 116.5H38A24 24 0 0 1 14 92.5V60.5A24 24 0 0 1 38 36.5Z"/>
+<path fill="#281206" fill-opacity=".5" fill-rule="evenodd" d="M0 0H128V148H0Z M38 29H90A24 24 0 0 1 114 53V85A24 24 0 0 1 90 109H38A24 24 0 0 1 14 85V53A24 24 0 0 1 38 29Z"/>
+</g>
+</svg>

@@ -18,7 +18,10 @@ namespace Puzzle.Core.Tests;
 /// </summary>
 public class GameFlowTests
 {
-    /// <summary>The room the Unity game's result card asks of a screen (ResultPanel.Width and Height), in points.</summary>
+    /// <summary>
+    /// The room the Unity game's result card asks of a screen, in points: its body of 332 by 429 (ResultPanel) and
+    /// the half of its nameplate that rides over its top edge, 20 (HangingCard.Height).
+    /// </summary>
     private const float CardWidth = 332f;
     private const float CardHeight = 449f;
 

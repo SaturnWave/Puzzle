@@ -1,0 +1,18 @@
+<!-- The smallest teal disc, in a dark line and no gilt, as the design canvas draws it under the chevron at the end
+     of a row that leads somewhere (SettingsTR). One unit is one point of the design. The disc is 26 across around
+     (18, 17). Its drop is the brown a thing throws on a cream card. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="576" height="576" viewBox="0 0 36 36">
+<defs>
+<linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="30"><stop offset="0" stop-color="#3AB0B3"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+<clipPath id="in-face"><circle cx="18" cy="17" r="13"/></clipPath>
+</defs>
+<!-- the drop under the disc, the dark line, the face -->
+<circle cx="18" cy="19.5" r="14.6" fill="#5C3810" fill-opacity=".3"/>
+<circle cx="18" cy="17" r="14.6" fill="#0A3640"/>
+<circle cx="18" cy="17" r="13" fill="url(#teal)"/>
+<!-- light along the top of the face, a darker foot -->
+<g clip-path="url(#in-face)">
+<path fill="#fff" fill-opacity=".5" fill-rule="evenodd" d="M0 0H36V36H0Z M5 19A13 13 0 0 1 31 19A13 13 0 0 1 5 19Z"/>
+<path fill="#06323A" fill-opacity=".6" fill-rule="evenodd" d="M0 0H36V36H0Z M5 14.5A13 13 0 0 1 31 14.5A13 13 0 0 1 5 14.5Z"/>
+</g>
+</svg>

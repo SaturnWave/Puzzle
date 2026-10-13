@@ -26,7 +26,13 @@ namespace Puzzle.Client.Art
         /// <summary>The cream card a result is written on; its middle stretches both ways to any size. Its pivot is the middle of its body.</summary>
         Card,
 
-        /// <summary>The brass nameplate on a card's top edge, 280 points wide, with the pins of the card's two wires. Its pivot is the middle of the plate.</summary>
+        /// <summary>
+        /// A brass nameplate 280 points wide with its studs and the pins of a card's two wires drawn in. The game no
+        /// longer draws it: every nameplate, a card's and the one on the banner of a restored room, is
+        /// <see cref="BrassPlate"/> with <see cref="Stud"/> and <see cref="WirePin"/> on it, at any width (the
+        /// game's BrassNameplate). The member stays until the catalogue is next built without it. Its pivot is the
+        /// middle of the plate.
+        /// </summary>
         Nameplate,
 
         /// <summary>The green button of a card; its middle stretches sideways to any width. Its pivot is the middle of the pill.</summary>
@@ -59,7 +65,7 @@ namespace Puzzle.Client.Art
         /// <summary>The round teal badge a room's number stands on, 34 points across in its rings. Its pivot is its middle.</summary>
         RoomBadge,
 
-        /// <summary>The raised teal plate behind the navigation bar's chosen destination, 70 by 88 points. Its pivot is the middle of the plate.</summary>
+        /// <summary>The raised teal plate behind the navigation bar's chosen destination, 70 by 88 points; its middle stretches sideways under a longer name. Its pivot is the middle of the plate.</summary>
         Tab,
 
         /// <summary>The museum's mark on the navigation bar, drawn in a box of 100 points. Its pivot is the middle of the box.</summary>
@@ -83,7 +89,11 @@ namespace Puzzle.Client.Art
         /// <summary>The blue button that leads to a painting's jigsaw; stretches as <see cref="Button"/> does. Its pivot is the middle of the pill.</summary>
         BlueButton,
 
-        /// <summary>The round teal button with an arrow to the left, 44 points across in a gilt ring. Its pivot is the middle of the disc.</summary>
+        /// <summary>
+        /// The round teal button with an arrow to the left drawn in, 44 points across in a gilt ring. The game no
+        /// longer draws it: a round button is <see cref="TealDisc"/> with its mark over it (<see cref="IconBack"/>
+        /// for this one). Its pivot is the middle of the disc.
+        /// </summary>
         BackButton,
 
         /// <summary>The collection's mark on the navigation bar, drawn in a box of 100 points. Its pivot is the middle of the box.</summary>
@@ -109,30 +119,216 @@ namespace Puzzle.Client.Art
 
         /// <summary>The red badge of a count, 22 points across; its middle stretches sideways for a longer number. Its pivot is the middle of the badge.</summary>
         RedBadge,
+
+        // The marks below are the design canvas' own symbols, written out of it by tools/unity/extract-design-symbols.js.
+        // Each is drawn in a box of 100 points with its pivot in the middle of the box; the game draws it at the size a place needs.
+
+        /// <summary>A gold coin with a drop of paint struck on it: the player's coins, a price, what a level pays.</summary>
+        IconCoin,
+
+        /// <summary>The red heart of the player's lives.</summary>
+        IconHeart,
+
+        /// <summary>The ivory gear on the round button that opens the settings.</summary>
+        IconGear,
+
+        /// <summary>The shop's mark on the navigation bar: a market stall under a striped awning.</summary>
+        IconShop,
+
+        /// <summary>The picture in the small frame of the free gift: a parcel on velvet that fills its whole box. <see cref="SmallFrame"/> is drawn over it.</summary>
+        GiftPicture,
+
+        /// <summary>The ivory arrow to the left on the round button that leads back; turned around, it points to the right.</summary>
+        IconBack,
+
+        /// <summary>The two white bars on the shelf's round button that stops a level.</summary>
+        IconPause,
+
+        /// <summary>The painter's spatula: the booster that takes one piece off the board.</summary>
+        IconSpatula,
+
+        /// <summary>A palette between two turning arrows: the booster that shuffles the board.</summary>
+        IconShuffle,
+
+        /// <summary>The gilt token that says +3: the booster of three more moves, chosen before a level.</summary>
+        IconThreeMoves,
+
+        /// <summary>The gilt token that says +5: the offer of five more moves when a level's moves have run out.</summary>
+        IconFiveMoves,
+
+        /// <summary>A handful of coins: the shop's smallest pack, and the coins an advertisement gives.</summary>
+        CoinPile,
+
+        /// <summary>A red pouch of coins: the shop's middle pack.</summary>
+        CoinPouch,
+
+        /// <summary>An open chest of coins: the shop's largest pack.</summary>
+        CoinChest,
+
+        /// <summary>A loudspeaker: the settings' row for sound.</summary>
+        IconSound,
+
+        /// <summary>Two notes: the settings' row for music.</summary>
+        IconMusic,
+
+        /// <summary>A phone that shakes: the settings' row for vibration.</summary>
+        IconBuzz,
+
+        /// <summary>A globe: the settings' row for the language.</summary>
+        IconGlobe,
+
+        /// <summary>A shield with a tick: the settings' row for privacy and data.</summary>
+        IconShield,
+
+        /// <summary>A question mark: the settings' row for support.</summary>
+        IconHelp,
+
+        // The white strokes below stand on a round button or a badge, each in a picture as large as the canvas shows it.
+
+        /// <summary>The white plus of "get more" on its dark green edge, 14 points across; it stands on <see cref="GreenDisc"/>. Its pivot is its middle.</summary>
+        GlyphPlus,
+
+        /// <summary>The white cross that closes a card, on its dark teal edge, 22 points across; it stands on <see cref="TealDisc"/>. Its pivot is its middle.</summary>
+        GlyphClose,
+
+        /// <summary>The white chevron to the right of a row that leads somewhere, on its dark teal edge, 14 points across; it stands on <see cref="TinyTealDisc"/>. Its pivot is its middle.</summary>
+        GlyphChevron,
+
+        /// <summary>The white tick of what is chosen, 18 points across; it stands on <see cref="GreenBadge"/>. Its pivot is its middle.</summary>
+        GlyphTick,
+
+        /// <summary>The white triangle of "watch" on its dark blue edge, 24 points across; it stands on the blue buttons that play an advertisement. Its pivot is its middle.</summary>
+        GlyphPlay,
+
+        /// <summary>The round cream disc a booster's picture stands on, 60 points across in a gilt ring. Its pivot is the middle of the disc.</summary>
+        CreamDisc,
+
+        /// <summary>The green ring of a chosen booster, drawn over <see cref="CreamDisc"/> at the same place and scale: it covers the gilt ring. Its pivot is the middle of the ring.</summary>
+        ChosenRing,
+
+        /// <summary>The round teal button with nothing on it, 44 points across in a gilt ring on a dark lip; a mark is drawn over it. Its pivot is the middle of the disc.</summary>
+        TealDisc,
+
+        /// <summary>The teal disc a row's mark stands on, 32 points across in a gilt ring. Its pivot is the middle of the disc.</summary>
+        SmallTealDisc,
+
+        /// <summary>The smallest teal disc, 26 points across in a dark line with no gilt; the chevron stands on it. Its pivot is the middle of the disc.</summary>
+        TinyTealDisc,
+
+        /// <summary>The round green button of "get more", 26 points across; <see cref="GlyphPlus"/> stands on it. Its pivot is the middle of the disc.</summary>
+        GreenDisc,
+
+        /// <summary>The teal badge in a white ring with how many of a booster the player owns, 22 points across; its middle stretches sideways for a longer number. Its pivot is the middle of the badge.</summary>
+        TealBadge,
+
+        /// <summary>The green badge in a white ring, 22 points across: with a plus where the player owns none of a booster, with <see cref="GlyphTick"/> where one is chosen. Stretches as <see cref="TealBadge"/> does. Its pivot is the middle of the badge.</summary>
+        GreenBadge,
+
+        /// <summary>The small green button, 44 points high; its middle stretches sideways to any width. Its pivot is the middle of the pill.</summary>
+        SmallButton,
+
+        /// <summary>The small blue button that plays an advertisement; stretches as <see cref="SmallButton"/> does. Its pivot is the middle of the pill.</summary>
+        SmallBlueButton,
+
+        /// <summary>The see-through dark green pill a price stands in, sunk into a green button, 21 points high; its middle stretches sideways to any width. Its pivot is the middle of the pill.</summary>
+        PricePill,
+
+        /// <summary>The track of a switch that is on, 56 by 23 points: green in a gilt ring with a white tick at its left end. Its pivot is the middle of the track.</summary>
+        ToggleOn,
+
+        /// <summary>The track of a switch that is off: a hollow of dull cream in a gilt ring, as large as <see cref="ToggleOn"/>. Its pivot is the middle of the track.</summary>
+        ToggleOff,
+
+        /// <summary>The cream knob of a switch, 33 points across; it stands 15 points right of an on track's middle and 15 left of an off track's. Its pivot is the middle of the knob.</summary>
+        ToggleKnob,
+
+        /// <summary>
+        /// A small gilt frame around a hole, 60 by 60 points with a hole of 50 by 50; its middle stretches both ways
+        /// to any size. It is drawn over the picture it frames and throws its shade on it. Its pivot is the middle
+        /// of the hole.
+        /// </summary>
+        SmallFrame,
+
+        /// <summary>The teal velvet behind what <see cref="SmallFrame"/> shows, a box of 100 points filled to its corners; drawn at the size of the frame's hole, also wider than high. Its pivot is the middle of the box.</summary>
+        Velvet,
+
+        /// <summary>
+        /// The wooden plank a row of round discs stands on, 80 points high as drawn; its middle stretches both ways,
+        /// to the board's booster shelf, the shelf before a level and the shop's shelves. Its pivot is the middle of the plank.
+        /// </summary>
+        Plank,
+
+        /// <summary>The dark well the rooms' chips lie in on the collection's plaque, 36 points high in a gilt ring; its middle stretches sideways to any width. Its pivot is the middle of the well.</summary>
+        ChipWell,
+
+        /// <summary>The cream chip of the chosen room in <see cref="ChipWell"/>, 28 points high in a dark line; its middle stretches sideways to any width. Its pivot is the middle of the chip.</summary>
+        Chip,
+
+        /// <summary>A pip of a piece won, on a cream card: gilt, 19 by 13 points. The jigsaw's dark bar has pips of its own (<see cref="PipOn"/>). Its pivot is the middle of the pip.</summary>
+        CardPipOn,
+
+        /// <summary>The pip of the piece a level has just given, on a cream card: gilt in rings of light and red, as large inside as <see cref="CardPipOn"/>. Its pivot is the middle of the pip.</summary>
+        CardPipNew,
+
+        /// <summary>A pip of a piece not won yet, on a cream card: a shallow hollow, as large as <see cref="CardPipOn"/>. Its pivot is the middle of the pip.</summary>
+        CardPipOff,
+
+        /// <summary>
+        /// A brass nameplate with neither studs nor pins, 40 by 40 points as drawn; its middle stretches both ways
+        /// to any size, for a name in one line or two. <see cref="Stud"/> and <see cref="WirePin"/> are drawn on it.
+        /// It is the nameplate of every card that hangs and of the banner of a restored room. Its pivot is the middle of the plate.
+        /// </summary>
+        BrassPlate,
+
+        /// <summary>A stud of a brass nameplate, 6 points across; the canvas sets one 9 points in from each end of a plate. Its pivot is its middle.</summary>
+        Stud,
+
+        /// <summary>The gilt pin a picture wire ends in, 6 points across. Its pivot is its middle.</summary>
+        WirePin,
+
+        /// <summary>The cream pill an amount stands in, 36 points high in a gilt rim: the wallet's coins and lives, the coins a level pays; its middle stretches sideways to any width. Its pivot is the middle of the pill.</summary>
+        WalletPill,
     }
 
     /// <summary>
-    /// How lettering is drawn. All of it is one typeface; a style is how heavy its strokes are drawn and whether it
-    /// throws a shadow. The colour is the text's own.
+    /// How lettering is drawn, as the design canvas sets its type: a style is the typeface of a line
+    /// (<see cref="Typefaces.Of"/>) and what is drawn around and under its strokes. The colour is the text's own.
+    /// A closed set: <see cref="ArtCatalogue"/> stores a typeface and a material per style in this order, so after
+    /// adding a member, build the catalogue again (ProjectSetup.Run).
     /// </summary>
     public enum LetteringStyle
     {
-        /// <summary>The large numbers on the plaques: the strokes drawn heavier and rounder than the typeface has them.</summary>
+        /// <summary>Every figure: the numbers on the plaques, counts on badges, the amounts of a wallet. Paytone One as its file has it.</summary>
         Figure,
 
-        /// <summary>The small capitals over the numbers.</summary>
+        /// <summary>The design's interface type, Gabarito at its heaviest: labels in small capitals, names, hints, the words on pills.</summary>
         Label,
 
         /// <summary>Light lettering on the dark wood of the shelf, with a dark edge under it.</summary>
         OnWood,
 
-        /// <summary>White lettering on the green of a button: heavy strokes in a dark green outline, which is what makes it legible there.</summary>
+        /// <summary>White lettering on the green of a button: Paytone One in a dark green outline, as wide under the letters as at their sides.</summary>
         OnButton,
 
-        /// <summary>White lettering on the gallery's teal (a room's number on its badge, a destination's name on the bar, the teal button): heavy strokes in a dark teal outline.</summary>
+        /// <summary>White lettering on the gallery's teal (a room's number on its badge, a destination's name on the bar, the teal button): in a dark teal outline.</summary>
         OnTeal,
 
-        /// <summary>White lettering on the blue of the buttons that lead to a jigsaw: heavy strokes in a dark blue outline.</summary>
+        /// <summary>White lettering on the blue of the buttons that lead to a jigsaw: in a dark blue outline.</summary>
         OnBlue,
+
+        /// <summary>The serif of titles and names, on brass and on cream: a nameplate's title, the name of a room or a page, a painting's title.</summary>
+        Title,
+
+        /// <summary>A secondary line under or beside a stronger one: Gabarito a weight lighter than <see cref="Label"/>.</summary>
+        Soft,
+
+        /// <summary>The white count on the red heart of the lives: in a dark red outline.</summary>
+        OnHeart,
+
+        /// <summary>The white amount on the dark green pill that states a price inside a button: no outline, the pill is dark enough.</summary>
+        OnPricePill,
+
+        /// <summary>Cream lettering on the gallery's dark teal where no plate lies under it: a place that is not chosen, a locked room's name.</summary>
+        OnDarkTeal,
     }
 }

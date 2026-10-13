@@ -6,7 +6,6 @@ using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Layout;
-using Puzzle.Client.Painting;
 using Puzzle.Museum;
 using TMPro;
 using UnityEngine;
@@ -28,11 +27,14 @@ namespace Puzzle.Client.Hall
         /// <summary>The plaque's rim and padding: lettering begins this far in from its left edge and ends as far from its right.</summary>
         public const float SidePadding = 13f;
 
-        /// <summary>The sizes of a plaque's two kinds of line: the small capitals that label, and the name or title under them.</summary>
+        /// <summary>
+        /// The sizes of a plaque's two kinds of line, as the design sets them (HomeTR): the small capitals that
+        /// label ("ODA 1 / 20": 9 points, apart by 9 hundredths of their size), and the name or title under them in
+        /// the serif ("Empresyonizm": 16 points).
+        /// </summary>
         public const float LabelSize = 9f;
         public const float TitleSize = 16f;
         private const float LabelSpacing = 9f;
-        private static readonly Color LabelInk = Tint.Of(0x8A5A2B);
 
         /// <summary>The plaque's picture is its body and the room around it for its rim and shadow: 28 points wider, 34 higher.</summary>
         private const float PictureMarginAcross = 28f;
@@ -82,7 +84,7 @@ namespace Puzzle.Client.Hall
         /// <summary>A line of small capitals, as the plaques label what stands under them.</summary>
         public static TextMeshPro WriteLabel(string name, Transform parent, ArtCatalogue art, DrawOrder order)
         {
-            TextMeshPro label = Lettering.Write(name, parent, art, LetteringStyle.Label, LabelSize, LabelInk, order);
+            TextMeshPro label = Lettering.Write(name, parent, art, LetteringStyle.Label, LabelSize, Lettering.LabelInk, order);
             label.characterSpacing = LabelSpacing;
             return label;
         }
@@ -122,7 +124,7 @@ namespace Puzzle.Client.Hall
             Transform badge = SceneObjects.AddSprite("Badge", content, art.Of(GalleryArt.RoomBadge), art.SpriteMaterial, DrawOrder.PlaqueArt).transform;
             badge.localPosition = new Vector3(left + BadgeMiddleIn, 0f, 0f);
             TextMeshPro number = Lettering.Write("Room number", badge, art, LetteringStyle.OnTeal, BadgeNumberSize, Color.white, DrawOrder.PlaqueLettering);
-            number.transform.localPosition = new Vector3(0f, -Hud.FigureDrop * BadgeNumberSize, 0f);
+            number.transform.localPosition = new Vector3(0f, -Lettering.FigureDrop(LetteringStyle.OnTeal) * BadgeNumberSize, 0f);
             Lettering.Say(number, room.Number.Value.ToString(CultureInfo.InvariantCulture));
 
             TextMeshPro whichRoom = PagePlaque.WriteLabel("Which room", content, art, DrawOrder.PlaqueLettering);
@@ -130,7 +132,7 @@ namespace Puzzle.Client.Hall
 
             float picturesRight = right - PicturesEndIn;
             float picturesLeft = picturesRight - PaintingThumbs.RowWidth;
-            TextMeshPro name = Lettering.Write("Room name", content, art, LetteringStyle.Label, PagePlaque.TitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
+            TextMeshPro name = Lettering.Write("Room name", content, art, LetteringStyle.Title, PagePlaque.TitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
             float roomForTheName = picturesLeft - PagePlaque.SidePadding - (left + LinesBeginIn);
             name.fontSize = PagePlaque.TitleSize * Mathf.Min(1f, roomForTheName / Lettering.WidthOf(name, room.Name));
             Lettering.SayFromLeft(name, room.Name, left + LinesBeginIn, -RoomNameDown);

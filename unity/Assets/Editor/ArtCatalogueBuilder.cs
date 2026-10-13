@@ -11,7 +11,7 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Writes the art catalogue (Assets/Art/ArtCatalogue.asset) from the drawings in Assets/Art/Pieces and
-    /// Assets/Art/Gallery and from the game's typeface. Each list of drawings and its folder must agree exactly: a
+    /// Assets/Art/Gallery and from the game's typefaces. Each list of drawings and its folder must agree exactly: a
     /// drawing without a file, or a file no drawing asks for, stops the build with its name, so the game cannot meet
     /// a missing sprite later.
     /// </summary>
@@ -109,6 +109,57 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.PipOff] = "pip-off",
             [GalleryArt.PipNext] = "pip-next",
             [GalleryArt.RedBadge] = "badge-red",
+            [GalleryArt.IconCoin] = "icon-coin",
+            [GalleryArt.IconHeart] = "icon-heart",
+            [GalleryArt.IconGear] = "icon-gear",
+            [GalleryArt.IconShop] = "icon-shop",
+            [GalleryArt.GiftPicture] = "picture-gift",
+            [GalleryArt.IconBack] = "icon-back",
+            [GalleryArt.IconPause] = "icon-pause",
+            [GalleryArt.IconSpatula] = "icon-spatula",
+            [GalleryArt.IconShuffle] = "icon-shuffle",
+            [GalleryArt.IconThreeMoves] = "icon-moves-3",
+            [GalleryArt.IconFiveMoves] = "icon-moves-5",
+            [GalleryArt.CoinPile] = "coins-pile",
+            [GalleryArt.CoinPouch] = "coins-pouch",
+            [GalleryArt.CoinChest] = "coins-chest",
+            [GalleryArt.IconSound] = "icon-sound",
+            [GalleryArt.IconMusic] = "icon-music",
+            [GalleryArt.IconBuzz] = "icon-buzz",
+            [GalleryArt.IconGlobe] = "icon-globe",
+            [GalleryArt.IconShield] = "icon-shield",
+            [GalleryArt.IconHelp] = "icon-help",
+            [GalleryArt.GlyphPlus] = "glyph-plus",
+            [GalleryArt.GlyphClose] = "glyph-close",
+            [GalleryArt.GlyphChevron] = "glyph-chevron",
+            [GalleryArt.GlyphTick] = "glyph-tick",
+            [GalleryArt.GlyphPlay] = "glyph-play",
+            [GalleryArt.CreamDisc] = "disc-cream",
+            [GalleryArt.ChosenRing] = "ring-chosen",
+            [GalleryArt.TealDisc] = "disc-teal",
+            [GalleryArt.SmallTealDisc] = "disc-teal-small",
+            [GalleryArt.TinyTealDisc] = "disc-teal-tiny",
+            [GalleryArt.GreenDisc] = "disc-green",
+            [GalleryArt.TealBadge] = "badge-teal",
+            [GalleryArt.GreenBadge] = "badge-green",
+            [GalleryArt.SmallButton] = "button-small",
+            [GalleryArt.SmallBlueButton] = "button-small-blue",
+            [GalleryArt.PricePill] = "pill-price",
+            [GalleryArt.ToggleOn] = "toggle-on",
+            [GalleryArt.ToggleOff] = "toggle-off",
+            [GalleryArt.ToggleKnob] = "toggle-knob",
+            [GalleryArt.SmallFrame] = "frame-small",
+            [GalleryArt.Velvet] = "velvet",
+            [GalleryArt.Plank] = "plank",
+            [GalleryArt.ChipWell] = "chip-well",
+            [GalleryArt.Chip] = "chip",
+            [GalleryArt.CardPipOn] = "pip-card-on",
+            [GalleryArt.CardPipNew] = "pip-card-new",
+            [GalleryArt.CardPipOff] = "pip-card-off",
+            [GalleryArt.BrassPlate] = "brass-plate",
+            [GalleryArt.Stud] = "stud",
+            [GalleryArt.WirePin] = "wire-pin",
+            [GalleryArt.WalletPill] = "wallet-pill",
         };
 
         /// <exception cref="InvalidOperationException">The drawings and the files do not agree, or a material is missing.</exception>
@@ -118,7 +169,7 @@ namespace Puzzle.Client.EditorTools
             RefuseUnlistedFiles(GalleryArtImport.GalleryFolder, GalleryFileNames.Values.Append(Path.GetFileNameWithoutExtension(GalleryArtImport.DamaskPath)));
             Dictionary<PieceArt, Sprite> pieces = SpritesOf(FileNames, PieceSpriteImport.PiecesFolder, PiecesExporter);
             Dictionary<GalleryArt, Sprite> gallery = SpritesOf(GalleryFileNames, GalleryArtImport.GalleryFolder, GalleryExporter);
-            (TMP_FontAsset typeface, IReadOnlyDictionary<LetteringStyle, Material> letteringMaterials) = LetteringBuilder.Ensure();
+            (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> letteringMaterials) = LetteringBuilder.Ensure();
 
             ArtCatalogue catalogue = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(CataloguePath);
             if (catalogue == null)
@@ -129,7 +180,7 @@ namespace Puzzle.Client.EditorTools
 
             Debug.Log($"Art catalogue: {pieces.Count + gallery.Count} drawings, packed into {PieceAtlasBuilder.TexturesOf(pieces.Values.Concat(gallery.Values))} atlas texture(s).");
             catalogue.FillDrawings(pieces, gallery, Damask(), SpriteMaterial(), PaintMaterial());
-            catalogue.FillLettering(typeface, letteringMaterials);
+            catalogue.FillLettering(typefaces, letteringMaterials);
             EditorUtility.SetDirty(catalogue);
         }
 

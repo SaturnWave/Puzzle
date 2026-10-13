@@ -64,7 +64,7 @@ namespace Puzzle.Client.Maps
         private static readonly Color ShutDoor = Tint.Of(0x5E3305);
         private static readonly Color ShutDoorLight = Tint.Of(0xC99255);
 
-        /// <summary>The entrance in the plan's foot wall: two posts, the swing of its two door leaves, and its name beside it.</summary>
+        /// <summary>The entrance in the plan's foot wall: two posts, the swing of its two door leaves, and its name beside it (MapTR, "GİRİŞ": 9 points).</summary>
         private const float EntranceWidth = 36f;
         private const float EntranceDepth = 18f;
         private static readonly Color EntrancePost = Tint.Of(0x5E3305);
@@ -80,10 +80,20 @@ namespace Puzzle.Client.Maps
         private static readonly Color NearNumber = Tint.Of(0x7A5A2E);
         private static readonly Color FarNumber = Tint.Of(0x93744A);
         private static readonly Color StretchNumber = Tint.Of(0x96784E);
-        private const float LargestNumber = 32f;
+        private const float LargestNumber = 34f;
         private const float LargestStretchNumber = 24f;
 
-        /// <summary>A room drawn in full: its badge or padlock at the left, two lines beside it, its paintings, a pill.</summary>
+        /// <summary>
+        /// A number is this share of its floor's height at the most, as the design has them (MapTR): a room's 34
+        /// points on a floor of 69 and 28 on one of 59, a stretch of rooms' 24 on a floor of 45.
+        /// </summary>
+        private const float NumberOfFloorHeight = 0.48f;
+        private const float StretchNumberOfFloorHeight = 0.54f;
+
+        /// <summary>
+        /// A room drawn in full: its badge or padlock at the left, two lines beside it, its paintings, a pill. The
+        /// type sizes are the design's (MapTR): the number on the badge 18 points, the room's name in the serif 16.
+        /// </summary>
         private const float BadgeIn = 28f;
         private const float BadgeSize = 34f;
         private const float BadgeNumberSize = 18f;
@@ -99,7 +109,10 @@ namespace Puzzle.Client.Maps
         private const float PadlockBox = 100f;
         private const float LinesBesidePadlockIn = 75f;
 
-        /// <summary>A pill: its picture is the pill and the room around it for its rim and drop, 16 points wider and 40 high for a pill of 24.</summary>
+        /// <summary>
+        /// A pill: its picture is the pill and the room around it for its rim and drop, 16 points wider and 40 high
+        /// for a pill of 24. Its line is the design's (MapTR, "Buradasın · Bölüm 47": 11.5 points).
+        /// </summary>
         private const float PillHeight = 24f;
         private const float PillPictureMargin = 16f;
         private const float PillPictureHeight = 40f;
@@ -545,15 +558,15 @@ namespace Puzzle.Client.Maps
                     for (int room = row.RowAhead * FloorPlan.RoomsInARow; room < Math.Min(plan.Ahead.Count, (row.RowAhead + 1) * FloorPlan.RoomsInARow); room++)
                     {
                         Box floor = layout.FloorOfRoomAhead(room);
-                        WriteNumber(MuseumWords.Rooms(plan.Ahead[room], plan.Ahead[room]), floor, LargestNumber, row.RowAhead == 0 ? NearNumber : FarNumber);
+                        WriteNumber(MuseumWords.Rooms(plan.Ahead[room], plan.Ahead[room]), floor, LargestNumber, NumberOfFloorHeight, row.RowAhead == 0 ? NearNumber : FarNumber);
                     }
 
                     break;
                 case PlanRowKind.Beyond when plan.Beyond is RoomStretch beyond:
-                    WriteNumber(MuseumWords.Rooms(beyond.First, beyond.Last), row.Floor, LargestStretchNumber, StretchNumber);
+                    WriteNumber(MuseumWords.Rooms(beyond.First, beyond.Last), row.Floor, LargestStretchNumber, StretchNumberOfFloorHeight, StretchNumber);
                     break;
                 case PlanRowKind.Behind when plan.Behind is RoomStretch behind:
-                    WriteNumber(MuseumWords.Rooms(behind.First, behind.Last), row.Floor, LargestStretchNumber, NearNumber);
+                    WriteNumber(MuseumWords.Rooms(behind.First, behind.Last), row.Floor, LargestStretchNumber, StretchNumberOfFloorHeight, NearNumber);
                     break;
                 default:
                     throw new InvalidOperationException($"The layout has a row for {row.Kind} that the plan has no room for.");
@@ -561,11 +574,12 @@ namespace Puzzle.Client.Maps
         }
 
         /// <summary>A room's number, or a stretch of rooms' numbers, in the middle of its floor, no larger than the floor's height allows.</summary>
-        private void WriteNumber(string number, Box floor, float largest, Color colour)
+        /// <param name="ofFloorHeight">The share of the floor's height the number may have.</param>
+        private void WriteNumber(string number, Box floor, float largest, float ofFloorHeight, Color colour)
         {
-            float size = Mathf.Min(largest, 0.56f * floor.Height);
+            float size = Mathf.Min(largest, ofFloorHeight * floor.Height);
             TextMeshPro line = Lettering.Write($"Room {number}", Content, _art, LetteringStyle.Figure, size, colour, DrawOrder.SheetLettering);
-            line.transform.localPosition = new Vector3(floor.MiddleX, floor.MiddleY - Hud.FigureDrop * size, 0f);
+            line.transform.localPosition = new Vector3(floor.MiddleX, floor.MiddleY - Lettering.FigureDrop(LetteringStyle.Figure) * size, 0f);
             Lettering.Say(line, number);
         }
 
@@ -632,7 +646,7 @@ namespace Puzzle.Client.Maps
             Transform badge = SceneObjects.AddSprite("Badge", Content, _art.Of(GalleryArt.RoomBadge), _art.SpriteMaterial, DrawOrder.SheetArt).transform;
             badge.localPosition = new Vector3(floor.Left + BadgeIn, middle, 0f);
             TextMeshPro number = Lettering.Write("Room number", badge, _art, LetteringStyle.OnTeal, BadgeNumberSize, Color.white, DrawOrder.SheetLettering);
-            number.transform.localPosition = new Vector3(0f, -Hud.FigureDrop * BadgeNumberSize, 0f);
+            number.transform.localPosition = new Vector3(0f, -Lettering.FigureDrop(LetteringStyle.OnTeal) * BadgeNumberSize, 0f);
             Lettering.Say(number, wall.Number.Value.ToString(CultureInfo.InvariantCulture));
 
             float left = floor.Left + LinesBeginIn;
@@ -658,7 +672,7 @@ namespace Puzzle.Client.Maps
 
         private void WriteName(string name, float left, float height, float room)
         {
-            TextMeshPro line = Lettering.Write("Room name", Content, _art, LetteringStyle.Label, NameSize, Lettering.Ink, DrawOrder.SheetLettering);
+            TextMeshPro line = Lettering.Write("Room name", Content, _art, LetteringStyle.Title, NameSize, Lettering.Ink, DrawOrder.SheetLettering);
             line.fontSize = NameSize * Mathf.Min(1f, room / Lettering.WidthOf(line, name));
             Lettering.SayFromLeft(line, name, left, height);
         }
