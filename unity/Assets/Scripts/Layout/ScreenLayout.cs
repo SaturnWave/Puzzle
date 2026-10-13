@@ -54,7 +54,11 @@ namespace Puzzle.Client.Layout
         public static bool operator !=(ScreenShape left, ScreenShape right) => !left.Equals(right);
     }
 
-    /// <summary>Where a card hangs in front of the board: the height of its middle (it is centred on the screen's width) and how large it is drawn.</summary>
+    /// <summary>
+    /// Where a card hangs in front of the board (<see cref="ScreenLayout.PlaceOfACard"/>) or of a page of the museum
+    /// (<see cref="PageLayout.PlaceOfACard"/>): the height of its middle (it is centred on the screen's width) and how
+    /// large it is drawn.
+    /// </summary>
     public readonly struct CardPlace
     {
         public CardPlace(float middle, float scale)

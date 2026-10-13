@@ -30,7 +30,11 @@ namespace Puzzle.Client.Collections
         /// <summary>The wires meet the frame's top edge this far in from its corners.</summary>
         private const float WireInFromCorner = 22f;
 
-        /// <summary>The pill that counts the pieces in place rides on the frame's top edge; the badge of the waiting pieces sits on the frame's upper right corner.</summary>
+        /// <summary>
+        /// The pill that counts the pieces in place rides on the frame's top edge; the badge of the waiting pieces
+        /// sits on the frame's upper right corner. The pill is the game's own: the design counts the pieces on a
+        /// card beside the painting (CollectionTR, "6 / 10 parça"), which the collection's page does not have.
+        /// </summary>
         private const float PillPictureMargin = 16f;
         private const float PillPictureHeight = 40f;
         private const float PillSideRoom = 10f;
@@ -173,7 +177,7 @@ namespace Puzzle.Client.Collections
 
         private Transform AddBadge(ArtCatalogue art, int piecesWaiting)
         {
-            Transform badge = CountBadge.Add("Pieces waiting", _root, art, piecesWaiting, DrawOrder.ExhibitBadge);
+            Transform badge = CountBadge.Add("Pieces waiting", _root, art, BadgeFace.Waiting(piecesWaiting), DrawOrder.ExhibitBadge).Transform;
             badge.localScale = new Vector3(BadgeScale, BadgeScale, 1f);
             return badge;
         }

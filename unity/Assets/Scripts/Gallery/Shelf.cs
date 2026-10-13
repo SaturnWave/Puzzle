@@ -19,6 +19,7 @@ namespace Puzzle.Client.Gallery
         private const float PictureMargin = 28f;
         private const float PictureHeight = 96f;
 
+        /// <summary>The line is the web test page's, at its size there (13 points); the design canvas writes nothing on its shelf (BoardTR).</summary>
         private const float LineSize = 13f;
 
         /// <summary>

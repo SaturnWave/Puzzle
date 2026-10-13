@@ -91,7 +91,18 @@ MonoBehaviour:
   _damask: {fileID: 2800000, guid: d2167f5e0ce534d48a43f0412ffd9704, type: 3}
   _spriteMaterial: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   _paintMaterial: {fileID: 2100000, guid: 038382e979d627047814111252a8ed83, type: 2}
-  _typeface: {fileID: 11400000, guid: 5e1ef2b4a58cf034fac9f96da467c1c7, type: 2}
+  _typefaces:
+  - {fileID: 11400000, guid: ff1db1b3785d82342a64cd31631c2842, type: 2}
+  - {fileID: 11400000, guid: 83a48dcef6cafec4ca3932ec42e3065d, type: 2}
+  - {fileID: 11400000, guid: ae2ba3c84ecf380409e21587d58fe3af, type: 2}
+  - {fileID: 11400000, guid: ff1db1b3785d82342a64cd31631c2842, type: 2}
+  - {fileID: 11400000, guid: ff1db1b3785d82342a64cd31631c2842, type: 2}
+  - {fileID: 11400000, guid: ff1db1b3785d82342a64cd31631c2842, type: 2}
+  - {fileID: 11400000, guid: de9cfec53ab44704d80de4e1176c0e81, type: 2}
+  - {fileID: 11400000, guid: ae2ba3c84ecf380409e21587d58fe3af, type: 2}
+  - {fileID: 11400000, guid: ff1db1b3785d82342a64cd31631c2842, type: 2}
+  - {fileID: 11400000, guid: ff1db1b3785d82342a64cd31631c2842, type: 2}
+  - {fileID: 11400000, guid: 83a48dcef6cafec4ca3932ec42e3065d, type: 2}
   _letteringMaterials:
   - {fileID: 2100000, guid: ac2232f1b1ad7ec46a6d67bdfc9ea27b, type: 2}
   - {fileID: 2100000, guid: dcfb5e75b179e044fa286c74620dda43, type: 2}
@@ -99,3 +110,8 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 24530354d963a644e83dd13afe057979, type: 2}
   - {fileID: 2100000, guid: 4a4bb7f97b380054eb1c8efbe360ea61, type: 2}
   - {fileID: 2100000, guid: c1fc4a0f30b54f0419d42e984c7c01cd, type: 2}
+  - {fileID: 2100000, guid: 57845af8faa82a247a80933d99e136fc, type: 2}
+  - {fileID: 2100000, guid: 4fe94d9e5d6519041901de961270d209, type: 2}
+  - {fileID: 2100000, guid: 6fe3b8c8ffd96cd4dad99b397b5a95e3, type: 2}
+  - {fileID: 2100000, guid: 8012697c2bf5a2e418cde99e40e90cb9, type: 2}
+  - {fileID: 2100000, guid: 09c6b0e824e037b44a6e28a7575e8527, type: 2}

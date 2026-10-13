@@ -18,6 +18,8 @@ namespace Puzzle.Client.Screens
     /// What can be pressed on a screen, each control with what pressing it asks for, and the finger that presses.
     /// A control is pressed when the finger comes down on it and lifts on it; a finger that slides off lets it go,
     /// one that slides back holds it down again, as buttons behave everywhere. One finger, one control at a time.
+    /// A control that stops being pressable while the finger holds it (it is dimmed, set aside or taken out of
+    /// sight) is not pressed by the lift: it is asked once more as the finger lifts.
     /// </summary>
     /// <typeparam name="TAction">What a press asks for.</typeparam>
     public sealed class PressSet<TAction>
@@ -26,7 +28,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The control the finger came down on and has not lifted from; nothing while no control is held.</summary>
         private (IPressable Control, TAction Action)? _held;
-        private bool _isFingerOnIt;
+
+        /// <summary>Where the finger last was while it held a control.</summary>
+        private Vector2 _fingerAt;
 
         /// <summary>True while the finger is down and came down on a control.</summary>
         public bool IsHolding => _held.HasValue;
@@ -49,7 +53,7 @@ namespace Puzzle.Client.Screens
                 if (_controls[control].Control.IsUnder(point))
                 {
                     _held = _controls[control];
-                    _isFingerOnIt = true;
+                    _fingerAt = point;
                     _controls[control].Control.ShowPressed(true);
                     return;
                 }
@@ -61,8 +65,8 @@ namespace Puzzle.Client.Screens
             if (_held.HasValue)
             {
                 IPressable control = _held.Value.Control;
-                _isFingerOnIt = control.IsUnder(point);
-                control.ShowPressed(_isFingerOnIt);
+                _fingerAt = point;
+                control.ShowPressed(control.IsUnder(point));
             }
         }
 
@@ -70,7 +74,8 @@ namespace Puzzle.Client.Screens
         /// <returns>True when that pressed a control; <paramref name="action"/> is then what the press asks for.</returns>
         public bool FingerUp(out TAction action)
         {
-            bool isPressed = _held.HasValue && _isFingerOnIt;
+            // The control answers anew: what it was when the finger came down or last moved may no longer be so.
+            bool isPressed = _held.HasValue && _held.Value.Control.IsUnder(_fingerAt);
             action = _held.HasValue ? _held.Value.Action : default!;
             FingerGone();
             return isPressed;
@@ -81,7 +86,6 @@ namespace Puzzle.Client.Screens
         {
             _held?.Control.ShowPressed(false);
             _held = null;
-            _isFingerOnIt = false;
         }
     }
 }

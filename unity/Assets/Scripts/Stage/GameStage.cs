@@ -119,7 +119,7 @@ namespace Puzzle.Client.Stage
         private readonly BoardPointer _pointer;
         private readonly TweenSet _tweens = new TweenSet();
         private readonly Timeline _timeline = new Timeline();
-        private readonly RoundButton _leave;
+        private readonly DiscButton _leave;
         private readonly PressSet<StageControl> _controls = new PressSet<StageControl>();
 
         private ScreenLayout? _layout;
@@ -170,7 +170,7 @@ namespace Puzzle.Client.Stage
             _board = BoardView.Create(_root.transform, art, _ledger, showExits: hasItemsToDrop);
             _shelf = Shelf.Create(_root.transform, art);
             _shelf.Say(AttemptWords.OnTheShelf(brief));
-            _leave = new RoundButton("Leave", _root.transform, art, ArrowWay.Back, DrawOrder.ShelfButton);
+            _leave = new DiscButton("Leave", _root.transform, art, DiscGlyph.Back, DrawOrder.ShelfButton);
             _controls.Add(_leave, StageControl.Leave);
             _veil = Veil.Create(_root.transform, art);
             _effectArt = effectArt;
@@ -305,7 +305,7 @@ namespace Puzzle.Client.Stage
             _board.Place(layout);
             _effects.Place(layout);
             _shelf.Place(layout);
-            _leave.Place(new Vector2(layout.LeaveButton.MiddleX, layout.LeaveButton.MiddleY), layout.LeaveButton.Width / RoundButton.Size);
+            _leave.Place(new Vector2(layout.LeaveButton.MiddleX, layout.LeaveButton.MiddleY), layout.LeaveButton.Width / DiscButton.Size);
             _veil.Fit(layout.View);
             _result?.Place(layout);
         }

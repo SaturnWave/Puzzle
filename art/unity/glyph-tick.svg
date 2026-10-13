@@ -1,0 +1,6 @@
+<!-- The white tick of what is chosen, as the design canvas draws it on the green badge at the upper right of a
+     chosen booster (LevelStartTR): the canvas' own stroke, which it writes in a box of 12 and shows 18 points
+     across. One unit is one point of the design. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 18 18">
+<path d="M3.4 6.2L5.2 8L8.6 4.2" transform="scale(1.5)" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

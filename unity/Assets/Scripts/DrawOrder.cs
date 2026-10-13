@@ -97,8 +97,17 @@ namespace Puzzle.Client
         Shelf = 1000,
         ShelfLettering = 1001,
 
-        /// <summary>The round button on the shelf's left end that leads out of the level.</summary>
+        /// <summary>The round button on the shelf's left end that leads out of the level, and the mark on it.</summary>
         ShelfButton = 1002,
+        ShelfButtonGlyph = 1003,
+
+        /// <summary>
+        /// A booster's round disc on the shelf. What stands on a disc takes the places above it, wherever the disc
+        /// lies (<see cref="DiscPart"/>): its picture (two places, for a picture of two pieces), the ring of a
+        /// chosen one, its badges and what is written on them. The shelf's last place before the jigsaw's tray is
+        /// <see cref="ShelfDisc"/> plus <see cref="DiscPart.BadgeLettering"/>.
+        /// </summary>
+        ShelfDisc = 1004,
 
         /// <summary>
         /// The jigsaw's wooden tray, the pieces that wait in it (a piece takes three places from <see cref="TrayPiece"/>
@@ -116,6 +125,9 @@ namespace Puzzle.Client
         /// <summary>A small framed picture on a plaque: its frame is plaque art, its picture and the mark on it come over that.</summary>
         PlaquePicture = 1103,
         PlaquePictureMark = 1104,
+
+        /// <summary>The studs of a brass nameplate that rides on a plaque (the banner of a restored room), and the pins on its top edge: over the plate, which is plaque art.</summary>
+        PlaqueNameplatePin = 1105,
 
         /// <summary>The ring of light that widens from a plaque's rim as a won game's finale opens: over the plaques, under what then leaves them.</summary>
         PlaqueRing = 1140,
@@ -146,16 +158,36 @@ namespace Puzzle.Client
         BarIcon = 1502,
         BarLettering = 1503,
 
+        /// <summary>
+        /// The row of the player's coins and lives over a museum page's plaque, which the stage owns as it owns
+        /// the bar, so pages slide under it: the cream pills, the coin and the heart that stand on their ends,
+        /// what is written on them, and the round buttons of the row with their marks.
+        /// </summary>
+        WalletPill = 1510,
+        WalletMark = 1511,
+        WalletLettering = 1512,
+        WalletButton = 1513,
+        WalletButtonGlyph = 1514,
+
         /// <summary>The dark that falls over the whole room, plaques and shelf included, when a game is decided.</summary>
         Veil = 2000,
 
-        /// <summary>The result's card in front of the dark, from its wires up to what stands and is written on it.</summary>
-        /// <summary>The shelf's round button while a result's card hangs: it stays lit in the dark room, as the way out to the museum.</summary>
+        /// <summary>The shelf's round button while a result's card hangs: it stays lit in the dark room, as the way out to the museum. Its mark takes the place above.</summary>
         ShelfButtonOverTheDark = 2050,
+
+        /// <summary>A card in front of the dark, from its wires up to what stands and is written on it.</summary>
         CardWire = 2090,
         Card = 2100,
+
+        /// <summary>
+        /// What lies flat on a card: an alcove, a rule, a wooden plank, the face of a button. What is sunk into
+        /// such a face (the pill of a price) takes the place above, and the mark in that pill the place after.
+        /// </summary>
         CardArt = 2110,
         CardLight = 2111,
+
+        /// <summary>A round disc that stands on a card or on a plank of it; what stands on the disc takes the places above it (<see cref="DiscPart"/>).</summary>
+        CardDisc = 2112,
 
         /// <summary>What stands in the card's alcove. A jigsaw piece takes three places from here up: its cardboard, its face, its rim.</summary>
         CardExhibit = 2120,
@@ -165,11 +197,49 @@ namespace Puzzle.Client
         CardNameplate = 2140,
         CardNameplateLettering = 2141,
 
+        /// <summary>The studs of a card's nameplate and the pins its wires end in.</summary>
+        CardNameplatePin = 2142,
+
+        /// <summary>The round button on a card's upper right corner that closes it, over the card and its nameplate, and the cross on it.</summary>
+        CardCloseButton = 2145,
+        CardCloseGlyph = 2146,
+
+        /// <summary>
+        /// The dark that falls over a card when a second card is hung in front of it, and what is added to the
+        /// order of everything of that second card (<see cref="CardWire"/> to <see cref="CardCloseGlyph"/>): it
+        /// keeps its order within itself and all of it comes over the second dark.
+        /// </summary>
+        SecondVeil = 2400,
+        OverACard = 450,
+
         /// <summary>
         /// Added to the order of a painting that is hung in front of the dark to be looked at by itself: its canvas,
         /// wires, frame and plate keep their order among themselves and all come over the <see cref="Veil"/>.
         /// </summary>
         OverTheDark = 2900,
+    }
+
+    /// <summary>
+    /// What stands on a round disc with a picture (a booster's), from the disc up. Each is drawn at the disc's own
+    /// place in the drawing order plus its value, so a disc is the same on the shelf, on a card and on a page. A
+    /// closed set.
+    /// </summary>
+    public enum DiscPart
+    {
+        /// <summary>The cream disc itself.</summary>
+        Disc = 0,
+
+        /// <summary>The picture on it; a picture of two pieces takes this place and the next, the first piece under the second.</summary>
+        Picture = 1,
+
+        /// <summary>The green ring of a disc that is chosen or armed, over the disc's gilt one.</summary>
+        Ring = 3,
+
+        /// <summary>The badges on its rim: how many are owned, the plus of "get more", the tick of a chosen one.</summary>
+        Badge = 4,
+
+        /// <summary>What a badge says.</summary>
+        BadgeLettering = 5,
     }
 
     /// <summary>

@@ -1,9 +1,9 @@
-// Brings what the game's lettering needs into the Unity project, from files the Unity Editor itself ships with:
-//   - TextMesh Pro's "Essential Resources" (its shaders and settings) -> unity/Assets/TextMesh Pro
-//     (the same files the Editor's "Import TMP Essential Resources" button unpacks, without opening the Editor);
-//   - the typeface Roboto Bold from TextMesh Pro's "Examples & Extras" -> unity/Assets/Art/Fonts/Roboto-Bold.ttf.
+// Brings what the game's lettering needs of TextMesh Pro into the Unity project, from files the Unity Editor itself
+// ships with: TextMesh Pro's "Essential Resources" (its shaders and settings) -> unity/Assets/TextMesh Pro, the same
+// files the Editor's "Import TMP Essential Resources" button unpacks, without opening the Editor.
 // Nothing is downloaded. Every file comes with the .meta file Unity packed with it, so its id in the project is the
 // one TextMesh Pro expects. Run once; the files are committed. Safe to run again: it writes the same files.
+// The game's own typefaces are not from here: tools/unity/fetch-fonts.js fetches them.
 //
 // usage (from the repository root): node tools/unity/import-text-resources.js
 // Set PUZZLE_UNITY_EDITOR to the Editor's folder (the one that holds Unity.exe) when it is not in the usual place.
@@ -24,11 +24,6 @@ const IMPORTS = [
     // The two graphs are for another render pipeline (HDRP) and would not compile in this project.
     takes: packedPath => !packedPath.includes("HDRP"),
     placedAt: packedPath => packedPath,
-  },
-  {
-    package: "TMP Examples & Extras.unitypackage",
-    takes: packedPath => packedPath.endsWith("/Fonts/Roboto-Bold.ttf"),
-    placedAt: () => "Assets/Art/Fonts/Roboto-Bold.ttf",
   },
 ];
 

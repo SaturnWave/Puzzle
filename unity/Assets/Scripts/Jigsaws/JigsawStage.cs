@@ -57,7 +57,14 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>The frame of a painting that is whole again swells once by this share of its size.</summary>
         private const float RestoredSwell = 0.035f;
 
-        private const float PlaceAllLabelSize = 23f;
+        /// <summary>
+        /// The buttons' labels. The design sets "Otomatik tamamla" at 18 points on a button of 260 (JigsawTR); on
+        /// the game's button, which is drawn smaller than its measures, it is as large as fits beside its mark.
+        /// Its two words stand as far apart as the design sets them (word-spacing 4 px at 18 px): both of the
+        /// outline's widths given back to the gap, where most labels get one, so that blue shows between the words.
+        /// </summary>
+        private const float PlaceAllLabelSize = 20f;
+        private const float PlaceAllWordsApart = 4f / 18f;
         private const float DoneLabelSize = 29f;
 
         private readonly GameObject _root;
@@ -69,7 +76,7 @@ namespace Puzzle.Client.Jigsaws
         private readonly ProgressPips _pips;
         private readonly PieceTray _tray;
         private readonly RestoredSparkles _sparkles;
-        private readonly RoundButton _back;
+        private readonly DiscButton _back;
         private readonly PushButton _placeAll;
         private readonly PushButton _done;
         private readonly Veil _veil;
@@ -121,10 +128,10 @@ namespace Puzzle.Client.Jigsaws
             _pips = ProgressPips.Create(_root.transform, art, Table.PieceCount);
             _tray = PieceTray.Create(_root.transform, art, _look);
             _sparkles = RestoredSparkles.Create(_root.transform, art);
-            _back = new RoundButton("Back", _root.transform, art, ArrowWay.Back, DrawOrder.PageButton);
+            _back = new DiscButton("Back", _root.transform, art, DiscGlyph.Back, DrawOrder.PageButton);
             _placeAll = new PushButton(
                 "Place them all", _root.transform, art, ButtonLook.Blue, MuseumWords.PlaceThemAll, JigsawLayout.ButtonWidth, PlaceAllLabelSize,
-                DrawOrder.PageButton, DrawOrder.PageButtonLettering, GalleryArt.IconPiece);
+                DrawOrder.PageButton, DrawOrder.PageButtonLettering, GalleryArt.IconPiece, PlaceAllWordsApart);
             _done = new PushButton(
                 "Done", _root.transform, art, ButtonLook.Green, MuseumWords.Done, JigsawLayout.ButtonWidth, DoneLabelSize,
                 DrawOrder.PageButton, DrawOrder.PageButtonLettering);

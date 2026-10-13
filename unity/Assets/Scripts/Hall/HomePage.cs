@@ -39,8 +39,12 @@ namespace Puzzle.Client.Hall
     /// </remarks>
     public sealed class HomePage : IMuseumPage, IMovingPage
     {
+        /// <summary>
+        /// The buttons' labels. The play button's is the design's (HomeTR, "Bölüm 47": 29 points). The design sets
+        /// "Tablo" at 19 over a row of pips; alone on its button it is set as large as fits beside its mark.
+        /// </summary>
         private const float PlayLabelSize = 29f;
-        private const float JigsawLabelSize = 25f;
+        private const float JigsawLabelSize = 22f;
         private const float NoteSize = 12.5f;
         private const float NoteSideRoom = 14f;
 
@@ -51,9 +55,13 @@ namespace Puzzle.Client.Hall
         /// <summary>A wall lamp hangs with its foot this far under the middle of the frame.</summary>
         private const float LampFootUnderFrameMiddle = 14f;
 
-        /// <summary>On the banner of a restored room, in its own points from the middle of its body: its two lines, and the room each has between its sides.</summary>
-        private const float BannerTitleSize = 19.5f;
-        private const float BannerTitleRoom = 232f;
+        /// <summary>
+        /// On the banner of a restored room, in its own points from the middle of its body: its nameplate, which is
+        /// a result card's (WinTR: 280 points wide, the title at 20.5), and its two lines with the room each has
+        /// between the banner's sides.
+        /// </summary>
+        private const float BannerNameplateWidth = 280f;
+        private const float BannerTitleSize = 20.5f;
         private const float BannerLineSize = 15f;
         private const float BannerLineDown = 3f;
         private const float BannerNoteSize = 12f;
@@ -247,9 +255,10 @@ namespace Puzzle.Client.Hall
         }
 
         /// <summary>
-        /// The banner of a room that has just been restored: a cream plaque with the gilt nameplate of a result's
-        /// card on its top edge, which says that the room is restored; on the plaque the room with its paintings,
-        /// and what comes next. Sizes are in points around the middle of the plaque's body at its full size.
+        /// The banner of a room that has just been restored: a cream plaque with the brass nameplate of a result's
+        /// card on its top edge, pins and all, which says that the room is restored; on the plaque the room with
+        /// its paintings, and what comes next. Sizes are in points around the middle of the plaque's body at its
+        /// full size.
         /// </summary>
         private sealed class RoomBanner
         {
@@ -262,16 +271,17 @@ namespace Puzzle.Client.Hall
                 _content = new GameObject("Banner").transform;
                 _content.SetParent(_plaque.Root, worldPositionStays: false);
 
-                Transform nameplate = SceneObjects.AddSprite("Nameplate", _content, art.Of(GalleryArt.Nameplate), art.SpriteMaterial, DrawOrder.PlaqueArt).transform;
-                nameplate.localPosition = new Vector3(0f, HallLayout.BannerHeight / 2f, 0f);
-                TextMeshPro title = Lettering.Write("Title", nameplate, art, LetteringStyle.Label, BannerTitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
-                Lettering.SayWithin(title, MuseumWords.RoomRestored, BannerTitleSize, BannerTitleRoom);
+                var nameplate = new BrassNameplate(
+                    "Nameplate", _content, art, new CardNameplate(MuseumWords.RoomRestored, BannerNameplateWidth, BannerTitleSize),
+                    DrawOrder.PlaqueArt, DrawOrder.PlaqueLettering, DrawOrder.PlaqueNameplatePin);
+                nameplate.Transform.localPosition = new Vector3(0f, HallLayout.BannerHeight / 2f, 0f);
+                nameplate.AddThePins();
 
                 TextMeshPro line = Lettering.Write("Room", _content, art, LetteringStyle.Label, BannerLineSize, Lettering.Ink, DrawOrder.PlaqueLettering);
                 line.transform.localPosition = new Vector3(0f, -BannerLineDown, 0f);
                 Lettering.SayWithin(line, MuseumWords.RoomAndItsPaintings(room.Name), BannerLineSize, BannerLineRoom);
 
-                TextMeshPro next = Lettering.Write("What comes next", _content, art, LetteringStyle.Label, BannerNoteSize, Lettering.SoftInk, DrawOrder.PlaqueLettering);
+                TextMeshPro next = Lettering.Write("What comes next", _content, art, LetteringStyle.Soft, BannerNoteSize, Lettering.SoftInk, DrawOrder.PlaqueLettering);
                 next.transform.localPosition = new Vector3(0f, -BannerNoteDown, 0f);
                 Lettering.SayWithin(next, whatComesNext, BannerNoteSize, BannerLineRoom);
             }

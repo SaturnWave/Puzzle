@@ -1,0 +1,66 @@
+{
+  "fonts": [
+    {
+      "file": "Gabarito-Bold.ttf",
+      "family": "Gabarito",
+      "weight": 700,
+      "copyright": "Copyright 2023 The Gabarito Project Authors (https://github.com/naipefoundry/gabarito)",
+      "reservedFontNames": [],
+      "licence": "SIL Open Font License, Version 1.1",
+      "licenceText": "Gabarito-OFL.txt",
+      "licenceTextFrom": "https://raw.githubusercontent.com/google/fonts/main/ofl/gabarito/OFL.txt",
+      "askedOf": "https://fonts.googleapis.com/css2?family=Gabarito:wght@700",
+      "fetchedFrom": "https://fonts.gstatic.com/s/gabarito/v9/QGYwz_0dZAGKJJ4t3FFkc3Q8AkNP9Pj2BMW0Fg.ttf",
+      "bytes": 100556,
+      "sha256": "2f93a2dacd279c2206c74adbcba17db99e540bd1b4faae3fc166c6a42480da08"
+    },
+    {
+      "file": "Gabarito-ExtraBold.ttf",
+      "family": "Gabarito",
+      "weight": 800,
+      "copyright": "Copyright 2023 The Gabarito Project Authors (https://github.com/naipefoundry/gabarito)",
+      "reservedFontNames": [],
+      "licence": "SIL Open Font License, Version 1.1",
+      "licenceText": "Gabarito-OFL.txt",
+      "licenceTextFrom": "https://raw.githubusercontent.com/google/fonts/main/ofl/gabarito/OFL.txt",
+      "askedOf": "https://fonts.googleapis.com/css2?family=Gabarito:wght@800",
+      "fetchedFrom": "https://fonts.gstatic.com/s/gabarito/v9/QGYwz_0dZAGKJJ4t3FFkc3Q8AkNP9Pj2Y8W0Fg.ttf",
+      "bytes": 100660,
+      "sha256": "8741b7c7a72e82dd59bbd2569e86b231d4291056cf5aac1f4d5a65b721570058"
+    },
+    {
+      "file": "PaytoneOne-Regular.ttf",
+      "family": "Paytone One",
+      "weight": 400,
+      "copyright": "Copyright 2011 The Paytone Project Authors (https://github.com/googlefonts/paytoneFont), with Reserved Font Names \"Paytone\" and \"Paytone One\".",
+      "reservedFontNames": [
+        "Paytone",
+        "Paytone One"
+      ],
+      "licence": "SIL Open Font License, Version 1.1",
+      "licenceText": "PaytoneOne-OFL.txt",
+      "licenceTextFrom": "https://raw.githubusercontent.com/google/fonts/main/ofl/paytoneone/OFL.txt",
+      "askedOf": "https://fonts.googleapis.com/css2?family=Paytone+One",
+      "fetchedFrom": "https://fonts.gstatic.com/s/paytoneone/v25/0nksC9P7MfYHj2oFtYm2CiTq.ttf",
+      "bytes": 110408,
+      "sha256": "449167d1db3b7190b7b4dbbe905fd564622c91df294d8794a53184147359a67f"
+    },
+    {
+      "file": "YoungSerif-Regular.ttf",
+      "family": "Young Serif",
+      "weight": 400,
+      "copyright": "Copyright 2023 The Young Serif Project Authors (https://github.com/noirblancrouge/YoungSerif)",
+      "reservedFontNames": [],
+      "licence": "SIL Open Font License, Version 1.1",
+      "licenceText": "YoungSerif-OFL.txt",
+      "licenceTextFrom": "https://raw.githubusercontent.com/google/fonts/main/ofl/youngserif/OFL.txt",
+      "askedOf": "https://fonts.googleapis.com/css2?family=Young+Serif",
+      "fetchedFrom": "https://fonts.gstatic.com/s/youngserif/v2/3qTpojO2nS2VtkB3KtkQZ2t6.ttf",
+      "bytes": 102084,
+      "sha256": "a0a943015fae6d41423f2f65ff27655055b1f1aca1a890b84c2b3855ae925a2b",
+      "changed": "The figures 0 to 9 are the font's own lining forms (its 'lnum' feature) by default: tools/unity/lining-figures.js",
+      "bytesAsKept": 104304,
+      "sha256AsKept": "e1fbbf8d69c7618b64333c921f8942b940f4bd201dfc7f10b60e447b8d9fcf79"
+    }
+  ]
+}

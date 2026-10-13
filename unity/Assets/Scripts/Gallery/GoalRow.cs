@@ -24,6 +24,11 @@ namespace Puzzle.Client.Gallery
         /// <summary>From this number on, a count has three digits and is set smaller.</summary>
         private const int FirstLongNumber = 100;
 
+        /// <summary>
+        /// The row's measures by how many goals it shows. The design canvas draws two goals, each over its number
+        /// at 24 points (BoardTR, "12" and "16"): the size of a pair's numbers here. The numbers of one goal alone
+        /// and of three side by side are the web test page's.
+        /// </summary>
         private static readonly Measures Alone = new Measures(iconSize: 38f, numberSize: 31f, longNumberSize: 25f, gap: 5f, gapWithLongNumbers: 5f, sealSize: 26f);
         private static readonly Measures Paired = new Measures(iconSize: 30f, numberSize: 24f, longNumberSize: 20f, gap: 12f, gapWithLongNumbers: 6f, sealSize: 20f);
         private static readonly Measures Three = new Measures(iconSize: 27f, numberSize: 19f, longNumberSize: 15f, gap: 5f, gapWithLongNumbers: 5f, sealSize: 18f);
@@ -160,7 +165,7 @@ namespace Puzzle.Client.Gallery
             private Transform Mark => _seal.enabled ? _seal.transform : _number.transform;
 
             /// <summary>A number is set a little low, as its typeface sets it in a line; a seal is not.</summary>
-            private float MarkDrop => _seal.enabled ? 0f : Hud.FigureDrop * _number.fontSize;
+            private float MarkDrop => _seal.enabled ? 0f : Lettering.FigureDrop(LetteringStyle.Figure) * _number.fontSize;
 
             public void Show(GoalFigure goal, ArtCatalogue art, Measures measures, float numberSize)
             {

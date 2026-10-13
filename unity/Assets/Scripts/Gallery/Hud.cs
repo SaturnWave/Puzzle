@@ -17,12 +17,6 @@ namespace Puzzle.Client.Gallery
     /// </summary>
     public sealed class Hud : IDisposable
     {
-        /// <summary>
-        /// The typeface sets figures a little under the middle of their line: this part of the type size. Numbers
-        /// are placed by the middle of their digits, so they are moved down by it to stand as a stylesheet sets them.
-        /// </summary>
-        public const float FigureDrop = 0.045f;
-
         private const string LevelLabel = "BÖLÜM";
         private const string MovesLabel = "HAMLE";
         private const string GoalsLabel = "HEDEF";
@@ -38,10 +32,11 @@ namespace Puzzle.Client.Gallery
         /// <summary>A plaque's face has 7 points of rim and padding over it and 6 under it, so its middle lies this far above the plaque's.</summary>
         private const float FaceMiddle = 0.5f;
 
+        /// <summary>The labels, as the design sets them (BoardTR, "HAMLE"): 10 points, their capitals apart by this many hundredths of their size.</summary>
         private const float LabelSize = 10f;
-
-        /// <summary>The labels' capitals stand apart by this many hundredths of their size.</summary>
         private const float LabelSpacing = 9f;
+
+        /// <summary>The moves are the design's (BoardTR, "14": 40 points); the level's number alone on its plaque is the web page's.</summary>
         private const float LevelNumberSize = 31f;
         private const float MovesNumberSize = 40f;
 
@@ -164,7 +159,7 @@ namespace Puzzle.Client.Gallery
 
         private static TextMeshPro WriteLabel(string words, Transform parent, ArtCatalogue art, float height)
         {
-            TextMeshPro label = Lettering.Write(words, parent, art, LetteringStyle.Label, LabelSize, Lettering.SoftInk, DrawOrder.PlaqueLettering);
+            TextMeshPro label = Lettering.Write(words, parent, art, LetteringStyle.Label, LabelSize, Lettering.LabelInk, DrawOrder.PlaqueLettering);
             label.characterSpacing = LabelSpacing;
             label.transform.localPosition = new Vector3(0f, height, 0f);
             Lettering.Say(label, words);
@@ -175,7 +170,7 @@ namespace Puzzle.Client.Gallery
         private static TextMeshPro WriteNumber(string name, Transform parent, ArtCatalogue art, float size, float lineMiddle)
         {
             TextMeshPro number = Lettering.Write(name, parent, art, LetteringStyle.Figure, size, Lettering.Ink, DrawOrder.PlaqueLettering);
-            number.transform.localPosition = new Vector3(0f, lineMiddle - FigureDrop * size, 0f);
+            number.transform.localPosition = new Vector3(0f, lineMiddle - Lettering.FigureDrop(LetteringStyle.Figure) * size, 0f);
             return number;
         }
 

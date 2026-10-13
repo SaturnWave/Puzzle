@@ -126,7 +126,7 @@ namespace Puzzle.Client.EditorTools
         /// player would: by the button of its result's card.
         /// </summary>
         /// <returns>The script of the turn that decided the game; the session's clock stands at that turn's move.</returns>
-        private static TurnScript PlayToTheEnding(GameSession session, FlowEnding ending, IBotPolicy player)
+        internal static TurnScript PlayToTheEnding(GameSession session, FlowEnding ending, IBotPolicy player)
         {
             var rng = new Rng(BotSeed, BotStream);
             for (int game = 1; game <= MostGames; game++)

@@ -89,9 +89,14 @@ namespace Puzzle.Client.EditorTools
     {
         private static readonly Regex ScreenPattern = new Regex(@"^(\d+)x(\d+)(?:\+(\d+)\+(\d+))?$");
 
+        /// <summary>What <c>-screens</c> calls the sheets of the controls several screens share: they show no player, so they are no page of <see cref="ShotPage"/>.</summary>
+        private const string Controls = "controls";
+
         private ShotPlan(string[] arguments)
         {
-            Pages = ListAfter("-screens", arguments, "home,map,collection").Select(text => OneOf<ShotPage>(text, "a page")).ToArray();
+            string[] screens = ListAfter("-screens", arguments, "home,map,collection");
+            ShowsTheControls = screens.Contains(Controls);
+            Pages = screens.Where(text => text != Controls).Select(text => OneOf<ShotPage>(text, $"a page, nor \"{Controls}\"")).ToArray();
             States = ListAfter("-screenStates", arguments, "0,46+42,50+50,640+3000").Select(PlayerState.Parse).ToArray();
             Screens = ListAfter("-screenSizes", arguments, "1080x2424,2076x2152").Select(ScreenFrom).ToArray();
             JigsawMoments = ListAfter("-jigsawMoments", arguments, "rest,carried,placed,flying,restored").Select(text => OneOf<JigsawMoment>(text, "a moment of the jigsaw")).ToArray();
@@ -102,6 +107,9 @@ namespace Puzzle.Client.EditorTools
         }
 
         public IReadOnlyList<ShotPage> Pages { get; }
+
+        /// <summary>True when the sheets of the shared controls are pictured on each screen: every control in every face, on each ground the game draws on.</summary>
+        public bool ShowsTheControls { get; }
 
         public IReadOnlyList<PlayerState> States { get; }
 
@@ -175,7 +183,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving] [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,controls] [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored]
     /// [-paintingsFrom ../art/paintings] [-screenWalk]</c>.
     /// A state is the levels won, or the levels won and the pieces in place. Each page, state and screen gives
@@ -183,6 +191,9 @@ namespace Puzzle.Client.EditorTools
     /// gives one per moment. <c>-paintingsFrom</c> shows the paintings from picture files of a folder (laid out as
     /// the catalogue names them) instead of the ones the game carries: it is how the screens are looked at with
     /// full-size pictures before those are in the game; such pictures end in <c>-full</c>.
+    /// <c>controls</c> is no page of a player: it gives, for each screen, the sheets of the controls several
+    /// screens share (<see cref="ControlsSpecimen"/>), every control in every face on the wall, on a card's cream
+    /// and on the shelf's wood, named <c>screen-controls-&lt;sheet&gt;-&lt;ground&gt;-&lt;size&gt;.png</c>.
     /// </summary>
     /// <remarks>
     /// <c>-screenWalk</c> also walks through the game from each state on each screen, on the game's own session and
@@ -212,6 +223,11 @@ namespace Puzzle.Client.EditorTools
                 int pictures = 0;
                 foreach (ScreenShape screen in plan.Screens)
                 {
+                    if (plan.ShowsTheControls)
+                    {
+                        pictures += ShootTheControls(screen, studio);
+                    }
+
                     foreach (PlayerState state in plan.States)
                     {
                         pictures += plan.Pages.Sum(page => Shoot(page, plan, state, screen, studio));
@@ -244,6 +260,32 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Leaving => ShootTheLeavingCard(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
+
+        /// <summary>The sheets of the shared controls on one screen: each sheet on each ground, one picture each.</summary>
+        /// <returns>How many pictures were taken.</returns>
+        private static int ShootTheControls(ScreenShape screen, Studio studio)
+        {
+            int pictures = 0;
+            foreach (ControlsPage page in (ControlsPage[])Enum.GetValues(typeof(ControlsPage)))
+            {
+                foreach (ControlsGround ground in (ControlsGround[])Enum.GetValues(typeof(ControlsGround)))
+                {
+                    // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
+                    EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                    Transform root = new GameObject("Controls").transform;
+                    using ControlsSpecimen specimen = ControlsSpecimen.Build(root, studio.Art, page, ground, screen);
+                    Camera camera = StageCamera.Add(root);
+                    StageCamera.Show(camera, ScreenView.Of(screen));
+
+                    string file = $"screen-controls-{page.ToString().ToLowerInvariant()}-{ground.ToString().ToLowerInvariant()}-{screen}{studio.FileNameEnding}.png";
+                    CameraPicture.Write(camera, screen.PixelWidth, screen.PixelHeight, Path.Combine(StoryStudio.ShotsFolder, file));
+                    Debug.Log($"Screen shots: {file}");
+                    pictures++;
+                }
+            }
+
+            return pictures;
+        }
 
         private static MuseumStanding StandingOf(PlayerState state, Studio studio) => MuseumStanding.Of(state.Progress.Museum, studio.Paintings.Catalogue);
 
@@ -346,7 +388,7 @@ namespace Puzzle.Client.EditorTools
             return 0;
         }
 
-        private static MuseumStage OpenTheMuseum(MuseumDoor door, PlayerState state, ScreenShape screen, Studio studio)
+        internal static MuseumStage OpenTheMuseum(MuseumDoor door, PlayerState state, ScreenShape screen, Studio studio)
         {
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);

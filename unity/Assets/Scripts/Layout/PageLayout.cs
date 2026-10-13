@@ -76,6 +76,21 @@ namespace Puzzle.Client.Layout
         /// <summary>A destination's place on the bar is at most this wide.</summary>
         public const float WidestTab = 104f;
 
+        /// <summary>
+        /// A card that hangs in front of a page has the whole usable screen for itself: the dark it hangs in
+        /// front of lies over the plaque and over the bar too. It keeps this much wall at each side of a narrow
+        /// screen, as a card in front of the board does, and this far from the usable screen's top and foot.
+        /// </summary>
+        public const float CardSideMargin = ScreenLayout.CardSideMargin;
+        public const float CardMarginAboveAndBelow = 8f;
+
+        /// <summary>
+        /// A card's middle lies this far above the middle of the usable screen where there is room for that, as
+        /// the design hangs its cards (LevelStartTR and SettingsTR: what hangs there has its middle 13.5 points
+        /// above the middle of the canvas).
+        /// </summary>
+        public const float CardAboveTheMiddle = 13.5f;
+
         private PageLayout(ScreenView view, float roominess)
         {
             View = view;
@@ -140,5 +155,35 @@ namespace Puzzle.Client.Layout
 
         /// <summary>How wide each of the bar's places is: what a finger may hit.</summary>
         public float TabWidth(int count) => Math.Min(WidestTab, View.Width / count);
+
+        /// <summary>
+        /// Where a card of a given size hangs in front of the page: centred on the screen's width, a little above
+        /// the middle of the usable screen, at its full size where it fits there and smaller where it does not. A
+        /// card is made smaller before anything of it is cut off, and it never leaves the usable screen: where
+        /// the room is short, it gives up its place above the middle first.
+        /// </summary>
+        /// <param name="width">The card's width at full size, in points.</param>
+        /// <param name="height">The card's height at full size, with all that rides on its edges.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The card has no size.</exception>
+        public CardPlace PlaceOfACard(float width, float height)
+        {
+            if (!(width > 0f && height > 0f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), $"A card of {width} x {height} points has no size.");
+            }
+
+            float roomTop = View.UsableTop - CardMarginAboveAndBelow;
+            float roomBottom = View.UsableBottom + CardMarginAboveAndBelow;
+            float widestScale = (View.Width - 2 * CardSideMargin) / width;
+            float tallestScale = (roomTop - roomBottom) / height;
+            float scale = Math.Min(1f, Math.Min(widestScale, tallestScale));
+
+            // A card that fills the room has one place only; rounding must not turn that into none.
+            float halfHeight = scale * height / 2;
+            float lowest = roomBottom + halfHeight;
+            float highest = Math.Max(lowest, roomTop - halfHeight);
+            float wished = (roomTop + roomBottom) / 2 + CardAboveTheMiddle;
+            return new CardPlace(Math.Clamp(wished, lowest, highest), scale);
+        }
     }
 }
