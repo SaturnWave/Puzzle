@@ -15,6 +15,7 @@ using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
 using Puzzle.Core.Randomness;
 using Puzzle.Core.Recording;
+using Puzzle.Meta;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -28,8 +29,11 @@ namespace Puzzle.Client.EditorTools
     /// it is. Then a won, a lost and a left attempt are played by bot through the game's own session, on a log of its
     /// own: each is a line in the log the moment it ends (the won and the lost one at their deciding move, before any of
     /// it is shown; the left one at the press of the leaving card's museum button), and a level left before its first
-    /// move leaves no line. An attempt with every booster and the extra moves, which no screen offers yet, is played on
-    /// the engine alone and logged the same way. Last, the file is read back with Unity's reader, and every record is
+    /// move leaves no line. An attempt gone into by touches through the level's card, with two start boosters chosen
+    /// there, is played by bot too: closing the card and leaving the board before a move spend nothing and write
+    /// nothing, and the attempt played to its end spends the two at its first move and is a line that names them. An
+    /// attempt with every booster of play and the extra moves, which no screen offers yet, is played on the engine
+    /// alone and logged the same way. Last, the file is read back with Unity's reader, and every record is
     /// played again on the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves
     /// used and goals. It works in a folder of its own (out/unity/attempt-log). The damaged and the later device file
     /// write two warnings to the log on purpose.
@@ -78,6 +82,7 @@ namespace Puzzle.Client.EditorTools
                 PlayUntil(bench, WonLevel, status => status == GameStatus.Won, Bot(SkillProfile.Expert.Name), ended);
                 PlayUntil(bench, LostLevel, status => status.IsLoss(), new RandomPolicy(), ended);
                 LeaveBeforeAndAfterAMove(bench, ended);
+                PlayWithStartBoostersChosenOnTheCard(bench, ended);
                 PlayWithEveryBoosterOnTheEngine(bench, ended);
 
                 int replayed = EveryLineReadsBackAndReplaysToTheEndSeen(bench, ended);
@@ -184,6 +189,46 @@ namespace Puzzle.Client.EditorTools
                 Leave(session);
                 Require(LinesInTheLog() == linesBefore + 1, "no line was written when a level was left after a move");
             }
+        }
+
+        /// <summary>
+        /// A level gone into as a player goes, with the brush and splat and the rainbow palette chosen on its card.
+        /// The card closed with them chosen, and the board left before a move, spend nothing and write no line; the
+        /// attempt played to its end by bot takes their specials, spends both at its first move, and is one line.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Something was spent or written that should not have been, or the other way round.</exception>
+        private static void PlayWithStartBoostersChosenOnTheCard(Bench bench, List<Ending> ended)
+        {
+            BoosterKind[] chosen = { BoosterKind.StartRocketAndBomb, BoosterKind.StartColorBomb };
+            using GameSession session = bench.SessionInTheHall(LeftLevel);
+            PlayerProgress before = session.Progress;
+            int linesBefore = LinesInTheLog();
+
+            ThroughTheCard.BringDownTheCard(session);
+            foreach (BoosterKind booster in chosen)
+            {
+                ThroughTheCard.Choose(session, booster);
+            }
+
+            Press(session, ThroughTheCard.MuseumOf(session).StartCardClosePixel, "the level's card's round button");
+            StoryStudio.AdvanceUntilSettled(session);
+            Require(!ThroughTheCard.MuseumOf(session).ShowsTheStartCard, "the level's card's round button did not close it");
+            Require(session.Progress.Equals(before), $"closing the level's card with boosters chosen changed the progress to \"{session.Progress}\"");
+
+            ThroughTheCard.IntoTheLevel(session, chosen);
+            Leave(session);
+            Require(session.Progress.Equals(before) && LinesInTheLog() == linesBefore, $"leaving a board taken into with boosters before a move changed the progress to \"{session.Progress}\" or wrote a line");
+
+            ThroughTheCard.IntoTheLevel(session, chosen);
+            Game game = session.Stage.Game;
+            string[] names = chosen.Select(BoosterKinds.Name).ToArray();
+            Require(game.BoostersUsed.SequenceEqual(names), $"the board took [{string.Join(", ", game.BoostersUsed)}], not [{string.Join(", ", names)}]");
+            FlowStory.PlayTheGame(session, Bot(SkillProfile.Expert.Name), new Rng(BotSeed, BotStream));
+            ended.Add(Ending.Of(game, $"level {LeftLevel} with [{string.Join(", ", names)}] chosen on its card, {game.Status} after {game.MovesUsed} moves"));
+            Require(LinesInTheLog() == linesBefore + 1, "the attempt taken into with boosters chosen on the card wrote no line, or more than one");
+
+            BoosterShelf spent = chosen.Aggregate(before.Wallet.Shelf, (shelf, booster) => shelf.WithOneFewer(booster));
+            Require(session.Progress.Wallet.Shelf.Equals(spent), $"after the attempt the shelf holds {session.Progress.Wallet.Shelf}, not {spent}");
         }
 
         /// <summary>The shelf's round button asks whether to leave; the card's museum button leaves for the hall.</summary>
@@ -334,6 +379,10 @@ namespace Puzzle.Client.EditorTools
             public AttemptLogFile Log { get; }
 
             public LevelDefinition Level(int number) => LevelPack.Numbered(_levels, number);
+
+            /// <summary>The game's own session in the hall of a new player who stands on a level, on the check's log.</summary>
+            public GameSession SessionInTheHall(int levelNumber) =>
+                new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(StoryStudio.StandingOn(Level(levelNumber), _levels)), Log, Screen, SessionOpening.InTheMuseum);
 
             /// <summary>The game's own session at the board of a level, for a new player who has tried it so many times before, on the check's log.</summary>
             public GameSession SessionAt(int levelNumber, int attempt)

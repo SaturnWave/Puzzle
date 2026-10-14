@@ -11,6 +11,7 @@ using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
+using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
 using UnityEngine;
@@ -212,6 +213,13 @@ namespace Puzzle.Client.Stage
         /// <summary>True once the player has chosen where to go on to and the result's card is gone.</summary>
         public bool PlayerWentOn => PlayerChose.HasValue;
 
+        /// <summary>
+        /// Where the green button of the decided game's card leads in the museum: to the hall after a win, to the hall
+        /// with the level's card coming down after a loss (<see cref="LevelResult.GoingOnLeadsTo"/>).
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The game is still being played: it has no result yet.</exception>
+        public MuseumDoor GoingOnLeadsTo() => LevelResult.Of(_game, _brief).GoingOnLeadsTo();
+
         /// <summary>True while the card that asks whether the player means to leave hangs in front of the board, or is coming or going.</summary>
         public bool IsAskingWhetherToLeave => _result != null && _game.Status == GameStatus.Playing;
 
@@ -292,7 +300,9 @@ namespace Puzzle.Client.Stage
         public static GameStage Open(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, StageOpening opening = StageOpening.InTheLitRoom)
         {
             var stage = new GameStage(game, art, effectArt, paintings, brief);
-            BoardEntrance.Play(stage._board, stage._tweens);
+            // The engine's last events are its start's while no move is played: the specials of the start boosters.
+            IReadOnlyList<GameEvent> startEvents = game.MovesUsed == 0 ? game.LastEvents : Array.Empty<GameEvent>();
+            BoardEntrance.Play(stage._board, stage._tweens, stage._effects, startEvents);
             if (opening == StageOpening.OutOfTheDark)
             {
                 stage._tweens.Start(new Tween(0f, Tempo.RoomLightens, Easing.Out, lit => stage._veil.Darken(1f - lit)));

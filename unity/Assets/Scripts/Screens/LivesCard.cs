@@ -14,8 +14,9 @@ namespace Puzzle.Client.Screens
     /// The card that tells of the player's lives, over a museum page: the heart with the lives that are there on
     /// it, how many of how many those are, and either that every life is there or how long until the next one is
     /// back and until all are. A player without a life is told that a life must come first. It is opened by the
-    /// heart's pill of the wallet row, and by the play button of a player without a life, and closed by its round
-    /// button, by its "Tamam" and by the way back. No life is sold here: coins do not buy lives in this game.
+    /// heart's pill of the wallet row, and by the play button of a player without a life (over the card before a
+    /// level by that card's green button), and closed by its round button, by its "Tamam" and by the way back. No
+    /// life is sold here: coins do not buy lives in this game.
     /// </summary>
     /// <remarks>
     /// The design canvas draws no such card. It is built in the language of the cards it does draw (LevelStartTR,
@@ -24,7 +25,7 @@ namespace Puzzle.Client.Screens
     /// redraw. Its sizes are the canvas' points around the middle of its body, and it is drawn at the share of them
     /// the screen's card place gives it (<see cref="PageLayout.PlaceOfACard"/>).
     /// </remarks>
-    public sealed class LivesCard : IDisposable
+    public sealed class LivesCard : IMuseumCard
     {
         /// <summary>The body, and the nameplate as wide as the settings card's (SettingsTR) with its title at the level-start card's size.</summary>
         private static readonly Vector2 Body = new Vector2(300f, 330f);
@@ -61,26 +62,27 @@ namespace Puzzle.Client.Screens
         private readonly List<TextMeshPro> _lines = new List<TextMeshPro>();
         private readonly PushButton _done;
 
-        private LivesCard(Transform parent, ArtCatalogue art, WalletView wallet)
+        private LivesCard(Transform parent, ArtCatalogue art, WalletView wallet, int raisedBy)
         {
             _card = new HangingCard<MuseumPress>(
-                "Lives card", parent, art, Body, new CardNameplate(WalletWords.LivesTitle, NameplateWidth, TitleSize), CardHanging.FromPinsInTheWall);
+                "Lives card", parent, art, Body, new CardNameplate(WalletWords.LivesTitle, NameplateWidth, TitleSize), CardHanging.FromPinsInTheWall,
+                raisedBy: raisedBy);
             _card.AddCloseButton(new MuseumPress.CloseTheCard());
 
-            Transform heart = SceneObjects.AddSprite("Heart", _card.Content, art.Of(GalleryArt.IconHeart), art.SpriteMaterial, DrawOrder.CardExhibit).transform;
+            Transform heart = SceneObjects.AddSprite("Heart", _card.Content, art.Of(GalleryArt.IconHeart), art.SpriteMaterial, DrawOrder.CardExhibit + raisedBy).transform;
             heart.localPosition = _card.At(HeartDown);
             heart.localScale = new Vector3(HeartSize / MarkBox, HeartSize / MarkBox, 1f);
-            _heartCount = Lettering.Write("Lives", _card.Content, art, LetteringStyle.OnHeart, HeartCountSize, Color.white, DrawOrder.CardLettering);
+            _heartCount = Lettering.Write("Lives", _card.Content, art, LetteringStyle.OnHeart, HeartCountSize, Color.white, DrawOrder.CardLettering + raisedBy);
             _heartCount.transform.localPosition = _card.At(HeartDown - HeartCountOverMiddle + Lettering.FigureDrop(LetteringStyle.OnHeart) * HeartCountSize);
 
-            _ofMost = Lettering.Write("Lives of most", _card.Content, art, LetteringStyle.Figure, OfMostSize, Lettering.Ink, DrawOrder.CardLettering);
+            _ofMost = Lettering.Write("Lives of most", _card.Content, art, LetteringStyle.Figure, OfMostSize, Lettering.Ink, DrawOrder.CardLettering + raisedBy);
             _ofMost.transform.localPosition = _card.At(OfMostDown + Lettering.FigureDrop(LetteringStyle.Figure) * OfMostSize);
 
-            _lines.Add(Lettering.Write("First line", _card.Content, art, LetteringStyle.Label, FirstLineSize, Lettering.Ink, DrawOrder.CardLettering));
-            _lines.Add(Lettering.Write("Second line", _card.Content, art, LetteringStyle.Soft, OtherLineSize, Lettering.SoftInk, DrawOrder.CardLettering));
-            _lines.Add(Lettering.Write("Third line", _card.Content, art, LetteringStyle.Soft, OtherLineSize, Lettering.Danger, DrawOrder.CardLettering));
+            _lines.Add(Lettering.Write("First line", _card.Content, art, LetteringStyle.Label, FirstLineSize, Lettering.Ink, DrawOrder.CardLettering + raisedBy));
+            _lines.Add(Lettering.Write("Second line", _card.Content, art, LetteringStyle.Soft, OtherLineSize, Lettering.SoftInk, DrawOrder.CardLettering + raisedBy));
+            _lines.Add(Lettering.Write("Third line", _card.Content, art, LetteringStyle.Soft, OtherLineSize, Lettering.Danger, DrawOrder.CardLettering + raisedBy));
 
-            _done = new PushButton("Done", _card.Content, art, ButtonLook.Green, MuseumWords.Done, ButtonWidth, ButtonLabelSize, DrawOrder.CardArt, DrawOrder.CardLettering);
+            _done = new PushButton("Done", _card.Content, art, ButtonLook.Green, MuseumWords.Done, ButtonWidth, ButtonLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
             _done.Place(_card.At(ButtonDown));
             _card.Listen(_done, new MuseumPress.CloseTheCard());
             Tell(wallet);
@@ -93,7 +95,8 @@ namespace Puzzle.Client.Screens
         public Vector2 DoneButtonMiddle => _card.InTheLayout(_done.Middle);
 
         /// <summary>Builds the card out of sight above the screen, telling of a wallet. Place it before the first picture.</summary>
-        public static LivesCard Create(Transform parent, ArtCatalogue art, WalletView wallet) => new LivesCard(parent, art, wallet);
+        /// <param name="raisedBy">Added to the card's places in the drawing order: <see cref="DrawOrder.OverACard"/> for the card in front of the card before a level.</param>
+        public static LivesCard Create(Transform parent, ArtCatalogue art, WalletView wallet, int raisedBy = 0) => new LivesCard(parent, art, wallet, raisedBy);
 
         /// <summary>Tells of the wallet as it is now: the lives, and the waits that count down while the card hangs.</summary>
         public void Tell(WalletView wallet)

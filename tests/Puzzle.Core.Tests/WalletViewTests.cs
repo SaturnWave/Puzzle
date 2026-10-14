@@ -103,4 +103,17 @@ public class WalletViewTests
         Assert.Equal(view.GetHashCode(), counting.WithCoins(view.Coins).GetHashCode());
         Assert.Throws<ArgumentNullException>(() => WalletView.Of(null!, FiveLives, Evening));
     }
+
+    [Fact]
+    public void The_view_holds_the_boosters_on_the_shelf_for_the_card_before_a_level_and_a_booster_bought_changes_it()
+    {
+        Wallet wallet = WalletWith(1250, LifeMeter.Full).WithShelf(BoosterShelf.Empty.With(BoosterKind.StartRocketAndBomb, 2));
+        WalletView view = WalletView.Of(wallet, FiveLives, Evening);
+        WalletView afterABooster = WalletView.Of(wallet.WithShelf(wallet.Shelf.WithOneMore(BoosterKind.StartColorBomb)), FiveLives, Evening);
+
+        Assert.Equal(wallet.Shelf, view.Shelf);
+        Assert.Equal(wallet.Shelf, view.WithCoins(new Coins(5)).Shelf);
+        Assert.NotEqual(view, afterABooster);
+        Assert.Equal(BoosterShelf.Empty, default(WalletView).Shelf);
+    }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
+using Puzzle.Meta;
 using Puzzle.Museum;
 
 namespace Puzzle.Client.Screens
@@ -65,9 +66,10 @@ namespace Puzzle.Client.Screens
     }
 
     /// <summary>
-    /// What a press on a page of the museum asks for. A closed set (private constructor): the player goes to
-    /// another page, starts the level they stand on, opens a painting's jigsaw, opens or closes a card that hangs
-    /// over the page, or does something that stays on the page that is shown.
+    /// What a press on a page of the museum, or on a card that hangs over it, asks for. A closed set (private
+    /// constructor): the player goes to another page, asks for the level they stand on, chooses its start boosters
+    /// and goes into it, buys a booster, opens a painting's jigsaw, opens or closes a card that hangs over the page,
+    /// or does something that stays on the page that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -75,9 +77,36 @@ namespace Puzzle.Client.Screens
         {
         }
 
-        /// <summary>The play button: into the level.</summary>
+        /// <summary>The play button: the card before the level the player stands on.</summary>
         public sealed class Play : MuseumPress
         {
+        }
+
+        /// <summary>A start booster's disc on the card before a level: it is chosen or put back, or, when none is held, offered.</summary>
+        public sealed class ChooseStartBooster : MuseumPress
+        {
+            public ChooseStartBooster(BoosterKind booster)
+            {
+                Booster = booster;
+            }
+
+            public BoosterKind Booster { get; }
+        }
+
+        /// <summary>The green button of the card before a level: into the level, with the start boosters chosen on the card.</summary>
+        public sealed class StartTheLevel : MuseumPress
+        {
+        }
+
+        /// <summary>The green button of the card that offers a booster the player holds none of: one of it, for its price.</summary>
+        public sealed class BuyABooster : MuseumPress
+        {
+            public BuyABooster(BoosterKind booster)
+            {
+                Booster = booster;
+            }
+
+            public BoosterKind Booster { get; }
         }
 
         /// <summary>A place on the navigation bar: to that page.</summary>
@@ -133,6 +162,31 @@ namespace Puzzle.Client.Screens
     }
 
     /// <summary>
+    /// What a press in the museum asks of the player's wallet, which the museum shows and does not hold: whoever owns
+    /// the museum's stage applies it by the economy's rules, keeps the wallet after it, and tells the stage of it. A
+    /// closed set (private constructor).
+    /// </summary>
+    public abstract class MuseumRequest
+    {
+        private MuseumRequest()
+        {
+        }
+
+        /// <summary>One booster of a kind, for its single price.</summary>
+        public sealed class BuyABooster : MuseumRequest
+        {
+            public BuyABooster(BoosterKind booster)
+            {
+                Booster = booster;
+            }
+
+            public BoosterKind Booster { get; }
+
+            public override string ToString() => $"buy one {Booster.Name()}";
+        }
+    }
+
+    /// <summary>
     /// What a player leaves the museum for. A closed set (private constructor): a level's board, or a painting's jigsaw.
     /// </summary>
     public abstract class MuseumExit
@@ -141,9 +195,16 @@ namespace Puzzle.Client.Screens
         {
         }
 
-        /// <summary>To the board of the level the player stands on.</summary>
+        /// <summary>To the board of the level the player stands on, through its card, with the start boosters chosen there.</summary>
         public sealed class ToPlay : MuseumExit
         {
+            public ToPlay(StartChoice startBoosters)
+            {
+                StartBoosters = startBoosters ?? throw new ArgumentNullException(nameof(startBoosters));
+            }
+
+            /// <summary>The start boosters the player takes into the attempt; they leave the shelf with its first move.</summary>
+            public StartChoice StartBoosters { get; }
         }
 
         /// <summary>To the jigsaw of a painting; its way back leads to the page it was opened from.</summary>
@@ -159,28 +220,40 @@ namespace Puzzle.Client.Screens
     }
 
     /// <summary>
-    /// Where in the museum a visit begins: a page; on the collection's page the room it is opened at; and in the
-    /// hall, the room that has just been restored, if the visit begins with that.
+    /// Where in the museum a visit begins: a page; on the collection's page the room it is opened at; in the hall,
+    /// the room that has just been restored, if the visit begins with that; or the hall with the card before the
+    /// level hanging over it, where a level that is to be tried again leads.
     /// </summary>
     public readonly struct MuseumDoor
     {
         public MuseumDoor(Destination page, RoomNumber? collectionRoom = null)
-            : this(page, collectionRoom, restored: null)
+            : this(page, collectionRoom, restored: null, hangsTheStartCard: false)
         {
         }
 
-        private MuseumDoor(Destination page, RoomNumber? collectionRoom, RoomNumber? restored)
+        private MuseumDoor(Destination page, RoomNumber? collectionRoom, RoomNumber? restored, bool hangsTheStartCard)
         {
             Page = page;
             CollectionRoom = collectionRoom;
             Restored = restored;
+            HangsTheStartCard = hangsTheStartCard;
         }
 
-        /// <summary>The hall, where the game opens and where a level's result leads back to.</summary>
+        /// <summary>The hall, where the game opens and where a won level leads back to.</summary>
         public static MuseumDoor Home => new MuseumDoor(Destination.Home);
 
+        /// <summary>
+        /// The hall with the card of the level the player stands on coming down over it, as after its play button:
+        /// where a level that is to be tried again leads (a lost card's "Tekrar dene"). A player without a life is
+        /// shown the lives card instead, as the play button shows it them.
+        /// </summary>
+        public static MuseumDoor HomeWithTheStartCard => new MuseumDoor(Destination.Home, collectionRoom: null, restored: null, hangsTheStartCard: true);
+
         /// <summary>The hall of a room whose fifth painting has just become whole: it is shown restored before the hall moves on.</summary>
-        public static MuseumDoor AtTheRestored(RoomNumber room) => new MuseumDoor(Destination.Home, collectionRoom: null, restored: room);
+        public static MuseumDoor AtTheRestored(RoomNumber room) => new MuseumDoor(Destination.Home, collectionRoom: null, restored: room, hangsTheStartCard: false);
+
+        /// <summary>True when the visit begins with the card before the level hanging over the hall.</summary>
+        public bool HangsTheStartCard { get; }
 
         /// <summary>The room the hall shows restored as the visit begins; nothing for the hall as the player's progress has it.</summary>
         public RoomNumber? Restored { get; }

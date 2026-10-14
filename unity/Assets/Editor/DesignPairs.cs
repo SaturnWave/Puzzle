@@ -11,6 +11,7 @@ using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Screens;
 using Puzzle.Core.Levels;
+using Puzzle.Meta;
 using Puzzle.Museum;
 using Puzzle.Museum.Catalogue;
 using UnityEditor;
@@ -42,6 +43,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The card of that level lost (LoseTR).</summary>
         Lost,
+
+        /// <summary>The card before that level, come down over the hall, its first start booster chosen (LevelStartTR).</summary>
+        LevelStart,
     }
 
     /// <summary>
@@ -49,11 +53,12 @@ namespace Puzzle.Client.EditorTools
     /// design canvas' own picture of the screen at the left, scaled to the same height, and at the right what the
     /// game's camera shows of the same screen on the phone the canvas is drawn for.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.DesignPairs.Run
-    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost] [-pairState 46+45;coins=1250] [-pairDrawings ../out/design/next/project]
+    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost,levelstart] [-pairState 46+45;coins=1250;starts=2:1:0] [-pairDrawings ../out/design/next/project]
     ///   -pairScreens   which screens (all of them when left out)
     ///   -pairState     the player, as the picture command is told of one: levels won, or levels won + pieces in
     ///                  place, and the wallet after it. Left out, it is the player the canvas draws: on level 47,
-    ///                  with 1.250 coins, every life and the fifth painting's sixth piece waiting to be placed
+    ///                  with 1.250 coins, every life, two, one and none of the three start boosters, and the fifth
+    ///                  painting's sixth piece waiting to be placed
     ///   -pairDrawings  the folder of the canvas' pictures (HomeTR.png and its fellows); they are not part of
     ///                  the repository, so a machine without them names what is missing and writes nothing
     /// The pictures go to out/unity/shots/pair-&lt;screen&gt;-1080x2340.png. A pair compares what is built, how it is
@@ -67,8 +72,11 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The canvas draws a phone of 390 by 844 points; this is the game's screen of that shape.</summary>
         private static readonly ScreenShape Screen = new ScreenShape(1080, 2340);
 
-        /// <summary>The player of the canvas: 46 levels won, four paintings whole and five pieces of the fifth in place, its sixth waiting; 1.250 coins and every life.</summary>
-        private const string PlayerOfTheCanvas = "46+45;coins=1250";
+        /// <summary>
+        /// The player of the canvas: 46 levels won, four paintings whole and five pieces of the fifth in place, its
+        /// sixth waiting; 1.250 coins, every life, and two, one and none of the start boosters (LevelStartTR).
+        /// </summary>
+        private const string PlayerOfTheCanvas = "46+45;coins=1250;starts=2:1:0";
 
         /// <summary>The two pictures stand this many pixels apart, on the sheet's own dark.</summary>
         private const int Gap = 24;
@@ -143,6 +151,7 @@ namespace Puzzle.Client.EditorTools
             PairedScreen.Board => "BoardTR",
             PairedScreen.Won => "WinTR",
             PairedScreen.Lost => "LoseTR",
+            PairedScreen.LevelStart => "LevelStartTR",
             _ => throw new ArgumentOutOfRangeException(nameof(screen), screen, "A screen the pair command does not know."),
         };
 
@@ -221,6 +230,8 @@ namespace Puzzle.Client.EditorTools
                     return TakeTheBoard(state, studio, FlowEnding.Won);
                 case PairedScreen.Lost:
                     return TakeTheBoard(state, studio, FlowEnding.Lost);
+                case PairedScreen.LevelStart:
+                    return TakeTheStartCard(state, studio);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(screen), screen, "A screen the pair command does not know.");
             }
@@ -230,6 +241,29 @@ namespace Puzzle.Client.EditorTools
         {
             using MuseumStage museum = ScreenShots.OpenTheMuseum(door, state, Screen, studio);
             return StoryStudio.Take(museum, Screen);
+        }
+
+        /// <summary>The hall after its play button was pressed, with the card before the level at rest and its first start booster chosen, as the canvas draws it.</summary>
+        /// <exception cref="InvalidOperationException">The play button or the booster's disc is not there to press, or the press did not choose it.</exception>
+        private static Texture2D TakeTheStartCard(PlayerState state, Studio studio)
+        {
+            using MuseumStage museum = ScreenShots.OpenTheMuseum(MuseumDoor.Home, state, Screen, studio);
+            PressAndSettle(museum, museum.PlayButtonPixel, "the hall's play button");
+            BoosterKind first = LevelBrief.StartBoosters[0];
+            PressAndSettle(museum, museum.StartCardDiscPixel(first), $"the disc of {first.Name()}");
+            if (!museum.StartChoice.Has(first))
+            {
+                throw new InvalidOperationException($"A press on the disc of {first.Name()} did not choose it: the player {state.Label} may hold none.");
+            }
+
+            return StoryStudio.Take(museum, Screen);
+        }
+
+        private static void PressAndSettle(MuseumStage museum, Vector2? pixel, string what)
+        {
+            museum.PointerDown(pixel ?? throw new InvalidOperationException($"The hall shows no {what} to press."));
+            museum.PointerUp();
+            StageSteps.Settle(museum);
         }
 
         /// <summary>The jigsaw of the painting the player is restoring, at rest.</summary>

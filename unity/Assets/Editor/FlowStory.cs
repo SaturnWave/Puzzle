@@ -27,7 +27,8 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// The storyboard of the way from one level to the next, with no game running: a session starts on a level as a
     /// player would find it, a bot plays until the level is won (or lost), the result's card comes down, a finger
-    /// presses its button, and the next board comes out of the dark. It is the game's own session on a progress file
+    /// presses its button, the hall comes out of the dark (after a loss with the level's card coming down over it),
+    /// and through the level's card the next board comes out of the dark. It is the game's own session on a progress file
     /// of its own (out/unity/flow-progress), so what is pictured is what a phone does, saving included; at the end
     /// the progress is read back from the file and a second session is opened on it, as after a restart.
     /// A level that is won with moves left over has its finale before the card: a few moments of it are pictured
@@ -156,10 +157,26 @@ namespace Puzzle.Client.EditorTools
                 PressTheButton(session);
                 session.PointerUp();
                 AdvanceToTheNextStage(session);
-                StoryStudio.AdvanceUntilSettled(session);
+                IntoTheNextBoard(session);
             }
 
             throw new InvalidOperationException($"{MostGames} games did not end as {ending}; pick another bot or level for this story.");
+        }
+
+        /// <summary>
+        /// From the hall a result's card led to, into the level the player stands on, as a player goes: through the
+        /// level's card, which hangs already after a loss, with no start booster chosen.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The player has no life left to go on with, or a press led nowhere.</exception>
+        internal static void IntoTheNextBoard(GameSession session)
+        {
+            StoryStudio.AdvanceUntilSettled(session);
+            if (ThroughTheCard.MuseumOf(session).ShowsTheLivesCard)
+            {
+                throw new InvalidOperationException($"The player has no life left to go on with (\"{session.Progress}\"); the story needs a player with lives.");
+            }
+
+            ThroughTheCard.IntoTheLevel(session, Array.Empty<BoosterKind>());
         }
 
         /// <summary>Plays the open game to its end, every turn to rest but the last; returns the last turn's script.</summary>
@@ -237,7 +254,10 @@ namespace Puzzle.Client.EditorTools
             reel.Shoot("result");
         }
 
-        /// <summary>A finger presses the card's button and lifts; the card goes up, and the next board comes out of the dark.</summary>
+        /// <summary>
+        /// A finger presses the card's button and lifts; the card goes up, the hall comes out of the dark (after a loss
+        /// the level's card comes down over it), and through the level's card the next board comes out of the dark.
+        /// </summary>
         private static void PictureGoingOn(Reel reel)
         {
             PressTheButton(reel.Session);
@@ -249,6 +269,18 @@ namespace Puzzle.Client.EditorTools
 
             AdvanceToTheNextStage(reel.Session);
             float clock = 0f;
+            foreach (float moment in NextMoments)
+            {
+                clock = reel.AdvanceTo(moment, clock);
+                reel.Shoot($"hall-t{StoryStudio.Seconds(moment)}");
+            }
+
+            reel.Settle();
+            reel.Shoot("hall");
+            ThroughTheCard.BringDownTheCard(reel.Session);
+            reel.Shoot("card");
+            ThroughTheCard.PressPlay(reel.Session);
+            clock = 0f;
             foreach (float moment in NextMoments)
             {
                 clock = reel.AdvanceTo(moment, clock);
@@ -270,7 +302,7 @@ namespace Puzzle.Client.EditorTools
             session.PointerDown(button);
         }
 
-        /// <summary>Moves the clock until the session has opened another stage, which it does once the card is gone.</summary>
+        /// <summary>Moves the clock until the session has opened another stage, which it does once the card is gone: the museum, since a level's card is the one door into a level.</summary>
         /// <exception cref="InvalidOperationException">The session keeps its stage: the button was not pressed.</exception>
         private static void AdvanceToTheNextStage(GameSession session)
         {

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Puzzle.Client.Gallery;
+using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
 using Puzzle.Meta;
 
@@ -52,7 +53,7 @@ namespace Puzzle.Client.Flow
     /// <summary>Where the player goes on to from a result's card.</summary>
     public enum ResultChoice
     {
-        /// <summary>On with the levels: the next one after a win, the same one's next board after a loss.</summary>
+        /// <summary>On with the levels, through the hall: the next one after a win, the same one again after a loss (<see cref="LevelResult.GoingOnLeadsTo"/>).</summary>
         GoOn,
 
         /// <summary>Back to the museum's hall.</summary>
@@ -90,6 +91,22 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The number the player knows the level by.</summary>
         public int LevelNumber { get; }
+
+        /// <summary>
+        /// Where the green button of a decided game's card leads, the card before a level being the one door into
+        /// it: after a win to the hall, where the coins arrive and the next level waits behind the play button;
+        /// after a loss, and after the last level won once more, to the hall with the card of the same level coming
+        /// down, so it is tried again with its start boosters chosen anew.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The card asks whether to leave: its green button keeps the player in the game.</exception>
+        public MuseumDoor GoingOnLeadsTo() => this switch
+        {
+            Won { IsLastLevel: true } => MuseumDoor.HomeWithTheStartCard,
+            Won _ => MuseumDoor.Home,
+            Lost _ => MuseumDoor.HomeWithTheStartCard,
+            Leaving _ => throw new InvalidOperationException("The card that asks whether to leave keeps the player in the game; it leads nowhere in the museum."),
+            _ => throw new InvalidOperationException($"A result of the kind {GetType().Name} leads nowhere."),
+        };
 
         /// <summary>The result of a game that is over.</summary>
         /// <exception cref="InvalidOperationException">The game is still being played.</exception>

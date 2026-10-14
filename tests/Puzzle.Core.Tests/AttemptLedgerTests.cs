@@ -67,6 +67,22 @@ public class AttemptLedgerTests
         Assert.Equal(before.Wallet.Coins, withOne.Wallet.Coins);
     }
 
+    [Fact]
+    public void Start_boosters_chosen_on_the_card_stay_on_the_shelf_when_the_level_is_left_before_its_first_move_and_go_with_it()
+    {
+        PlayerProgress before = OnLevelForty().WithWallet(TheRules.StartingWallet.WithShelf(TheRules.StartingWallet.Shelf.WithOneMore(BoosterKind.StartExtraMoves)));
+        StartChoice chosen = new[] { BoosterKind.StartRocketAndBomb, BoosterKind.StartExtraMoves }.Aggregate(
+            StartChoice.None, (choice, booster) => Assert.IsType<StartToggle.Changed>(TheRules.StartBoosters.Toggled(choice, booster, before.Wallet.Shelf)).Choice);
+
+        PlayerProgress leftBeforeAMove = Apply(before, new AttemptEvent.Left(afterAMove: false));
+        PlayerProgress leftAfterOne = Apply(before, new AttemptEvent.FirstMove(chosen), new AttemptEvent.Left(afterAMove: true));
+
+        Assert.Same(before, leftBeforeAMove);
+        Assert.Equal(before.Wallet.Shelf.WithOneFewer(BoosterKind.StartRocketAndBomb).WithOneFewer(BoosterKind.StartExtraMoves), leftAfterOne.Wallet.Shelf);
+        Assert.Equal(4, leftAfterOne.Wallet.Lives.LivesUnder(TheRules.Lives));
+        Assert.Equal(before.Wallet.Coins, leftAfterOne.Wallet.Coins);
+    }
+
     [Theory]
     [InlineData(LossReason.OutOfMoves)]
     [InlineData(LossReason.NoMovePossible)]

@@ -49,6 +49,18 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The hall with the lives card hanging over it, as the heart's pill opens it.</summary>
         Lives,
+
+        /// <summary>The hall with the card before the level hanging over it, as the play button brings it down.</summary>
+        LevelStart,
+
+        /// <summary>That card with every start booster the player holds chosen.</summary>
+        LevelStartChosen,
+
+        /// <summary>That card with the card in front of it that offers the first start booster the player holds none of.</summary>
+        GetMore,
+
+        /// <summary>The level's board coming in with each start booster chosen on its card, and with all three: a few moments and at rest.</summary>
+        Entrance,
     }
 
     /// <summary>
@@ -79,7 +91,8 @@ namespace Puzzle.Client.EditorTools
         /// painting by painting, each painting's pieces by their numbers). Asking for more pieces than the levels
         /// gave places them all. After either, the wallet may be named, each part after a semicolon, in any order:
         /// coins=1250, lives=3 (of the most a meter holds), next=12:34 (minutes and seconds until the next life,
-        /// with fewer lives than the most; a whole life's time when left out), boosters=2 (of every kind), ads=1
+        /// with fewer lives than the most; a whole life's time when left out), boosters=2 (of every kind), starts=2:1:0
+        /// (of the three start boosters, in the order the card before a level shows them, after boosters), ads=1
         /// (watched today for extra moves and for coins each). What is not named is the starting wallet's:
         /// "46+42;coins=1250;lives=3;next=12:34".
         /// </summary>
@@ -137,13 +150,32 @@ namespace Puzzle.Client.EditorTools
                         wallet = wallet.WithShelf(BoosterKinds.All.Aggregate(BoosterShelf.Empty, (shelf, kind) => shelf.With(kind, each)));
                         label += $"-b{each}";
                         break;
+                    case "starts":
+                        string[] counts = value.Split(':');
+                        if (counts.Length != LevelBrief.StartBoosters.Count)
+                        {
+                            throw new ArgumentException($"\"{value}\" does not count the {LevelBrief.StartBoosters.Count} start boosters: write starts=2:1:0.");
+                        }
+
+                        BoosterShelf before = wallet.Shelf;
+                        BoosterShelf shelf = BoosterShelf.Empty;
+                        foreach (BoosterKind booster in BoosterKinds.All)
+                        {
+                            int place = LevelBrief.StartBoosters.ToList().IndexOf(booster);
+                            shelf = shelf.With(booster, place >= 0 ? ShotPlan.WholeNumber(counts[place]) : before.Count(booster));
+                        }
+
+                        wallet = wallet.WithShelf(shelf);
+
+                        label += $"-s{value.Replace(":", string.Empty)}";
+                        break;
                     case "ads":
                         int watched = ShotPlan.WholeNumber(value);
                         wallet = wallet.WithAds(new AdsWatched(DayStamp.Of(now), forExtraMoves: watched, forCoins: watched));
                         label += $"-a{watched}";
                         break;
                     default:
-                        throw new ArgumentException($"\"{nameAndValue[0]}\" is nothing a wallet has: write coins, lives, next, boosters or ads.");
+                        throw new ArgumentException($"\"{nameAndValue[0]}\" is nothing a wallet has: write coins, lives, next, boosters, starts or ads.");
                 }
             }
 
@@ -283,7 +315,8 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,controls] [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,controls]
+    /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored]
     /// [-paintingsFrom ../art/paintings] [-screenWalk]</c>.
     /// A state is the levels won, or the levels won and the pieces in place, with the wallet after it where it is
@@ -298,9 +331,10 @@ namespace Puzzle.Client.EditorTools
     /// </summary>
     /// <remarks>
     /// <c>-screenWalk</c> also walks through the game from each state on each screen, on the game's own session and
-    /// by touches alone (<see cref="GameWalk"/>): through the museum's pages, into the level, through a whole
-    /// level, from a won level's card to the jigsaw, where the piece just won is carried to its place, and back.
-    /// The walk fails when a touch does not lead where it should.
+    /// by touches alone (<see cref="GameWalk"/>): through the museum's pages, through the level's card into the
+    /// level, through a whole level, from a won level's card to the jigsaw, where the piece just won is carried to
+    /// its place, and back, and on to the hall; and once on each screen a level lost and tried again through its
+    /// card. The walk fails when a touch does not lead where it should.
     /// </remarks>
     public static class ScreenShots
     {
@@ -327,6 +361,11 @@ namespace Puzzle.Client.EditorTools
                     if (plan.ShowsTheControls)
                     {
                         pictures += ShootTheControls(screen, studio);
+                    }
+
+                    if (plan.Walks)
+                    {
+                        GameWalk.RunTheCardWalks(screen, studio);
                     }
 
                     foreach (PlayerState state in plan.States)
@@ -360,6 +399,10 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Restored => ShootTheRestoredRoom(state, screen, studio),
             ShotPage.Leaving => ShootTheLeavingCard(state, screen, studio),
             ShotPage.Lives => ShootTheLivesCard(state, screen, studio),
+            ShotPage.LevelStart => LevelStartShots.ShootTheCard(StartCardMoment.AsItComes, state, screen, studio),
+            ShotPage.LevelStartChosen => LevelStartShots.ShootTheCard(StartCardMoment.Chosen, state, screen, studio),
+            ShotPage.GetMore => LevelStartShots.ShootTheCard(StartCardMoment.GetMore, state, screen, studio),
+            ShotPage.Entrance => LevelStartShots.ShootTheEntrances(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 
@@ -516,10 +559,11 @@ namespace Puzzle.Client.EditorTools
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             PlayerProgress progress = state.Progress;
+            LevelDefinition level = studio.Levels[progress.LevelIndexIn(studio.Levels.Count)];
             var visit = new MuseumVisit(
-                progress.Museum, studio.Paintings.Catalogue, studio.Levels[progress.LevelIndexIn(studio.Levels.Count)].Id.Value,
-                hasWonEveryLevel: progress.LevelsWon >= studio.Levels.Count);
-            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet);
+                progress.Museum, studio.Paintings.Catalogue, level.Id.Value, hasWonEveryLevel: progress.LevelsWon >= studio.Levels.Count);
+            var brief = LevelBrief.Of(level, PieceReward.ForWinning(progress, studio.Levels.Count, studio.Paintings.Catalogue), StoryStudio.Economy, LevelStart.Rules);
+            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet, brief);
             museum.Fit(screen);
             return museum;
         }

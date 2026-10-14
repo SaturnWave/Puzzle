@@ -30,12 +30,13 @@ namespace Puzzle.Client.Gallery
         private Rect _screen;
         private float _strength;
 
-        private Veil(Transform parent, ArtCatalogue art)
+        private Veil(Transform parent, ArtCatalogue art, DrawOrder order)
         {
-            _shape = PaintedShape.Create("Veil", parent, art.PaintMaterial, DrawOrder.Veil);
+            _shape = PaintedShape.Create("Veil", parent, art.PaintMaterial, order);
         }
 
-        public static Veil Create(Transform parent, ArtCatalogue art) => new Veil(parent, art);
+        /// <param name="order">Where the dark lies in the drawing order: over the room (<see cref="DrawOrder.Veil"/>), or over a card a second card hangs in front of (<see cref="DrawOrder.SecondVeil"/>).</param>
+        public static Veil Create(Transform parent, ArtCatalogue art, DrawOrder order = DrawOrder.Veil) => new Veil(parent, art, order);
 
         /// <summary>Spreads the veil over a screen, at the strength it has.</summary>
         public void Fit(ScreenView view)

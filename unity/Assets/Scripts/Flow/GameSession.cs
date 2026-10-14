@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
@@ -32,16 +33,17 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// A player's way through the game: the stage they are looking at (the museum, the board of the attempt they
     /// are in, or a painting's jigsaw) and the progress that decides what comes next. The game opens in the
-    /// museum's hall; its play button opens the level the player stands on. A win opens the next level of the pack,
-    /// a loss the same level again with the next seed of its calibrated pool, so a retry is another board of the
-    /// same measured difficulty (the web test server deals attempts the same way); from either result's card the
-    /// player can also go back to the museum. A painting's jigsaw opens from a won level's card and from the
+    /// museum's hall. A level has one door: its card, which the hall's play button brings down, where the player
+    /// chooses the start boosters to take into it; its green button opens the level's board with them. A won
+    /// card's green button leads to the hall, where the coins arrive and the next level waits behind the play
+    /// button; a lost card's leads to the hall with the same level's card coming down, and the level then deals
+    /// the next seed of its calibrated pool, so a retry is another board of the same measured difficulty (the web
+    /// test server deals attempts the same way). A painting's jigsaw opens from a won level's card and from the
     /// museum's pages while pieces wait; its way back leads to where it was opened from, but for the jigsaw in
     /// which the fifth painting of a room became whole: from there the player is led to the hall, which shows them
     /// the restored room before it moves on. A level can be left for the museum at any time (the board asks first).
-    /// Like the stages it owns,
-    /// the session only moves when it is told the time (<see cref="Advance"/>): the running game tells it every
-    /// frame, the Editor's storyboards whenever they want.
+    /// Like the stages it owns, the session only moves when it is told the time (<see cref="Advance"/>): the
+    /// running game tells it every frame, the Editor's storyboards whenever they want.
     /// </summary>
     /// <remarks>
     /// Progress is kept in the store the moment it changes. What the board's stage reports of the attempt goes
@@ -67,7 +69,14 @@ namespace Puzzle.Client.Flow
     /// The museum is told the player's wallet at every step, as the rules have it at that instant: its row counts the
     /// lives back and the wait down as the clock runs, and a player without a life is shown the lives card instead of
     /// a level. Coins won on a board arrive in the museum's row when the player comes back to it: the row opens with
-    /// the amount it showed last and counts up to the new one.
+    /// the amount it showed last and counts up to the new one. A booster bought on a museum card is bought here, by
+    /// the economy's rules, and saved at once; the row counts its price down.
+    /// </para>
+    /// <para>
+    /// The start boosters chosen on a level's card are taken into its attempt: their specials lie on the board as it
+    /// opens and their moves are on the plaque, and they leave the shelf with the attempt's first move, so a card
+    /// closed, or a level left before its first move, spends nothing. A board with no free gem for a special opens
+    /// without it, and that booster is not spent. The attempt's record names them, so it replays to the same end.
     /// </para>
     /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
@@ -87,7 +96,7 @@ namespace Puzzle.Client.Flow
         private readonly IProgressStore _store;
         private readonly IAttemptLog _attempts;
         private readonly AttemptLedger _ledger;
-        private readonly LifeRules _lives;
+        private readonly EconomyRules _rules;
         private readonly IWallClock _clock;
 
         /// <summary>What is thrown over the board, painted once for all the stages of this session: painting it anew for every level would hold up each level's first frame.</summary>
@@ -146,7 +155,7 @@ namespace Puzzle.Client.Flow
             _art = art;
             _paintings = paintings;
             _ledger = new AttemptLedger(rules, levels.Count);
-            _lives = rules.Lives;
+            _rules = rules;
             _clock = clock;
             _store = store;
             _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
@@ -157,7 +166,7 @@ namespace Puzzle.Client.Flow
             _front = opening switch
             {
                 SessionOpening.InTheMuseum => OpenTheMuseum(StageOpening.InTheLitRoom, MuseumDoor.Home),
-                SessionOpening.AtTheBoard => OpenTheBoard(StageOpening.InTheLitRoom),
+                SessionOpening.AtTheBoard => OpenTheBoard(StageOpening.InTheLitRoom, StartChoice.None),
                 _ => throw new ArgumentOutOfRangeException(nameof(opening), opening, "A session opens in the museum or at the board."),
             };
         }
@@ -201,6 +210,7 @@ namespace Puzzle.Client.Flow
             TellTheMuseumTheWallet();
             _front.Advance(deltaSeconds);
             KeepWhatHappened();
+            DoWhatTheMuseumAskedFor();
             KeepWhatWasPlaced();
             FollowThePlayer();
         }
@@ -229,6 +239,7 @@ namespace Puzzle.Client.Flow
         {
             _front.PointerUp();
             KeepWhatHappened();
+            DoWhatTheMuseumAskedFor();
         }
 
         /// <summary>
@@ -296,7 +307,7 @@ namespace Puzzle.Client.Flow
         private LevelDefinition LevelToPlay => _levels[_progress.LevelIndexIn(_levels.Count)];
 
         /// <summary>The player's wallet as the rules have it now: lives that came back since the last loss are there.</summary>
-        private WalletView WalletNow => WalletView.Of(_progress.Wallet, _lives, _clock.Now);
+        private WalletView WalletNow => WalletView.Of(_progress.Wallet, _rules.Lives, _clock.Now);
 
         /// <summary>Tells the museum, if it is the stage that is seen, of the wallet as it is at this step.</summary>
         private void TellTheMuseumTheWallet()
@@ -311,14 +322,16 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// If the player has left the stage that is open, opens what they left it for, out of the dark the stage
-        /// left behind: the board of their level from the museum; from a result's card, the next board or the museum.
+        /// left behind: from the museum the board of their level with the start boosters chosen on its card, or a
+        /// painting's jigsaw; from a result's card the museum: the hall, with the level's card coming down where the
+        /// card's green button tries the level again.
         /// </summary>
         private void FollowThePlayer()
         {
             switch (_front)
             {
-                case MuseumStage { PlayerLeftFor: MuseumExit.ToPlay _ }:
-                    ChangeTheStage(() => OpenTheBoard(StageOpening.OutOfTheDark));
+                case MuseumStage { PlayerLeftFor: MuseumExit.ToPlay toPlay }:
+                    ChangeTheStage(() => OpenTheBoard(StageOpening.OutOfTheDark, toPlay.StartBoosters));
 
                     // The hall's paintings are not seen on a board; the result's card loads the one it shows by itself.
                     PaintingGallery.LetGoOfUnusedPictures();
@@ -327,8 +340,9 @@ namespace Puzzle.Client.Flow
                     _wayBack = new WayBack.ToTheMuseum(museum.Door);
                     ChangeTheStage(() => OpenTheJigsaw(jigsaw.Painting));
                     break;
-                case GameStage { PlayerChose: ResultChoice.GoOn }:
-                    ChangeTheStage(() => OpenTheBoard(StageOpening.OutOfTheDark));
+                case GameStage { PlayerChose: ResultChoice.GoOn } board:
+                    MuseumDoor goesOnTo = board.GoingOnLeadsTo();
+                    ChangeTheStage(() => OpenTheMuseum(StageOpening.OutOfTheDark, goesOnTo));
                     break;
                 case GameStage { PlayerChose: ResultChoice.ToTheMuseum }:
                     ChangeTheStage(() => OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.Home));
@@ -399,9 +413,11 @@ namespace Puzzle.Client.Flow
         /// <summary>Opens the museum as the progress has it, on one of its pages.</summary>
         private IStage OpenTheMuseum(StageOpening opening, MuseumDoor door)
         {
-            var visit = new MuseumVisit(_progress.Museum, _paintings.Catalogue, LevelToPlay.Id.Value, hasWonEveryLevel: _progress.LevelsWon >= _levels.Count);
+            LevelDefinition level = LevelToPlay;
+            var visit = new MuseumVisit(_progress.Museum, _paintings.Catalogue, level.Id.Value, hasWonEveryLevel: _progress.LevelsWon >= _levels.Count);
+            LevelBrief brief = LevelBrief.Of(level, PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue), _rules, LevelStart.Rules);
             WalletView wallet = WalletNow;
-            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, opening);
+            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, brief, opening);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;
@@ -419,9 +435,11 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// Opens the stage of the attempt the progress asks for: the level the player stands on, with the seed its
-        /// pool has for this try. The attempt begins now, as its record will say.
+        /// pool has for this try and the start boosters chosen on its card, whose specials lie on the board as it
+        /// opens. The attempt begins now, as its record will say; what it took leaves the shelf with its first move.
         /// </summary>
-        private IStage OpenTheBoard(StageOpening opening)
+        /// <param name="startBoosters">The start boosters chosen on the level's card; none for a board opened without the card (the Editor's studies).</param>
+        private IStage OpenTheBoard(StageOpening opening, StartChoice startBoosters)
         {
             LevelDefinition level = LevelToPlay;
             int attempt = _progress.AttemptsOnLevel;
@@ -429,11 +447,77 @@ namespace Puzzle.Client.Flow
             _startOfTheBoard = new AttemptStart(
                 level.Id, level.ContentVersion, level.MoveLimit, LevelStart.SeedsOf(level, attempt), attempt, _attempts.Device, ThisClient, _clock.Now);
 
-            // No start booster is taken into an attempt until the level's start card offers them.
-            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard, StartChoice.None);
-            GameStage stage = GameStage.Open(LevelStart.Attempt(level, attempt), _art, _effectArt, _paintings, brief, opening);
+            Game game = LevelStart.Attempt(level, attempt, startBoosters.ForTheEngine());
+            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard, TakenBy(game, startBoosters));
+            GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, opening);
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
             return stage;
+        }
+
+        /// <summary>
+        /// The start boosters the game took of the ones chosen: all of them, but where the board had no free gem for
+        /// a special, whose booster is put back and not spent (LevelStart.Attempt).
+        /// </summary>
+        private StartChoice TakenBy(Game game, StartChoice chosen)
+        {
+            StartChoice taken = chosen;
+            foreach (BoosterKind booster in chosen.Boosters)
+            {
+                bool isTaken = game.BoostersUsed.Contains(booster.Name());
+                if (!isTaken && _rules.StartBoosters.Toggled(taken, booster, _progress.Wallet.Shelf) is StartToggle.Changed putBack)
+                {
+                    Debug.LogWarning($"Level {game.Level.Id} had no free gem for the special of {booster.Name()}: the board opened without it, and it is not spent.");
+                    taken = putBack.Choice;
+                }
+            }
+
+            return taken;
+        }
+
+        /// <summary>
+        /// What the museum's presses asked of the wallet since it was last asked, done by the economy's rules and
+        /// saved at once: a booster bought for its price. The museum is told the wallet after it at once, and its
+        /// row counts the coins down to it.
+        /// </summary>
+        private void DoWhatTheMuseumAskedFor()
+        {
+            if (!(Museum is MuseumStage museum))
+            {
+                return;
+            }
+
+            IReadOnlyList<MuseumRequest> asked = museum.TakeWhatWasAskedFor();
+            if (asked.Count == 0)
+            {
+                return;
+            }
+
+            foreach (MuseumRequest request in asked)
+            {
+                _progress = _progress.WithWallet(WalletAfter(request, _progress.Wallet));
+            }
+
+            SaveProgress();
+            TellTheMuseumTheWallet();
+        }
+
+        /// <summary>The wallet after a request of the museum's, by the economy's rules; the wallet as it was where the rules refuse it.</summary>
+        private Wallet WalletAfter(MuseumRequest request, Wallet wallet)
+        {
+            switch (request)
+            {
+                case MuseumRequest.BuyABooster buy:
+                    if (_rules.Shop.BuyOne(buy.Booster, wallet) is Purchase.Bought bought)
+                    {
+                        return bought.Wallet;
+                    }
+
+                    // The card that offered it dims its button when the coins fall short; a press that gets here anyway changes nothing.
+                    Debug.LogWarning($"One {buy.Booster.Name()} was asked for with {wallet.Coins} coins, short of its price of {_rules.Shop.PriceOf(buy.Booster)}; nothing was bought.");
+                    return wallet;
+                default:
+                    throw new InvalidOperationException($"The session does not know the museum's request \"{request}\".");
+            }
         }
 
         /// <summary>

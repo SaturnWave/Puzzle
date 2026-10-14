@@ -137,6 +137,12 @@ namespace Puzzle.Client.Screens
         /// <summary>What the card adds to the places in the drawing order of all that stands on it.</summary>
         public int RaisedBy => _raisedBy;
 
+        /// <summary>How large the card is drawn where it was last placed.</summary>
+        public float Scale => _scale;
+
+        /// <summary>The height in the layout of the lower edge of the card's body, where it hangs in its place.</summary>
+        public float Foot => _place.y - _scale * _body.y / 2f;
+
         /// <summary>The middle of the button that closes the card, in the layout's points: where a finger presses it. Nothing on a card that has none.</summary>
         public Vector2? CloseButtonMiddle => _close.HasValue ? InTheLayout(_close.Value.Button.Middle) : (Vector2?)null;
 
@@ -179,6 +185,13 @@ namespace Puzzle.Client.Screens
                 _presses.Add(_close.Value.Button, _close.Value.Asks);
             }
         }
+
+        /// <summary>
+        /// The place where the card's body stands on a foot at a height of the layout, drawn at a scale: where a card
+        /// that hangs in front of another stands on that one's foot, so the nameplate of the card behind stays in
+        /// sight above it.
+        /// </summary>
+        public CardPlace PlaceOnAFoot(float foot, float scale) => new CardPlace(foot + scale * (_body.y / 2f + (RidesAbove - _ridesBelow) / 2f), scale);
 
         /// <summary>Hangs the card at a place a layout has for it; call again whenever the screen changes.</summary>
         /// <param name="place">The middle of the room the card takes (<see cref="Height"/>), and how large it is drawn.</param>

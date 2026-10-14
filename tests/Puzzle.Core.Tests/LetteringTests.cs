@@ -82,6 +82,7 @@ public partial class LetteringTests
     [InlineData("Flow", "AttemptWords.cs")]
     [InlineData("Flow", "WalletWords.cs")]
     [InlineData("Flow", "NumberWords.cs")]
+    [InlineData("Flow", "LevelStartWords.cs")]
     [InlineData("Gallery", "Hud.cs")]
     public void Every_word_the_game_says_can_be_written_with_the_letter_set(string folder, string file)
     {

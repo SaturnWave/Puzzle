@@ -81,6 +81,12 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletView.cs" Link="Unity\Flow\WalletView.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletWords.cs" Link="Unity\Flow\WalletWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\WalletRowLayout.cs" Link="Unity\Layout\WalletRowLayout.cs" />
+    <!-- Nor has the card before a level: what it shows of the level and offers for it, its words, where its parts stand, and where a press in the museum leads. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelBrief.cs" Link="Unity\Flow\LevelBrief.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelStartWords.cs" Link="Unity\Flow\LevelStartWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\LevelStartLayout.cs" Link="Unity\Layout\LevelStartLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\Destination.cs" Link="Unity\Screens\Destination.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Engine\LevelStart.cs" Link="Unity\Engine\LevelStart.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

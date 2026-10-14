@@ -2,6 +2,7 @@ using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
@@ -331,6 +332,28 @@ public class GameFlowTests
 
         // The blue button's own lines are "Parçayı" and "yerleştir": the green one's are no longer, so both are lettered alike.
         Assert.All(ResultWords.GoOnOnANarrowButton(onTheLastLevel).Split('\n'), line => Assert.True(line.Length <= 6));
+    }
+
+    [Fact]
+    public void The_card_before_a_level_is_its_one_door_a_win_goes_on_to_the_hall_and_a_retry_to_the_hall_with_the_levels_card()
+    {
+        var goals = new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3) };
+        Game won = PlayedOut(goals, moves: 5);
+        Game lost = PlayedOut(new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 3), new GoalSpec.CollectColor(GemColor.Red, 999) }, moves: 1);
+        Game playing = Start(Level(BoardWithAMatchInReach(), goals: goals, moves: 5));
+
+        MuseumDoor afterAWin = LevelResult.Of(won, new AttemptBrief(attemptNumber: 1, isOnLastLevel: false)).GoingOnLeadsTo();
+        MuseumDoor afterTheLastLevelWonAgain = LevelResult.Of(won, new AttemptBrief(attemptNumber: 1, isOnLastLevel: true)).GoingOnLeadsTo();
+        MuseumDoor afterALoss = LevelResult.Of(lost, new AttemptBrief(attemptNumber: 2, isOnLastLevel: false)).GoingOnLeadsTo();
+
+        Assert.Equal((Destination.Home, false), (afterAWin.Page, afterAWin.HangsTheStartCard));
+        Assert.Equal((Destination.Home, true), (afterALoss.Page, afterALoss.HangsTheStartCard));
+        Assert.Equal((Destination.Home, true), (afterTheLastLevelWonAgain.Page, afterTheLastLevelWonAgain.HangsTheStartCard));
+        Assert.Null(afterALoss.Restored);
+        Assert.False(MuseumDoor.Home.HangsTheStartCard);
+
+        // The card that asks whether to leave keeps the player in the game: its green button leads to no page.
+        Assert.Throws<InvalidOperationException>(() => LevelResult.ForLeaving(playing, AttemptBrief.FirstTry).GoingOnLeadsTo());
     }
 
     [Fact]

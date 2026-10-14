@@ -5,10 +5,11 @@ using Puzzle.Meta;
 namespace Puzzle.Client.Flow
 {
     /// <summary>
-    /// What the museum's wallet row and the lives card show of a player's wallet at one instant: the coins, the
-    /// lives that are there with every life that has come back by then, and while a life is missing how long until
-    /// the next one is back and until all are. The meter is settled at the instant it is seen (a life is stored as
-    /// missing until a loss settles it), so the same wallet looked at later shows more lives and shorter waits.
+    /// What the museum shows of a player's wallet at one instant, on its row and on its cards: the coins, the
+    /// lives that are there with every life that has come back by then, while a life is missing how long until
+    /// the next one is back and until all are, and the boosters on the shelf (the card before a level counts them).
+    /// The meter is settled at the instant it is seen (a life is stored as missing until a loss settles it), so the
+    /// same wallet looked at later shows more lives and shorter waits.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     /// <remarks>
@@ -18,16 +19,23 @@ namespace Puzzle.Client.Flow
     /// </remarks>
     public readonly struct WalletView : IEquatable<WalletView>
     {
-        private WalletView(Coins coins, int lives, int mostLives, TimeSpan? untilNextLife, TimeSpan? untilFull)
+        /// <summary>Nothing only in the struct's default, which holds no wallet.</summary>
+        private readonly BoosterShelf? _shelf;
+
+        private WalletView(Coins coins, int lives, int mostLives, TimeSpan? untilNextLife, TimeSpan? untilFull, BoosterShelf shelf)
         {
             Coins = coins;
             Lives = lives;
             MostLives = mostLives;
             UntilNextLife = untilNextLife;
             UntilFull = untilFull;
+            _shelf = shelf;
         }
 
         public Coins Coins { get; }
+
+        /// <summary>The boosters the player holds; an empty shelf for a view made without a wallet (the struct's default).</summary>
+        public BoosterShelf Shelf => _shelf ?? BoosterShelf.Empty;
 
         /// <summary>How many lives are there at the instant.</summary>
         public int Lives { get; }
@@ -55,24 +63,24 @@ namespace Puzzle.Client.Flow
             LifeMeter settled = wallet.Lives.SettledAt(now, lives);
             if (!(settled.UntilNextLife(now) is TimeSpan wait))
             {
-                return new WalletView(coins, lives.Max, lives.Max, untilNextLife: null, untilFull: null);
+                return new WalletView(coins, lives.Max, lives.Max, untilNextLife: null, untilFull: null, wallet.Shelf);
             }
 
             TimeSpan untilNext = wait < lives.PerLife ? wait : lives.PerLife;
             TimeSpan untilFull = untilNext + TimeSpan.FromTicks(lives.PerLife.Ticks * (settled.ShortOfFull - 1));
-            return new WalletView(coins, settled.LivesUnder(lives), lives.Max, untilNext, untilFull);
+            return new WalletView(coins, settled.LivesUnder(lives), lives.Max, untilNext, untilFull, wallet.Shelf);
         }
 
         /// <summary>The same view with another amount of coins: what the row shows while an amount counts up to this one's.</summary>
-        public WalletView WithCoins(Coins coins) => new WalletView(coins, Lives, MostLives, UntilNextLife, UntilFull);
+        public WalletView WithCoins(Coins coins) => new WalletView(coins, Lives, MostLives, UntilNextLife, UntilFull, Shelf);
 
         public bool Equals(WalletView other) =>
             Coins == other.Coins && Lives == other.Lives && MostLives == other.MostLives
-            && UntilNextLife == other.UntilNextLife && UntilFull == other.UntilFull;
+            && UntilNextLife == other.UntilNextLife && UntilFull == other.UntilFull && Shelf.Equals(other.Shelf);
 
         public override bool Equals(object? obj) => obj is WalletView other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(Coins, Lives, MostLives, UntilNextLife, UntilFull);
+        public override int GetHashCode() => HashCode.Combine(Coins, Lives, MostLives, UntilNextLife, UntilFull, Shelf);
 
         public override string ToString() => IsFull
             ? $"{Coins} coins, {Lives} lives (full)"
