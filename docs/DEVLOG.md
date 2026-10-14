@@ -4,6 +4,38 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
+
+**Kullanıcı kararları**
+- Yeni oyunculara başta yardım: 200 altın ve her booster'dan 3. Sayıların kabaca yazıldığı söylendi; bir denge politikası istendi.
+- Reklamla altın: 4 (reklam başına; günde 3 kez).
+- 3–20. odaların tabloları onaylandı ("tabloları onaylıyorum"). K2–K4 öneriler doğrultusunda: Washington kırpılıp final oldu, üç dosya müzenin beyanıyla kabul, notlu üç eser kaldı.
+- Bilinen açıklar not edilsin; telefon testleri hazırlansın, zamanı gelince bütün testler koşulsun.
+- Sıradaki işlerden devam.
+
+**Ekonomi: hoş geldin hediyesi ve denge politikası (§25)**
+- Hediye ve reklam sayıları ayar dosyasında, kullanıcı kararı olarak işaretli.
+- Simülatör artık hediyeyi de veriyor (ilk bölümden önce, ayrı bir gelir sütunu); karşılaştırma için `economy/no-welcome-gift.json`. Sonuç: ortalama oyuncu hediyeyle de 100. bölüme 8., 1000. bölüme 90. günde geliyor; kese 200–400 altın dolu. En çok zayıf oyuncuya yarıyor.
+- Denge politikası: dört sabit ilişki testlerle (`EconomyBalancePolicyTests`), üç sonuç simülatörle denetleniyor. Kullanıcının sayıları bütün kurallardan geçiyor.
+- Hata: hediye sayılarını "karar" olarak işaretleyen ilk kayıt iki testi kırdı (CI kırmızıya döndü); ikisi de düzeltildi.
+
+**Müze: 3–20. odalar (§18)**
+- 90 tablo kataloğa, lisans listelerine ve oyuna girdi; odalar 1–2'den geriye doğru, 15. yüzyıla kadar gidiyor. 50 tablo kırpıldı (çerçeve, paspartu, renk kartı, kâğıt kenarı); hepsine bütün olarak bakıldı.
+- Getirme betiği her müzeyi tanıyor ve aynı indirmeden her zaman aynı baytları üreten bir kırpma adımı var. 1. ve 2. odalar birebir aynı kaldı.
+- İş ayrı bir kopyada tek ajanla yapıldı; Unity'de içe aktarma ve müze raporu ana kopyada.
+
+**Arayüz: planın 2. aşaması (§23)**
+- Cüzdan kayıt dosyasında (katman 3); eski dosyalar hoş geldin hediyesi ve dolu canla okunuyor. Bölüm kazanılınca altın, kayıpta can aynı anda kaydediliyor (`AttemptLedger`).
+- 3.194 test geçti; Unity'de kayıt dosyası, şölen, dokunma ve ekran yürüyüşü denetimleri hatasız. Kayıt dosyası denetimini ayrıca ben çalıştırdım.
+- Henüz yok: can denetimi ve cüzdanın ekranda görünmesi.
+
+**Telefon test planı**
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 22 bilinen açık, 37 telefon testi.
+
+**Diğer**
+- Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.
+- Herkese açık test sunucusu çalışmıyor; en son 12 Ekim akşamı veri yazmış. Bu oturumda durdurulmadı. Yeniden başlatmak kullanıcının kendi PowerShell penceresinden yapılmalı.
+
 ## 2026-10-14 · Oturum 22 — Kurallar istemcide: can, coin, booster (arayüz planı 1. aşama)
 
 **Yapılan (§23)**

@@ -113,7 +113,7 @@ dotnet run --project src\Puzzle.Cli -c Release --no-build -- humans
 
 Sunucu bölüm dosyalarını yalnızca açılışta okur. Bölümler diskte değiştirildikten sonra geçerli olmaları için sunucunun yeniden başlatılması gerekir:
 
-1. Sunucu penceresinde Ctrl+C ile durdur (bekleyen kayıtlar yazılır). Pencereye ulaşamıyorsan başka bir pencereden `.	oolspublicStop-PublicServer.ps1` aynı işi yapar: sunucunun konsoluna Ctrl+C gönderir, hiçbir şeyi zorla kapatmaz.
+1. Sunucu penceresinde Ctrl+C ile durdur (bekleyen kayıtlar yazılır). Pencereye ulaşamıyorsan başka bir pencereden `.\tools\public\Stop-PublicServer.ps1` aynı işi yapar: sunucunun konsoluna Ctrl+C gönderir, hiçbir şeyi zorla kapatmaz.
 2. Yeniden başlat: `.\tools\public\Start-PublicServer.ps1`. Günlükte `Public mode: 1000 levels` satırı görünmeli.
 
 - Değiştirilen bölümlerin eski sürümleri `levels/archive/` altında durur; eski kayıtlar bu sayede botlarla karşılaştırılmaya devam eder.
@@ -121,6 +121,7 @@ Sunucu bölüm dosyalarını yalnızca açılışta okur. Bölümler diskte değ
 - Sunucuyu, kapanabilecek bir araç ya da oturumun içinden başlatma: o oturum bitince sunucu da kapanır (2026-10-05'te yaşandı). Kendi PowerShell pencerende başlat.
 - Sunucu çalışırken çözümü Release olarak derleme ve `src/Puzzle.Web/wwwroot` altını düzenleme: sayfalar kaynak klasöründen canlı sunulur.
 - İlk 50 bölüm 2026-10-05'te daha kolay sürümleriyle değiştirildi; ardından 1000 bölümün hepsi yüzde 25 hamle payıyla yeniden üretildi ([GAME_DESIGN.md](GAME_DESIGN.md) §8 madde 7 ve 8).
+- 2026-10-12'den beri yayındaki bölümler bölüm bankasından derlenir; yayına alma adımları (sunucuyu durdur, derlenen klasörü `levels/generated` yerine koy, yeniden başlat) [GAME_DESIGN.md](GAME_DESIGN.md) §24'te. `levels/generated` klasörüne bu adımların dışında yazılmaz.
 
 ## 8. Korumalar ve bilinen sınırlar
 

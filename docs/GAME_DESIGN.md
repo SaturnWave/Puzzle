@@ -785,7 +785,39 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 
 10 parçayı düz ızgarayla bölmenin tek yolu 5×2; yaygın tablo oranlarında ince uzun parçalar veriyor. 3-4-3 diziliminde parçalar kareye yakın kalıyor (prototipte karşılaştırıldı, kullanıcı 3-4-3'ü seçti). Dikey tablolarda dizilimler 90 derece döner. Prototip atılabilir bir JS denemesi; gerçek kesim kodu C# ile yazılacak (§12, Faz 3).
 
-**Uygulama durumu (2026-10-08).** Bu bölümdeki yapı, yapboz tablosu ve 3-4-3 dizilimi Unity istemcisinde çalışıyor (§23). İlk odanın tabloları: Sainte-Adresse Plajı (Monet, 1867), Kız Kardeş (Terasta) (Renoir, 1881), Yağmurlu Gün (Caillebotte, 1877), Nilüferler (Monet, 1906), Buğday Yığınları (Yaz Sonu) (Monet, 1890–91); hepsi Art Institute of Chicago'da kamu malı, lisans listesi `art/paintings/room-01/licences.json`. 2–20. odaların tabloları seçilmedi; o bölümlerin parçaları tablolar gelene kadar bekler. Yan koleksiyon, coinle parça ve etkinlik tabloları yok.
+**Uygulama durumu (2026-10-08).** Bu bölümdeki yapı, yapboz tablosu ve 3-4-3 dizilimi Unity istemcisinde çalışıyor (§23). İlk odanın tabloları: Sainte-Adresse Plajı (Monet, 1867), Kız Kardeş (Terasta) (Renoir, 1881), Yağmurlu Gün (Caillebotte, 1877), Nilüferler (Monet, 1906), Buğday Yığınları (Yaz Sonu) (Monet, 1890–91); hepsi Art Institute of Chicago'da kamu malı, lisans listesi `art/paintings/room-01/licences.json`. 2. odanın tabloları 2026-10-08'de, 3–20. odalarınki 2026-10-14'te geldi (aşağıda). Yan koleksiyon, coinle parça ve etkinlik tabloları yok.
+
+**Müzenin 100 tablosu (2026-10-14).** Kullanıcı 3–20. odaların önerisini onayladı. Kural: yalnızca üzerinde telif olmayan eserler, her oda bir dönem, tür serbest ama dönemin içinde. Görüntü yalnızca sahibi müzenin kendi serbest bıraktığı fotoğraf olabilir. Odalar 1–2'den (Empresyonizm, Post-empresyonizm) geriye doğru, zamanda geriye gider:
+
+| Oda | Dönem | Final |
+|---|---|---|
+| 3 | Kuzey Işığı: İsveç, Finlandiya, Danimarka (1875–1899) | Büyük Huş Ağacının Altında Kahvaltı (Larsson) |
+| 4 | Amerika: Yaldızlı Çağ (1870–1899) | Kırbaç Oyunu (Homer) |
+| 5 | Hollanda: Lahey Okulu ve Amsterdam (1860–1899) | Sahilde Sabah At Gezintisi (Mauve) |
+| 6 | Japonya: Edo'nun Son Yılları ve Meiji (1840–1895) | Shin-Ohashi'de Ani Sağanak (Hiroşige) |
+| 7 | Fransa: Barbizon, Gerçekçilik ve Salon (1830–1885) | Prenses de Broglie (Ingres) |
+| 8 | Amerika: Hudson Nehri ve Sınır Boyları (1825–1870) | Washington Delaware Nehri'ni Geçerken (Leutze) |
+| 9 | Danimarka Altın Çağı (1810–1860) | Kolezyum'un Üç Kemeri (Eckersberg) |
+| 10 | Romantik Britanya: Constable ve Turner (1800–1850) | Lordlar ve Avam Kamaralarının Yanışı (Turner) |
+| 11 | Edo Japonyası: Hokusai ve Hiroşige (1790–1840) | Büyük Dalga (Hokusai) |
+| 12 | Devrimler Çağı: Amerika ve Avrupa (1770–1825) | Kırmızılı Çocuk (Goya) |
+| 13 | Kral George Çağı Britanyası (1740–1800) | Elizabeth Farren (Lawrence) |
+| 14 | Şehir Manzaraları: Venedik, Roma, İstanbul (1720–1790) | San Marco Meydanı (Canaletto) |
+| 15 | Rokoko Fransası (1715–1789) | Kitap Okuyan Genç Kız (Fragonard) |
+| 16 | Hollanda Altın Çağı: Vermeer Kuşağı (1650–1700) | Küçük Sokak (Vermeer) |
+| 17 | Barok Avrupa: Hollanda, Flandre ve Fransa (1600–1650) | Otoportre (Leyster) |
+| 18 | İran ve Babür Sarayları: Minyatür Çağı (1520–1650) | At Üstünde Şah Cihan |
+| 19 | Rönesans Avrupası: Holbein'den Arcimboldo'ya (1500–1600) | Vertumnus (Arcimboldo) |
+| 20 | Flandre ve İtalya: 15. Yüzyıl (1430–1500) | Giuliano de' Medici (Botticelli) |
+
+- **Kaynaklar:** National Gallery of Art (32), The Met (30), Rijksmuseum (13), SMK (6), Nationalmuseum (3), Cleveland (2), Skokloster Şatosu (2), Getty (1), Finlandiya Ulusal Galerisi (1). Her tablonun müzesi, sayfası, kaynağı ve lisans cümlesi `art/paintings/room-NN/licences.json` dosyasında. Kırpılan tablonun kırpma kutusu da orada.
+- **Görüntüler:** uzun kenar 1920 piksel, asla büyütülmez. 50 tablonun çerçevesi, paspartusu, renk kartı ya da kâğıt kenarı kırpıldı. 90 yeni tablo toplam 75,5 MB.
+- **Getirme:** `node tools/unity/fetch-paintings.js` artık her müzeyi tanır. Kırpma adımı (`tools/unity/prepare-painting.py`, Pillow) aynı indirmeden her zaman aynı baytları üretir. 1. ve 2. odalar birebir aynı kaldı.
+- **Kararlar:**
+  - K2: Washington tablosu yanlardan kırpılıp 8. odanın finali oldu; Elma Şırası Yapımı yedeğe döndü.
+  - K3: üç eserin görüntüsü müzenin kendi sunucusundan indi.
+  - K4: notlu üç eser kaldı.
+- **Türkçe adlarla ilgili not:** levhalardaki ifadeler ("y. 1460", "muhtemelen 1538", "Genç Hans Holbein", "Abel Grimmer'e atfen") ajanın seçimi. Japonca adlarda uzatma işaretleri düşürüldü (Ōtani → Otani), çünkü oyunun harf kümesinde ō ve ū yok.
 
 **Müze:** hafif. Tamamlanan tablo duvara asılır, oda adım adım onarılır (çatlaklar kapanır, ışıklar yanar). Oyuncu seçim yapmaz. Seçenekli dekorasyon ve müze işletmesi ileride eklenebilir.
 
@@ -1011,10 +1043,30 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **`src/Puzzle.Meta`** (düz C#, Unity'ye derlenmiş girer; yalnızca `Puzzle.Core`'a bağlı): cüzdan (coin, can, booster rafı, günün reklam sayıları, ödül sayaçları; değişmez, değerce eşit), can sayacı, kazanma ödülü, "+5 hamle" teklifinin koşulları (coin'le ya da günün reklam hakkıyla), bölüm öncesi booster seçimi, tablo ve gün ödülleri (n. ödül sıradaki n. booster'dır; rastgelelik yok), mağaza (tek booster, set, reklamla coin; gerçek para paketleri "satışta değil"). Her kuralın sonucu kapalı bir türdür: alındı, coin yetmiyor, satışta değil gibi.
 - **Saat dışarıdan verilir.** Kurallar saati bilmez; her soruya zaman parametre olarak gelir. Geri alınmış bir saat can getirmez ve yeni gün hakkı açmaz. İleri alınmış saat canları doldurur: bilinen açık, sunucusuz bir oyunda kapanmaz.
 - **Tek ayar dosyası.** Oyun fiyatları ve miktarları `economy/default.json` dosyasından okur (§25). `tools/unity/economy-pack.js` dosyanın oyuna ait bölümlerini paketler (`unity/Assets/Generated/Resources/Economy.json`); paketin sabitlenmiş bir kopyası testlerdedir (`tests/fixtures/economy-pack.json`). **Ayar dosyası her değiştiğinde:** `node tools/unity/economy-pack.js --pin`, ardından `node tools/unity/sync-engine.js`; yoksa betiğin testi, `EconomyFileTests` ve `EconomyCheck` kırmızıya döner.
-- **Oyuna özel yeni alanlar** (simülatör biçimlerini denetler, simüle etmez; hepsi yer tutucu): yeni oyuncunun başlangıcı (0 coin, her booster'dan bir tane), bir denemeye alınabilecek bölüm öncesi booster sayısı (3), mağaza (coin paketleri 500 / 1.200 / 2.500, fiyatsız; booster setleri `starter` 900 ve `master` 6.300 coin, içindekilerin tek tek fiyatlarının toplamı; reklamla 20 coin, günde 3 kez), derlemenin işaretleri (reklam "canlandırma", gerçek para "yok").
+- **Yeni alanlar.** Yeni oyuncunun hoş geldin hediyesi: 200 coin ve her booster'dan 3. Kullanıcının kararıdır (2026-10-14) ve simüle edilir (§25). Oyuna özel alanları simülatör yalnızca biçim olarak denetler, simüle etmez:
+  - bir denemeye alınabilecek bölüm öncesi booster sayısı: 3;
+  - mağazada coin paketleri: 500 / 1.200 / 2.500, fiyatsız;
+  - booster setleri: `starter` 900, `master` 6.300 coin; ikisi de içindekilerin tek tek fiyatlarının toplamı;
+  - reklamla coin: 4 coin (kullanıcı kararı), günde 3 kez;
+  - derlemenin işaretleri: reklam "canlandırma", gerçek para "yok".
 - **Simülatörle aynı cevap.** Simülatörün yürüttüğü oyuncu yolculukları oyunun kurallarından geçirilir; can, coin ve booster her adımda aynı çıkmak zorundadır (`MetaAgainstTheSimulatorTests`). Yeni alanlar simülasyonun tek bir sayısını değiştirmedi.
 - **Doğrulama:** 3.160 test (99'u yeni), paket betiğinin 8 testi; Unity'de `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck` (Unity'nin okuyucusu paketi yazıldığı gibi okuyor ve oyun kuralları ondan kuruyor) ve ekran yürüyüşü hatasız.
 - **Kanıtlanmadı:** telefonda ve IL2CPP derlemesinde çalışma; bölüm içi booster kullanımı ve aynı denemede iki bölüm öncesi booster simülatör karşılaştırmasında yok.
+**Cüzdan kayıt dosyasında (2026-10-14).** Arayüz planının 2. aşaması. Ekranda yine bir şey değişmedi.
+
+- **Kayıt dosyası katman 3:** ilerlemeyle birlikte cüzdanı da yazar: altın, eksik can sayısı ve sonraki canın anı, booster'lar, günün reklam sayıları, ödül sayaçları.
+- **Eski dosyalar:** katman 1 ve 2 dosyaları kuralların başlangıç cüzdanıyla okunur, yani hoş geldin hediyesi ve dolu canla. Cüzdanın dosyada olup olmadığına katman numarası karar verir, asla bir sıfır değil.
+- **Bozuk ve yeni dosyalar:** cüzdanı olmayan ya da olamayacak bir cüzdanı olan katman 3 dosyası bozuk sayılır. Daha yeni bir katman anlaşıldığı kadar okunur, üzerine yazılmaz.
+- **Denemenin hesabı (`AttemptLedger`):** tahta sahnesi denemenin olaylarını bildirir, kurallar her birini işler:
+  - ilk hamle denemeyi saydırır;
+  - kazandıran hamle oyuncuyu ilerletir ve altınını aynı kayıtta öder, şölen sırasında kapanan oyun hiçbirini kaybetmez;
+  - kesin kayıp ya da hamleden sonra bölümden çıkmak bir can götürür;
+  - hamlesiz çıkmak ve bölüm ortasında oyunu kapatmak ücretsizdir.
+- **Saat:** dışarıdan, tam saniyeyle gelir. Canlar tam dakikalarla döndüğü için sonraki canın anı dosyadan birebir okunur.
+- **Henüz yok:** can denetimi (canı biten oyuncu yine başlayabilir; 7–8. aşamalar), cüzdanın ekranda görünmesi.
+- **Doğrulama:** 3.194 test. Unity'de `ProgressFileCheck` (gerçek bir katman 2 dosyası hoş geldin hediyesi ve dolu canla okunuyor, katman 3 olarak yazılıp yeniden başlatmadan sonra aynı okunuyor), ekran yürüyüşü, kazanma ve kaybetme akışları üç ekran boyunda.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T23–T28 (kayıt dosyası `adb` ile okunarak).
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
@@ -1098,7 +1150,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Can:** 5 can ve 30 dakika kalır. Ortalama oyuncunun 100. bölüme **8. günde** gelmesi kabul edildi (ilk dilek 10–14 gündü).
 - **Alışkanlık:** hesaplar günde 3 oturum ve **10 dakikalık oturuma** dayanır; iki gerçek oyuncunun kaydına en yakın alışkanlık budur.
 - **Coin sayıları** (simülatörden okundu, yürürlükte; her biri ayar dosyasında "öneri" olarak işaretli ve değiştirilebilir): kalan hamle başına **4**, tamamlanan tablo başına **80**, "+5 hamle" **900**, bölüm öncesi booster'lar: renk bombası **500**, roket ve bomba **200**, "+3 hamle" **200**. Bölüm kazanmanın sabit ödülü ve günlük coin ödülü yok.
-- **Yer tutucu kalanlar:** bölüm içi dört booster'ın fiyatı (ölçülmedi), yan koleksiyon parçasının fiyatı ve oyuna özel alanlar (başlangıç, mağaza, reklamla coin; §23).
+- **Yer tutucu kalanlar:** bölüm içi dört booster'ın fiyatı (ölçülmedi), yan koleksiyon parçasının fiyatı, mağazanın paketleri ve setleri, günlük reklam sayısı (§23).
 
 **Neden 5 can.** 10 dakikalık oturumda 5 can hiçbir oturumu bitirmez; hızı yavaşlatmanın yolu oyuncuyu durdurmaktır. İlk dileği (10–14 gün) yalnızca iki ayar tutturuyor, ikisi de rahat oyuncu hedefiyle (§19) çelişiyor:
 
@@ -1133,6 +1185,37 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | 60 dakika (`sessions-60-minutes.json`) | 2. gün | 7. gün | 23. gün | 664 | Oturumların yüzde 63'ü canla biter; yaklaşık 163 "+5" isteği karşılanmaz |
 
 Oyuncular kayıttakinden uzun oynarsa hız artar ve coin daralır; kısa oynarsa coin birikir. İlk gerçek veride bakılacak ilk sayı oturum süresidir.
+**Hoş geldin hediyesi ve denge politikası (2026-10-14).** Kullanıcı yeni oyunculara başta biraz yardım istedi: **200 altın ve her booster'dan 3** (yedi tür, 21 booster). Reklamla altın **4** oldu (günde 3 kez). Kullanıcı sayıları kabaca yazdığını söyleyip bir denge politikası istedi; sayılar aşağıdaki kurallara bağlandı ve hepsi kurallardan geçiyor.
+
+Hediye artık simülasyona da giriyor: simüle edilen oyuncu ilk bölümden önce hediyeyi alır, raporlarda ayrı bir gelir sütunu olarak görünür. Karşılaştırma için `economy/no-welcome-gift.json` hediyeyi çıkarır.
+
+*Sabit ilişkiler.* Ayar dosyasına bakan testler bunları tutar (`EconomyBalancePolicyTests`). Bir sayı değişip ona bağlı olan değişmezse test kırmızıya döner.
+
+1. Hoş geldin altını en ucuz bölüm öncesi booster'ı alabilir, "+5 hamle"yi alamaz: 200 altın, roket ve bomba ya da "+3 hamle"nin fiyatı; "+5" 900. İlk mağaza ziyaretinde bir şey alınabilir, ilk "+5" oynayarak kazanılır.
+2. Hoş geldin booster'ları yedi türün hepsinden ve eşit sayıdadır: her booster parasız tanınır, hiçbiri öne çıkarılmaz.
+3. Bir booster seti, içindekilerin tek tek fiyatlarının toplamına satılır; indirim icat edilmez.
+4. Bir günün reklamla altını "+5"in onda birinden azdır (4 × 3 = 12 < 90): reklamla altın küçük bir ek olarak kalır.
+5. Ayar okuyucusu ayrıca şunları denetler: şölen "+5"i geri ödemez ("+5" 4 hamlelik altından pahalıdır), "+3 hamle" booster'ı 3 hamlelik altından pahalıdır.
+
+*Simülatörle bakılanlar.* Her ayar değişikliğinde `puzzle economy compare` ile bakılır:
+
+6. Ortalama oyuncu 100. bölüme hedef aralıkta, 7–9. günde gelir.
+7. Hoş geldin hediyesi bu günü en çok bir gün değiştirir.
+8. Ortalama oyuncunun kesesi 100., 300. ve 1000. bölümde 2–8 "+5" değerinde kalır.
+
+Ölçüm (4.000 oyuncu, aynı oyuncular iki ayarla):
+
+| | Hediyeyle | Hediyesiz |
+|---|---|---|
+| Ortalama oyuncu: 100. / 300. / 1000. bölüm | 8. / 25. / 90. gün | 8. / 25. / 90. gün |
+| Ortalama oyuncunun kesesi: 100. / 300. / 1000. bölümde | 4.004 / 4.192 / 6.744 | 3.720 / 3.756 / 6.504 |
+| Zayıf oyuncunun kesesi, 100. bölümde | 2.024 | 1.624 |
+| Zayıf oyuncunun karşılanmayan "+5" isteği, 100. bölüme kadar | 0,57 | 0,89 |
+
+Hediye hızı değiştirmiyor (kural 7). Keseye 200–400 altın ekliyor; ortalama oyuncunun kesesi 4,4–7,5 "+5" değerinde (kural 8). En çok zayıf oyuncuya yarıyor: ilk 100 bölümde karşılanmayan "+5" isteği üçte bir azalıyor.
+
+Simülasyonda hediyenin 12 bölüm içi booster'ı etkisiz sayılır, çünkü bölüm içi booster ölçülmedi. Oyunda ilk bölümleri bundan biraz daha kolaylaştırırlar.
+
 **Sınırlar**
 - Bölüm içi booster'lar ölçülmedi (hiçbir bot ne zaman kullanacağını bilmiyor). Gerçek para simüle edilmiyor; ücretsiz oyuncunun eksiği raporlanıyor.
 - Tek tek bölüm sıralaması gürültülüdür; yalnızca kademe bazındaki tablo sağlamdır.
