@@ -867,7 +867,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Boşa giden booster olmaz:** hiçbir şeyi değiştirmeyecek kullanım reddedilir ve tahta olduğu gibi kalır (vurulacak bir şey olmayan hücre, tahtanın dışı ya da boşluğu, yeniden dizilemeyen tahta). İstemci booster'ı ancak kabul edilen kullanımda harcar.
 - **Karıştırma** yalnızca gerçek bir yeniden dizilişi kabul eder: serbest taşlar yer değiştirir, hiçbiri yeniden boyanmaz, en az bir hücrede başka bir taş durur, tahtada eşleşme oluşmaz ve hamle kalır. Kutu, zincirli taş, özel taş ve malzeme yerinde kalır. Böyle bir diziliş bulunamazsa (örneğin tek serbest taş) kullanım reddedilir. Hamle kalmadığında oyunun kendi yaptığı karıştırma bundan farklıdır: oyun sürsün diye son çare olarak taşları yeniden boyayabilir.
 - Kaç booster'ın bulunduğu ve nasıl kazanıldığı motorun değil meta katmanın işidir. Kullanılan booster'lar deneme kaydına sırasıyla yazılır.
-- **Bilinen sınır:** kayıt, kullanılan booster'ların adlarını tutar; hangi hücreye ve hangi hamleden sonra kullanıldıklarını tutmaz. Booster'lı bir deneme kayıttan birebir yeniden oynatılamaz. İstemciye booster gelmeden önce hamle, booster ve "+5 hamle"yi aynı sırada tutan tek bir eylem kaydı eklenmeli (kayıt biçimine eklemeli değişiklik).
+- **Bilinen sınır (2026-10-14 kapandı):** kayıt, kullanılan booster'ların adlarını tutar; hangi hücreye ve hangi hamleden sonra kullanıldıklarını tutmaz. Booster'lı bir deneme kayıttan birebir yeniden oynatılamaz. İstemciye booster gelmeden önce hamle, booster ve "+5 hamle"yi aynı sırada tutan tek bir eylem kaydı eklenmeli (kayıt biçimine eklemeli değişiklik). Eklendi: kaydın isteğe bağlı `actions` alanı hamleyi, booster'ı nişanıyla, "+5"i ve reddedilen istekleri sırasıyla tutar; `AttemptReplay` denemeyi birebir yeniden oynatır (§23).
 - İstemcide (Unity) booster düğmeleri ve animasyonları yok; sıradaki istemci işi.
 
 ## 19. Ürün kararları
@@ -1066,6 +1066,17 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Henüz yok:** can denetimi (canı biten oyuncu yine başlayabilir; 7–8. aşamalar), cüzdanın ekranda görünmesi.
 - **Doğrulama:** 3.194 test. Unity'de `ProgressFileCheck` (gerçek bir katman 2 dosyası hoş geldin hediyesi ve dolu canla okunuyor, katman 3 olarak yazılıp yeniden başlatmadan sonra aynı okunuyor), ekran yürüyüşü, kazanma ve kaybetme akışları üç ekran boyunda.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T23–T28 (kayıt dosyası `adb` ile okunarak).
+
+**Denemenin sıralı kaydı (2026-10-14).** Arayüz planının 3. aşaması. Ekranda yine bir şey değişmedi.
+
+- **Motor:** `GameOptions.RecordActions` açıkken oyuncunun yaptıklarını sırasıyla tutar. Tutulanlar: hamleler, nişanıyla booster'lar, alınan "+5", karıştırma akışından çekip reddedilen karıştırma ve "+5" istekleri. Kapalıyken hiçbir şey tutulmaz ve oyun eskisi gibi oynar: motor izi aynı; ekonomi simülatörünün denetimi 48 saklı oyunu bu derlemeyle yeniden oynayıp kabul etti.
+- **Kayıt ve yeniden oynatma:** deneme kaydının son alanı `actions` isteğe bağlıdır; şema 1 kalır, eski satırlar okunur. `AttemptReplay` bir denemeyi kaydından yeniden oynatır, her eylemi ve sonu denetler. §18'deki "booster'lı deneme yeniden oynatılamaz" sınırı böylece kapandı.
+- **Telefonda:** biten her deneme (kazanılan, kesin kaybedilen ya da hamleden sonra bırakılan) için bir satır `attempts.jsonl` dosyasına eklenir. Araçların okuduğu satırın aynısıdır. Yazılamayan satır bekletilir ve yeniden denenir (en çok 64). `device.json` rastgele 128 bitlik bir cihaz kimliği tutar. Teklif açıkken kayıt yazılmaz.
+- **Bilinen:** ekranlar henüz booster ya da "+5" sunmadığı için oyunun yazdığı kayıtlarda yalnızca hamle var. Bölüm ortasında kapatılan oyun kayıt bırakmaz. Dosya sınırsız büyür (deneme başına yaklaşık 1,1 KB) ve henüz "Kayıtları sil" yok.
+- **Sonraki aşamalara notlar:**
+  - Karıştırma booster'ı eşleşme içeren her dizilimi reddediyor; büyük tahtalarda oyuncu sık sık "reddedildi" görebilir.
+  - Bugün deneme ancak bir hamleden sonra sayılıyor; yalnızca booster kullanıp çıkmak kayıt bırakmıyor ve can götürmüyor. Bu karar 10. aşamada verilecek.
+- **Doğrulama:** 3.250 test. Unity'de `AttemptLogCheck`: kazanılan, kaybedilen, bırakılan ve booster'lı denemeler yazıldı, Unity'nin okuyucusuyla okundu ve aynı sona yeniden oynatıldı. Ben de çalıştırdım: 5 kayıt, geçti.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 

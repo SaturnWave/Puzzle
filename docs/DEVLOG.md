@@ -29,8 +29,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.194 test geçti; Unity'de kayıt dosyası, şölen, dokunma ve ekran yürüyüşü denetimleri hatasız. Kayıt dosyası denetimini ayrıca ben çalıştırdım.
 - Henüz yok: can denetimi ve cüzdanın ekranda görünmesi.
 
+**Arayüz: planın 3. aşaması (§23)**
+- Motor, oyuncunun yaptıklarını sırasıyla kaydedebiliyor (hamle, booster, "+5", reddedilen istekler); deneme kaydından birebir yeniden oynatılabiliyor. §18'deki sınır kapandı.
+- Kayıt kapalıyken motor aynen oynuyor: motor izi aynı, ekonomi denetimi 48 saklı oyunu bu derlemeyle kabul etti.
+- Telefonda her biten deneme `attempts.jsonl` dosyasına bir satır yazıyor; `device.json` rastgele bir cihaz kimliği tutuyor.
+- 3.250 test geçti; Unity'de yeni `AttemptLogCheck` dahil bütün denetimler hatasız. Kayıt dosyası denetimini ben de çalıştırdım.
+
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 22 bilinen açık, 37 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 42 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

@@ -31,7 +31,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A04 | Bitiş şöleninin telefonda kare hızı ve gerçek parmakla atlanması ölçülmedi. | §23 | Orta | T12 |
 | A05 | 10 sütunlu tahtada hücre yaklaşık 36 pt; önerilen 44 pt dokunma hedefinin altında. | §2, §22 | Orta: yanlış dokunuş | T10 |
 | A06 | Bantlı bir parça, bandının çıktığı gösterilmeden hareket edebiliyor. | Oturum 20 | Düşük, görsel | Kullanıcının ayrı oturumunda ele alınıyor; sonucu henüz bu dalda yok |
-| A07 | Booster'lı bir deneme, kayıttan birebir yeniden oynatılamıyor (hamle ve booster sırası tutulmuyor). | §18 | Kalibrasyon verisi için önemli | Arayüz planının 3. aşaması |
+| A07 | Booster'lı bir deneme kayıttan birebir yeniden oynatılamıyordu. **Kapandı (2026-10-14, aşama 3):** eylemler sırasıyla kaydediliyor ve yeniden oynatılıyor. | §18 | — | Kapandı; telefonda T30–T33 |
 | A08 | Reklamlar yalnızca canlandırma; gerçek para paketleri satışta değil. | §23 | Bilinçli | Yayın hazırlığında |
 | A09 | Bölüm içi dört booster'ın etkisi ölçülmedi; fiyatları yer tutucu. Hoş geldin hediyesinin 12 bölüm içi booster'ı simülasyonda etkisiz sayılıyor. | §25 | Orta | Bot kuralı yazılınca |
 | A10 | Ses ve titreşim yok. | §23 | Bilinçli | Sonraki faz |
@@ -45,6 +45,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A18 | `generate --repair` 899. bölümü her seferinde yeniden üretiyor. | Oturum 12 | Zararsız | — |
 | A19 | Can denetimi yok: canı bitmiş oyuncu bölüm başlatabiliyor; kayıp sayacı 5'te durur. | Aşama 2 | Bilinçli, geçici | Arayüz planının 7–8. aşamaları; T27 |
 | A20 | Cüzdan oyunda henüz görünmüyor; yalnızca kayıt dosyasında. | Aşama 2 | Geçici | Ekran aşamaları |
+| A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
 | A22 | Uzun dönem adları (ör. "Amerika: Hudson Nehri ve Sınır Boyları") koleksiyon plaketinde iki düğmenin arasına sığmak için küçük yazılıyor; harita da uzun adı küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -89,6 +90,11 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T25 | Kayıp bir can götürür, 30 dakikalık saati başlatır | Can doluyken (`"livesShort":0`) hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı ve telefonun saatini (`adb shell date +%s`) oku | `"livesShort":1`; `nextLifeAtUnixSeconds` kaybettiren hamlenin anı artı 1800 (birkaç saniye içinde). Yarım saat içinde ikinci kayıp: 2, aynı `nextLifeAtUnixSeconds` | Aşama 2 | Bekliyor |
 | T26 | Hamlesiz çıkış ve yarıda kapatma ücretsiz | Bir bölüm aç, hamle yapmadan yuvarlak düğmeyle müzeye dön, dosyayı oku. Sonra bir bölümde birkaç hamle oyna, uygulamayı kaydırarak kapat, aç, dosyayı oku | İkisi de `livesShort`'u değiştirmez; ikincisi yalnızca denemeyi sayar (`attemptsOnLevel` bir artar), oyun salonda açılır | Aşama 2 | Bekliyor |
 | T27 | Can bitince oyun bozulmaz | 30 dakika içinde beş bölüm kaybet, sonra altıncıyı | Oyun sürer (can denetimi henüz yok, A19); dosya `"livesShort":5`'te kalır, altıncı kayıp bir şey değiştirmez | Aşama 2 | Bekliyor |
+| T29 | Cihaz kimliği | Yeni APK'yı kur, oyunu bir kez aç; `adb shell run-as com.saturnwave.puzzle cat files/device.json` ile kimliği not et; uygulamayı durdurup aç, yeniden oku; aynı APK'yı üstüne kur, oku; kaldırıp kur, oku | İlk üç okumada aynı kimlik; kaldırıp kurunca yeni bir kimlik | Aşama 3 | Bekliyor |
+| T30 | Kazanılan bölümün satırı | `attempts.jsonl` satır sayısını not et; hamle kalmışken bir bölüm kazan, şölen başlar başlamaz uygulamayı kapat; son satırı oku | Bir satır fazla: `"result":"won"`, `"client":"unity"`, `deviceId` device.json'daki kimlik, `moveLimit` bölümün kendi limiti, hamle kadar `{"act":"move"}` | Aşama 3 | Bekliyor |
+| T31 | Kaybedilen bölümün satırı | Hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı oku | Bir satır fazla: `"result":"outOfMoves"`, `movesUsed` bölümün hamle sayısı | Aşama 3 | Bekliyor |
+| T32 | Bırakma ve kapatma | Hamle yapmadan bölümden çık; iki hamle oynayıp çık; bir hamle oynayıp uygulamayı kapat; her adımdan sonra satırları say | İlki satır eklemez; ikincisi `"result":"abandoned"`, `"movesUsed":2` ile bir satır ekler; üçüncüsü satır eklemez | Aşama 3 | Bekliyor |
+| T33 | Araçlar telefonun dosyasını okur | Dosyayı bilgisayara al (`adb shell run-as com.saturnwave.puzzle cat files/attempts.jsonl > phone-attempts.jsonl`); `dotnet run --project src/Puzzle.Cli -c Debug -- humans phone-attempts.jsonl --out out/phone-humans.csv` | Her satır okunur, okunamayan satır yok; denemeler bölümlerine sayılır | Aşama 3 | Bekliyor |
 | T28 | Kaydedilen an yeniden başlatmadan sağ çıkar | Bir kayıptan sonra `livesShort` ve `nextLifeAtUnixSeconds`'u not et; `adb shell am force-stop com.saturnwave.puzzle` ile durdur, aç; yarım saat içinde bir bölüm kazan, dosyayı oku | `livesShort` ve `nextLifeAtUnixSeconds` öncekiyle birebir aynı; `coins` ve `levelsWon` kazançla arttı | Aşama 2 | Bekliyor |
 
 ### D. Can ve saat
