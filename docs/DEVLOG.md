@@ -50,8 +50,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Booster'la başlayan denemeler kayıttan aynı sona yeniden oynatılıyor (gerçek bölümlerle test edildi). Motor, kurallar ve ekonomi ayarları değişmedi.
 - 3.322 test geçti; Unity'de bütün denetimler, kartın içinden geçen yürüyüş ve tasarımla karşılaştırma hatasız. Görüntülere baktım: kart çizime çok yakın.
 
+**Arayüz: planın 9. aşaması (§23)**
+- Tahta plaketleri, duraklatmalı yüksek raf ve kazanma kartı tasarımdaki hâlinde. Kazanma kartı ödenen altını sayarak gösteriyor; salonun altın satırı tam o kadar artıyor.
+- Duraklatma çıkma kartını açıyor; kart hamleden önce mi sonra mı çıkıldığına göre can bedelini söylüyor.
+- 3.349 test geçti; Unity'de bütün denetimler hatasız, şölen 5,5 saniye sınırında. Görüntülere baktım: tahta ve kazanma kartı çizimle neredeyse aynı.
+
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 60 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 70 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

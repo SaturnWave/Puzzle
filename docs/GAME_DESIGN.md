@@ -1102,6 +1102,21 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Doğrulama:** 3.322 test. Unity'de bütün denetimler, kartın içinden geçen ekran yürüyüşü, yeterli ve yetersiz altınla satın alma, tasarımla yan yana karşılaştırma (kart çizime çok yakın).
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T100–T109.
 
+**Tahta plaketleri, raf ve kazanma kartı (2026-10-14).** Arayüz planının 9. aşaması.
+
+- **Plaketler:** parça veren bölümde sol plaket hedeflerin üstünde "BÖLÜM N" der. Sağ plaket "PARÇA k / m" der; altında tablonun örtülü küçük bir kopyası durur, kazanılacak parça yaldızla aydınlanır. Parça vermeyen bölüm eski düzende kalır.
+- **Raf:** tasarımdaki ahşap tahta, daha yüksek, beş yerli: duraklatma ve 10. aşamanın dört booster'ı için yer.
+- **Duraklatma:** bölümden çıkma kartını açar. Kartın notu çıkmanın neye mal olacağını söyler: hamleden sonra bir can, önce hiçbir şey. Basıldığı andan sonra tahta dokunuş almaz; sürmekte olan hamle önce sonuna kadar gösterilir.
+- **Kazanma kartı:** WinTR çizimindeki gibi:
+  - geniş bir oyukta kazanılan parça (yeni çizim `alcove-wide`);
+  - yenisi halkalı ilerleme noktaları;
+  - sayarak artan "+N" altın hapı ve "Kalan N hamle fırçaya dönüştü" satırı.
+
+  Altın, deneme hesabının ödediği kuraldan gelir; salonun altın satırı tam o kadar artar. Son hamlede kazanılan bölüm "+0" göstermez. Şölen 5,5 saniye sınırında kalır. Kart, şölen izlense de atlansa da oynatacak bir şeyi olmasa da gelir.
+- **Değişmeyenler:** motor. Kaybetme ve çıkma kartlarının yeni görünümü 11. aşamada.
+- **Doğrulama:** 3.349 test. Unity'de bütün denetimler, yeni durumlarıyla şölen ve dokunma denetimleri, oynatma kipi, ekran yürüyüşü ve tasarımla karşılaştırma hatasız. Tahta ve kazanma kartı çizimle neredeyse aynı.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T110–T119.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici

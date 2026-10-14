@@ -160,6 +160,21 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T108 | Geri tuşu sırası | Teklif kartı açıkken geri tuşuna art arda bas | Önce teklif kartı, sonra bölüm kartı kapanır, sonra salonda bir şey olmaz | Aşama 8 | Bekliyor |
 | T109 | Kart açıkken kapatma | Booster seçiliyken uygulamayı kapat, aç | Hiçbir şey harcanmamış | Aşama 8 | Bekliyor |
 
+### F4. Tahta plaketleri, duraklatma ve kazanma kartı (aşama 9)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T110 | Parça veren bölümün plaketleri | 46 bölüm kazanmış oyuncuyla 47. bölümü aç; bir hamle oyna | Solda "BÖLÜM 47", hedef ve 41; sağda "PARÇA 7 / 10", tablo karanlık, yalnızca bir parça yaldızla çevrili; sayılar tahtayla birlikte azalır | Aşama 9 | Bekliyor |
+| T111 | Parça vermeyen bölüm | 101. bölümü ya da daha önce kazanılmış bir bölümü aç | Solda "BÖLÜM" ve numara, sağda "HEDEF" ve hedefler | Aşama 9 | Bekliyor |
+| T112 | Zincirleme sırasında duraklatma | Uzun bir zincirlemede duraklatmaya bas, tahtada kaydır; kartı 10 saniye açık bırak; geri tuşuna bas | Hamle oynanmaz; tahta durunca "Bölümden çık?" gelir; kart açıkken hiçbir şey kıpırdamaz; geri tuşu kartı kapatır, oyun sürer | Aşama 9 | Bekliyor |
+| T113 | Çıkmanın bedeli | Hamleden önce duraklat → "Henüz hamle yapmadın, can gitmez" → Müze; sonra hamleden sonra aynısı | İlkinde can aynı; ikincisinde "Çıkarsan 1 can gider" ve bir can eksik | Aşama 9 | Bekliyor |
+| T114 | Kazanma kartı | Hamle kalmışken bir bölüm kazan; "Devam" | Şölen, sonra parça, "Yeni parça: k / 10", yenisi kırmızı halkalı noktalar, +0'dan sayan "+N", "Kalan N hamle fırçaya dönüştü"; N = 4 × kalan hamle; salonda altın tam N artar | Aşama 9 | Bekliyor |
+| T115 | Şöleni atlama | Şölen sırasında ekrana dokun | Şölen hemen biter, aynı kart aynı +N ile gelir | Aşama 9 | Bekliyor |
+| T116 | Son hamlede kazanma | Bir bölümü son hamlede kazan | Şölen yok; altın satırında yalnızca "Son hamlede tamamlandı", hap yok; altın değişmez | Aşama 9 | Bekliyor |
+| T117 | Kart altında duraklatma | Herhangi bir kart açıkken soluk duraklatma diskine dokun; kazanma kartında geri tuşuna bas | Diske dokunmak bir şey yapmaz; geri tuşu salona götürür | Aşama 9 | Bekliyor |
+| T118 | Tablonun son parçası | Bir tablonun son parçasını veren bölümü kazan | "Yeni parça: 10 / 10", bütün noktalar yaldızlı, sonuncusu halkalı | Aşama 9 | Bekliyor |
+| T119 | Katlanır ekranda raf | Telefonu aç, sonra dış ekranda tekrarla | Raf diskleri ve duraklatma rahat basılıyor; kart tamamen ekranda | Aşama 9 | Bekliyor |
+
 ### G. Görünüm
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
