@@ -11,8 +11,18 @@ namespace Puzzle.Client.Layout
     /// screen the workbench is drawn smaller, and smaller still where a cutout or a system bar takes more of the
     /// height, before the painting gives up what it needs to be seen. No Unity dependency.
     /// </summary>
+    /// <remarks>
+    /// What the page's top takes (the cornice, the wallet row, the plaque) comes out of the wall in this order: the
+    /// painting first gives up what it has over the height the workbench gives way to (<see cref="PictureHeightTheBenchGivesWayTo"/>
+    /// on a tight screen, <see cref="RoomyPictureHeightTheBenchGivesWayTo"/> on a roomy one); then the workbench is
+    /// drawn smaller, down to its smallest; only then does the painting go under that height, and on no screen the
+    /// game supports under <see cref="SmallestPicture"/>.
+    /// </remarks>
     public sealed class HallLayout
     {
+        /// <summary>The least height the painting has on any screen the game supports: the tests hold every layout to it.</summary>
+        public const float SmallestPicture = 100f;
+
         /// <summary>The frame is this wide on every side of the picture (the frame's own drawing).</summary>
         public const float FrameWidth = 23f;
 
@@ -34,11 +44,15 @@ namespace Puzzle.Client.Layout
 
         /// <summary>
         /// How large the workbench is drawn on the tight screen; the smallest it is ever drawn; and the height the
-        /// picture keeps while the bench can still shrink for it.
+        /// picture keeps while the bench can still shrink for it, on a tight screen and on a roomy one. The design
+        /// draws the painting 165 of the game's points high on its own phone (HomeTR: 302 of 390 points wide,
+        /// Wheatstacks); the roomy height comes as near that as the wallet row leaves room for with a bench of
+        /// three quarters.
         /// </summary>
         private const float TightBench = 0.7f;
-        private const float SmallestBench = 0.45f;
-        private const float PictureHeightTheBenchGivesWayTo = 136f;
+        public const float SmallestBench = 0.45f;
+        public const float PictureHeightTheBenchGivesWayTo = 136f;
+        public const float RoomyPictureHeightTheBenchGivesWayTo = 156f;
 
         /// <summary>The skirting board along the foot of the wall.</summary>
         public const float SkirtingHeight = 14f;
@@ -108,7 +122,7 @@ namespace Puzzle.Client.Layout
             float TallestPictureOver(float benchScale) => roomTop - benchFeet - BenchHeight * benchScale - roomOverTheBench;
 
             float usualBench = page.Between(TightBench, 1f);
-            float missing = PictureHeightTheBenchGivesWayTo - TallestPictureOver(usualBench);
+            float missing = page.Between(PictureHeightTheBenchGivesWayTo, RoomyPictureHeightTheBenchGivesWayTo) - TallestPictureOver(usualBench);
             BenchScale = Math.Clamp(usualBench - Math.Max(0f, missing) / BenchHeight, SmallestBench, 1f);
             FloorLine = benchFeet + BenchFeetBelowFloorLine * BenchScale;
             float tallestPicture = Math.Max(1f, TallestPictureOver(BenchScale));

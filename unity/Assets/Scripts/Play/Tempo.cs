@@ -153,6 +153,12 @@ namespace Puzzle.Client.Play
         public const float PageTurns = 0.3f;
 
         /// <summary>
+        /// Coins that arrive (or leave) while the wallet row is seen: its amount counts from the old one to the new.
+        /// It is a function of the museum's clock, never an act of its timeline, so the museum listens meanwhile.
+        /// </summary>
+        public const float CoinsCount = 0.9f;
+
+        /// <summary>
         /// A jigsaw piece is picked up from the tray and grows to its size in the painting; let go near its place it
         /// drops in, and its edge lights up for a moment; let go anywhere else it goes back to the tray. The place
         /// it left in the tray is filled by the next piece that waited behind.

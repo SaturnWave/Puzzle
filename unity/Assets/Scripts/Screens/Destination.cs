@@ -66,8 +66,8 @@ namespace Puzzle.Client.Screens
 
     /// <summary>
     /// What a press on a page of the museum asks for. A closed set (private constructor): the player goes to
-    /// another page, starts the level they stand on, opens a painting's jigsaw, or does something that stays on the
-    /// page that is shown.
+    /// another page, starts the level they stand on, opens a painting's jigsaw, opens or closes a card that hangs
+    /// over the page, or does something that stays on the page that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -104,6 +104,16 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The button under a room that has just been restored: on to the hall as the player's progress has it.</summary>
         public sealed class GoOnFromTheRestoredRoom : MuseumPress
+        {
+        }
+
+        /// <summary>The heart's pill of the wallet row, or the play button of a player without a life: the card that tells of the lives.</summary>
+        public sealed class OpenTheLivesCard : MuseumPress
+        {
+        }
+
+        /// <summary>A card's button that closes it, or its "Tamam": the card goes up and the page is the player's again.</summary>
+        public sealed class CloseTheCard : MuseumPress
         {
         }
 

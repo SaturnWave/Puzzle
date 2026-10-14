@@ -23,8 +23,9 @@ namespace Puzzle.Client.Collections
     /// comes forward to be looked at when it is touched; a painting whose pieces wait leads to its jigsaw.
     /// </summary>
     /// <remarks>
-    /// Left out of the design, because the game has nothing behind them: the gold, the lives and the settings over
-    /// the plaque, and the row of room tabs that scrolls sideways (the two round buttons turn the rooms instead).
+    /// Over the plaque the museum's stage shows the player's coins and lives (<see cref="WalletRow"/>). Left out of
+    /// the design, because the game has nothing behind them yet: the wallet row's plus buttons and the settings'
+    /// button, and the row of room tabs that scrolls sideways (the two round buttons turn the rooms instead).
     /// </remarks>
     public sealed class CollectionPage : IMuseumPage
     {

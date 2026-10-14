@@ -14,6 +14,7 @@ using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Levels;
+using Puzzle.Meta;
 using Puzzle.Museum;
 using Puzzle.Museum.Catalogue;
 using UnityEditor;
@@ -45,12 +46,19 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The board of the level the player stands on, with the card that asks whether they mean to leave it.</summary>
         Leaving,
+
+        /// <summary>The hall with the lives card hanging over it, as the heart's pill opens it.</summary>
+        Lives,
     }
 
-    /// <summary>A player as the picture command is told of one: so many levels won, so many of the pieces they gave in place.</summary>
+    /// <summary>
+    /// A player as the picture command is told of one: so many levels won, so many of the pieces they gave in place,
+    /// and their wallet at the tools' instant (<see cref="StoryStudio.Clock"/>): the one a new player starts with, or
+    /// one with the coins, the lives, the wait for the next life, the boosters and the day's ads the state names.
+    /// </summary>
     internal readonly struct PlayerState
     {
-        private static readonly Regex Pattern = new Regex(@"^(\d+)(?:\+(\d+))?$");
+        private static readonly Regex Pattern = new Regex(@"^(\d+)(?:\+(\d+))?((?:;[a-z]+=[0-9:]+)*)$");
 
         private PlayerState(PlayerProgress progress, string label)
         {
@@ -63,24 +71,116 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The state as it is written into a picture's file name.</summary>
         public string Label { get; }
 
+        /// <summary>The player's wallet as the museum's row shows it at the tools' instant.</summary>
+        public WalletView Wallet => WalletView.Of(Progress.Wallet, StoryStudio.Economy.Lives, StoryStudio.Clock.Now);
+
         /// <summary>
         /// Reads "46" (46 levels won, no piece placed) or "46+42" (and 42 pieces in place, in the museum's order:
         /// painting by painting, each painting's pieces by their numbers). Asking for more pieces than the levels
-        /// gave places them all.
+        /// gave places them all. After either, the wallet may be named, each part after a semicolon, in any order:
+        /// coins=1250, lives=3 (of the most a meter holds), next=12:34 (minutes and seconds until the next life,
+        /// with fewer lives than the most; a whole life's time when left out), boosters=2 (of every kind), ads=1
+        /// (watched today for extra moves and for coins each). What is not named is the starting wallet's:
+        /// "46+42;coins=1250;lives=3;next=12:34".
         /// </summary>
-        /// <exception cref="ArgumentException">The text is neither.</exception>
+        /// <exception cref="ArgumentException">The text is none of these.</exception>
         public static PlayerState Parse(string text)
         {
             Match match = Pattern.Match(text);
             if (!match.Success)
             {
-                throw new ArgumentException($"\"{text}\" is not a player's state: write the levels won, such as 46, or 46+42 with the pieces in place.");
+                throw new ArgumentException(
+                    $"\"{text}\" is not a player's state: write the levels won, such as 46, or 46+42 with the pieces in place, and the wallet after it, such as 46+42;coins=1250;lives=3;next=12:34.");
             }
 
             var won = new PlayerProgress(ShotPlan.WholeNumber(match.Groups[1].Value), attemptsOnLevel: 0);
             int asked = match.Groups[2].Success ? ShotPlan.WholeNumber(match.Groups[2].Value) : 0;
-            PlayerProgress progress = won.WithWaitingPiecesPlaced(Math.Min(asked, won.Museum.PiecesWaiting));
-            return new PlayerState(progress, $"won{progress.LevelsWon}-placed{progress.Museum.PiecesPlaced}");
+            PlayerProgress placed = won.WithWaitingPiecesPlaced(Math.Min(asked, won.Museum.PiecesWaiting));
+            (Wallet wallet, string named) = WalletNamedIn(match.Groups[3].Value);
+            PlayerProgress progress = placed.WithWallet(wallet);
+            return new PlayerState(progress, $"won{progress.LevelsWon}-placed{progress.Museum.PiecesPlaced}{named}");
+        }
+
+        /// <summary>The wallet the parts after the progress name, from the starting wallet, and what they add to the state's label.</summary>
+        /// <exception cref="ArgumentException">A part names nothing a wallet has, or a value it cannot have.</exception>
+        private static (Wallet Wallet, string Label) WalletNamedIn(string parts)
+        {
+            EconomyRules rules = StoryStudio.Economy;
+            DateTimeOffset now = StoryStudio.Clock.Now;
+            Wallet wallet = rules.StartingWallet;
+            int? lives = null;
+            TimeSpan? next = null;
+            string label = string.Empty;
+            foreach (string part in parts.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] nameAndValue = part.Split('=');
+                string value = nameAndValue[1];
+                switch (nameAndValue[0])
+                {
+                    case "coins":
+                        long coins = long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long amount)
+                            ? amount
+                            : throw new ArgumentException($"\"{value}\" is not an amount of coins.");
+                        wallet = wallet.WithCoins(new Coins(coins));
+                        label += $"-c{coins}";
+                        break;
+                    case "lives":
+                        lives = ShotPlan.WholeNumber(value);
+                        label += $"-l{lives}";
+                        break;
+                    case "next":
+                        next = MinutesAndSeconds(value);
+                        label += $"-n{value.Replace(":", string.Empty)}";
+                        break;
+                    case "boosters":
+                        int each = ShotPlan.WholeNumber(value);
+                        wallet = wallet.WithShelf(BoosterKinds.All.Aggregate(BoosterShelf.Empty, (shelf, kind) => shelf.With(kind, each)));
+                        label += $"-b{each}";
+                        break;
+                    case "ads":
+                        int watched = ShotPlan.WholeNumber(value);
+                        wallet = wallet.WithAds(new AdsWatched(DayStamp.Of(now), forExtraMoves: watched, forCoins: watched));
+                        label += $"-a{watched}";
+                        break;
+                    default:
+                        throw new ArgumentException($"\"{nameAndValue[0]}\" is nothing a wallet has: write coins, lives, next, boosters or ads.");
+                }
+            }
+
+            return (wallet.WithLives(MeterOf(lives, next, rules.Lives, now)), label);
+        }
+
+        /// <summary>A meter with so many lives there and the next back after the wait; a full one where no number is named.</summary>
+        /// <exception cref="ArgumentException">More lives than a meter holds, or a wait for a meter that is full.</exception>
+        private static LifeMeter MeterOf(int? lives, TimeSpan? next, LifeRules rules, DateTimeOffset now)
+        {
+            int missing = rules.Max - (lives ?? rules.Max);
+            if (missing < 0)
+            {
+                throw new ArgumentException($"A meter holds {rules.Max} lives at the most, not {lives}.");
+            }
+
+            if (missing == 0)
+            {
+                return next == null ? LifeMeter.Full : throw new ArgumentException("A full meter waits for no life: name fewer lives with next.");
+            }
+
+            TimeSpan wait = next ?? rules.PerLife;
+            if (wait <= TimeSpan.Zero || wait > rules.PerLife)
+            {
+                throw new ArgumentException($"The next life is back within {rules.PerLife.TotalMinutes} minutes of a loss, not {wait}.");
+            }
+
+            return new LifeMeter(missing, now + wait);
+        }
+
+        /// <exception cref="ArgumentException">The text is not minutes and seconds.</exception>
+        private static TimeSpan MinutesAndSeconds(string text)
+        {
+            string[] parts = text.Split(':');
+            return parts.Length == 2
+                ? TimeSpan.FromMinutes(ShotPlan.WholeNumber(parts[0])) + TimeSpan.FromSeconds(ShotPlan.WholeNumber(parts[1]))
+                : throw new ArgumentException($"\"{text}\" is no wait: write minutes and seconds, such as 12:34.");
         }
     }
 
@@ -183,10 +283,11 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,controls] [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,controls] [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored]
     /// [-paintingsFrom ../art/paintings] [-screenWalk]</c>.
-    /// A state is the levels won, or the levels won and the pieces in place. Each page, state and screen gives
+    /// A state is the levels won, or the levels won and the pieces in place, with the wallet after it where it is
+    /// not a new player's (<c>46+42;coins=1250;lives=3;next=12:34</c>, see <see cref="PlayerState.Parse"/>). Each page, state and screen gives
     /// one picture in out/unity/shots, named <c>screen-&lt;page&gt;-&lt;state&gt;-&lt;size&gt;.png</c>; the jigsaw
     /// gives one per moment. <c>-paintingsFrom</c> shows the paintings from picture files of a folder (laid out as
     /// the catalogue names them) instead of the ones the game carries: it is how the screens are looked at with
@@ -258,6 +359,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Jigsaw => JigsawShots.Shoot(plan.Painting ?? StandingOf(state, studio).Painting, plan.JigsawMoments, state, screen, studio),
             ShotPage.Restored => ShootTheRestoredRoom(state, screen, studio),
             ShotPage.Leaving => ShootTheLeavingCard(state, screen, studio),
+            ShotPage.Lives => ShootTheLivesCard(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 
@@ -350,6 +452,27 @@ namespace Puzzle.Client.EditorTools
             return 1;
         }
 
+        /// <summary>The hall after the heart's pill was pressed: the lives card, come down in front of the dark.</summary>
+        private static int ShootTheLivesCard(PlayerState state, ScreenShape screen, Studio studio)
+        {
+            using MuseumStage museum = OpenTheMuseum(MuseumDoor.Home, state, screen, studio);
+            if (museum.LivesPixel is not Vector2 heart)
+            {
+                throw new InvalidOperationException("The hall shows no heart's pill to press.");
+            }
+
+            museum.PointerDown(heart);
+            museum.PointerUp();
+            StageSteps.Settle(museum);
+            if (!museum.ShowsTheLivesCard || museum.LivesCardDonePixel == null)
+            {
+                throw new InvalidOperationException("A press on the heart's pill did not bring the lives card down.");
+            }
+
+            WritePicture(museum, screen, studio.FileName("lives", state, screen));
+            return 1;
+        }
+
         private static string CollectionName(ShotPlan plan) =>
             plan.CollectionRoom is RoomNumber room ? $"collection-room{room.Value:D2}" : "collection";
 
@@ -396,7 +519,7 @@ namespace Puzzle.Client.EditorTools
             var visit = new MuseumVisit(
                 progress.Museum, studio.Paintings.Catalogue, studio.Levels[progress.LevelIndexIn(studio.Levels.Count)].Id.Value,
                 hasWonEveryLevel: progress.LevelsWon >= studio.Levels.Count);
-            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door);
+            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet);
             museum.Fit(screen);
             return museum;
         }

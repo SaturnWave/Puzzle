@@ -49,11 +49,11 @@ namespace Puzzle.Client.EditorTools
     /// design canvas' own picture of the screen at the left, scaled to the same height, and at the right what the
     /// game's camera shows of the same screen on the phone the canvas is drawn for.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.DesignPairs.Run
-    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost] [-pairState 46+45] [-pairDrawings ../out/design/next/project]
+    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost] [-pairState 46+45;coins=1250] [-pairDrawings ../out/design/next/project]
     ///   -pairScreens   which screens (all of them when left out)
     ///   -pairState     the player, as the picture command is told of one: levels won, or levels won + pieces in
-    ///                  place. Left out, it is the player the canvas draws: on level 47, with the fifth painting's
-    ///                  sixth piece waiting to be placed
+    ///                  place, and the wallet after it. Left out, it is the player the canvas draws: on level 47,
+    ///                  with 1.250 coins, every life and the fifth painting's sixth piece waiting to be placed
     ///   -pairDrawings  the folder of the canvas' pictures (HomeTR.png and its fellows); they are not part of
     ///                  the repository, so a machine without them names what is missing and writes nothing
     /// The pictures go to out/unity/shots/pair-&lt;screen&gt;-1080x2340.png. A pair compares what is built, how it is
@@ -67,8 +67,8 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The canvas draws a phone of 390 by 844 points; this is the game's screen of that shape.</summary>
         private static readonly ScreenShape Screen = new ScreenShape(1080, 2340);
 
-        /// <summary>The player of the canvas: 46 levels won, four paintings whole and five pieces of the fifth in place, its sixth waiting.</summary>
-        private const string PlayerOfTheCanvas = "46+45";
+        /// <summary>The player of the canvas: 46 levels won, four paintings whole and five pieces of the fifth in place, its sixth waiting; 1.250 coins and every life.</summary>
+        private const string PlayerOfTheCanvas = "46+45;coins=1250";
 
         /// <summary>The two pictures stand this many pixels apart, on the sheet's own dark.</summary>
         private const int Gap = 24;

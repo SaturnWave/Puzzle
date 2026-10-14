@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Puzzle.Client.Flow;
 using Puzzle.Museum;
 
@@ -53,6 +54,13 @@ namespace Puzzle.Client.Layout
     /// always drawn in full; how many more rooms are drawn by themselves is what the sheet's height allows, and all
     /// other rooms are in a stretch, so every screen shows the whole museum. No Unity dependency.
     /// </summary>
+    /// <remarks>
+    /// A short screen takes height from the map in this order: first the rows lose what they grow by on a tall
+    /// screen; then the plan draws fewer rooms by themselves (the second row of rooms ahead, the first, and last
+    /// the room left behind); then the wall over and under the frame narrows to its least; and last the rows that
+    /// stand for a stretch of rooms are drawn lower, down to what still holds their numbers. The rooms drawn in
+    /// full never lose what their furnishing needs.
+    /// </remarks>
     public sealed class MapLayout
     {
         /// <summary>The frame is this wide on every side of the sheet (the frame's own drawing).</summary>
@@ -69,6 +77,16 @@ namespace Puzzle.Client.Layout
 
         /// <summary>Under the plan's lowest wall the sheet has room for the entrance's door swing and its label.</summary>
         public const float SheetFootMargin = 22f;
+
+        /// <summary>The wall over the frame and under it, on a tight screen and a roomy one, and the least either narrows to on a short screen.</summary>
+        private const float TightWallOverTheFrame = 14f;
+        private const float RoomyWallOverTheFrame = 22f;
+        private const float TightWallUnderTheFrame = 12f;
+        private const float RoomyWallUnderTheFrame = 20f;
+        private const float LeastWallAroundTheFrame = 6f;
+
+        /// <summary>A row that stands for a stretch of rooms holds only their numbers: on a short screen it is drawn as low as this.</summary>
+        private const float LowestStretch = 24f;
 
         /// <summary>
         /// The depths a map may have, from the one that shows most to the one every screen has room for. The room
@@ -153,12 +171,25 @@ namespace Puzzle.Client.Layout
             PageLayout page = PageLayout.Of(screen);
             float frameWidth = Math.Min(WidestFrame, page.View.Width - 2 * WallBesideFrame);
             float sheetWidth = page.View.OnWholePixels(frameWidth - 2 * FrameWidth);
-            float sheetTop = page.View.OnWholePixels(page.RailBottom - page.Between(14f, 22f) - FrameWidth);
-            float lowestSheetBottom = page.BarReach + page.Between(12f, 20f) + FrameWidth;
-            float tallestSheet = sheetTop - lowestSheetBottom;
+            float wallOver = page.Between(TightWallOverTheFrame, RoomyWallOverTheFrame);
+            float wallUnder = page.Between(TightWallUnderTheFrame, RoomyWallUnderTheFrame);
+            float TallestSheetBetween(float over, float under) => SheetTopUnder(page, over) - (page.BarReach + under + FrameWidth);
 
-            FloorPlan plan = DeepestPlanThatFits(here, tallestSheet);
+            FloorPlan plan = DeepestPlanThatFits(here, TallestSheetBetween(wallOver, wallUnder)) ?? FloorPlan.Of(here, DepthsByPreference[DepthsByPreference.Length - 1]);
             List<(PlanRowKind Kind, int RowAhead)> parts = PartsOf(plan);
+
+            // Where not even the shallowest plan fits, the wall around the frame narrows as far as it must.
+            float missing = SheetHeightOf(parts, RowMeasure.Least) - TallestSheetBetween(wallOver, wallUnder);
+            float canNarrow = wallOver + wallUnder - 2 * LeastWallAroundTheFrame;
+            if (missing > 0f && canNarrow > 0f)
+            {
+                float narrowed = Math.Min(1f, missing / canNarrow);
+                wallOver -= narrowed * (wallOver - LeastWallAroundTheFrame);
+                wallUnder -= narrowed * (wallUnder - LeastWallAroundTheFrame);
+            }
+
+            float sheetTop = SheetTopUnder(page, wallOver);
+            float tallestSheet = TallestSheetBetween(wallOver, wallUnder);
             float[] heights = HeightsOf(parts, tallestSheet);
 
             float floorLeft = -sheetWidth / 2 + SheetSideMargin + WallThickness;
@@ -189,7 +220,12 @@ namespace Puzzle.Client.Layout
             throw new InvalidOperationException($"The plan has no row {rowAhead} of rooms ahead.");
         }
 
-        private static FloorPlan DeepestPlanThatFits(RoomNumber here, float tallestSheet)
+        /// <summary>The top of the sheet, inside the frame that hangs this far under the picture rail.</summary>
+        private static float SheetTopUnder(PageLayout page, float wallOverTheFrame) =>
+            page.View.OnWholePixels(page.RailBottom - wallOverTheFrame - FrameWidth);
+
+        /// <summary>The plan that draws the most rooms by themselves and fits the sheet at its rows' least heights; nothing where not even the shallowest fits.</summary>
+        private static FloorPlan? DeepestPlanThatFits(RoomNumber here, float tallestSheet)
         {
             foreach (PlanDepth depth in DepthsByPreference)
             {
@@ -200,8 +236,7 @@ namespace Puzzle.Client.Layout
                 }
             }
 
-            // No screen the game supports is this short; the shallowest plan is then drawn and its foot runs under the bar.
-            return FloorPlan.Of(here, DepthsByPreference[DepthsByPreference.Length - 1]);
+            return null;
         }
 
         /// <summary>The rows a plan has, from the top of the sheet down.</summary>
@@ -248,20 +283,32 @@ namespace Puzzle.Client.Layout
             return height;
         }
 
-        /// <summary>Each row's height: its least, and of what the sheet has left over, a share by how much the row may grow.</summary>
+        /// <summary>
+        /// Each row's height: its least, and of what the sheet has left over, a share by how much the row may grow.
+        /// A sheet lower than the rows' least takes what is missing from the rows of stretches, alike, as far as
+        /// they can give it; no screen the game supports is shorter than that, and the plan's foot would then run
+        /// under the bar.
+        /// </summary>
         private static float[] HeightsOf(List<(PlanRowKind Kind, int RowAhead)> parts, float tallestSheet)
         {
             float least = SheetHeightOf(parts, RowMeasure.Least);
             float most = SheetHeightOf(parts, RowMeasure.Most);
             float grown = most > least ? Math.Clamp((tallestSheet - least) / (most - least), 0f, 1f) : 0f;
+            int stretches = parts.Count(part => IsAStretch(part.Kind));
+            float lowered = stretches > 0 ? Math.Max(0f, least - tallestSheet) / stretches : 0f;
             var heights = new float[parts.Count];
             for (int part = 0; part < parts.Count; part++)
             {
-                heights[part] = LeastHeightOf(parts[part].Kind) + grown * RoomToGrowOf(parts[part].Kind);
+                PlanRowKind kind = parts[part].Kind;
+                heights[part] = IsAStretch(kind)
+                    ? Math.Max(LowestStretch, LeastHeightOf(kind) - lowered) + grown * RoomToGrowOf(kind)
+                    : LeastHeightOf(kind) + grown * RoomToGrowOf(kind);
             }
 
             return heights;
         }
+
+        private static bool IsAStretch(PlanRowKind kind) => kind == PlanRowKind.Beyond || kind == PlanRowKind.Behind;
 
         /// <summary>The least height of a row's floor: what stands in it needs that much.</summary>
         private static float LeastHeightOf(PlanRowKind kind) => kind switch

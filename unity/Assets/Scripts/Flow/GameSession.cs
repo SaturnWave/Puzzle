@@ -64,6 +64,12 @@ namespace Puzzle.Client.Flow
     /// when <see cref="WriteWaitingRecords"/> is called.
     /// </para>
     /// <para>
+    /// The museum is told the player's wallet at every step, as the rules have it at that instant: its row counts the
+    /// lives back and the wait down as the clock runs, and a player without a life is shown the lives card instead of
+    /// a level. Coins won on a board arrive in the museum's row when the player comes back to it: the row opens with
+    /// the amount it showed last and counts up to the new one.
+    /// </para>
+    /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
     /// next one is built, in the dark both of them share, so the change is not seen. The one exception is a board
     /// whose card led to the jigsaw: it steps aside, out of sight, and comes back with its card when the player
@@ -81,6 +87,7 @@ namespace Puzzle.Client.Flow
         private readonly IProgressStore _store;
         private readonly IAttemptLog _attempts;
         private readonly AttemptLedger _ledger;
+        private readonly LifeRules _lives;
         private readonly IWallClock _clock;
 
         /// <summary>What is thrown over the board, painted once for all the stages of this session: painting it anew for every level would hold up each level's first frame.</summary>
@@ -100,6 +107,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>Where the way back from the open jigsaw leads; nothing while no jigsaw is open.</summary>
         private WayBack? _wayBack;
+
+        /// <summary>The amount the museum's row last showed; nothing before the museum was first seen. A museum opened later counts up from it.</summary>
+        private Coins? _coinsLastShown;
 
         /// <summary>How many pieces of the open jigsaw the progress already knows to be in place.</summary>
         private int _piecesKept;
@@ -136,6 +146,7 @@ namespace Puzzle.Client.Flow
             _art = art;
             _paintings = paintings;
             _ledger = new AttemptLedger(rules, levels.Count);
+            _lives = rules.Lives;
             _clock = clock;
             _store = store;
             _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
@@ -187,6 +198,7 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public void Advance(float deltaSeconds)
         {
+            TellTheMuseumTheWallet();
             _front.Advance(deltaSeconds);
             KeepWhatHappened();
             KeepWhatWasPlaced();
@@ -283,6 +295,20 @@ namespace Puzzle.Client.Flow
         /// <summary>The level the player stands on.</summary>
         private LevelDefinition LevelToPlay => _levels[_progress.LevelIndexIn(_levels.Count)];
 
+        /// <summary>The player's wallet as the rules have it now: lives that came back since the last loss are there.</summary>
+        private WalletView WalletNow => WalletView.Of(_progress.Wallet, _lives, _clock.Now);
+
+        /// <summary>Tells the museum, if it is the stage that is seen, of the wallet as it is at this step.</summary>
+        private void TellTheMuseumTheWallet()
+        {
+            if (Museum is MuseumStage museum)
+            {
+                WalletView wallet = WalletNow;
+                museum.Tell(wallet);
+                _coinsLastShown = wallet.Coins;
+            }
+        }
+
         /// <summary>
         /// If the player has left the stage that is open, opens what they left it for, out of the dark the stage
         /// left behind: the board of their level from the museum; from a result's card, the next board or the museum.
@@ -374,7 +400,8 @@ namespace Puzzle.Client.Flow
         private IStage OpenTheMuseum(StageOpening opening, MuseumDoor door)
         {
             var visit = new MuseumVisit(_progress.Museum, _paintings.Catalogue, LevelToPlay.Id.Value, hasWonEveryLevel: _progress.LevelsWon >= _levels.Count);
-            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, opening);
+            WalletView wallet = WalletNow;
+            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, opening);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;

@@ -17,8 +17,9 @@ namespace Puzzle.Client.Maps
     /// where the player stands; nothing on it is pressed.
     /// </summary>
     /// <remarks>
-    /// Left out of the design, because the game has nothing behind them yet: the gold and the lives with their plus
-    /// buttons, and the settings. The design's rooms are also buttons that lead into a room; the game has one hall,
+    /// Over the plaque the museum's stage shows the player's coins and lives (<see cref="WalletRow"/>). Left out of
+    /// the design, because the game has nothing behind them yet: the wallet row's plus buttons and the settings'
+    /// button. The design's rooms are also buttons that lead into a room; the game has one hall,
     /// the room the player is restoring, so the rooms here are not pressed.
     /// </remarks>
     public sealed class MapPage : IMuseumPage

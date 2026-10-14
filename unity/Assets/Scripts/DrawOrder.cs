@@ -69,6 +69,13 @@ namespace Puzzle.Client
         ExhibitLabelLettering = -603,
         ExhibitBadge = -602,
         ExhibitBadgeLettering = -601,
+
+        /// <summary>
+        /// The piece that waits to be placed, leaning on the hall's workbench (HomeTR): it takes three places from
+        /// here up (its cardboard, its face, its rim) and its shadow the place below; the sparkles around it come over all of it.
+        /// </summary>
+        BenchPiece = -598,
+        BenchSparkle = -595,
         Floor = 0,
         FloorWeave = 1,
         TrayShade = 2,

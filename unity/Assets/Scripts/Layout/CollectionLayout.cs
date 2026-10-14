@@ -56,6 +56,11 @@ namespace Puzzle.Client.Layout
     /// not full is centred. Each painting is as large as its proportions and its share of the wall allow. Lengths
     /// are in points. No Unity dependency.
     /// </summary>
+    /// <remarks>
+    /// What the page's top takes (the cornice, the wallet row, the plaque) comes out of the paintings alone: the
+    /// wall between the rail, the rows and the bar keeps its measures, and every row of paintings is drawn as much
+    /// lower as the room is short.
+    /// </remarks>
     public sealed class CollectionLayout
     {
         /// <summary>The frames of the collection are the hall's frame at this share of its size.</summary>

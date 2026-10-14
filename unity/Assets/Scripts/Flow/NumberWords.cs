@@ -19,7 +19,7 @@ namespace Puzzle.Client.Flow
 
         /// <summary>An amount with a point between its thousands, as Turkish writes them: "950", "1.250", "1.000.000".</summary>
         /// <exception cref="ArgumentOutOfRangeException">The amount is less than nothing: the game counts no debt.</exception>
-        public static string Amount(int amount)
+        public static string Amount(long amount)
         {
             if (amount < 0)
             {

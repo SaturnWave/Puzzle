@@ -69,9 +69,9 @@ namespace Puzzle.Client.Screens
         /// <summary>The two lines of a label stand this far apart, as a share of their type size.</summary>
         private const float LineApart = 1.02f;
 
-        /// <summary>A mark is drawn in a box of 100 points; on a button it is this large, begins this far from the pill's end, and its label begins this far after it.</summary>
+        /// <summary>A mark is drawn in a box of 100 points; on a button it is this large unless the button says otherwise, begins this far from the pill's end, and its label begins this far after it.</summary>
         private const float MarkBox = 100f;
-        private const float MarkSize = 46f;
+        public const float MarkSize = 46f;
         private const float MarkInFromEnd = 10f;
         private const float GapMarkToLabel = 2f;
 
@@ -103,6 +103,12 @@ namespace Puzzle.Client.Screens
         private readonly float _labelMiddle;
         private readonly float _labelRoom;
 
+        /// <summary>How far over its usual height the label stands, to leave room under it on the face.</summary>
+        private readonly float _labelLift;
+
+        /// <summary>Where the mark ends at its right, along the face; the pill's left end where the button has no mark.</summary>
+        private readonly float _markRight;
+
         /// <summary>The label's lines as they are written now, from the upper one down.</summary>
         private readonly List<TextMeshPro> _lines = new List<TextMeshPro>();
 
@@ -115,16 +121,21 @@ namespace Puzzle.Client.Screens
         /// where the label's drawing states a gap of its own (JigsawTR, "Otomatik tamamla"); nothing for the gap
         /// of the label's style, which is what the design gives most labels.
         /// </param>
+        /// <param name="labelLift">
+        /// How far over its usual height the label stands, where something stands under it on the face (HomeTR:
+        /// "Tablo" over its pips, <see cref="Face"/>); nothing for a label alone.
+        /// </param>
+        /// <param name="markSize">How large the mark is drawn: <see cref="MarkSize"/>, or less where the face holds more beside it (HomeTR: the piece over "Tablo" and its pips is 38).</param>
         public PushButton(
             string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, float width, float labelSize,
-            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark = null, float? wordsApart = null)
-            : this(name, parent, art, look, label, price: null, width, labelSize, faceOrder, letteringOrder, mark, wordsApart)
+            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark = null, float? wordsApart = null, float labelLift = 0f, float markSize = MarkSize)
+            : this(name, parent, art, look, label, price: null, width, labelSize, faceOrder, letteringOrder, mark, wordsApart, labelLift, markSize)
         {
         }
 
         private PushButton(
             string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, string? price, float width, float labelSize,
-            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark, float? wordsApart)
+            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark, float? wordsApart, float labelLift, float markSize)
         {
             _art = art;
             _look = look;
@@ -132,15 +143,18 @@ namespace Puzzle.Client.Screens
             _width = width;
             _labelSize = labelSize;
             _wordsApart = wordsApart;
+            _labelLift = labelLift;
             _pill = new ButtonPill(name, parent, art.Of(look.Face), art.SpriteMaterial, Measures, width, faceOrder);
 
             float labelLeft = -width / 2f + LabelInFromEnds;
+            _markRight = -width / 2f;
             if (mark is GalleryArt drawing)
             {
                 _mark = SceneObjects.AddSprite("Mark", _pill.Pill, art.Of(drawing), art.SpriteMaterial, letteringOrder);
-                _mark.transform.localPosition = new Vector3(-width / 2f + MarkInFromEnd + MarkSize / 2f, LabelAboveMiddle, 0f);
-                _mark.transform.localScale = new Vector3(MarkSize / MarkBox, MarkSize / MarkBox, 1f);
-                labelLeft = -width / 2f + MarkInFromEnd + MarkSize + GapMarkToLabel;
+                _mark.transform.localPosition = new Vector3(-width / 2f + MarkInFromEnd + markSize / 2f, LabelAboveMiddle, 0f);
+                _mark.transform.localScale = new Vector3(markSize / MarkBox, markSize / MarkBox, 1f);
+                _markRight = -width / 2f + MarkInFromEnd + markSize;
+                labelLeft = _markRight + GapMarkToLabel;
             }
 
             float labelRight = width / 2f - LabelInFromEnds;
@@ -158,6 +172,15 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The middle of the pill, in the points of what the button stands on.</summary>
         public Vector2 Middle => _pill.Middle;
+
+        /// <summary>The button's face: what stands on it is added under this, in the pill's points around its middle, and goes down with it when it is held.</summary>
+        public Transform Face => _pill.Pill;
+
+        /// <summary>Where the label's lines are centred along the face: in its middle, or between a mark and the right end.</summary>
+        public float LabelMiddle => _labelMiddle;
+
+        /// <summary>How wide something under the label may be, centred under it, without reaching the mark.</summary>
+        public float RoomUnderTheLabel => 2f * (_labelMiddle - _markRight - GapMarkToLabel);
 
         /// <summary>
         /// A button that sells something for coins, as the design draws the offer of five more moves (LoseTR): its
@@ -180,7 +203,7 @@ namespace Puzzle.Client.Screens
                     nameof(letteringOrder));
             }
 
-            return new PushButton(name, parent, art, look, label, price, width, labelSize, faceOrder, letteringOrder, mark: null, wordsApart: null);
+            return new PushButton(name, parent, art, look, label, price, width, labelSize, faceOrder, letteringOrder, mark: null, wordsApart: null, labelLift: 0f, markSize: MarkSize);
         }
 
         /// <summary>Puts the middle of the pill at a place of what the button stands on, drawn at a share of its full size.</summary>
@@ -216,7 +239,7 @@ namespace Puzzle.Client.Screens
                 _lines.Add(WriteALine($"Label {_lines.Count + 1}"));
             }
 
-            float middleOfTheLines = _price != null ? LabelAboveMiddleOverAPrice : LabelAboveMiddle;
+            float middleOfTheLines = (_price != null ? LabelAboveMiddleOverAPrice : LabelAboveMiddle) + _labelLift;
             float top = middleOfTheLines + (words.Length - 1) * LineApart * _labelSize / 2f;
             for (int line = 0; line < words.Length; line++)
             {

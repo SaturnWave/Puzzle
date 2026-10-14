@@ -45,12 +45,23 @@ namespace Puzzle.Client.Layout
         public override string ToString() => $"{Left:0.#}..{Right:0.#} x {Bottom:0.#}..{Top:0.#}";
     }
 
+    /// <summary>What a page has between its cornice and its plaque. A closed set.</summary>
+    public enum PageTop
+    {
+        /// <summary>The row of the player's coins and lives: the museum's hall, map and collection.</summary>
+        WalletRow,
+
+        /// <summary>Nothing: the plaque hangs right under the cornice (the jigsaw, whose plaque counts its pieces).</summary>
+        PlaqueUnderTheCornice,
+    }
+
     /// <summary>
     /// What every page of the museum has in common, from the top of the screen down: the cornice under the ceiling,
-    /// the page's plaque, the picture rail that what hangs on the page hangs from, and at the foot the navigation
-    /// bar. Lengths are in points (<see cref="ScreenView"/>). Like the board screen, a page is laid out for the
-    /// tight 9:16 phone and gets more air on a taller one; a wider screen is as high as the tight phone and shows
-    /// more wall at its sides. No Unity dependency.
+    /// the row of the player's coins and lives, the page's plaque, the picture rail that what hangs on the page
+    /// hangs from, and at the foot the navigation bar. Lengths are in points (<see cref="ScreenView"/>). Like the
+    /// board screen, a page is laid out for the tight 9:16 phone and gets more air on a taller one; a wider screen
+    /// is as high as the tight phone and shows more wall at its sides. What the row takes of the height comes out
+    /// of what hangs on each page, which gives it up in the order its own layout states. No Unity dependency.
     /// </summary>
     public sealed class PageLayout
     {
@@ -63,6 +74,22 @@ namespace Puzzle.Client.Layout
         public const float PlaqueHeight = 54f;
         public const float WidestPlaque = 336f;
         public const float PlaqueSideMargin = 12f;
+
+        /// <summary>
+        /// The wallet row is drawn as wide as the plaque on a roomy screen and as much smaller on a tight one as the
+        /// bar is; it keeps this much wall under the cornice and over the plaque, on a tight screen and a roomy one.
+        /// The canvas leaves 39 points over its row for a phone's status bar, which the game's screen does not
+        /// count (<see cref="ScreenView.UsableTop"/>), and 9 under it.
+        /// </summary>
+        public const float WalletRowTightScale = TightBarScale;
+        private const float TightGapOverTheRow = 5f;
+        private const float RoomyGapOverTheRow = 12f;
+        private const float TightGapUnderTheRow = 6f;
+        private const float RoomyGapUnderTheRow = 10f;
+
+        /// <summary>A page without the row hangs its plaque this far under the cornice, on a tight screen and a roomy one.</summary>
+        private const float TightGapUnderTheCornice = 9f;
+        private const float RoomyGapUnderTheCornice = 15f;
 
         /// <summary>The picture rail: a narrow moulding right under the plaque.</summary>
         public const float RailHeight = 7f;
@@ -91,14 +118,31 @@ namespace Puzzle.Client.Layout
         /// </summary>
         public const float CardAboveTheMiddle = 13.5f;
 
-        private PageLayout(ScreenView view, float roominess)
+        private PageLayout(ScreenView view, float roominess, PageTop top)
         {
             View = view;
             Roominess = roominess;
             BarScale = Between(TightBarScale, 1f);
             CorniceBottom = view.UsableTop - CorniceHeight;
-            float plaqueTop = CorniceBottom - Between(9f, 15f);
             float plaqueWidth = Math.Min(WidestPlaque, view.Width - 2 * PlaqueSideMargin);
+            float plaqueTop;
+            switch (top)
+            {
+                case PageTop.WalletRow:
+                    WalletRowScale = plaqueWidth / WalletRowLayout.Width * Between(WalletRowTightScale, 1f);
+                    float rowWidth = WalletRowLayout.Width * WalletRowScale;
+                    float rowHeight = WalletRowLayout.Height * WalletRowScale;
+                    WalletRow = new Box(-rowWidth / 2, CorniceBottom - Between(TightGapOverTheRow, RoomyGapOverTheRow) - rowHeight, rowWidth, rowHeight);
+                    plaqueTop = WalletRow.Bottom - Between(TightGapUnderTheRow, RoomyGapUnderTheRow);
+                    break;
+                case PageTop.PlaqueUnderTheCornice:
+                    WalletRow = new Box(0f, CorniceBottom, 0f, 0f);
+                    plaqueTop = CorniceBottom - Between(TightGapUnderTheCornice, RoomyGapUnderTheCornice);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(top), top, "A page's top that the layout does not know.");
+            }
+
             Plaque = new Box(-plaqueWidth / 2, plaqueTop - PlaqueHeight, plaqueWidth, PlaqueHeight);
             RailTop = Plaque.Bottom - GapPlaqueToRail;
             BarTop = view.UsableBottom + BarHeight * BarScale;
@@ -111,6 +155,16 @@ namespace Puzzle.Client.Layout
 
         /// <summary>The lower edge of the cornice.</summary>
         public float CorniceBottom { get; }
+
+        /// <summary>
+        /// The row of the player's coins and lives, centred over the plaque: its box is the coin's and the heart's
+        /// height and the canvas' row's width (<see cref="WalletRowLayout"/>) at <see cref="WalletRowScale"/>. A
+        /// page without the row has an empty box at the cornice's lower edge.
+        /// </summary>
+        public Box WalletRow { get; }
+
+        /// <summary>How large the wallet row is drawn: a share of the canvas' points; nothing on a page without the row.</summary>
+        public float WalletRowScale { get; }
 
         /// <summary>The page's plaque: the room's name on the home, the museum's summary on the map.</summary>
         public Box Plaque { get; }
@@ -128,12 +182,13 @@ namespace Puzzle.Client.Layout
         /// <summary>The highest point of the bar: the top of the chosen destination's mark. A page keeps clear of it.</summary>
         public float BarReach => BarTop + TabRise * BarScale;
 
-        public static PageLayout Of(ScreenShape screen)
+        /// <param name="top">What stands between the cornice and the plaque: the wallet row on the museum's pages.</param>
+        public static PageLayout Of(ScreenShape screen, PageTop top = PageTop.WalletRow)
         {
             ScreenView view = ScreenView.Of(screen);
             float usableHeight = view.UsableTop - view.UsableBottom;
             float roominess = Math.Clamp((usableHeight - ScreenView.DesignHeight) / (RoomyHeight - ScreenView.DesignHeight), 0f, 1f);
-            return new PageLayout(view, roominess);
+            return new PageLayout(view, roominess, top);
         }
 
         /// <summary>A length that is one thing on the tight screen and another on a roomy one, and between them in between.</summary>

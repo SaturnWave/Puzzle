@@ -10,6 +10,7 @@ using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Randomness;
+using Puzzle.Meta;
 using Puzzle.Museum;
 using Puzzle.Museum.Catalogue;
 using UnityEditor.SceneManagement;
@@ -26,8 +27,10 @@ namespace Puzzle.Client.EditorTools
     /// where the piece just won is carried to its place by a finger and what else waits is placed by the blue
     /// button, then back to the card and on to the hall (through the restored room's celebration when the jigsaw
     /// completed a room), to the collection once more, and from there to the hall by the device's way back. The pictures are named <c>walk-&lt;state&gt;-&lt;size&gt;-NN-&lt;what&gt;.png</c>,
-    /// with a sheet of all of them. The walk fails when a touch does not lead where it should, or when what was
-    /// placed is not in the player's progress.
+    /// with a sheet of all of them. A second, short walk follows the same player without a life: the play button
+    /// opens the lives card and no board, its "Tamam" closes it, the heart's pill opens it again and the device's
+    /// way back closes it (<c>walk-nolife-...</c>). The walk fails when a touch does not lead where it should, or
+    /// when what was placed is not in the player's progress.
     /// </summary>
     internal static class GameWalk
     {
@@ -54,8 +57,18 @@ namespace Puzzle.Client.EditorTools
         /// <summary>No longer than this passes between a press that leaves a stage and the next stage.</summary>
         private const float LongestLeave = 2f;
 
+        /// <summary>The walk of a player without a life has the next one back this long after the tools' instant.</summary>
+        private static readonly TimeSpan NextLifeWithoutALife = new TimeSpan(0, 12, 34);
+
         public static void Run(PlayerState state, ScreenShape screen, Studio studio)
         {
+            if (!state.Wallet.HasALife)
+            {
+                // A player without a life has no level to walk through: only the walk that shows them the lives card.
+                WalkWithoutALife(state, screen, studio);
+                return;
+            }
+
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), StoryStudio.AttemptsKeptInMemory(), screen, SessionOpening.InTheMuseum);
             var reel = new Reel(session, screen, $"walk-{state.Label}-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
@@ -102,6 +115,56 @@ namespace Puzzle.Client.EditorTools
 
             reel.WriteSheet();
             Debug.Log($"Screen shots: walk {reel.Name}: hall, collection, map, hall, level {levelToPlay} ({ending}), {atTheJigsaw}, hall, collection; the player now stands at \"{session.Progress}\".");
+            WalkWithoutALife(state, screen, studio);
+        }
+
+        /// <summary>
+        /// The same player with every life lost, the next back in 12:34: the play button opens the lives card and no
+        /// board; its "Tamam" closes it; the heart's pill opens it again, and the device's way back closes it.
+        /// </summary>
+        private static void WalkWithoutALife(PlayerState state, ScreenShape screen, Studio studio)
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            LifeRules lives = StoryStudio.Economy.Lives;
+            var none = new LifeMeter(lives.Max, StoryStudio.Clock.Now + NextLifeWithoutALife);
+            PlayerProgress progress = state.Progress.WithWallet(state.Progress.Wallet.WithLives(none));
+            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(progress), StoryStudio.AttemptsKeptInMemory(), screen, SessionOpening.InTheMuseum);
+            var reel = new Reel(session, screen, $"walk-nolife-{state.Label}-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
+
+            reel.Settle();
+            reel.Shoot("home");
+            Press(session, MuseumOf(session).PlayButtonPixel, "the play button", reel, pressedShot: null);
+            reel.Settle();
+            if (session.Board != null || !MuseumOf(session).ShowsTheLivesCard)
+            {
+                throw new InvalidOperationException("Without a life the play button did not open the lives card, or opened a board.");
+            }
+
+            reel.Shoot("lives-card");
+            Press(session, MuseumOf(session).LivesCardDonePixel, "the lives card's Tamam", reel, pressedShot: null);
+            reel.Settle();
+            if (MuseumOf(session).ShowsTheLivesCard || MuseumOf(session).PlayButtonPixel == null)
+            {
+                throw new InvalidOperationException("The lives card's Tamam did not close it and give the hall back.");
+            }
+
+            Press(session, MuseumOf(session).LivesPixel, "the heart's pill", reel, "heart-pressed");
+            reel.Settle();
+            if (!MuseumOf(session).ShowsTheLivesCard)
+            {
+                throw new InvalidOperationException("The heart's pill did not open the lives card.");
+            }
+
+            session.GoBack();
+            reel.Settle();
+            if (MuseumOf(session).ShowsTheLivesCard || session.Board != null || !session.Progress.Equals(progress))
+            {
+                throw new InvalidOperationException($"The device's way back did not close the lives card, or the walk changed the progress to \"{session.Progress}\".");
+            }
+
+            reel.Shoot("home-again");
+            reel.WriteSheet();
+            Debug.Log($"Screen shots: walk {reel.Name}: without a life the play button opened the lives card and no board; Tamam, the heart's pill and the way back led where they should.");
         }
 
         /// <summary>From the hall into the level the player stands on, by the play button.</summary>

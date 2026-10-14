@@ -188,7 +188,7 @@ namespace Puzzle.Client.Layout
                 throw new ArgumentOutOfRangeException(nameof(pictureAspect), pictureAspect, "A picture has a width and a height.");
             }
 
-            return new JigsawLayout(PageLayout.Of(screen), pictureAspect, size, orientation);
+            return new JigsawLayout(PageLayout.Of(screen, PageTop.PlaqueUnderTheCornice), pictureAspect, size, orientation);
         }
 
         /// <summary>The middle of a place in the tray, the places that are used being centred in the well as a row.</summary>

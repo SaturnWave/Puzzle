@@ -45,17 +45,88 @@ public class MuseumLayoutTests
 
     [Theory]
     [MemberData(nameof(EveryScreen))]
-    public void A_page_keeps_its_plaque_under_the_cornice_and_its_bar_over_the_screens_foot(int width, int height, int top, int bottom)
+    public void A_page_keeps_its_wallet_row_and_plaque_under_the_cornice_and_its_bar_over_the_screens_foot(int width, int height, int top, int bottom)
     {
         PageLayout page = PageLayout.Of(new ScreenShape(width, height, top, bottom));
 
         Assert.True(page.CorniceBottom < page.View.UsableTop, "the cornice does not show under the cutout");
-        Assert.True(page.Plaque.Top < page.CorniceBottom, "the plaque runs into the cornice");
+        Assert.True(page.WalletRow.Top < page.CorniceBottom, "the wallet row runs into the cornice");
+        Assert.True(page.Plaque.Top < page.WalletRow.Bottom, "the plaque runs into the wallet row");
+        Assert.True(page.WalletRow.Left >= page.Plaque.Left - 0.01f && page.WalletRow.Right <= page.Plaque.Right + 0.01f, "the wallet row is wider than the plaque");
+        Assert.Equal(page.Plaque.MiddleX, page.WalletRow.MiddleX, precision: 3);
         Assert.True(page.RailTop < page.Plaque.Bottom, "the rail runs into the plaque");
         Assert.True(page.Plaque.Left >= page.View.Left + PageLayout.PlaqueSideMargin - 0.01f, "the plaque is cut off at the side");
         Assert.True(page.BarTop >= page.View.UsableBottom + PageLayout.BarHeight * PageLayout.TightBarScale - 0.01f, "the bar is hidden by the system bar");
         Assert.True(page.BarReach > page.BarTop);
         Assert.InRange(page.Roominess, 0f, 1f);
+    }
+
+    [Theory]
+    [InlineData(1080, 2340, 0, 0, 1f)]
+    [InlineData(1080, 2424, 96, 48, 1f)]
+    [InlineData(1080, 1920, 0, 0, PageLayout.WalletRowTightScale)]
+    [InlineData(2076, 2152, 0, 0, PageLayout.WalletRowTightScale)]
+    public void The_wallet_row_is_as_wide_as_the_plaque_on_a_roomy_screen_and_drawn_smaller_on_a_tight_one(int width, int height, int top, int bottom, float shareOfThePlaque)
+    {
+        PageLayout page = PageLayout.Of(new ScreenShape(width, height, top, bottom));
+
+        Assert.Equal(PageLayout.WidestPlaque, page.Plaque.Width, precision: 3);
+        Assert.Equal(page.Plaque.Width * shareOfThePlaque, page.WalletRow.Width, precision: 2);
+        Assert.Equal(page.WalletRow.Width / WalletRowLayout.Width, page.WalletRowScale, precision: 4);
+        Assert.Equal(WalletRowLayout.Height * page.WalletRowScale, page.WalletRow.Height, precision: 3);
+
+        // The row hangs as close under the cornice on every screen, a cutout or not: what is over the cornice is not the page's.
+        Assert.InRange(page.CorniceBottom - page.WalletRow.Top, 5f - 0.01f, 12f + 0.01f);
+    }
+
+    [Theory]
+    [InlineData(1080, 2340)]
+    [InlineData(1080, 1920)]
+    public void A_page_without_the_wallet_row_hangs_its_plaque_right_under_the_cornice_as_the_jigsaw_has_it(int width, int height)
+    {
+        var screen = new ScreenShape(width, height);
+        PageLayout bare = PageLayout.Of(screen, PageTop.PlaqueUnderTheCornice);
+        PageLayout withTheRow = PageLayout.Of(screen);
+
+        Assert.Equal((0f, 0f), (bare.WalletRow.Height, bare.WalletRowScale));
+        Assert.InRange(bare.CorniceBottom - bare.Plaque.Top, 9f - 0.01f, 15f + 0.01f);
+        Assert.True(withTheRow.Plaque.Top < bare.Plaque.Top - withTheRow.WalletRow.Height, "the row's height did not come out of the page under it");
+        Assert.Equal(bare.Plaque.MiddleY, JigsawLayout.Of(screen, 1.69f, JigsawSize.Ten, PaintingOrientation.Landscape).Plaque.MiddleY, precision: 3);
+    }
+
+    [Theory]
+    [InlineData(0f)]
+    [InlineData(40.8f)]
+    [InlineData(82f)]
+    [InlineData(400f)]
+    public void Nothing_of_the_wallet_row_runs_into_anything_else_of_it_whatever_the_amount(float amountWidth)
+    {
+        WalletRowLayout row = WalletRowLayout.ForAnAmount(amountWidth);
+
+        Assert.InRange(row.CoinsPill, WalletRowLayout.NarrowestCoinsPill, WalletRowLayout.WidestCoinsPill);
+        Assert.True(WalletRowLayout.Coin.Left >= 0f && WalletRowLayout.Gear.Right <= WalletRowLayout.Width + 2f, "the row reaches out of its place over the plaque");
+        Assert.True(row.CoinsPillBox.Left > WalletRowLayout.Coin.Left && row.CoinsPillBox.Left < WalletRowLayout.Coin.Right, "the coin does not stand on its pill's end");
+        Assert.True(row.CoinsPlus.Right < row.Heart.Left, "the coins' plus runs into the heart");
+        Assert.True(row.LivesPlus.Right + WalletRowLayout.LeastGapToGear <= WalletRowLayout.Gear.Left + 0.01f, "the lives run into the settings' button");
+        Assert.True(row.AmountRoom >= WalletRowLayout.NarrowestCoinsPill - WalletRowLayout.WordsInFromLeft - WalletRowLayout.WordsInFromRight - 0.01f);
+        Assert.True(WalletRowLayout.WaitRoom > 0f && row.LivesButton.Contains(row.WaitMiddle, 0f));
+        Assert.True(WalletRowLayout.Coin.Height <= WalletRowLayout.Height && row.CoinsPillBox.Height <= WalletRowLayout.Height);
+    }
+
+    [Fact]
+    public void The_wallet_row_stands_where_the_canvas_draws_it_for_its_own_amount()
+    {
+        // HomeTR: the coin 14..60, its pill 36..136, its plus 122..148 (middle 135), the heart 164..210, its pill 186..278, the gear's middle 356; the row begins at 14.
+        WalletRowLayout row = WalletRowLayout.ForAnAmount(40.8f);
+
+        Assert.Equal(WalletRowLayout.NarrowestCoinsPill, row.CoinsPill);
+        Assert.Equal((0f, 46f), (WalletRowLayout.Coin.Left, WalletRowLayout.Coin.Right));
+        Assert.Equal((22f, 122f), (row.CoinsPillBox.Left, row.CoinsPillBox.Right));
+        Assert.Equal(121f, row.CoinsPlus.MiddleX);
+        Assert.Equal((150f, 196f), (row.Heart.Left, row.Heart.Right));
+        Assert.Equal((172f, 264f), (row.LivesPillBox.Left, row.LivesPillBox.Right));
+        Assert.Equal(342f, WalletRowLayout.Gear.MiddleX);
+        Assert.Throws<ArgumentOutOfRangeException>(() => WalletRowLayout.ForAnAmount(-1f));
     }
 
     [Fact]
@@ -112,19 +183,30 @@ public class MuseumLayoutTests
         // The picture keeps its proportions, to the pixel it is rounded to.
         Assert.InRange(hall.Picture.Width / hall.Picture.Height, aspect * (1 - 2 * onePixel / hall.Picture.Height) - 0.01f, aspect * (1 + 2 * onePixel / hall.Picture.Height) + 0.01f);
         Assert.True(hall.Picture.Width <= HallLayout.WidestPicture + onePixel);
-        Assert.True(hall.Picture.Height >= 100f, $"the picture is only {hall.Picture.Height} points high");
-        Assert.InRange(hall.BenchScale, 0.45f, 1f);
+        Assert.True(hall.Picture.Height >= HallLayout.SmallestPicture, $"the picture is only {hall.Picture.Height} points high");
+        Assert.InRange(hall.BenchScale, HallLayout.SmallestBench, 1f);
+
+        // The bench before the painting: a picture under the height the bench gives way to has the smallest bench over it.
+        bool isAsWideAsTheWallAllows = hall.Picture.Width >= Math.Min(HallLayout.WidestPicture, page.View.Width - 2 * (HallLayout.FrameWidth + 10f)) - 2 * onePixel;
+        if (hall.Picture.Height < HallLayout.PictureHeightTheBenchGivesWayTo - 2 * onePixel && !isAsWideAsTheWallAllows)
+        {
+            Assert.Equal(HallLayout.SmallestBench, hall.BenchScale, precision: 3);
+        }
     }
 
     [Fact]
-    public void A_screen_that_loses_height_to_a_cutout_draws_the_bench_smaller_and_keeps_the_picture()
+    public void A_screen_that_loses_height_draws_the_bench_smaller_before_the_painting_gives_up_its_height()
     {
         HallLayout whole = HallLayout.Of(new ScreenShape(2076, 2152), 1.69f);
         HallLayout withBars = HallLayout.Of(new ScreenShape(2076, 2152, topInsetPixels: 80, bottomInsetPixels: 60), 1.69f);
 
-        Assert.Equal(0.7f, whole.BenchScale, precision: 3);
-        Assert.True(withBars.BenchScale < whole.BenchScale);
-        Assert.True(withBars.Picture.Height >= 130f, $"the picture is only {withBars.Picture.Height} points high");
+        // The wallet row costs the open foldable its usual bench; the painting keeps the height the bench gives way to.
+        Assert.True(whole.BenchScale < 0.7f && whole.BenchScale > HallLayout.SmallestBench);
+        Assert.True(whole.Picture.Height >= HallLayout.PictureHeightTheBenchGivesWayTo - 1f, $"the picture is only {whole.Picture.Height} points high");
+
+        // A cutout and a system bar take more: the bench is at its smallest before the painting goes lower.
+        Assert.Equal(HallLayout.SmallestBench, withBars.BenchScale, precision: 3);
+        Assert.InRange(withBars.Picture.Height, HallLayout.SmallestPicture, whole.Picture.Height);
     }
 
     [Fact]
@@ -181,12 +263,29 @@ public class MuseumLayoutTests
     public void A_tall_phone_shows_more_of_the_museum_room_by_room_than_a_short_one()
     {
         MapLayout tall = MapLayout.Of(new ScreenShape(1080, 2424), new RoomNumber(2));
-        MapLayout shorter = MapLayout.Of(new ScreenShape(1080, 1920), new RoomNumber(13));
+        MapLayout shorter = MapLayout.Of(new ScreenShape(1080, 1920), new RoomNumber(2));
+        MapLayout farther = MapLayout.Of(new ScreenShape(1080, 1920), new RoomNumber(13));
 
-        Assert.Equal((new RoomNumber(1), 4), (tall.Plan.Before!.Value, tall.Plan.Ahead.Count));
-        Assert.True(shorter.Plan.Ahead.Count < 4 || shorter.Plan.Before == null);
-        Assert.NotNull(shorter.Plan.Behind);
-        Assert.NotNull(shorter.Plan.Beyond);
+        Assert.Equal((new RoomNumber(1), 2), (tall.Plan.Before!.Value, tall.Plan.Ahead.Count));
+        Assert.True(shorter.Plan.Ahead.Count < tall.Plan.Ahead.Count && shorter.Plan.Before == null);
+        Assert.NotNull(farther.Plan.Behind);
+        Assert.NotNull(farther.Plan.Beyond);
+    }
+
+    [Theory]
+    [InlineData(1080, 1920, 90, 48)]
+    [InlineData(2076, 2152, 80, 60)]
+    public void On_the_shortest_screens_the_map_narrows_the_wall_around_its_frame_before_its_rooms_lose_room(int width, int height, int top, int bottom)
+    {
+        var screen = new ScreenShape(width, height, top, bottom);
+        PageLayout page = PageLayout.Of(screen);
+        MapLayout map = MapLayout.Of(screen, new RoomNumber(13));
+
+        // The shallowest plan: the next room and the player's in full, the rest as two stretches.
+        Assert.Equal((0, false), (map.Plan.RowsAhead, map.Plan.Before.HasValue));
+        Assert.True(map.Frame.Bottom - page.BarReach < 12f, "the wall under the frame did not narrow");
+        Assert.True(map.Frame.Bottom > page.BarReach, "the frame runs into the bar");
+        Assert.True(map.FloorOf(PlanRowKind.Here)!.Value.Height >= 120f && map.FloorOf(PlanRowKind.Next)!.Value.Height >= 76f);
     }
 
     [Fact]

@@ -77,6 +77,10 @@
     <Compile Include="..\..\unity\Assets\Scripts\Screens\BoosterFace.cs" Link="Unity\Screens\BoosterFace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\PipRowPlan.cs" Link="Unity\Screens\PipRowPlan.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\NumberWords.cs" Link="Unity\Flow\NumberWords.cs" />
+    <!-- Nor has the wallet row of the museum's pages: what it shows of a wallet at an instant, its words, where its parts stand. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletView.cs" Link="Unity\Flow\WalletView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletWords.cs" Link="Unity\Flow\WalletWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\WalletRowLayout.cs" Link="Unity\Layout\WalletRowLayout.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

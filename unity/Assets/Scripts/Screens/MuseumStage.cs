@@ -44,16 +44,22 @@ namespace Puzzle.Client.Screens
 
     /// <summary>
     /// The museum as the player walks through it between two levels: one page at a time (the hall, the map, the
-    /// collection), and at their foot the navigation bar that leads from one to the other. A page is turned like a page: the new one
-    /// comes in from the side its destination stands on the bar while the old one leaves to the other side. Like
-    /// the board's stage it has a clock that only <see cref="Advance"/> moves, and everything of it is drawn by its
-    /// one camera, so the Editor pictures any page at any moment with no game running.
+    /// collection), over them the row of the player's coins and lives, and at their foot the navigation bar that
+    /// leads from one page to the other. A page is turned like a page: the new one comes in from the side its
+    /// destination stands on the bar while the old one leaves to the other side, under the row and the bar, which
+    /// stay. One card at a time may hang over the page, the row and the bar, in front of the room's dark (the lives
+    /// card); while it hangs, only the card is pressed, and the way back closes it. Like the board's stage the
+    /// museum has a clock that only <see cref="Advance"/> moves, and everything of it is drawn by its one camera, so
+    /// the Editor pictures any page at any moment with no game running.
     /// </summary>
     /// <remarks>
     /// The stage shows the museum as the player's progress has it when the stage is opened; it does not change that
-    /// progress. When the player has pressed the play button, or a painting whose pieces wait, and the room has
-    /// gone dark, <see cref="PlayerLeftFor"/> says what for, and whoever owns the stage opens the level's board or
-    /// the painting's jigsaw, which comes out of the same dark.
+    /// progress. The player's wallet is what its owner tells it (<see cref="Tell"/>), at every step: the wallet as
+    /// the rules have it at that instant, so the lives come back and the waits count down as the clock runs, and
+    /// coins that arrive count up on the row. The play button of a player without a life opens the lives card
+    /// instead of the level. When the player has pressed the play button with a life, or a painting whose pieces
+    /// wait, and the room has gone dark, <see cref="PlayerLeftFor"/> says what for, and whoever owns the stage opens
+    /// the level's board or the painting's jigsaw, which comes out of the same dark.
     /// <para>
     /// To add a page: add its <see cref="Destination"/>, build it in <see cref="BuildPage"/>, and give it a render
     /// state in the Editor's ScreenShots command. A page needs no clock of its own while nothing on it moves; one
@@ -67,6 +73,7 @@ namespace Puzzle.Client.Screens
         private readonly PaintingGallery _paintings;
         private readonly MuseumVisit _visit;
         private readonly NavigationBar _bar;
+        private readonly WalletRow _wallet;
         private readonly Veil _veil;
         private readonly Timeline _timeline = new Timeline();
         private readonly PressSet<MuseumPress> _presses = new PressSet<MuseumPress>();
@@ -86,7 +93,10 @@ namespace Puzzle.Client.Screens
         /// <summary>How long the page that is shown has been the one shown.</summary>
         private float _secondsOnThePage;
 
-        private MuseumStage(MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door)
+        /// <summary>The card that hangs over the page, coming down or going up; nothing while none does.</summary>
+        private LivesCard? _card;
+
+        private MuseumStage(MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet)
         {
             _visit = visit;
             _paintings = paintings;
@@ -98,6 +108,7 @@ namespace Puzzle.Client.Screens
                 ? HomePage.Create(_root.transform, art, paintings, visit, restored)
                 : BuildPage(door.Page, door.CollectionRoom);
             _bar = NavigationBar.Create(_root.transform, art, door.Page);
+            _wallet = WalletRow.Create(_root.transform, art, wallet);
             _veil = Veil.Create(_root.transform, art);
             ListenToThePage();
         }
@@ -118,6 +129,12 @@ namespace Puzzle.Client.Screens
 
         /// <summary>True once the player has left for the level they stand on.</summary>
         public bool PlayerWentToPlay => PlayerLeftFor is MuseumExit.ToPlay;
+
+        /// <summary>True while the lives card hangs over the page, or is on its way down or up.</summary>
+        public bool ShowsTheLivesCard => _card != null;
+
+        /// <summary>The wallet as the stage was last told of it.</summary>
+        public WalletView Wallet => _wallet.Wallet;
 
         /// <summary>Where the player is in the museum: the page that is shown, and on the collection's page the room.</summary>
         public MuseumDoor Door => new MuseumDoor(Showing, (_page as CollectionPage)?.Room);
@@ -146,15 +163,25 @@ namespace Puzzle.Client.Screens
         /// <summary>The painting of the collection that is looked at by itself; nothing while none is.</summary>
         public PaintingNumber? PaintingViewed => (_page as CollectionPage)?.Viewed;
 
+        /// <summary>The pixel in the middle of the wallet row's heart and its pill, which open the lives card; nothing while the page's controls are not pressed.</summary>
+        public Vector2? LivesPixel => PixelWhileListening(_wallet.LivesButtonMiddle);
+
+        /// <summary>The pixels in the middle of the lives card's "Tamam" and of its round button that closes it; nothing while the card is not down.</summary>
+        public Vector2? LivesCardDonePixel => _card != null ? PixelOnTheCard(_card.DoneButtonMiddle) : null;
+
+        public Vector2? LivesCardClosePixel => _card != null ? PixelOnTheCard(_card.Card.CloseButtonMiddle) : null;
+
         /// <summary>The museum listens to the player while nothing of it moves and the player has not left it.</summary>
         private bool ListensToThePlayer => IsSettled && !_isLeaving && PlayerLeftFor == null;
 
         /// <summary>Builds the museum for a visit, with one page shown. Call <see cref="Fit"/> before the first picture.</summary>
         /// <param name="door">The page the visit begins on.</param>
+        /// <param name="wallet">The player's wallet as the row shows it first, with nothing counting; <see cref="Tell"/> it anew at every step.</param>
         /// <param name="opening">In the lit room, as the game starts; or out of the dark a result's card or a jigsaw left behind.</param>
-        public static MuseumStage Open(MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, StageOpening opening = StageOpening.InTheLitRoom)
+        public static MuseumStage Open(
+            MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, StageOpening opening = StageOpening.InTheLitRoom)
         {
-            var stage = new MuseumStage(visit, paintings, art, door);
+            var stage = new MuseumStage(visit, paintings, art, door, wallet);
             if (opening == StageOpening.OutOfTheDark)
             {
                 stage._veil.Darken(1f);
@@ -172,7 +199,9 @@ namespace Puzzle.Client.Screens
             _page.Fit(screen);
             _leaving?.Fit(screen);
             _bar.Place(layout);
+            _wallet.Place(layout);
             _veil.Fit(layout.View);
+            _card?.Card.Place(layout.PlaceOfACard(_card.Card.Width, _card.Card.Height), layout.View);
         }
 
         public void Advance(float deltaSeconds)
@@ -180,11 +209,22 @@ namespace Puzzle.Client.Screens
             _timeline.Advance(deltaSeconds);
             _secondsOnThePage += deltaSeconds;
             (_page as IMovingPage)?.Move(_secondsOnThePage);
+            _wallet.Advance(deltaSeconds);
         }
 
         /// <summary>
-        /// The device's way back: a painting that hangs forward goes back to the wall; from the map and the
-        /// collection it leads to the hall; in the hall it leads nowhere.
+        /// Shows the player's wallet as it is at this instant, on the row and on a card that tells of it: the
+        /// owner of the stage tells it at every step, settled by the rules at the time of the step.
+        /// </summary>
+        public void Tell(WalletView wallet)
+        {
+            _wallet.Tell(wallet);
+            _card?.Tell(wallet);
+        }
+
+        /// <summary>
+        /// The device's way back: a card that hangs over the page goes up; a painting that hangs forward goes back
+        /// to the wall; from the map and the collection it leads to the hall; in the hall it leads nowhere.
         /// </summary>
         public void GoBack()
         {
@@ -193,7 +233,11 @@ namespace Puzzle.Client.Screens
                 return;
             }
 
-            if (_page.TryGoBack())
+            if (_card != null)
+            {
+                TakeTheCardUp(_card);
+            }
+            else if (_page.TryGoBack())
             {
                 ListenToThePage();
             }
@@ -211,7 +255,16 @@ namespace Puzzle.Client.Screens
 
         public void PointerDown(Vector2 pixel)
         {
-            if (ListensToThePlayer && _screen is ScreenShape screen)
+            if (!ListensToThePlayer || !(_screen is ScreenShape screen))
+            {
+                return;
+            }
+
+            if (_card != null)
+            {
+                _card.Card.FingerDown(PointAt(pixel, screen));
+            }
+            else
             {
                 _presses.FingerDown(PointAt(pixel, screen));
             }
@@ -219,7 +272,16 @@ namespace Puzzle.Client.Screens
 
         public void PointerMoved(Vector2 pixel)
         {
-            if (ListensToThePlayer && _screen is ScreenShape screen)
+            if (!ListensToThePlayer || !(_screen is ScreenShape screen))
+            {
+                return;
+            }
+
+            if (_card != null)
+            {
+                _card.Card.FingerMovedTo(PointAt(pixel, screen));
+            }
+            else
             {
                 _presses.FingerMovedTo(PointAt(pixel, screen));
             }
@@ -227,19 +289,32 @@ namespace Puzzle.Client.Screens
 
         public void PointerUp()
         {
-            if (ListensToThePlayer && _presses.FingerUp(out MuseumPress press))
+            if (!ListensToThePlayer)
+            {
+                return;
+            }
+
+            MuseumPress press;
+            bool isPressed = _card != null ? _card.Card.FingerUp(out press) : _presses.FingerUp(out press);
+            if (isPressed)
             {
                 Follow(press);
             }
         }
 
-        public void PointerCancelled() => _presses.FingerGone();
+        public void PointerCancelled()
+        {
+            _presses.FingerGone();
+            _card?.Card.FingerGone();
+        }
 
         public void Dispose()
         {
             _page.Dispose();
             _leaving?.Dispose();
             _bar.Dispose();
+            _wallet.Dispose();
+            _card?.Dispose();
             _veil.Dispose();
             SceneObjects.Destroy(_root);
         }
@@ -248,6 +323,13 @@ namespace Puzzle.Client.Screens
         {
             switch (press)
             {
+                case MuseumPress.Play _ when !_wallet.Wallet.HasALife:
+                case MuseumPress.OpenTheLivesCard _:
+                    HangTheLivesCard();
+                    break;
+                case MuseumPress.CloseTheCard _ when _card != null:
+                    TakeTheCardUp(_card);
+                    break;
                 case MuseumPress.Play _:
                     LeaveFor(new MuseumExit.ToPlay());
                     break;
@@ -267,6 +349,40 @@ namespace Puzzle.Client.Screens
                 default:
                     throw new InvalidOperationException($"A press of the kind {press.GetType().Name} leads nowhere.");
             }
+        }
+
+        /// <summary>The room goes dark and the lives card comes down in front of it; meanwhile nothing is pressed.</summary>
+        private void HangTheLivesCard()
+        {
+            if (_card != null || !(_screen is ScreenShape screen))
+            {
+                return;
+            }
+
+            LivesCard card = LivesCard.Create(_root.transform, _art, _wallet.Wallet);
+            PageLayout layout = PageLayout.Of(screen);
+            card.Card.Place(layout.PlaceOfACard(card.Card.Width, card.Card.Height), layout.View);
+            _card = card;
+            _presses.Clear();
+            _timeline.Add(0f, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)));
+            _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.Card.ComeDown);
+        }
+
+        /// <summary>The card goes up, the room lights again behind it, and once it is gone the page is the player's again.</summary>
+        private void TakeTheCardUp(LivesCard card)
+        {
+            card.Card.FingerGone();
+            _timeline.Add(0f, Tempo.CardGoesUp, card.Card.GoUp);
+            _timeline.Add(
+                Tempo.CardGoesUp / 2f,
+                Tempo.RoomLightens,
+                progress => _veil.Darken(1f - Easing.Out(progress)),
+                () =>
+                {
+                    card.Dispose();
+                    _card = null;
+                    ListenToThePage();
+                });
         }
 
         /// <summary>The room goes dark; once it is, this stage is over.</summary>
@@ -337,6 +453,7 @@ namespace Puzzle.Client.Screens
         {
             _presses.Clear();
             _bar.AddPressables(_presses);
+            _wallet.AddPressables(_presses);
             _page.AddPressables(_presses);
         }
 
@@ -349,8 +466,12 @@ namespace Puzzle.Client.Screens
             _ => throw new ArgumentOutOfRangeException(nameof(destination), destination, "A destination without a page."),
         };
 
-        /// <summary>The pixel of a point of the page that is shown; nothing while the stage has no screen or does not listen to the player.</summary>
+        /// <summary>The pixel of a point of the page that is shown; nothing while the stage has no screen, does not listen to the player, or a card hangs over the page.</summary>
         private Vector2? PixelWhileListening(Vector2? point) =>
+            point is Vector2 at && ListensToThePlayer && _card == null && _screen is ScreenShape screen ? PixelOf(at, screen) : (Vector2?)null;
+
+        /// <summary>The pixel of a point of the card that hangs over the page; nothing while it is on its way, or the stage has no screen.</summary>
+        private Vector2? PixelOnTheCard(Vector2? point) =>
             point is Vector2 at && ListensToThePlayer && _screen is ScreenShape screen ? PixelOf(at, screen) : (Vector2?)null;
 
         private static Vector2 PointAt(Vector2 pixel, ScreenShape screen)

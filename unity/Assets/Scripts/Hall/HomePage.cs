@@ -6,6 +6,7 @@ using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Painting;
 using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
@@ -19,8 +20,10 @@ namespace Puzzle.Client.Hall
     /// The museum's home, as the design canvas draws it (HomeTR): the hall of the room the player is restoring, with
     /// the room's plaque under the cornice, the painting being restored in its frame on the wall, the painter's
     /// workbench on the floor, and the green button that opens the level the player stands on. While pieces of the
-    /// painting wait to be placed, the blue "Tablo" button stands beside the green one, with a red badge that counts
-    /// them: it leads to the painting's jigsaw.
+    /// painting wait to be placed, the next of them leans on the workbench among sparkles, and the blue "Tablo"
+    /// button stands beside the green one, with a row of pips under its word for the pieces in place and a red badge
+    /// that counts the ones that wait: it leads to the painting's jigsaw. Over the plaque the museum's stage shows
+    /// the player's coins and lives (<see cref="WalletRow"/>).
     /// </summary>
     /// <remarks>
     /// The hall has two more faces, which the design canvas does not draw:
@@ -33,18 +36,36 @@ namespace Puzzle.Client.Hall
     /// light and among sparkles, and where the workbench stands a banner that says so and what comes next. Its
     /// green button leads on to the hall as the player's progress has it.</item>
     /// </list>
-    /// Left out of the design, because the game has nothing behind them yet: the gold and the lives with their
-    /// plus buttons, the settings, and the event and gift frames beside the workbench. The piece that leans on the
-    /// workbench while it waits is not drawn either; the badge on the blue button says that pieces wait.
+    /// Left out of the design, because the game has nothing behind them yet: the event and gift frames beside the
+    /// workbench, and on the wallet row the plus buttons and the settings' button (the shop's and the settings'
+    /// stages bring them).
     /// </remarks>
     public sealed class HomePage : IMuseumPage, IMovingPage
     {
         /// <summary>
-        /// The buttons' labels. The play button's is the design's (HomeTR, "Bölüm 47": 29 points). The design sets
-        /// "Tablo" at 19 over a row of pips; alone on its button it is set as large as fits beside its mark.
+        /// The buttons' labels, as the design sets them (HomeTR): "Bölüm 47" at 29 points; "Tablo" at 19 beside a
+        /// piece of 38, its line 5.5 points over where a label alone stands, over a row of pips whose middle lies
+        /// 9.5 under the face's. The pips' hollows are the design's dark at 55 % over the button's blue, as one colour.
         /// </summary>
         private const float PlayLabelSize = 29f;
-        private const float JigsawLabelSize = 22f;
+        private const float JigsawLabelSize = 19f;
+        private const float JigsawMarkSize = 38f;
+        private const float JigsawLabelLift = 5.5f;
+        private const float PipsUnderMiddle = 9.5f;
+        private static readonly Color PipsGround = Tint.Of(0x0F2670);
+        private static readonly Color PipsHollow = Tint.Of(0x1A3C94);
+
+        /// <summary>
+        /// The piece that waits, leaning on the workbench (HomeTR), in the bench's own points from its feet: its
+        /// cell fits a box of 56 by 44, its middle stands here, and it leans 8 degrees back. Around it three
+        /// sparkles: where, and how large.
+        /// </summary>
+        private static readonly Vector2 WaitingPieceBox = new Vector2(56f, 44f);
+        private static readonly Vector2 WaitingPieceMiddle = new Vector2(-50f, 144f);
+        private const float WaitingPieceLeans = 8f;
+        private const float WaitingPieceSoftEdge = 0.5f;
+        private const float SparkleDrawnSize = 24f;
+        private static readonly (float Across, float Up, float Size)[] SparklesBesideThePiece = { (-13f, 164f, 15f), (-82f, 143f, 10f), (-42f, 177f, 9f) };
         private const float NoteSize = 12.5f;
         private const float NoteSideRoom = 14f;
 
@@ -83,8 +104,12 @@ namespace Puzzle.Client.Hall
         private readonly PushButton _play;
         private readonly MuseumPress _playLeadsTo;
 
-        /// <summary>The button that leads to the painting's jigsaw; nothing while no piece of the painting waits.</summary>
+        /// <summary>The button that leads to the painting's jigsaw, and the pips under its word; nothing while no piece of the painting waits.</summary>
         private readonly PushButton? _toTheJigsaw;
+        private readonly SmallPips? _pips;
+
+        /// <summary>The next piece that waits, leaning on the workbench; nothing while none waits.</summary>
+        private readonly LoosePiece? _waitingPiece;
 
         /// <summary>The pill over the play button that says why nothing is being restored; nothing while a painting is.</summary>
         private readonly Transform? _note;
@@ -123,8 +148,14 @@ namespace Puzzle.Client.Hall
             {
                 _toTheJigsaw = new PushButton(
                     "To the jigsaw", _root, art, ButtonLook.Blue, MuseumWords.ToTheJigsaw, HallLayout.JigsawButtonWidth, JigsawLabelSize,
-                    DrawOrder.PageButton, DrawOrder.PageButtonLettering, GalleryArt.IconPiece);
+                    DrawOrder.PageButton, DrawOrder.PageButtonLettering, GalleryArt.IconPiece, labelLift: JigsawLabelLift, markSize: JigsawMarkSize);
                 _toTheJigsaw.AddBadge(piecesWaiting);
+                _pips = new SmallPips("Pips", _toTheJigsaw.Face, art, PipsGround, PipsHollow, DrawOrder.PageButtonLettering);
+                _pips.Show(painting.PiecesInPlace.Count, painting.PieceCount);
+                float pipsScale = Mathf.Min(1f, _toTheJigsaw.RoomUnderTheLabel / SmallPips.WidthOf(painting.PieceCount));
+                _pips.Transform.localPosition = new Vector3(_toTheJigsaw.LabelMiddle, -PipsUnderMiddle, 0f);
+                _pips.Transform.localScale = new Vector3(pipsScale, pipsScale, 1f);
+                _waitingPiece = LeanOnTheBench(art, visit.Progress.WaitingIn(_shown)[0]);
             }
 
             if (isCelebrating)
@@ -210,7 +241,28 @@ namespace Puzzle.Client.Hall
             _plaque.Dispose();
             _painting.Dispose();
             _sparkles?.Dispose();
+            _pips?.Dispose();
+            _waitingPiece?.Dispose();
             SceneObjects.DestroyObjectOf(_root);
+        }
+
+        /// <summary>The piece that waits, standing on the workbench and leaning back, with sparkles around it; the bench's scale draws it with the bench.</summary>
+        private LoosePiece LeanOnTheBench(ArtCatalogue art, int pieceNumber)
+        {
+            // A cut is the same at every size: the piece's cell on a painting one point wide tells its share of any width.
+            var cell = _look.CutAt(new Vector2(1f, 1f / _look.Aspect)).Pieces[pieceNumber].Cell;
+            float paintingWidth = Mathf.Min(WaitingPieceBox.x / (float)cell.Width, WaitingPieceBox.y / (float)cell.Height);
+            LoosePiece piece = LoosePiece.Create(_bench, art, _look, pieceNumber, paintingWidth, WaitingPieceSoftEdge, DrawOrder.BenchPiece);
+            piece.Transform.localPosition = new Vector3(WaitingPieceMiddle.x, WaitingPieceMiddle.y, 0f);
+            piece.Transform.localRotation = Quaternion.Euler(0f, 0f, WaitingPieceLeans);
+            foreach ((float across, float up, float size) in SparklesBesideThePiece)
+            {
+                Transform sparkle = SceneObjects.AddSprite("Sparkle", _bench, art.Of(GalleryArt.Sparkle), art.SpriteMaterial, DrawOrder.BenchSparkle).transform;
+                sparkle.localPosition = new Vector3(across, up, 0f);
+                sparkle.localScale = new Vector3(size / SparkleDrawnSize, size / SparkleDrawnSize, 1f);
+            }
+
+            return piece;
         }
 
         /// <summary>What the green button says: the level it opens, the last level again once all are won, or the way on from a restored room.</summary>
