@@ -59,8 +59,7 @@ namespace Puzzle.Client.Collections
             _root.SetParent(parent, worldPositionStays: false);
             _wall = Wall.Create(_root, art);
             _trim = RoomTrim.Create(_root, art);
-            _plaque = CollectionPlaque.Create(
-                _root, art, CollectionRooms.PaintingsWhole(visit.Progress, paintings.Catalogue), paintings.Catalogue.Rooms.Select(MuseumWords.NameOf).ToArray());
+            _plaque = CollectionPlaque.Create(_root, art, CollectionRooms.PaintingsWhole(visit.Progress, paintings.Catalogue));
             _previous = new DiscButton("Room before", _root, art, DiscGlyph.Back, DrawOrder.PlaqueArt);
             _next = new DiscButton("Room after", _root, art, DiscGlyph.Forward, DrawOrder.PlaqueArt);
             Room = room;

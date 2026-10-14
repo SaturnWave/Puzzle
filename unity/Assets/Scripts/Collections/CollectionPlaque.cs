@@ -1,7 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
@@ -29,9 +27,26 @@ namespace Puzzle.Client.Collections
         /// <summary>
         /// The room's name between its two buttons. The design names the rooms on a strip of pills there
         /// (CollectionTR, "Oda 1 · Empresyonizm": 11.5 points); between the game's two buttons one name stands, in
-        /// the serif of the page's name and a size under it, or smaller where the museum's longest name needs it.
+        /// the serif of the page's name and a size under it, or smaller where the name needs it.
         /// </summary>
         private const float LargestRoomNameSize = 13.5f;
+
+        /// <summary>
+        /// A name that would be set smaller than this on one line is set on two. The rooms named for periods
+        /// ("Rönesans Avrupası: Holbein'den Arcimboldo'ya") would come down to about 7 points on one line.
+        /// </summary>
+        private const float SmallestOneLineNameSize = 11f;
+
+        /// <summary>
+        /// The size of a name on two lines, or smaller where its longer line needs it, and how far apart the two
+        /// lines stand, as a part of the type size: two lines of this size fit between the room's label and the
+        /// plaque's rim.
+        /// </summary>
+        private const float LargestTwoLineNameSize = 10f;
+        private const float TwoLinesApart = 1.25f;
+
+        /// <summary>Two lines are centred this far under the plaque's middle: a little lower than one, away from the label.</summary>
+        private const float TwoLinesDown = 8f;
 
         /// <summary>The room's lines keep this far from the buttons at their sides: clear of the buttons' rims.</summary>
         private const float RoomLinesClearOfButtons = 8f;
@@ -42,21 +57,15 @@ namespace Puzzle.Client.Collections
 
         private readonly PagePlaque _plaque;
         private readonly TextMeshPro _whichRoom;
+
+        /// <summary>The room's name, or the first of its two lines.</summary>
         private readonly TextMeshPro _roomName;
 
-        /// <summary>
-        /// The size every room's name is set at: the one at which the longest of them stands between the buttons,
-        /// so that the name does not change its size as the player turns from room to room.
-        /// </summary>
-        private readonly float _roomNameSize;
+        /// <summary>The second line of a long name; it says nothing under a name on one line.</summary>
+        private readonly TextMeshPro _roomNameGoesOn;
 
-        private CollectionPlaque(Transform parent, ArtCatalogue art, int paintingsWhole, IReadOnlyCollection<string> roomNames)
+        private CollectionPlaque(Transform parent, ArtCatalogue art, int paintingsWhole)
         {
-            if (roomNames.Count == 0)
-            {
-                throw new ArgumentException("A museum without a room has no collection to show.", nameof(roomNames));
-            }
-
             _plaque = new PagePlaque("Collection plaque", parent, art);
             Transform content = _plaque.Content;
             float left = -PagePlaque.DesignWidth / 2f + PagePlaque.SidePadding;
@@ -70,16 +79,13 @@ namespace Puzzle.Client.Collections
             _whichRoom = PagePlaque.WriteLabel("Which room", content, art, DrawOrder.PlaqueLettering);
             _whichRoom.transform.localPosition = new Vector3(roomMiddle, LabelUp, 0f);
             _roomName = Lettering.Write("Room name", content, art, LetteringStyle.Title, LargestRoomNameSize, Lettering.Ink, DrawOrder.PlaqueLettering);
+            _roomNameGoesOn = Lettering.Write("Room name goes on", content, art, LetteringStyle.Title, LargestTwoLineNameSize, Lettering.Ink, DrawOrder.PlaqueLettering);
             _roomName.transform.localPosition = new Vector3(roomMiddle, -NameDown, 0f);
-            float widestName = roomNames.Max(name => Lettering.WidthOf(_roomName, name));
-            _roomNameSize = LargestRoomNameSize * Mathf.Min(1f, RoomBetweenButtons / widestName);
+            _roomNameGoesOn.transform.localPosition = new Vector3(roomMiddle, -NameDown, 0f);
         }
 
         /// <param name="paintingsWhole">How many of the museum's paintings hang whole.</param>
-        /// <param name="roomNames">The name of every room of the museum, as the plaque may come to show it.</param>
-        /// <exception cref="ArgumentException">No room is named.</exception>
-        public static CollectionPlaque Create(Transform parent, ArtCatalogue art, int paintingsWhole, IReadOnlyCollection<string> roomNames) =>
-            new CollectionPlaque(parent, art, paintingsWhole, roomNames);
+        public static CollectionPlaque Create(Transform parent, ArtCatalogue art, int paintingsWhole) => new CollectionPlaque(parent, art, paintingsWhole);
 
         public void Place(PageLayout page) => _plaque.Place(page.Plaque);
 
@@ -90,8 +96,62 @@ namespace Puzzle.Client.Collections
             Lettering.Say(_whichRoom, MuseumWords.RoomOfRooms(room.Number));
             string name = room.IsToCome ? MuseumWords.RoomToCome : isOpen ? room.Name : MuseumWords.OpensAt(room.Number);
 
-            // What stands there instead of a name (when the room opens, that it is being prepared) is set no larger than the names.
-            Lettering.SayWithin(_roomName, name, _roomNameSize, RoomBetweenButtons);
+            Lettering.SayWithin(_roomName, name, LargestRoomNameSize, RoomBetweenButtons);
+            if (_roomName.fontSize >= SmallestOneLineNameSize)
+            {
+                SayOnOneLine();
+                return;
+            }
+
+            (string first, string second) = SplitInTwo(name);
+            float size = Mathf.Min(SizeToFit(first), SizeToFit(second));
+            float apart = TwoLinesApart * size;
+            Lettering.SayWithin(_roomName, first, size, RoomBetweenButtons);
+            Lettering.SayWithin(_roomNameGoesOn, second, size, RoomBetweenButtons);
+            MoveDownTo(_roomName, -TwoLinesDown + apart / 2f);
+            MoveDownTo(_roomNameGoesOn, -TwoLinesDown - apart / 2f);
+        }
+
+        private void SayOnOneLine()
+        {
+            Lettering.Say(_roomNameGoesOn, string.Empty);
+            MoveDownTo(_roomName, -NameDown);
+        }
+
+        /// <summary>The size at which these words fill the room between the buttons, no larger than a two-line name's.</summary>
+        private float SizeToFit(string words)
+        {
+            _roomNameGoesOn.fontSize = LargestTwoLineNameSize;
+            return LargestTwoLineNameSize * Mathf.Min(1f, RoomBetweenButtons / Lettering.WidthOf(_roomNameGoesOn, words));
+        }
+
+        /// <summary>
+        /// The name broken at the space that leaves the longer of its two lines the shortest, so the two can be set
+        /// as large as possible; a name without a space stays whole on the first line.
+        /// </summary>
+        private (string First, string Second) SplitInTwo(string name)
+        {
+            (string First, string Second) best = (name, string.Empty);
+            float bestLonger = float.MaxValue;
+            for (int space = name.IndexOf(' '); space > 0; space = name.IndexOf(' ', space + 1))
+            {
+                string first = name.Substring(0, space);
+                string second = name.Substring(space + 1);
+                float longer = Mathf.Max(Lettering.WidthOf(_roomNameGoesOn, first), Lettering.WidthOf(_roomNameGoesOn, second));
+                if (longer < bestLonger)
+                {
+                    best = (first, second);
+                    bestLonger = longer;
+                }
+            }
+
+            return best;
+        }
+
+        private static void MoveDownTo(TextMeshPro line, float height)
+        {
+            Vector3 place = line.transform.localPosition;
+            line.transform.localPosition = new Vector3(place.x, height, place.z);
         }
 
         public void Dispose() => SceneObjects.DestroyObjectOf(_plaque.Root);
