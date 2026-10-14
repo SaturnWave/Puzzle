@@ -45,12 +45,14 @@ public class EconomyFileTests
             simulated.Prices.Boosters.ToDictionary(price => SimulatedBoosters.Name(price.Key), price => price.Value.Amount),
             BoosterKinds.All.ToDictionary(BoosterKinds.Name, kind => game.Shop.PriceOf(kind).Amount));
 
+        // The welcome gift, which both play by.
+        Assert.Equal(simulated.Start.Coins.Amount, game.StartingWallet.Coins.Amount);
+        Assert.Equal(
+            simulated.Start.Boosters.ToDictionary(held => SimulatedBoosters.Name(held.Key), held => held.Value),
+            BoosterKinds.All.ToDictionary(BoosterKinds.Name, game.StartingWallet.Shelf.Count));
+
         // What the game alone plays by, and the simulator only reads.
         GameOnlySettings stated = simulated.Game;
-        Assert.Equal(stated.StartCoins.Amount, game.StartingWallet.Coins.Amount);
-        Assert.Equal(
-            stated.StartBoosters.ToDictionary(held => SimulatedBoosters.Name(held.Key), held => held.Value),
-            BoosterKinds.All.ToDictionary(BoosterKinds.Name, game.StartingWallet.Shelf.Count));
         Assert.Equal(stated.StartBoostersPerAttempt, game.StartBoosters.PerAttempt);
         Assert.Equal(
             stated.CoinPacks.ToDictionary(pack => pack.Key, pack => pack.Value.Amount),

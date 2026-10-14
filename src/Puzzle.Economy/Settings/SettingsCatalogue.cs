@@ -97,10 +97,12 @@ public static class SettingsCatalogue
         new("prices.boosters.*", Coins, Provenance.Placeholder),
         new("prices.sideCollectionPiece", Coins, Provenance.Placeholder),
 
-        // What the game reads and no simulated player meets: a simulated player starts with nothing, takes one start
-        // booster per attempt (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins.
-        new("start.coins", Coins, Provenance.Decided, SettingUse.GameOnly),
-        new("start.boosters.*", Boosters, Provenance.Decided, SettingUse.GameOnly),
+        // The welcome gift: what a new player is given before the first level, in the game and in the simulation.
+        new("start.coins", Coins, Provenance.Decided),
+        new("start.boosters.*", Boosters, Provenance.Decided),
+
+        // What the game reads and no simulated player meets: a simulated player takes one start booster per attempt
+        // (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins.
         new("startBoosters.perAttempt", Boosters, Provenance.Proposed, SettingUse.GameOnly),
         new("shop.coinPacks.*.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.priceCoins", Coins, Provenance.Placeholder, SettingUse.GameOnly),

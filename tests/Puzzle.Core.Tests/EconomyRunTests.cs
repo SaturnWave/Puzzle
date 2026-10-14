@@ -90,15 +90,15 @@ public class EconomyRunTests
     public void What_is_stated_for_the_game_alone_changes_no_figure_and_is_listed_apart()
     {
         const string AnotherStartAndShop =
-            """{ "start": { "coins": 5000, "boosters": { "shuffle": 9 } }, "startBoosters": { "perAttempt": 1 }, "shop": { "coinPacks": { "huge": { "coins": 90000 } }, "boosterSets": { "starter": { "priceCoins": 1 } }, "adForCoins": { "coins": 999, "perDay": 20 } } }""";
+            """{ "startBoosters": { "perAttempt": 1 }, "shop": { "coinPacks": { "huge": { "coins": 90000 } }, "boosterSets": { "starter": { "priceCoins": 1 } }, "adForCoins": { "coins": 999, "perDay": 20 } } }""";
         IReadOnlyDictionary<string, string> first = SmallWorld.Report(SmallWorld.Settings()).Files();
         IReadOnlyDictionary<string, string> otherGame = SmallWorld.Report(SmallWorld.Settings(AnotherStartAndShop)).Files();
 
         string[] differing = first.Keys.Where(file => first[file] != otherGame[file]).ToArray();
 
-        // A player of the game would be far richer with these; a simulated player never meets one of them.
+        // A player of the game would be far richer with these; a simulated player never meets one of them. (The welcome
+        // gift of the start section is simulated: its tests are with the other rewards.)
         Assert.Equal(["settings.csv", EconomyReport.SummaryFile], differing);
-        Assert.Contains("start.coins,5000,coins (the game's; not simulated),Decided\n", otherGame["settings.csv"]);
         Assert.Contains("shop.coinPacks.huge.coins,90000,coins (the game's; not simulated),Placeholder\n", otherGame["settings.csv"]);
         Assert.Contains("lives.max,5,lives,Decided\n", otherGame["settings.csv"]);
 
@@ -106,9 +106,9 @@ public class EconomyRunTests
         string summary = otherGame[EconomyReport.SummaryFile];
         int restOn = summary.IndexOf("WHAT THE NUMBERS REST ON", StringComparison.Ordinal);
         int gameOnly = summary.IndexOf("STATED FOR THE GAME, NOT SIMULATED", StringComparison.Ordinal);
-        int stated = summary.IndexOf("    start.coins = 5000  (coins; Decided)", StringComparison.Ordinal);
-        Assert.True(restOn >= 0 && gameOnly > restOn && stated > gameOnly, $"the headings stand at {restOn} and {gameOnly}, the game's start at {stated}");
-        Assert.DoesNotContain("start.coins", summary[restOn..gameOnly]);
+        int stated = summary.IndexOf("    shop.coinPacks.huge.coins = 90000  (coins; Placeholder)", StringComparison.Ordinal);
+        Assert.True(restOn >= 0 && gameOnly > restOn && stated > gameOnly, $"the headings stand at {restOn} and {gameOnly}, the game's coin pack at {stated}");
+        Assert.DoesNotContain("shop.coinPacks", summary[restOn..gameOnly]);
         Assert.Contains("extraMovesOffer.priceCoins = 900  (coins)", summary[restOn..gameOnly]);
     }
 

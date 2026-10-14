@@ -104,12 +104,17 @@
   // FOR THE GAME ALONE, from here to "build": read and checked by the simulator, simulated by nothing. The fixture
   // states them because a settings file must; no test of a simulator's rule counts with one.
 
+  // The welcome gift, simulated: none, so that a test of a rule counts only what the rule gives. Tests of the gift
+  // lay one over this.
   "start": {
     // Coins a new player starts with. [placeholder]
     "coins": 0,
     // Boosters a new player starts with; every booster is stated, 0 gives none. [placeholder]
-    "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1, "hit-cell": 1, "hit-row": 1, "hit-column": 1, "shuffle": 1 }
+    "boosters": { "start-rocket-and-bomb": 0, "start-color-bomb": 0, "start-extra-moves": 0, "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
   },
+
+  // FOR THE GAME ALONE, from here to "build": read and checked by the simulator, simulated by nothing. The fixture
+  // states them because a settings file must; no test of a simulator's rule counts with one.
 
   "startBoosters": {
     // Start boosters a player may take into one attempt, each kind once: 1 to 3. [proposed]

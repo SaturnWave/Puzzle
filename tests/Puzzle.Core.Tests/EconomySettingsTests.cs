@@ -50,6 +50,9 @@ public class EconomySettingsTests
         Assert.True(Shipped("one-life.json").Lives.Max.CompareTo(standard.Lives.Max) < 0);
         Assert.True(Shipped("life-every-16-hours.json").Lives.PerLife > standard.Lives.PerLife);
         Assert.True(Shipped("extra-moves-1800.json").ExtraMovesOffer.Price > standard.ExtraMovesOffer.Price);
+        EconomySettings noGift = Shipped("no-welcome-gift.json");
+        Assert.Equal(Coins.None, noGift.Start.Coins);
+        Assert.All(noGift.Start.Boosters.Values, count => Assert.Equal(0, count));
         ExtraMovesHabit takesNothing = Shipped("no-offers.json").Player.ExtraMoves;
         Assert.False(takesNothing.WatchesAds);
         Assert.False(takesNothing.PaysCoins);
@@ -273,12 +276,13 @@ public class EconomySettingsTests
     [Fact]
     public void What_the_file_states_for_the_game_alone_is_read_whole_and_marked_as_not_simulated()
     {
-        GameOnlySettings game = EconomySupport.Settings().Game;
+        EconomySettings settings = EconomySupport.Settings();
+        GameOnlySettings game = settings.Game;
 
-        // The fixture's start, cap, shop and build, as the file states them.
-        Assert.Equal(Coins.None, game.StartCoins);
-        Assert.Equal(BoosterKinds.All.Order(), game.StartBoosters.Keys.Order());
-        Assert.All(game.StartBoosters.Values, count => Assert.Equal(1, count));
+        // The fixture's welcome gift, which is simulated, and its cap, shop and build, which are the game's alone.
+        Assert.Equal(Coins.None, settings.Start.Coins);
+        Assert.Equal(BoosterKinds.All.Order(), settings.Start.Boosters.Keys.Order());
+        Assert.All(settings.Start.Boosters.Values, count => Assert.Equal(0, count));
         Assert.Equal(3, game.StartBoostersPerAttempt);
         Assert.Equal(new Coins(1200), game.CoinPacks["medium"]);
         Assert.Equal(["large", "medium", "small"], game.CoinPacks.Keys.Order());
@@ -290,8 +294,10 @@ public class EconomySettingsTests
 
         // The catalogue says of each of these that no simulated player meets it, and of nothing else.
         string[] gameOnly = SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly).Select(field => field.Path.Split('.')[0]).Distinct().ToArray();
-        Assert.Equal(["start", "startBoosters", "shop", "build"], gameOnly);
+        Assert.Equal(["startBoosters", "shop", "build"], gameOnly);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("lives.max").Use);
+        Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("start.coins").Use);
+        Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("start.boosters.hit-row").Use);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("player.startBoosters.perAttempt").Use);
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("startBoosters.perAttempt").Use);
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("shop.boosterSets.starter.boosters.start-color-bomb").Use);
