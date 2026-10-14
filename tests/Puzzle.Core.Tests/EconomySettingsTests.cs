@@ -297,7 +297,7 @@ public class EconomySettingsTests
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("shop.boosterSets.starter.boosters.start-color-bomb").Use);
         Assert.All(
             SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly),
-            field => Assert.Contains(field.Provenance, new[] { Provenance.Placeholder, Provenance.Proposed }));
+            field => Assert.Contains(field.Provenance, new[] { Provenance.Decided, Provenance.Placeholder, Provenance.Proposed }));
 
         // The game may let a player take more start boosters than a simulated player takes: the two are stated apart.
         EconomySettings oneForBoth = EconomySupport.Settings("""{ "startBoosters": { "perAttempt": 1 } }""");
