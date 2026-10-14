@@ -53,12 +53,12 @@ public class MuseumCatalogueTests
     }
 
     [Fact]
-    public void The_second_room_is_named_and_the_rooms_after_it_carry_provisional_names()
+    public void Every_room_is_named_for_good_and_hangs_its_five_paintings()
     {
-        MuseumCatalogue catalogue = Shipped.Value;   // rooms whose paintings are chosen later keep provisional names until then
+        MuseumCatalogue catalogue = Shipped.Value;   // a room's name stops being provisional when its paintings are chosen
 
         Assert.Equal(("Post-empresyonizm", false), (catalogue.Room(new RoomNumber(2)).Movement, catalogue.Room(new RoomNumber(2)).IsNameProvisional));
-        Assert.All(catalogue.Rooms.Skip(2), room => Assert.True(room.IsNameProvisional, $"Room {room.Number} is not marked provisional."));
+        Assert.All(catalogue.Rooms, room => Assert.Equal((false, MuseumPlan.PaintingsPerRoom), (room.IsNameProvisional, room.Artworks.Count)));
         Assert.Equal(20, catalogue.Rooms.Select(room => room.Movement).Distinct().Count());
     }
 

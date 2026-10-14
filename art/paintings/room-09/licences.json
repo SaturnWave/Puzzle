@@ -1,0 +1,88 @@
+{
+  "room": "room-09",
+  "paintings": [
+    {
+      "file": "view-from-the-artists-window.jpg",
+      "title": "View from the Artist's Window",
+      "titleTr": "Sanatçının Penceresinden Görünüm",
+      "artist": "Martinus Rørbye",
+      "year": "1823–27",
+      "width": 1518,
+      "height": 1920,
+      "museum": "Statens Museum for Kunst",
+      "museumPage": "https://open.smk.dk/artwork/image/KMS7452",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Martinus_Rørbye,_Udsigt_fra_kunstnerens_vindue,_,_KMS7452,_Statens_Museum_for_Kunst.jpg",
+      "licence": "Public domain work; the museum has waived its rights in the photograph, which carries the Public Domain Mark (SMK Open)"
+    },
+    {
+      "file": "street-in-osterbro.jpg",
+      "title": "A View of a Street in Østerbro outside Copenhagen. Morning Light",
+      "titleTr": "Sabah Işığında Østerbro'da Bir Sokak",
+      "artist": "Christen Købke",
+      "year": "1836",
+      "width": 1904,
+      "height": 1232,
+      "museum": "Statens Museum for Kunst",
+      "museumPage": "https://open.smk.dk/artwork/image/KMS844",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Christen_Købke,_Parti_af_Østerbro_i_morgenbelysning,_1836,_KMS844,_Statens_Museum_for_Kunst.jpg",
+      "crop": {
+        "left": 0.004,
+        "top": 0.004,
+        "right": 0.996,
+        "bottom": 0.997
+      },
+      "licence": "Public domain work; the museum has waived its rights in the photograph, which carries the Public Domain Mark (SMK Open)"
+    },
+    {
+      "file": "danish-artists-in-rome.jpg",
+      "title": "A Group of Danish Artists in Rome",
+      "titleTr": "Roma'da Bir Grup Danimarkalı Sanatçı",
+      "artist": "Constantin Hansen",
+      "year": "1837",
+      "width": 1906,
+      "height": 1572,
+      "museum": "Statens Museum for Kunst",
+      "museumPage": "https://open.smk.dk/artwork/image/KMS3236",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Constantin_Hansen,_Et_selskab_af_danske_kunstnere_i_Rom,_1837,_KMS3236,_Statens_Museum_for_Kunst.jpg",
+      "crop": {
+        "left": 0.002,
+        "top": 0.002,
+        "right": 0.995,
+        "bottom": 0.996
+      },
+      "licence": "Public domain work; the museum has waived its rights in the photograph, which carries the Public Domain Mark (SMK Open)"
+    },
+    {
+      "file": "beech-wood-in-may.jpg",
+      "title": "A Beech Wood in May near Iselingen Manor, Zealand",
+      "titleTr": "Mayıs'ta Kayın Ormanı",
+      "artist": "P. C. Skovgaard",
+      "year": "1857",
+      "width": 1601,
+      "height": 1920,
+      "museum": "Statens Museum for Kunst",
+      "museumPage": "https://open.smk.dk/artwork/image/KMS4580",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:PC_Skovgaard,_Bøgeskov_i_maj_Motiv_fra_Iselingen,_1857,_KMS4580,_Statens_Museum_for_Kunst.jpg",
+      "licence": "Public domain work; the museum has waived its rights in the photograph, which carries the Public Domain Mark (SMK Open)"
+    },
+    {
+      "file": "three-arches-of-the-colosseum.jpg",
+      "title": "A View through Three Arches of the Third Storey of the Colosseum",
+      "titleTr": "Kolezyum'un Üçüncü Katındaki Üç Kemerden Görünüm",
+      "artist": "Christoffer Wilhelm Eckersberg",
+      "year": "1815",
+      "width": 1889,
+      "height": 1207,
+      "museum": "Statens Museum for Kunst",
+      "museumPage": "https://open.smk.dk/artwork/image/KMS3123",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:CW_Eckersberg,_Udsigt_gennem_tre_buer_i_Colosseums_tredje_stokværk,_1815,_KMS3123,_Statens_Museum_for_Kunst.jpg",
+      "crop": {
+        "left": 0.006,
+        "top": 0.006,
+        "right": 0.99,
+        "bottom": 0.994
+      },
+      "licence": "Public domain work; the museum has waived its rights in the photograph, which carries the Public Domain Mark (SMK Open)"
+    }
+  ]
+}

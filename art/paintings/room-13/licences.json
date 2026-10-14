@@ -1,0 +1,82 @@
+{
+  "room": "room-13",
+  "paintings": [
+    {
+      "file": "maynard-family-at-waltons.jpg",
+      "title": "Members of the Maynard Family in the Park at Waltons",
+      "titleTr": "Maynard Ailesi Waltons Parkı'nda",
+      "artist": "Arthur Devis",
+      "year": "y. 1755–62",
+      "width": 1920,
+      "height": 1339,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/47182",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Arthur_Devis,_Members_of_the_Maynard_Family_in_the_Park_at_Waltons,_c._1755-1762,_NGA_47182.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "duke-of-dorsets-hunter.jpg",
+      "title": "The Third Duke of Dorset's Hunter with a Groom and a Dog",
+      "titleTr": "Üçüncü Dorset Dükü'nün Av Atı, Seyis ve Köpekle",
+      "artist": "George Stubbs",
+      "year": "1768",
+      "width": 1882,
+      "height": 1508,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/437764",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:The_Third_Duke_of_Dorset's_Hunter_with_a_Groom_and_a_Dog_MET_DP164858.jpg",
+      "crop": {
+        "left": 0.01,
+        "top": 0.01,
+        "right": 0.99,
+        "bottom": 0.986
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "lady-caroline-howard.jpg",
+      "title": "Lady Caroline Howard",
+      "titleTr": "Leydi Caroline Howard",
+      "artist": "Sir Joshua Reynolds",
+      "year": "1778",
+      "width": 1521,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/113",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Sir_Joshua_Reynolds,_Lady_Caroline_Howard,_1778,_NGA_113.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "mrs-richard-brinsley-sheridan.jpg",
+      "title": "Mrs. Richard Brinsley Sheridan",
+      "titleTr": "Bayan Richard Brinsley Sheridan",
+      "artist": "Thomas Gainsborough",
+      "year": "1785–87",
+      "width": 1355,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/99",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Thomas_Gainsborough,_Mrs._Richard_Brinsley_Sheridan,_1785-1787,_NGA_99.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "elizabeth-farren.jpg",
+      "title": "Elizabeth Farren, Later Countess of Derby",
+      "titleTr": "Elizabeth Farren, Sonradan Derby Kontesi",
+      "artist": "Sir Thomas Lawrence",
+      "year": "1790",
+      "width": 1199,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/436851",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Elizabeth_Farren_(born_about_1759,_died_1829),_Later_Countess_of_Derby_MET_DP169218.jpg",
+      "crop": {
+        "left": 0.01,
+        "top": 0.028,
+        "right": 0.99,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}
