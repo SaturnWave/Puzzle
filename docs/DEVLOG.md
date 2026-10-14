@@ -35,8 +35,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Telefonda her biten deneme `attempts.jsonl` dosyasına bir satır yazıyor; `device.json` rastgele bir cihaz kimliği tutuyor.
 - 3.250 test geçti; Unity'de yeni `AttemptLogCheck` dahil bütün denetimler hatasız. Kayıt dosyası denetimini ben de çalıştırdım.
 
+**Arayüz: planın 7. aşaması (§23)**
+- Kullanıcı müze levhalarına ve kırpmalara baktı: "güzel".
+- Altın ve can satırı salon, harita ve koleksiyonda tasarımdaki yerinde; canlar gerçek saatle dönüyor, kazanılan altın sayarak artıyor. Yeni can kartı; can bitince bölüm açılmıyor. Salon "Tablo" noktalarını ve tezgâhtaki bekleyen parçayı kazandı.
+- 3.276 test geçti; Unity'de bütün denetimler ve ekran yürüyüşü hatasız. Görüntülere ve tasarımla yan yana karşılaştırmalara bakıldı.
+- Ajanın bulduğu bir sorun (müze birleşmesinden kalma): koleksiyon plaketi oda adlarını 6 puntoya düşürüyordu. Düzelttim: her ad kendi boyunda, uzun ad iki satırda.
+
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 42 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 50 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

@@ -43,10 +43,10 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A16 | Web oyuncu sayfası gerçek telefonda, Safari'de ve ekran okuyucuyla denenmedi. | Oturum 13 | Herkese açık test için | T70 |
 | A17 | Bir sunucu testi (`PublicModeTests`, istek seli) bütün takım birlikte koşarken zamanlamaya takılabiliyor; tek başına geçiyor. | Oturum 21 | Telefonla ilgisi yok | Ayrı iş |
 | A18 | `generate --repair` 899. bölümü her seferinde yeniden üretiyor. | Oturum 12 | Zararsız | — |
-| A19 | Can denetimi yok: canı bitmiş oyuncu bölüm başlatabiliyor; kayıp sayacı 5'te durur. | Aşama 2 | Bilinçli, geçici | Arayüz planının 7–8. aşamaları; T27 |
-| A20 | Cüzdan oyunda henüz görünmüyor; yalnızca kayıt dosyasında. | Aşama 2 | Geçici | Ekran aşamaları |
+| A19 | Can denetimi yoktu. **Salondan kapandı (2026-10-14, aşama 7):** canı bitmiş oyuncu "Bölüm N" ile bölüm açamıyor. Bölüm başı kartı 8. aşamada gelecek. | Aşama 2 | Düşük | T37, T38 |
+| A20 | Cüzdan oyunda görünmüyordu. **Kapandı (2026-10-14, aşama 7):** altın ve canlar müze sayfalarında; can bitince bölüm açılmıyor. | Aşama 2 | — | T34–T41 |
 | A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
-| A22 | Uzun dönem adları (ör. "Amerika: Hudson Nehri ve Sınır Boyları") koleksiyon plaketinde iki düğmenin arasına sığmak için küçük yazılıyor; harita da uzun adı küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
+| A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
 ## 3. Telefon testleri
@@ -126,6 +126,19 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T51 | Bölüm öncesi booster | Üç bölüm öncesi booster'ı birden seç, bölümü başlat | Üçü de tahtada; raftan düşer | Bölüm başı ekranı | Bekliyor |
 | T52 | Mağaza | Booster ve set al; altın paketine dokun | Altın düşer, booster rafa gelir; paketler "satışta değil" | Mağaza ekranı | Bekliyor |
 | T53 | Reklamla altın | Mağazada reklam izle, günde 4 kez dene | İlk 3'ünde 4'er altın; 4.'sü reddedilir | Mağaza ekranı | Bekliyor |
+
+### F2. Cüzdan satırı ve can kartı (aşama 7)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T34 | İlk açılış | Uygulamayı ilk kez kur ve aç | Salonda altın hapında "200", kalpte "5" ve "Dolu"; harita ve koleksiyona geçerken satır yerinde kalır | Aşama 7 | Bekliyor |
+| T35 | Geri sayım | Bir bölümde hamle yapıp çık ya da kaybet; salona dön | Kalpte "4"; hap 30:00 civarından saniye saniye geri sayar | Aşama 7 | Bekliyor |
+| T36 | Can kartı | Kalbe ya da hapına dokun | Oda kararır, "Canlar" kartı iner: "4 / 5", işleyen "Sonraki can", "Canların ... sonra dolar"; "Tamam", yuvarlak X ve geri hareketi kartı kapatır | Aşama 7 | Bekliyor |
+| T37 | Can bitince | Beş canı da kaybet, "Bölüm N"ye bas | Tahta açılmaz; kartta kırmızı "0 / 5" ve "Bir can gelince oynayabilirsin" | Aşama 7 | Bekliyor |
+| T38 | Can gelince | Geri sayımın bitmesini bekle (ya da saati 30 dakika ileri al) | Kalpte "1"; "Bölüm N" bölümü açar | Aşama 7 | Bekliyor |
+| T39 | Altının sayarak artması | Bir bölüm kazan, kartın "Müze" düğmesine bas | Salondaki tutar eski değerden yenisine yaklaşık bir saniyede sayarak çıkar | Aşama 7 | Bekliyor |
+| T40 | İç ekran | Telefonu aç (2076×2152) | Satır plaketin üstünde ortalı, hiçbir şey çakışmıyor; salon, harita ve koleksiyon sığıyor | Aşama 7 | Bekliyor |
+| T41 | Saat geri | Bir can eksikken telefonun saatini bir saat geri al | Can gelmez; hap en çok 30:00 gösterir ve bekler | Aşama 7 | Bekliyor |
 
 ### G. Görünüm
 

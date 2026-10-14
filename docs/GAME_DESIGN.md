@@ -1078,6 +1078,20 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
   - Bugün deneme ancak bir hamleden sonra sayılıyor; yalnızca booster kullanıp çıkmak kayıt bırakmıyor ve can götürmüyor. Bu karar 10. aşamada verilecek.
 - **Doğrulama:** 3.250 test. Unity'de `AttemptLogCheck`: kazanılan, kaybedilen, bırakılan ve booster'lı denemeler yazıldı, Unity'nin okuyucusuyla okundu ve aynı sona yeniden oynatıldı. Ben de çalıştırdım: 5 kayıt, geçti.
 
+**Müze sayfalarında cüzdan ve canlar (2026-10-14).** Arayüz planının 7. aşaması; planın görünür ilk aşaması.
+
+- **Cüzdan satırı:** salon, harita ve koleksiyonda, tasarım çizimindeki yerinde, korniş ile plaket arasında durur:
+  - solda pulunun üstünde altın ("200", "1.250", "1.234.567"; uzun sayı hapı genişletir);
+  - yanında üzerinde can sayısı yazan kalp ve "Dolu" ya da bir sonraki cana kalan süreyi ("12:34") gösteren hap.
+
+  Sayfalar değişirken satır yerinde kalır. Canlar gerçek saatle döner. Tahtada kazanılan altın, salona dönülünce eski tutardan yenisine sayarak artar.
+- **Can kartı:** tasarımda çizimi yok; ekrana koyduğumuz yeni bir parça. Kalbin hapına dokununca, can bitmişken de "Bölüm N"ye basınca açılır; can bitmişse bölüm açılmaz. Kartta "n / 5", sonraki can, canların tamamen dolacağı süre ve "Tamam" düğmesi var.
+- **Salon:** "Tablo" düğmesinin altında çizimdeki küçük ilerleme noktaları var; bekleyen parça ışıltılarla tezgâha yaslanıyor. Satırın yüksekliği tezgâhtan alındı; tablo eski boyunda kaldı.
+- **Sonraki aşamalara kalanlar:** artı düğmeleri ve ayarlar dişlisi (yerleri ayrıldı), etkinlik ve hediye çerçeveleri, mağaza ve takvim sekmeleri, koleksiyonun oda şeritleri.
+- **Oda adları (düzeltme):** koleksiyon plaketi bütün oda adlarını en uzun adın sığdığı boyda yazıyordu; dönem adlarıyla bu boy yaklaşık 6 punto oldu. Artık her ad kendi boyunda yazılıyor (en çok 13,5 punto). Tek satırda 11 puntodan küçük kalacak bir ad, iki dengeli satıra bölünüp en çok 10 puntoyla yazılıyor.
+- **Doğrulama:** 3.276 test. Unity'de bütün denetimler ve ekran yürüyüşü (canı bitmiş oyuncu için bir adım eklendi) hatasız. 96 sayfa görüntüsüne, tasarım çizimiyle yan yana karşılaştırmalara ve oda adı düzeltmesinde altı odaya bakıldı.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T34–T41.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
