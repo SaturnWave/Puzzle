@@ -133,6 +133,29 @@ public class EconomyBoosterAndRewardTests
     }
 
     [Fact]
+    public void A_new_player_is_given_the_welcome_gift_before_anything_else()
+    {
+        EconomySettings settings = OnePlayer(
+            """{ "start": { "coins": 150, "boosters": { "start-rocket-and-bomb": 0, "start-color-bomb": 2, "start-extra-moves": 0, "hit-cell": 0, "hit-row": 1, "hit-column": 0, "shuffle": 0 } } }""");
+        HandMadeLevels levels = new HandMadeLevels().EasyLevels(3);
+
+        JourneyList journey = Journey(settings, levels);
+
+        // The gift comes first: before the first day's reward and before the first attempt, once.
+        RewardGiven gift = Assert.IsType<RewardGiven>(journey.Events.First());
+        Assert.Equal(CoinSource.WelcomeGift, gift.Source);
+        Assert.Equal(new Coins(150), gift.Coins);
+        Assert.Equal([BoosterKind.StartColorBomb, BoosterKind.StartColorBomb, BoosterKind.HitRow], gift.Boosters);
+        Assert.Equal(0, gift.After.LevelsWon);
+        Assert.Equal(new Coins(150), gift.After.Balance);
+        Assert.Equal(2, gift.After.Held.Count(BoosterKind.StartColorBomb));
+        Assert.Single(journey.Rewards, reward => reward.Source == CoinSource.WelcomeGift);
+
+        // A gift of nothing is not given: the tests' own settings give none.
+        Assert.DoesNotContain(Journey(OnePlayer(), levels).Rewards, reward => reward.Source == CoinSource.WelcomeGift);
+    }
+
+    [Fact]
     public void A_completed_painting_pays_once_and_in_the_settings_rotation()
     {
         EconomySettings settings = OnePlayer(

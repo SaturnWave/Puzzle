@@ -98,6 +98,9 @@ public enum CoinSource
     LevelWon,
     PaintingCompleted,
     Daily,
+
+    /// <summary>What a new player is given before the first level: the settings' start section.</summary>
+    WelcomeGift,
 }
 
 /// <summary>What coins are spent on in this version. Closed set.</summary>

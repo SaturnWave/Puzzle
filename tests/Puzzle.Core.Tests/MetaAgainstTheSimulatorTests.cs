@@ -36,6 +36,10 @@ public class MetaAgainstTheSimulatorTests
             """{ "player": { "startBoosters": { "useAfterLossesOnLevel": 0, "buyAfterLossesOnLevel": 0 } } }""",
         ],
         ["""{ "player": { "extraMoves": { "watchesAds": false, "paysCoins": false } }, "lives": { "max": 1, "minutesPerLife": 600 } }"""],
+        [
+            """{ "start": { "coins": 450, "boosters": { "start-rocket-and-bomb": 2, "start-color-bomb": 1, "start-extra-moves": 0, "hit-cell": 1, "hit-row": 0, "hit-column": 0, "shuffle": 3 } } }""",
+            """{ "player": { "startBoosters": { "useAfterLossesOnLevel": 1, "buyAfterLossesOnLevel": 2 } } }""",
+        ],
     ];
 
     private static DateTimeOffset ClockAt(PlayerTime time) => FirstMidnight + time.SinceFirstMidnight;
@@ -223,6 +227,7 @@ public class MetaAgainstTheSimulatorTests
             ("a session without a life at its start", met.OfType<SessionEnded>().Any(session => session.End is SessionEnd.NoLifeAtStart)),
             ("a painting's reward", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.PaintingCompleted)),
             ("a daily reward", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.Daily)),
+            ("a welcome gift", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.WelcomeGift)),
         }.Where(part => !part.Met).Select(part => part.What).ToArray();
         Assert.Empty(neverMet);
     }
@@ -260,6 +265,8 @@ public class MetaAgainstTheSimulatorTests
         pack.extraMovesOffer.freeAdsPerDay = settings.ExtraMovesOffer.FreeAdsPerDay;
         pack.extraMovesOffer.priceCoins = settings.ExtraMovesOffer.Price.Amount;
         pack.prices.boosters = settings.Prices.Boosters.Select(price => MetaSupport.Price(price.Key.Name(), price.Value.Amount)).ToArray();
+        pack.start.coins = settings.Start.Coins.Amount;
+        pack.start.boosters = settings.Start.Boosters.Select(held => new BoosterCountFile { booster = held.Key.Name(), count = held.Value }).ToArray();
         return EconomyFileMapper.ToRules(pack);
     }
 
@@ -273,8 +280,8 @@ public class MetaAgainstTheSimulatorTests
 
     /// <summary>
     /// Settles everything a simulated journey tells of through the game's rules, on a wallet of the game's, and
-    /// holds the wallet to the simulator's own account after each thing. A simulated player starts with nothing,
-    /// whatever the settings' start says.
+    /// holds the wallet to the simulator's own account after each thing. A journey begins with the welcome gift, which
+    /// must be the game's starting wallet.
     /// </summary>
     private sealed class JourneyReplay(Meta.EconomyRules game, ExtraMovesHabit habit)
     {
@@ -375,6 +382,9 @@ public class MetaAgainstTheSimulatorTests
                     var gift = Assert.IsType<Meta.DailyGift.Given>(game.Daily.TakenOn(wallet, Meta.DayStamp.Of(ClockAt(reward.At))));
                     AssertSame(reward, gift.Reward);
                     return gift.Wallet;
+                case CoinSource.WelcomeGift:
+                    Assert.Equal(Meta.Wallet.Empty, wallet);
+                    return game.StartingWallet;
                 case CoinSource.Finale or CoinSource.LevelWon:
                     throw new InvalidOperationException($"The simulator told of a reward for {reward.Source}, which is a win's pay and no reward.");
                 default:

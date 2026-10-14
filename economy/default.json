@@ -2,7 +2,7 @@
   // The game's economy settings, which are the economy simulator's too: who plays, how they play, what the game
   // gives and what things cost. The game reads lives, coins, rewards, extraMovesOffer, the booster prices, start,
   // startBoosters, shop and build (tools/unity/sync-engine.js packs them for it); the simulator reads everything
-  // and simulates all but the last four.
+  // and simulates all but the last three.
   // Every field must be stated; the code holds no default. Each comment ends with where the value comes from:
   //   [decided]     a product decision (docs/GAME_DESIGN.md section 19) or a fact of the engine
   //   [assumed n]   starting assumption n, approved by the owner as a default
@@ -128,11 +128,7 @@
     "sideCollectionPiece": 300
   },
 
-  // FOR THE GAME ALONE, from here to "build". The simulator checks that these are well formed and simulates nothing
-  // with them: a simulated player starts with no coin and no booster, takes one start booster per attempt
-  // (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins. The amounts are stand-ins
-  // for a test build: nobody has decided one of them.
-
+  // The welcome gift: what a new player is given before the first level, in the game and in the simulation alike.
   "start": {
     // Coins a new player starts with, the welcome gift: the price of the cheapest start booster, so the shop can
     // sell something on the first visit, and well under the price of a +5, so the first +5 for coins is earned.
@@ -142,6 +138,10 @@
     // without coins. Every booster is stated; 0 gives none. The owner's number of 2026-10-14. [decided]
     "boosters": { "start-rocket-and-bomb": 3, "start-color-bomb": 3, "start-extra-moves": 3, "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
   },
+
+  // FOR THE GAME ALONE, from here to "build". The simulator checks that these are well formed and simulates nothing
+  // with them: a simulated player takes one start booster per attempt (player.startBoosters.perAttempt), never
+  // opens the shop and watches no ad for coins. Most amounts here are stand-ins for a test build.
 
   "startBoosters": {
     // Start boosters a player may take into one attempt, each kind once: 1 to 3. The game allows all three; the

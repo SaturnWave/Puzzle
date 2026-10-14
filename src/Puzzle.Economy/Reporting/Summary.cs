@@ -192,7 +192,7 @@ public static class Summary
         string offer = OfferName(report);
         text.AppendLine(Line($"COINS at each milestone (means per player; balances as p10 / p50 / p90). The {offer} moves cost {settings.ExtraMovesOffer.Price}, a side-collection piece {settings.Prices.SideCollectionPiece}"));
         var table = new TextTable(
-            "population", "level", "reached", "balance", "from the finale", "level wins", "paintings", "daily", $"spent on {offer}", "on boosters",
+            "population", "level", "reached", "balance", "welcome gift", "from the finale", "level wins", "paintings", "daily", $"spent on {offer}", "on boosters",
             "unpaid wants: gaps", "their full price", $"p50 buys {offer}", "side pieces");
         foreach (CoinsRow row in report.Coins.Where(row => row.At == BalanceMoment.Milestone))
         {
@@ -201,6 +201,7 @@ public static class Summary
                 Whole(row.Value),
                 Percent(row.ReachedShare),
                 $"{Whole(row.BalanceP10)} / {Whole(row.BalanceP50)} / {Whole(row.BalanceP90)}",
+                Whole(row.EarnedWelcomeGift),
                 Whole(row.EarnedFinale),
                 Whole(row.EarnedLevelWon),
                 Whole(row.EarnedPainting),
@@ -382,7 +383,7 @@ public static class Summary
         }
 
         text.AppendLine("STATED FOR THE GAME, NOT SIMULATED: the game reads these from the same file; no figure above rests on one");
-        text.AppendLine("  (a simulated player starts with no coin and no booster, takes one start booster per attempt, never opens the shop and watches no ad for coins)");
+        text.AppendLine("  (a simulated player takes one start booster per attempt, never opens the shop and watches no ad for coins)");
         foreach (SettingRow row in gameOnly)
         {
             text.AppendLine(Invariant, $"    {row.Field} = {row.Value}  ({row.Unit}; {row.Provenance})");

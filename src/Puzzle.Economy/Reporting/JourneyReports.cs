@@ -70,6 +70,7 @@ public sealed record CoinsRow(
     Coins? BalanceP10,
     Coins? BalanceP50,
     Coins? BalanceP90,
+    Coins? EarnedWelcomeGift,
     Coins? EarnedFinale,
     Coins? EarnedLevelWon,
     Coins? EarnedPainting,
@@ -226,7 +227,7 @@ public static class JourneyReports
     {
         var table = new CsvTable(
             "population", "at", "value", "players", "reachedShare", "playersStillPlaying", "levelP50", "balanceP10", "balanceP50", "balanceP90",
-            "earnedFinale", "earnedLevelWon", "earnedPainting", "earnedDaily", "spentExtraMoves", "spentStartBoosters", "gapsAtUnpaidWants", "priceOfUnpaidWants",
+            "earnedWelcomeGift", "earnedFinale", "earnedLevelWon", "earnedPainting", "earnedDaily", "spentExtraMoves", "spentStartBoosters", "gapsAtUnpaidWants", "priceOfUnpaidWants",
             "balanceBuysExtraMoves", "balanceBuysSidePieces");
         foreach (CoinsRow row in rows)
         {
@@ -241,6 +242,7 @@ public static class JourneyReports
                 Cell.Whole(row.BalanceP10),
                 Cell.Whole(row.BalanceP50),
                 Cell.Whole(row.BalanceP90),
+                Cell.Whole(row.EarnedWelcomeGift),
                 Cell.Whole(row.EarnedFinale),
                 Cell.Whole(row.EarnedLevelWon),
                 Cell.Whole(row.EarnedPainting),
@@ -402,6 +404,7 @@ public static class JourneyReports
             Statistics.Quantile(balances, Statistics.BandLow),
             median,
             Statistics.Quantile(balances, Statistics.BandHigh),
+            MeanCoins(totals, player => player.Earned(CoinSource.WelcomeGift)),
             MeanCoins(totals, player => player.Earned(CoinSource.Finale)),
             MeanCoins(totals, player => player.Earned(CoinSource.LevelWon)),
             MeanCoins(totals, player => player.Earned(CoinSource.PaintingCompleted)),

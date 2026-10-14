@@ -165,7 +165,7 @@ public class EconomyFigureTests
         Assert.Equal(new Coins(300), atTheEndOfDayOne.BalanceP50);
 
         string[] coins = Cells(report.Files()["coins.csv"], row => row[1] == "level");
-        Assert.Equal(["skill-55", "level", "2", "1", "1.000", "0", "2", "300", "300", "300", "100", "200", "0", "0", "0", "0", "3750", "4500", "0", "1"], coins);
+        Assert.Equal(["skill-55", "level", "2", "1", "1.000", "0", "2", "300", "300", "300", "0", "100", "200", "0", "0", "0", "0", "3750", "4500", "0", "1"], coins);
 
         SpendingRow spending = report.Spending.Single();
         Assert.Equal(Figures(5.0, 5.0, 5.0), Figures(spending.TimesOutOfMoves, spending.ExtraMovesWanted, spending.ExtraMovesWantedADay));

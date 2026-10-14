@@ -42,6 +42,7 @@ public sealed class PlayerSimulator
     public void Play(SimulatedPlayer player, IJourneyLog log)
     {
         var journey = new Journey(player, new LifeMeter(_settings.Lives));
+        GiveTheWelcomeGift(journey, PlayerTime.At(new DayNumber(1), _settings.Habit.SessionStarts[0]), log);
         for (int day = 1; day <= _settings.Players.HorizonDays && !IsOver(journey); day++)
         {
             PlayDay(journey, new DayNumber(day), log);
@@ -236,16 +237,31 @@ public sealed class PlayerSimulator
         }
     }
 
-    private static void Give(Journey journey, CoinSource source, RewardRule rule, int rewardNumber, PlayerTime at, IJourneyLog log)
+    /// <summary>
+    /// What a new player is given before the first level; it comes first, before the first day's reward. A gift of
+    /// nothing is not given, so a journey without one tells of no gift.
+    /// </summary>
+    private void GiveTheWelcomeGift(Journey journey, PlayerTime at, IJourneyLog log)
     {
-        BoosterKind[] boosters = rule.BoostersOf(rewardNumber).ToArray();
-        journey.Balance += rule.Coins;
+        BoosterKind[] boosters = _settings.Start.BoostersOneByOne.ToArray();
+        if (_settings.Start.Coins != Coins.None || boosters.Length > 0)
+        {
+            Receive(journey, CoinSource.WelcomeGift, _settings.Start.Coins, boosters, at, log);
+        }
+    }
+
+    private static void Give(Journey journey, CoinSource source, RewardRule rule, int rewardNumber, PlayerTime at, IJourneyLog log) =>
+        Receive(journey, source, rule.Coins, rule.BoostersOf(rewardNumber).ToArray(), at, log);
+
+    private static void Receive(Journey journey, CoinSource source, Coins coins, BoosterKind[] boosters, PlayerTime at, IJourneyLog log)
+    {
+        journey.Balance += coins;
         foreach (BoosterKind booster in boosters)
         {
             journey.Shelf = journey.Shelf.WithOneMore(booster);
         }
 
-        log.RewardGiven(new RewardGiven(source, at, rule.Coins, boosters, journey.Standing));
+        log.RewardGiven(new RewardGiven(source, at, coins, boosters, journey.Standing));
     }
 
     /// <summary>What a win paid: for the moves left, and the flat reward of the level.</summary>

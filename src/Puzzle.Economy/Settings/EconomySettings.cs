@@ -27,6 +27,9 @@ public sealed record EconomySettings
 
     public required PriceSettings Prices { get; init; }
 
+    /// <summary>What a new player is given before the first level (the file's start section).</summary>
+    public required WelcomeGift Start { get; init; }
+
     /// <summary>What the file states for the game alone; nothing of it is simulated.</summary>
     public required GameOnlySettings Game { get; init; }
 
@@ -168,19 +171,23 @@ public enum RealMoneyInTheBuild
 public sealed record BoosterSetSettings(Coins Price, IReadOnlyDictionary<BoosterKind, int> Boosters);
 
 /// <summary>
-/// What the settings file states for the game alone (its start, startBoosters, shop and build sections). The file is
-/// the game's too, so these are read and checked here, and the reports list them apart; the simulation never reads
-/// one. A simulated player starts with no coin and no booster, takes one start booster per attempt, never opens the
-/// shop and watches no ad for coins, whatever these say.
+/// What a new player is given before the first level, in the game and in the simulation alike: coins, and boosters
+/// of every kind (a count may be 0).
+/// </summary>
+public sealed record WelcomeGift(Coins Coins, IReadOnlyDictionary<BoosterKind, int> Boosters)
+{
+    /// <summary>The boosters one by one, in the engine's order of kinds.</summary>
+    public IEnumerable<BoosterKind> BoostersOneByOne => BoosterKinds.All.SelectMany(kind => Enumerable.Repeat(kind, Boosters[kind]));
+}
+
+/// <summary>
+/// What the settings file states for the game alone (its startBoosters, shop and build sections). The file is the
+/// game's too, so these are read and checked here, and the reports list them apart; the simulation never reads one.
+/// A simulated player takes one start booster per attempt, never opens the shop and watches no ad for coins,
+/// whatever these say.
 /// </summary>
 public sealed record GameOnlySettings
 {
-    /// <summary>Coins a new player of the game starts with.</summary>
-    public required Coins StartCoins { get; init; }
-
-    /// <summary>Boosters a new player of the game starts with: every kind is stated, a count may be 0.</summary>
-    public required IReadOnlyDictionary<BoosterKind, int> StartBoosters { get; init; }
-
     /// <summary>Start boosters the game lets a player take into one attempt, each kind once.</summary>
     public required int StartBoostersPerAttempt { get; init; }
 

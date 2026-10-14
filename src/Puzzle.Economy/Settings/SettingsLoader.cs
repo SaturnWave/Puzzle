@@ -250,6 +250,10 @@ public static class SettingsLoader
                 },
                 ExtraMovesOffer = OfferOf(file.ExtraMovesOffer, coins),
                 Prices = PricesOf(file.Prices, coins),
+                Start = new WelcomeGift(
+                    CoinsOf(file.Start.Coins, "start.coins"),
+                    ByBooster(file.Start.Boosters, BoosterKinds.All, "start.boosters")
+                        .ToDictionary(held => held.Key, held => AtLeast(held.Value, 0, $"start.boosters.{held.Key.Name()}"))),
                 Game = GameOnlyOf(file),
                 Player = player,
                 Measurement = measurement,
@@ -369,9 +373,6 @@ public static class SettingsLoader
                 $"startBoosters.perAttempt {file.StartBoosters.PerAttempt} must be 1 to {startKinds}: each kind of start booster is taken once");
             return new GameOnlySettings
             {
-                StartCoins = CoinsOf(file.Start.Coins, "start.coins"),
-                StartBoosters = ByBooster(file.Start.Boosters, BoosterKinds.All, "start.boosters")
-                    .ToDictionary(held => held.Key, held => AtLeast(held.Value, 0, $"start.boosters.{held.Key.Name()}")),
                 StartBoostersPerAttempt = file.StartBoosters.PerAttempt,
                 CoinPacks = ByPlainName(file.Shop.CoinPacks, "shop.coinPacks")
                     .ToDictionary(pack => pack.Key, pack => CoinsOf(AtLeast(pack.Value.Coins, 1L, $"shop.coinPacks.{pack.Key}.coins"), $"shop.coinPacks.{pack.Key}.coins")),
