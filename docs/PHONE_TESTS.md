@@ -31,7 +31,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A04 | Bitiş şöleninin telefonda kare hızı ve gerçek parmakla atlanması ölçülmedi. | §23 | Orta | T12 |
 | A05 | 10 sütunlu tahtada hücre yaklaşık 36 pt; önerilen 44 pt dokunma hedefinin altında. | §2, §22 | Orta: yanlış dokunuş | T10 |
 | A06 | Bantlı bir parça, bandının çıktığı gösterilmeden hareket edebiliyor. | Oturum 20 | Düşük, görsel | Kullanıcının ayrı oturumunda ele alınıyor; sonucu henüz bu dalda yok |
-| A07 | Booster'lı bir deneme kayıttan birebir yeniden oynatılamıyordu. **Kapandı (2026-10-14, aşama 3):** eylemler sırasıyla kaydediliyor ve yeniden oynatılıyor. | §18 | — | Kapandı; telefonda T30–T33 |
+| A07 | Booster'lı bir deneme kayıttan birebir yeniden oynatılamıyordu. **Kapandı (2026-10-14, aşama 3):** eylemler sırasıyla kaydediliyor ve yeniden oynatılıyor. | §18 | — | Kapandı; telefonda T81–T84 |
 | A08 | Reklamlar yalnızca canlandırma; gerçek para paketleri satışta değil. | §23 | Bilinçli | Yayın hazırlığında |
 | A09 | Bölüm içi dört booster'ın etkisi ölçülmedi; fiyatları yer tutucu. Hoş geldin hediyesinin 12 bölüm içi booster'ı simülasyonda etkisiz sayılıyor. | §25 | Orta | Bot kuralı yazılınca |
 | A10 | Ses ve titreşim yok. | §23 | Bilinçli | Sonraki faz |
@@ -43,8 +43,8 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A16 | Web oyuncu sayfası gerçek telefonda, Safari'de ve ekran okuyucuyla denenmedi. | Oturum 13 | Herkese açık test için | T70 |
 | A17 | Bir sunucu testi (`PublicModeTests`, istek seli) bütün takım birlikte koşarken zamanlamaya takılabiliyor; tek başına geçiyor. | Oturum 21 | Telefonla ilgisi yok | Ayrı iş |
 | A18 | `generate --repair` 899. bölümü her seferinde yeniden üretiyor. | Oturum 12 | Zararsız | — |
-| A19 | Can denetimi yoktu. **Salondan kapandı (2026-10-14, aşama 7):** canı bitmiş oyuncu "Bölüm N" ile bölüm açamıyor. Bölüm başı kartı 8. aşamada gelecek. | Aşama 2 | Düşük | T37, T38 |
-| A20 | Cüzdan oyunda görünmüyordu. **Kapandı (2026-10-14, aşama 7):** altın ve canlar müze sayfalarında; can bitince bölüm açılmıyor. | Aşama 2 | — | T34–T41 |
+| A19 | Can denetimi yoktu. **Salondan kapandı (2026-10-14, aşama 7):** canı bitmiş oyuncu "Bölüm N" ile bölüm açamıyor. Bölüm başı kartı 8. aşamada gelecek. | Aşama 2 | Düşük | T93, T94 |
+| A20 | Cüzdan oyunda görünmüyordu. **Kapandı (2026-10-14, aşama 7):** altın ve canlar müze sayfalarında; can bitince bölüm açılmıyor. | Aşama 2 | — | T90–T97 |
 | A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
@@ -90,12 +90,17 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T25 | Kayıp bir can götürür, 30 dakikalık saati başlatır | Can doluyken (`"livesShort":0`) hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı ve telefonun saatini (`adb shell date +%s`) oku | `"livesShort":1`; `nextLifeAtUnixSeconds` kaybettiren hamlenin anı artı 1800 (birkaç saniye içinde). Yarım saat içinde ikinci kayıp: 2, aynı `nextLifeAtUnixSeconds` | Aşama 2 | Bekliyor |
 | T26 | Hamlesiz çıkış ve yarıda kapatma ücretsiz | Bir bölüm aç, hamle yapmadan yuvarlak düğmeyle müzeye dön, dosyayı oku. Sonra bir bölümde birkaç hamle oyna, uygulamayı kaydırarak kapat, aç, dosyayı oku | İkisi de `livesShort`'u değiştirmez; ikincisi yalnızca denemeyi sayar (`attemptsOnLevel` bir artar), oyun salonda açılır | Aşama 2 | Bekliyor |
 | T27 | Can bitince oyun bozulmaz | 30 dakika içinde beş bölüm kaybet, sonra altıncıyı | Oyun sürer (can denetimi henüz yok, A19); dosya `"livesShort":5`'te kalır, altıncı kayıp bir şey değiştirmez | Aşama 2 | Bekliyor |
-| T29 | Cihaz kimliği | Yeni APK'yı kur, oyunu bir kez aç; `adb shell run-as com.saturnwave.puzzle cat files/device.json` ile kimliği not et; uygulamayı durdurup aç, yeniden oku; aynı APK'yı üstüne kur, oku; kaldırıp kur, oku | İlk üç okumada aynı kimlik; kaldırıp kurunca yeni bir kimlik | Aşama 3 | Bekliyor |
-| T30 | Kazanılan bölümün satırı | `attempts.jsonl` satır sayısını not et; hamle kalmışken bir bölüm kazan, şölen başlar başlamaz uygulamayı kapat; son satırı oku | Bir satır fazla: `"result":"won"`, `"client":"unity"`, `deviceId` device.json'daki kimlik, `moveLimit` bölümün kendi limiti, hamle kadar `{"act":"move"}` | Aşama 3 | Bekliyor |
-| T31 | Kaybedilen bölümün satırı | Hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı oku | Bir satır fazla: `"result":"outOfMoves"`, `movesUsed` bölümün hamle sayısı | Aşama 3 | Bekliyor |
-| T32 | Bırakma ve kapatma | Hamle yapmadan bölümden çık; iki hamle oynayıp çık; bir hamle oynayıp uygulamayı kapat; her adımdan sonra satırları say | İlki satır eklemez; ikincisi `"result":"abandoned"`, `"movesUsed":2` ile bir satır ekler; üçüncüsü satır eklemez | Aşama 3 | Bekliyor |
-| T33 | Araçlar telefonun dosyasını okur | Dosyayı bilgisayara al (`adb shell run-as com.saturnwave.puzzle cat files/attempts.jsonl > phone-attempts.jsonl`); `dotnet run --project src/Puzzle.Cli -c Debug -- humans phone-attempts.jsonl --out out/phone-humans.csv` | Her satır okunur, okunamayan satır yok; denemeler bölümlerine sayılır | Aşama 3 | Bekliyor |
 | T28 | Kaydedilen an yeniden başlatmadan sağ çıkar | Bir kayıptan sonra `livesShort` ve `nextLifeAtUnixSeconds`'u not et; `adb shell am force-stop com.saturnwave.puzzle` ile durdur, aç; yarım saat içinde bir bölüm kazan, dosyayı oku | `livesShort` ve `nextLifeAtUnixSeconds` öncekiyle birebir aynı; `coins` ve `levelsWon` kazançla arttı | Aşama 2 | Bekliyor |
+
+### C3. Deneme kaydı ve cihaz kimliği (aşama 3)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T80 | Cihaz kimliği | Yeni APK'yı kur, oyunu bir kez aç; `adb shell run-as com.saturnwave.puzzle cat files/device.json` ile kimliği not et; uygulamayı durdurup aç, yeniden oku; aynı APK'yı üstüne kur, oku; kaldırıp kur, oku | İlk üç okumada aynı kimlik; kaldırıp kurunca yeni bir kimlik | Aşama 3 | Bekliyor |
+| T81 | Kazanılan bölümün satırı | `attempts.jsonl` satır sayısını not et; hamle kalmışken bir bölüm kazan, şölen başlar başlamaz uygulamayı kapat; son satırı oku | Bir satır fazla: `"result":"won"`, `"client":"unity"`, `deviceId` device.json'daki kimlik, `moveLimit` bölümün kendi limiti, hamle kadar `{"act":"move"}` | Aşama 3 | Bekliyor |
+| T82 | Kaybedilen bölümün satırı | Hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı oku | Bir satır fazla: `"result":"outOfMoves"`, `movesUsed` bölümün hamle sayısı | Aşama 3 | Bekliyor |
+| T83 | Bırakma ve kapatma | Hamle yapmadan bölümden çık; iki hamle oynayıp çık; bir hamle oynayıp uygulamayı kapat; her adımdan sonra satırları say | İlki satır eklemez; ikincisi `"result":"abandoned"`, `"movesUsed":2` ile bir satır ekler; üçüncüsü satır eklemez | Aşama 3 | Bekliyor |
+| T84 | Araçlar telefonun dosyasını okur | Dosyayı bilgisayara al (`adb shell run-as com.saturnwave.puzzle cat files/attempts.jsonl > phone-attempts.jsonl`); `dotnet run --project src/Puzzle.Cli -c Debug -- humans phone-attempts.jsonl --out out/phone-humans.csv` | Her satır okunur, okunamayan satır yok; denemeler bölümlerine sayılır | Aşama 3 | Bekliyor |
 
 ### D. Can ve saat
 
@@ -131,29 +136,29 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|
-| T34 | İlk açılış | Uygulamayı ilk kez kur ve aç | Salonda altın hapında "200", kalpte "5" ve "Dolu"; harita ve koleksiyona geçerken satır yerinde kalır | Aşama 7 | Bekliyor |
-| T35 | Geri sayım | Bir bölümde hamle yapıp çık ya da kaybet; salona dön | Kalpte "4"; hap 30:00 civarından saniye saniye geri sayar | Aşama 7 | Bekliyor |
-| T36 | Can kartı | Kalbe ya da hapına dokun | Oda kararır, "Canlar" kartı iner: "4 / 5", işleyen "Sonraki can", "Canların ... sonra dolar"; "Tamam", yuvarlak X ve geri hareketi kartı kapatır | Aşama 7 | Bekliyor |
-| T37 | Can bitince | Beş canı da kaybet, "Bölüm N"ye bas | Tahta açılmaz; kartta kırmızı "0 / 5" ve "Bir can gelince oynayabilirsin" | Aşama 7 | Bekliyor |
-| T38 | Can gelince | Geri sayımın bitmesini bekle (ya da saati 30 dakika ileri al) | Kalpte "1"; "Bölüm N" bölümü açar | Aşama 7 | Bekliyor |
-| T39 | Altının sayarak artması | Bir bölüm kazan, kartın "Müze" düğmesine bas | Salondaki tutar eski değerden yenisine yaklaşık bir saniyede sayarak çıkar | Aşama 7 | Bekliyor |
-| T40 | İç ekran | Telefonu aç (2076×2152) | Satır plaketin üstünde ortalı, hiçbir şey çakışmıyor; salon, harita ve koleksiyon sığıyor | Aşama 7 | Bekliyor |
-| T41 | Saat geri | Bir can eksikken telefonun saatini bir saat geri al | Can gelmez; hap en çok 30:00 gösterir ve bekler | Aşama 7 | Bekliyor |
+| T90 | İlk açılış | Uygulamayı ilk kez kur ve aç | Salonda altın hapında "200", kalpte "5" ve "Dolu"; harita ve koleksiyona geçerken satır yerinde kalır | Aşama 7 | Bekliyor |
+| T91 | Geri sayım | Bir bölümde hamle yapıp çık ya da kaybet; salona dön | Kalpte "4"; hap 30:00 civarından saniye saniye geri sayar | Aşama 7 | Bekliyor |
+| T92 | Can kartı | Kalbe ya da hapına dokun | Oda kararır, "Canlar" kartı iner: "4 / 5", işleyen "Sonraki can", "Canların ... sonra dolar"; "Tamam", yuvarlak X ve geri hareketi kartı kapatır | Aşama 7 | Bekliyor |
+| T93 | Can bitince | Beş canı da kaybet, "Bölüm N"ye bas | Tahta açılmaz; kartta kırmızı "0 / 5" ve "Bir can gelince oynayabilirsin" | Aşama 7 | Bekliyor |
+| T94 | Can gelince | Geri sayımın bitmesini bekle (ya da saati 30 dakika ileri al) | Kalpte "1"; "Bölüm N" bölümü açar | Aşama 7 | Bekliyor |
+| T95 | Altının sayarak artması | Bir bölüm kazan, kartın "Müze" düğmesine bas | Salondaki tutar eski değerden yenisine yaklaşık bir saniyede sayarak çıkar | Aşama 7 | Bekliyor |
+| T96 | İç ekran | Telefonu aç (2076×2152) | Satır plaketin üstünde ortalı, hiçbir şey çakışmıyor; salon, harita ve koleksiyon sığıyor | Aşama 7 | Bekliyor |
+| T97 | Saat geri | Bir can eksikken telefonun saatini bir saat geri al | Can gelmez; hap en çok 30:00 gösterir ve bekler | Aşama 7 | Bekliyor |
 
 ### F3. Bölüm başı kartı (aşama 8)
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|
-| T52 | İlk kart | İlk kurulumda salonda "Bölüm 1"e bas | Kart iner: bölüm 1, hedefi, hamlesi, her birinde 3 yazan üç disk, hiçbiri seçili değil | Aşama 8 | Bekliyor |
-| T53 | Seçmek, bırakmak | Fırça + sıçrama diskine dokun, sonra yine dokun; "+3 hamle"ye dokun; X ile kapat, yeniden aç | Önce yeşil halka ve tik, sonra kalkar; madalyon 3 artar; yeniden açınca hepsi yine 3, hiçbiri seçili değil | Aşama 8 | Bekliyor |
-| T54 | Booster'la açılış | Fırça + sıçrama ve paleti seç, "Oyna"; hamle yapmadan geri tuşuyla çık ve onayla; kartı aç | Tahtada fırça, sıçrama ve palet en son altın ışıkla belirir; kartta hâlâ 3 ve 3 | Aşama 8 | Bekliyor |
-| T55 | Harcama ilk hamlede | Aynısını yap, bir hamle oyna, bölümü bitir; sonraki kartı aç | 2 ve 2 | Aşama 8 | Bekliyor |
-| T56 | Tekrar dene | Bir bölümü kaybet, "Tekrar dene" | Salona dönülür ve aynı bölümün kartı iner; "Oyna" "2. deneme" ile açılır | Aşama 8 | Bekliyor |
-| T57 | Kazanınca | Bir bölüm kazan, "Devam" | Salona dönülür, altın sayarak artar, düğme sonraki bölümü gösterir; kart inmez | Aşama 8 | Bekliyor |
-| T58 | Satın alma | Bir bölüm öncesi booster'ın üçünü de harca; artısına dokun; "Satın al"; sonra altını yetmeyen biriyle dene | Fiyatlı teklif kartı (+3 hamle: 200); satın alınca kart kalkar, altın geriye sayar, diskte 1; altın yetmezse düğme soluk ve "Altın yetmiyor" | Aşama 8 | Bekliyor |
-| T59 | Can yokken | Bütün canları kaybet; "Tekrar dene"ye ve "Bölüm N"ye bas | İkisinde de bölüm kartı değil can kartı gelir | Aşama 8 | Bekliyor |
-| T60 | Geri tuşu sırası | Teklif kartı açıkken geri tuşuna art arda bas | Önce teklif kartı, sonra bölüm kartı kapanır, sonra salonda bir şey olmaz | Aşama 8 | Bekliyor |
-| T61 | Kart açıkken kapatma | Booster seçiliyken uygulamayı kapat, aç | Hiçbir şey harcanmamış | Aşama 8 | Bekliyor |
+| T100 | İlk kart | İlk kurulumda salonda "Bölüm 1"e bas | Kart iner: bölüm 1, hedefi, hamlesi, her birinde 3 yazan üç disk, hiçbiri seçili değil | Aşama 8 | Bekliyor |
+| T101 | Seçmek, bırakmak | Fırça + sıçrama diskine dokun, sonra yine dokun; "+3 hamle"ye dokun; X ile kapat, yeniden aç | Önce yeşil halka ve tik, sonra kalkar; madalyon 3 artar; yeniden açınca hepsi yine 3, hiçbiri seçili değil | Aşama 8 | Bekliyor |
+| T102 | Booster'la açılış | Fırça + sıçrama ve paleti seç, "Oyna"; hamle yapmadan geri tuşuyla çık ve onayla; kartı aç | Tahtada fırça, sıçrama ve palet en son altın ışıkla belirir; kartta hâlâ 3 ve 3 | Aşama 8 | Bekliyor |
+| T103 | Harcama ilk hamlede | Aynısını yap, bir hamle oyna, bölümü bitir; sonraki kartı aç | 2 ve 2 | Aşama 8 | Bekliyor |
+| T104 | Tekrar dene | Bir bölümü kaybet, "Tekrar dene" | Salona dönülür ve aynı bölümün kartı iner; "Oyna" "2. deneme" ile açılır | Aşama 8 | Bekliyor |
+| T105 | Kazanınca | Bir bölüm kazan, "Devam" | Salona dönülür, altın sayarak artar, düğme sonraki bölümü gösterir; kart inmez | Aşama 8 | Bekliyor |
+| T106 | Satın alma | Bir bölüm öncesi booster'ın üçünü de harca; artısına dokun; "Satın al"; sonra altını yetmeyen biriyle dene | Fiyatlı teklif kartı (+3 hamle: 200); satın alınca kart kalkar, altın geriye sayar, diskte 1; altın yetmezse düğme soluk ve "Altın yetmiyor" | Aşama 8 | Bekliyor |
+| T107 | Can yokken | Bütün canları kaybet; "Tekrar dene"ye ve "Bölüm N"ye bas | İkisinde de bölüm kartı değil can kartı gelir | Aşama 8 | Bekliyor |
+| T108 | Geri tuşu sırası | Teklif kartı açıkken geri tuşuna art arda bas | Önce teklif kartı, sonra bölüm kartı kapanır, sonra salonda bir şey olmaz | Aşama 8 | Bekliyor |
+| T109 | Kart açıkken kapatma | Booster seçiliyken uygulamayı kapat, aç | Hiçbir şey harcanmamış | Aşama 8 | Bekliyor |
 
 ### G. Görünüm
 

@@ -1090,7 +1090,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Sonraki aşamalara kalanlar:** artı düğmeleri ve ayarlar dişlisi (yerleri ayrıldı), etkinlik ve hediye çerçeveleri, mağaza ve takvim sekmeleri, koleksiyonun oda şeritleri.
 - **Oda adları (düzeltme):** koleksiyon plaketi bütün oda adlarını en uzun adın sığdığı boyda yazıyordu; dönem adlarıyla bu boy yaklaşık 6 punto oldu. Artık her ad kendi boyunda yazılıyor (en çok 13,5 punto). Tek satırda 11 puntodan küçük kalacak bir ad, iki dengeli satıra bölünüp en çok 10 puntoyla yazılıyor.
 - **Doğrulama:** 3.276 test. Unity'de bütün denetimler ve ekran yürüyüşü (canı bitmiş oyuncu için bir adım eklendi) hatasız. 96 sayfa görüntüsüne, tasarım çizimiyle yan yana karşılaştırmalara ve oda adı düzeltmesinde altı odaya bakıldı.
-- **Telefon testleri:** `docs/PHONE_TESTS.md`, T34–T41.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T90–T97.
 
 **Bölüm başı kartı ve bölüm öncesi booster'lar (2026-10-14).** Arayüz planının 8. aşaması.
 
@@ -1100,7 +1100,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Harcama:** seçilen booster'lar ancak ilk hamlede harcanır. Kartı kapatmak ya da hamle yapmadan çıkmak hiçbir şey götürmez. Deneme kaydı booster'ları adıyla tutar; kayıt aynı sona yeniden oynatılır (gerçek bölümlerle test edildi).
 - **Değişmeyenler:** motor, kurallar ve ekonomi ayarları.
 - **Doğrulama:** 3.322 test. Unity'de bütün denetimler, kartın içinden geçen ekran yürüyüşü, yeterli ve yetersiz altınla satın alma, tasarımla yan yana karşılaştırma (kart çizime çok yakın).
-- **Telefon testleri:** `docs/PHONE_TESTS.md`, T52–T61.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T100–T109.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
