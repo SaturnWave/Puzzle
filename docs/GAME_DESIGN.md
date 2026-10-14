@@ -1100,7 +1100,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Harcama:** seçilen booster'lar ancak ilk hamlede harcanır. Kartı kapatmak ya da hamle yapmadan çıkmak hiçbir şey götürmez. Deneme kaydı booster'ları adıyla tutar; kayıt aynı sona yeniden oynatılır (gerçek bölümlerle test edildi).
 - **Değişmeyenler:** motor, kurallar ve ekonomi ayarları.
 - **Doğrulama:** 3.322 test. Unity'de bütün denetimler, kartın içinden geçen ekran yürüyüşü, yeterli ve yetersiz altınla satın alma, tasarımla yan yana karşılaştırma (kart çizime çok yakın).
-- **Telefon testleri:** `docs/PHONE_TESTS.md`, T42–T51.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T52–T61.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 

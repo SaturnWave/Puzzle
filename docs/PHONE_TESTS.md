@@ -144,16 +144,16 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|
-| T42 | İlk kart | İlk kurulumda salonda "Bölüm 1"e bas | Kart iner: bölüm 1, hedefi, hamlesi, her birinde 3 yazan üç disk, hiçbiri seçili değil | Aşama 8 | Bekliyor |
-| T43 | Seçmek, bırakmak | Fırça + sıçrama diskine dokun, sonra yine dokun; "+3 hamle"ye dokun; X ile kapat, yeniden aç | Önce yeşil halka ve tik, sonra kalkar; madalyon 3 artar; yeniden açınca hepsi yine 3, hiçbiri seçili değil | Aşama 8 | Bekliyor |
-| T44b | Booster'la açılış | Fırça + sıçrama ve paleti seç, "Oyna"; hamle yapmadan geri tuşuyla çık ve onayla; kartı aç | Tahtada fırça, sıçrama ve palet en son altın ışıkla belirir; kartta hâlâ 3 ve 3 | Aşama 8 | Bekliyor |
-| T45 | Harcama ilk hamlede | Aynısını yap, bir hamle oyna, bölümü bitir; sonraki kartı aç | 2 ve 2 | Aşama 8 | Bekliyor |
-| T46 | Tekrar dene | Bir bölümü kaybet, "Tekrar dene" | Salona dönülür ve aynı bölümün kartı iner; "Oyna" "2. deneme" ile açılır | Aşama 8 | Bekliyor |
-| T47 | Kazanınca | Bir bölüm kazan, "Devam" | Salona dönülür, altın sayarak artar, düğme sonraki bölümü gösterir; kart inmez | Aşama 8 | Bekliyor |
-| T48 | Satın alma | Bir bölüm öncesi booster'ın üçünü de harca; artısına dokun; "Satın al"; sonra altını yetmeyen biriyle dene | Fiyatlı teklif kartı (+3 hamle: 200); satın alınca kart kalkar, altın geriye sayar, diskte 1; altın yetmezse düğme soluk ve "Altın yetmiyor" | Aşama 8 | Bekliyor |
-| T49 | Can yokken | Bütün canları kaybet; "Tekrar dene"ye ve "Bölüm N"ye bas | İkisinde de bölüm kartı değil can kartı gelir | Aşama 8 | Bekliyor |
-| T50 | Geri tuşu sırası | Teklif kartı açıkken geri tuşuna art arda bas | Önce teklif kartı, sonra bölüm kartı kapanır, sonra salonda bir şey olmaz | Aşama 8 | Bekliyor |
-| T51 | Kart açıkken kapatma | Booster seçiliyken uygulamayı kapat, aç | Hiçbir şey harcanmamış | Aşama 8 | Bekliyor |
+| T52 | İlk kart | İlk kurulumda salonda "Bölüm 1"e bas | Kart iner: bölüm 1, hedefi, hamlesi, her birinde 3 yazan üç disk, hiçbiri seçili değil | Aşama 8 | Bekliyor |
+| T53 | Seçmek, bırakmak | Fırça + sıçrama diskine dokun, sonra yine dokun; "+3 hamle"ye dokun; X ile kapat, yeniden aç | Önce yeşil halka ve tik, sonra kalkar; madalyon 3 artar; yeniden açınca hepsi yine 3, hiçbiri seçili değil | Aşama 8 | Bekliyor |
+| T54 | Booster'la açılış | Fırça + sıçrama ve paleti seç, "Oyna"; hamle yapmadan geri tuşuyla çık ve onayla; kartı aç | Tahtada fırça, sıçrama ve palet en son altın ışıkla belirir; kartta hâlâ 3 ve 3 | Aşama 8 | Bekliyor |
+| T55 | Harcama ilk hamlede | Aynısını yap, bir hamle oyna, bölümü bitir; sonraki kartı aç | 2 ve 2 | Aşama 8 | Bekliyor |
+| T56 | Tekrar dene | Bir bölümü kaybet, "Tekrar dene" | Salona dönülür ve aynı bölümün kartı iner; "Oyna" "2. deneme" ile açılır | Aşama 8 | Bekliyor |
+| T57 | Kazanınca | Bir bölüm kazan, "Devam" | Salona dönülür, altın sayarak artar, düğme sonraki bölümü gösterir; kart inmez | Aşama 8 | Bekliyor |
+| T58 | Satın alma | Bir bölüm öncesi booster'ın üçünü de harca; artısına dokun; "Satın al"; sonra altını yetmeyen biriyle dene | Fiyatlı teklif kartı (+3 hamle: 200); satın alınca kart kalkar, altın geriye sayar, diskte 1; altın yetmezse düğme soluk ve "Altın yetmiyor" | Aşama 8 | Bekliyor |
+| T59 | Can yokken | Bütün canları kaybet; "Tekrar dene"ye ve "Bölüm N"ye bas | İkisinde de bölüm kartı değil can kartı gelir | Aşama 8 | Bekliyor |
+| T60 | Geri tuşu sırası | Teklif kartı açıkken geri tuşuna art arda bas | Önce teklif kartı, sonra bölüm kartı kapanır, sonra salonda bir şey olmaz | Aşama 8 | Bekliyor |
+| T61 | Kart açıkken kapatma | Booster seçiliyken uygulamayı kapat, aç | Hiçbir şey harcanmamış | Aşama 8 | Bekliyor |
 
 ### G. Görünüm
 
