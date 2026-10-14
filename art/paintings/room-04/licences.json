@@ -1,0 +1,82 @@
+{
+  "room": "room-04",
+  "paintings": [
+    {
+      "file": "the-dinner-horn.jpg",
+      "title": "The Dinner Horn (Blowing the Horn at Seaside)",
+      "titleTr": "Yemek Borusu",
+      "artist": "Winslow Homer",
+      "year": "1870",
+      "width": 1350,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/89664",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Winslow_Homer,_The_Dinner_Horn_(Blowing_the_Horn_at_Seaside),_1870,_NGA_89664.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "champion-single-sculls.jpg",
+      "title": "The Champion Single Sculls (Max Schmitt in a Single Scull)",
+      "titleTr": "Tek Çifte Şampiyonu (Tek Çiftede Max Schmitt)",
+      "artist": "Thomas Eakins",
+      "year": "1871",
+      "width": 1868,
+      "height": 1290,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/10819",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:The_Champion_Single_Sculls_(Max_Schmitt_in_a_Single_Scull)_MET_DT86.jpg",
+      "crop": {
+        "left": 0.015,
+        "top": 0.022,
+        "right": 0.988,
+        "bottom": 0.982
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "setting-out-to-fish.jpg",
+      "title": "En route pour la pêche (Setting Out to Fish)",
+      "titleTr": "Balığa Çıkarken",
+      "artist": "John Singer Sargent",
+      "year": "1878",
+      "width": 1920,
+      "height": 1213,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/166472",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:John_Singer_Sargent,_En_route_pour_la_pêche_(Setting_Out_to_Fish),_1878,_NGA_166472.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "a-friendly-call.jpg",
+      "title": "A Friendly Call",
+      "titleTr": "Dost Ziyareti",
+      "artist": "William Merritt Chase",
+      "year": "1895",
+      "width": 1920,
+      "height": 1198,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/3205",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:William_Merritt_Chase,_A_Friendly_Call,_1895,_NGA_3205.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "snap-the-whip.jpg",
+      "title": "Snap the Whip",
+      "titleTr": "Kırbaç Oyunu",
+      "artist": "Winslow Homer",
+      "year": "1872",
+      "width": 1920,
+      "height": 1201,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/11140",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Snap_the_Whip_MET_DT1395.jpg",
+      "crop": {
+        "left": 0.06,
+        "top": 0.024,
+        "right": 0.986,
+        "bottom": 0.974
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

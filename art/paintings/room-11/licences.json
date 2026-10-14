@@ -1,0 +1,100 @@
+{
+  "room": "room-11",
+  "paintings": [
+    {
+      "file": "otani-oniji-as-yakko-edobei.jpg",
+      "title": "Kabuki Actor Otani Oniji III as Yakko Edobei",
+      "titleTr": "Kabuki Oyuncusu III. Otani Oniji, Uşak Edobei Rolünde",
+      "artist": "Tōshūsai Sharaku",
+      "year": "1794",
+      "width": 1199,
+      "height": 1862,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/37358",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:三代目大谷鬼次の奴江戸兵衛-Kabuki_Actor_Ōtani_Oniji_III_as_Yakko_Edobei_in_the_Play_The_Colored_Reins_of_a_Loving_Wife_(Koi_nyōbō_somewake_tazuna)_MET_DP130228.jpg",
+      "crop": {
+        "left": 0.031,
+        "top": 0.013,
+        "right": 0.968,
+        "bottom": 0.985
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "red-fuji.jpg",
+      "title": "South Wind, Clear Sky (Red Fuji), from Thirty-six Views of Mount Fuji",
+      "titleTr": "Güney Rüzgârı, Açık Hava (Kızıl Fuji)",
+      "artist": "Katsushika Hokusai",
+      "year": "y. 1830–32",
+      "width": 1832,
+      "height": 1226,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/55736",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:冨嶽三十六景_凱風快晴-South_Wind,_Clear_Sky_(Gaifū_kaisei),_also_known_as_Red_Fuji,_from_the_series_Thirty-six_Views_of_Mount_Fuji_(Fugaku_sanjūrokkei)_MET_DP141053.jpg",
+      "crop": {
+        "left": 0.022,
+        "top": 0.033,
+        "right": 0.976,
+        "bottom": 0.965
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "hakone-lake.jpg",
+      "title": "Hakone: Picture of the Lake, from Fifty-three Stations of the Tokaido",
+      "titleTr": "Hakone: Göl Manzarası (Tokaido'nun Elli Üç Konağı)",
+      "artist": "Utagawa Hiroshige",
+      "year": "1833",
+      "width": 1920,
+      "height": 1340,
+      "museum": "Cleveland Museum of Art",
+      "museumPage": "https://www.clevelandart.org/art/1940.982",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Ando_Hiroshige_-_Picture_of_the_Lake_at_Hakone_(from_the_series_53_Stations_of_the_Tokaido)_-_1940.982_-_Cleveland_Museum_of_Art.tif",
+      "crop": {
+        "left": 0.083,
+        "top": 0.064,
+        "right": 0.917,
+        "bottom": 0.938
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Cleveland Museum of Art Open Access)"
+    },
+    {
+      "file": "tsukuda-island.jpg",
+      "title": "Tsukuda Island, from Famous Places in the Eastern Capital",
+      "titleTr": "Tsukuda Adası (Doğu Başkentinin Ünlü Yerleri)",
+      "artist": "Utagawa Kuniyoshi",
+      "year": "1831–35",
+      "width": 1830,
+      "height": 1217,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/RP-P-1956-729",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Het_eiland_Tsukuda_Tsukudajima_(titel_op_object)_Beroemde_plaatsen_in_de_Oostelijke_hoofdstad_(serietitel)_Toto_meisho_(serietitel_op_object),_RP-P-1956-729.jpg",
+      "crop": {
+        "left": 0.02,
+        "top": 0.026,
+        "right": 0.973,
+        "bottom": 0.97
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "great-wave.jpg",
+      "title": "Under the Wave off Kanagawa (The Great Wave), from Thirty-six Views of Mount Fuji",
+      "titleTr": "Kanagawa Açıklarında Büyük Dalga",
+      "artist": "Katsushika Hokusai",
+      "year": "y. 1830–32",
+      "width": 1824,
+      "height": 1236,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/36491",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:冨嶽三十六景_神奈川沖浪裏-Under_the_Wave_off_Kanagawa_(Kanagawa_oki_nami_ura),_also_known_as_The_Great_Wave,_from_the_series_Thirty-six_Views_of_Mount_Fuji_(Fugaku_sanjūrokkei)_MET_DP141063.jpg",
+      "crop": {
+        "left": 0.027,
+        "top": 0.036,
+        "right": 0.977,
+        "bottom": 0.968
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

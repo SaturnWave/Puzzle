@@ -1,0 +1,76 @@
+{
+  "room": "room-17",
+  "paintings": [
+    {
+      "file": "brueghel-river-landscape.jpg",
+      "title": "River Landscape",
+      "titleTr": "Nehir Manzarası",
+      "artist": "Jan Brueghel the Elder",
+      "year": "1607",
+      "width": 1920,
+      "height": 1232,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/111124-river-landscape",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Jan_Brueghel_the_Elder,_River_Landscape,_1607,_NGA_111124.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "banquet-piece-with-mince-pie.jpg",
+      "title": "Banquet Piece with Mince Pie",
+      "titleTr": "Kıymalı Turtalı Ziyafet Sofrası",
+      "artist": "Willem Claesz Heda",
+      "year": "1635",
+      "width": 1920,
+      "height": 1855,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/72869-banquet-piece-mince-pie",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Willem_Claesz_Heda,_Banquet_Piece_with_Mince_Pie,_1635,_NGA_72869.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "andries-stilte-as-a-standard-bearer.jpg",
+      "title": "Andries Stilte as a Standard Bearer",
+      "titleTr": "Sancaktar Andries Stilte",
+      "artist": "Johannes Cornelisz Verspronck",
+      "year": "1640",
+      "width": 1427,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/104729-andries-stilte-standard-bearer",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Johannes_Cornelisz_Verspronck,_Andries_Stilte_as_a_Standard_Bearer,_1640,_NGA_104729.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "trojan-women-setting-fire-to-their-fleet.jpg",
+      "title": "The Trojan Women Setting Fire to Their Fleet",
+      "titleTr": "Troyalı Kadınlar Gemilerini Ateşe Veriyor",
+      "artist": "Claude Lorrain (Claude Gellée)",
+      "year": "y. 1643",
+      "width": 1862,
+      "height": 1271,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/435908",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:The_Trojan_Women_Setting_Fire_to_Their_Fleet_MET_DP226145.jpg",
+      "crop": {
+        "left": 0.016,
+        "top": 0.02,
+        "right": 0.986,
+        "bottom": 0.974
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "leyster-self-portrait.jpg",
+      "title": "Self-Portrait",
+      "titleTr": "Otoportre",
+      "artist": "Judith Leyster",
+      "year": "y. 1630",
+      "width": 1688,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/37003-self-portrait",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Judith_Leyster,_Self-Portrait,_c._1630,_NGA_37003.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "room": "room-18",
+  "paintings": [
+    {
+      "file": "feast-of-sada.jpg",
+      "title": "The Feast of Sada (from the Shahnama of Shah Tahmasp)",
+      "titleTr": "Sede Bayramı (Şah Tahmasb Şehnamesi'nden)",
+      "artist": "Attributed to Sultan Muhammad (Tabriz, Iran)",
+      "year": "y. 1525",
+      "width": 1550,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/452111",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:\"The_Feast_of_Sada\",_Folio_22v_from_the_Shahnama_(Book_of_Kings)_of_Shah_Tahmasp_MET_DP107689.jpg",
+      "crop": {
+        "left": 0.09,
+        "top": 0.07,
+        "right": 0.75,
+        "bottom": 0.643
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "concourse-of-the-birds.jpg",
+      "title": "The Concourse of the Birds",
+      "titleTr": "Kuşların Meclisi (Mantıku't-Tayr'dan)",
+      "artist": "Habiballah of Sava",
+      "year": "y. 1600",
+      "width": 1193,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/451725",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:\"The_Concourse_of_the_Birds\",_Folio_11r_from_a_Mantiq_al-tair_(Language_of_the_Birds)_MET_DT462.jpg",
+      "crop": {
+        "left": 0.343,
+        "top": 0.243,
+        "right": 0.841,
+        "bottom": 0.778
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "study-of-a-nilgai.jpg",
+      "title": "Study of a Nilgai (Blue Bull)",
+      "titleTr": "Nilgay (Mavi Boğa) Etüdü",
+      "artist": "Mansur",
+      "year": "y. 1620",
+      "width": 1920,
+      "height": 1236,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/451261",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:\"Study_of_a_Nilgai_(Blue_Bull)\",_Folio_from_the_Shah_Jahan_Album_MET_DP240655.jpg",
+      "crop": {
+        "left": 0.034,
+        "top": 0.03,
+        "right": 0.974,
+        "bottom": 0.96
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "jahangir-and-akbar.jpg",
+      "title": "Jahangir and His Father, Akbar",
+      "titleTr": "Cihangir ve Babası Ekber",
+      "artist": "Balchand",
+      "year": "y. 1630",
+      "width": 1277,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/451264",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:\"Jahangir_and_his_Father,_Akbar\",_Folio_from_the_Shah_Jahan_Album_MET_DP240813.jpg",
+      "crop": {
+        "left": 0.037,
+        "top": 0.026,
+        "right": 0.961,
+        "bottom": 0.97
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "shah-jahan-on-horseback.jpg",
+      "title": "Shah Jahan on Horseback",
+      "titleTr": "At Üstünde Şah Cihan",
+      "artist": "Payag",
+      "year": "y. 1630",
+      "width": 1190,
+      "height": 1825,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/451267",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:\"Shah_Jahan_on_Horseback\",_Folio_from_the_Shah_Jahan_Album_MET_DT1030.jpg",
+      "crop": {
+        "left": 0.034,
+        "top": 0.021,
+        "right": 0.964,
+        "bottom": 0.978
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

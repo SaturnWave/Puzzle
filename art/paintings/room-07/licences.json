@@ -1,0 +1,94 @@
+{
+  "room": "room-07",
+  "paintings": [
+    {
+      "file": "young-ladies-of-the-village.jpg",
+      "title": "Young Ladies of the Village",
+      "titleTr": "Köyün Genç Hanımları",
+      "artist": "Gustave Courbet",
+      "year": "1851–52",
+      "width": 1904,
+      "height": 1420,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/438820",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Young_Ladies_of_the_Village_MET_DT1967.jpg",
+      "crop": {
+        "left": 0.004,
+        "top": 0.005,
+        "right": 0.996,
+        "bottom": 0.995
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "festival-in-the-harbor-of-honfleur.jpg",
+      "title": "Festival in the Harbor of Honfleur",
+      "titleTr": "Honfleur Limanı'nda Şenlik",
+      "artist": "Eugène Boudin",
+      "year": "1858",
+      "width": 1920,
+      "height": 1313,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/61360",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Eugène_Boudin,_Festival_in_the_Harbor_of_Honfleur,_1858,_NGA_61360.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "fantin-latour-still-life.jpg",
+      "title": "Still Life with Flowers and Fruit",
+      "titleTr": "Çiçekli ve Meyveli Natürmort",
+      "artist": "Henri Fantin-Latour",
+      "year": "1866",
+      "width": 1551,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/436293",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Henri_Fantin-Latour_-_Still_Life_with_Flowers_and_Fruit_MET_DT1980.jpg",
+      "crop": {
+        "left": 0.024,
+        "top": 0.019,
+        "right": 0.974,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "weaning-the-calves.jpg",
+      "title": "Weaning the Calves",
+      "titleTr": "Buzağıların Sütten Kesilmesi",
+      "artist": "Rosa Bonheur",
+      "year": "1879",
+      "width": 1860,
+      "height": 1487,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/435703",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Weaning_the_Calves_MET_DT2579.jpg",
+      "crop": {
+        "left": 0.016,
+        "top": 0.018,
+        "right": 0.985,
+        "bottom": 0.974
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "princesse-de-broglie.jpg",
+      "title": "Princesse de Broglie",
+      "titleTr": "Prenses de Broglie",
+      "artist": "Jean-Auguste-Dominique Ingres",
+      "year": "1851–53",
+      "width": 1426,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/459106",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Joséphine-Éléonore-Marie-Pauline_de_Galard_de_Brassac_de_Béarn_(1825–1860),_Princesse_de_Broglie_MET_DT717.jpg",
+      "crop": {
+        "left": 0.014,
+        "top": 0.01,
+        "right": 0.982,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

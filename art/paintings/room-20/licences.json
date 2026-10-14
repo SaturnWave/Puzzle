@@ -1,0 +1,100 @@
+{
+  "room": "room-20",
+  "paintings": [
+    {
+      "file": "francesco-d-este.jpg",
+      "title": "Francesco d'Este",
+      "titleTr": "Francesco d'Este",
+      "artist": "Rogier van der Weyden",
+      "year": "y. 1460",
+      "width": 1320,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/437487",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Francesco_d'Este_(born_about_1430,_died_after_1475)_MET_83.jpg",
+      "crop": {
+        "left": 0.2,
+        "top": 0.15,
+        "right": 0.805,
+        "bottom": 0.823
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "neroccio-portrait-of-a-lady.jpg",
+      "title": "Portrait of a Lady",
+      "titleTr": "Bir Hanımın Portresi",
+      "artist": "Neroccio de' Landi",
+      "year": "y. 1485",
+      "width": 1228,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/1186",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Neroccio_de'_Landi,_Portrait_of_a_Lady,_c._1485,_NGA_1186.jpg",
+      "crop": {
+        "left": 0.178,
+        "top": 0.128,
+        "right": 0.822,
+        "bottom": 0.87
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "francesco-sassetti-and-his-son.jpg",
+      "title": "Francesco Sassetti and His Son Teodoro",
+      "titleTr": "Francesco Sassetti ve Oğlu Teodoro",
+      "artist": "Domenico Ghirlandaio",
+      "year": "y. 1488",
+      "width": 1420,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/436489",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Francesco_Sassetti_(1421–1490)_and_His_Son_Teodoro_MET_DT1369.jpg",
+      "crop": {
+        "left": 0.096,
+        "top": 0.11,
+        "right": 0.903,
+        "bottom": 0.938
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "hunting-on-the-lagoon.jpg",
+      "title": "Hunting on the Lagoon",
+      "titleTr": "Lagünde Av",
+      "artist": "Vittore Carpaccio",
+      "year": "y. 1490–95",
+      "width": 1582,
+      "height": 1897,
+      "museum": "J. Paul Getty Museum",
+      "museumPage": "https://www.getty.edu/art/collection/object/103REK",
+      "fetchedFrom": "https://media.getty.edu/iiif/image/420e73de-34a0-47cf-9d21-475f8daf6c80/full/!1920,1920/0/default.jpg",
+      "crop": {
+        "left": 0,
+        "top": 0.012,
+        "right": 1,
+        "bottom": 1
+      },
+      "licence": "Public domain work; the museum marks its photograph CC0 (J. Paul Getty Museum Open Content)"
+    },
+    {
+      "file": "giuliano-de-medici.jpg",
+      "title": "Giuliano de' Medici",
+      "titleTr": "Giuliano de' Medici",
+      "artist": "Sandro Botticelli",
+      "year": "y. 1478–80",
+      "width": 1241,
+      "height": 1873,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/41671",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Sandro_Botticelli,_Giuliano_de'_Medici,_c._1478-1480,_NGA_41671.jpg",
+      "crop": {
+        "left": 0.016,
+        "top": 0.016,
+        "right": 0.985,
+        "bottom": 1
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    }
+  ]
+}
