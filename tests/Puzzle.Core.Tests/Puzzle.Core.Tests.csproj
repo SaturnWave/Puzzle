@@ -43,6 +43,9 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PlayerProgress.cs" Link="Unity\Flow\PlayerProgress.cs" />
     <!-- Nor has the document the progress is saved as, with the rule that reads the layout of the game before the museum. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\ProgressDocument.cs" Link="Unity\Flow\ProgressDocument.cs" />
+    <!-- Nor has what an attempt's events do to the progress by the economy's rules, and the wall clock those rules count real time by. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLedger.cs" Link="Unity\Flow\AttemptLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WallClock.cs" Link="Unity\Flow\WallClock.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelResult.cs" Link="Unity\Flow\LevelResult.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />

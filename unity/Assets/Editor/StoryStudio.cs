@@ -5,10 +5,13 @@ using System.Globalization;
 using System.IO;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
+using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Levels;
+using Puzzle.Meta;
+using Puzzle.Meta.Settings;
 using UnityEngine;
 
 namespace Puzzle.Client.EditorTools
@@ -31,7 +34,19 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A sheet shows its pictures at a third of their size.</summary>
         public const int SheetShrinksBy = 3;
 
-        /// <summary>The progress of a player who stands on a level, never having tried it.</summary>
+        private static readonly Lazy<EconomyRules> PackedEconomy = new Lazy<EconomyRules>(EconomyPack.LoadPacked);
+
+        /// <summary>The economy the game is packed with: the tools' sessions keep their attempts by the game's own rules.</summary>
+        /// <exception cref="EconomyFormatException">The project carries no economy pack the game can play by.</exception>
+        public static EconomyRules Economy => PackedEconomy.Value;
+
+        /// <summary>
+        /// The tools' wall clock: always a Wednesday noon in Istanbul, so what a picture or a check shows of lives
+        /// and days does not depend on the hour it was made at.
+        /// </summary>
+        public static IWallClock Clock { get; } = new FixedWallClock(new DateTimeOffset(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3)));
+
+        /// <summary>The progress of a new player who stands on a level, never having tried it.</summary>
         /// <exception cref="ArgumentException">The pack has no such level.</exception>
         public static PlayerProgress StandingOn(LevelDefinition level, IReadOnlyList<LevelDefinition> levels)
         {
@@ -39,7 +54,7 @@ namespace Puzzle.Client.EditorTools
             {
                 if (levels[index].Id.Value == level.Id.Value)
                 {
-                    return new PlayerProgress(levelsWon: index, attemptsOnLevel: 0);
+                    return new PlayerProgress(levelsWon: index, attemptsOnLevel: 0).WithWallet(Economy.StartingWallet);
                 }
             }
 
@@ -51,7 +66,7 @@ namespace Puzzle.Client.EditorTools
         /// the museum the game opens in is not their subject.
         /// </summary>
         public static GameSession AtTheBoard(IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, IProgressStore store, ScreenShape screen) =>
-            new GameSession(levels, art, PaintingGallery.OfThePackedMuseum(), store, screen, SessionOpening.AtTheBoard);
+            new GameSession(levels, art, PaintingGallery.OfThePackedMuseum(), Economy, Clock, store, screen, SessionOpening.AtTheBoard);
 
         /// <summary>Moves the session's clock frame by frame for a while.</summary>
         public static void AdvanceBy(float seconds, GameSession session) => AdvanceTo(seconds, session, clock: 0f);

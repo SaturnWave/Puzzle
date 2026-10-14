@@ -8,6 +8,7 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Core.Levels;
+using Puzzle.Meta;
 using UnityEngine;
 
 namespace Puzzle.Client
@@ -66,7 +67,7 @@ namespace Puzzle.Client
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
             _fittedTo = CurrentScreen();
-            _session = OpenSession(LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), _fittedTo);
+            _session = OpenSession(LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), _fittedTo);
         }
 
         private void Update()
@@ -111,28 +112,33 @@ namespace Puzzle.Client
         private void OnDestroy() => _session?.Dispose();
 
         /// <summary>
-        /// The session on the progress file in the game's own data folder. If that file is there but cannot be read
-        /// from the device, the player can still play: this run starts at the first level, keeps its progress in
-        /// memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes
-        /// on from where that file says the player stands, as far as this version can read it, and likewise leaves
-        /// the file alone: the later game finds its progress as it left it.
+        /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
+        /// device's clock. If that file is there but cannot be read from the device, the player can still play: this
+        /// run starts at the first level as a new player, keeps its progress in memory only, and leaves the file as
+        /// it is. If a later version of the game wrote the file, this run goes on from where that file says the
+        /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
+        /// finds its progress as it left it.
         /// </summary>
-        private static GameSession OpenSession(IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, ScreenShape screen)
+        private static GameSession OpenSession(
+            IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, ScreenShape screen)
         {
+            var clock = new SystemWallClock();
+            GameSession SessionOn(IProgressStore store) => new GameSession(levels, art, paintings, rules, clock, store, screen, SessionOpening.InTheMuseum);
+
             try
             {
-                return new GameSession(levels, art, paintings, new ProgressFile(Application.persistentDataPath), screen, SessionOpening.InTheMuseum);
+                return SessionOn(new ProgressFile(Application.persistentDataPath, rules.StartingWallet));
             }
             catch (ProgressOfALaterGameException later)
             {
-                PlayerProgress start = later.Understood ?? PlayerProgress.None;
+                PlayerProgress start = later.Understood ?? PlayerProgress.NewPlayer(rules.StartingWallet);
                 Debug.LogError($"{later.Message} This run goes on from \"{start}\" and does not save.");
-                return new GameSession(levels, art, paintings, new ProgressInMemory(start), screen, SessionOpening.InTheMuseum);
+                return SessionOn(new ProgressInMemory(start));
             }
             catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
             {
                 Debug.LogError($"The saved progress cannot be read, so this run starts at the first level and does not save: {failure.Message}");
-                return new GameSession(levels, art, paintings, new ProgressInMemory(PlayerProgress.None), screen, SessionOpening.InTheMuseum);
+                return SessionOn(new ProgressInMemory(PlayerProgress.NewPlayer(rules.StartingWallet)));
             }
         }
 

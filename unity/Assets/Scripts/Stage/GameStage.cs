@@ -67,6 +67,12 @@ namespace Puzzle.Client.Stage
     /// and the board reaches that edge. Under a result's card the same round button stays lit and leads to the
     /// museum, so every card has that way out whatever its two buttons offer.
     /// </para>
+    /// <para>
+    /// What happens in the attempt that changes the player's progress is reported, in order, at the moment the
+    /// engine says so: the first move, the move that wins, the move after which the game is lost for good, and the
+    /// press that leaves the level (<see cref="TakeWhatHappened"/>). The stage keeps no progress itself; whoever
+    /// owns it takes the reports and keeps them.
+    /// </para>
     /// </remarks>
     public sealed class GameStage : IStage
     {
@@ -148,6 +154,9 @@ namespace Puzzle.Client.Stage
 
         /// <summary>What went wrong in the showing of the turn that is on, for <see cref="LastTurnFaults"/>.</summary>
         private readonly List<string> _faultsOfTheTurn = new List<string>();
+
+        /// <summary>What happened in the attempt that changes the player's progress and nobody has taken yet, in the order it happened.</summary>
+        private readonly List<AttemptEvent> _happened = new List<AttemptEvent>();
 
         private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief)
         {
@@ -377,6 +386,7 @@ namespace Puzzle.Client.Stage
                 return false;
             }
 
+            ReportWhatTheMoveDid();
             _playing = Playback.ATurn;
             try
             {
@@ -394,6 +404,18 @@ namespace Puzzle.Client.Stage
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// What happened in the attempt since this was asked last, in the order it happened, each reported once: the
+        /// first move, a win or a loss for good the moment the engine decided it (long before it is shown), and the
+        /// leaving card's press that leaves the level.
+        /// </summary>
+        public IReadOnlyList<AttemptEvent> TakeWhatHappened()
+        {
+            AttemptEvent[] taken = _happened.ToArray();
+            _happened.Clear();
+            return taken;
         }
 
         /// <summary>The pixel of the screen in the middle of a cell, counted from the screen's lower left corner: where a finger touches that cell.</summary>
@@ -567,6 +589,37 @@ namespace Puzzle.Client.Stage
 
             // A tween and not an act: this is called by an act, which may not add acts to the timeline it is shown by.
             _tweens.Start(new Tween(0f, Tempo.MovesSwell, progress => 1f - Easing.In(progress), _hud.SwellTheMoves));
+        }
+
+        /// <summary>
+        /// The engine has just played a move: if it was the attempt's first, or decided the game, that is reported
+        /// now, before any of it is shown. In this build a game out of moves is lost for good at once: no offer of
+        /// extra moves is made yet.
+        /// </summary>
+        private void ReportWhatTheMoveDid()
+        {
+            bool wasTheFirstMove = _game.MovesUsed == 1;
+            if (wasTheFirstMove)
+            {
+                _happened.Add(new AttemptEvent.FirstMove(_brief.StartBoosters));
+            }
+
+            switch (_game.Status)
+            {
+                case GameStatus.Playing:
+                    break;
+                case GameStatus.Won:
+                    _happened.Add(new AttemptEvent.Won(_game.MovesLeft));
+                    break;
+                case GameStatus.LostOutOfMoves:
+                    _happened.Add(new AttemptEvent.LostForGood(LossReason.OutOfMoves));
+                    break;
+                case GameStatus.LostNoMovesPossible:
+                    _happened.Add(new AttemptEvent.LostForGood(LossReason.NoMovePossible));
+                    break;
+                default:
+                    throw new InvalidOperationException($"A game that ended as {_game.Status} is not known to the stage.");
+            }
         }
 
         /// <summary>
@@ -909,7 +962,8 @@ namespace Puzzle.Client.Stage
 
         /// <summary>
         /// The player pressed one of the card's buttons: the card goes up out of sight, and then this stage is over,
-        /// unless the choice was to stay in the game.
+        /// unless the choice was to stay in the game. A level that is left while it is played is reported left at
+        /// the press: what leaving costs is the player's from that moment, not from the card's going up.
         /// </summary>
         private void SendTheCardUp(ResultPanel card, ResultChoice choice)
         {
@@ -917,11 +971,15 @@ namespace Puzzle.Client.Stage
             if (choice == ResultChoice.Stay)
             {
                 GoOnWithTheGame(card);
+                return;
             }
-            else
+
+            if (IsAskingWhetherToLeave)
             {
-                _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerChose = choice);
+                _happened.Add(new AttemptEvent.Left(afterAMove: _game.MovesUsed > 0));
             }
+
+            _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerChose = choice);
         }
 
         /// <summary>The pixel of the screen at which a point of the layout lies; nothing before the stage has a screen.</summary>

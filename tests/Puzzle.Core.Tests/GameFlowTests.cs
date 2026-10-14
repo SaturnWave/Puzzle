@@ -6,6 +6,7 @@ using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
+using Puzzle.Meta;
 using static Puzzle.Core.Tests.TestBoards;
 
 namespace Puzzle.Core.Tests;
@@ -41,11 +42,17 @@ public class GameFlowTests
     }
 
     [Fact]
-    public void A_new_player_stands_on_the_first_level_and_has_not_tried_it()
+    public void A_new_player_stands_on_the_first_level_has_not_tried_it_and_holds_the_rules_starting_wallet()
     {
-        Assert.Equal(0, PlayerProgress.None.LevelIndexIn(LevelsInThePack));
-        Assert.Equal(0, PlayerProgress.None.AttemptsOnLevel);
-        Assert.False(PlayerProgress.None.IsOnLastLevelOf(LevelsInThePack));
+        Wallet startingWallet = MetaSupport.Rules().StartingWallet;
+
+        PlayerProgress newPlayer = PlayerProgress.NewPlayer(startingWallet);
+
+        Assert.Equal(0, newPlayer.LevelIndexIn(LevelsInThePack));
+        Assert.Equal(0, newPlayer.AttemptsOnLevel);
+        Assert.False(newPlayer.IsOnLastLevelOf(LevelsInThePack));
+        Assert.Equal(0, newPlayer.Museum.PiecesPlaced);
+        Assert.Equal(startingWallet, newPlayer.Wallet);
     }
 
     [Fact]
@@ -54,7 +61,7 @@ public class GameFlowTests
         // The seed of an attempt is picked by the count of attempts before it, as the web test server picks it.
         var pool = new uint[] { 11, 22, 33 };
         AttemptPolicy policy = new AttemptPolicy { SeedPool = pool };
-        PlayerProgress progress = PlayerProgress.None;
+        var progress = new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0);
 
         var dealt = new List<AttemptSeeds>();
         for (int attempt = 0; attempt < 4; attempt++)
@@ -97,13 +104,13 @@ public class GameFlowTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new PlayerProgress(levelsWon: -1, attemptsOnLevel: 0));
         Assert.Throws<ArgumentOutOfRangeException>(() => new PlayerProgress(levelsWon: 0, attemptsOnLevel: -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => PlayerProgress.None.LevelIndexIn(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0).LevelIndexIn(0));
     }
 
     [Fact]
     public void A_store_in_memory_gives_back_what_it_was_given_last()
     {
-        var store = new ProgressInMemory(PlayerProgress.None);
+        var store = new ProgressInMemory(new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0));
         var later = new PlayerProgress(levelsWon: 7, attemptsOnLevel: 2);
 
         store.Save(later);

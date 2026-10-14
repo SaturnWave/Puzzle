@@ -11,6 +11,7 @@ using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
+using Puzzle.Meta;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -30,8 +31,10 @@ namespace Puzzle.Client.EditorTools
     /// of its own (out/unity/flow-progress), so what is pictured is what a phone does, saving included; at the end
     /// the progress is read back from the file and a second session is opened on it, as after a restart.
     /// A level that is won with moves left over has its finale before the card: a few moments of it are pictured
-    /// too, and the story requires that the win is on file the moment the winning move is played and that a
-    /// restart as the finale begins opens the next level, so closing the game during the finale loses nothing.
+    /// too, and the story requires that the win and its coins are on file the moment the winning move is played
+    /// and that a restart as the finale begins opens the next level, so closing the game during the finale loses
+    /// nothing. A lost level must have cost one life the moment the losing move is played, with the next life due
+    /// one life's time after it on the tools' clock (StoryStudio.Clock).
     /// Pictures go to out/unity/shots/flow-level-NNNN-SIZE-won-NN-what.png (or -lost-), with one sheet of them all.
     /// </summary>
     internal static class FlowStory
@@ -75,9 +78,10 @@ namespace Puzzle.Client.EditorTools
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             string name = $"flow-level-{level.Id.Value:D4}-{screen}-{ending.ToString().ToLowerInvariant()}";
             string folder = Path.Combine(ProgressFolder, name);
-            StartTheProgressFile(folder, StoryStudio.StandingOn(level, levels));
+            PlayerProgress start = StoryStudio.StandingOn(level, levels);
+            StartTheProgressFile(folder, start);
 
-            using GameSession session = StoryStudio.AtTheBoard(levels, art, new ProgressFile(folder), screen);
+            using GameSession session = StoryStudio.AtTheBoard(levels, art, FileIn(folder), screen);
             var reel = new Reel(session, screen, name);
             reel.Advance(EntranceMoment);
             reel.Shoot($"start-t{StoryStudio.Seconds(EntranceMoment)}");
@@ -87,11 +91,16 @@ namespace Puzzle.Client.EditorTools
             TurnScript decidingTurn = PlayToTheEnding(session, ending, player);
             PlayerProgress decidedWith = session.Progress;
             LevelDefinition decided = session.Stage.Game.Level;
-            var restart = new Restart(folder, levels, art, screen);
+            var restart = new Restart(folder, levels, art, screen, start);
+
+            // The clock stands at the deciding move: nothing of it was shown yet, and what it decided must be on file already.
             if (ending == FlowEnding.Won)
             {
-                // The clock stands at the winning move: nothing of it was shown yet, and the win must be on file already.
-                restart.RequireTheLevelAfter(decided, "right after the winning move, before any of it was shown");
+                restart.RequireTheLevelAfter(decided, session.Stage.Game.MovesLeft, "right after the winning move, before any of it was shown");
+            }
+            else
+            {
+                restart.RequireTheFirstLifeLost(decided, "right after the losing move, before any of it was shown");
             }
 
             reel.Advance(decidingTurn.Seconds);
@@ -118,8 +127,11 @@ namespace Puzzle.Client.EditorTools
                 Directory.Delete(folder, recursive: true);
             }
 
-            new ProgressFile(folder).Save(start);
+            FileIn(folder).Save(start);
         }
+
+        /// <summary>The progress file in a story's folder, as the game opens it.</summary>
+        private static ProgressFile FileIn(string folder) => new ProgressFile(folder, StoryStudio.Economy.StartingWallet);
 
         /// <summary>
         /// Plays whole games until one ends as the story needs. A game that ends the other way is gone on from, as a
@@ -176,14 +188,14 @@ namespace Puzzle.Client.EditorTools
         /// The finale of a game that was won with moves left over: a few of its moments, and in the middle of it
         /// what a player finds who closes the game there and opens it again. The clock is left at the finale's end.
         /// </summary>
-        /// <exception cref="InvalidOperationException">No finale began, it was at fault, or a restart in the middle of it lost the win.</exception>
+        /// <exception cref="InvalidOperationException">No finale began, it was at fault, or a restart in the middle of it lost the win or its coins.</exception>
         private static void PictureTheFinale(Reel reel, Restart restart, LevelDefinition won)
         {
             GameStage stage = reel.Session.Stage;
 
             // The clock stands at the end of the winning turn's script: only the give of its last landings is still to come.
             StageSteps.AdvanceToTheFinale(stage, () => reel.Session.Advance(StoryStudio.FrameSeconds), turnStillTakes: 0f);
-            restart.RequireTheLevelAfter(won, "as the finale began");
+            restart.RequireTheLevelAfter(won, stage.Game.MovesLeft, "as the finale began");
             float clock = 0f;
             foreach (float moment in FinaleMoments)
             {
@@ -274,20 +286,24 @@ namespace Puzzle.Client.EditorTools
             }
         }
 
-        /// <summary>After a win the player stands on the next level, never tried; after a loss on the same level, with the same count of tries.</summary>
+        /// <summary>
+        /// After a win the player stands on the next level, never tried; after a loss on the same level, with the same
+        /// count of tries. What the wallet holds is the restart checks' subject.
+        /// </summary>
         private static void CheckWhereThePlayerStands(GameSession session, LevelDefinition decided, PlayerProgress decidedWith, FlowEnding ending, IReadOnlyList<LevelDefinition> levels)
         {
             int decidedIndex = StoryStudio.StandingOn(decided, levels).LevelsWon;
-            PlayerProgress expected = ending == FlowEnding.Won
-                ? new PlayerProgress(Math.Min(decidedIndex + 1, levels.Count), attemptsOnLevel: 0)
-                : new PlayerProgress(decidedIndex, decidedWith.AttemptsOnLevel);
-            if (!session.Progress.Equals(expected))
+            (int LevelsWon, int AttemptsOnLevel) expected = ending == FlowEnding.Won
+                ? (Math.Min(decidedIndex + 1, levels.Count), 0)
+                : (decidedIndex, decidedWith.AttemptsOnLevel);
+            if ((session.Progress.LevelsWon, session.Progress.AttemptsOnLevel) != expected)
             {
-                throw new InvalidOperationException($"After level {decided.Id.Value} was {ending} the progress is \"{session.Progress}\", not \"{expected}\".");
+                throw new InvalidOperationException(
+                    $"After level {decided.Id.Value} was {ending} the progress is \"{session.Progress}\", not {expected.LevelsWon} levels won and {expected.AttemptsOnLevel} attempts on the next.");
             }
 
             int openLevel = session.Stage.Game.Level.Id.Value;
-            int expectedLevel = levels[expected.LevelIndexIn(levels.Count)].Id.Value;
+            int expectedLevel = levels[session.Progress.LevelIndexIn(levels.Count)].Id.Value;
             if (openLevel != expectedLevel)
             {
                 throw new InvalidOperationException($"After level {decided.Id.Value} was {ending} level {openLevel} is open, not level {expectedLevel}.");
@@ -297,13 +313,14 @@ namespace Puzzle.Client.EditorTools
         /// <summary>What a restart of the game finds: the file holds the session's progress, and a session opened on it opens the same level.</summary>
         private static void CheckARestart(GameSession session, string folder, IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, ScreenShape screen)
         {
-            PlayerProgress onFile = new ProgressFile(folder).Load();
+            // Equal in everything, the wallet too: the instant of the next life included, which the file keeps in whole seconds.
+            PlayerProgress onFile = FileIn(folder).Load();
             if (session.HasUnsavedProgress || !onFile.Equals(session.Progress))
             {
                 throw new InvalidOperationException($"The progress file holds \"{onFile}\" while the session stands at \"{session.Progress}\".");
             }
 
-            using GameSession restarted = StoryStudio.AtTheBoard(levels, art, new ProgressFile(folder), screen);
+            using GameSession restarted = StoryStudio.AtTheBoard(levels, art, FileIn(folder), screen);
             if (restarted.Stage.Game.Level.Id.Value != session.Stage.Game.Level.Id.Value)
             {
                 throw new InvalidOperationException($"A restart opens level {restarted.Stage.Game.Level.Id.Value}, not level {session.Stage.Game.Level.Id.Value}.");
@@ -329,34 +346,70 @@ namespace Puzzle.Client.EditorTools
             private readonly IReadOnlyList<LevelDefinition> _levels;
             private readonly ArtCatalogue _art;
             private readonly ScreenShape _screen;
+            private readonly PlayerProgress _start;
 
-            public Restart(string folder, IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, ScreenShape screen)
+            /// <param name="start">Where the story began: a new player's wallet on the level it tells of.</param>
+            public Restart(string folder, IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, ScreenShape screen, PlayerProgress start)
             {
                 _folder = folder;
                 _levels = levels;
                 _art = art;
                 _screen = screen;
+                _start = start;
             }
 
-            /// <summary>A win is the player's from the move that won it: the file holds it, and a restart opens the level after it.</summary>
-            /// <exception cref="InvalidOperationException">The file does not hold the win, or a restart opens another level.</exception>
-            public void RequireTheLevelAfter(LevelDefinition won, string when)
+            /// <summary>
+            /// A win is the player's from the move that won it: the file holds it with its coins, and a restart opens the
+            /// level after it. Every game the story played before the winning one was lost, and a loss pays no coin, so
+            /// the file holds the story's starting coins and what the win pays for the moves it left.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">The file does not hold the win or its coins, or a restart opens another level.</exception>
+            public void RequireTheLevelAfter(LevelDefinition won, int movesLeft, string when)
             {
                 int levelsWon = Math.Min(StoryStudio.StandingOn(won, _levels).LevelsWon + 1, _levels.Count);
-                PlayerProgress onFile = new ProgressFile(_folder).Load();
-                if (onFile.LevelsWon != levelsWon)
+                Coins withTheWin = _start.Wallet.Coins + StoryStudio.Economy.Win.Of(movesLeft);
+                PlayerProgress onFile = FileIn(_folder).Load();
+                if (onFile.LevelsWon != levelsWon || onFile.Wallet.Coins != withTheWin)
                 {
-                    throw new InvalidOperationException($"Level {won.Id.Value} is won, and {when} the progress file holds \"{onFile}\": a player who closed the game now would lose the win.");
+                    throw new InvalidOperationException(
+                        $"Level {won.Id.Value} is won with {movesLeft} moves left, and {when} the progress file holds \"{onFile}\", not {levelsWon} levels won and {withTheWin} coins: "
+                        + "a player who closed the game now would lose the win or its coins.");
                 }
 
                 int next = _levels[onFile.LevelIndexIn(_levels.Count)].Id.Value;
-                using GameSession restarted = StoryStudio.AtTheBoard(_levels, _art, new ProgressFile(_folder), _screen);
+                using GameSession restarted = StoryStudio.AtTheBoard(_levels, _art, FileIn(_folder), _screen);
                 if (restarted.Stage.Game.Level.Id.Value != next)
                 {
                     throw new InvalidOperationException($"Level {won.Id.Value} is won, and a restart {when} opens level {restarted.Stage.Game.Level.Id.Value}, not level {next}.");
                 }
 
-                Debug.Log($"Storyboard: flow: level {won.Id.Value} is won; {when} the progress file holds \"{onFile}\" and a restart opens level {next}.");
+                Debug.Log($"Storyboard: flow: level {won.Id.Value} is won with {movesLeft} moves left; {when} the progress file holds \"{onFile}\" and a restart opens level {next}.");
+            }
+
+            /// <summary>
+            /// A loss for good costs a life from the move that lost: the file holds one life fewer than full, the next
+            /// due one life's time after the tools' clock. Every game the story played before the losing one was won,
+            /// and a win costs no life, so this is the story's first.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">The story did not start with every life, or the file does not hold the life lost and when the next comes back.</exception>
+            public void RequireTheFirstLifeLost(LevelDefinition lost, string when)
+            {
+                if (!_start.Wallet.Lives.IsFull)
+                {
+                    throw new InvalidOperationException($"The story began with \"{_start.Wallet.Lives}\"; it needs every life.");
+                }
+
+                LifeRules lives = StoryStudio.Economy.Lives;
+                var oneLost = new LifeMeter(shortOfFull: 1, StoryStudio.Clock.Now + lives.PerLife);
+                PlayerProgress onFile = FileIn(_folder).Load();
+                if (onFile.Wallet.Lives != oneLost)
+                {
+                    throw new InvalidOperationException(
+                        $"Level {lost.Id.Value} is lost, and {when} the progress file holds lives \"{onFile.Wallet.Lives}\", not \"{oneLost}\": a player who closed the game now would keep the life.");
+                }
+
+                Debug.Log($"Storyboard: flow: level {lost.Id.Value} is lost; {when} the progress file holds {onFile.Wallet.Lives.LivesUnder(lives)} of {lives.Max} lives "
+                    + $"and the next comes back in {onFile.Wallet.Lives.UntilNextLife(StoryStudio.Clock.Now)} (\"{onFile}\").");
             }
         }
 

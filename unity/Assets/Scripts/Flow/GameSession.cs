@@ -12,6 +12,7 @@ using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
+using Puzzle.Meta;
 using Puzzle.Museum;
 using UnityEngine;
 
@@ -42,15 +43,17 @@ namespace Puzzle.Client.Flow
     /// frame, the Editor's storyboards whenever they want.
     /// </summary>
     /// <remarks>
-    /// Progress is kept in the store the moment it changes: when the first move of an attempt is played (the attempt
-    /// then counts, so its board is not dealt again), and when the engine says a level is won (before the win is
-    /// even shown, so closing the game during the celebration does not lose it), and when a jigsaw piece has
-    /// dropped into its place; pieces that fly to their places together are kept together, once the last of them
+    /// Progress is kept in the store the moment it changes. What the board's stage reports of the attempt goes
+    /// through the economy's rules (<see cref="AttemptLedger"/>) at the time the wall clock tells: the first move
+    /// makes the attempt count (so its board is not dealt again); the move that wins moves the player on and pays
+    /// the win's coins in the same save, before the win is even shown, so closing the game during the celebration
+    /// loses neither; a loss for good, or leaving a level after a move, costs a life. A jigsaw piece is kept when it
+    /// has dropped into its place; pieces that fly to their places together are kept together, once the last of them
     /// has landed, so forty pieces are one save and not forty. A piece that is won and not placed needs no
     /// saving: the levels won say that it waits, so it can never be lost. The attempt in progress itself
-    /// lives in memory only: a game that is closed in the middle of a level comes back in the museum, and the level
-    /// starts again with its next board. A store that cannot be written does not stop the game; the progress is kept
-    /// here and saved again at the next change, or when <see cref="SaveProgress"/> is called.
+    /// lives in memory only: a game that is closed in the middle of a level comes back in the museum, costs no life,
+    /// and the level starts again with its next board. A store that cannot be written does not stop the game; the
+    /// progress is kept here and saved again at the next change, or when <see cref="SaveProgress"/> is called.
     /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
     /// next one is built, in the dark both of them share, so the change is not seen. The one exception is a board
@@ -64,6 +67,8 @@ namespace Puzzle.Client.Flow
         private readonly ArtCatalogue _art;
         private readonly PaintingGallery _paintings;
         private readonly IProgressStore _store;
+        private readonly AttemptLedger _ledger;
+        private readonly IWallClock _clock;
 
         /// <summary>What is thrown over the board, painted once for all the stages of this session: painting it anew for every level would hold up each level's first frame.</summary>
         private readonly EffectArt _effectArt;
@@ -73,9 +78,6 @@ namespace Puzzle.Client.Flow
 
         /// <summary>What the store was last given: the progress is saved again when it differs from this.</summary>
         private PlayerProgress _saved;
-
-        /// <summary>How many moves of the open attempt the progress already knows of.</summary>
-        private int _movesKept;
 
         /// <summary>What winning the open attempt gives: the painting its card's jigsaw button leads to. Nothing in the museum, and for a level that gives nothing.</summary>
         private PieceReward? _rewardOfTheBoard;
@@ -92,11 +94,20 @@ namespace Puzzle.Client.Flow
         /// <summary>Loads the player's progress and opens the game where the opening says, laid out for a screen.</summary>
         /// <param name="levels">The levels in the order they are played.</param>
         /// <param name="paintings">The museum's paintings, for the museum's pages and for the pieces a win gives.</param>
+        /// <param name="rules">The economy the attempts are kept by: what a win pays, what a loss costs.</param>
+        /// <param name="clock">The time the rules count lives and days by: the device's, or a tool's fixed one.</param>
         /// <exception cref="ArgumentException">There is no level to play.</exception>
         /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
         public GameSession(
-            IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, IProgressStore store, ScreenShape screen, SessionOpening opening)
+            IReadOnlyList<LevelDefinition> levels,
+            ArtCatalogue art,
+            PaintingGallery paintings,
+            EconomyRules rules,
+            IWallClock clock,
+            IProgressStore store,
+            ScreenShape screen,
+            SessionOpening opening)
         {
             if (levels.Count == 0)
             {
@@ -106,6 +117,8 @@ namespace Puzzle.Client.Flow
             _levels = levels;
             _art = art;
             _paintings = paintings;
+            _ledger = new AttemptLedger(rules, levels.Count);
+            _clock = clock;
             _store = store;
             _screen = screen;
             _progress = store.Load();
@@ -156,7 +169,7 @@ namespace Puzzle.Client.Flow
         public void Advance(float deltaSeconds)
         {
             _front.Advance(deltaSeconds);
-            KeepWhatWasPlayed();
+            KeepWhatHappened();
             KeepWhatWasPlaced();
             FollowThePlayer();
         }
@@ -166,7 +179,7 @@ namespace Puzzle.Client.Flow
         public bool TryPlay(Move move)
         {
             bool isPlayed = Stage.TryPlay(move);
-            KeepWhatWasPlayed();
+            KeepWhatHappened();
             return isPlayed;
         }
 
@@ -177,14 +190,14 @@ namespace Puzzle.Client.Flow
         public void PointerMoved(Vector2 pixel)
         {
             _front.PointerMoved(pixel);
-            KeepWhatWasPlayed();
+            KeepWhatHappened();
         }
 
         /// <summary>The finger lifted; on a board, a tap on a neighbour of the picked piece, or on a special piece, plays a move.</summary>
         public void PointerUp()
         {
             _front.PointerUp();
-            KeepWhatWasPlayed();
+            KeepWhatHappened();
         }
 
         /// <summary>
@@ -347,35 +360,37 @@ namespace Puzzle.Client.Flow
         private IStage OpenTheBoard(StageOpening opening)
         {
             _rewardOfTheBoard = PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue);
-            var brief = new AttemptBrief(_progress.AttemptsOnLevel + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard);
+
+            // No start booster is taken into an attempt until the level's start card offers them.
+            var brief = new AttemptBrief(_progress.AttemptsOnLevel + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard, StartChoice.None);
             GameStage stage = GameStage.Open(LevelStart.Attempt(LevelToPlay, _progress.AttemptsOnLevel), _art, _effectArt, _paintings, brief, opening);
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
-            _movesKept = 0;
             return stage;
         }
 
         /// <summary>
-        /// If the board's game has moved on since the progress last looked: its first move makes the attempt count,
-        /// and a move that won the level moves the player on to the next. Either is saved at once.
+        /// What the board's stage reported of the attempt since the progress last looked, kept by the economy's rules
+        /// in the order it happened and saved at once, as one save however much it was.
         /// </summary>
-        private void KeepWhatWasPlayed()
+        private void KeepWhatHappened()
         {
-            if (!(Board is GameStage board) || board.Game.MovesUsed == _movesKept)
+            if (!(Board is GameStage board))
             {
                 return;
             }
 
-            if (_movesKept == 0)
+            IReadOnlyList<AttemptEvent> happened = board.TakeWhatHappened();
+            if (happened.Count == 0)
             {
-                _progress = _progress.WithAttemptStarted();
+                return;
             }
 
-            if (board.Game.Status == GameStatus.Won)
+            DateTimeOffset now = _clock.Now;
+            foreach (AttemptEvent each in happened)
             {
-                _progress = _progress.WithLevelWon(_levels.Count);
+                _progress = _ledger.Apply(_progress, each, now);
             }
 
-            _movesKept = board.Game.MovesUsed;
             SaveProgress();
         }
 

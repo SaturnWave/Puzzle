@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.IO;
+using Puzzle.Meta;
 using UnityEngine;
 
 namespace Puzzle.Client.Flow
@@ -22,7 +23,7 @@ namespace Puzzle.Client.Flow
         /// <summary>The layout the file is in.</summary>
         public int Version { get; }
 
-        /// <summary>What this game can read of the later game's progress: where the player stands. Nothing when it cannot read that either.</summary>
+        /// <summary>What this game can read of the later game's progress: where the player stands, with the pieces and the wallet as far as they read. Nothing when it cannot read the player's place either.</summary>
         public PlayerProgress? Understood { get; }
     }
 
@@ -35,10 +36,11 @@ namespace Puzzle.Client.Flow
     /// A save writes a second file beside the first and then puts it in the first one's place, so a game that is
     /// killed in the middle of a save leaves the old progress or the new one, never half a file. A file that cannot
     /// be read as progress is not written over: it is moved aside under another name and reported, and the player
-    /// starts at the first level. A file that a later version of the game wrote is something else: it is sound,
-    /// only this game does not know all of it. It is left exactly where and as it is, and
+    /// starts at the first level as a new player. A file that a later version of the game wrote is something else:
+    /// it is sound, only this game does not know all of it. It is left exactly where and as it is, and
     /// <see cref="Load"/> says so (<see cref="ProgressOfALaterGameException"/>) instead of answering. A file of an
-    /// earlier layout is read as it stands and written in this game's layout at the next save.
+    /// earlier layout is read as it stands (one from before the wallet gives its player a new player's wallet) and
+    /// written in this game's layout at the next save.
     /// </remarks>
     public sealed class ProgressFile : IProgressStore
     {
@@ -48,11 +50,17 @@ namespace Puzzle.Client.Flow
         private const string DamagedFileSuffix = ".damaged";
 
         private readonly string _path;
+        private readonly Wallet _startingWallet;
 
         /// <param name="folder">The folder the file lies in; on a device, <c>Application.persistentDataPath</c>.</param>
-        public ProgressFile(string folder)
+        /// <param name="startingWallet">
+        /// What the rules give a new player (Puzzle.Meta.EconomyRules.StartingWallet): the wallet of a player with no
+        /// file, with a damaged one, or with one of a layout before the wallet.
+        /// </param>
+        public ProgressFile(string folder, Wallet startingWallet)
         {
             _path = Path.Combine(folder, FileName);
+            _startingWallet = startingWallet ?? throw new ArgumentNullException(nameof(startingWallet));
         }
 
         /// <exception cref="ProgressOfALaterGameException">The file was written by a later version of the game; it is left as it is.</exception>
@@ -62,7 +70,7 @@ namespace Puzzle.Client.Flow
         {
             if (!File.Exists(_path))
             {
-                return PlayerProgress.None;
+                return PlayerProgress.NewPlayer(_startingWallet);
             }
 
             switch (Read(File.ReadAllText(_path)))
@@ -91,22 +99,22 @@ namespace Puzzle.Client.Flow
             }
         }
 
-        /// <summary>The file is not a progress document: it is kept under another name, and the player starts at the first level.</summary>
+        /// <summary>The file is not a progress document: it is kept under another name, and the player starts at the first level as a new player.</summary>
         private PlayerProgress MoveTheDamagedFileAside()
         {
             string aside = _path + DamagedFileSuffix;
             File.Delete(aside);
             File.Move(_path, aside);
             Debug.LogWarning($"The saved progress could not be read; it was kept as {aside} and the game starts at the first level.");
-            return PlayerProgress.None;
+            return PlayerProgress.NewPlayer(_startingWallet);
         }
 
         /// <summary>What a file's text is, as far as this version of the game can tell.</summary>
-        private static ProgressReading Read(string json)
+        private ProgressReading Read(string json)
         {
             try
             {
-                return ProgressDocument.Read(JsonUtility.FromJson<ProgressDocument>(json));
+                return ProgressDocument.Read(JsonUtility.FromJson<ProgressDocument>(json), _startingWallet);
             }
             catch (ArgumentException)
             {

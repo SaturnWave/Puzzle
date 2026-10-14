@@ -158,7 +158,7 @@ public class MuseumScreensTests
     {
         Assert.Null(PieceReward.ForWinning(new PlayerProgress(levelsWon: 1000, attemptsOnLevel: 0), LevelCount, TestMuseums.Full));
         Assert.Null(PieceReward.ForWinning(new PlayerProgress(levelsWon: 12, attemptsOnLevel: 0), levelCount: 12, TestMuseums.Full));
-        Assert.Throws<ArgumentOutOfRangeException>(() => PieceReward.ForWinning(PlayerProgress.None, levelCount: 0, TestMuseums.Full));
+        Assert.Throws<ArgumentOutOfRangeException>(() => PieceReward.ForWinning(new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0), levelCount: 0, TestMuseums.Full));
     }
 
     [Fact]

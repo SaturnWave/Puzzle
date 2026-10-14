@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Puzzle.Client.Gallery;
 using Puzzle.Core.Engine;
+using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
 {
@@ -13,10 +14,14 @@ namespace Puzzle.Client.Flow
     /// </summary>
     public readonly struct AttemptBrief
     {
+        /// <summary>The start boosters taken into the attempt; nothing for none, which is also what the struct's default holds.</summary>
+        private readonly StartChoice? _startBoosters;
+
         /// <param name="attemptNumber">Which try at the level this is, counted from 1.</param>
         /// <param name="reward">The jigsaw pieces winning this attempt gives; nothing when it gives none.</param>
+        /// <param name="startBoosters">The start boosters the player took into the attempt; nothing when they took none.</param>
         /// <exception cref="ArgumentOutOfRangeException">The attempt number is less than 1.</exception>
-        public AttemptBrief(int attemptNumber, bool isOnLastLevel, PieceReward? reward = null)
+        public AttemptBrief(int attemptNumber, bool isOnLastLevel, PieceReward? reward = null, StartChoice? startBoosters = null)
         {
             if (attemptNumber < 1)
             {
@@ -26,6 +31,7 @@ namespace Puzzle.Client.Flow
             AttemptNumber = attemptNumber;
             IsOnLastLevel = isOnLastLevel;
             Reward = reward;
+            _startBoosters = startBoosters;
         }
 
         /// <summary>A first try at a level that has a level after it and gives no jigsaw piece: what a picture of a single level shows.</summary>
@@ -38,6 +44,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The jigsaw pieces of a painting that winning the attempt gives the player; nothing when it gives none.</summary>
         public PieceReward? Reward { get; }
+
+        /// <summary>The start boosters the player took into the attempt: they leave the shelf with its first move.</summary>
+        public StartChoice StartBoosters => _startBoosters ?? StartChoice.None;
     }
 
     /// <summary>Where the player goes on to from a result's card.</summary>

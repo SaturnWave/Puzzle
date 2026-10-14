@@ -57,7 +57,7 @@ namespace Puzzle.Client.EditorTools
         public static void Run(PlayerState state, ScreenShape screen, Studio studio)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, new ProgressInMemory(state.Progress), screen, SessionOpening.InTheMuseum);
+            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), screen, SessionOpening.InTheMuseum);
             var reel = new Reel(session, screen, $"walk-{state.Label}-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
             int levelToPlay = studio.Levels[state.Progress.LevelIndexIn(studio.Levels.Count)].Id.Value;
 
