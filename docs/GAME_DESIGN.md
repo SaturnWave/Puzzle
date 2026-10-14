@@ -1247,7 +1247,9 @@ Simülasyonda hediyenin 12 bölüm içi booster'ı etkisiz sayılır, çünkü b
 - Hedefi 2–4 adımda ilerleyen 71 bölümde "+5"in istenme kuralı ilerlemeyi göremiyor; bu bölümler raporda ayrı gösterilir.
 - Oyuncu can beklemez, erken dönmez: "bekleme" yerine canın kestiği oyun süresi raporlanır.
 
-**Açık kararlar:** yan koleksiyon parçaları oyunla kazanılan coin'le alınabilsin mi (öneri: evet; iyi oyuncunun biriken coin'inin gideceği yer olur, fiyatı koleksiyonun büyüklüğü belli olunca okunur); coin sayılarının tek tek onayı; bölüm içi booster fiyatları (ölçüm yok).
+**Karar (2026-10-14):** yan koleksiyon parçaları oyunla kazanılan coin'le alınır. İyi oyuncunun biriken coin'inin gideceği yer burasıdır; parça fiyatı, koleksiyonun büyüklüğü belli olunca simülatörden okunur.
+
+**Açık kararlar:** coin sayılarının tek tek onayı; bölüm içi booster fiyatları (ölçüm yok); yan koleksiyonun büyüklüğü ve parça fiyatı.
 
 **Komutlar**
 

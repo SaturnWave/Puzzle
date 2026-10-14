@@ -123,8 +123,9 @@
       "shuffle": 300
     },
     // Coins a piece of the side collection costs. Nothing buys one in this version: balances are also shown as the
-    // pieces they would buy. Pieces of the main paintings are never sold. Whether a free player is meant to afford
-    // these from play is an open question to the owner. [placeholder]
+    // pieces they would buy. Pieces of the main paintings are never sold. The owner decided on 2026-10-14 that these
+    // pieces are bought with coins earned by play, so they are where a strong player's coins go; the price waits for
+    // the size of the side collection. [placeholder]
     "sideCollectionPiece": 300
   },
 

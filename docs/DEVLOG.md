@@ -35,6 +35,10 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Telefonda her biten deneme `attempts.jsonl` dosyasına bir satır yazıyor; `device.json` rastgele bir cihaz kimliği tutuyor.
 - 3.250 test geçti; Unity'de yeni `AttemptLogCheck` dahil bütün denetimler hatasız. Kayıt dosyası denetimini ben de çalıştırdım.
 
+**Kullanıcı kararları (akşam)**
+- Yan koleksiyon parçaları oyunla kazanılan altınla alınır (§25).
+- Herkese açık test sunucusu arayüz işleri bitince yeniden açılacak; o zamana kadar kapalı kalıyor.
+
 **Arayüz: planın 7. aşaması (§23)**
 - Kullanıcı müze levhalarına ve kırpmalara baktı: "güzel".
 - Altın ve can satırı salon, harita ve koleksiyonda tasarımdaki yerinde; canlar gerçek saatle dönüyor, kazanılan altın sayarak artıyor. Yeni can kartı; can bitince bölüm açılmıyor. Salon "Tablo" noktalarını ve tezgâhtaki bekleyen parçayı kazandı.
