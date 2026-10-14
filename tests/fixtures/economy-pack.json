@@ -74,35 +74,35 @@
     ]
   },
   "start": {
-    "coins": 0,
+    "coins": 200,
     "boosters": [
       {
         "booster": "start-rocket-and-bomb",
-        "count": 1
+        "count": 3
       },
       {
         "booster": "start-color-bomb",
-        "count": 1
+        "count": 3
       },
       {
         "booster": "start-extra-moves",
-        "count": 1
+        "count": 3
       },
       {
         "booster": "hit-cell",
-        "count": 1
+        "count": 3
       },
       {
         "booster": "hit-row",
-        "count": 1
+        "count": 3
       },
       {
         "booster": "hit-column",
-        "count": 1
+        "count": 3
       },
       {
         "booster": "shuffle",
-        "count": 1
+        "count": 3
       }
     ]
   },
@@ -167,7 +167,7 @@
       }
     ],
     "adForCoins": {
-      "coins": 20,
+      "coins": 4,
       "perDay": 3
     }
   },

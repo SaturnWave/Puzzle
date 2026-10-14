@@ -99,13 +99,13 @@ public static class SettingsCatalogue
 
         // What the game reads and no simulated player meets: a simulated player starts with nothing, takes one start
         // booster per attempt (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins.
-        new("start.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
-        new("start.boosters.*", Boosters, Provenance.Placeholder, SettingUse.GameOnly),
+        new("start.coins", Coins, Provenance.Decided, SettingUse.GameOnly),
+        new("start.boosters.*", Boosters, Provenance.Decided, SettingUse.GameOnly),
         new("startBoosters.perAttempt", Boosters, Provenance.Proposed, SettingUse.GameOnly),
         new("shop.coinPacks.*.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.priceCoins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.boosters.*", Boosters, Provenance.Placeholder, SettingUse.GameOnly),
-        new("shop.adForCoins.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
+        new("shop.adForCoins.coins", Coins, Provenance.Decided, SettingUse.GameOnly),
         new("shop.adForCoins.perDay", AdsADay, Provenance.Placeholder, SettingUse.GameOnly),
         new("build.ads", "how an ad is shown", Provenance.Proposed, SettingUse.GameOnly),
         new("build.realMoneyPurchases", "what is sold for money", Provenance.Proposed, SettingUse.GameOnly),

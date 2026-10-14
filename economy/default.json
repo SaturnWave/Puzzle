@@ -134,11 +134,13 @@
   // for a test build: nobody has decided one of them.
 
   "start": {
-    // Coins a new player starts with. [placeholder]
-    "coins": 0,
-    // Boosters a new player starts with: one of each, so that a tester meets every booster once without coins.
-    // Every booster is stated; 0 gives none. [placeholder]
-    "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1, "hit-cell": 1, "hit-row": 1, "hit-column": 1, "shuffle": 1 }
+    // Coins a new player starts with, the welcome gift: the price of the cheapest start booster, so the shop can
+    // sell something on the first visit, and well under the price of a +5, so the first +5 for coins is earned.
+    // The owner's number of 2026-10-14; the balance policy (docs/GAME_DESIGN.md section 25) holds it. [decided]
+    "coins": 200,
+    // Boosters a new player starts with: three of each, so the first levels can be eased and every booster is met
+    // without coins. Every booster is stated; 0 gives none. The owner's number of 2026-10-14. [decided]
+    "boosters": { "start-rocket-and-bomb": 3, "start-color-bomb": 3, "start-extra-moves": 3, "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
   },
 
   "startBoosters": {
@@ -170,10 +172,10 @@
       }
     },
     "adForCoins": {
-      // Coins one watched ad gives: about half an average win at 4 coins a move left, a +5 in forty-five ads.
-      // Three a day add about a seventh to what the average free player earns in a day (about 420 coins); at 50
-      // they would add a third and undo the balance the other amounts were read for. [placeholder]
-      "coins": 20,
+      // Coins one watched ad gives: what one move left pays in the finale. Three a day add about 3 % to what the
+      // average free player earns in a day (about 420 coins), so the ad is a small extra that moves no balance.
+      // The owner's number of 2026-10-14. [decided]
+      "coins": 4,
       // Times a day an ad gives coins. [placeholder]
       "perDay": 3
     }
