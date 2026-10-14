@@ -98,7 +98,7 @@ public class EconomyRunTests
 
         // A player of the game would be far richer with these; a simulated player never meets one of them.
         Assert.Equal(["settings.csv", EconomyReport.SummaryFile], differing);
-        Assert.Contains("start.coins,5000,coins (the game's; not simulated),Placeholder\n", otherGame["settings.csv"]);
+        Assert.Contains("start.coins,5000,coins (the game's; not simulated),Decided\n", otherGame["settings.csv"]);
         Assert.Contains("shop.coinPacks.huge.coins,90000,coins (the game's; not simulated),Placeholder\n", otherGame["settings.csv"]);
         Assert.Contains("lives.max,5,lives,Decided\n", otherGame["settings.csv"]);
 
@@ -106,7 +106,7 @@ public class EconomyRunTests
         string summary = otherGame[EconomyReport.SummaryFile];
         int restOn = summary.IndexOf("WHAT THE NUMBERS REST ON", StringComparison.Ordinal);
         int gameOnly = summary.IndexOf("STATED FOR THE GAME, NOT SIMULATED", StringComparison.Ordinal);
-        int stated = summary.IndexOf("    start.coins = 5000  (coins; Placeholder)", StringComparison.Ordinal);
+        int stated = summary.IndexOf("    start.coins = 5000  (coins; Decided)", StringComparison.Ordinal);
         Assert.True(restOn >= 0 && gameOnly > restOn && stated > gameOnly, $"the headings stand at {restOn} and {gameOnly}, the game's start at {stated}");
         Assert.DoesNotContain("start.coins", summary[restOn..gameOnly]);
         Assert.Contains("extraMovesOffer.priceCoins = 900  (coins)", summary[restOn..gameOnly]);
