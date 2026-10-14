@@ -139,6 +139,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 65ef3986c6d59674e9431c3d1e406f5e, type: 3}
   - {fileID: 21300000, guid: f4df5f1e633b8eb40b11d29478386660, type: 3}
   - {fileID: 21300000, guid: e37cff9d11e7334469ca9c7e691af423, type: 3}
+  - {fileID: 21300000, guid: afa3122251aba7c4cb335302036bddea, type: 3}
   _damask: {fileID: 2800000, guid: d2167f5e0ce534d48a43f0412ffd9704, type: 3}
   _spriteMaterial: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   _paintMaterial: {fileID: 2100000, guid: 038382e979d627047814111252a8ed83, type: 2}

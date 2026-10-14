@@ -77,6 +77,16 @@ namespace Puzzle.Client.Gallery
         /// the height of its capitals, all as parts of the type size (Gabarito 0.94, 0.26 and 0.681; Paytone One
         /// 1.113, 0.283 and 0.688; Young Serif 1.046, 0.366 and 0.75).
         /// </summary>
+        /// <summary>How high a style's capitals stand over its baseline, as a part of the type size: the measures <see cref="FigureDropOf"/> names.</summary>
+        public static float CapitalsHeight(LetteringStyle style) => Typefaces.Of(style) switch
+        {
+            Typeface.GabaritoBold => 0.681f,
+            Typeface.GabaritoExtraBold => 0.681f,
+            Typeface.PaytoneOne => 0.688f,
+            Typeface.YoungSerif => 0.75f,
+            _ => throw new ArgumentOutOfRangeException(nameof(style), style, "A typeface whose measures are not listed."),
+        };
+
         private static float FigureDropOf(Typeface typeface) => typeface switch
         {
             Typeface.GabaritoBold => 0f,

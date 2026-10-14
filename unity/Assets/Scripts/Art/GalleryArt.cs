@@ -288,6 +288,12 @@ namespace Puzzle.Client.Art
 
         /// <summary>The cream pill an amount stands in, 36 points high in a gilt rim: the wallet's coins and lives, the coins a level pays; its middle stretches sideways to any width. Its pivot is the middle of the pill.</summary>
         WalletPill,
+
+        /// <summary>
+        /// The alcove of the design canvas' cards (WinTR, LoseTR): <see cref="Alcove"/> with a niche of 316 by 188,
+        /// so its frame is 330 by 202 points. Its pivot is the middle of the frame.
+        /// </summary>
+        WideAlcove,
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 
 namespace Puzzle.Client.Layout
 {
@@ -126,8 +127,8 @@ namespace Puzzle.Client.Layout
         /// <summary>The height of the row of plaques at full size: the moves medallion's, the tallest of them.</summary>
         public const float HudHeight = 98f;
 
-        /// <summary>The shelf's plank at full size.</summary>
-        public const float ShelfHeight = 58f;
+        /// <summary>The shelf's plank at full size: a little lower than the canvas' 78 (BoardTR), and still room for its discs.</summary>
+        public const float ShelfHeight = 72f;
 
         /// <summary>From this much width on a screen is compact: even a board as wide as it is high is held back by the height.</summary>
         public const float WideWidth = 480f;
@@ -141,8 +142,14 @@ namespace Puzzle.Client.Layout
         /// </summary>
         public const float CompactHudScale = 0.65f;
 
-        /// <summary>...and the shelf this large: a ledge for one line of lettering, which keeps its size (Shelf).</summary>
-        public const float CompactShelfScale = 0.5f;
+        /// <summary>
+        /// ...and the shelf this large: less than the plaques, for every point it gives up goes to the cells, but
+        /// enough for its discs to be as large in the hand as a fingertip's press (<see cref="SmallestDiscInTheHand"/>).
+        /// </summary>
+        public const float CompactShelfScale = 0.62f;
+
+        /// <summary>A point of the open foldable is this much larger in the hand than a phone's (see <see cref="CompactHudScale"/>).</summary>
+        public const float CompactPointInTheHand = 1.25f;
 
         /// <summary>The plaques hang at least this far under the top of the usable screen, and the shelf stands as far above its foot.</summary>
         public const float LeastWallAtTheEdges = 8f;
@@ -158,14 +165,21 @@ namespace Puzzle.Client.Layout
         public const float ShelfSideMargin = 12f;
 
         /// <summary>
-        /// The round button that leads out of the level stands on the shelf's left end: as large as most of the
-        /// plank's height, never larger than the design's round button nor smaller than a fingertip can hit, its
-        /// rim this far in from the plank's end.
+        /// What stands on the shelf, as the design canvas draws it (BoardTR): the teal pause disc at the plank's
+        /// left end and the cream discs of the four boosters after it, spread to its right end, the first and the
+        /// last this far in from the plank's ends. At full size a booster's disc is 56 points across, a little less
+        /// than the canvas' 60 on its plank of 78, and the pause disc is the canvas' share of it (46 to 60).
         /// </summary>
-        public const float LargestLeaveButton = 44f;
-        public const float SmallestLeaveButton = 30f;
-        public const float LeaveButtonShareOfPlank = 0.8f;
-        public const float LeaveButtonInFromEnd = 9f;
+        public const float BoosterDisc = 56f;
+        public const float PauseDiscShare = 46f / 60f;
+        public const float DiscsInFromPlankEnd = 14f;
+        public const int BoostersOnTheShelf = 4;
+
+        /// <summary>The discs stand this far above the plank's middle: its foot is a dark lip (BoardTR pads the plank's foot by 3).</summary>
+        public const float DiscsAboveMiddle = 1.5f;
+
+        /// <summary>No disc on the shelf is drawn smaller than this in the hand, in a phone's points: a fingertip's press.</summary>
+        public const float SmallestDiscInTheHand = 40f;
 
         /// <summary>
         /// The gilt frame reaches this far past the board's cells on every side (8.1, and its soft edge). It is
@@ -204,11 +218,13 @@ namespace Puzzle.Client.Layout
             View = chrome.View;
             HudScale = chrome.HudScale;
             ShelfScale = chrome.ShelfScale;
+            PointInTheHand = chrome.PointInTheHand;
             HudMiddle = chrome.HudMiddle;
             ShelfMiddle = chrome.ShelfMiddle;
             CellSize = cellSize;
             BoardLeft = boardLeft;
             BoardTop = boardTop;
+            ShelfDiscs = DiscsOnTheShelf();
         }
 
         /// <summary>The screen in points, as every screen of the game measures it.</summary>
@@ -227,6 +243,9 @@ namespace Puzzle.Client.Layout
         /// <summary>How large the shelf is drawn: as the plaques are, but for a compact screen, where it is <see cref="CompactShelfScale"/>.</summary>
         public float ShelfScale { get; }
 
+        /// <summary>How large a point of this screen is in the hand, against a phone's: 1 on a phone, <see cref="CompactPointInTheHand"/> on a compact screen.</summary>
+        public float PointInTheHand { get; }
+
         /// <summary>The height of the middle of the row of plaques. The row is centred on the screen's width.</summary>
         public float HudMiddle { get; }
 
@@ -243,15 +262,15 @@ namespace Puzzle.Client.Layout
         /// <summary>The upper edge of the shelf's plank.</summary>
         public float ShelfTop => ShelfMiddle + ShelfHeight * ShelfScale / 2;
 
-        /// <summary>The disc of the round button that leads out of the level, on the shelf's left end.</summary>
-        public Box LeaveButton
-        {
-            get
-            {
-                float size = Math.Clamp(LeaveButtonShareOfPlank * ShelfHeight * ShelfScale, SmallestLeaveButton, LargestLeaveButton);
-                return Box.Around(-ShelfWidth / 2 + LeaveButtonInFromEnd + size / 2, ShelfMiddle, size, size);
-            }
-        }
+        /// <summary>
+        /// The five discs on the shelf, from its left end: the pause disc, then the places of the four boosters'
+        /// discs (stage 10 puts the discs there). Each is drawn at the shelf's size, but never smaller in the
+        /// hand than <see cref="SmallestDiscInTheHand"/>; the gaps between them share what is left of the plank.
+        /// </summary>
+        public IReadOnlyList<Box> ShelfDiscs { get; }
+
+        /// <summary>The pause disc on the shelf's left end: it asks whether the player means to leave the level.</summary>
+        public Box PauseButton => ShelfDiscs[0];
 
         /// <summary>The side of a cell; a whole number of pixels, so every cell is drawn as wide as its neighbour.</summary>
         public float CellSize { get; }
@@ -344,17 +363,39 @@ namespace Puzzle.Client.Layout
         private static float OnWholePixels(float points, float pixelsPerPoint) =>
             (float)(Math.Floor(points * pixelsPerPoint) / pixelsPerPoint);
 
+        /// <summary>The pause disc at the plank's left end and the four boosters' after it, spread edge to edge, each at least a fingertip across.</summary>
+        private Box[] DiscsOnTheShelf()
+        {
+            float fingertip = SmallestDiscInTheHand / PointInTheHand;
+            float pause = Math.Max(PauseDiscShare * BoosterDisc * ShelfScale, fingertip);
+            float booster = Math.Max(BoosterDisc * ShelfScale, fingertip);
+            float left = -ShelfWidth / 2 + DiscsInFromPlankEnd * ShelfScale;
+            float right = ShelfWidth / 2 - DiscsInFromPlankEnd * ShelfScale;
+            float gap = (right - left - pause - BoostersOnTheShelf * booster) / BoostersOnTheShelf;
+            float middle = ShelfMiddle + DiscsAboveMiddle * ShelfScale;
+
+            var discs = new Box[1 + BoostersOnTheShelf];
+            discs[0] = Box.Around(left + pause / 2, middle, pause, pause);
+            for (int place = 1; place < discs.Length; place++)
+            {
+                discs[place] = Box.Around(discs[place - 1].Right + gap + booster / 2, middle, booster, booster);
+            }
+
+            return discs;
+        }
+
         /// <summary>
         /// What a screen alone decides, before any board: the size of a point, where the plaques and the shelf go, and
         /// the room they leave for a board's cells.
         /// </summary>
         private readonly struct Chrome
         {
-            private Chrome(ScreenView view, float hudScale, float shelfScale, float hudMiddle, float shelfMiddle, float roomTop, float roomBottom)
+            private Chrome(ScreenView view, float hudScale, float shelfScale, float pointInTheHand, float hudMiddle, float shelfMiddle, float roomTop, float roomBottom)
             {
                 View = view;
                 HudScale = hudScale;
                 ShelfScale = shelfScale;
+                PointInTheHand = pointInTheHand;
                 HudMiddle = hudMiddle;
                 ShelfMiddle = shelfMiddle;
                 RoomTop = roomTop;
@@ -370,6 +411,8 @@ namespace Puzzle.Client.Layout
             public float HudScale { get; }
 
             public float ShelfScale { get; }
+
+            public float PointInTheHand { get; }
 
             public float HudMiddle { get; }
 
@@ -399,12 +442,13 @@ namespace Puzzle.Client.Layout
 
                 float hudScale = Between(CompactHudScale, TightChromeScale, 1f);
                 float shelfScale = Between(CompactShelfScale, TightChromeScale, 1f);
+                float pointInTheHand = Between(CompactPointInTheHand, 1f, 1f);
                 float wallAboveHud = Between(LeastWallAtTheEdges, 12f, Math.Clamp(0.055f * viewHeight, 14f, 52f));
                 float hudMiddle = usableTop - wallAboveHud - HudHeight * hudScale / 2;
                 float shelfMiddle = usableBottom + Between(LeastWallAtTheEdges, 10f, 14f) + ShelfHeight * shelfScale / 2;
                 float roomTop = hudMiddle - HudHeight * hudScale / 2 - Between(5f, 6f, 8f) - FrameReach;
                 float roomBottom = shelfMiddle + ShelfHeight * shelfScale / 2 + Between(3f, 4f, 6f) + FrameShadowDrop + FrameReach;
-                return new Chrome(view, hudScale, shelfScale, hudMiddle, shelfMiddle, roomTop, roomBottom);
+                return new Chrome(view, hudScale, shelfScale, pointInTheHand, hudMiddle, shelfMiddle, roomTop, roomBottom);
             }
         }
     }

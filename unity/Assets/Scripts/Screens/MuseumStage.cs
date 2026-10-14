@@ -179,6 +179,9 @@ namespace Puzzle.Client.Screens
         /// <summary>The wallet as the stage was last told of it.</summary>
         public WalletView Wallet => _wallet.Wallet;
 
+        /// <summary>The coins the wallet row shows now: coins that came in count up to <see cref="Wallet"/>'s amount.</summary>
+        public Coins CoinsShown => _wallet.CoinsShown;
+
         /// <summary>Where the player is in the museum: the page that is shown, and on the collection's page the room.</summary>
         public MuseumDoor Door => new MuseumDoor(Showing, (_page as CollectionPage)?.Room);
 

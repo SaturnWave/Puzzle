@@ -90,6 +90,9 @@ namespace Puzzle.Client.Screens
         /// <summary>The wallet as the row was last told of it; the amount shown may still be counting towards its coins.</summary>
         public WalletView Wallet { get; private set; }
 
+        /// <summary>The amount of coins the row shows now: while it counts, where the count has got to.</summary>
+        public Coins CoinsShown => _shown;
+
         /// <summary>The middle of the lives' button, in the layout's points: where a finger presses it. Nothing before the row is placed.</summary>
         public Vector2? LivesButtonMiddle => _page is PageLayout page ? InTheLayout(page, new Vector2(_layout.LivesButton.MiddleX, _layout.LivesButton.MiddleY)) : (Vector2?)null;
 

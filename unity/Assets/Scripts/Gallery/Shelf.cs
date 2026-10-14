@@ -8,23 +8,23 @@ using UnityEngine;
 namespace Puzzle.Client.Gallery
 {
     /// <summary>
-    /// The wooden shelf under the board, with a line of lettering on it; the line keeps clear of the round button
-    /// that stands on the shelf's left end (the stage's own, <see cref="ScreenLayout.LeaveButton"/>). Sizes are in
-    /// points around the middle of the plank at its full size; a screen on which the board needs the height draws the shelf smaller
-    /// (<see cref="ScreenLayout.ShelfScale"/>), down to a ledge half as high.
+    /// The wooden shelf under the board, the design canvas' plank (BoardTR), with a line of lettering on it; the
+    /// line keeps clear of the pause disc that stands on the shelf's left end (the stage's own,
+    /// <see cref="ScreenLayout.PauseButton"/>) and lies where the boosters' discs will stand. Sizes are in points
+    /// around the middle of the plank at its full size; a screen on which the board needs the height draws the
+    /// shelf smaller (<see cref="ScreenLayout.ShelfScale"/>).
     /// </summary>
     public sealed class Shelf : IDisposable
     {
-        /// <summary>The shelf's picture is its plank and the room around it for its edge and shadow: 28 points wider, 96 high.</summary>
-        private const float PictureMargin = 28f;
-        private const float PictureHeight = 96f;
+        /// <summary>The plank's picture is its body and the room around it for its rim and shadow: 28 points wider, 68 higher.</summary>
+        private static readonly Vector2 PictureMargin = new Vector2(28f, 68f);
 
         /// <summary>The line is the web test page's, at its size there (13 points); the design canvas writes nothing on its shelf (BoardTR).</summary>
         private const float LineSize = 13f;
 
         /// <summary>
-        /// The line is not set smaller than this on the screen, however small the shelf is drawn: on the ledge of
-        /// a compact screen it would be half its size, too small to read.
+        /// The line is not set smaller than this on the screen, however small the shelf is drawn: on the shelf of
+        /// a compact screen it would be little more than half its size, too small to read.
         /// </summary>
         private const float SmallestLineOnScreen = 9f;
 
@@ -39,13 +39,13 @@ namespace Puzzle.Client.Gallery
         private readonly TextMeshPro _line;
         private string _words = string.Empty;
 
-        /// <summary>The line stands this far to the right of the round button on the shelf's left end.</summary>
+        /// <summary>The line stands this far to the right of the pause disc on the shelf's left end.</summary>
         private const float LineAfterButton = 8f;
 
         /// <summary>The plank's width in the shelf's own points, as the screen last allowed it; the line is fitted to it.</summary>
         private float _plankWidth = ScreenLayout.WidestShelf;
 
-        /// <summary>Where the line begins, from the plank's left end, in the shelf's own points: after the round button.</summary>
+        /// <summary>Where the line begins, from the plank's left end, in the shelf's own points: after the pause disc.</summary>
         private float _lineBeginsIn = LineInFromEnds;
 
         /// <summary>The line's type size in the shelf's own points, for the size the shelf was last drawn at.</summary>
@@ -58,9 +58,9 @@ namespace Puzzle.Client.Gallery
 
             _plank = new GameObject("Plank").AddComponent<SpriteRenderer>();
             _plank.transform.SetParent(_root, worldPositionStays: false);
-            _plank.sprite = art.Of(GalleryArt.Shelf);
+            _plank.sprite = art.Of(GalleryArt.Plank);
             _plank.sharedMaterial = art.SpriteMaterial;
-            _plank.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches; its round ends keep their shape
+            _plank.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches both ways; its round corners keep their shape
             _plank.sortingOrder = (int)DrawOrder.Shelf;
 
             _line = Lettering.Write("Line", _root, art, LetteringStyle.OnWood, LineSize, Lettering.OnDark, DrawOrder.ShelfLettering);
@@ -78,9 +78,9 @@ namespace Puzzle.Client.Gallery
 
             // From here on in the shelf's own points.
             _plankWidth = layout.ShelfWidth / scale;
-            _lineBeginsIn = (layout.LeaveButton.Right + layout.ShelfWidth / 2f) / scale + LineAfterButton;
+            _lineBeginsIn = (layout.PauseButton.Right + layout.ShelfWidth / 2f) / scale + LineAfterButton;
             _lineSize = Mathf.Max(LineSize, SmallestLineOnScreen / scale);
-            _plank.size = new Vector2(_plankWidth + PictureMargin, PictureHeight);
+            _plank.size = new Vector2(_plankWidth, ScreenLayout.ShelfHeight) + PictureMargin;
             WriteLine();
         }
 

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Puzzle.Bot;
@@ -100,8 +101,10 @@ namespace Puzzle.Client.EditorTools
             OpenTheLevel(reel, levelToPlay, taken, pictures: true);
             LeaveTheLevelAndComeBack(reel, levelToPlay, taken);
             BoosterShelf beforeTheLevel = session.Progress.Wallet.Shelf;
+            Coins coinsBeforeTheLevel = session.Progress.Wallet.Coins;
             GameStatus ending = PlayTheLevel(reel);
             RequireSpent(session, beforeTheLevel, taken, "the level's first move");
+            RequireTheCoinsOnTheCardPaid(session, coinsBeforeTheLevel, ending);
             bool hadPiecesToPlace = session.Stage.PlaceButtonPixel != null;
             string atTheJigsaw = hadPiecesToPlace ? PlaceWhatWasWon(reel) : "no piece to place";
             if (session.Museum == null)
@@ -115,6 +118,12 @@ namespace Puzzle.Client.EditorTools
             {
                 throw new InvalidOperationException($"From a result's card the museum opened on {MuseumOf(session).Showing}, or with a card hanging, not on its bare hall.");
             }
+
+            // The row counts on its own clock, which no settling of the hall waits for: it has counted once its time is up.
+            reel.Advance(Tempo.CoinsCount);
+            ThroughTheCard.Require(
+                MuseumOf(session).CoinsShown == session.Progress.Wallet.Coins,
+                $"back in the hall the wallet row shows {MuseumOf(session).CoinsShown} coins once it has counted, and the player has {session.Progress.Wallet.Coins}");
 
             TurnThePage(reel, Destination.Collection, picturesTheTurn: false);
             reel.Shoot("collection-again");
@@ -227,7 +236,7 @@ namespace Puzzle.Client.EditorTools
         /// <summary>
         /// Through the card with the colour bomb chosen, a loss, "Tekrar dene", the hall with the same level's card
         /// down (the colour bomb one fewer), "Oyna" with nothing chosen, the level's second board; played to its end,
-        /// the shelf's round button under its card leads to the bare hall.
+        /// the pause disc under its card listens to nothing, and the device's way back leads to the bare hall.
         /// </summary>
         private static void WalkARetry(PlayerProgress standing, ScreenShape screen, Studio studio)
         {
@@ -269,11 +278,12 @@ namespace Puzzle.Client.EditorTools
 
             FlowStory.PlayTheGame(session, new RandomPolicy(), new Rng(BotSeed, BotStream));
             reel.Settle();
-            Press(session, session.Stage.LeaveButtonPixel, "the shelf's round button under the card", reel, pressedShot: null);
-            WaitFor(session, () => session.Museum != null, "the shelf's round button under the card opened no museum");
+            ThroughTheCard.Require(session.Stage.PauseButtonPixel == null, "the pause disc listens under a result's card; the card has its own ways out");
+            session.GoBack();
+            WaitFor(session, () => session.Museum != null, "the device's way back under the card opened no museum");
             reel.Settle();
             reel.Shoot("hall");
-            ThroughTheCard.Require(!MuseumOf(session).ShowsTheStartCard && MuseumOf(session).PlayButtonPixel != null, "the shelf's round button under a card did not lead to the bare hall");
+            ThroughTheCard.Require(!MuseumOf(session).ShowsTheStartCard && MuseumOf(session).PlayButtonPixel != null, "the device's way back under a card did not lead to the bare hall");
             reel.WriteSheet();
             Debug.Log($"Screen shots: walk {reel.Name}: level {lostLevel} lost with the colour bomb, Tekrar dene, the hall with its card, its second board, the hall; the player now stands at \"{session.Progress}\".");
         }
@@ -314,6 +324,16 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The first start booster the player holds, to be taken into the walk's level; none for a player who holds none.</summary>
         private static BoosterKind[] TheFirstStartBoosterHeld(BoosterShelf shelf) => LevelBrief.StartBoosters.Where(shelf.Has).Take(1).ToArray();
 
+        /// <summary>A won level's card, at rest, shows the coins the attempt's ledger paid for the win: what the player has more than before the level.</summary>
+        /// <exception cref="InvalidOperationException">The card shows other coins, or a lost level's card shows any.</exception>
+        private static void RequireTheCoinsOnTheCardPaid(GameSession session, Coins before, GameStatus ending)
+        {
+            long paid = session.Progress.Wallet.Coins.Amount - before.Amount;
+            long? shown = session.Stage.CoinsOnTheCard;
+            bool isRight = ending == GameStatus.Won ? shown == paid : shown == null && paid == 0;
+            ThroughTheCard.Require(isRight, $"the card of a level {ending} shows {(shown is long coins ? coins.ToString(CultureInfo.InvariantCulture) : "no")} coins; the level paid {paid}");
+        }
+
         /// <exception cref="InvalidOperationException">The boosters taken into the level did not leave the shelf, or more did.</exception>
         private static void RequireSpent(GameSession session, BoosterShelf before, BoosterKind[] taken, string when)
         {
@@ -338,6 +358,10 @@ namespace Puzzle.Client.EditorTools
             WaitFor(session, () => session.Museum != null, "the card's green button opened no museum");
             reel.Advance(DarkMoment);
             reel.Shoot("hall-comes");
+            if (isWon && MuseumOf(session).CoinsShown >= session.Progress.Wallet.Coins)
+            {
+                throw new InvalidOperationException($"The hall opened after a win with its wallet row at {MuseumOf(session).CoinsShown} coins of {session.Progress.Wallet.Coins}: the coins the win paid do not count up.");
+            }
             reel.Settle();
             if (MuseumOf(session).ShowsTheStartCard == isWon)
             {
@@ -473,7 +497,7 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>
-        /// The shelf's round button asks whether to leave; the device's way back says no and the game goes on; asked
+        /// The shelf's pause disc asks whether to leave; the device's way back says no and the game goes on; asked
         /// again, the card's teal button leads to the hall, with the player's progress as it was (no move was
         /// played, so the attempt does not count and the boosters taken into it are not spent); the play button and
         /// the level's card then open the same level again.
@@ -483,17 +507,17 @@ namespace Puzzle.Client.EditorTools
             GameSession session = reel.Session;
             PlayerProgress before = session.Progress;
             reel.Shoot("board");
-            Press(session, session.Stage.LeaveButtonPixel, "the shelf's round button", reel, "leave-pressed");
+            Press(session, session.Stage.PauseButtonPixel, "the shelf's pause disc", reel, "pause-pressed");
             reel.Settle();
             reel.Shoot("leave-asked");
             if (!session.Stage.IsAskingWhetherToLeave)
             {
-                throw new InvalidOperationException("The shelf's round button did not ask whether to leave the level.");
+                throw new InvalidOperationException("The shelf's pause disc did not ask whether to leave the level.");
             }
 
             session.GoBack();
             reel.Settle();
-            if (session.Board == null || session.Stage.IsAskingWhetherToLeave || session.Stage.LeaveButtonPixel == null)
+            if (session.Board == null || session.Stage.IsAskingWhetherToLeave || session.Stage.PauseButtonPixel == null)
             {
                 throw new InvalidOperationException("The device's way back did not take the leaving card away and give the board back.");
             }

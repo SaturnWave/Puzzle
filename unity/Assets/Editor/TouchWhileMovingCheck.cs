@@ -45,6 +45,12 @@ namespace Puzzle.Client.EditorTools
         /// <summary>No turn takes this long; a move that has not been played by then never will be.</summary>
         private const float LongestWaitSeconds = 12f;
 
+        /// <summary>The pause's card is left hanging this long, to see that nothing on the board moves or plays under it.</summary>
+        private const float PausedFor = 3f;
+
+        /// <summary>A card's buttons reach no farther than this many pixels above and below their middle on the check's screen (72 points and a lip, 3 pixels a point).</summary>
+        private const float RowOfButtonsReach = 150f;
+
         private static readonly ScreenShape Screen = new ScreenShape(1080, 1920);
 
         public static void Run()
@@ -73,8 +79,12 @@ namespace Puzzle.Client.EditorTools
                 ASwipeShortlyBeforeRestIsPlayedWhenTheBoardRests(player);
                 AFingerThatCameDownWhileMovingPlaysWhenItDragsAtRest(player);
                 AnOldSwipeIsForgotten(player);
+                APauseWhileMovingStopsTheBoardsTouchesUntilThePlayerStays(player);
+                LeavingFromThePauseAfterAMoveCostsALife(player, progress);
                 Debug.Log("Touch check passed: a swipe made while the board moved was played when it came to rest (during the entrance and during a turn), "
-                    + "a finger that came down during a turn played by dragging at rest, and a swipe older than the wait was forgotten.");
+                    + "a finger that came down during a turn played by dragging at rest, and a swipe older than the wait was forgotten; "
+                    + "the pause disc pressed during a turn let the turn end, played no swipe made after it, and its card held the board still and untouched "
+                    + "until the way back gave it back; leaving from it after a move cost one life.");
             }
             catch (Exception failure) when (failure is InvalidOperationException || failure is ArgumentException
                 || failure is IOException || failure is LevelFormatException)
@@ -140,6 +150,50 @@ namespace Puzzle.Client.EditorTools
             player.Expect(before, $"after a swipe made {StoryStudio.Seconds(turn.Seconds)} s before the board came to rest");
         }
 
+        /// <summary>
+        /// The pause disc pressed while a turn is shown: the turn ends as the engine played it, a swipe made after
+        /// the press is forgotten, and the card that asks whether to leave comes. Under it the board takes no touch
+        /// and plays no move however long the clock runs; the way back takes the card up, and the board plays again.
+        /// </summary>
+        private static void APauseWhileMovingStopsTheBoardsTouchesUntilThePlayerStays(Player player)
+        {
+            int before = player.MovesPlayed;
+            player.PlayTheBotsMove();
+            player.Press(player.Session.Stage.PauseButtonPixel, "the pause disc during a turn");
+            player.Swipe(player.ALegalTrade());
+            player.ComeToRest("a turn during which the pause disc was pressed");
+            player.Expect(before + 1, "after a swipe made once the pause disc was pressed");
+            player.Require(player.Session.Stage.IsAskingWhetherToLeave, "the pause disc pressed during a turn did not ask whether to leave once the board rested");
+
+            // A swipe over the board's cells, clear of the card's row of buttons: a press of those would be the card's.
+            Move trade = player.ALegalTradeClearOfTheCardsButtons();
+            player.Swipe(trade);
+            player.Advance(PausedFor);
+            player.Expect(before + 1, $"under the pause's card, {StoryStudio.Seconds(PausedFor)} s after a swipe on the board");
+            player.Require(!player.Session.TryPlay(trade), "under the pause's card the stage played a move it was handed");
+            player.Require(player.Session.Stage.IsAskingWhetherToLeave && player.Session.Stage.IsSettled, "the pause's card did not hang still over a still board");
+
+            player.Session.GoBack();
+            player.ComeToRest("the pause's card taken up by the way back");
+            player.Require(!player.Session.Stage.IsAskingWhetherToLeave && player.Session.Stage.PauseButtonPixel != null, "the way back did not give the board and its pause disc back");
+            player.Swipe(player.ALegalTrade());
+            player.Expect(before + 2, "after a swipe on the board given back by the pause's card");
+            player.ComeToRest("the turn after the pause");
+        }
+
+        /// <summary>The pause disc after a move, and the card's museum button: the attempt is left, and that costs one life.</summary>
+        private static void LeavingFromThePauseAfterAMoveCostsALife(Player player, ProgressInMemory progress)
+        {
+            int livesBefore = player.Lives;
+            player.Press(player.Session.Stage.PauseButtonPixel, "the pause disc at rest");
+            player.ComeToRest("the pause's card coming down");
+            player.Press(player.Session.Stage.MuseumButtonPixel, "the pause card's museum button");
+            player.Advance(Tempo.CardGoesUp + Tempo.RoomLightens);
+            player.Require(player.Session.Museum != null, "the pause card's museum button did not lead to the museum");
+            player.Require(player.Lives == livesBefore - 1, $"leaving after a move left {player.Lives} lives of {livesBefore}; it costs one");
+            player.Require(progress.Load().Equals(player.Session.Progress), "leaving the level was not saved");
+        }
+
         /// <summary>The session of the check with a bot to make moves and a finger to touch the board.</summary>
         private sealed class Player
         {
@@ -157,7 +211,47 @@ namespace Puzzle.Client.EditorTools
 
             public int MovesPlayed => Game.MovesUsed;
 
+            /// <summary>The lives the player has at the tools' instant, as the economy counts them.</summary>
+            public int Lives => WalletView.Of(Session.Progress.Wallet, StoryStudio.Economy.Lives, StoryStudio.Clock.Now).Lives;
+
             private Game Game => Session.Stage.Game;
+
+            /// <summary>A finger comes down on a control and lifts there.</summary>
+            /// <exception cref="InvalidOperationException">The control is not there to press.</exception>
+            public void Press(Vector2? pixel, string what)
+            {
+                Vector2 at = pixel ?? throw new InvalidOperationException($"The stage shows no {what} to press.");
+                Session.PointerDown(at);
+                Session.PointerUp();
+            }
+
+            /// <exception cref="InvalidOperationException">What must hold does not.</exception>
+            public void Require(bool holds, string otherwise)
+            {
+                if (!holds)
+                {
+                    throw new InvalidOperationException(otherwise);
+                }
+            }
+
+            /// <summary>A legal trade whose two cells lie well above or below the row of the card's buttons.</summary>
+            /// <exception cref="InvalidOperationException">No card's button is there to keep clear of, or every trade lies on its row.</exception>
+            public Move ALegalTradeClearOfTheCardsButtons()
+            {
+                Vector2 button = Session.Stage.ResultButtonPixel ?? throw new InvalidOperationException("No card hangs whose buttons the swipe should keep clear of.");
+                foreach (Move move in Game.FindLegalMoves())
+                {
+                    bool isClear = move.Kind == MoveKind.Swap
+                        && Mathf.Abs(Session.Stage.PixelOf(move.From).y - button.y) > RowOfButtonsReach
+                        && Mathf.Abs(Session.Stage.PixelOf(move.To).y - button.y) > RowOfButtonsReach;
+                    if (isClear)
+                    {
+                        return move;
+                    }
+                }
+
+                throw new InvalidOperationException($"Level {LevelNumber} has no trade at move {Game.MovesUsed} clear of the card's buttons; pick another level for this check.");
+            }
 
             public void Advance(float seconds) => StoryStudio.AdvanceBy(seconds, Session);
 

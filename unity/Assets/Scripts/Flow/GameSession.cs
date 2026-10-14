@@ -448,7 +448,7 @@ namespace Puzzle.Client.Flow
                 level.Id, level.ContentVersion, level.MoveLimit, LevelStart.SeedsOf(level, attempt), attempt, _attempts.Device, ThisClient, _clock.Now);
 
             Game game = LevelStart.Attempt(level, attempt, startBoosters.ForTheEngine());
-            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard, TakenBy(game, startBoosters));
+            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters));
             GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, opening);
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
             return stage;

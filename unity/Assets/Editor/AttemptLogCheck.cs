@@ -231,13 +231,13 @@ namespace Puzzle.Client.EditorTools
             Require(session.Progress.Wallet.Shelf.Equals(spent), $"after the attempt the shelf holds {session.Progress.Wallet.Shelf}, not {spent}");
         }
 
-        /// <summary>The shelf's round button asks whether to leave; the card's museum button leaves for the hall.</summary>
+        /// <summary>The shelf's pause disc asks whether to leave; the card's museum button leaves for the hall.</summary>
         private static void Leave(GameSession session)
         {
             StoryStudio.AdvanceUntilSettled(session);
-            Press(session, session.Stage.LeaveButtonPixel, "the shelf's round button");
+            Press(session, session.Stage.PauseButtonPixel, "the shelf's pause disc");
             StoryStudio.AdvanceUntilSettled(session);
-            Require(session.Stage.IsAskingWhetherToLeave, "the shelf's round button did not ask whether to leave the level");
+            Require(session.Stage.IsAskingWhetherToLeave, "the shelf's pause disc did not ask whether to leave the level");
             Press(session, session.Stage.MuseumButtonPixel, "the leaving card's museum button");
             for (float waited = 0f; session.Museum == null; waited += StoryStudio.FrameSeconds)
             {

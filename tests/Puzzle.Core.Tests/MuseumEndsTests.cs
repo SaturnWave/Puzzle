@@ -197,17 +197,18 @@ public class MuseumEndsTests
 
     [Theory]
     [MemberData(nameof(EveryScreen))]
-    public void The_button_that_leads_out_of_a_level_stands_on_the_shelfs_left_end_and_is_large_enough_for_a_finger(int width, int height, int top, int bottom)
+    public void The_pause_disc_stands_on_the_shelfs_left_end_and_is_large_enough_for_a_finger(int width, int height, int top, int bottom)
     {
         foreach ((int columns, int rows) in new[] { (9, 10), (11, 13), (7, 7) })
         {
             ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height, top, bottom), new BoardFootprint(columns, rows, hasExits: true));
-            Box button = layout.LeaveButton;
+            Box button = layout.PauseButton;
             float boardBottom = layout.BoardTop - rows * layout.CellSize;
 
-            Assert.InRange(button.Width, ScreenLayout.SmallestLeaveButton, ScreenLayout.LargestLeaveButton);
+            Assert.True(button.Width * layout.PointInTheHand >= ScreenLayout.SmallestDiscInTheHand - 0.001f, $"the pause disc is {button.Width * layout.PointInTheHand} points across in the hand");
+            Assert.True(button.Height <= ScreenLayout.ShelfHeight * layout.ShelfScale, "the pause disc is higher than the plank it stands on");
             Assert.Equal(button.Width, button.Height, precision: 3);
-            Assert.Equal(layout.ShelfMiddle, button.MiddleY, precision: 3);
+            Assert.Equal(layout.ShelfMiddle + ScreenLayout.DiscsAboveMiddle * layout.ShelfScale, button.MiddleY, precision: 3);
             Assert.True(button.Left > -layout.ShelfWidth / 2 && button.Right < 0f, "the button does not stand on the left half of the shelf");
             Assert.True(button.Left >= layout.View.Left + 4f && button.Bottom >= layout.View.UsableBottom, "the button leaves the screen");
             Assert.True(button.Top < boardBottom, "the button reaches the board's cells");

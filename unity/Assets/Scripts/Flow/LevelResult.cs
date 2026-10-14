@@ -11,18 +11,16 @@ namespace Puzzle.Client.Flow
 {
     /// <summary>
     /// What the stage is told about the attempt it shows, beyond the game itself: the things only the player's
-    /// progress knows, and the result panel says.
+    /// progress knows, and the economy's rule for what a win pays, which the plaques and the result panel say.
     /// </summary>
-    public readonly struct AttemptBrief
+    public sealed class AttemptBrief
     {
-        /// <summary>The start boosters taken into the attempt; nothing for none, which is also what the struct's default holds.</summary>
-        private readonly StartChoice? _startBoosters;
-
         /// <param name="attemptNumber">Which try at the level this is, counted from 1.</param>
+        /// <param name="winPays">What a win pays, as the attempt's ledger pays it (<see cref="AttemptLedger"/>): the card shows those coins.</param>
         /// <param name="reward">The jigsaw pieces winning this attempt gives; nothing when it gives none.</param>
         /// <param name="startBoosters">The start boosters the player took into the attempt; nothing when they took none.</param>
         /// <exception cref="ArgumentOutOfRangeException">The attempt number is less than 1.</exception>
-        public AttemptBrief(int attemptNumber, bool isOnLastLevel, PieceReward? reward = null, StartChoice? startBoosters = null)
+        public AttemptBrief(int attemptNumber, bool isOnLastLevel, WinReward winPays, PieceReward? reward = null, StartChoice? startBoosters = null)
         {
             if (attemptNumber < 1)
             {
@@ -31,23 +29,27 @@ namespace Puzzle.Client.Flow
 
             AttemptNumber = attemptNumber;
             IsOnLastLevel = isOnLastLevel;
+            WinPays = winPays ?? throw new ArgumentNullException(nameof(winPays));
             Reward = reward;
-            _startBoosters = startBoosters;
+            StartBoosters = startBoosters ?? StartChoice.None;
         }
-
-        /// <summary>A first try at a level that has a level after it and gives no jigsaw piece: what a picture of a single level shows.</summary>
-        public static AttemptBrief FirstTry => new AttemptBrief(attemptNumber: 1, isOnLastLevel: false);
 
         public int AttemptNumber { get; }
 
         /// <summary>True when no level follows this one: winning it leads nowhere new.</summary>
         public bool IsOnLastLevel { get; }
 
+        /// <summary>What a win of the attempt pays: the economy's rule, which the attempt's ledger pays by.</summary>
+        public WinReward WinPays { get; }
+
         /// <summary>The jigsaw pieces of a painting that winning the attempt gives the player; nothing when it gives none.</summary>
         public PieceReward? Reward { get; }
 
         /// <summary>The start boosters the player took into the attempt: they leave the shelf with its first move.</summary>
-        public StartChoice StartBoosters => _startBoosters ?? StartChoice.None;
+        public StartChoice StartBoosters { get; }
+
+        /// <summary>A first try at a level that has a level after it and gives no jigsaw piece: what a picture of a single level shows.</summary>
+        public static AttemptBrief FirstTry(WinReward winPays) => new AttemptBrief(attemptNumber: 1, isOnLastLevel: false, winPays);
     }
 
     /// <summary>Where the player goes on to from a result's card.</summary>
@@ -115,7 +117,7 @@ namespace Puzzle.Client.Flow
             int level = game.Level.Id.Value;
             return game.Status switch
             {
-                GameStatus.Won => new Won(level, game.MovesUsed, game.MovesLeft, brief.IsOnLastLevel, brief.Reward),
+                GameStatus.Won => new Won(level, game.MovesUsed, game.MovesLeft, brief.IsOnLastLevel, brief.Reward, brief.WinPays.Of(game.MovesLeft)),
                 GameStatus.LostOutOfMoves => new Lost(level, LossReason.OutOfMoves, brief.AttemptNumber, OpenGoalsOf(game)),
                 GameStatus.LostNoMovesPossible => new Lost(level, LossReason.NoMovePossible, brief.AttemptNumber, OpenGoalsOf(game)),
                 GameStatus.Playing => throw new InvalidOperationException($"Level {level} is still being played; it has no result yet."),
@@ -147,14 +149,21 @@ namespace Puzzle.Client.Flow
         /// <summary>The level's goals were met.</summary>
         public sealed class Won : LevelResult
         {
-            public Won(int levelNumber, int movesUsed, int movesLeft, bool isLastLevel, PieceReward? reward)
+            public Won(int levelNumber, int movesUsed, int movesLeft, bool isLastLevel, PieceReward? reward, Coins coins)
                 : base(levelNumber)
             {
                 MovesUsed = movesUsed;
                 MovesLeft = movesLeft;
                 IsLastLevel = isLastLevel;
                 Reward = reward;
+                Coins = coins;
             }
+
+            /// <summary>
+            /// The coins the win paid: what the economy's rule pays for it with the moves the game says were left,
+            /// which the attempt's ledger paid at the winning move. The finale's rockets do not change it.
+            /// </summary>
+            public Coins Coins { get; }
 
             public int MovesUsed { get; }
 
@@ -240,21 +249,30 @@ namespace Puzzle.Client.Flow
         };
 
         /// <summary>
-        /// The smaller line under the headline: the level and its moves where the headline says what was won, else
-        /// the moves a won game left over, or, for a lost one, what the alcove above it shows; a player who asks
-        /// to leave is told what leaving costs (the attempt counts once a move was played: the level's next board
-        /// is then another one).
+        /// The smaller line under the headline of a card of what is left: for a lost game, what the alcove above it
+        /// shows; a player who asks to leave is told what leaving costs, the life that leaving after a move takes
+        /// (<see cref="AttemptLedger"/>) or that nothing is lost before one.
         /// </summary>
+        /// <exception cref="InvalidOperationException">The game is won: its card says what the moves left over became beside its coins (<see cref="MovesLeftOver"/>).</exception>
         public static string Footnote(LevelResult result) => result switch
         {
-            LevelResult.Won { Reward: PieceReward _ } won => LevelAndMoves(won),
-            LevelResult.Won { MovesLeft: 0 } => "Son hamlede tamamlandı",
-            LevelResult.Won won => $"{Number(won.MovesLeft)} hamle arttı",
+            LevelResult.Won _ => throw new InvalidOperationException("A won level's card has no footnote: beside its coins it says what the moves left over became."),
             LevelResult.Lost _ => "Hedefe bu kadar kaldı",
-            LevelResult.Leaving { HasPlayed: true } => "Çıkarsan bu deneme sayılır",
-            LevelResult.Leaving _ => "Henüz hamle yapmadın",
+            LevelResult.Leaving { HasPlayed: true } => "Çıkarsan 1 can gider",
+            LevelResult.Leaving _ => "Henüz hamle yapmadın, can gitmez",
             _ => throw Unknown(result),
         };
+
+        /// <summary>The coins a win paid, on their pill (WinTR, "+45").</summary>
+        public static string CoinsWon(Coins coins) => $"+{NumberWords.Amount(coins.Amount)}";
+
+        /// <summary>
+        /// Beside the coins of a won card: what became of the moves left over, which the finale turned into rockets,
+        /// the canvas' brushes (WinTR), on two lines beside the brush; with no move left over, one line and no brush.
+        /// </summary>
+        public static string MovesLeftOver(LevelResult.Won won) => won.MovesLeft == 0
+            ? "Son hamlede tamamlandı"
+            : $"Kalan {Number(won.MovesLeft)} hamle\nfırçaya dönüştü";
 
         /// <summary>The green button: on with the levels, or, for a player who asked to leave, on with the game.</summary>
         public static string GoOn(LevelResult result) => result switch

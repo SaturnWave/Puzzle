@@ -119,9 +119,13 @@ namespace Puzzle.Client.Flow
             : $"{artwork.Caption.Artist.ToUpperInvariant()} · {artwork.Caption.Year}";
 
         /// <summary>What a won level gave, on its result's card: "Yeni parça: 7 / 10", or the pieces when it gave several.</summary>
-        public static string Earned(PieceReward reward) => reward.Pieces.Count == 1
-            ? $"Yeni parça: {Number(reward.WonWithThem)} / {Number(reward.PieceCount)}"
-            : $"{Number(reward.Pieces.Count)} yeni parça: {Number(reward.WonWithThem)} / {Number(reward.PieceCount)}";
+        public static string Earned(PieceReward reward) => $"{EarnedLead(reward)} {EarnedCount(reward)}";
+
+        /// <summary>The words of <see cref="Earned"/> before its figures, which the card sets in another typeface: "Yeni parça:".</summary>
+        public static string EarnedLead(PieceReward reward) => reward.Pieces.Count == 1 ? "Yeni parça:" : $"{Number(reward.Pieces.Count)} yeni parça:";
+
+        /// <summary>The figures of <see cref="Earned"/>: how many of the painting's pieces the player has with these, of all, "7 / 10".</summary>
+        public static string EarnedCount(PieceReward reward) => $"{Number(reward.WonWithThem)} / {Number(reward.PieceCount)}";
 
         /// <summary>The collection's plaque: how many of the museum's paintings hang whole, "4 / 100 TABLO".</summary>
         public static string CollectionCount(int paintingsWhole) => $"{Number(paintingsWhole)} / {Number(MuseumPlan.PaintingCount)} TABLO";

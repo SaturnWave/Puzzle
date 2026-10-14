@@ -116,6 +116,94 @@ public class ScreenLayoutTests
     }
 
     [Theory]
+    [InlineData(1080, 2424, 0, 0)]
+    [InlineData(1080, 2424, 96, 48)]
+    [InlineData(1080, 2340, 0, 0)]
+    [InlineData(1080, 1920, 0, 0)]
+    [InlineData(1080, 1920, 90, 48)]
+    [InlineData(720, 1280, 0, 0)]
+    [InlineData(1200, 1920, 0, 0)]
+    [InlineData(1260, 1920, 0, 0)]
+    [InlineData(2076, 2152, 0, 0)]
+    [InlineData(2076, 2152, 80, 60)]
+    [InlineData(1038, 1076, 0, 0)]
+    public void The_shelfs_five_discs_stand_apart_on_its_plank_from_end_to_end_and_none_is_less_than_a_fingertip_in_the_hand(int width, int height, int topInset, int bottomInset)
+    {
+        ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height, topInset, bottomInset), new BoardFootprint(10, 12, hasExits: false));
+        IReadOnlyList<Box> discs = layout.ShelfDiscs;
+        float plankTop = layout.ShelfTop;
+        float plankBottom = layout.ShelfMiddle - ScreenLayout.ShelfHeight * layout.ShelfScale / 2;
+        float inFromTheEnds = ScreenLayout.DiscsInFromPlankEnd * layout.ShelfScale;
+
+        // The pause disc, then the places of the four boosters' discs, edge to edge as BoardTR spreads them.
+        Assert.Equal(1 + ScreenLayout.BoostersOnTheShelf, discs.Count);
+        Assert.Equal((layout.PauseButton.Left, layout.PauseButton.Width), (discs[0].Left, discs[0].Width));
+        Assert.Equal(-layout.ShelfWidth / 2 + inFromTheEnds, discs[0].Left, 0.001f);
+        Assert.Equal(layout.ShelfWidth / 2 - inFromTheEnds, discs[^1].Right, 0.001f);
+        foreach (Box disc in discs)
+        {
+            Assert.True(disc.Width * layout.PointInTheHand >= ScreenLayout.SmallestDiscInTheHand - 0.001f, $"a disc of {disc} is {disc.Width * layout.PointInTheHand} points across in the hand");
+            Assert.True(disc.Bottom >= plankBottom && disc.Top <= plankTop, $"a disc of {disc} stands out of the plank {plankBottom}..{plankTop}");
+            Assert.Equal(disc.Width, disc.Height, 0.001f);
+        }
+
+        float[] gaps = discs.Zip(discs.Skip(1), (left, right) => right.Left - left.Right).ToArray();
+        Assert.All(gaps, gap => Assert.True(gap > 0f, $"two discs of the shelf run into each other: {string.Join(", ", gaps)}"));
+        Assert.All(gaps, gap => Assert.Equal(gaps[0], gap, 0.001f));
+        Assert.All(discs.Skip(1), disc => Assert.Equal(discs[1].Width, disc.Width, 0.001f));
+        Assert.True(discs[0].Width <= discs[1].Width, "the pause disc is larger than a booster's");
+    }
+
+    [Fact]
+    public void The_open_foldable_shows_a_point_a_quarter_larger_in_the_hand_and_a_phone_its_own()
+    {
+        var board = new BoardFootprint(10, 12, hasExits: false);
+
+        Assert.Equal(1f, ScreenLayout.Of(new ScreenShape(1080, 2340), board).PointInTheHand);
+        Assert.Equal(1f, ScreenLayout.Of(new ScreenShape(1080, 1920), board).PointInTheHand);
+        Assert.Equal(ScreenLayout.CompactPointInTheHand, ScreenLayout.Of(new ScreenShape(2076, 2152), board).PointInTheHand);
+    }
+
+    /// <summary>
+    /// What the shelf's discs cost the cells: the plank grew from 58 points to 72 at full size, and on the open
+    /// foldable from half its size to 0.62 of it. A tall phone's width decides every board of the game, as before.
+    /// On the 9:16 phone the width decided every board before; now the height holds back one shape, 9 x 12, whose
+    /// cell goes from 113 to 111 pixels on 1080 x 1920 (1.8 percent) and from 75 to 74 on 720 x 1280. The open
+    /// foldable's height decides every board, and its cells lose 2.9 to 3.3 percent (the pixels it had before are
+    /// those the plank of 29 points left, by the board's rows).
+    /// </summary>
+    [Fact]
+    public void The_taller_shelf_costs_a_tall_phone_no_cell_and_a_9_to_16_phone_or_the_open_foldable_at_most_about_three_percent_of_one()
+    {
+        const float AboutThreePercent = 0.035f;
+        var foldableCellsBefore = new Dictionary<int, int> { [10] = 167, [11] = 152, [12] = 139, [13] = 128 };
+        foreach ((int columns, int rows) in BoardsOfTheGame)
+        {
+            var board = new BoardFootprint(columns, rows, hasExits: false);
+            foreach ((int width, int height) in new[] { (1080, 2424), (1080, 2340) })
+            {
+                ScreenLayout tall = ScreenLayout.Of(new ScreenShape(width, height), board);
+                Assert.Equal(WidthsCell(tall, columns), tall.CellSize, 0.0001f);
+            }
+
+            foreach ((int width, int height) in new[] { (1080, 1920), (720, 1280) })
+            {
+                ScreenLayout phone = ScreenLayout.Of(new ScreenShape(width, height), board);
+                float lost = 1f - phone.CellSize / WidthsCell(phone, columns);
+                Assert.True(lost <= AboutThreePercent, $"a {columns} x {rows} board on {width} x {height} loses {lost:P1} of its cell to the shelf");
+            }
+
+            ScreenLayout foldable = ScreenLayout.Of(new ScreenShape(2076, 2152), board);
+            float foldableLost = 1f - foldable.CellSize * foldable.PixelsPerPoint / foldableCellsBefore[rows];
+            Assert.True(foldableLost <= AboutThreePercent, $"a {columns} x {rows} board on the open foldable loses {foldableLost:P1} of its cell to the shelf");
+        }
+    }
+
+    /// <summary>The cell a phone's width gives a board, on whole pixels: what it has where the height does not hold it back.</summary>
+    private static float WidthsCell(ScreenLayout layout, int columns) =>
+        MathF.Floor(MathF.Min(ScreenLayout.LargestCell, (layout.ViewWidth - 2 * ScreenLayout.BoardMargin) / columns) * layout.PixelsPerPoint) / layout.PixelsPerPoint;
+
+    [Theory]
     [MemberData(nameof(ScreensAndBoards))]
     public void A_cell_is_a_whole_number_of_pixels(int width, int height, int columns, int rows, bool hasExits)
     {
@@ -150,17 +238,18 @@ public class ScreenLayoutTests
     /// The cells of the foldable the game is tried on, in pixels. Its cover display is a tall phone at about 422
     /// pixels to the inch, where the width decides the cell; opened, it is nearly square at about 373, where the
     /// height does. In millimetres, and beside what the same boards had while the frame was 10.6 points wide with
-    /// 4 points of wall beside it and the open screen drew the plaques and the shelf at the 9:16 phone's size:
+    /// 4 points of wall beside it and the open screen drew the plaques and the shelf at the 9:16 phone's size, and
+    /// before the shelf grew for its discs (58 points high and half of that on the open screen, now 72 and 0.62):
     /// <code>
-    /// cover, 1080 x 2424        before           now
-    ///    9 columns           110 px  6.6 mm   113 px  6.8 mm
-    ///   10 columns            99 px  6.0 mm   102 px  6.1 mm
-    ///   11 columns            90 px  5.4 mm    93 px  5.6 mm
+    /// cover, 1080 x 2424        before           wider frame      with the discs
+    ///    9 columns           110 px  6.6 mm   113 px  6.8 mm   113 px  6.8 mm
+    ///   10 columns            99 px  6.0 mm   102 px  6.1 mm   102 px  6.1 mm
+    ///   11 columns            90 px  5.4 mm    93 px  5.6 mm    93 px  5.6 mm
     /// open, 2076 x 2152
-    ///   10 rows              151 px 10.3 mm   167 px 11.4 mm
-    ///   11 rows              137 px  9.3 mm   152 px 10.4 mm
-    ///   12 rows              126 px  8.6 mm   139 px  9.5 mm
-    ///   13 rows              116 px  7.9 mm   128 px  8.7 mm
+    ///   10 rows              151 px 10.3 mm   167 px 11.4 mm   162 px 11.0 mm
+    ///   11 rows              137 px  9.3 mm   152 px 10.4 mm   147 px 10.0 mm
+    ///   12 rows              126 px  8.6 mm   139 px  9.5 mm   135 px  9.2 mm
+    ///   13 rows              116 px  7.9 mm   128 px  8.7 mm   124 px  8.4 mm
     /// </code>
     /// On the cover a board of 11 columns cannot have cells of more than 98 pixels even with no frame at all: a
     /// larger cell there takes a board of fewer columns, which is the levels' business and not the layout's.
@@ -174,14 +263,14 @@ public class ScreenLayoutTests
     [InlineData(1080, 2424, 11, 13, 93)]
     [InlineData(1080, 2424, 12, 13, 85)]
     [InlineData(1080, 2424, 13, 13, 78)]
-    [InlineData(2076, 2152, 9, 10, 167)]
-    [InlineData(2076, 2152, 10, 10, 167)]
-    [InlineData(2076, 2152, 9, 11, 152)]
-    [InlineData(2076, 2152, 11, 11, 152)]
-    [InlineData(2076, 2152, 10, 12, 139)]
-    [InlineData(2076, 2152, 10, 13, 128)]
-    [InlineData(2076, 2152, 11, 13, 128)]
-    [InlineData(2076, 2152, 13, 13, 128)]
+    [InlineData(2076, 2152, 9, 10, 162)]
+    [InlineData(2076, 2152, 10, 10, 162)]
+    [InlineData(2076, 2152, 9, 11, 147)]
+    [InlineData(2076, 2152, 11, 11, 147)]
+    [InlineData(2076, 2152, 10, 12, 135)]
+    [InlineData(2076, 2152, 10, 13, 124)]
+    [InlineData(2076, 2152, 11, 13, 124)]
+    [InlineData(2076, 2152, 13, 13, 124)]
     public void The_foldable_the_game_is_tried_on_shows_a_board_with_cells_of_this_many_pixels(int width, int height, int columns, int rows, int cellPixels)
     {
         ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height), new BoardFootprint(columns, rows, hasExits: false));
@@ -240,13 +329,14 @@ public class ScreenLayoutTests
     }
 
     [Fact]
-    public void On_a_phone_the_width_decides_every_board_of_the_game()
+    public void On_a_tall_phone_the_width_decides_every_board_of_the_game()
     {
-        // So nothing the plaques and the shelf could give up would make a phone's cells larger, and they keep
+        // So nothing the plaques and the shelf could give up would make a tall phone's cells larger, and they keep
         // their size there. Only the frame and the line of wall beside it stand between the cells and the screen's
         // sides (and less than the pixel per column that whole-pixel cells cost, half of it at each side; the
-        // board's left edge is put on a whole pixel, which may take most of a pixel from the wall there).
-        foreach ((int width, int height) in new[] { (1080, 2424), (1080, 2340), (1080, 1920) })
+        // board's left edge is put on a whole pixel, which may take most of a pixel from the wall there). On the
+        // 9:16 phone the shelf's discs take a little of the tallest boards' cells (see the test of what they cost).
+        foreach ((int width, int height) in new[] { (1080, 2424), (1080, 2340) })
         {
             foreach ((int columns, int rows) in BoardsOfTheGame)
             {

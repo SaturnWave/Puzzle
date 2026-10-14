@@ -1,7 +1,9 @@
 #nullable enable
 using System;
-using System.Globalization;
+using System.Collections.Generic;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
+using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Painting;
 using TMPro;
@@ -10,17 +12,16 @@ using UnityEngine;
 namespace Puzzle.Client.Gallery
 {
     /// <summary>
-    /// What hangs on the wall above the board: the level's plaque (BÖLÜM), the round moves medallion (HAMLE) and the
-    /// goals' plaque (HEDEF), each on thin picture wires that run up out of the screen. Sizes and places are the web
-    /// test page's HUD (gallery.css) at its full size, in points around the medallion's middle; a screen on
-    /// which the board needs the height draws the whole row smaller (<see cref="ScreenLayout.HudScale"/>).
+    /// What hangs on the wall above the board: a plaque at each side of the round moves medallion (HAMLE), each on
+    /// thin picture wires that run up out of the screen. What the plaques show the jigsaw piece the level gives
+    /// decides (<see cref="BoardPlaques"/>): with a piece, the design canvas' arrangement (BoardTR), "BÖLÜM 47" over
+    /// the goals at the left and "PARÇA 7 / 10" over the veiled painting with that piece lit at the right; without
+    /// one, the web test page's, the level's number at the left and the goals under "HEDEF" at the right. Sizes and
+    /// places are the canvas' at full size, in points around the medallion's middle; a screen on which the board
+    /// needs the height draws the whole row smaller (<see cref="ScreenLayout.HudScale"/>).
     /// </summary>
     public sealed class Hud : IDisposable
     {
-        private const string LevelLabel = "BÖLÜM";
-        private const string MovesLabel = "HAMLE";
-        private const string GoalsLabel = "HEDEF";
-
         private const float MedallionSize = ScreenLayout.HudHeight;
         private const float PlaqueHeight = 84f;
         private const float GapBetween = 8f;
@@ -36,14 +37,23 @@ namespace Puzzle.Client.Gallery
         private const float LabelSize = 10f;
         private const float LabelSpacing = 9f;
 
+        /// <summary>The label over the painting is a little smaller and closer set (BoardTR, "PARÇA 7 / 10": 9.5 points, 7 hundredths), 8.5 over the picture.</summary>
+        private const float PieceLabelSize = 9.5f;
+        private const float PieceLabelSpacing = 7f;
+        private const float GapUnderPieceLabel = 8.5f;
+
         /// <summary>The moves are the design's (BoardTR, "14": 40 points); the level's number alone on its plaque is the web page's.</summary>
         private const float LevelNumberSize = 31f;
         private const float MovesNumberSize = 40f;
 
-        /// <summary>The room between a label and what stands under it: the level's number, the moves, the goals.</summary>
+        /// <summary>
+        /// The room between a label and what stands under it: the level's number, the moves, the goals under
+        /// "HEDEF" (the web page's), the goals under "BÖLÜM 47" (BoardTR, 3).
+        /// </summary>
         private const float GapUnderLevelLabel = 6f;
         private const float GapUnderMovesLabel = 2f;
         private const float GapUnderGoalsLabel = 4f;
+        private const float GapUnderLevelOverGoals = 3f;
 
         /// <summary>The moves stand this far above the foot of the medallion's dial, more than above its head.</summary>
         private const float RoomUnderMoves = 3f;
@@ -56,48 +66,69 @@ namespace Puzzle.Client.Gallery
 
         private readonly Transform _root;
         private readonly PaintedShape _wires;
-        private readonly Plaque _levelPlaque;
-        private readonly Plaque _goalsPlaque;
+        private readonly Plaque _left;
+        private readonly Plaque _right;
         private readonly TextMeshPro _movesNumber;
-        private readonly TextMeshPro _goalsLabel;
 
-        /// <summary>The three labels. They keep their size on the screen when a phone draws the row smaller, as the web page keeps them.</summary>
-        private readonly TextMeshPro[] _labels;
+        /// <summary>The label over the goals: "HEDEF" on the right plaque, or "BÖLÜM 47" on the left one; the goals stand under it.</summary>
+        private readonly TextMeshPro _goalsLabel;
+        private readonly float _gapUnderGoalsLabel;
         private readonly GoalRow _goals;
 
-        private Hud(Transform parent, ArtCatalogue art, int levelNumber)
+        /// <summary>The painting of the piece the level gives, on the right plaque; nothing where it gives none.</summary>
+        private readonly RewardThumb? _thumb;
+
+        /// <summary>The labels with their sizes. They keep their size on the screen when a phone draws the row smaller, as the web page keeps them.</summary>
+        private readonly List<(TextMeshPro Label, float Size)> _labels = new List<(TextMeshPro, float)>();
+
+        private Hud(Transform parent, ArtCatalogue art, BoardPlaques plaques, PaintingGallery paintings)
         {
             _root = new GameObject("Hud").transform;
             _root.SetParent(parent, worldPositionStays: false);
             _wires = PaintedShape.Create("Wires", _root, art.PaintMaterial, DrawOrder.Wire);
-
-            _levelPlaque = new Plaque("Level plaque", _root, art);
-            (float levelLabelAt, float levelNumberAt) = Stacked(FaceMiddle, GapUnderLevelLabel, LevelNumberSize);
-            TextMeshPro levelLabel = WriteLabel(LevelLabel, _levelPlaque.Group, art, levelLabelAt);
-            TextMeshPro levelFigure = WriteNumber("Level", _levelPlaque.Group, art, LevelNumberSize, levelNumberAt);
-            Lettering.Say(levelFigure, levelNumber.ToString(CultureInfo.InvariantCulture));
-
+            _left = new Plaque("Left plaque", _root, art);
             AddMedallion(art);
-            (float movesLabelAt, float movesNumberAt) = Stacked(0f, GapUnderMovesLabel, MovesNumberSize, RoomUnderMoves);
-            TextMeshPro movesLabel = WriteLabel(MovesLabel, _root, art, movesLabelAt);
+            (float movesLabelAt, float movesNumberAt) = Stacked(0f, LabelSize, GapUnderMovesLabel, MovesNumberSize, RoomUnderMoves);
+            WriteLabel(BoardWords.Moves, _root, art, LabelSize, LabelSpacing, movesLabelAt);
             _movesNumber = WriteNumber("Moves", _root, art, MovesNumberSize, movesNumberAt);
+            _right = new Plaque("Right plaque", _root, art);
 
-            _goalsPlaque = new Plaque("Goals plaque", _root, art);
-            _goalsLabel = WriteLabel(GoalsLabel, _goalsPlaque.Group, art, 0f);
-            _goals = new GoalRow(_goalsPlaque.Group, art);
-            _labels = new[] { levelLabel, movesLabel, _goalsLabel };
+            switch (plaques)
+            {
+                case BoardPlaques.LevelBesideGoals beside:
+                    (float levelLabelAt, float levelNumberAt) = Stacked(FaceMiddle, LabelSize, GapUnderLevelLabel, LevelNumberSize);
+                    WriteLabel(beside.LevelLabel, _left.Group, art, LabelSize, LabelSpacing, levelLabelAt);
+                    Lettering.Say(WriteNumber("Level", _left.Group, art, LevelNumberSize, levelNumberAt), beside.LevelFigure);
+                    _goalsLabel = WriteLabel(beside.GoalsLabel, _right.Group, art, LabelSize, LabelSpacing, 0f);
+                    _goals = new GoalRow(_right.Group, art);
+                    _gapUnderGoalsLabel = GapUnderGoalsLabel;
+                    break;
+                case BoardPlaques.LevelOverGoalsBesideThePiece withThePiece:
+                    _goalsLabel = WriteLabel(withThePiece.GoalsLabel, _left.Group, art, LabelSize, LabelSpacing, 0f);
+                    _goals = new GoalRow(_left.Group, art);
+                    _gapUnderGoalsLabel = GapUnderLevelOverGoals;
+                    _thumb = RewardThumb.Create(_right.Group, art, paintings, withThePiece.Reward);
+                    (float pieceLabelAt, float thumbAt) = Stacked(FaceMiddle, PieceLabelSize, GapUnderPieceLabel, _thumb.Size.y);
+                    WriteLabel(withThePiece.PieceLabel, _right.Group, art, PieceLabelSize, PieceLabelSpacing, pieceLabelAt);
+                    _thumb.Transform.localPosition = new Vector3(0f, thumbAt, 0f);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(plaques), plaques, "Plaques the row does not know how to hang.");
+            }
         }
 
-        public static Hud Create(Transform parent, ArtCatalogue art, int levelNumber) => new Hud(parent, art, levelNumber);
+        /// <summary>Builds the row of a level's plaques, as the piece the level gives arranges them.</summary>
+        /// <param name="paintings">Where the painting of the piece comes from.</param>
+        public static Hud Create(Transform parent, ArtCatalogue art, BoardPlaques plaques, PaintingGallery paintings) => new Hud(parent, art, plaques, paintings);
 
         /// <summary>Shows the numbers of a moment of the game.</summary>
         public void Show(HudFigures figures)
         {
             _movesNumber.color = figures.MovesAreFew ? Lettering.Danger : Lettering.Ink;
-            Lettering.Say(_movesNumber, figures.MovesLeft.ToString(CultureInfo.InvariantCulture));
+            Lettering.Say(_movesNumber, BoardWords.Number(figures.MovesLeft));
 
             _goals.Show(figures.Goals);
-            (float labelAt, float rowAt) = Stacked(FaceMiddle, GapUnderGoalsLabel, _goals.Height);
+            (float labelAt, float rowAt) = Stacked(FaceMiddle, LabelSize, _gapUnderGoalsLabel, _goals.Height);
             _goalsLabel.transform.localPosition = new Vector3(0f, labelAt, 0f);
             _goals.Transform.localPosition = new Vector3(0f, rowAt, 0f);
         }
@@ -123,18 +154,19 @@ namespace Puzzle.Client.Gallery
             float rowWidth = layout.HudWidth / scale;
             float plaqueWidth = (rowWidth - MedallionSize - 2f * GapBetween) / 2f;
             float plaqueMiddle = MedallionSize / 2f + GapBetween + plaqueWidth / 2f;
-            _levelPlaque.Hang(-plaqueMiddle, plaqueWidth);
-            _goalsPlaque.Hang(plaqueMiddle, plaqueWidth);
+            _left.Hang(-plaqueMiddle, plaqueWidth);
+            _right.Hang(plaqueMiddle, plaqueWidth);
 
             // Down to the tight phone's row the labels keep their size on the screen. A compact screen draws the
             // row smaller than that; there they shrink with it from that size on, or they would crowd the numbers.
-            float labelSize = LabelSize / Mathf.Max(scale, ScreenLayout.TightChromeScale);
-            foreach (TextMeshPro label in _labels)
+            float keptBy = 1f / Mathf.Max(scale, ScreenLayout.TightChromeScale);
+            foreach ((TextMeshPro label, float size) in _labels)
             {
-                label.fontSize = labelSize;
+                label.fontSize = size * keptBy;
                 label.ForceMeshUpdate();
             }
 
+            _thumb?.Show(softEdge: 1f / (layout.PixelsPerPoint * scale));
             float topOfTheScreen = (layout.ViewHeight / 2f - layout.HudMiddle) / scale;
             _wires.Show(Wires(plaqueMiddle, plaqueWidth, topOfTheScreen));
         }
@@ -143,6 +175,7 @@ namespace Puzzle.Client.Gallery
         {
             _wires.Dispose();
             _goals.Dispose();
+            _thumb?.Dispose();
             SceneObjects.DestroyObjectOf(_root);
         }
 
@@ -151,18 +184,19 @@ namespace Puzzle.Client.Gallery
         /// centres a column: the heights of the label's line and of the body's.
         /// </summary>
         /// <param name="roomBelow">Empty room that counts as part of the column, under the body.</param>
-        private static (float LabelAt, float BodyAt) Stacked(float middle, float gap, float bodyHeight, float roomBelow = 0f)
+        private static (float LabelAt, float BodyAt) Stacked(float middle, float labelSize, float gap, float bodyHeight, float roomBelow = 0f)
         {
-            float top = middle + (LabelSize + gap + bodyHeight + roomBelow) / 2f;
-            return (top - LabelSize / 2f, top - LabelSize - gap - bodyHeight / 2f);
+            float top = middle + (labelSize + gap + bodyHeight + roomBelow) / 2f;
+            return (top - labelSize / 2f, top - labelSize - gap - bodyHeight / 2f);
         }
 
-        private static TextMeshPro WriteLabel(string words, Transform parent, ArtCatalogue art, float height)
+        private TextMeshPro WriteLabel(string words, Transform parent, ArtCatalogue art, float size, float spacing, float height)
         {
-            TextMeshPro label = Lettering.Write(words, parent, art, LetteringStyle.Label, LabelSize, Lettering.LabelInk, DrawOrder.PlaqueLettering);
-            label.characterSpacing = LabelSpacing;
+            TextMeshPro label = Lettering.Write(words, parent, art, LetteringStyle.Label, size, Lettering.LabelInk, DrawOrder.PlaqueLettering);
+            label.characterSpacing = spacing;
             label.transform.localPosition = new Vector3(0f, height, 0f);
             Lettering.Say(label, words);
+            _labels.Add((label, size));
             return label;
         }
 

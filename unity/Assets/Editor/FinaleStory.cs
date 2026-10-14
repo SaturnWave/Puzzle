@@ -51,6 +51,8 @@ namespace Puzzle.Client.EditorTools
     ///   -finaleEarly  the level's goals are cut to this part of them (above 0, up to 1), so it is won while most
     ///                 of its crates, tapes and slabs still stand. No level of the game ends like that; this shows
     ///                 what the finale's rockets make of what stands in their way
+    ///   -finalePiece  the win gives the jigsaw piece a player with so many levels won is given (46: the fifth
+    ///                 painting's seventh piece; 49: its last), on the plaque and the card; left out, it gives none
     /// Pictures go to out/unity/shots/finale/finale-level-NNNN-left-NN-SIZE-tS.SS.png (…-before-N.png, …-end.png,
     /// …-card.png) with a sheet (…-sheet.png); an early win has -earlyNN before the size, a skip -skip and a strip
     /// -stripS.SS after it, with its frames as …-fNN.png. Do not pass -nographics: the pictures need a graphics device.
@@ -85,9 +87,10 @@ namespace Puzzle.Client.EditorTools
                 {
                     LevelDefinition level = LevelPack.Numbered(levels, levelNumber);
                     RehearsedGame rehearsed = RehearsedGame.Of(plan.GoalsPart is float part ? EarlyWin.Of(level, part) : level, plan.Bot);
+                    AttemptBrief brief = plan.BriefOfTheAttempt(levels.Count, paintings);
                     foreach (int movesLeft in plan.MovesLeft)
                     {
-                        Tell(rehearsed, movesLeft, plan, art, paintings);
+                        Tell(rehearsed, movesLeft, plan, brief, art, paintings);
                     }
                 }
             }
@@ -103,9 +106,9 @@ namespace Puzzle.Client.EditorTools
         /// A stage on a game that its next move decides, laid out for a screen and at rest: the board's entrance is
         /// over. The caller plays the deciding move on it and disposes of it.
         /// </summary>
-        internal static GameStage OpenAtRest(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, ScreenShape screen)
+        internal static GameStage OpenAtRest(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, ScreenShape screen, AttemptBrief brief)
         {
-            GameStage stage = GameStage.Open(game, art, effectArt, paintings, AttemptBrief.FirstTry);
+            GameStage stage = GameStage.Open(game, art, effectArt, paintings, brief);
             stage.Fit(screen);
             StageSteps.Settle(stage);
             return stage;
@@ -113,14 +116,14 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>Wins the rehearsed game on a stage with so many moves left, and pictures its finale as the plan says.</summary>
         /// <exception cref="InvalidOperationException">The finale did not begin, was at fault, or was shown for too long.</exception>
-        private static void Tell(RehearsedGame rehearsed, int movesLeft, Plan plan, ArtCatalogue art, PaintingGallery paintings)
+        private static void Tell(RehearsedGame rehearsed, int movesLeft, Plan plan, AttemptBrief brief, ArtCatalogue art, PaintingGallery paintings)
         {
             // A scene of its own that is never saved: nothing of an earlier story is left in this one.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             int level = rehearsed.Level.Id.Value;
             int moves = rehearsed.MovesToWin + movesLeft;
             using EffectArt effectArt = EffectArt.Paint();
-            using GameStage stage = OpenAtRest(rehearsed.BeforeItsDecidingMoveWith(moves), art, effectArt, paintings, plan.Screen);
+            using GameStage stage = OpenAtRest(rehearsed.BeforeItsDecidingMoveWith(moves), art, effectArt, paintings, plan.Screen, brief);
             if (!stage.TryPlay(rehearsed.DecidingMoveWith(moves)) || stage.Game.Status != GameStatus.Won || stage.Game.MovesLeft != movesLeft)
             {
                 throw new InvalidOperationException($"Level {level} was not won with {movesLeft} moves left: it is {stage.Game.Status} with {stage.Game.MovesLeft} left.");
@@ -536,7 +539,8 @@ namespace Puzzle.Client.EditorTools
                 int framesBefore,
                 Strip? strip,
                 float? skipAt,
-                float? goalsPart)
+                float? goalsPart,
+                int? pieceAfterLevelsWon)
             {
                 LevelNumbers = levelNumbers;
                 MovesLeft = movesLeft;
@@ -547,6 +551,24 @@ namespace Puzzle.Client.EditorTools
                 Strip = strip;
                 SkipAt = skipAt;
                 GoalsPart = goalsPart;
+                PieceAfterLevelsWon = pieceAfterLevelsWon;
+            }
+
+            /// <summary>The win gives the piece that a player with so many levels won is given; nothing when it gives none.</summary>
+            public int? PieceAfterLevelsWon { get; }
+
+            /// <summary>What the stage is told of the attempt: a first try, paid by the game's economy, with the piece asked for.</summary>
+            /// <exception cref="ArgumentException">No piece is given for the levels won that were named.</exception>
+            public AttemptBrief BriefOfTheAttempt(int levelCount, PaintingGallery paintings)
+            {
+                if (PieceAfterLevelsWon is not int levelsWon)
+                {
+                    return AttemptBrief.FirstTry(StoryStudio.Economy.Win);
+                }
+
+                PieceReward reward = PieceReward.ForWinning(new PlayerProgress(levelsWon, attemptsOnLevel: 0), levelCount, paintings.Catalogue)
+                    ?? throw new ArgumentException($"A player with {levelsWon} levels won is given no piece: -finalePiece names one who is.");
+                return new AttemptBrief(attemptNumber: 1, isOnLastLevel: false, StoryStudio.Economy.Win, reward);
             }
 
             public IReadOnlyList<int> LevelNumbers { get; }
@@ -576,9 +598,10 @@ namespace Puzzle.Client.EditorTools
             public string NameOf(int level, int movesLeft)
             {
                 string early = GoalsPart is float part ? $"-early{Mathf.RoundToInt(100f * part):D2}" : string.Empty;
+                string piece = PieceAfterLevelsWon is int levelsWon ? $"-piece{levelsWon}" : string.Empty;
                 string skip = SkipAt.HasValue ? "-skip" : string.Empty;
                 string strip = Strip is Strip frames ? $"-strip{frames.Label}" : string.Empty;
-                return $"finale-level-{level:D4}-left-{movesLeft:D2}{early}-{Screen}{skip}{strip}";
+                return $"finale-level-{level:D4}-left-{movesLeft:D2}{early}{piece}-{Screen}{skip}{strip}";
             }
 
             /// <exception cref="ArgumentException">An argument is not written as the usage says.</exception>
@@ -593,6 +616,7 @@ namespace Puzzle.Client.EditorTools
                 string skipAt = After("-finaleSkipAt", arguments, string.Empty);
                 string strip = After("-finaleStrip", arguments, string.Empty);
                 string early = After("-finaleEarly", arguments, string.Empty);
+                string piece = After("-finalePiece", arguments, string.Empty);
                 if (skipAt.Length > 0 && strip.Length > 0)
                 {
                     throw new ArgumentException("A finale is skipped or pictured as a strip, not both: give -finaleSkipAt or -finaleStrip.");
@@ -608,7 +632,8 @@ namespace Puzzle.Client.EditorTools
                     WholeNumber(After("-finaleBefore", arguments, "0")),
                     strip.Length == 0 ? (Strip?)null : FinaleStory.Strip.Parse(strip),
                     skipAt.Length == 0 ? (float?)null : NumberFromNothingUp(skipAt),
-                    early.Length == 0 ? (float?)null : NumberFromNothingUp(early));
+                    early.Length == 0 ? (float?)null : NumberFromNothingUp(early),
+                    piece.Length == 0 ? (int?)null : WholeNumber(piece));
             }
 
             /// <exception cref="ArgumentException">The text is not a number from 0 up.</exception>

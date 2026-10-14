@@ -160,6 +160,7 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.Stud] = "stud",
             [GalleryArt.WirePin] = "wire-pin",
             [GalleryArt.WalletPill] = "wallet-pill",
+            [GalleryArt.WideAlcove] = "alcove-wide",
         };
 
         /// <exception cref="InvalidOperationException">The drawings and the files do not agree, or a material is missing.</exception>

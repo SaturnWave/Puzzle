@@ -28,10 +28,12 @@ namespace Puzzle.Client.EditorTools
     /// does, moves the stage's clock to the moments asked for, and writes what the game's camera sees as PNG files
     /// into out/unity/shots. The same level, size and moment always give the same picture.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.RenderHarness.Run
-    ///            [-shotLevels 1,40,52,114] [-shotSizes 1080x2340,1080x1920,1038x1076] [-shotTimes settled] [-shotMoves 0]
+    ///            [-shotLevels 1,40,52,114] [-shotSizes 1080x2340,1080x1920,1038x1076] [-shotTimes settled] [-shotMoves 0] [-shotPiece 46]
     ///   -shotSizes  width x height in pixels; "+top+bottom" adds a cutout and a system bar, e.g. 1080x2340+96+48
     ///   -shotTimes  seconds after the stage opens, or "settled" for the moment everything has come to rest
     ///   -shotMoves  moves a random player makes before the picture, to see a board in the middle of a game
+    ///   -shotPiece  the level gives the jigsaw piece a player with so many levels won is given, which its plaques
+    ///               show; left out, it gives none, as a level won before or beyond the museum's paintings
     /// Do not pass -nographics: the pictures need a graphics device.
     /// </summary>
     public static class RenderHarness
@@ -55,12 +57,13 @@ namespace Puzzle.Client.EditorTools
                 ArtCatalogue art = LoadArt();
                 IReadOnlyList<LevelDefinition> levels = LevelPack.LoadPacked();
                 PaintingGallery paintings = PaintingGallery.OfThePackedMuseum();
+                AttemptBrief brief = plan.BriefOfTheAttempt(levels.Count, paintings);
                 foreach (int levelNumber in plan.LevelNumbers)
                 {
                     LevelDefinition level = LevelPack.Numbered(levels, levelNumber);
                     foreach (ScreenShape screen in plan.Screens)
                     {
-                        Shoot(level, screen, plan, art, paintings);
+                        Shoot(level, screen, plan, brief, art, paintings);
                     }
                 }
             }
@@ -84,18 +87,19 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>One stage on one screen, pictured at every moment of the plan in turn.</summary>
-        private static void Shoot(LevelDefinition level, ScreenShape screen, ShotPlan plan, ArtCatalogue art, PaintingGallery paintings)
+        private static void Shoot(LevelDefinition level, ScreenShape screen, ShotPlan plan, AttemptBrief brief, ArtCatalogue art, PaintingGallery paintings)
         {
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using EffectArt effectArt = EffectArt.Paint();
-            using GameStage stage = GameStage.Open(GameAfter(plan.MovesPlayed, level), art, effectArt, paintings, AttemptBrief.FirstTry);
+            using GameStage stage = GameStage.Open(GameAfter(plan.MovesPlayed, level), art, effectArt, paintings, brief);
             stage.Fit(screen);
             float clock = 0f;
             foreach (Moment moment in plan.Moments)
             {
                 clock = AdvanceTo(moment, stage, clock);
-                string file = $"level-{level.Id.Value:D4}-{screen}{(plan.MovesPlayed > 0 ? $"-move{plan.MovesPlayed}" : "")}-{moment.Label}.png";
+                string piece = plan.PieceAfterLevelsWon is int levelsWon ? $"-piece{levelsWon}" : string.Empty;
+                string file = $"level-{level.Id.Value:D4}{piece}-{screen}{(plan.MovesPlayed > 0 ? $"-move{plan.MovesPlayed}" : "")}-{moment.Label}.png";
                 CameraPicture.Write(stage.Camera, screen.PixelWidth, screen.PixelHeight, Path.Combine(ShotsFolder, file));
                 Debug.Log($"Render harness: {file} at {clock.ToString("F2", CultureInfo.InvariantCulture)} s");
             }
@@ -176,12 +180,13 @@ namespace Puzzle.Client.EditorTools
         {
             private static readonly Regex ScreenPattern = new Regex(@"^(\d+)x(\d+)(?:\+(\d+)\+(\d+))?$");
 
-            private ShotPlan(IReadOnlyList<int> levelNumbers, IReadOnlyList<ScreenShape> screens, IReadOnlyList<Moment> moments, int movesPlayed)
+            private ShotPlan(IReadOnlyList<int> levelNumbers, IReadOnlyList<ScreenShape> screens, IReadOnlyList<Moment> moments, int movesPlayed, int? pieceAfterLevelsWon)
             {
                 LevelNumbers = levelNumbers;
                 Screens = screens;
                 Moments = moments;
                 MovesPlayed = movesPlayed;
+                PieceAfterLevelsWon = pieceAfterLevelsWon;
             }
 
             public IReadOnlyList<int> LevelNumbers { get; }
@@ -193,6 +198,23 @@ namespace Puzzle.Client.EditorTools
 
             public int MovesPlayed { get; }
 
+            /// <summary>The level gives the piece a player with so many levels won is given; nothing when it gives none.</summary>
+            public int? PieceAfterLevelsWon { get; }
+
+            /// <summary>What the stage is told of the attempt: a first try, paid by the game's economy, with the piece asked for.</summary>
+            /// <exception cref="ArgumentException">No piece is given for the levels won that were named.</exception>
+            public AttemptBrief BriefOfTheAttempt(int levelCount, PaintingGallery paintings)
+            {
+                if (PieceAfterLevelsWon is not int levelsWon)
+                {
+                    return AttemptBrief.FirstTry(StoryStudio.Economy.Win);
+                }
+
+                PieceReward reward = PieceReward.ForWinning(new PlayerProgress(levelsWon, attemptsOnLevel: 0), levelCount, paintings.Catalogue)
+                    ?? throw new ArgumentException($"A player with {levelsWon} levels won is given no piece: -shotPiece names one who is.");
+                return new AttemptBrief(attemptNumber: 1, isOnLastLevel: false, StoryStudio.Economy.Win, reward);
+            }
+
             /// <summary>
             /// Without arguments: the levels that show a plain board, a hole, a shaped board with exits and crates of
             /// every strength, on a tall phone, a 9:16 phone and the half-size square of a foldable, once settled.
@@ -203,7 +225,8 @@ namespace Puzzle.Client.EditorTools
                 ListAfter("-shotSizes", arguments, "1080x2340,1080x1920,1038x1076").Select(ScreenFrom).ToArray(),
                 ListAfter("-shotTimes", arguments, "settled").Select(Moment.Parse)
                     .OrderBy(moment => moment.IsSettled).ThenBy(moment => moment.Seconds).ToArray(),
-                ListAfter("-shotMoves", arguments, "0").Select(WholeNumber).Single());
+                ListAfter("-shotMoves", arguments, "0").Select(WholeNumber).Single(),
+                Array.IndexOf(arguments, "-shotPiece") >= 0 ? ListAfter("-shotPiece", arguments, "0").Select(WholeNumber).Single() : (int?)null);
 
             /// <summary>The comma-separated values that follow a switch, or the default when the switch is not given.</summary>
             private static string[] ListAfter(string name, string[] arguments, string byDefault)

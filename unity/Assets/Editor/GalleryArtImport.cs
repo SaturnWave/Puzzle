@@ -33,6 +33,7 @@ namespace Puzzle.Client.EditorTools
             ["nameplate"] = new Picture(pointsWide: 304f, pivot: new Vector2(152f, 32f)),
             ["button"] = new Picture(pointsWide: 176f, pivot: new Vector2(88f, 46f), stretchesFrom: 56f),
             ["alcove"] = new Picture(pointsWide: 316f, pivot: new Vector2(158f, 106f)),
+            ["alcove-wide"] = new Picture(pointsWide: 344f, pivot: new Vector2(172f, 106f)),
             ["sparkle"] = new Picture(pointsWide: 24f, pivot: new Vector2(12f, 12f), largestSide: 128),
             ["count-badge"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 19f), stretchesFrom: 21f, largestSide: 256),
             ["picture-frame"] = new Picture(pointsWide: 177.5f, pivot: new Vector2(88.75f, 88.75f), stretchesFrom: 65f, stretchesFromTop: 65f, stretchesFromFoot: 65f),

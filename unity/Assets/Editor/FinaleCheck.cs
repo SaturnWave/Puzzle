@@ -28,7 +28,7 @@ namespace Puzzle.Client.EditorTools
     /// never on the board between them, and every picture a thrown move is made of at a place of its own. A finger
     /// that comes down in the middle of it ends it in that same call, on the engine's board, and the card is in
     /// its place as soon after as after any win; the finger presses nothing of that card. A second finger does the
-    /// same while the first one rests, and so does the way back. The shelf's round button does not listen
+    /// same while the first one rests, and so does the way back. The shelf's pause disc does not listen
     /// meanwhile. A win on the last move and a lost game have no finale, and their card comes as it always did.
     /// And a finale that cannot be shown costs its picture and not the card, in two ways. The check plays the
     /// engine's finale behind the stage's back, so the stage's own is refused. And it wins a game on a stage that
@@ -85,7 +85,7 @@ namespace Puzzle.Client.EditorTools
                 Debug.Log($"Finale check passed on level {LevelNumber} with {MovesLeft} moves left: watched to its end the finale left no fault and the card hung, "
                     + "the shelf said nothing meanwhile and a finger that lifted did not end it; its light lay on the wall or over the plaques and every part of a thrown move at a place of its own; "
                     + "a finger, a second finger beside a resting one, and the way back each ended it in the same call, on the engine's board, with the card in its place in time and nothing of it pressed; "
-                    + "the shelf's round button did not listen meanwhile; a win on the last move and a lost game had no finale; "
+                    + "the shelf's pause disc did not listen meanwhile; the card showed the coins the win pays, watched, skipped or with no finale; a win on the last move and a lost game had no finale; "
                     + "and a finale the engine refused, and one the stage could not put on its timeline, were each reported as a fault and the card came all the same.");
             }
             catch (Exception failure) when (failure is InvalidOperationException || failure is ArgumentException
@@ -108,7 +108,7 @@ namespace Puzzle.Client.EditorTools
             trial.Stage.PointerUp();
             trial.Require(trial.Stage.IsShowingTheFinale, "the finger of the winning move lifted, and that ended the finale");
             trial.Require(trial.Stage.WordsOnTheShelf.Length == 0, $"the shelf says \"{trial.Stage.WordsOnTheShelf}\" while the finale is shown, where any touch ends it");
-            trial.Require(trial.Stage.LeaveButtonPixel == null, "the shelf's round button listens while the finale is shown");
+            trial.Require(trial.Stage.PauseButtonPixel == null, "the shelf's pause disc listens while the finale is shown");
             int thrown = trial.Stage.Finale?.Cues.OfType<Cue.MoveThrown>().Count() ?? 0;
             trial.Require(thrown == MovesLeft, $"{thrown} moves are thrown in the finale's script; {MovesLeft} were left");
 
@@ -117,6 +117,7 @@ namespace Puzzle.Client.EditorTools
             trial.RequireNoFault("a finale watched to its end");
             trial.RequireTheCardWithin(CardIsDownWithin, "the end of a finale watched to its end");
             trial.Require(trial.Stage.Game.MovesLeft == MovesLeft, "the game no longer says how many moves were left");
+            trial.RequireTheCoinsOfTheWin(MovesLeft, "a finale watched to its end");
             return trial.Stage.ResultButtonPixel ?? throw new InvalidOperationException("The card hangs and has no green button.");
         }
 
@@ -171,6 +172,7 @@ namespace Puzzle.Client.EditorTools
             trial.Require(!trial.Stage.IsShowingTheFinale, "a finger came down and the finale went on");
             trial.RequireNoFault("a finale ended by a finger");
             trial.RequireTheCardWithin(CardIsDownWithin, "a finger ended the finale");
+            trial.RequireTheCoinsOfTheWin(MovesLeft, "a finale ended by a finger");
             trial.Stage.PointerMoved(greenButton);
             trial.Stage.PointerUp();
             trial.Advance(2f * Tempo.CardGoesUp);
@@ -217,6 +219,7 @@ namespace Puzzle.Client.EditorTools
             trial.Require(trial.Stage.Finale == null, "a win on the last move has a finale's script");
             trial.Require(trial.Stage.WordsOnTheShelf == AttemptWords.HowToPlay, "the shelf of a win on the last move does not say what it always said");
             trial.RequireNoFault("a win on the last move");
+            trial.RequireTheCoinsOfTheWin(movesLeft: 0, "a win on the last move");
         }
 
         private static void ALostGameHasNoFinale(Bench bench)
@@ -286,7 +289,7 @@ namespace Puzzle.Client.EditorTools
                 EffectArt effectArt = EffectArt.Paint();
                 Game game = _rehearsed.BeforeItsDecidingMoveWith(moves);
                 GameStage stage = isLaidOut
-                    ? FinaleStory.OpenAtRest(game, _art, effectArt, _paintings, Screen)
+                    ? FinaleStory.OpenAtRest(game, _art, effectArt, _paintings, Screen, AttemptBrief.FirstTry(StoryStudio.Economy.Win))
                     : OpenAtRestWithoutAScreen(game, effectArt);
                 var trial = new Trial(stage, effectArt);
                 if (!stage.TryPlay(_rehearsed.DecidingMoveWith(moves)) || stage.Game.Status != ending)
@@ -300,7 +303,7 @@ namespace Puzzle.Client.EditorTools
 
             private GameStage OpenAtRestWithoutAScreen(Game game, EffectArt effectArt)
             {
-                GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry);
+                GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry(StoryStudio.Economy.Win));
                 StageSteps.Settle(stage);
                 return stage;
             }
@@ -401,6 +404,18 @@ namespace Puzzle.Client.EditorTools
             {
                 Advance(seconds);
                 Require(Stage.ResultButtonPixel != null, $"{StoryStudio.Seconds(seconds)} s after {after} the result's card does not hang in its place");
+            }
+
+            /// <summary>
+            /// Lets the card's exhibits come to an end, the coins counting up with them: the card then shows the coins
+            /// the economy pays for a win with so many moves left, which is what the attempt's ledger pays.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">The stage does not come to rest, or the card shows other coins.</exception>
+            public void RequireTheCoinsOfTheWin(int movesLeft, string after)
+            {
+                StageSteps.Settle(Stage);
+                long paid = StoryStudio.Economy.Win.Of(movesLeft).Amount;
+                Require(Stage.CoinsOnTheCard == paid, $"after {after} the card shows {(Stage.CoinsOnTheCard is long shown ? shown.ToString(System.Globalization.CultureInfo.InvariantCulture) : "no")} coins; a win with {movesLeft} moves left pays {paid}");
             }
 
             /// <exception cref="InvalidOperationException">The stage reported a fault.</exception>

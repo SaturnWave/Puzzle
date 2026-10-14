@@ -104,7 +104,7 @@ namespace Puzzle.Client
         Shelf = 1000,
         ShelfLettering = 1001,
 
-        /// <summary>The round button on the shelf's left end that leads out of the level, and the mark on it.</summary>
+        /// <summary>The pause disc on the shelf's left end, which asks whether to leave the level, and the mark on it; under a card it lies in the dark with the shelf.</summary>
         ShelfButton = 1002,
         ShelfButtonGlyph = 1003,
 
@@ -135,6 +135,13 @@ namespace Puzzle.Client
 
         /// <summary>The studs of a brass nameplate that rides on a plaque (the banner of a restored room), and the pins on its top edge: over the plate, which is plaque art.</summary>
         PlaqueNameplatePin = 1105,
+
+        /// <summary>
+        /// On the board's plaque of the piece a level gives (BoardTR), over the veiled painting, which is a picture
+        /// and its mark: the pieces the level gives, lit, and over them the lines of the cut and the outlines of those pieces.
+        /// </summary>
+        PlaquePictureLit = 1106,
+        PlaquePictureLines = 1107,
 
         /// <summary>The ring of light that widens from a plaque's rim as a won game's finale opens: over the plaques, under what then leaves them.</summary>
         PlaqueRing = 1140,
@@ -178,9 +185,6 @@ namespace Puzzle.Client
 
         /// <summary>The dark that falls over the whole room, plaques and shelf included, when a game is decided.</summary>
         Veil = 2000,
-
-        /// <summary>The shelf's round button while a result's card hangs: it stays lit in the dark room, as the way out to the museum. Its mark takes the place above.</summary>
-        ShelfButtonOverTheDark = 2050,
 
         /// <summary>A card in front of the dark, from its wires up to what stands and is written on it.</summary>
         CardWire = 2090,

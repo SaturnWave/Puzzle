@@ -44,7 +44,7 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The hall of the last room the player has restored, as it is shown right after its fifth painting became whole.</summary>
         Restored,
 
-        /// <summary>The board of the level the player stands on, with the card that asks whether they mean to leave it.</summary>
+        /// <summary>The board of the level the player stands on, with the card that asks whether they mean to leave it: before a move and after one.</summary>
         Leaving,
 
         /// <summary>The hall with the lives card hanging over it, as the heart's pill opens it.</summary>
@@ -472,15 +472,37 @@ namespace Puzzle.Client.EditorTools
             return 2;
         }
 
-        /// <summary>The board of the level the player stands on, after the round button on its shelf was pressed: the card that asks whether to leave.</summary>
+        /// <summary>
+        /// The board of the level the player stands on, after the pause disc on its shelf was pressed: the card that
+        /// asks whether to leave, before any move (leaving costs nothing) and again after one (it costs a life).
+        /// </summary>
         private static int ShootTheLeavingCard(PlayerState state, ScreenShape screen, Studio studio)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), StoryStudio.AttemptsKeptInMemory(), screen, SessionOpening.AtTheBoard);
             StoryStudio.AdvanceUntilSettled(session);
-            if (session.Stage.LeaveButtonPixel is not Vector2 button)
+            AskWhetherToLeave(session);
+            WritePicture(session.Front, screen, studio.FileName("leaving", state, screen));
+
+            session.GoBack();
+            StoryStudio.AdvanceUntilSettled(session);
+            if (!session.TryPlay(session.Stage.Game.FindLegalMoves().First()))
             {
-                throw new InvalidOperationException("A board at rest has no button that leads out of the level.");
+                throw new InvalidOperationException("The board given back by the leaving card refused a legal move.");
+            }
+
+            StoryStudio.AdvanceUntilSettled(session);
+            AskWhetherToLeave(session);
+            WritePicture(session.Front, screen, studio.FileName("leaving-after-a-move", state, screen));
+            return 2;
+        }
+
+        /// <exception cref="InvalidOperationException">The board has no pause disc to press, or the press did not ask.</exception>
+        private static void AskWhetherToLeave(GameSession session)
+        {
+            if (session.Stage.PauseButtonPixel is not Vector2 button)
+            {
+                throw new InvalidOperationException("A board at rest has no pause disc that asks whether to leave the level.");
             }
 
             session.PointerDown(button);
@@ -488,11 +510,8 @@ namespace Puzzle.Client.EditorTools
             StoryStudio.AdvanceUntilSettled(session);
             if (!session.Stage.IsAskingWhetherToLeave)
             {
-                throw new InvalidOperationException("A press on the shelf's round button did not ask whether to leave the level.");
+                throw new InvalidOperationException("A press on the shelf's pause disc did not ask whether to leave the level.");
             }
-
-            WritePicture(session.Front, screen, studio.FileName("leaving", state, screen));
-            return 1;
         }
 
         /// <summary>The hall after the heart's pill was pressed: the lives card, come down in front of the dark.</summary>

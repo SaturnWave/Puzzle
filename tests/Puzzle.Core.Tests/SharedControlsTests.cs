@@ -267,13 +267,14 @@ public class SharedControlsTests
     }
 
     [Fact]
-    public void A_round_buttons_mark_takes_the_place_above_its_disc_on_the_shelf_in_the_dark_and_on_a_card()
+    public void A_round_buttons_mark_takes_the_place_above_its_disc_on_the_shelf_and_on_a_card()
     {
         Assert.Equal((int)DrawOrder.ShelfButton + 1, (int)DrawOrder.ShelfButtonGlyph);
         Assert.Equal((int)DrawOrder.CardCloseButton + 1, (int)DrawOrder.CardCloseGlyph);
         Assert.Equal((int)DrawOrder.WalletButton + 1, (int)DrawOrder.WalletButtonGlyph);
-        Assert.DoesNotContain(Enum.GetValues<DrawOrder>(), place => (int)place == (int)DrawOrder.ShelfButtonOverTheDark + 1);
-        Assert.True(DrawOrder.ShelfButtonOverTheDark > DrawOrder.Veil && (int)DrawOrder.ShelfButtonOverTheDark + 1 < (int)DrawOrder.CardWire);
+
+        // Under a card the shelf's pause disc lies in the dark with the shelf: every card has its own way out.
+        Assert.True(DrawOrder.ShelfButtonGlyph < DrawOrder.Veil);
     }
 
     [Fact]

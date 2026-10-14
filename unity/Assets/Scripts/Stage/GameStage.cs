@@ -62,11 +62,13 @@ namespace Puzzle.Client.Stage
     /// win itself is kept by whoever owns the stage the moment the winning move is played, long before any of this.
     /// </para>
     /// <para>
-    /// A level can be left at any time. The round button on the shelf's left end, and the device's way back
-    /// (<see cref="GoBack"/>), ask first: a card comes down that says what leaving costs, and the player stays or
-    /// goes to the museum. Asking first matters on a phone, where a swipe from the screen's edge is the way back
-    /// and the board reaches that edge. Under a result's card the same round button stays lit and leads to the
-    /// museum, so every card has that way out whatever its two buttons offer.
+    /// A level can be left at any time. The pause disc on the shelf's left end, and the device's way back
+    /// (<see cref="GoBack"/>), ask first: a card comes down that says what leaving costs (a life once a move was
+    /// played, nothing before), and the player stays or goes to the museum. From the press on the board takes no
+    /// touch: what the finger did before is forgotten, and a move still being shown is finished before the card
+    /// comes. Asking first matters on a phone, where a swipe from the screen's edge is the way back and the board
+    /// reaches that edge. Under any card the pause disc lies in the dark with the shelf and listens to nothing:
+    /// every card has its own way out.
     /// </para>
     /// <para>
     /// What happens in the attempt that changes the player's progress is reported, in order, at the moment the
@@ -87,8 +89,8 @@ namespace Puzzle.Client.Stage
         /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set.</summary>
         private enum StageControl
         {
-            /// <summary>The round button on the shelf: out of the level.</summary>
-            Leave,
+            /// <summary>The pause disc on the shelf: it asks whether to leave the level.</summary>
+            Pause,
         }
 
         /// <summary>What the stage's timeline is showing of the game. A closed set.</summary>
@@ -126,7 +128,7 @@ namespace Puzzle.Client.Stage
         private readonly BoardPointer _pointer;
         private readonly TweenSet _tweens = new TweenSet();
         private readonly Timeline _timeline = new Timeline();
-        private readonly DiscButton _leave;
+        private readonly DiscButton _pause;
         private readonly PressSet<StageControl> _controls = new PressSet<StageControl>();
 
         private ScreenLayout? _layout;
@@ -174,14 +176,14 @@ namespace Puzzle.Client.Stage
             Camera = StageCamera.Add(_root.transform);
             _wall = Wall.Create(_root.transform, art);
             _lamps = WallLamps.Create(_root.transform, art);
-            _hud = Hud.Create(_root.transform, art, game.Level.Id.Value);
+            _hud = Hud.Create(_root.transform, art, BoardPlaques.Of(game.Level.Id.Value, brief.Reward), paintings);
             _hud.Show(_figures);
             _frame = BoardFrame.Create(_root.transform, art, _shape);
             _board = BoardView.Create(_root.transform, art, _ledger, showExits: hasItemsToDrop);
             _shelf = Shelf.Create(_root.transform, art);
             _shelf.Say(AttemptWords.OnTheShelf(brief));
-            _leave = new DiscButton("Leave", _root.transform, art, DiscGlyph.Back, DrawOrder.ShelfButton);
-            _controls.Add(_leave, StageControl.Leave);
+            _pause = new DiscButton("Pause", _root.transform, art, DiscGlyph.Pause, DrawOrder.ShelfButton);
+            _controls.Add(_pause, StageControl.Pause);
             _veil = Veil.Create(_root.transform, art);
             _effectArt = effectArt;
             _pickedMark = new PickedMark(_board.Root, _effectArt, art);
@@ -224,11 +226,13 @@ namespace Puzzle.Client.Stage
         public bool IsAskingWhetherToLeave => _result != null && _game.Status == GameStatus.Playing;
 
         /// <summary>
-        /// The pixel of the screen in the middle of the round button on the shelf, which leads out of the level:
-        /// while the game is played it asks first, under a result's card it leads to the museum. Nothing while the
-        /// button is not listening.
+        /// The pixel of the screen in the middle of the pause disc on the shelf, which asks whether to leave the
+        /// level. Nothing while the disc is not listening: under a card, once it was pressed, and once the game is decided.
         /// </summary>
-        public Vector2? LeaveButtonPixel => ListensForTheLeaveButton ? PixelOf(_leave.Middle) : null;
+        public Vector2? PauseButtonPixel => ListensForThePauseButton ? PixelOf(_pause.Middle) : null;
+
+        /// <summary>The coins a won level's card shows on its pill now, as far as they have counted up; nothing while no won level's card hangs.</summary>
+        public long? CoinsOnTheCard => _result?.CoinsShown;
 
         /// <summary>
         /// The pixel of the screen in the middle of the result card's green button, which leads on with the levels,
@@ -271,8 +275,8 @@ namespace Puzzle.Client.Stage
         /// </summary>
         public IReadOnlyList<string> LastTurnFaults { get; private set; } = Array.Empty<string>();
 
-        /// <summary>The board listens to the player while the game goes on and nothing is moving.</summary>
-        private bool TakesInput => IsSettled && _game.Status == GameStatus.Playing;
+        /// <summary>The board listens to the player while the game goes on, nothing is moving, and the player has not asked to leave it.</summary>
+        private bool TakesInput => IsSettled && _game.Status == GameStatus.Playing && _result == null && !_isAskedToLeave;
 
         /// <summary>
         /// The card listens to the player from the moment it hangs in its place: what is still popping up in its
@@ -281,12 +285,11 @@ namespace Puzzle.Client.Stage
         private bool ListensToTheCard => _result != null && _isCardDown && !PlayerWentOn;
 
         /// <summary>
-        /// The shelf's round button listens while the game is played (also while pieces move: the question then
-        /// waits for them) and under a result's card. Under the card that asks whether to leave it does not: that
-        /// card's own buttons answer.
+        /// The pause disc listens while the game is played, also while pieces move: the question then waits for
+        /// them. Once pressed it has asked; under a card it does not listen: every card has its own way out.
         /// </summary>
-        private bool ListensForTheLeaveButton =>
-            !PlayerWentOn && (_result == null ? _game.Status == GameStatus.Playing : ListensToTheCard && !IsAskingWhetherToLeave);
+        private bool ListensForThePauseButton =>
+            !PlayerWentOn && _result == null && _game.Status == GameStatus.Playing && !_isAskedToLeave;
 
         /// <summary>Builds the stage of a game and starts the board's entrance. Call <see cref="Fit"/> before the first picture.</summary>
         /// <param name="game">A game that records its events (GameOptions.RecordEvents): the stage plays them back.</param>
@@ -324,7 +327,7 @@ namespace Puzzle.Client.Stage
             _board.Place(layout);
             _effects.Place(layout);
             _shelf.Place(layout);
-            _leave.Place(new Vector2(layout.LeaveButton.MiddleX, layout.LeaveButton.MiddleY), layout.LeaveButton.Width / DiscButton.Size);
+            _pause.Place(new Vector2(layout.PauseButton.MiddleX, layout.PauseButton.MiddleY), layout.PauseButton.Width / DiscButton.Size);
             _veil.Fit(layout.View);
             _result?.Place(layout);
         }
@@ -460,14 +463,14 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            if (ListensForTheLeaveButton)
+            if (ListensForThePauseButton)
             {
                 _controls.FingerDown(PointAt(pixel, layout));
             }
 
             if (_controls.IsHolding)
             {
-                return; // the finger is the round button's until it lifts
+                return; // the finger is the pause disc's until it lifts
             }
 
             if (_result != null)
@@ -477,7 +480,7 @@ namespace Puzzle.Client.Stage
                     _result.FingerDown(PointAt(pixel, layout));
                 }
             }
-            else if (_game.Status == GameStatus.Playing)
+            else if (_game.Status == GameStatus.Playing && !_isAskedToLeave)
             {
                 (float column, float row) = layout.BoardPointAt(pixel.x, pixel.y);
                 _pointer.Down(column, row);
@@ -535,7 +538,7 @@ namespace Puzzle.Client.Stage
             {
                 if (_controls.FingerUp(out StageControl _))
                 {
-                    GoBack(); // the round button and the device's way back mean the same, on every card and on none
+                    AskToLeave(); // as the device's way back does while the game is played: the disc listens only then
                 }
 
                 return;
@@ -642,7 +645,7 @@ namespace Puzzle.Client.Stage
             {
                 ActOn(gesture);
             }
-            else if (_game.Status == GameStatus.Playing)
+            else if (_game.Status == GameStatus.Playing && !_isAskedToLeave)
             {
                 _waiting = new WaitingGesture(gesture, _clock);
             }
@@ -863,9 +866,6 @@ namespace Puzzle.Client.Stage
             int piecesWaiting = _game.Status == GameStatus.Won ? _brief.Reward?.WaitingWithThem ?? 0 : 0;
             _isAskedToLeave = false;
             _controls.FingerGone();
-
-            // The round button stays lit in the dark room: under a result it is the way to the museum.
-            _leave.DrawAt(DrawOrder.ShelfButtonOverTheDark);
             HangACard(LevelResult.Of(_game, _brief), piecesWaiting, comesIn: Tempo.PauseBeforeResult);
         }
 
@@ -889,12 +889,17 @@ namespace Puzzle.Client.Stage
         }
 
         /// <summary>
-        /// The player wants to leave the level. If the board is at rest the question is put at once; if pieces are
-        /// still moving it waits for them, and is dropped if their move decides the game.
+        /// The player wants to leave the level (the pause disc, or the way back). From now on the board takes no
+        /// touch: a piece picked is put down and a gesture that waits is forgotten. If the board is at rest the
+        /// question is put at once; if pieces are still moving it waits for them, and is dropped if their move
+        /// decides the game.
         /// </summary>
         private void AskToLeave()
         {
             _isAskedToLeave = true;
+            _pointer.Cancel();
+            _pointer.ClearSelection();
+            _waiting = null;
             AskWhetherToLeaveOnceAtRest();
         }
 
@@ -911,9 +916,6 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            _pointer.Cancel();
-            _pointer.ClearSelection();
-            _waiting = null;
             HangACard(LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0, comesIn: 0f);
         }
 
