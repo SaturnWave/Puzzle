@@ -45,8 +45,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.276 test geçti; Unity'de bütün denetimler ve ekran yürüyüşü hatasız. Görüntülere ve tasarımla yan yana karşılaştırmalara bakıldı.
 - Ajanın bulduğu bir sorun (müze birleşmesinden kalma): koleksiyon plaketi oda adlarını 6 puntoya düşürüyordu. Düzelttim: her ad kendi boyunda, uzun ad iki satırda.
 
+**Arayüz: planın 8. aşaması (§23)**
+- Her bölüm tasarımdaki bölüm başı kartından açılıyor: hedefler, hamle ve üç bölüm öncesi booster. Seçilen booster ilk hamlede harcanıyor; hiç kalmamış booster karttan tek fiyatına alınabiliyor. Kayıptan sonra "Tekrar dene" aynı karta götürüyor; can yoksa can kartı geliyor.
+- Booster'la başlayan denemeler kayıttan aynı sona yeniden oynatılıyor (gerçek bölümlerle test edildi). Motor, kurallar ve ekonomi ayarları değişmedi.
+- 3.322 test geçti; Unity'de bütün denetimler, kartın içinden geçen yürüyüş ve tasarımla karşılaştırma hatasız. Görüntülere baktım: kart çizime çok yakın.
+
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 50 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 60 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

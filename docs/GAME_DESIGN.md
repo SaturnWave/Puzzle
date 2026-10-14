@@ -1092,6 +1092,16 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Doğrulama:** 3.276 test. Unity'de bütün denetimler ve ekran yürüyüşü (canı bitmiş oyuncu için bir adım eklendi) hatasız. 96 sayfa görüntüsüne, tasarım çizimiyle yan yana karşılaştırmalara ve oda adı düzeltmesinde altı odaya bakıldı.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T34–T41.
 
+**Bölüm başı kartı ve bölüm öncesi booster'lar (2026-10-14).** Arayüz planının 8. aşaması.
+
+- **Kart:** "Bölüm N" düğmesi tasarımdaki kartı indirir: bölüm, verdiği parça ("ÖDÜL · PARÇA k / m"), bir ile üç hedef, hamle madalyonu ve üç bölüm öncesi booster. Sahip olunan booster'a dokunmak onu seçer ya da geri bırakır (en çok 3, ayar dosyasındaki sınır); "+3 hamle" madalyona eklenir.
+- **Satın alma kartı:** hiç kalmamış booster artıyla görünür. Artıya dokununca önde ikinci bir kart açılır ve booster'ı tek fiyatına satar; altın yetmezse düğme soluk ve "Altın yetmiyor" der. Satın alma kurallardan geçer, hemen kaydedilir, altın satırı geriye sayar. Bu kartın tasarımda çizimi yok.
+- **Tek kapı:** "Oyna" tahtayı seçilen booster'larla açar; özel taşlar öteki taşlardan sonra altın bir ışıkla belirir. Kayıptan sonra "Tekrar dene" aynı bölümün kartına götürür; can yoksa can kartı gelir. Kazanınca "Devam" salona döner.
+- **Harcama:** seçilen booster'lar ancak ilk hamlede harcanır. Kartı kapatmak ya da hamle yapmadan çıkmak hiçbir şey götürmez. Deneme kaydı booster'ları adıyla tutar; kayıt aynı sona yeniden oynatılır (gerçek bölümlerle test edildi).
+- **Değişmeyenler:** motor, kurallar ve ekonomi ayarları.
+- **Doğrulama:** 3.322 test. Unity'de bütün denetimler, kartın içinden geçen ekran yürüyüşü, yeterli ve yetersiz altınla satın alma, tasarımla yan yana karşılaştırma (kart çizime çok yakın).
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T42–T51.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
