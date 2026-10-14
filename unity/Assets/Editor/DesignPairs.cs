@@ -251,7 +251,7 @@ namespace Puzzle.Client.EditorTools
         private static Texture2D TakeTheBoard(PlayerState state, Studio studio, FlowEnding? ending)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), Screen, SessionOpening.AtTheBoard);
+            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), StoryStudio.AttemptsKeptInMemory(), Screen, SessionOpening.AtTheBoard);
             StoryStudio.AdvanceUntilSettled(session);
             if (ending is FlowEnding asked)
             {

@@ -5,6 +5,7 @@ using Puzzle.Core.Engine.Resolution;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
 using Puzzle.Core.Randomness;
+using Puzzle.Core.Recording;
 
 namespace Puzzle.Core.Engine
 {
@@ -14,7 +15,8 @@ namespace Puzzle.Core.Engine
     /// </summary>
     /// <remarks>
     /// Every random decision comes from streams derived from the seed given to <see cref="Start"/>: the same
-    /// seed and the same moves always produce the same game.
+    /// seed and the same moves always produce the same game; with boosters and the extra moves, the same
+    /// <see cref="Actions"/> do (<see cref="AttemptReplay"/>).
     /// </remarks>
     public sealed class Game
     {
@@ -33,6 +35,12 @@ namespace Puzzle.Core.Engine
         private readonly StatsCounter _moveStats = new StatsCounter();
         private readonly StatsCounter _totalStats;
         private readonly EventLog _events;
+
+        /// <summary>
+        /// What the player did, in order; nothing while <see cref="GameOptions.RecordActions"/> is off, and in every copy
+        /// of a game. Added to with <c>?.</c>, which builds no action at all when there is no list.
+        /// </summary>
+        private readonly List<AttemptAction>? _actions;
         private readonly MatchFinder _matches;
         private readonly MoveFinder _moves;
         private readonly TurnResolver _resolver;
@@ -68,6 +76,8 @@ namespace Puzzle.Core.Engine
             _shuffleRng = shuffleRng;
             _totalStats = totalStats;
             _events = options.RecordEvents && mode == Mode.Live ? new EventLog(true) : EventLog.Disabled;
+            _actions = options.RecordActions && mode == Mode.Live ? new List<AttemptAction>() : null;
+            Actions = _actions?.AsReadOnly() ?? (IReadOnlyList<AttemptAction>)Array.Empty<AttemptAction>();
 
             RuleSet rules = options.Rules;
             var pending = new Queue<Effect>();
@@ -125,6 +135,14 @@ namespace Puzzle.Core.Engine
 
         /// <summary>Whether the "+5 moves" offer was taken in this attempt.</summary>
         public bool ExtraMovesTaken { get; private set; }
+
+        /// <summary>
+        /// What the player did in this attempt, in order, as a replay needs it (<see cref="AttemptAction"/>): the moves and
+        /// boosters the game accepted, the extra moves taken, and the refused requests that drew from the shuffle stream.
+        /// Empty unless <see cref="GameOptions.RecordActions"/> is on; a copy of the game keeps none. It grows as the game
+        /// goes on: whoever keeps it copies it.
+        /// </summary>
+        public IReadOnlyList<AttemptAction> Actions { get; }
 
         /// <summary>Whether <see cref="PlayFinale"/> has run.</summary>
         public bool FinalePlayed { get; private set; }
@@ -287,6 +305,7 @@ namespace Puzzle.Core.Engine
             }
 
             FinishAction();
+            _actions?.Add(new AttemptAction.MovePlayed(move));
             return true;
         }
 
@@ -320,11 +339,18 @@ namespace Puzzle.Core.Engine
                 : TryStrike(CellsStruckBy(booster));
             if (!changedTheBoard)
             {
+                if (booster is BoosterUse.Shuffle)
+                {
+                    // The shuffle drew from the shuffle stream before it gave up: a replay has to ask for it here too.
+                    _actions?.Add(new AttemptAction.ShuffleRefused());
+                }
+
                 return false;
             }
 
             _boostersUsed = Appended(_boostersUsed, BoosterNames.Of(booster));
             FinishAction();
+            _actions?.Add(new AttemptAction.BoosterUsed(booster));
             return true;
         }
 
@@ -351,12 +377,15 @@ namespace Puzzle.Core.Engine
             // copy never asks (see NextStatus); any other game does not sell moves nobody could play.
             if (_mode != Mode.Lookahead && !_moves.HasAny() && !_shuffler.TryShuffleOrLeave(Level.Spawn.Palette))
             {
+                // The shuffles it tried drew from the shuffle stream: a replay has to ask for the moves here too.
+                _actions?.Add(new AttemptAction.ExtraMovesRefused());
                 return false;
             }
 
             _bonusMoves += ExtraMovesOffer.Moves;
             ExtraMovesTaken = true;
             FinishAction();
+            _actions?.Add(new AttemptAction.ExtraMovesTaken());
             return true;
         }
 

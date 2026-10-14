@@ -10,6 +10,7 @@ using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Levels;
+using Puzzle.Core.Recording;
 using Puzzle.Meta;
 using Puzzle.Meta.Settings;
 using UnityEngine;
@@ -46,6 +47,12 @@ namespace Puzzle.Client.EditorTools
         /// </summary>
         public static IWallClock Clock { get; } = new FixedWallClock(new DateTimeOffset(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3)));
 
+        /// <summary>The tools' phone: an id of its own, which no phone's random id is likely to be.</summary>
+        public static DeviceId Device { get; } = new DeviceId("00000000000000000000000000000000");
+
+        /// <summary>An attempt log that forgets, for a tool's session: the tools must not write a player's log.</summary>
+        public static IAttemptLog AttemptsKeptInMemory() => new AttemptsInMemory(Device);
+
         /// <summary>The progress of a new player who stands on a level, never having tried it.</summary>
         /// <exception cref="ArgumentException">The pack has no such level.</exception>
         public static PlayerProgress StandingOn(LevelDefinition level, IReadOnlyList<LevelDefinition> levels)
@@ -66,7 +73,7 @@ namespace Puzzle.Client.EditorTools
         /// the museum the game opens in is not their subject.
         /// </summary>
         public static GameSession AtTheBoard(IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, IProgressStore store, ScreenShape screen) =>
-            new GameSession(levels, art, PaintingGallery.OfThePackedMuseum(), Economy, Clock, store, screen, SessionOpening.AtTheBoard);
+            new GameSession(levels, art, PaintingGallery.OfThePackedMuseum(), Economy, Clock, store, AttemptsKeptInMemory(), screen, SessionOpening.AtTheBoard);
 
         /// <summary>Moves the session's clock frame by frame for a while.</summary>
         public static void AdvanceBy(float seconds, GameSession session) => AdvanceTo(seconds, session, clock: 0f);

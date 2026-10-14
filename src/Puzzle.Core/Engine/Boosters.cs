@@ -49,21 +49,39 @@ namespace Puzzle.Core.Engine
     /// </summary>
     public static class BoosterNames
     {
+        internal const string HitCellName = "hit-cell";
+        internal const string HitRowName = "hit-row";
+        internal const string HitColumnName = "hit-column";
+        internal const string ShuffleName = "shuffle";
+
+        private const string RocketAndBombName = "start-rocket-and-bomb";
+        private const string ColorBombName = "start-color-bomb";
+        private const string ExtraMovesName = "start-extra-moves";
+
         public static string Of(StartBooster booster) => booster switch
         {
-            StartBooster.RocketAndBomb => "start-rocket-and-bomb",
-            StartBooster.ColorBomb => "start-color-bomb",
-            StartBooster.ExtraMoves => "start-extra-moves",
+            StartBooster.RocketAndBomb => RocketAndBombName,
+            StartBooster.ColorBomb => ColorBombName,
+            StartBooster.ExtraMoves => ExtraMovesName,
             _ => throw new ArgumentOutOfRangeException(nameof(booster), booster, "Unknown start booster."),
         };
 
         public static string Of(BoosterUse booster) => booster switch
         {
-            BoosterUse.HitCell _ => "hit-cell",
-            BoosterUse.HitRow _ => "hit-row",
-            BoosterUse.HitColumn _ => "hit-column",
-            BoosterUse.Shuffle _ => "shuffle",
+            BoosterUse.HitCell _ => HitCellName,
+            BoosterUse.HitRow _ => HitRowName,
+            BoosterUse.HitColumn _ => HitColumnName,
+            BoosterUse.Shuffle _ => ShuffleName,
             _ => throw new InvalidOperationException($"Unhandled booster {booster.GetType().Name}."),
+        };
+
+        /// <summary>The start booster a record names; nothing for any other name: a booster of play, or one of a later game.</summary>
+        public static StartBooster? StartBoosterNamed(string name) => name switch
+        {
+            RocketAndBombName => StartBooster.RocketAndBomb,
+            ColorBombName => StartBooster.ColorBomb,
+            ExtraMovesName => StartBooster.ExtraMoves,
+            _ => null,
         };
     }
 }

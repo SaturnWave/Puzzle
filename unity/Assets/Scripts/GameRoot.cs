@@ -8,6 +8,7 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Core.Levels;
+using Puzzle.Core.Recording;
 using Puzzle.Meta;
 using UnityEngine;
 
@@ -23,9 +24,9 @@ namespace Puzzle.Client
     /// Being put away and brought back needs little: Unity stops calling <see cref="Update"/> while the game is in
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
-    /// a finger that was down, and to save progress that could not be saved before. If the device closes the game
-    /// while it is away, the attempt in progress is gone: the game comes back in the museum, and the level starts
-    /// again with its next board.
+    /// a finger that was down, and to save progress and attempt records that could not be saved before. If the device
+    /// closes the game while it is away, the attempt in progress is gone: the game comes back in the museum, and the
+    /// level starts again with its next board.
     /// </remarks>
     public sealed class GameRoot : MonoBehaviour
     {
@@ -97,6 +98,7 @@ namespace Puzzle.Client
             {
                 LetGoOfTheFinger();
                 _session?.SaveProgress();
+                _session?.WriteWaitingRecords();
             }
         }
 
@@ -113,9 +115,9 @@ namespace Puzzle.Client
 
         /// <summary>
         /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
-        /// device's clock. If that file is there but cannot be read from the device, the player can still play: this
-        /// run starts at the first level as a new player, keeps its progress in memory only, and leaves the file as
-        /// it is. If a later version of the game wrote the file, this run goes on from where that file says the
+        /// device's clock, with the attempt log in the same folder under the phone's id. If that file is there but
+        /// cannot be read from the device, the player can still play: this run starts at the first level as a new
+        /// player, keeps its progress in memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes on from where that file says the
         /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
         /// finds its progress as it left it.
         /// </summary>
@@ -123,7 +125,8 @@ namespace Puzzle.Client
             IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, ScreenShape screen)
         {
             var clock = new SystemWallClock();
-            GameSession SessionOn(IProgressStore store) => new GameSession(levels, art, paintings, rules, clock, store, screen, SessionOpening.InTheMuseum);
+            var attempts = new AttemptLogFile(Application.persistentDataPath, IdOfThisPhone());
+            GameSession SessionOn(IProgressStore store) => new GameSession(levels, art, paintings, rules, clock, store, attempts, screen, SessionOpening.InTheMuseum);
 
             try
             {
@@ -139,6 +142,24 @@ namespace Puzzle.Client
             {
                 Debug.LogError($"The saved progress cannot be read, so this run starts at the first level and does not save: {failure.Message}");
                 return SessionOn(new ProgressInMemory(PlayerProgress.NewPlayer(rules.StartingWallet)));
+            }
+        }
+
+        /// <summary>
+        /// The random id of this phone, from the device file in the game's own data folder, made there on the first
+        /// start. If the file can be neither read nor written, the player can still play: this run's attempt records
+        /// carry an id of their own.
+        /// </summary>
+        private static DeviceId IdOfThisPhone()
+        {
+            try
+            {
+                return new DeviceFile(Application.persistentDataPath).LoadOrMake();
+            }
+            catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
+            {
+                Debug.LogError($"The device file can be neither read nor written, so this run's attempt records carry an id of their own: {failure.Message}");
+                return DeviceDocument.NewId();
             }
         }
 

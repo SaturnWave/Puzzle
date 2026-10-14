@@ -153,6 +153,20 @@ public class AttemptLedgerTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new AttemptEvent.Won(movesLeft: -1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new AttemptLedger(TheRules, levelCount: 0));
     }
+
+    [Fact]
+    public void Only_a_win_a_loss_for_good_and_leaving_after_a_move_end_an_attempt_and_so_have_its_record_written()
+    {
+        AttemptEvent[] ending = { new AttemptEvent.Won(3), new AttemptEvent.LostForGood(LossReason.OutOfMoves), new AttemptEvent.Left(afterAMove: true) };
+        AttemptEvent[] notEnding =
+        {
+            new AttemptEvent.FirstMove(StartChoice.None), new AttemptEvent.BoosterAccepted(BoosterKind.HitRow),
+            new AttemptEvent.ExtraMovesTaken(ExtraMovesPayment.ByAd), new AttemptEvent.Left(afterAMove: false),
+        };
+
+        Assert.All(ending, happened => Assert.True(happened.EndsTheAttempt, happened.ToString()));
+        Assert.All(notEnding, happened => Assert.False(happened.EndsTheAttempt, happened.ToString()));
+    }
 }
 
 /// <summary>The wall clocks of the Unity game: they hand out whole seconds, which the save file keeps exactly.</summary>

@@ -331,7 +331,7 @@ namespace Puzzle.Client.EditorTools
         private static int ShootTheLeavingCard(PlayerState state, ScreenShape screen, Studio studio)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), screen, SessionOpening.AtTheBoard);
+            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), StoryStudio.AttemptsKeptInMemory(), screen, SessionOpening.AtTheBoard);
             StoryStudio.AdvanceUntilSettled(session);
             if (session.Stage.LeaveButtonPixel is not Vector2 button)
             {

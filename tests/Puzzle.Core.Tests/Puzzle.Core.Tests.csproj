@@ -46,6 +46,10 @@
     <!-- Nor has what an attempt's events do to the progress by the economy's rules, and the wall clock those rules count real time by. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLedger.cs" Link="Unity\Flow\AttemptLedger.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WallClock.cs" Link="Unity\Flow\WallClock.cs" />
+    <!-- Nor have the attempt record's line as the game writes it, the phone's log of those lines, and the document of the phone's random id. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLine.cs" Link="Unity\Flow\AttemptLine.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLogFile.cs" Link="Unity\Flow\AttemptLogFile.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceDocument.cs" Link="Unity\Flow\DeviceDocument.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelResult.cs" Link="Unity\Flow\LevelResult.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />
@@ -89,5 +93,7 @@
   <ItemGroup>
     <!-- The attempt-record wire format, pinned for every writer of it (the lab here, the Unity game later). -->
     <None Include="..\fixtures\attempt-records.schema-1.jsonl" Link="fixtures\attempt-records.schema-1.jsonl" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The same format with the optional action list, which the Unity game writes by hand: both writers are held to it. -->
+    <None Include="..\fixtures\attempt-records.actions.jsonl" Link="fixtures\attempt-records.actions.jsonl" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

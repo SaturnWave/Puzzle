@@ -12,6 +12,7 @@ using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
+using Puzzle.Core.Recording;
 using Puzzle.Meta;
 using Puzzle.Museum;
 using UnityEngine;
@@ -55,6 +56,14 @@ namespace Puzzle.Client.Flow
     /// and the level starts again with its next board. A store that cannot be written does not stop the game; the
     /// progress is kept here and saved again at the next change, or when <see cref="SaveProgress"/> is called.
     /// <para>
+    /// An attempt that ends for good (won, lost for good, or left after a move, which the record calls abandoned) has
+    /// its record written to the phone's attempt log at that moment, with what the player did in it, so that it can be
+    /// played again exactly (Puzzle.Core's AttemptReplay); never while something could still bring the attempt back.
+    /// An attempt left before its first move, or cut short by closing the game, is no attempt and has no record. A log
+    /// that cannot be written does not stop the game either: the record waits and is written with the next one, or
+    /// when <see cref="WriteWaitingRecords"/> is called.
+    /// </para>
+    /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
     /// next one is built, in the dark both of them share, so the change is not seen. The one exception is a board
     /// whose card led to the jigsaw: it steps aside, out of sight, and comes back with its card when the player
@@ -63,10 +72,14 @@ namespace Puzzle.Client.Flow
     /// </remarks>
     public sealed class GameSession : IDisposable
     {
+        /// <summary>The program that plays, as the attempt records name it.</summary>
+        private const string ThisClient = "unity";
+
         private readonly IReadOnlyList<LevelDefinition> _levels;
         private readonly ArtCatalogue _art;
         private readonly PaintingGallery _paintings;
         private readonly IProgressStore _store;
+        private readonly IAttemptLog _attempts;
         private readonly AttemptLedger _ledger;
         private readonly IWallClock _clock;
 
@@ -82,6 +95,9 @@ namespace Puzzle.Client.Flow
         /// <summary>What winning the open attempt gives: the painting its card's jigsaw button leads to. Nothing in the museum, and for a level that gives nothing.</summary>
         private PieceReward? _rewardOfTheBoard;
 
+        /// <summary>How the open attempt began, for its record; nothing in the museum, and once the attempt's record is written.</summary>
+        private AttemptStart? _startOfTheBoard;
+
         /// <summary>Where the way back from the open jigsaw leads; nothing while no jigsaw is open.</summary>
         private WayBack? _wayBack;
 
@@ -95,7 +111,8 @@ namespace Puzzle.Client.Flow
         /// <param name="levels">The levels in the order they are played.</param>
         /// <param name="paintings">The museum's paintings, for the museum's pages and for the pieces a win gives.</param>
         /// <param name="rules">The economy the attempts are kept by: what a win pays, what a loss costs.</param>
-        /// <param name="clock">The time the rules count lives and days by: the device's, or a tool's fixed one.</param>
+        /// <param name="clock">The time the rules count lives and days by, and the attempt records tell: the device's, or a tool's fixed one.</param>
+        /// <param name="attempts">Where the record of every attempt that ends for good goes: the phone's log, or a tool's in memory.</param>
         /// <exception cref="ArgumentException">There is no level to play.</exception>
         /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
@@ -106,6 +123,7 @@ namespace Puzzle.Client.Flow
             EconomyRules rules,
             IWallClock clock,
             IProgressStore store,
+            IAttemptLog attempts,
             ScreenShape screen,
             SessionOpening opening)
         {
@@ -120,6 +138,7 @@ namespace Puzzle.Client.Flow
             _ledger = new AttemptLedger(rules, levels.Count);
             _clock = clock;
             _store = store;
+            _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
             _screen = screen;
             _progress = store.Load();
             _saved = _progress;
@@ -237,6 +256,23 @@ namespace Puzzle.Client.Flow
             }
         }
 
+        /// <summary>
+        /// Writes the attempt records that could not be written when their attempts ended. The game calls this when it
+        /// is put away, so a record that waits gets another chance before the game may be closed.
+        /// </summary>
+        public void WriteWaitingRecords()
+        {
+            try
+            {
+                _attempts.WriteWaiting();
+            }
+            catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
+            {
+                // Playing goes on: the records still wait in the log, and the next record or the next pause writes them.
+                Debug.LogWarning($"Attempt records that wait could not be written now either and wait on: {failure.Message}");
+            }
+        }
+
         public void Dispose()
         {
             _front.Dispose();
@@ -341,6 +377,7 @@ namespace Puzzle.Client.Flow
             MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, opening);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
+            _startOfTheBoard = null;
             return museum;
         }
 
@@ -355,22 +392,27 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// Opens the stage of the attempt the progress asks for: the level the player stands on, with the seed its
-        /// pool has for this try.
+        /// pool has for this try. The attempt begins now, as its record will say.
         /// </summary>
         private IStage OpenTheBoard(StageOpening opening)
         {
+            LevelDefinition level = LevelToPlay;
+            int attempt = _progress.AttemptsOnLevel;
             _rewardOfTheBoard = PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue);
+            _startOfTheBoard = new AttemptStart(
+                level.Id, level.ContentVersion, level.MoveLimit, LevelStart.SeedsOf(level, attempt), attempt, _attempts.Device, ThisClient, _clock.Now);
 
             // No start booster is taken into an attempt until the level's start card offers them.
-            var brief = new AttemptBrief(_progress.AttemptsOnLevel + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard, StartChoice.None);
-            GameStage stage = GameStage.Open(LevelStart.Attempt(LevelToPlay, _progress.AttemptsOnLevel), _art, _effectArt, _paintings, brief, opening);
+            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rewardOfTheBoard, StartChoice.None);
+            GameStage stage = GameStage.Open(LevelStart.Attempt(level, attempt), _art, _effectArt, _paintings, brief, opening);
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
             return stage;
         }
 
         /// <summary>
         /// What the board's stage reported of the attempt since the progress last looked, kept by the economy's rules
-        /// in the order it happened and saved at once, as one save however much it was.
+        /// in the order it happened and saved at once, as one save however much it was. If the attempt ended for good
+        /// in it, its record follows the save.
         /// </summary>
         private void KeepWhatHappened()
         {
@@ -386,12 +428,42 @@ namespace Puzzle.Client.Flow
             }
 
             DateTimeOffset now = _clock.Now;
+            bool hasEnded = false;
             foreach (AttemptEvent each in happened)
             {
                 _progress = _ledger.Apply(_progress, each, now);
+                hasEnded |= each.EndsTheAttempt;
             }
 
             SaveProgress();
+            if (hasEnded)
+            {
+                RecordTheAttempt(board.Game, now);
+            }
+        }
+
+        /// <summary>
+        /// Writes the record of the open attempt, which has just ended for good, to the phone's log: once, with the
+        /// game as it stood when it ended. A clock that was set back since the attempt began (a time sync) gives an
+        /// attempt that ends as it began rather than one that ends before. A log that cannot be written does not stop
+        /// the game: the record waits there and is written with the next one.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The attempt's record was written before, or the attempt never began.</exception>
+        private void RecordTheAttempt(Game game, DateTimeOffset now)
+        {
+            AttemptStart start = _startOfTheBoard ?? throw new InvalidOperationException("An attempt ended a second time, or without having begun.");
+            _startOfTheBoard = null;
+            DateTimeOffset ended = now < start.StartedUtc ? start.StartedUtc : now;
+            var record = new AttemptRecord(start, AttemptOutcome.Of(game, ended), lab: null, game.Actions);
+            try
+            {
+                _attempts.Append(record);
+            }
+            catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
+            {
+                // Playing goes on: the record waits in the log, and the next record or the next pause writes it.
+                Debug.LogWarning($"The record of the attempt at level {start.Level} could not be written and waits: {failure.Message}");
+            }
         }
 
         /// <summary>

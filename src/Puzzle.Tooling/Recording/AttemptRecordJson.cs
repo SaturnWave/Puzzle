@@ -9,7 +9,10 @@ namespace Puzzle.Tooling.Recording;
 /// The JSON form of an <see cref="AttemptRecord"/>: one object on one line, camelCase fields, the schema version
 /// first. Goals use the level-file vocabulary ("CollectColor", "Red"); a move is <c>[x, y]</c> for a tap or
 /// <c>[fromX, fromY, toX, toY]</c> for a swap; times are ISO 8601 in UTC. Unknown fields are ignored, so later
-/// schema versions may add fields without breaking older readers.
+/// schema versions may add fields without breaking older readers. The optional <c>actions</c> come last, each one
+/// <c>{"act":name,"at":cells}</c> as <see cref="AttemptActionNames"/> spells it (<c>at</c> left out for an action that
+/// takes no aim); a line without them reads as a record that keeps none. The Unity game writes the same lines by hand
+/// (unity/Assets/Scripts/Flow/AttemptLine.cs).
 /// </summary>
 public static class AttemptRecordJson
 {
@@ -80,6 +83,7 @@ public static class AttemptRecordJson
             StartedUtc = start.StartedUtc,
             EndedUtc = outcome.EndedUtc,
             Lab = record.Lab is { } lab ? ToLabLine(lab) : null,
+            Actions = record.Actions?.Select(ToActionLine).ToArray(),
         };
     }
 
@@ -101,7 +105,7 @@ public static class AttemptRecordJson
             line.ExtraMovesBought,
             line.BoostersUsed,
             line.EndedUtc);
-        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null);
+        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, ToActions(line.Actions));
     }
 
     /// <summary><see cref="AttemptSeeds.WithFixedBoard"/> is the general two-seed form; for equal seeds it equals <see cref="AttemptSeeds.From"/>.</summary>
@@ -154,6 +158,41 @@ public static class AttemptRecordJson
         botMoves: lab.BotMoves,
         moves: lab.Moves.Select(MoveNumbers.ToMove).ToArray());
 
+    private static ActionLine ToActionLine(AttemptAction action) => new()
+    {
+        Act = AttemptActionNames.Of(action),
+        At = AttemptActionNames.CellsOf(action),
+    };
+
+    /// <summary>
+    /// The actions a line keeps; none when it has no list, and none either when the list holds an action this build
+    /// does not know (a booster of a later game): such a record still reads and counts, as its <c>boostersUsed</c> may
+    /// name that booster too, and only cannot be replayed here.
+    /// </summary>
+    /// <exception cref="ArgumentException">An action of a known kind is aimed at cells that do not fit it.</exception>
+    private static AttemptAction[]? ToActions(ActionLine[]? lines)
+    {
+        if (lines is null)
+        {
+            return null;
+        }
+
+        var actions = new AttemptAction[lines.Length];
+        for (int index = 0; index < lines.Length; index++)
+        {
+            // The reader leaves the elements of a list as the line has them, null too.
+            ActionLine line = lines[index] ?? throw new ArgumentException("An action cannot be null.");
+            if (AttemptActionNames.Named(line.Act, line.At) is not { } action)
+            {
+                return null;
+            }
+
+            actions[index] = action;
+        }
+
+        return actions;
+    }
+
     // Wire shapes. Declaration order is field order in the line; "required" makes a missing field a format error.
     private sealed class SchemaProbe
     {
@@ -198,6 +237,18 @@ public static class AttemptRecordJson
 
         /// <summary>Web lab only.</summary>
         public LabLine? Lab { get; init; }
+
+        /// <summary>What the player did, in order; absent in the lab's records and in records from before the list existed.</summary>
+        public ActionLine[]? Actions { get; init; }
+    }
+
+    private sealed class ActionLine
+    {
+        /// <summary>The action's name: "move", a booster's name, "extra-moves", "shuffle-refused" or "extra-moves-refused".</summary>
+        public required string Act { get; init; }
+
+        /// <summary>The cells the action was aimed at; absent for an action that takes no aim.</summary>
+        public int[]? At { get; init; }
     }
 
     private sealed class GoalLine

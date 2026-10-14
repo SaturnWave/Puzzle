@@ -18,6 +18,13 @@ namespace Puzzle.Core.Engine
         public bool RecordEvents { get; init; }
 
         /// <summary>
+        /// Keep what the player did, in order (<see cref="Game.Actions"/>), so that the attempt's record can replay it
+        /// (<see cref="Recording.AttemptReplay"/>). Off for bot runs: nothing is kept, nothing is allocated, and the game
+        /// plays the same either way.
+        /// </summary>
+        public bool RecordActions { get; init; }
+
+        /// <summary>
         /// Replaces the level's move limit. The bot calibration plays with a large override to learn how many
         /// moves a level really needs.
         /// </summary>

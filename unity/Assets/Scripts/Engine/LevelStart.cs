@@ -9,7 +9,8 @@ namespace Puzzle.Client.Engine
         /// <summary>
         /// The level as a player first meets it: the first seed of its calibrated pool, so the first board is one whose
         /// difficulty was measured. A level without a pool is seeded with its own number, which keeps the board the
-        /// same from run to run. The game records its events, because the view plays them.
+        /// same from run to run. The game records its events, because the view plays them, and what the player does,
+        /// because the attempt's record keeps it (Puzzle.Core's AttemptReplay plays the attempt again from it).
         /// </summary>
         public static Game FirstAttempt(LevelDefinition level) => Attempt(level, attempt: 0);
 
@@ -19,7 +20,7 @@ namespace Puzzle.Client.Engine
         /// </summary>
         /// <param name="attempt">How many times the level was tried before: 0 for the first try.</param>
         public static Game Attempt(LevelDefinition level, int attempt) =>
-            Game.Start(level, SeedsOf(level, attempt), new GameOptions { RecordEvents = true });
+            Game.Start(level, SeedsOf(level, attempt), new GameOptions { RecordEvents = true, RecordActions = true });
 
         /// <summary>
         /// The same attempt with another count of moves than the level gives: the same board and the same pieces
@@ -30,7 +31,9 @@ namespace Puzzle.Client.Engine
         public static Game AttemptWithMoves(LevelDefinition level, int attempt, int moves) =>
             Game.Start(level, SeedsOf(level, attempt), new GameOptions { RecordEvents = true, MoveLimitOverride = moves });
 
-        private static AttemptSeeds SeedsOf(LevelDefinition level, int attempt) =>
+        /// <summary>The seeds of a try at the level, which <see cref="Attempt"/> starts its game from and the attempt's record keeps.</summary>
+        /// <param name="attempt">How many times the level was tried before: 0 for the first try.</param>
+        public static AttemptSeeds SeedsOf(LevelDefinition level, int attempt) =>
             level.Attempts.SeedsFor(attempt, unpooledSeed: (uint)(level.Id.Value + attempt));
     }
 }

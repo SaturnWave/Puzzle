@@ -23,6 +23,12 @@ namespace Puzzle.Client.Flow
         {
         }
 
+        /// <summary>
+        /// Whether the attempt is over for good with this event: won, lost for good, or left after a move. Its record is
+        /// written then (<see cref="IAttemptLog"/>), never while something could still bring the attempt back.
+        /// </summary>
+        public bool EndsTheAttempt => this is Won || this is LostForGood || (this is Left left && left.AfterAMove);
+
         /// <summary>The attempt's first move was played: the attempt counts, and the start boosters taken into it are spent.</summary>
         public sealed class FirstMove : AttemptEvent
         {
