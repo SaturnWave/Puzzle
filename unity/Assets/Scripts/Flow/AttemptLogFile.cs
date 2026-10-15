@@ -23,6 +23,22 @@ namespace Puzzle.Client.Flow
         /// <exception cref="IOException">They could not be written now either; they go on waiting.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not write the log now; they go on waiting.</exception>
         void WriteWaiting();
+
+        /// <summary>Where the log lies on the phone: its file's full path; nothing for a log kept in memory.</summary>
+        string? FilePath { get; }
+
+        /// <summary>How many records the log keeps: those written and those that wait.</summary>
+        /// <exception cref="IOException">The log could not be read to count them.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not read the log.</exception>
+        int CountRecords();
+
+        /// <summary>
+        /// Deletes every record the log keeps, those written and those that wait, at the player's wish: the count is
+        /// 0 after it, and the next attempt that ends begins the log anew. Nothing else of the game is touched.
+        /// </summary>
+        /// <exception cref="IOException">The file could not be deleted; the records that waited are gone, those written are still there.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not delete the file; as after an <see cref="IOException"/>.</exception>
+        void DeleteAll();
     }
 
     /// <summary>
@@ -37,6 +53,11 @@ namespace Puzzle.Client.Flow
     /// the game: it waits here, in the order the attempts ended, and is written before the next record, or when the
     /// game is put away. At most <see cref="MaxWaiting"/> records wait; past that the one that has waited longest gives
     /// way and is counted in <see cref="RecordsLost"/>.
+    /// <para>
+    /// The records are counted by reading the file once, a buffer at a time, and from then on by the lines this log
+    /// writes. The player may delete them all (<see cref="DeleteAll"/>), which the game asks of the log only in the
+    /// museum, on the one thread the game runs on, where no attempt is open: no record can be on its way meanwhile.
+    /// </para>
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </remarks>
     public sealed class AttemptLogFile : IAttemptLog
@@ -48,8 +69,14 @@ namespace Puzzle.Client.Flow
 
         private const byte LineBreak = (byte)'\n';
 
+        /// <summary>How much of the file is read at a time to count its lines.</summary>
+        private const int CountingBuffer = 64 * 1024;
+
         private readonly string _folder;
         private readonly Queue<string> _waiting = new Queue<string>();
+
+        /// <summary>How many lines the file holds, a line cut short included; nothing until it is counted, and while a line is being written.</summary>
+        private int? _linesOnFile;
 
         /// <param name="folder">The folder the file lies in; on a device, <c>Application.persistentDataPath</c>.</param>
         /// <param name="device">The phone's id (<see cref="DeviceDocument"/>), which every record of this log carries.</param>
@@ -64,6 +91,8 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The full path of the file.</summary>
         public string Path { get; }
+
+        public string? FilePath => Path;
 
         /// <summary>How many records wait to be written.</summary>
         public int Waiting => _waiting.Count;
@@ -103,10 +132,34 @@ namespace Puzzle.Client.Flow
             }
         }
 
+        public int CountRecords()
+        {
+            if (_linesOnFile == null)
+            {
+                _linesOnFile = File.Exists(Path) ? LinesIn(Path) : 0;
+            }
+
+            return _linesOnFile.Value + _waiting.Count;
+        }
+
+        public void DeleteAll()
+        {
+            _waiting.Clear();
+            _linesOnFile = null;
+            if (File.Exists(Path))
+            {
+                File.Delete(Path);
+            }
+
+            _linesOnFile = 0;
+        }
+
         /// <summary>Appends one line, after a line break of its own if the file does not end in one.</summary>
         private void WriteALine(string line)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(line + "\n");
+            int? linesBefore = _linesOnFile;
+            _linesOnFile = null; // a write that fails halfway leaves a file that is counted anew
 
             // Read access only to look at the last byte; nobody else writes while this does.
             using (var file = new FileStream(Path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
@@ -122,6 +175,35 @@ namespace Puzzle.Client.Flow
 
                 file.Write(bytes, 0, bytes.Length);
             }
+
+            // A line cut short was counted already; the line break that closes it adds none.
+            _linesOnFile = linesBefore + 1;
+        }
+
+        /// <summary>The lines of a file, read a buffer at a time; a last line without its line break counts as one.</summary>
+        private static int LinesIn(string path)
+        {
+            var buffer = new byte[CountingBuffer];
+            int lines = 0;
+            bool endsInALineBreak = true;
+            using (var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                int read;
+                while ((read = file.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    for (int at = 0; at < read; at++)
+                    {
+                        if (buffer[at] == LineBreak)
+                        {
+                            lines++;
+                        }
+                    }
+
+                    endsInALineBreak = buffer[read - 1] == LineBreak;
+                }
+            }
+
+            return endsInALineBreak ? lines : lines + 1;
         }
     }
 
@@ -154,5 +236,11 @@ namespace Puzzle.Client.Flow
         {
             // Nothing waits: a record in memory is kept the moment it comes.
         }
+
+        public string? FilePath => null;
+
+        public int CountRecords() => _records.Count;
+
+        public void DeleteAll() => _records.Clear();
     }
 }

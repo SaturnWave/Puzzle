@@ -13,7 +13,7 @@ namespace Puzzle.Client.EditorTools
     /// <summary>Which of the game's shared controls a specimen shows. A closed set.</summary>
     internal enum ControlsPage
     {
-        /// <summary>The large and the small buttons, in every face.</summary>
+        /// <summary>The large and the small buttons, in every face, and the settings' switches.</summary>
         Buttons,
 
         /// <summary>The round buttons, the boosters' discs in every face, the badges and a row of pips.</summary>
@@ -43,7 +43,7 @@ namespace Puzzle.Client.EditorTools
     {
         /// <summary>The specimen is as wide as the canvas' cards; each page is as high as its rows need.</summary>
         private const float Width = 362f;
-        private const float ButtonsHeight = 480f;
+        private const float ButtonsHeight = 556f;
         private const float DiscsHeight = 528f;
 
         /// <summary>A row of the canvas' cards is this wide (WinTR: its row of buttons), and its first thing lies this far under a card's top edge, clear of the nameplate.</summary>
@@ -202,7 +202,7 @@ namespace Puzzle.Client.EditorTools
             return button;
         }
 
-        /// <summary>The large buttons (WinTR, LoseTR, the hall's) and the small ones (ShopTR), each face once.</summary>
+        /// <summary>The large buttons (WinTR, LoseTR, the hall's), the small ones (ShopTR), each face once, and the switches (SettingsTR).</summary>
         private void LayTheButtons()
         {
             // WinTR's own row: green beside blue with its mark and two lines.
@@ -234,6 +234,15 @@ namespace Puzzle.Client.EditorTools
             SmallButton tomorrow = Small("Small blue, said anew", SmallButtonColour.Blue, "İzle", labelSize: 18f, place: 2, top, SmallButtonMark.Play);
             tomorrow.Say("Yarın yine");
             tomorrow.Dim(true);
+
+            // SettingsTR's switches, each in its 70 by 44 button: on, off, and on while it is held.
+            top = Header("ANAHTARLAR", top + SmallButton.Height + SmallButton.Lip + OverAHeader);
+            float middle = top + Toggle.ButtonHeight / 2f;
+            new Toggle("Switch on", _content, _art, isOn: true, DrawOrder.CardDisc).Place(At(-100f, middle));
+            new Toggle("Switch off", _content, _art, isOn: false, DrawOrder.CardDisc).Place(At(0f, middle));
+            var held = new Toggle("Switch on, held", _content, _art, isOn: true, DrawOrder.CardDisc);
+            held.Place(At(100f, middle));
+            held.ShowPressed(true);
         }
 
         private DiscButton Round(string name, DiscGlyph glyph, float right, float middleDown, float scale = 1f)

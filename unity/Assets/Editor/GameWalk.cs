@@ -43,7 +43,8 @@ namespace Puzzle.Client.EditorTools
     /// board; with the last life lost instead, the lives card comes down and no board opens
     /// (<c>walk-retry-...</c>, <c>walk-lastlife-...</c>); and a start booster held none of is bought on the card
     /// that offers it, chosen and taken into the level, while with too few coins nothing is bought
-    /// (<c>walk-buy-...</c>); and the walks of the shop, the gift and a painting's reward (GameWalk.Shop.cs). The walk
+    /// (<c>walk-buy-...</c>); and the walks of the shop, the gift and a painting's reward (GameWalk.Shop.cs), and of
+    /// the settings, the privacy card's deleted records and the support card (GameWalk.Settings.cs). The walk
     /// fails when a touch does not lead where it should, or when what was placed, spent, bought or given is not in the
     /// player's progress.
     /// </summary>
@@ -160,6 +161,7 @@ namespace Puzzle.Client.EditorTools
             WalkTheLastLifeLost(standing, screen, studio);
             WalkABuy(standing, screen, studio);
             RunTheShopWalks(screen, studio);
+            RunTheSettingsWalk(screen, studio);
         }
 
         /// <summary>

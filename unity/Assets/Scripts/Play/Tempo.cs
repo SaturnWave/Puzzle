@@ -168,6 +168,9 @@ namespace Puzzle.Client.Play
         /// <summary>A page of the museum is turned: the next one slides in from its side while the one shown slides out.</summary>
         public const float PageTurns = 0.3f;
 
+        /// <summary>A switch of the settings card is pressed: its knob slides to the other end of its track.</summary>
+        public const float SwitchSlides = 0.16f;
+
         /// <summary>
         /// Coins that arrive (or leave) while the wallet row is seen: its amount counts from the old one to the new.
         /// It is a function of the museum's clock, never an act of its timeline, so the museum listens meanwhile.

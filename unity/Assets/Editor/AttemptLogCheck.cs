@@ -10,6 +10,7 @@ using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
@@ -24,9 +25,14 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Checks from the command line that the phone's attempt records do what the game relies on, with Unity's own file
-    /// calls and JSON reader. The device file makes a random id on the first start, in the layout the tests pin, and a
-    /// restart reads the same id; a damaged device file is moved aside for a new id, and a later game's file is left as
-    /// it is. Then a won, a lost and a left attempt are played by bot through the game's own session, on a log of its
+    /// calls and JSON reader. The device file makes a random id on the first start, in the layout the tests pin, with a
+    /// first start's settings, and a restart reads the same id; a setting kept is written at once and survives a
+    /// restart, also a switch flipped by touches on the settings card of the game's own session (given the two
+    /// switches the sounds will bring), which a session opened anew shows as it was left; a file of the first layout
+    /// keeps its id and reads with a first start's settings; a damaged device file
+    /// is moved aside for a new id and costs neither the progress nor the wallet beside it, and a later game's file is
+    /// left as it is, a setting changed on it included. Then a won, a lost and a left attempt are played by bot
+    /// through the game's own session, on a log of its
     /// own: each is a line in the log the moment it ends for good (the won one at its deciding move, before any of it is
     /// shown; the lost one when its offer of extra moves is given up, never while it hangs; the left one at the press of
     /// the leaving card's museum button), and a level left before its first move leaves no line. The offer is taken by
@@ -43,7 +49,7 @@ namespace Puzzle.Client.EditorTools
     /// the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves used and goals;
     /// and the records written before the shuffle rule changed (tests/fixtures/attempt-records.first-shuffle-rule.jsonl),
     /// which name no rule, are read the same way and replay by the first rule to their end. It works in a folder of its
-    /// own (out/unity/attempt-log). The damaged and the later device file write two warnings to the log on purpose.
+    /// own (out/unity/attempt-log). The damaged and the later device file write three warnings to the log on purpose.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.AttemptLogCheck.Run
     /// </summary>
     public static class AttemptLogCheck
@@ -67,8 +73,8 @@ namespace Puzzle.Client.EditorTools
         private const ulong BotSeed = 20261014;
         private const ulong BotStream = 3;
 
-        /// <summary>A later game's device file, with an id this game reads and something it does not know.</summary>
-        private const string LaterDeviceDocument = "{\"version\":2,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"sound\":false}";
+        /// <summary>A later game's device file, with an id and settings this game reads and something it does not know.</summary>
+        private const string LaterDeviceDocument = "{\"version\":3,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"music\":false}}";
 
         /// <summary>Records the game wrote before the shuffle booster's rule changed, which name no rule.</summary>
         private const string FirstRuleRecords = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
@@ -89,9 +95,11 @@ namespace Puzzle.Client.EditorTools
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
                 StartWithAnEmptyFolder();
                 ADamagedDeviceFileGivesANewIdAndALaterOneIsLeftAsItIs();
+                ASettingKeptSurvivesARestartAndAnOlderFileReadsWithTheSettingsOfAFirstStart();
                 DeviceId device = TheFirstStartMakesTheIdAndARestartReadsIt();
 
                 var bench = new Bench(device);
+                ASwitchFlippedOnTheCardIsKeptAtOnceAndARestartShowsIt(bench);
                 var ended = new List<Ending>();
                 PlayUntil(bench, WonLevel, status => status == GameStatus.Won, Bot(SkillProfile.Expert.Name), ended);
                 PlayUntil(bench, LostLevel, status => status.IsLoss(), new RandomPolicy(), ended);
@@ -124,37 +132,112 @@ namespace Puzzle.Client.EditorTools
             Directory.CreateDirectory(Folder);
         }
 
-        /// <exception cref="InvalidOperationException">The device file was not written as the tests pin it, or a restart read another id.</exception>
+        /// <exception cref="InvalidOperationException">The device file was not written as the tests pin it, or a restart read another id or other settings.</exception>
         private static DeviceId TheFirstStartMakesTheIdAndARestartReadsIt()
         {
-            DeviceId made = new DeviceFile(Folder).LoadOrMake();
+            DeviceId made = DeviceFile.LoadOrMake(Folder).Device;
             string written = File.ReadAllText(Path.Combine(Folder, DeviceFile.FileName));
-            Require(written == "{\"version\":1,\"id\":\"" + made.Value + "\"}", $"the first start wrote the device file as {written}");
-            DeviceId afterARestart = new DeviceFile(Folder).LoadOrMake();
-            Require(afterARestart.Equals(made), $"a restart read the id {afterARestart}, not {made}");
+            Require(written == "{\"version\":2,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true}}", $"the first start wrote the device file as {written}");
+            DeviceFile afterARestart = DeviceFile.LoadOrMake(Folder);
+            Require(afterARestart.Device.Equals(made), $"a restart read the id {afterARestart.Device}, not {made}");
+            Require(afterARestart.Settings.Equals(DeviceSettings.Default), $"a restart read the settings {afterARestart.Settings}, not a first start's");
             return made;
         }
 
-        /// <exception cref="InvalidOperationException">A damaged file was written over or kept its id, or a later game's file was changed.</exception>
+        /// <summary>
+        /// A setting kept is in the file at once and a restart reads it with the same id; a file of the first layout
+        /// keeps its id and reads with a first start's settings until one is changed.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">A setting was not written at once, did not survive a restart, or the first layout lost its id.</exception>
+        private static void ASettingKeptSurvivesARestartAndAnOlderFileReadsWithTheSettingsOfAFirstStart()
+        {
+            string folder = Path.Combine(Folder, "device-settings");
+            DeviceFile phone = DeviceFile.LoadOrMake(folder);
+            DeviceSettings quiet = DeviceSettings.Default.With(DeviceSetting.Sound, isOn: false);
+            phone.Keep(quiet);
+            string written = File.ReadAllText(Path.Combine(folder, DeviceFile.FileName));
+            Require(written.Contains("\"sound\":false"), $"the setting kept was not written at once: {written}");
+            DeviceFile afterARestart = DeviceFile.LoadOrMake(folder);
+            Require(afterARestart.Settings.Equals(quiet) && afterARestart.Device.Equals(phone.Device), $"a restart read {afterARestart.Settings} of {afterARestart.Device}, not {quiet} of {phone.Device}");
+
+            const string firstLayout = "{\"version\":1,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"}";
+            string older = Path.Combine(Folder, "device-first-layout");
+            Directory.CreateDirectory(older);
+            string olderFile = Path.Combine(older, DeviceFile.FileName);
+            File.WriteAllText(olderFile, firstLayout);
+            DeviceFile read = DeviceFile.LoadOrMake(older);
+            Require(read.Device.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a" && read.Settings.Equals(DeviceSettings.Default), $"a file of the first layout read as {read.Settings} of {read.Device}");
+            Require(File.ReadAllText(olderFile) == firstLayout, "a file of the first layout was written before anything was changed");
+            read.Keep(quiet);
+            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":2,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
+        }
+
+        /// <summary>
+        /// A switch flipped on the settings card, through the game's own session and by touches, is in the device file
+        /// at once, and a session opened anew on the same file shows it as it was left. The build honours no setting
+        /// yet, so the session is given the two switches the sounds will bring; the game's card has none until then.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">A press led nowhere, the setting was not written at once, or a restart showed it otherwise.</exception>
+        private static void ASwitchFlippedOnTheCardIsKeptAtOnceAndARestartShowsIt(Bench bench)
+        {
+            string folder = Path.Combine(Folder, "device-switch");
+            var twoSwitches = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Vibration);
+            using (GameSession session = bench.SessionOnThePhone(LeftLevel, DeviceFile.LoadOrMake(folder), twoSwitches))
+            {
+                StoryStudio.AdvanceUntilSettled(session);
+                MuseumStage museum = session.Museum ?? throw new InvalidOperationException("The session did not open in the museum.");
+                Press(session, museum.GearPixel, "the wallet row's gear");
+                StoryStudio.AdvanceUntilSettled(session);
+                Press(session, museum.SwitchPixel(DeviceSetting.Vibration), "the settings card's switch of vibration");
+
+                // At once: before the knob has slid across, the file holds it.
+                string written = File.ReadAllText(Path.Combine(folder, DeviceFile.FileName));
+                Require(written.Contains("\"sound\":true,\"vibration\":false"), $"the switch flipped on the card was not written at once: {written}");
+            }
+
+            using (GameSession again = bench.SessionOnThePhone(LeftLevel, DeviceFile.LoadOrMake(folder), twoSwitches))
+            {
+                StoryStudio.AdvanceUntilSettled(again);
+                MuseumStage museum = again.Museum ?? throw new InvalidOperationException("The session did not open in the museum.");
+                Press(again, museum.GearPixel, "the wallet row's gear");
+                StoryStudio.AdvanceUntilSettled(again);
+                IReadOnlyList<(DeviceSetting Setting, bool IsOn)> shown = museum.SwitchesShown;
+                Require(
+                    shown.Count == 2 && shown[0] == (DeviceSetting.Sound, true) && shown[1] == (DeviceSetting.Vibration, false),
+                    $"after a restart the card's switches show {string.Join(", ", shown)}");
+            }
+        }
+
+        /// <exception cref="InvalidOperationException">A damaged file was written over or kept its id, the progress beside it changed, or a later game's file was changed.</exception>
         private static void ADamagedDeviceFileGivesANewIdAndALaterOneIsLeftAsItIs()
         {
             const string damagedDocument = "{\"version\":1,\"id\":\"ada@example.com\"}";
             string damaged = Path.Combine(Folder, "device-damaged");
             Directory.CreateDirectory(damaged);
             File.WriteAllText(Path.Combine(damaged, DeviceFile.FileName), damagedDocument);
-            DeviceId made = new DeviceFile(damaged).LoadOrMake();
+            var progressFile = new ProgressFile(damaged, StoryStudio.Economy.StartingWallet);
+            PlayerProgress saved = new PlayerProgress(levelsWon: 12, attemptsOnLevel: 1).WithWallet(StoryStudio.Economy.StartingWallet.WithCoins(new Coins(1250)));
+            progressFile.Save(saved);
+            string progressBefore = File.ReadAllText(Path.Combine(damaged, ProgressFile.FileName));
+
+            DeviceFile made = DeviceFile.LoadOrMake(damaged);
             Require(File.ReadAllText(Path.Combine(damaged, DeviceFile.FileName + ".damaged")) == damagedDocument, "the damaged device file was not kept aside as it was");
-            Require(new DeviceFile(damaged).LoadOrMake().Equals(made), "the id made in place of a damaged file did not read back");
+            Require(made.Settings.Equals(DeviceSettings.Default), $"the settings made in place of a damaged file are {made.Settings}");
+            Require(DeviceFile.LoadOrMake(damaged).Device.Equals(made.Device), "the id made in place of a damaged file did not read back");
+            Require(File.ReadAllText(Path.Combine(damaged, ProgressFile.FileName)) == progressBefore && progressFile.Load().Equals(saved), "a damaged device file cost the progress or the wallet beside it");
 
             string later = Path.Combine(Folder, "device-later");
             Directory.CreateDirectory(later);
             string laterFile = Path.Combine(later, DeviceFile.FileName);
             File.WriteAllText(laterFile, LaterDeviceDocument);
-            DeviceId kept = new DeviceFile(later).LoadOrMake();
-            Require(kept.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a", $"a later game's id read as {kept}");
-            File.WriteAllText(laterFile, "{\"version\":2,\"id\":\"a later spelling\"}");
-            new DeviceFile(later).LoadOrMake();
-            Require(File.ReadAllText(laterFile) == "{\"version\":2,\"id\":\"a later spelling\"}", "a later game's device file was written over");
+            DeviceFile kept = DeviceFile.LoadOrMake(later);
+            Require(kept.Device.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a", $"a later game's id read as {kept.Device}");
+            Require(!kept.Settings.Sound, $"a later game's settings read as {kept.Settings}");
+            kept.Keep(DeviceSettings.Default);
+            Require(File.ReadAllText(laterFile) == LaterDeviceDocument, "a setting changed on a later game's device file was written over it");
+            File.WriteAllText(laterFile, "{\"version\":3,\"id\":\"a later spelling\"}");
+            DeviceFile.LoadOrMake(later);
+            Require(File.ReadAllText(laterFile) == "{\"version\":3,\"id\":\"a later spelling\"}", "a later game's device file was written over");
         }
 
         /// <summary>
@@ -564,6 +647,12 @@ namespace Puzzle.Client.EditorTools
             /// <summary>The game's own session at the board of a level that is the whole pack, for a new player with a wallet, on the check's log.</summary>
             public GameSession SessionOn(LevelDefinition level, Wallet wallet) =>
                 new GameSession(new[] { level }, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0).WithWallet(wallet)), Log, Screen, SessionOpening.AtTheBoard);
+
+            /// <summary>The game's own session in the hall of a new player who stands on a level, on the check's log, with the settings of a device file and so many switches.</summary>
+            public GameSession SessionOnThePhone(int levelNumber, DeviceFile phone, DeviceAbilities abilities) =>
+                new GameSession(
+                    _levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(StoryStudio.StandingOn(Level(levelNumber), _levels)), Log,
+                    phone, abilities, Screen, SessionOpening.InTheMuseum);
 
             /// <summary>The game's own session in the hall of a new player who stands on a level, on the check's log.</summary>
             public GameSession SessionInTheHall(int levelNumber) =>

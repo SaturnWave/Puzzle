@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
@@ -25,6 +26,10 @@ namespace Puzzle.Client.EditorTools
     internal static class StoryStudio
     {
         public const string ShotsFolder = "../out/unity/shots";
+
+        /// <summary>Where the tools keep the records of their stand-in phone (<see cref="RecordsOnAPhone"/>), and the real lines they are made of.</summary>
+        private const string PhoneFolder = "../out/unity/phone/Android/data/com.saturnwave.puzzle/files";
+        private const string RecordsFixture = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
 
         /// <summary>The clock is moved in the steps a phone would move it.</summary>
         public const float FrameSeconds = 1f / 60f;
@@ -72,6 +77,41 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>An attempt log that forgets, for a tool's session: the tools must not write a player's log.</summary>
         public static IAttemptLog AttemptsKeptInMemory() => new AttemptsInMemory(Device);
+
+        /// <summary>
+        /// The tools' stand-in for a phone's records: an attempt log in a folder of the tools laid out as a phone's
+        /// data folder is, so a picture shows a path as long as a phone's, begun anew with so many lines of real
+        /// records (the game's lines of tests/fixtures/attempt-records.first-shuffle-rule.jsonl, over and over).
+        /// </summary>
+        /// <exception cref="IOException">The folder could not be made anew, or the records could not be written.</exception>
+        public static AttemptLogFile RecordsOnAPhone(int records)
+        {
+            if (Directory.Exists(PhoneFolder))
+            {
+                Directory.Delete(PhoneFolder, recursive: true);
+            }
+
+            Directory.CreateDirectory(PhoneFolder);
+            string[] game = File.ReadAllLines(RecordsFixture);
+            var lines = new string[records];
+            for (int line = 0; line < records; line++)
+            {
+                lines[line] = game[line % game.Length];
+            }
+
+            var log = new AttemptLogFile(PhoneFolder, Device);
+            File.WriteAllLines(log.Path, lines);
+            return log;
+        }
+
+        /// <summary>
+        /// The phone as a tool's pictures show it without a session: a first start's settings, a row for each setting
+        /// the abilities name, the tools' id, this build's version and its newest levels, and the records of a log.
+        /// </summary>
+        public static DeviceView PhoneWith(IAttemptLog log, IReadOnlyList<LevelDefinition> levels, DeviceAbilities abilities) =>
+            new DeviceView(
+                DeviceSettings.Default, abilities.Settings, log.Device, Application.version, levels.Select(level => level.ContentVersion).Max(),
+                log.CountRecords(), log.FilePath, Economy.Ads, Economy.Shop.RealMoney);
 
         /// <summary>
         /// The progress of a new player who stands on a level, never having tried it: the welcome gift and the gift of

@@ -8,12 +8,16 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// Brings everything the Editor derives up to date, in the order the parts need each other: the render pipeline,
     /// the atlas of the sprites, the art catalogue from the drawings and the typeface, the scene that refers to the
-    /// catalogue. Safe to run again at any time; run it after the drawings, the lists of drawings or the lettering
-    /// styles change (after node tools/unity/export-sprites.js or export-gallery-art.js, for instance).
+    /// catalogue; and it keeps Unity's own player statistics off. Safe to run again at any time; run it after the
+    /// drawings, the lists of drawings or the lettering styles change (after node tools/unity/export-sprites.js or
+    /// export-gallery-art.js, for instance).
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ProjectSetup.Run
     /// </summary>
     public static class ProjectSetup
     {
+        /// <summary>The player settings' field of Unity's own statistics.</summary>
+        private const string StatisticsField = "submitAnalytics";
+
         public static void Run()
         {
             try
@@ -41,7 +45,29 @@ namespace Puzzle.Client.EditorTools
             ArtCatalogueBuilder.Build();
             PaintingSizesBuilder.Build();
             MainSceneBuilder.Build();
+            SwitchOffUnitysStatistics();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Unity's own statistics of a built game (the hardware statistics the player would send to Unity) are
+        /// switched off, so that the privacy card's sentence holds that this build sends nothing anywhere
+        /// (unity/Assets/Scripts/Flow/PrivacyWords.cs). The package build runs this setup first, so no package
+        /// is made with them on. The Editor has no public property for the flag; it is the player settings'
+        /// field submitAnalytics, as ProjectSettings/ProjectSettings.asset writes it.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The player settings have no such field: Unity has renamed it, and the privacy text must be checked anew.</exception>
+        private static void SwitchOffUnitysStatistics()
+        {
+            var playerSettings = new SerializedObject(Unsupported.GetSerializedAssetInterfaceSingleton("PlayerSettings"));
+            SerializedProperty statistics = playerSettings.FindProperty(StatisticsField)
+                ?? throw new InvalidOperationException($"The player settings have no field {StatisticsField}; check how this Unity sends its statistics before the privacy card says it sends nothing.");
+            if (statistics.boolValue)
+            {
+                statistics.boolValue = false;
+                playerSettings.ApplyModifiedPropertiesWithoutUndo();
+                Debug.Log("Project setup: Unity's player statistics are switched off.");
+            }
         }
     }
 }

@@ -19,14 +19,14 @@ namespace Puzzle.Client.Screens
     /// pill "Dolu" or how long until the next life is back; at each pill's right end the green plus of "get more".
     /// The museum's stage owns the row, as it owns the navigation bar, so a page turns under it and the row stays.
     /// The coin, its pill and its plus are pressed to go to the shop; the heart, its pill and its plus to open the
-    /// lives card (no life is sold). Where everything stands is <see cref="WalletRowLayout"/>'s; sizes are the
-    /// canvas' points, drawn at the share of them the page has (<see cref="PageLayout.WalletRowScale"/>).
+    /// lives card (no life is sold); the teal gear at the row's right end to open the settings card. Where everything
+    /// stands is <see cref="WalletRowLayout"/>'s; sizes are the canvas' points, drawn at the share of them the page
+    /// has (<see cref="PageLayout.WalletRowScale"/>).
     /// </summary>
     /// <remarks>
     /// The row has no clock of its own and is no act of the museum's timeline: the stage tells it how much time has
     /// passed, and coins that arrive count up as a function of that time (<see cref="Tempo.CoinsCount"/>), so the
     /// museum listens to the player while they do. The countdown to the next life is what the wallet it is told says.
-    /// Not drawn yet, its place kept: the round button of the settings at the row's right end.
     /// </remarks>
     public sealed class WalletRow : IDisposable
     {
@@ -56,6 +56,8 @@ namespace Puzzle.Client.Screens
         private readonly DiscButton _livesPlus;
         private readonly RowButton _coinsButton;
         private readonly RowButton _livesButton;
+        private readonly DiscButton _gear;
+        private readonly GearButton _gearButton;
 
         private WalletRowLayout _layout = WalletRowLayout.ForAnAmount(0f);
 
@@ -86,6 +88,9 @@ namespace Puzzle.Client.Screens
             _livesPlus = new DiscButton("Lives plus", _root, art, DiscGlyph.Plus, DrawOrder.WalletButton);
             _coinsButton = new RowButton(this, layout => layout.CoinsButton, _coinsPill, _coin, _coinsPlus);
             _livesButton = new RowButton(this, layout => layout.LivesButton, _livesPill, _heart, _livesPlus);
+            _gear = new DiscButton("Gear", _root, art, DiscGlyph.Gear, DrawOrder.WalletButton);
+            _gear.Place(new Vector2(WalletRowLayout.Gear.MiddleX, WalletRowLayout.Gear.MiddleY), WalletRowLayout.GearSize / DiscButton.Size);
+            _gearButton = new GearButton(this);
 
             _countFrom = _countTo = _shown = wallet.Coins;
             Wallet = wallet;
@@ -104,6 +109,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The middle of the coins' plus, in the layout's points: a finger that presses it goes to the shop. Nothing before the row is placed.</summary>
         public Vector2? CoinsPlusMiddle => _page is PageLayout page ? InTheLayout(page, new Vector2(_layout.CoinsPlus.MiddleX, _layout.CoinsPlus.MiddleY)) : (Vector2?)null;
+
+        /// <summary>The middle of the gear, in the layout's points: a finger that presses it opens the settings card. Nothing before the row is placed.</summary>
+        public Vector2? GearMiddle => _page is PageLayout page ? InTheLayout(page, _gear.Middle) : (Vector2?)null;
 
         /// <summary>Builds the row showing a wallet as it is, with nothing counting. Call <see cref="Place"/> before the first picture.</summary>
         public static WalletRow Create(Transform parent, ArtCatalogue art, WalletView wallet) => new WalletRow(parent, art, wallet);
@@ -146,11 +154,12 @@ namespace Puzzle.Client.Screens
             ShowTheAmount(evenIfShown: false);
         }
 
-        /// <summary>Tells a set of pressable controls about the row's: the coins' button asks for the shop, the lives' button for the lives card.</summary>
+        /// <summary>Tells a set of pressable controls about the row's: the coins' button asks for the shop, the lives' button for the lives card, the gear for the settings card.</summary>
         public void AddPressables(PressSet<MuseumPress> presses)
         {
             presses.Add(_coinsButton, new MuseumPress.Visit(Destination.Shop));
             presses.Add(_livesButton, new MuseumPress.OpenTheLivesCard());
+            presses.Add(_gearButton, new MuseumPress.OpenTheSettings());
         }
 
         public void Dispose() => SceneObjects.DestroyObjectOf(_root);
@@ -224,6 +233,25 @@ namespace Puzzle.Client.Screens
         private static Vector2 InTheLayout(PageLayout page, Vector2 onTheRow) =>
             new Vector2(page.WalletRow.Left + onTheRow.x * page.WalletRowScale, page.WalletRow.MiddleY + onTheRow.y * page.WalletRowScale);
 
+        /// <summary>Where a point of the page lies on the row, in the canvas' points.</summary>
+        private static Vector2 OnTheRow(PageLayout page, Vector2 point) =>
+            new Vector2((point.x - page.WalletRow.Left) / page.WalletRowScale, (point.y - page.WalletRow.MiddleY) / page.WalletRowScale);
+
+        /// <summary>The gear as a button of the page: a finger on the page is looked for on the row, where the gear stands.</summary>
+        private sealed class GearButton : IPressable
+        {
+            private readonly WalletRow _row;
+
+            public GearButton(WalletRow row)
+            {
+                _row = row;
+            }
+
+            public bool IsUnder(Vector2 point) => _row._page is PageLayout page && _row._gear.IsUnder(OnTheRow(page, point));
+
+            public void ShowPressed(bool isPressed) => _row._gear.ShowPressed(isPressed);
+        }
+
         /// <summary>
         /// A mark, its pill and its plus as one button, as the canvas makes each a button (HomeTR): the coin's leads to
         /// the shop, the heart's opens the lives card. Held, the pill and the mark lose a little light and the plus
@@ -254,7 +282,7 @@ namespace Puzzle.Client.Screens
                     return false;
                 }
 
-                var onTheRow = new Vector2((point.x - page.WalletRow.Left) / page.WalletRowScale, (point.y - page.WalletRow.MiddleY) / page.WalletRowScale);
+                Vector2 onTheRow = OnTheRow(page, point);
                 return _box(_row._layout).Contains(onTheRow.x, onTheRow.y);
             }
 

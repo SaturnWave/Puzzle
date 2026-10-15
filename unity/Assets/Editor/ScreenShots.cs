@@ -67,6 +67,18 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The hall's gift frame pressed: the hall before, the card that answers, and the hall once it is closed.</summary>
         Gift,
+
+        /// <summary>The hall with the settings card hanging over it, as the wallet row's gear brings it down.</summary>
+        Settings,
+
+        /// <summary>The privacy card in front of the settings card, with the tools' records: before "Kayıtları sil", its question, and after "Sil".</summary>
+        Privacy,
+
+        /// <summary>The support card in front of the settings card.</summary>
+        Support,
+
+        /// <summary>The settings card as it will be with the switches of sound and vibration, which this build does not honour yet: a look ahead, not the game.</summary>
+        SettingsPreview,
     }
 
     /// <summary>
@@ -350,7 +362,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,settingspreview,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk]</c>.
@@ -440,6 +452,10 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Entrance => LevelStartShots.ShootTheEntrances(state, screen, studio),
             ShotPage.Shop => ShootThePage(new MuseumDoor(Destination.Shop), "shop", state, screen, studio),
             ShotPage.Gift => ShootTheGift(state, screen, studio),
+            ShotPage.Settings => SettingsShots.ShootTheSettings(state, screen, studio),
+            ShotPage.Privacy => SettingsShots.ShootThePrivacy(state, screen, studio),
+            ShotPage.Support => SettingsShots.ShootTheSupport(state, screen, studio),
+            ShotPage.SettingsPreview => SettingsShots.ShootThePreview(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 
@@ -652,7 +668,11 @@ namespace Puzzle.Client.EditorTools
             return 0;
         }
 
-        internal static MuseumStage OpenTheMuseum(MuseumDoor door, PlayerState state, ScreenShape screen, Studio studio)
+        /// <summary>The museum of a player at a door, with no session, the phone the tools' with no record and the switches this build honours.</summary>
+        internal static MuseumStage OpenTheMuseum(MuseumDoor door, PlayerState state, ScreenShape screen, Studio studio) =>
+            OpenTheMuseum(door, state, screen, studio, StoryStudio.PhoneWith(StoryStudio.AttemptsKeptInMemory(), studio.Levels, DeviceAbilities.OfThisBuild));
+
+        internal static MuseumStage OpenTheMuseum(MuseumDoor door, PlayerState state, ScreenShape screen, Studio studio, DeviceView device)
         {
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -661,7 +681,7 @@ namespace Puzzle.Client.EditorTools
             var visit = new MuseumVisit(
                 progress.Museum, studio.Paintings.Catalogue, level.Id.Value, hasWonEveryLevel: progress.LevelsWon >= studio.Levels.Count);
             var brief = LevelBrief.Of(level, PieceReward.ForWinning(progress, studio.Levels.Count, studio.Paintings.Catalogue), StoryStudio.Economy, LevelStart.Rules);
-            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet, state.Shop, brief);
+            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet, state.Shop, device, brief);
             museum.Fit(screen);
             return museum;
         }

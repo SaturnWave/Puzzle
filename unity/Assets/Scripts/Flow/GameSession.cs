@@ -98,6 +98,13 @@ namespace Puzzle.Client.Flow
     /// without it, and that booster is not spent. The attempt's record names them, so it replays to the same end.
     /// </para>
     /// <para>
+    /// The museum's settings card shows the phone: the player's settings, kept in the device file the moment one is
+    /// turned; the attempt records, which the player may delete there after a question; the id, the versions and the
+    /// build's marks. What it asks is done here and the museum is told the phone after it. Deleting the records is
+    /// asked only in the museum, where no attempt is open, so no record is on its way meanwhile; the progress and the
+    /// wallet are in another file and are not touched.
+    /// </para>
+    /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
     /// next one is built, in the dark both of them share, so the change is not seen. The one exception is a board
     /// whose card led to the jigsaw: it steps aside, out of sight, and comes back with its card when the player
@@ -114,6 +121,11 @@ namespace Puzzle.Client.Flow
         private readonly PaintingGallery _paintings;
         private readonly IProgressStore _store;
         private readonly IAttemptLog _attempts;
+        private readonly ISettingsStore _settings;
+        private readonly DeviceAbilities _abilities;
+
+        /// <summary>The newest version of the levels the game carries, as the support card tells it.</summary>
+        private readonly ContentVersion _content;
         private readonly AttemptLedger _ledger;
         private readonly WalletLedger _walletLedger;
         private readonly EconomyRules _rules;
@@ -146,12 +158,10 @@ namespace Puzzle.Client.Flow
         /// <summary>The room whose fifth painting became whole on the open jigsaw; nothing otherwise. The hall shows it restored when the jigsaw is left.</summary>
         private RoomNumber? _restoredJustNow;
 
-        /// <summary>Loads the player's progress and opens the game where the opening says, laid out for a screen.</summary>
-        /// <param name="levels">The levels in the order they are played.</param>
-        /// <param name="paintings">The museum's paintings, for the museum's pages and for the pieces a win gives.</param>
-        /// <param name="rules">The economy the attempts are kept by: what a win pays, what a loss costs.</param>
-        /// <param name="clock">The time the rules count lives and days by, and the attempt records tell: the device's, or a tool's fixed one.</param>
-        /// <param name="attempts">Where the record of every attempt that ends for good goes: the phone's log, or a tool's in memory.</param>
+        /// <summary>
+        /// A session whose settings are kept in memory as a first start has them, with the switches this build honours:
+        /// the Editor's tools', which must not touch a phone's device file. Otherwise as the session the game opens.
+        /// </summary>
         /// <exception cref="ArgumentException">There is no level to play.</exception>
         /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
@@ -163,6 +173,33 @@ namespace Puzzle.Client.Flow
             IWallClock clock,
             IProgressStore store,
             IAttemptLog attempts,
+            ScreenShape screen,
+            SessionOpening opening)
+            : this(levels, art, paintings, rules, clock, store, attempts, new SettingsInMemory(DeviceSettings.Default), DeviceAbilities.OfThisBuild, screen, opening)
+        {
+        }
+
+        /// <summary>Loads the player's progress and opens the game where the opening says, laid out for a screen.</summary>
+        /// <param name="levels">The levels in the order they are played.</param>
+        /// <param name="paintings">The museum's paintings, for the museum's pages and for the pieces a win gives.</param>
+        /// <param name="rules">The economy the attempts are kept by: what a win pays, what a loss costs.</param>
+        /// <param name="clock">The time the rules count lives and days by, and the attempt records tell: the device's, or a tool's fixed one.</param>
+        /// <param name="attempts">Where the record of every attempt that ends for good goes: the phone's log, or a tool's in memory.</param>
+        /// <param name="settings">Where the player's settings are kept: the phone's device file, or a tool's in memory.</param>
+        /// <param name="abilities">What the build honours on the phone, whose switches the settings card shows: <see cref="DeviceAbilities.OfThisBuild"/> in the game.</param>
+        /// <exception cref="ArgumentException">There is no level to play.</exception>
+        /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
+        public GameSession(
+            IReadOnlyList<LevelDefinition> levels,
+            ArtCatalogue art,
+            PaintingGallery paintings,
+            EconomyRules rules,
+            IWallClock clock,
+            IProgressStore store,
+            IAttemptLog attempts,
+            ISettingsStore settings,
+            DeviceAbilities abilities,
             ScreenShape screen,
             SessionOpening opening)
         {
@@ -180,6 +217,9 @@ namespace Puzzle.Client.Flow
             _clock = clock;
             _store = store;
             _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _abilities = abilities ?? throw new ArgumentNullException(nameof(abilities));
+            _content = levels.Select(level => level.ContentVersion).Max();
             _screen = screen;
             _saved = store.Load();
 
@@ -239,6 +279,7 @@ namespace Puzzle.Client.Flow
             _front.Advance(deltaSeconds);
             KeepWhatHappened();
             DoWhatTheStageAskedFor();
+            DoWhatWasAskedOfThePhone();
             KeepWhatWasPlaced();
             FollowThePlayer();
         }
@@ -268,6 +309,7 @@ namespace Puzzle.Client.Flow
             _front.PointerUp();
             KeepWhatHappened();
             DoWhatTheStageAskedFor();
+            DoWhatWasAskedOfThePhone();
         }
 
         /// <summary>
@@ -342,6 +384,11 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The shop and the gift as the rules have them for the player now, on their calendar day.</summary>
         private ShopView ShopNow => ShopView.Of(_rules, _progress.Wallet, _clock.Now);
+
+        /// <summary>The phone as the settings card shows it now: the settings kept, the records there are, this build's versions and marks.</summary>
+        private DeviceView DeviceNow => new DeviceView(
+            _settings.Settings, _abilities.Settings, _attempts.Device, Application.version, _content,
+            RecordsKeptNow(), _attempts.FilePath, _rules.Ads, _rules.Shop.RealMoney);
 
         /// <summary>Tells the museum or the board, whichever is the stage that is seen, of the wallet as it is at this step.</summary>
         private void TellTheStageTheWallet()
@@ -455,7 +502,8 @@ namespace Puzzle.Client.Flow
             var visit = new MuseumVisit(_progress.Museum, _paintings.Catalogue, level.Id.Value, hasWonEveryLevel: _progress.LevelsWon >= _levels.Count);
             LevelBrief brief = LevelBrief.Of(level, PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue), _rules, LevelStart.Rules);
             WalletView wallet = WalletNow;
-            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, brief, opening);
+            MuseumStage museum = MuseumStage.Open(
+                visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, DeviceNow, brief, opening);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;
@@ -573,6 +621,73 @@ namespace Puzzle.Client.Flow
                 {
                     asking.Hear(request, answer);
                 }
+            }
+        }
+
+        /// <summary>
+        /// What the museum's settings card asked of the phone since it was last asked: a setting turned is kept in the
+        /// device file at once, the attempt records are deleted. A file that cannot be written does not stop the game:
+        /// the setting holds for this run, and the records that could not be deleted are still counted. The museum is
+        /// told the phone after it.
+        /// </summary>
+        private void DoWhatWasAskedOfThePhone()
+        {
+            if (!(Museum is MuseumStage museum))
+            {
+                return;
+            }
+
+            IReadOnlyList<DeviceRequest> asked = museum.TakeWhatWasAskedOfThePhone();
+            if (asked.Count == 0)
+            {
+                return;
+            }
+
+            foreach (DeviceRequest request in asked)
+            {
+                try
+                {
+                    Do(request);
+                }
+                catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
+                {
+                    // Playing goes on: the card shows the phone as it is, which is what came of the request.
+                    Debug.LogWarning($"\"{request}\" could not be done on the phone: {failure.Message}");
+                }
+            }
+
+            museum.Tell(DeviceNow);
+        }
+
+        /// <exception cref="IOException">The device file or the attempt log could not be written.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not write them.</exception>
+        private void Do(DeviceRequest request)
+        {
+            switch (request)
+            {
+                case DeviceRequest.TurnASetting turn:
+                    _settings.Keep(_settings.Settings.With(turn.Setting, turn.IsOn));
+                    break;
+                case DeviceRequest.DeleteTheRecords _:
+                    _attempts.DeleteAll();
+                    Debug.Log("The attempt records on this phone were deleted at the player's wish.");
+                    break;
+                default:
+                    throw new InvalidOperationException($"The session does not know the request \"{request}\".");
+            }
+        }
+
+        /// <summary>How many attempt records the phone keeps; nothing when the log cannot be read to count them.</summary>
+        private int? RecordsKeptNow()
+        {
+            try
+            {
+                return _attempts.CountRecords();
+            }
+            catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
+            {
+                Debug.LogWarning($"The attempt records could not be counted: {failure.Message}");
+                return null;
             }
         }
 

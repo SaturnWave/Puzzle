@@ -115,7 +115,8 @@ namespace Puzzle.Client
 
         /// <summary>
         /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
-        /// device's clock, with the attempt log in the same folder under the phone's id. If that file is there but
+        /// device's clock, with the attempt log in the same folder under the phone's id and the player's settings in
+        /// the device file beside it. If that file is there but
         /// cannot be read from the device, the player can still play: this run starts at the first level as a new
         /// player, keeps its progress in memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes on from where that file says the
         /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
@@ -125,8 +126,10 @@ namespace Puzzle.Client
             IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, ScreenShape screen)
         {
             var clock = new SystemWallClock();
-            var attempts = new AttemptLogFile(Application.persistentDataPath, IdOfThisPhone());
-            GameSession SessionOn(IProgressStore store) => new GameSession(levels, art, paintings, rules, clock, store, attempts, screen, SessionOpening.InTheMuseum);
+            (DeviceId phone, ISettingsStore settings) = ThisPhone();
+            var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
+            GameSession SessionOn(IProgressStore store) =>
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, DeviceAbilities.OfThisBuild, screen, SessionOpening.InTheMuseum);
 
             try
             {
@@ -146,20 +149,21 @@ namespace Puzzle.Client
         }
 
         /// <summary>
-        /// The random id of this phone, from the device file in the game's own data folder, made there on the first
-        /// start. If the file can be neither read nor written, the player can still play: this run's attempt records
-        /// carry an id of their own.
+        /// The random id of this phone and the player's settings, from the device file in the game's own data folder,
+        /// made there on the first start. If the file can be neither read nor written, the player can still play:
+        /// this run's attempt records carry an id of their own, and its settings are a first start's, kept for the run.
         /// </summary>
-        private static DeviceId IdOfThisPhone()
+        private static (DeviceId Phone, ISettingsStore Settings) ThisPhone()
         {
             try
             {
-                return new DeviceFile(Application.persistentDataPath).LoadOrMake();
+                DeviceFile file = DeviceFile.LoadOrMake(Application.persistentDataPath);
+                return (file.Device, file);
             }
             catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
             {
-                Debug.LogError($"The device file can be neither read nor written, so this run's attempt records carry an id of their own: {failure.Message}");
-                return DeviceDocument.NewId();
+                Debug.LogError($"The device file can be neither read nor written, so this run's attempt records carry an id of their own and its settings are kept for the run only: {failure.Message}");
+                return (DeviceDocument.NewId(), new SettingsInMemory(DeviceSettings.Default));
             }
         }
 

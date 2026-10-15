@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Collections;
@@ -51,10 +52,16 @@ namespace Puzzle.Client.Screens
         void Tell(ShopView shop);
     }
 
+    /// <summary>A card that shows something of the phone (the settings card, the privacy card): the stage tells it whenever that changes.</summary>
+    public interface IDeviceCard
+    {
+        void Tell(DeviceView device);
+    }
+
     /// <summary>
     /// A card that hangs over a museum page, in front of the room's dark: the lives card, the card before a level, the
-    /// card that offers a booster, the card that tells what a request of the shop or of the gift came to. It shows the
-    /// wallet as the stage is told of it at every step.
+    /// card that offers a booster, the card that tells what a request of the shop or of the gift came to, the settings
+    /// card and the cards it opens. It shows the wallet as the stage is told of it at every step.
     /// </summary>
     public interface IMuseumCard : IDisposable
     {
@@ -86,6 +93,12 @@ namespace Puzzle.Client.Screens
     /// who applies it by the rules, tells the wallet after it, and tells the stage what the rules said
     /// (<see cref="Hear"/>): a card then says what came of it, a refusal and why included. The shop's ad for coins is
     /// the test build's stand-in card, shown here; its coins are asked for once it is over.
+    /// <para>
+    /// The gear of the wallet row brings the settings card down, whose rows open the privacy card and the support card
+    /// in front of it. What those ask of the phone (a setting turned, the attempt records deleted after a question)
+    /// the stage passes on to its owner too (<see cref="TakeWhatWasAskedOfThePhone"/>), who keeps it and tells the
+    /// stage the phone as it is after it (<see cref="Tell(DeviceView)"/>).
+    /// </para>
     /// <para>
     /// The card before a level is the one door into it. The play button opens it, or, for a player without a life,
     /// the lives card; on it the player chooses the start boosters they hold, and its green button leads into the
@@ -122,6 +135,9 @@ namespace Puzzle.Client.Screens
         /// <summary>The shop and the gift as the rules had them at the last step, for the pages that show them.</summary>
         private ShopView _shop;
 
+        /// <summary>The phone as the stage was last told of it, for the settings card and the cards it opens.</summary>
+        private DeviceView _device;
+
         /// <summary>The stand-in ad for coins while it hangs over the shop; nothing otherwise.</summary>
         private AdInTheMuseum? _ad;
 
@@ -135,6 +151,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>What presses asked of the wallet that the stage's owner has not taken yet, in the order they were made.</summary>
         private readonly List<WalletRequest> _asked = new List<WalletRequest>();
+
+        /// <summary>What presses asked of the phone that the stage's owner has not taken yet, in the order they were made.</summary>
+        private readonly List<DeviceRequest> _askedOfThePhone = new List<DeviceRequest>();
 
         /// <summary>The page that is shown, or that is coming in while a page is turned.</summary>
         private IMuseumPage _page;
@@ -151,13 +170,15 @@ namespace Puzzle.Client.Screens
         /// <summary>How long the page that is shown has been the one shown.</summary>
         private float _secondsOnThePage;
 
-        private MuseumStage(MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, LevelBrief level)
+        private MuseumStage(
+            MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, DeviceView device, LevelBrief level)
         {
             _visit = visit;
             _paintings = paintings;
             _art = art;
             _level = level;
             _shop = shop;
+            _device = device;
             Showing = door.Page;
             _root = new GameObject("Museum");
             Camera = StageCamera.Add(_root.transform);
@@ -288,6 +309,51 @@ namespace Puzzle.Client.Screens
         /// <summary>True while the shop's free strip offers an ad: the day has one left; false otherwise, and on another page.</summary>
         public bool ShopOffersAnAd => _page is ShopPage { OffersAnAd: true };
 
+        /// <summary>The pixel in the middle of the wallet row's gear, which opens the settings; nothing while the page's controls are not pressed.</summary>
+        public Vector2? GearPixel => PixelWhileListening(_wallet.GearMiddle);
+
+        /// <summary>True while the settings card hangs over the page, or is on its way down or up.</summary>
+        public bool ShowsTheSettings => _cards.Exists(card => card is SettingsCard);
+
+        /// <summary>The card that hangs in front: the settings card, the privacy card, the support card; nothing while none of them is in front.</summary>
+        public SettingsCardKind? SettingsCardInFront => TopCard switch
+        {
+            SettingsCard _ => SettingsCardKind.Settings,
+            PrivacyCard _ => SettingsCardKind.Privacy,
+            SupportCard _ => SettingsCardKind.Support,
+            _ => null,
+        };
+
+        /// <summary>The pixels in the middle of the settings card's rows that open the privacy card and the support card, and of a setting's switch; nothing while that card is not down in front.</summary>
+        public Vector2? PrivacyRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.PrivacyRowMiddle) : null;
+
+        public Vector2? SupportRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.SupportRowMiddle) : null;
+
+        public Vector2? SwitchPixel(DeviceSetting setting) =>
+            TopCard is SettingsCard settings && settings.Switches.Contains(setting) ? PixelOnTheCard(settings.SwitchMiddle(setting)) : null;
+
+        /// <summary>The settings the settings card's switches show, in its order; none while that card does not hang.</summary>
+        public IReadOnlyList<(DeviceSetting Setting, bool IsOn)> SwitchesShown =>
+            _cards.Find(card => card is SettingsCard) is SettingsCard settings
+                ? settings.Switches.Select(setting => (setting, settings.ShowsOn(setting))).ToArray()
+                : Array.Empty<(DeviceSetting, bool)>();
+
+        /// <summary>The pixel in the middle of the round button that closes the card in front, whichever it is; nothing while no card is down in front.</summary>
+        public Vector2? CardClosePixel => TopCard is IMuseumCard card ? PixelOnTheCard(card.Card.CloseButtonMiddle) : null;
+
+        /// <summary>What the privacy card's count says, and whether it asks the question; nothing while that card is not in front.</summary>
+        public (string Count, bool Asks)? PrivacyShown => TopCard is PrivacyCard privacy ? (privacy.CountSays, privacy.AsksTheQuestion) : ((string, bool)?)null;
+
+        /// <summary>The pixels in the middle of the privacy card's "Kayıtları sil", and of the question's "Vazgeç" and "Sil"; nothing while each is not there to press.</summary>
+        public Vector2? DeleteRecordsPixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.DeleteButtonMiddle) : null;
+
+        public Vector2? KeepRecordsPixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.KeepButtonMiddle) : null;
+
+        public Vector2? ConfirmDeletePixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.ConfirmButtonMiddle) : null;
+
+        /// <summary>The pixel in the middle of the support card's "Tamam"; nothing while that card is not down in front.</summary>
+        public Vector2? SupportDonePixel => TopCard is SupportCard support ? PixelOnTheCard(support.DoneButtonMiddle) : null;
+
         /// <summary>The museum listens to the player while nothing of it moves and the player has not left it.</summary>
         private bool ListensToThePlayer => IsSettled && !_isLeaving && PlayerLeftFor == null;
 
@@ -300,13 +366,14 @@ namespace Puzzle.Client.Screens
         /// <param name="door">The page the visit begins on, and whether the card before the level comes down over it.</param>
         /// <param name="wallet">The player's wallet as the row shows it first, with nothing counting; <see cref="Tell"/> it anew at every step.</param>
         /// <param name="shop">The shop and the gift as the rules have them for that wallet; told anew at every step with it.</param>
+        /// <param name="device">The phone as the settings card shows it; told anew when the player changes something of it.</param>
         /// <param name="level">What the card before the level the player stands on tells of it and offers for it.</param>
         /// <param name="opening">In the lit room, as the game starts; or out of the dark a result's card or a jigsaw left behind.</param>
         public static MuseumStage Open(
-            MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, LevelBrief level,
+            MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, DeviceView device, LevelBrief level,
             StageOpening opening = StageOpening.InTheLitRoom)
         {
-            var stage = new MuseumStage(visit, paintings, art, door, wallet, shop, level);
+            var stage = new MuseumStage(visit, paintings, art, door, wallet, shop, device, level);
             bool isDark = opening == StageOpening.OutOfTheDark;
             if (isDark)
             {
@@ -411,9 +478,32 @@ namespace Puzzle.Client.Screens
             return taken;
         }
 
+        /// <summary>What presses asked of the phone since the owner last took it, in order: the owner keeps it and tells the stage the phone after it.</summary>
+        public IReadOnlyList<DeviceRequest> TakeWhatWasAskedOfThePhone()
+        {
+            if (_askedOfThePhone.Count == 0)
+            {
+                return Array.Empty<DeviceRequest>();
+            }
+
+            DeviceRequest[] taken = _askedOfThePhone.ToArray();
+            _askedOfThePhone.Clear();
+            return taken;
+        }
+
+        /// <summary>Shows the phone as it is now on the cards that show it: the settings kept, the records left after a deletion.</summary>
+        public void Tell(DeviceView device)
+        {
+            _device = device ?? throw new ArgumentNullException(nameof(device));
+            foreach (IMuseumCard card in _cards)
+            {
+                (card as IDeviceCard)?.Tell(device);
+            }
+        }
+
         /// <summary>
-        /// The device's way back: the card in front goes up; a painting that hangs forward goes back to the wall;
-        /// from the map and the collection it leads to the hall; in the hall it leads nowhere.
+        /// The device's way back: the card in front goes up (a question on it with it); a painting that hangs forward
+        /// goes back to the wall; from the map and the collection it leads to the hall; in the hall it leads nowhere.
         /// </summary>
         public void GoBack()
         {
@@ -552,6 +642,32 @@ namespace Puzzle.Client.Screens
                     break;
                 case MuseumPress.TakeTheGift _:
                     _asked.Add(new WalletRequest.TakeTheDailyGift());
+                    break;
+                case MuseumPress.OpenTheSettings _:
+                    Hang(SettingsCard.Create(_root.transform, _art, _device), roomIsDark: false);
+                    break;
+                case MuseumPress.OpenThePrivacy _ when TopCard is SettingsCard:
+                    Hang(PrivacyCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
+                    break;
+                case MuseumPress.OpenTheSupport _ when TopCard is SettingsCard:
+                    Hang(SupportCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
+                    break;
+                case MuseumPress.FlipASwitch flip when TopCard is SettingsCard settings:
+                    // The switch slides at once; the setting is kept by the stage's owner, who tells the phone after it.
+                    bool isOn = settings.Flip(flip.Setting);
+                    _askedOfThePhone.Add(new DeviceRequest.TurnASetting(flip.Setting, isOn));
+                    _timeline.Add(0f, Tempo.SwitchSlides, progress => settings.Slide(flip.Setting, progress));
+                    break;
+                case MuseumPress.AskToDeleteTheRecords _ when TopCard is PrivacyCard privacy:
+                    privacy.Ask();
+                    break;
+                case MuseumPress.KeepTheRecords _ when TopCard is PrivacyCard privacy:
+                    privacy.TakeTheQuestionBack();
+                    break;
+                case MuseumPress.DeleteTheRecords _ when TopCard is PrivacyCard privacy:
+                    // The question goes at once; the count the card shows next is what the owner tells after the deletion.
+                    privacy.TakeTheQuestionBack();
+                    _askedOfThePhone.Add(new DeviceRequest.DeleteTheRecords());
                     break;
                 case MuseumPress.Visit visit when _cards.Count > 0:
                     // A card's way to the shop: every card goes up, and then the page turns.

@@ -77,8 +77,8 @@ namespace Puzzle.Client.Screens
     /// What a press on a page of the museum, or on a card that hangs over it, asks for. A closed set (private
     /// constructor): the player goes to another page, asks for the level they stand on, chooses its start boosters
     /// and goes into it, buys a booster or a set of them, asks for coins (a pack, an ad) or for the day's gift, opens
-    /// a painting's jigsaw, opens or closes a card that hangs over the page, or does something that stays on the page
-    /// that is shown.
+    /// a painting's jigsaw, opens or closes a card that hangs over the page, flips a setting or deletes the attempt
+    /// records after a question, or does something that stays on the page that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -190,6 +190,47 @@ namespace Puzzle.Client.Screens
         {
         }
 
+        /// <summary>The gear at the wallet row's right end: the settings card.</summary>
+        public sealed class OpenTheSettings : MuseumPress
+        {
+        }
+
+        /// <summary>The settings card's row "Gizlilik ve veri": the privacy card, in front of it.</summary>
+        public sealed class OpenThePrivacy : MuseumPress
+        {
+        }
+
+        /// <summary>The settings card's row "Destek": the support card, in front of it.</summary>
+        public sealed class OpenTheSupport : MuseumPress
+        {
+        }
+
+        /// <summary>A setting's switch on the settings card: it slides to the other state, which is kept at once.</summary>
+        public sealed class FlipASwitch : MuseumPress
+        {
+            public FlipASwitch(DeviceSetting setting)
+            {
+                Setting = setting;
+            }
+
+            public DeviceSetting Setting { get; }
+        }
+
+        /// <summary>The privacy card's "Kayıtları sil": the card asks first.</summary>
+        public sealed class AskToDeleteTheRecords : MuseumPress
+        {
+        }
+
+        /// <summary>The question's "Vazgeç": nothing is deleted, and the card is as it was.</summary>
+        public sealed class KeepTheRecords : MuseumPress
+        {
+        }
+
+        /// <summary>The question's "Sil": every attempt record on the phone is deleted.</summary>
+        public sealed class DeleteTheRecords : MuseumPress
+        {
+        }
+
         /// <summary>
         /// Something the page does by itself (it turns to another room, it brings a painting forward): the page
         /// does it, and the stage then asks the page anew what can be pressed.
@@ -265,6 +306,40 @@ namespace Puzzle.Client.Screens
         public sealed class TakeTheDailyGift : WalletRequest
         {
             public override string ToString() => "the daily gift";
+        }
+    }
+
+    /// <summary>
+    /// What a press on the settings card or a card it opens asks of the phone: whoever owns the museum keeps it
+    /// (the settings in the device file, the records' deletion in the attempt log) and tells the museum the phone
+    /// as it is after it. A closed set (private constructor).
+    /// </summary>
+    public abstract class DeviceRequest
+    {
+        private DeviceRequest()
+        {
+        }
+
+        /// <summary>A setting turned on or off.</summary>
+        public sealed class TurnASetting : DeviceRequest
+        {
+            public TurnASetting(DeviceSetting setting, bool isOn)
+            {
+                Setting = setting;
+                IsOn = isOn;
+            }
+
+            public DeviceSetting Setting { get; }
+
+            public bool IsOn { get; }
+
+            public override string ToString() => $"turn {Setting} {(IsOn ? "on" : "off")}";
+        }
+
+        /// <summary>Every attempt record on the phone deleted, at the player's wish.</summary>
+        public sealed class DeleteTheRecords : DeviceRequest
+        {
+            public override string ToString() => "delete the attempt records";
         }
     }
 

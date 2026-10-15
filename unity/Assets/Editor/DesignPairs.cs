@@ -49,6 +49,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The shop (ShopTR).</summary>
         Shop,
+
+        /// <summary>The settings card, come down over the hall from the wallet row's gear, with the switches this build honours (SettingsTR).</summary>
+        Settings,
     }
 
     /// <summary>
@@ -56,7 +59,7 @@ namespace Puzzle.Client.EditorTools
     /// design canvas' own picture of the screen at the left, scaled to the same height, and at the right what the
     /// game's camera shows of the same screen on the phone the canvas is drawn for.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.DesignPairs.Run
-    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost,levelstart,shop] [-pairState 46+45;coins=1250;starts=2:1:0;inlevel=3:2:2:0] [-pairDrawings ../out/design/next/project]
+    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost,levelstart,shop,settings] [-pairState 46+45;coins=1250;starts=2:1:0;inlevel=3:2:2:0] [-pairDrawings ../out/design/next/project]
     ///   -pairScreens   which screens (all of them when left out)
     ///   -pairState     the player, as the picture command is told of one: levels won, or levels won + pieces in
     ///                  place, and the wallet after it. Left out, it is the player the canvas draws: on level 47,
@@ -157,6 +160,7 @@ namespace Puzzle.Client.EditorTools
             PairedScreen.Lost => "LoseTR",
             PairedScreen.LevelStart => "LevelStartTR",
             PairedScreen.Shop => "ShopTR",
+            PairedScreen.Settings => "SettingsTR",
             _ => throw new ArgumentOutOfRangeException(nameof(screen), screen, "A screen the pair command does not know."),
         };
 
@@ -239,6 +243,8 @@ namespace Puzzle.Client.EditorTools
                     return TakeTheStartCard(state, studio);
                 case PairedScreen.Shop:
                     return TakeThePage(new MuseumDoor(Destination.Shop), state, studio);
+                case PairedScreen.Settings:
+                    return TakeTheSettingsCard(state, studio);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(screen), screen, "A screen the pair command does not know.");
             }
@@ -261,6 +267,20 @@ namespace Puzzle.Client.EditorTools
             if (!museum.StartChoice.Has(first))
             {
                 throw new InvalidOperationException($"A press on the disc of {first.Name()} did not choose it: the player {state.Label} may hold none.");
+            }
+
+            return StoryStudio.Take(museum, Screen);
+        }
+
+        /// <summary>The hall after the wallet row's gear was pressed, with the settings card at rest.</summary>
+        /// <exception cref="InvalidOperationException">The gear is not there to press, or the press did not bring the card.</exception>
+        private static Texture2D TakeTheSettingsCard(PlayerState state, Studio studio)
+        {
+            using MuseumStage museum = ScreenShots.OpenTheMuseum(MuseumDoor.Home, state, Screen, studio);
+            PressAndSettle(museum, museum.GearPixel, "the wallet row's gear");
+            if (museum.SettingsCardInFront != SettingsCardKind.Settings)
+            {
+                throw new InvalidOperationException("A press on the gear did not bring the settings card down.");
             }
 
             return StoryStudio.Take(museum, Screen);

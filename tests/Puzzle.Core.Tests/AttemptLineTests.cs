@@ -170,6 +170,111 @@ public class AttemptLogFileTests
     }
 
     [Fact]
+    public void The_records_are_counted_as_the_files_lines_and_each_one_written_adds_one()
+    {
+        using var temp = new TempFolder();
+        var log = new AttemptLogFile(temp.Path, GamePhone);
+        Assert.Equal(0, log.CountRecords());
+
+        log.Append(Ending(1));
+        log.Append(Ending(2));
+        Assert.Equal(2, log.CountRecords());
+
+        // A log opened anew, as after a restart, counts what the file holds.
+        var reopened = new AttemptLogFile(temp.Path, GamePhone);
+        Assert.Equal(2, reopened.CountRecords());
+        reopened.Append(Ending(3));
+        Assert.Equal(3, reopened.CountRecords());
+        Assert.Equal(3, File.ReadAllLines(reopened.Path).Length);
+    }
+
+    [Fact]
+    public void A_line_cut_short_counts_as_a_record_and_the_one_after_it_as_another()
+    {
+        using var temp = new TempFolder();
+        var log = new AttemptLogFile(temp.Path, GamePhone);
+        File.WriteAllText(log.Path, AttemptLine.Of(Ending(1)) + "\n{\"schema\":1,\"level\":7,\"atte");
+
+        Assert.Equal(2, log.CountRecords());
+        log.Append(Ending(2));
+        Assert.Equal(3, log.CountRecords());
+        Assert.Equal(3, new AttemptLogFile(temp.Path, GamePhone).CountRecords());
+    }
+
+    [Fact]
+    public void Records_that_wait_are_counted_too()
+    {
+        using var temp = new TempFolder();
+        string folder = Path.Combine(temp.Path, "log");
+        File.WriteAllText(folder, "a file where the folder should be");
+        var log = new AttemptLogFile(folder, GamePhone);
+
+        Assert.Throws<IOException>(() => log.Append(Ending(1)));
+
+        Assert.Equal(1, log.CountRecords());
+    }
+
+    [Fact]
+    public void Deleting_the_records_empties_the_log_of_those_written_and_those_that_wait_and_the_next_one_begins_it_anew()
+    {
+        using var temp = new TempFolder();
+        var log = new AttemptLogFile(temp.Path, GamePhone);
+        log.Append(Ending(1));
+        log.Append(Ending(2));
+
+        log.DeleteAll();
+
+        Assert.Equal(0, log.CountRecords());
+        Assert.False(File.Exists(log.Path));
+        log.Append(Ending(3));
+        Assert.Equal(new[] { AttemptLine.Of(Ending(3)) }, File.ReadAllLines(log.Path));
+        Assert.Equal(1, log.CountRecords());
+    }
+
+    [Fact]
+    public void Deleting_the_records_touches_nothing_else_in_the_games_folder()
+    {
+        using var temp = new TempFolder();
+        string progress = Path.Combine(temp.Path, "progress.json");
+        string device = Path.Combine(temp.Path, "device.json");
+        File.WriteAllText(progress, "{\"version\":4,\"levelsWon\":39}");
+        File.WriteAllText(device, "{\"version\":2,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"}");
+        var log = new AttemptLogFile(temp.Path, GamePhone);
+        log.Append(Ending(1));
+
+        log.DeleteAll();
+
+        Assert.Equal(new[] { device, progress }, Directory.GetFiles(temp.Path).OrderBy(file => file, StringComparer.Ordinal));
+        Assert.Equal("{\"version\":4,\"levelsWon\":39}", File.ReadAllText(progress));
+    }
+
+    [Fact]
+    public void Deleting_where_no_record_was_ever_written_is_no_harm()
+    {
+        using var temp = new TempFolder();
+        var log = new AttemptLogFile(Path.Combine(temp.Path, "not made yet"), GamePhone);
+
+        log.DeleteAll();
+
+        Assert.Equal(0, log.CountRecords());
+    }
+
+    [Fact]
+    public void A_log_in_memory_counts_and_deletes_its_records_and_lies_in_no_file()
+    {
+        var log = new AttemptsInMemory(GamePhone);
+        log.Append(Ending(1));
+        log.Append(Ending(2));
+        Assert.Equal(2, log.CountRecords());
+
+        log.DeleteAll();
+
+        Assert.Equal(0, log.CountRecords());
+        Assert.Empty(log.Records);
+        Assert.Null(log.FilePath);
+    }
+
+    [Fact]
     public void A_record_of_another_phone_is_not_this_logs()
     {
         using var temp = new TempFolder();

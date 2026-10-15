@@ -100,6 +100,14 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopWords.cs" Link="Unity\Flow\ShopWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletLedger.cs" Link="Unity\Flow\WalletLedger.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ShopLayout.cs" Link="Unity\Layout\ShopLayout.cs" />
+    <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceView.cs" Link="Unity\Flow\DeviceView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\SettingsWords.cs" Link="Unity\Flow\SettingsWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\ToggleLook.cs" Link="Unity\Screens\ToggleLook.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
