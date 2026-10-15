@@ -117,7 +117,7 @@ Dikey tablolarda dizilim 90 derece döner. Müzenin onarımı hafiftir: tamamlan
 
 1. Salonda "Bölüm N"ye basılır; can yoksa can kartı gelir.
 2. **Bölüm başı kartı** iner: bölüm, verdiği parça ("ÖDÜL · PARÇA k / m"), hedefler, hamle madalyonu ve üç bölüm öncesi booster. Hiç kalmamış bir booster artıyla görünür ve karttan tek fiyatına alınabilir. "Oyna" tahtayı açar.
-3. **Tahta ekranı:** solda "BÖLÜM N" ve hedefler, sağda "PARÇA k / m" ve tablonun örtülü küçük kopyası (kazanılacak parça yaldızla aydınlanır), hamle madalyonu, altta ahşap raf. Rafın beş yerinden biri duraklatmadır; dördü bölüm içi booster'lara ayrıldı (10. aşama).
+3. **Tahta ekranı:** solda "BÖLÜM N" ve hedefler, sağda "PARÇA k / m" ve tablonun örtülü küçük kopyası (kazanılacak parça yaldızla aydınlanır), hamle madalyonu, altta ahşap raf. Rafın beş yerinden biri duraklatmadır, dördünde bölüm içi booster'lar durur: spatula, satır fırçası, sütun fırçası, karıştırma. Bunlar 7., 12., 16. ve 20. bölümde birer birer açılır. Bir booster tek dokunuşla seçilir ve hedefe dokununca uygulanır; hamle saymaz, ama denemeyi başlatır.
 4. **Duraklatma** çıkma kartını açar; kart çıkmanın bedelini söyler (hamleden sonra bir can, önce hiçbir şey).
 5. **Kazanma kartı:** şölenden sonra kazanılan parça bir oyukta, ilerleme noktaları, sayarak artan "+N" altın ve "Kalan N hamle fırçaya dönüştü". "Devam" salona döner; yeni parça yapbozda yerleştirilir.
 6. **Kaybetme kartı:** "Tekrar dene" aynı bölümün kartına götürür. "+5 hamle" teklifinin kartı ve yeni kaybetme görünümü 11. aşamada gelecek.
@@ -448,8 +448,8 @@ Tasarım tuvalindeki bütün ekranların istemciye gelmesi için yazılan plan (
 | 7 | Salon, harita, koleksiyon: altın satırı ve canlar | ✅ 2026-10-14 |
 | 8 | Bölüm başı kartı ve bölüm öncesi booster'lar | ✅ 2026-10-14 |
 | 9 | Tahta plaketleri, duraklatmalı raf, kazanma kartı | ✅ 2026-10-14 |
-| 10 | Bölüm içi booster'lar: seçme, nişan alma, kullanma, reddetme | Sıradaki |
-| 11 | Hamle bitince: "+5" teklifi, canlandırılmış reklam, vazgeçme | — |
+| 10 | Bölüm içi booster'lar: seçme, nişan alma, kullanma, reddetme | ✅ 2026-10-15 |
+| 11 | Hamle bitince: "+5" teklifi, canlandırılmış reklam, vazgeçme | Sıradaki |
 | 12 | Mağaza, artı düğmeleri, hediye ve tablo ödülü | — |
 | 13 | Ayarlar, gizlilik ve veri, destek | — |
 | 14 | Ses ve titreşim (yer tutucu sesler) | — |
@@ -460,9 +460,10 @@ Tasarım tuvalindeki bütün ekranların istemciye gelmesi için yazılan plan (
 Proje sahibinin 2026-10-15'te belirlediği sıra:
 
 1. 10. aşamadan önce, öteki match-3 oyunlarının bölüm içi booster'ları (ve bölüm öncesi booster, "+5", can) nasıl kullandığının araştırması (`docs/research/in-level-boosters.md`, 2026-10-15'te hazır; PDF'i "Araştırma Notu") ve bu genel belge.
-2. **10. aşama:** bölüm içi booster'lar, araştırmanın önerilerine dayanarak.
-3. **11–15. aşamalar** (yukarıdaki tablo); ses ve titreşim 14. aşamada yer tutucu olarak gelir.
-4. **Bot deneyi:** ayrıntılarını proje sahibi kodlama bittikten sonra verecek.
+2. **10. aşama:** bölüm içi booster'lar, araştırmanın önerilerine dayanarak (✅ 2026-10-15).
+3. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Dört taslak `docs/research/avatar-concepts.md` belgesinde (PDF'i "Tasarım Önerisi"); seçim proje sahibinde.
+4. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
+5. **11–15. aşamalar** (yukarıdaki tablo); ses ve titreşim 14. aşamada yer tutucu olarak gelir.
 
 Planlanan öteki adımlar:
 

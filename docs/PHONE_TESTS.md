@@ -46,6 +46,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A19 | Can denetimi yoktu. **Salondan kapandı (2026-10-14, aşama 7):** canı bitmiş oyuncu "Bölüm N" ile bölüm açamıyor. Bölüm başı kartı 8. aşamada gelecek. | Aşama 2 | Düşük | T93, T94 |
 | A20 | Cüzdan oyunda görünmüyordu. **Kapandı (2026-10-14, aşama 7):** altın ve canlar müze sayfalarında; can bitince bölüm açılmıyor. | Aşama 2 | — | T90–T97 |
 | A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
+| A24 | Booster yazısı 9:16 telefonda uzun tahtalarda ve katlanır telefonun yatay iç ekranında en alt sıranın bir kısmını örtüyor. Dokunuşlar geçiyor, ama ilk denemedeki yazı ilk hamleye kadar o taşları gizliyor. | Aşama 10 | Orta | T134; yer ayırmak tahtayı küçültür |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -174,6 +175,26 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T117 | Kart altında duraklatma | Herhangi bir kart açıkken soluk duraklatma diskine dokun; kazanma kartında geri tuşuna bas | Diske dokunmak bir şey yapmaz; geri tuşu salona götürür | Aşama 9 | Bekliyor |
 | T118 | Tablonun son parçası | Bir tablonun son parçasını veren bölümü kazan | "Yeni parça: 10 / 10", bütün noktalar yaldızlı, sonuncusu halkalı | Aşama 9 | Bekliyor |
 | T119 | Katlanır ekranda raf | Telefonu aç, sonra dış ekranda tekrarla | Raf diskleri ve duraklatma rahat basılıyor; kart tamamen ekranda | Aşama 9 | Bekliyor |
+
+### F5. Bölüm içi booster'lar (aşama 10)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T120 | İlk bölümlerde kilit | İlk kurulumda 1–6. bölümleri kazan; her tahtada rafa bak | Dört sönük disk: Bölüm 7, Bölüm 12, Bölüm 16, Bölüm 20; dokununca bir şey olmaz; raf yazısı ilk hamleden sonra kalkar | Aşama 10 | Bekliyor |
+| T121 | Spatulanın açılışı | 7. bölümü ilk kez aç | Spatula diskinde 3 ve nefes alan bir ışık halkası; yazı "Yeni: Spatula! Diske dokun, sonra bir taşa." ve altında "Her bölüm booster'sız geçilebilir" | Aşama 10 | Bekliyor |
+| T122 | Tek dokunuşla seçmek | Spatula diskine bir kez hızlıca dokun | Diskte yeşil halka, öteki diskler sönük; yazı "Spatula · bir taşı ya da bir katı kaldırır / Bir taş seç" | Aşama 10 | Bekliyor |
+| T123 | Nişan ve kaydırma | Parmağını bir taşa koy, kaldırmadan yandaki hücreye kaydır, kaldır | Parmağın altındaki hücrede yaldız halka, kaydırmayı izler; yazı söner; kaldırınca spatula o hücreye iner; sayı 2 olur; HAMLE değişmez | Aşama 10 | Bekliyor |
+| T124 | Booster denemeyi başlatır | Yeni bir tahtada hamle yapmadan spatulayı kullan, duraklat, çık | Çıkma kartı "Çıkarsan 1 can gider" der; çıkınca bir can gider | Aşama 10 | Bekliyor |
+| T125 | Dokunulmamış tahta | Bir tahtayı açıp hiç dokunmadan çık | Kart can gitmeyeceğini söyler; can gitmez | Aşama 10 | Bekliyor |
+| T126 | Satır fırçası | 12. bölümden sonra satır fırçasını seç, parmağını bir hücrede tut | Bütün satır boyunca soluk bir ışık; kaldırınca fırça satırı soldan sağa boyar ve temizler | Aşama 10 | Bekliyor |
+| T127 | Taşlar düşerken | Bir hamle yap; taşlar düşerken sütun fırçasına ve bir hücreye dokun | Disk hemen seçilir; kullanım tahta oturunca uygulanır | Aşama 10 | Bekliyor |
+| T128 | Bırakmanın yolları | Bir fırçayı seç, sonra sırayla: diskine yine dokun / geri hareketi / parmağı tahtanın dışına sürükleyip kaldır / duraklat | Her biri booster'ı bırakır; yalnızca duraklatma çıkmak isteyip istemediğini sorar; hiçbir şey harcanmaz | Aşama 10 | Bekliyor |
+| T129 | Boşa kullanım | Spatulayı hiçbir şeyin vuramayacağı bir hücreye nişanla (malzemeli bir bölümde, ör. 51) | Disk sallanır, yazı "Burada vurulacak bir şey yok" der, sayı aynı kalır | Aşama 10 | Bekliyor |
+| T130 | Raftan satın alma | Bir booster'ı bitir, yeşil artısına dokun, satın al; sonra yetersiz altınla dene | Fiyatlı kart; "Satın al" fiyatı düşer, diskte 1 ve (spatula ve fırçalarda) seçili; altın yetmezse "Altın yetmiyor", bir şey olmaz | Aşama 10 | Bekliyor |
+| T131 | Karıştırma hep çalışır | 20. bölümden sonra büyük açık bir tahtada karıştırma diskine birkaç kez dokun | Her seferinde karıştırır ("Tahta karıştırılamıyor" gerçek bir bölümde hiç çıkmaz); taşlar döner, hazır eşleşme kalmaz | Aşama 10 | Bekliyor |
+| T132 | Dokunma alanı | Diskin kenarına (bir parmak genişliği içinde) ve iki diskin arasına dokun | Kenar diski basar; arası en çok bir diski basar; diskler dış ve iç ekranda elde en az 40 puan | Aşama 10 | Bekliyor |
+| T133 | Eski kayıtla açılış | Bu derlemeyi 20. bölümü geçmiş bir oyuncuyla 2.–9. aşama derlemesinin üstüne kur | Bölüm içi booster'lar yeniden verilmez (eski hediyeyle gelmişlerdi); cüzdandan önceki kayıtlı oyuncu (katman 1–2) her birinden 3 alır | Aşama 10 | Bekliyor |
+| T134 | Katlanır, yatay | Katlanır telefonu açıp yatay tut, uzun bir tahtada booster seç | Yazı okunur; en alt sıranın ne kadarını örttüğünü not et (bilinen açık A24) | Aşama 10 | Bekliyor |
 
 ### G. Görünüm
 

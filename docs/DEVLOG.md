@@ -36,6 +36,23 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Her Markdown belgesinin yanında PDF'i de olsun (zaten böyle; kural kalıcı).
 - Bu kararlarla 10. aşama tek ajanla başladı.
 
+**Avatar (§23'e sonra girecek)**
+- Kullanıcı, oyunun müze ve yapboz üzerinden gittiğini, bu yüzden bir avatara ihtiyaç olduğunu söyledi; avatar hikâyenin genç ressamı olacak.
+- İkinci bir ajan tasarım tuvalinin üslubunda dört taslak çizdi: Defne, Kerem, Ela ve Deniz. Seçim belgesi `docs/research/avatar-concepts.md`, PDF'i "Tasarım Önerisi". Önerim Defne; seçim kullanıcıda.
+
+**Bot deneyi (sonra)**
+- Booster'lar bitince oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot hazırlanacak. Botun eğilimleri ölçülecek; sahte reklam yalnızca botun kendi kararlarını ölçmek için kullanılacak. Ayrıntılar kullanıcıdan gelecek.
+
+**Arayüz: planın 10. aşaması (§23)**
+- Dört bölüm içi booster rafta, dokunuşla kullanılıyor. Booster tek dokunuşla seçiliyor; seçilince adını ve işini söylüyor. Boşa kullanım hiçbir şey harcamıyor; boş diskteki artıdan satın alınıyor.
+- Üç karar uygulandı:
+  - Karıştırma artık hep karıştırıyor. 2000 gerçek tahtada eski kural 449 kez reddediyordu, yenisi hiç; motor izi aynı ve eski kayıtlar eski kuralla oynatılıyor.
+  - Booster denemeyi başlatıyor.
+  - Booster'lar 7., 12., 16. ve 20. bölümde birer birer, hediyeleriyle açılıyor.
+- 3.424 test geçti; ekonomi denetimi ve simülatörün sayıları değişmedi; Unity'deki bütün denetimler hatasız. Görüntülere baktım.
+- Bilinen açık: bazı ekranlarda booster yazısı en alt sıranın bir kısmını örtüyor (A24).
+- Ajan bu aşamada yaklaşık 955 bin token kullandı; şimdiye kadarki en büyük aşama.
+
 ## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
 
 **Kullanıcı kararları**
@@ -88,7 +105,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.349 test geçti; Unity'de bütün denetimler hatasız, şölen 5,5 saniye sınırında. Görüntülere baktım: tahta ve kazanma kartı çizimle neredeyse aynı.
 
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 23 bilinen açık, 70 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 24 bilinen açık, 85 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

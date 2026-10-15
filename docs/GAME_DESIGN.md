@@ -1159,6 +1159,30 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 
 Bu kararlarla 10. aşama başladı.
 
+**Bölüm içi booster'lar oyunda (2026-10-15).** Arayüz planının 10. aşaması; yukarıdaki üç kararla.
+
+- **Kullanım:**
+  - Disk tek dokunuşla seçilir; parmak altında yanar, kaydırılabilir.
+  - Hap aracın adını, işini ve neyi seçmek gerektiğini söyler ("Spatula · bir taşı ya da bir katı kaldırır / Bir taş seç").
+  - Hedef, satır ya da sütun boyunca soluk bir ışık bandıyla ya da taşın altında bir halkayla görünür.
+  - Booster parmak kalkınca, tahta durunca uygulanır. Taşlar düşerken de seçilebilir; kullanım tahtanın oturmasını bekler.
+  - Seçili booster aynı diske yeniden dokununca, geri hareketiyle, parmağı tahtadan çıkarınca ya da duraklatınca bırakılır; hiçbir şey harcanmaz.
+- **Harcama:** booster yalnızca motor kabul edince harcanır. Hiçbir şey değiştirmeyecek kullanımda disk sallanır, hap nedenini söyler ("Burada vurulacak bir şey yok"), sayı aynı kalır. Kabul edilen ilk booster denemeyi başlatır.
+- **Satın alma:** boş diskteki artı, booster'ı tek fiyatına satar. Satın alınan spatula ya da fırça hemen seçili gelir; karıştırma tek dokunuşla çalıştığı için seçili gelmez.
+- **Karıştırma:** serbest taşlar eşleşme bırakmadan dizilir.
+  - 1000 bölümde 2000 tahtada (her bölümün ilk tahtası ve üç hamle sonrası) eski kural 449 kez reddediyordu; yenisi hiç reddetmedi.
+  - Motorun hamle kalmayınca yaptığı karıştırma değişmedi; motor izi aynı.
+  - Yeni kayıtlar `"shuffleRule":2` taşır. Bu alanı olmayan kayıt eski kuralla yeniden oynatılır.
+- **Açılış:** spatula 7., satır fırçası 12., sütun fırçası 16., karıştırma 20. bölümde açılır. O bölüme kadar disk sönüktür ve üstünde "Bölüm N" yazar. Açıldığı bölümde ışık halkası ve "Yeni: Spatula! Diske dokun, sonra bir taşa." yazısı çıkar; spatulanın altında "Her bölüm booster'sız geçilebilir" de yazar.
+- **Hediye:** 3'er adet her booster açıldığında bir kez verilir.
+  - Cüzdandan önceki kayıtlar (katman 1–2) her hediyeyi bir kez alır.
+  - 2.–9. aşama derlemelerinin kayıtları hediyeyi zaten başta almış sayılır, iki kez verilmez.
+  - Ekonomi paketi biçim 2, kayıt dosyası katman 4 oldu; ikisi de eklemeli değişiklik.
+- **Simülatör:** bölüm içi hediyeyi açılış bölümünde verir. Ortalama oyuncunun sayıları değişmedi: 8., 25. ve 90. gün.
+- **Bilinen:** 9:16 telefonda uzun tahtalarda ve katlanır telefonun yatay iç ekranında hap en alttaki sıranın bir kısmını örtüyor. Dokunuşlar geçiyor, ama ilk denemedeki yazı ilk hamleye kadar o taşları gizliyor. Seçili booster varken başka diske geçilemiyor; önce bırakmak gerekiyor.
+- **Doğrulama:** 3.424 test. Ekonomi denetimi oyunları bu derlemeyle kabul etti. Unity'de bütün denetimler, iki yeni araç (`BoosterCheck`, `BoosterShots`), oynatma kipi, ekran yürüyüşü ve tasarımla karşılaştırma hatasız.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T120–T134.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
