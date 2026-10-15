@@ -45,11 +45,13 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A18 | `generate --repair` 899. bölümü her seferinde yeniden üretiyor. | Oturum 12 | Zararsız | — |
 | A19 | Can denetimi yoktu. **Salondan kapandı (2026-10-14, aşama 7):** canı bitmiş oyuncu "Bölüm N" ile bölüm açamıyor. Bölüm başı kartı 8. aşamada gelecek. | Aşama 2 | Düşük | T93, T94 |
 | A20 | Cüzdan oyunda görünmüyordu. **Kapandı (2026-10-14, aşama 7):** altın ve canlar müze sayfalarında; can bitince bölüm açılmıyor. | Aşama 2 | — | T90–T97 |
-| A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
+| A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB). **Kısmen kapandı (2026-10-15, aşama 13):** Gizlilik ve veri kartında "Kayıtları sil" var; oyuncu silmedikçe dosya büyümeye devam eder. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | T182, T183 |
 | A24 | Booster yazısı 9:16 telefonda uzun tahtalarda ve katlanır telefonun yatay iç ekranında en alt sıranın bir kısmını örtüyor. Dokunuşlar geçiyor, ama ilk denemedeki yazı ilk hamleye kadar o taşları gizliyor. | Aşama 10 | Orta | T134; yer ayırmak tahtayı küçültür |
 | A25 | Teklif ya da canlandırma reklamı açıkken uygulama kapatılırsa can gitmez ve kayıt yazılmaz. | Aşama 11 | Düşük | Planın bildiği açık |
 | A26 | Ekonomi simülatörü tablo ödülünü onuncu kazanmada veriyor, oyun son parça yerleşince. Parçalar geç yerleştirilirse ödül oyunda simülatördekinden geç gelir. | Aşama 12 | Düşük; tahminin günü biraz kayabilir | Simülatör son parça anına geçirilecek ya da fark ölçülecek |
 | A27 | Bu sürümden önce tamamlanmış tablolar için ödül verilmez; ödül yalnızca son parçayla gelir. | Aşama 12 | Yalnızca eski test kayıtları | Kabul edildi |
+| A28 | APK INTERNET iznini taşıyor (Unity'nin "Auto" ayarı; 8 Ekim APK'sında görüldü). Oyunun kodu ağa çıkmıyor, Unity servisleri ve istatistikleri kapalı; yine de gizlilik metnindeki "hiçbir şey göndermez" cümlesi Unity'nin gerçekten bir şey göndermemesine dayanıyor. | Aşama 13 | Orta: gizlilik metninin doğruluğu | Proje sahibinin kararı: izin kaldırılsın mı; T186 telefonda ölçer |
+| A29 | Android yedeklemesi açık (`allowBackup` yazılmamış): oyunun dosyaları telefonun Google yedeğine katılabilir. Gizlilik metni bunu söylüyor. | Aşama 13 | Düşük; telefon değişince ilerlemeyi de kurtarabilir | Proje sahibinin kararı |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -233,6 +235,19 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T170 | Ödül bir kez | Son parça yerine oturur oturmaz uygulamayı kapat, aç; tabloyu koleksiyonda aç | Ödül tam bir kez verilmiş (+80 altın bir kez); tabloyu bütün olarak görmek bir şey vermez | Aşama 12 | Bekliyor |
 | T171 | Mağazaya git | Bölüm kartında hiç sahip olmadığın ve altının yetmediği bir başlangıç booster'ının artısına bas; "Mağazaya git"e bas | İki kart da kalkar, mağaza gelir; bir şey alınmaz, can gitmez | Aşama 12 | Bekliyor |
 | T172 | Katlanır ekranlar | T160, T162 ve T166'yı açık iç ekranda ve dış ekranda tekrarla | İç ekranda iki sütun (paketler ve setler yan yana, ücretsiz şerit altta), dışta tek sütun; her düğme rahat basılır; hediye çerçevesi tezgâhın yanında | Aşama 12 | Bekliyor |
+
+### F8. Ayarlar, gizlilik ve destek (aşama 13)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T180 | Çark | Salonda, haritada, koleksiyonda ve mağazada altın-kalp satırının sağ üstündeki yuvarlak çarka dokun | "Ayarlar" kartı her seferinde iner; arkadaki çubuğa ya da altına dokunmak bir şey yapmaz; telefonun geri hareketi kartı kapatır; başka bir sayfada × kapatır | Aşama 13 | Bekliyor |
+| T181 | Kartı oku | Ayarlar kartını aç ve oku | Dil (Türkçe, ok yok, dokunmak bir şey yapmaz), Gizlilik ve veri ("Oyun hiçbir şey göndermez"), Destek; 14. aşamadan sonra üstte Ses ve Titreşim anahtarları da var; altta "Oyuncu kimliği: XXXX-XXXX · Sürüm 1.0" ve "Test sürümü · reklamlar canlandırma, satın alma kapalı"; kesik yazı yok, ğ, ı, ş, ü doğru | Aşama 13 | Bekliyor |
+| T182 | Kayıt sayısı | İki bölümü sonuna kadar oyna (kazan ya da kaybet), sonra Gizlilik ve veri kartını aç | Metin rahat okunur ve sana göre doğru; "Deneme kayıtları" kayıtlar başladığından beri biten her denemeyi sayar (kazanılan, kaybedilen, bir hamleden sonra bırakılan) | Aşama 13 | Bekliyor |
+| T183 | Kayıtları sil | "Kayıtları sil"e dokun, sonra "Vazgeç"; yine dokun, sonra "Sil"; kartları kapat | Önce bir soru; Vazgeç bir şey değiştirmez; Sil sayıyı 0 yapar ve "Bütün kayıtlar silindi." der; düğme sönük; altın, can, bölüm, booster'lar ve yerleştirilmiş parçalar önceki gibi | Aşama 13 | Bekliyor |
+| T184 | Destek | Destek kartını aç. Telefon USB'deyken kartın gösterdiği klasörü aç | Oyuncu kimliği ayarlar kartının altındakiyle aynı; "Sürüm 1.0"; "Bölüm içeriği sürüm 1"; yol `/storage/emulated/0/Android/data/com.saturnwave.puzzle/files/attempts.jsonl`; T183'ten sonra dosya yok, bir bölüm daha bitince tek satırla geri gelir | Aşama 13 | Bekliyor |
+| T185 | Yeniden açılış | T183'ten sonra oyunu tamamen kapat (kaydırıp at), yeniden aç; ayarları ve gizlilik kartını aç | Sayı hâlâ 0 (ya da o zamandan beri biten deneme kadar); oyuncu kimliği öncekiyle aynı | Aşama 13 | Bekliyor |
+| T186 | Veri kullanımı | Android Ayarlar > Uygulamalar > oyun > Mobil veri ve Wi-Fi: Wi-Fi açıkken 10 dakikalık bir oturumdan önce ve sonra bak; Uygulama bilgisi > İzinler'e de bak | Oyun veri kullanmamış (0 B); oyun izin istememiş. Veri görünürse gizlilik metni değişmeli ya da INTERNET izni kaldırılmalı (A28) | Aşama 13 | Bekliyor |
+| T187 | Üstüne kurulum | Yeni sürümü eskisinin üstüne kur (kaldırmadan), oyunu aç | İlerleme, altın ve canlar duruyor; ayarlar kartı açılıyor (1. düzendeki eski cihaz dosyası bütün ayarlar açık okunur); hata görünmüyor | Aşama 13 | Bekliyor |
 
 ### G. Görünüm
 

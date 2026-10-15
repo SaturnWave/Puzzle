@@ -70,6 +70,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.560 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: mağaza ve salon çizimle neredeyse birebir; Usta seti 1.250 altında doğru olarak sönük.
 - İki yeni bilinen açık: simülatörle oyunun tablo ödülü anı farklı (A26), eski kayıtlardaki tamamlanmış tablolar ödülsüz (A27).
 
+**Arayüz: planın 13. aşaması (§23)**
+- Cüzdan satırındaki çark ayarlar kartını açıyor: Dil, Gizlilik ve veri, Destek. Ses ve titreşim anahtarları 14. aşamada.
+- Gizlilik kartı: taslak metin, deneme kayıtlarının sayısı, bir soruyla "Kayıtları sil". Unity'nin istatistik bayrağı kapatıldı.
+- Ajan APK'nın neler gönderebileceğini inceledi: oyunun kodu ağa hiç çıkmıyor; reklam, satın alma ya da analiz paketi yok; Unity servisleri kapalı. Ama 8 Ekim APK'sı INTERNET iznini taşıyor ve Android yedeklemesi açık (A28, A29).
+- 3.648 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: kart çizimin dilinde, anahtar satırları olmadığı için kısa.
+- Proje sahibinin kararını bekleyenler: gizlilik metni, INTERNET izninin kaldırılması, Android yedeklemesi.
+
 ## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
 
 **Kullanıcı kararları**
@@ -122,7 +129,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.349 test geçti; Unity'de bütün denetimler hatasız, şölen 5,5 saniye sınırında. Görüntülere baktım: tahta ve kazanma kartı çizimle neredeyse aynı.
 
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 27 bilinen açık, 110 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 29 bilinen açık, 118 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

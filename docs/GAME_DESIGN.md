@@ -924,6 +924,11 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Canlı testte bölüm değiştirme:** sunucu bölümleri yalnızca açılışta okur. Dosyalar diskte değişir, eski sürümler `levels/archive/` altına alınır, sunucu yeniden başlatılır. Yarım kalmış denemesi olan oyuncunun o denemesi düşer; oyuncu bulunduğu bölümün yeni sürümünden devam eder.
 - **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
 - **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
+- **İstemcide gizlilik ve veri (2026-10-15, arayüz aşaması 13):** ayarlar kartındaki "Gizlilik ve veri" kartı neyin telefonda tutulduğunu söyler (ilerleme, cüzdan, ayarlar, deneme kayıtları). Deneme kayıtlarını sayar ve bir soru sorduktan sonra siler; ilerleme, cüzdan ve ayarlar yerinde kalır.
+  - **Metin, onay bekleyen taslak** (`PrivacyWords.cs`): bu sürüm telefondan dışarı bir şey göndermez; hesap, reklam ağı ve satın alma yoktur; Unity'nin istatistikleri kapalıdır; kayıtlarda ad ya da telefon bilgisi yoktur, yalnızca rastgele bir kimlik vardır; Android yedeklemesi açıksa dosyalar telefonun yedeğine katılabilir.
+  - **Dayanağı:** oyunun kodu ağa hiç çıkmıyor; reklam, satın alma ya da analiz paketi yok; Unity servisleri kapalı; `ProjectSetup` Unity'nin istatistik bayrağını kapatıyor.
+  - **Rıza ekranı yok,** çünkü telefondan bir şey çıkmıyor. Analiz servisi eklenince rıza ekranı gelecek ve metin değişecek.
+  - **Açık:** APK INTERNET iznini taşıyor (A28); Android yedeklemesi açık (A29). İkisi de proje sahibinin kararını bekliyor.
 - **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
 - **Yayın sırası (karar 2026-10-05):** APK testi → doğrudan dünya geneli. Önceki plandaki birkaç küçük ülkede sınırlı yayın adımı kaldırıldı. Sonucu: limitleri gerçek oyuncu verisiyle ayarlama fırsatı yayından önce yalnızca web testi ve APK testidir; yayından sonraki ayar düzeltme paketleriyle yapılır (aşağıda). Bu yüzden yayın öncesi kalibrasyon bilerek yumuşak tutulur (§8 madde 7 ve 8). Yayında 1000 bölümün tamamı bulunur.
 - **Düzeltme paketleri:** bölümler uygulamanın içinde gelir; sunucudan küçük düzeltme paketleri inebilir (örneğin bir bölümün hamle limiti ya da seed havuzu). Oyun internetsiz de oynanır. Bölüm dosyasındaki `formatVersion` dosya biçimini sürümler; bölümün içeriğini `contentVersion` sürümler.
@@ -1228,6 +1233,23 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** telefonun saati ileri alınırsa ertesi günün reklamları ve hediyesi açılır (sunucu yok; A01). Simülatör tablo ödülünü onuncu kazanmada veriyor, oyun son parçada (A26). Satın alma ve ödülün sesi ve uçan altın canlandırması yok.
 - **Doğrulama:** 3.560 test. Unity'de bütün denetimler; mağaza, reklam, hediye ve tamamlanan tablo yürüyüşü; mağazalı tasarım karşılaştırması hatasız. Mağaza çizimle neredeyse birebir.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T160–T172.
+
+**Ayarlar, gizlilik ve veri, destek (2026-10-15).** Arayüz planının 13. aşaması.
+
+- **Çark ve kart:** cüzdan satırının sağındaki çark, SettingsTR çizimindeki "Ayarlar" kartını salonda, haritada, koleksiyonda ve mağazada açar. Geri hareketi ve × kartı kapatır; kart açıkken arkası tepki vermez.
+- **Satırlar:** yalnızca bu sürümün yapabildiği şeyler için satır çizilir (`DeviceAbilities`).
+  - "Dil" "Türkçe" gösterir, basılmaz.
+  - "Gizlilik ve veri" ile "Destek" kendi kartlarını açar.
+  - Ses ve titreşim anahtarları 14. aşamada gelir. Müzik satırı bir müzik seçilene kadar yok.
+
+  Kartın altında oyuncu kimliği (cihaz kimliğinin ilk sekiz karakteri, iki grup), sürüm ve kuralların sürüm işaretlerinden gelen satır durur: "Test sürümü · reklamlar canlandırma, satın alma kapalı".
+- **Gizlilik ve veri:** taslak metin (§20), deneme kayıtlarının sayısı ve "Kayıtları sil". Silme bir kez sorar. "Sil" kayıt dosyasını boşaltır; ilerleme, cüzdan ve ayarlar yerinde kalır.
+- **Destek:** oyuncu kimliği, sürüm, bölüm içeriği sürümü ve kayıt dosyasının yeri. Destek adresi yok, çünkü henüz verilmedi.
+- **Ayarların kaydı:** `device.json` 2. düzende ayarları da tutar. 1. düzendeki dosya bütün ayarlar açık okunur; bozuk dosya ilerlemeyi ve cüzdanı götürmez. Yeni anahtar denetimi (`Toggle`) hazır.
+- **Unity istatistikleri:** `ProjectSetup` Unity'nin kendi istatistik bayrağını kapatır (`submitAnalytics: 0`).
+- **Bilinen:** APK INTERNET iznini taşıyor (A28); Android yedeklemesi açık (A29); gizlilik metni onay bekliyor. Silme sorusunda "Sil" yeşil, "Vazgeç" mavi, çünkü sanatta kırmızı düğme yok.
+- **Doğrulama:** 3.648 test. Unity'de bütün denetimler; çark, kartlar ve silme yürüyüşü; ayarlar kartlı tasarım karşılaştırması hatasız. Kart çizimdekinden kısa, çünkü anahtar satırları yok. Gizlilik satırı çizimdeki "Yalnızca anonim oyun verisi toplanır" yerine "Oyun hiçbir şey göndermez" diyor; çizimdeki cümle bu sürüm için doğru olmazdı.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T180–T187.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
