@@ -309,6 +309,9 @@ namespace Puzzle.Client.Stage
         /// <summary>What happened in the attempt that changes the player's progress and nobody has taken yet, in the order it happened.</summary>
         private readonly List<AttemptEvent> _happened = new List<AttemptEvent>();
 
+        /// <summary>What the stage sounded that its owner has not taken yet: the cues of what it shows and of the presses on it.</summary>
+        private readonly CuesSounded _sounded = new CuesSounded();
+
         private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf)
         {
             bool hasItemsToDrop = game.Level.Goals.Any(goal => goal is GoalSpec.DropItems);
@@ -713,6 +716,7 @@ namespace Puzzle.Client.Stage
                 TurnScript script = TurnChoreographer.Compose(_ledger, _game.Level.Goals, _game.LastEvents, _game.Board);
                 LastTurn = script;
                 _turnPlayer.Play(script);
+                Score(SoundScore.OfATurn(script));
             }
             catch (InvalidOperationException fault)
             {
@@ -737,6 +741,9 @@ namespace Puzzle.Client.Stage
             _happened.Clear();
             return taken;
         }
+
+        /// <summary>The cues the stage sounded since this was asked last, in the order they fell, each once.</summary>
+        public IReadOnlyList<SoundCue> TakeWhatSounded() => _sounded.TakeAll();
 
         /// <summary>The pixel of the screen in the middle of a cell, counted from the screen's lower left corner: where a finger touches that cell.</summary>
         /// <exception cref="InvalidOperationException">The stage was not fitted to a screen yet.</exception>
@@ -870,6 +877,7 @@ namespace Puzzle.Client.Stage
             {
                 if (_controls.FingerUp(out StageControl pressed))
                 {
+                    _sounded.Add(SoundCue.Press);
                     Press(pressed);
                 }
 
@@ -880,6 +888,7 @@ namespace Puzzle.Client.Stage
             {
                 if (ListensToTheOffer && _offer.Card.FingerUp(out OfferPress asked))
                 {
+                    _sounded.Add(SoundCue.Press);
                     Answer(asked);
                 }
             }
@@ -887,6 +896,7 @@ namespace Puzzle.Client.Stage
             {
                 if (ListensToTheCard && _result.FingerUp(out ResultChoice choice))
                 {
+                    _sounded.Add(SoundCue.Press);
                     Choose(_result, choice);
                 }
             }
@@ -1129,6 +1139,7 @@ namespace Puzzle.Client.Stage
                 _finalePace = FinalePace.Of(script, finale.RocketsFired);
                 _finaleBeganAt = _timeline.Now;
                 _turnPlayer.Play(script);
+                Score(SoundScore.OfTheFinale(script));
             }
             catch (InvalidOperationException fault)
             {
@@ -1223,6 +1234,20 @@ namespace Puzzle.Client.Stage
         }
 
         /// <summary>
+        /// Puts what is heard of a script on the timeline beside what is seen of it: each cue sounds in the step that
+        /// reaches its moment, at the pace the script is played (a hurried finale's sounds are hurried with it), and a
+        /// script cut short (a finale skipped) takes the sounds it had not reached with it. Every moment lies within
+        /// the script, so the turn ends when it did without them.
+        /// </summary>
+        private void Score(IReadOnlyList<SoundNote> notes)
+        {
+            foreach (SoundNote note in notes)
+            {
+                _timeline.At(note.At, () => _sounded.Add(note.Cue));
+            }
+        }
+
+        /// <summary>
         /// The game is decided, or its moves have run out for the first time: the board is left to be seen for a
         /// moment, then the room goes dark, the result's card (or the offer of extra moves) comes down on its wires,
         /// and what it shows in its alcove pops up as it settles.
@@ -1258,6 +1283,7 @@ namespace Puzzle.Client.Stage
                 _timeline.Add(comesIn, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)), _lamps.PutOut);
             }
 
+            _timeline.At(cardComes, () => _sounded.Add(SoundScore.OfACard(card.Tells)));
             _timeline.Add(cardComes, Tempo.CardComesDown, card.ComeDown, () => _isCardDown = true);
             _timeline.Add(cardComes + Tempo.ExhibitsAfterCard, exhibitsSeconds, progress => card.ShowExhibits(progress * exhibitsSeconds));
         }
@@ -1349,6 +1375,7 @@ namespace Puzzle.Client.Stage
             _root.SetActive(true);
             PlayerChose = null;
             card.OfferThePlacing(piecesWaiting);
+            _timeline.At(Tempo.CardAfterDark, () => _sounded.Add(SoundCue.CardDown)); // the win was heard as the card first came
             _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.ComeDown, () => _isCardDown = true);
         }
 
@@ -1493,7 +1520,9 @@ namespace Puzzle.Client.Stage
             _playing = Playback.ATurn;
             try
             {
-                _turnPlayer.Play(TurnChoreographer.ComposeTheExtraMoves(_ledger, _game.LastEvents, _game.Board));
+                TurnScript script = TurnChoreographer.ComposeTheExtraMoves(_ledger, _game.LastEvents, _game.Board);
+                _turnPlayer.Play(script);
+                Score(SoundScore.OfATurn(script));
             }
             catch (InvalidOperationException fault)
             {
@@ -1523,6 +1552,7 @@ namespace Puzzle.Client.Stage
             var ad = new AdOnTheStage(card, Ads.Show(_brief.AdsShownAs), payment);
             _ad = ad;
             _timeline.Add(0f, Tempo.RoomDarkens, progress => _secondVeil.Darken(Easing.Out(progress)));
+            _timeline.At(Tempo.CardAfterDark, () => _sounded.Add(SoundCue.CardDown));
             _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.ComeDown, () => ad.IsDown = true);
         }
 
@@ -1686,6 +1716,7 @@ namespace Puzzle.Client.Stage
             if (!_game.TryUseBooster(use))
             {
                 _refused = (booster, _clock + Tempo.RefusalSaid);
+                _sounded.Add(SoundCue.Refuse);
                 _discs.Shake(booster, _clock);
                 _arming = booster == BoosterKind.Shuffle ? Arming.None : new Arming.Armed(booster);
                 ShowTheShelf();
@@ -1704,6 +1735,7 @@ namespace Puzzle.Client.Stage
                 TurnScript script = TurnChoreographer.ComposeBooster(_ledger, _game.Level.Goals, _game.LastEvents, _game.Board);
                 LastBooster = script;
                 _turnPlayer.Play(script);
+                Score(SoundScore.OfABooster(script));
             }
             catch (InvalidOperationException fault)
             {
@@ -1747,6 +1779,7 @@ namespace Puzzle.Client.Stage
             OfferedBooster = booster;
             _isOfferDown = false;
             _timeline.Add(0f, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)));
+            _timeline.At(Tempo.CardAfterDark, () => _sounded.Add(SoundCue.CardDown));
             _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, offer.Card.ComeDown, () => _isOfferDown = true);
             ShowTheShelf();
         }
@@ -1914,6 +1947,7 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
+            _sounded.Add(SoundCue.Refuse);
             bool bothMove = CanBeMoved(move.From) && CanBeMoved(move.To);
             float reach = bothMove ? RefusedTradeReach : RefusedNudgeReach;
             NudgeAndReturn(move.From, move.To, reach, isCarried: true);

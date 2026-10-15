@@ -14,8 +14,8 @@ namespace Puzzle.Client.EditorTools
     /// the hall with the settings card come down from the gear; the privacy card in front of it with the tools' stand-in
     /// records, its question, and the card once "Sil" has deleted them; the support card. The records lie in a folder
     /// of the tools laid out as a phone's (<see cref="StoryStudio.RecordsOnAPhone"/>), so the support card shows a
-    /// path as long as a phone's. And a look ahead: the settings card with the switches of sound and vibration, which
-    /// this build does not honour yet, drawn on the museum's stage alone.
+    /// path as long as a phone's. And the settings card with its switch of vibration turned off, drawn on the museum's
+    /// stage alone (the page "settingspreview", named when the build did not honour the switches yet).
     /// </summary>
     internal static class SettingsShots
     {
@@ -64,13 +64,12 @@ namespace Puzzle.Client.EditorTools
             return 1;
         }
 
-        /// <summary>The settings card with two switches, the second turned off, on the museum's stage alone: how it will look once the build honours them.</summary>
+        /// <summary>The settings card with the build's two switches, the second turned off, on the museum's stage alone.</summary>
         /// <returns>How many pictures were taken.</returns>
         public static int ShootThePreview(PlayerState state, ScreenShape screen, Studio studio)
         {
-            var twoSwitches = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Vibration);
             using MuseumStage museum = ScreenShots.OpenTheMuseum(
-                MuseumDoor.Home, state, screen, studio, StoryStudio.PhoneWith(StoryStudio.AttemptsKeptInMemory(), studio.Levels, twoSwitches));
+                MuseumDoor.Home, state, screen, studio, StoryStudio.PhoneWith(StoryStudio.AttemptsKeptInMemory(), studio.Levels, DeviceAbilities.OfThisBuild));
             StageSteps.Settle(museum);
             PressOnTheStage(museum, museum.GearPixel, "the wallet row's gear");
             PressOnTheStage(museum, museum.SwitchPixel(DeviceSetting.Vibration), "the switch of vibration");
@@ -85,7 +84,7 @@ namespace Puzzle.Client.EditorTools
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var session = new GameSession(
                 studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), records,
-                new SettingsInMemory(DeviceSettings.Default), DeviceAbilities.OfThisBuild, screen, SessionOpening.InTheMuseum);
+                new SettingsInMemory(DeviceSettings.Default), DeviceAbilities.OfThisBuild, CuePlayer.Silent, screen, SessionOpening.InTheMuseum);
             StoryStudio.AdvanceUntilSettled(session);
             return session;
         }

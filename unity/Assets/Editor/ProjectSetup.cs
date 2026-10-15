@@ -7,10 +7,11 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Brings everything the Editor derives up to date, in the order the parts need each other: the render pipeline,
-    /// the atlas of the sprites, the art catalogue from the drawings and the typeface, the scene that refers to the
-    /// catalogue; and it keeps Unity's own player statistics off. Safe to run again at any time; run it after the
-    /// drawings, the lists of drawings or the lettering styles change (after node tools/unity/export-sprites.js or
-    /// export-gallery-art.js, for instance).
+    /// the atlas of the sprites, the art catalogue from the drawings, the typeface and the sounds (it lists every sound
+    /// cue with its file, length and peak level), the scene that refers to the catalogue; and it keeps Unity's own
+    /// player statistics off. Safe to run again at any time; run it after the drawings, the lists of drawings, the
+    /// lettering styles or the sounds change (after node tools/unity/export-sprites.js, export-gallery-art.js or
+    /// fetch-sounds.js, for instance).
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ProjectSetup.Run
     /// </summary>
     public static class ProjectSetup

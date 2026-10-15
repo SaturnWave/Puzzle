@@ -7,6 +7,7 @@ using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Sound;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -18,7 +19,9 @@ namespace Puzzle.Client
     /// The one object of the game's scene. It opens the player's session, in the museum's hall, when the game starts
     /// and then only passes on what the device tells it: the time of each frame, the shape of the screen, where a finger touches it, and
     /// when the game is put away. Everything that is seen is built in code by the session's stage, so the scene file
-    /// stays a few lines and the Editor can build the same pictures without it.
+    /// stays a few lines and the Editor can build the same pictures without it. What is heard and felt goes the other
+    /// way: the root holds the phone's speaker and vibrator (<see cref="SoundPlayer"/>), which the session plays its
+    /// cues on; the Editor's sessions have none, and are silent.
     /// </summary>
     /// <remarks>
     /// Being put away and brought back needs little: Unity stops calling <see cref="Update"/> while the game is in
@@ -48,6 +51,7 @@ namespace Puzzle.Client
         [SerializeField] private ArtCatalogue? _art;
 
         private GameSession? _session;
+        private SoundPlayer? _sounds;
         private ScreenShape _fittedTo;
 
         /// <summary>
@@ -68,8 +72,15 @@ namespace Puzzle.Client
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
             _fittedTo = CurrentScreen();
-            _session = OpenSession(LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), _fittedTo);
+            _sounds = new SoundPlayer(gameObject, _art, Haptics.OfThisDevice());
+            _session = OpenSession(LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), _sounds, _fittedTo);
         }
+
+        /// <summary>
+        /// Where the running game's cues go: the phone's speaker and vibrator; nothing before the game has started.
+        /// For the Editor's play-mode check, which sounds every cue once through it.
+        /// </summary>
+        public ICuePlayer? Cues => _sounds;
 
         private void Update()
         {
@@ -111,7 +122,11 @@ namespace Puzzle.Client
             }
         }
 
-        private void OnDestroy() => _session?.Dispose();
+        private void OnDestroy()
+        {
+            _session?.Dispose();
+            _sounds?.Dispose();
+        }
 
         /// <summary>
         /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
@@ -123,13 +138,13 @@ namespace Puzzle.Client
         /// finds its progress as it left it.
         /// </summary>
         private static GameSession OpenSession(
-            IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, ScreenShape screen)
+            IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, ICuePlayer cues, ScreenShape screen)
         {
             var clock = new SystemWallClock();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
             GameSession SessionOn(IProgressStore store) =>
-                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, DeviceAbilities.OfThisBuild, screen, SessionOpening.InTheMuseum);
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, DeviceAbilities.OfThisBuild, cues, screen, SessionOpening.InTheMuseum);
 
             try
             {

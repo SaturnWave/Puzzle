@@ -155,6 +155,9 @@ namespace Puzzle.Client.Screens
         /// <summary>What presses asked of the phone that the stage's owner has not taken yet, in the order they were made.</summary>
         private readonly List<DeviceRequest> _askedOfThePhone = new List<DeviceRequest>();
 
+        /// <summary>What the stage sounded that its owner has not taken yet: presses, switches, cards and coins.</summary>
+        private readonly CuesSounded _sounded = new CuesSounded();
+
         /// <summary>The page that is shown, or that is coming in while a page is turned.</summary>
         private IMuseumPage _page;
 
@@ -442,6 +445,11 @@ namespace Puzzle.Client.Screens
         public void Tell(WalletView wallet, ShopView shop)
         {
             _shop = shop ?? throw new ArgumentNullException(nameof(shop));
+            if (wallet.Coins != _wallet.Wallet.Coins)
+            {
+                _sounded.Add(SoundCue.Coin); // as the row starts to count them in, or out
+            }
+
             _wallet.Tell(wallet);
             foreach (IMuseumCard card in _cards)
             {
@@ -490,6 +498,9 @@ namespace Puzzle.Client.Screens
             _askedOfThePhone.Clear();
             return taken;
         }
+
+        /// <summary>The cues the stage sounded since this was asked last, in the order they fell, each once.</summary>
+        public IReadOnlyList<SoundCue> TakeWhatSounded() => _sounded.TakeAll();
 
         /// <summary>Shows the phone as it is now on the cards that show it: the settings kept, the records left after a deletion.</summary>
         public void Tell(DeviceView device)
@@ -577,6 +588,7 @@ namespace Puzzle.Client.Screens
             bool isPressed = TopCard is IMuseumCard card ? card.Card.FingerUp(out press) : _presses.FingerUp(out press);
             if (isPressed)
             {
+                _sounded.Add(press is MuseumPress.FlipASwitch ? SoundCue.Toggle : SoundCue.Press);
                 Follow(press);
             }
         }
@@ -756,6 +768,7 @@ namespace Puzzle.Client.Screens
                 _timeline.Add(0f, Tempo.RoomDarkens, progress => dark.Darken(Easing.Out(progress)));
             }
 
+            _timeline.At(Tempo.CardAfterDark, () => _sounded.Add(SoundCue.CardDown));
             _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.Card.ComeDown);
         }
 
@@ -888,6 +901,7 @@ namespace Puzzle.Client.Screens
             _ad = ad;
             _presses.Clear();
             _timeline.Add(0f, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)));
+            _timeline.At(Tempo.CardAfterDark, () => _sounded.Add(SoundCue.CardDown));
             _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.ComeDown, () => ad.IsDown = true);
         }
 

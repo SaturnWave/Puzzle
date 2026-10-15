@@ -652,7 +652,7 @@ namespace Puzzle.Client.EditorTools
             public GameSession SessionOnThePhone(int levelNumber, DeviceFile phone, DeviceAbilities abilities) =>
                 new GameSession(
                     _levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(StoryStudio.StandingOn(Level(levelNumber), _levels)), Log,
-                    phone, abilities, Screen, SessionOpening.InTheMuseum);
+                    phone, abilities, CuePlayer.Silent, Screen, SessionOpening.InTheMuseum);
 
             /// <summary>The game's own session in the hall of a new player who stands on a level, on the check's log.</summary>
             public GameSession SessionInTheHall(int levelNumber) =>

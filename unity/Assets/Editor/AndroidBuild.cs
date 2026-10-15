@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -13,7 +14,8 @@ namespace Puzzle.Client.EditorTools
     /// The package lands in unity/Build/Android/puzzle.apk, signed with Unity's debug key: good for installing on a
     /// test phone, not for a store. What the Editor derives (the atlas, the art catalogue, the typefaces, the scene)
     /// is brought up to date first: the game reads the catalogue by the order of its lists of drawings, and a
-    /// package with a catalogue older than those lists would stop at the first drawing added since.
+    /// package with a catalogue older than those lists would stop at the first drawing added since. The manifest is
+    /// given the build's permissions on the way (<see cref="AndroidManifestStep"/>).
     /// </summary>
     public static class AndroidBuild
     {
@@ -56,6 +58,17 @@ namespace Puzzle.Client.EditorTools
             Debug.Log($"Android build: succeeded, {summary.totalSize / (1024 * 1024)} MB at {summary.outputPath} in {summary.totalTime.TotalMinutes:F1} min.");
         }
 
+        /// <summary>
+        /// What the package's manifest says of Android's permissions beyond what Unity writes, one line each, in the
+        /// order they are written (<see cref="AndroidManifestStep"/>). The internet permission Unity asks for stays as it
+        /// is until the owner decides: a line PermissionLine.Withdraw("android.permission.INTERNET") would take it out
+        /// of the merged manifest. The application's backup flag is not this step's.
+        /// </summary>
+        internal static readonly PermissionLine[] Permissions =
+        {
+            PermissionLine.Ask("android.permission.VIBRATE"), // the short ticks of play (Scripts/Sound/Haptics.cs)
+        };
+
         /// <summary>A 64-bit ARM package in portrait: what current phones run and what the stores ask for.</summary>
         private static void ApplyPlayerSettings()
         {
@@ -66,6 +79,24 @@ namespace Puzzle.Client.EditorTools
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
             EditorUserBuildSettings.buildAppBundle = false;
+        }
+    }
+
+    /// <summary>
+    /// The build's manifest step: once Unity has made the Gradle project of an Android build (this tool's, or any
+    /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>).
+    /// A manifest that cannot be read or written stops the build: a package without them would fail on the phone.
+    /// </summary>
+    public sealed class AndroidManifestStep : IPostGenerateGradleAndroidProject
+    {
+        public int callbackOrder => 0;
+
+        /// <param name="path">The Unity library's Gradle project, as Unity hands it over.</param>
+        public void OnPostGenerateGradleAndroidProject(string path)
+        {
+            string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
+            File.WriteAllText(manifest, ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions));
+            Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}.");
         }
     }
 }

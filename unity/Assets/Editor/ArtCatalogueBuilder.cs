@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Flow;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -11,9 +12,9 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Writes the art catalogue (Assets/Art/ArtCatalogue.asset) from the drawings in Assets/Art/Pieces and
-    /// Assets/Art/Gallery and from the game's typefaces. Each list of drawings and its folder must agree exactly: a
-    /// drawing without a file, or a file no drawing asks for, stops the build with its name, so the game cannot meet
-    /// a missing sprite later.
+    /// Assets/Art/Gallery, from the game's typefaces, and from the sounds in Assets/Art/Sounds. Each list and its folder
+    /// must agree exactly: a drawing or a sound cue without a file, or a file nothing asks for, stops the build with its
+    /// name, so the game cannot meet a missing sprite or sound later; a sound whose licence is not on record stops it too.
     /// </summary>
     public static class ArtCatalogueBuilder
     {
@@ -21,6 +22,10 @@ namespace Puzzle.Client.EditorTools
 
         private const string PiecesExporter = "tools/unity/export-sprites.js";
         private const string GalleryExporter = "tools/unity/export-gallery-art.js";
+        private const string SoundFetcher = "tools/unity/fetch-sounds.js";
+
+        /// <summary>Where each sound came from and under what licence, as the fetch script writes it; seen from the Unity project's folder.</summary>
+        private const string SoundLicencesPath = "../art/sounds/licences.json";
         private const string PaintShaderName = "Puzzle/Paint";
         private const string PaintMaterialPath = "Assets/Art/Shaders/Paint.mat";
 
@@ -163,13 +168,35 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.WideAlcove] = "alcove-wide",
         };
 
-        /// <exception cref="InvalidOperationException">The drawings and the files do not agree, or a material is missing.</exception>
+        /// <summary>The file each cue sounds with, named by the cue, as tools/unity/fetch-sounds.js keeps it.</summary>
+        private static readonly IReadOnlyDictionary<SoundCue, string> SoundFileNames = new Dictionary<SoundCue, string>
+        {
+            [SoundCue.Press] = "press.ogg",
+            [SoundCue.Refuse] = "refuse.ogg",
+            [SoundCue.Swap] = "swap.ogg",
+            [SoundCue.Match] = "match.ogg",
+            [SoundCue.SpecialMade] = "special-made.ogg",
+            [SoundCue.Blast] = "blast.ogg",
+            [SoundCue.Booster] = "booster.ogg",
+            [SoundCue.MoveThrown] = "move-thrown.ogg",
+            [SoundCue.CardDown] = "card-down.ogg",
+            [SoundCue.Win] = "win.ogg",
+            [SoundCue.Lose] = "lose.ogg",
+            [SoundCue.Coin] = "coin.ogg",
+            [SoundCue.PiecePlaced] = "piece-placed.ogg",
+            [SoundCue.PaintingWhole] = "painting-whole.ogg",
+            [SoundCue.Toggle] = "toggle.ogg",
+        };
+
+        /// <exception cref="InvalidOperationException">The drawings or the sounds and the files do not agree, a sound has no licence on record, or a material is missing.</exception>
+        /// <exception cref="IOException">The record of the sounds' licences cannot be read.</exception>
         public static void Build()
         {
             RefuseUnlistedFiles(PieceSpriteImport.PiecesFolder, FileNames.Values);
             RefuseUnlistedFiles(GalleryArtImport.GalleryFolder, GalleryFileNames.Values.Append(Path.GetFileNameWithoutExtension(GalleryArtImport.DamaskPath)));
             Dictionary<PieceArt, Sprite> pieces = SpritesOf(FileNames, PieceSpriteImport.PiecesFolder, PiecesExporter);
             Dictionary<GalleryArt, Sprite> gallery = SpritesOf(GalleryFileNames, GalleryArtImport.GalleryFolder, GalleryExporter);
+            Dictionary<SoundCue, AudioClip> sounds = SoundsOf(SoundFileNames);
             (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> letteringMaterials) = LetteringBuilder.Ensure();
 
             ArtCatalogue catalogue = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(CataloguePath);
@@ -182,7 +209,98 @@ namespace Puzzle.Client.EditorTools
             Debug.Log($"Art catalogue: {pieces.Count + gallery.Count} drawings, packed into {PieceAtlasBuilder.TexturesOf(pieces.Values.Concat(gallery.Values))} atlas texture(s).");
             catalogue.FillDrawings(pieces, gallery, Damask(), SpriteMaterial(), PaintMaterial());
             catalogue.FillLettering(typefaces, letteringMaterials);
+            catalogue.FillSounds(sounds);
             EditorUtility.SetDirty(catalogue);
+        }
+
+        /// <summary>
+        /// The sound of every cue, from the folder the fetch script keeps them in, each with its source and licence on
+        /// record; every cue is listed in the log with its file, its length and its peak level, by which the stand-ins
+        /// were chosen (no agent hears them).
+        /// </summary>
+        /// <exception cref="InvalidOperationException">A cue has no file, the folder holds a file no cue names, or a file has no licence on record.</exception>
+        /// <exception cref="IOException">The record cannot be read.</exception>
+        private static Dictionary<SoundCue, AudioClip> SoundsOf(IReadOnlyDictionary<SoundCue, string> fileNames)
+        {
+            var listed = new HashSet<string>(fileNames.Values);
+            string[] unlisted = Directory.GetFiles(SoundImport.SoundsFolder)
+                .Select(Path.GetFileName)
+                .Where(name => !name.EndsWith(".meta") && !listed.Contains(name))
+                .ToArray();
+            if (unlisted.Length > 0)
+            {
+                throw new InvalidOperationException($"{SoundImport.SoundsFolder} holds sounds no cue names: {string.Join(", ", unlisted)}. Add them to the cues and to the catalogue builder, or remove them.");
+            }
+
+            IReadOnlyDictionary<string, string> licences = SoundLicences();
+            var sounds = new Dictionary<SoundCue, AudioClip>();
+            foreach (SoundCue cue in (SoundCue[])Enum.GetValues(typeof(SoundCue)))
+            {
+                if (!fileNames.TryGetValue(cue, out string fileName))
+                {
+                    throw new InvalidOperationException($"The catalogue builder names no sound for {cue}.");
+                }
+
+                string path = $"{SoundImport.SoundsFolder}/{fileName}";
+                AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                if (clip == null)
+                {
+                    throw new InvalidOperationException($"{path}, the sound of {cue}, is missing or was not imported as a sound; run node {SoundFetcher} from the repository root.");
+                }
+
+                if (!licences.TryGetValue(fileName, out string licence) || string.IsNullOrWhiteSpace(licence))
+                {
+                    throw new InvalidOperationException($"{path} has no licence in {SoundLicencesPath}; run node {SoundFetcher} from the repository root.");
+                }
+
+                Debug.Log($"Sound {cue}: {fileName}, {clip.length:0.000} s, {clip.channels} channel(s) at {clip.frequency} Hz, peak {PeakOf(clip)}; {licence}.");
+                sounds[cue] = clip;
+            }
+
+            return sounds;
+        }
+
+        /// <summary>The licence of each sound file, by the file's name, as the fetch script recorded it.</summary>
+        /// <exception cref="IOException">The record cannot be read.</exception>
+        private static IReadOnlyDictionary<string, string> SoundLicences()
+        {
+            if (!File.Exists(SoundLicencesPath))
+            {
+                throw new FileNotFoundException($"{SoundLicencesPath} is missing; run node {SoundFetcher} from the repository root.", SoundLicencesPath);
+            }
+
+            SoundRecord record = JsonUtility.FromJson<SoundRecord>(File.ReadAllText(SoundLicencesPath));
+            return (record?.sounds ?? Array.Empty<SoundEntry>()).ToDictionary(entry => entry.file, entry => entry.licence);
+        }
+
+        /// <summary>
+        /// The loudest sample of a sound, in decibels below full scale, measured on its samples as the game decompresses
+        /// them; "not measured" where the Editor cannot hand them out.
+        /// </summary>
+        private static string PeakOf(AudioClip clip)
+        {
+            var samples = new float[clip.samples * clip.channels];
+            if (!clip.LoadAudioData() || !clip.GetData(samples, 0))
+            {
+                return "not measured (the Editor did not hand out its samples)";
+            }
+
+            float peak = samples.Length == 0 ? 0f : samples.Max(sample => Mathf.Abs(sample));
+            return peak > 0f ? $"{20f * Mathf.Log10(peak):0.0} dBFS" : "silent";
+        }
+
+        /// <summary>The record of the sounds as fetch-sounds.js writes it, as far as the builder reads it.</summary>
+        [Serializable]
+        private sealed class SoundRecord
+        {
+            public SoundEntry[] sounds = Array.Empty<SoundEntry>();
+        }
+
+        [Serializable]
+        private sealed class SoundEntry
+        {
+            public string file = string.Empty;
+            public string licence = string.Empty;
         }
 
         private static void RefuseUnlistedFiles(string folder, IEnumerable<string> listedNames)

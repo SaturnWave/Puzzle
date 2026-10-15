@@ -1,4 +1,7 @@
 #nullable enable
+using System.Linq;
+using Puzzle.Client.Art;
+using Puzzle.Client.Flow;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -8,7 +11,8 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Starts the game's scene the way a built game starts it, lets it run for a second and a half and writes its
-    /// last frame: the check that the scene file and the code it starts belong together. The pictures of the game are
+    /// last frame: the check that the scene file and the code it starts belong together. Halfway it sounds every cue
+    /// once through the running game's player. The pictures of the game are
     /// taken by RenderHarness, which needs no running game; this only proves that the running game gets there too.
     /// usage: Unity.exe -batchmode -projectPath unity -executeMethod Puzzle.Client.EditorTools.PlayModeCheck.Run
     /// Without -quit: the command ends the Editor itself, with exit code 1 when the game failed.
@@ -18,6 +22,9 @@ namespace Puzzle.Client.EditorTools
     {
         private const string PicturePath = "../out/unity/shots/play-mode.png";
         private const int FramesToRun = 90;
+
+        /// <summary>Halfway: the game has opened its session, and errors of its sounds still fail the check.</summary>
+        private const int FramesBeforeTheSounds = FramesToRun / 2;
 
         /// <summary>Entering play mode loads the scripts anew and forgets every static field; the Editor's session state survives it.</summary>
         private const string IsRunningKey = "Puzzle.Client.PlayModeCheck.IsRunning";
@@ -30,6 +37,7 @@ namespace Puzzle.Client.EditorTools
 
         private static bool _gameFailed;
         private static bool _isDone;
+        private static bool _hasSounded;
 
         static PlayModeCheck()
         {
@@ -72,6 +80,12 @@ namespace Puzzle.Client.EditorTools
                 Camera.allCameras[0].targetTexture = _screen;
             }
 
+            if (!_hasSounded && Time.frameCount >= FramesBeforeTheSounds)
+            {
+                _hasSounded = true;
+                SoundEveryCueOnce();
+            }
+
             bool hasNoPictureInTime = _screen == null && Time.frameCount > FramesToRun;
             if (hasNoPictureInTime)
             {
@@ -83,6 +97,40 @@ namespace Puzzle.Client.EditorTools
                 SessionState.EraseBool(IsRunningKey);
                 EditorApplication.Exit(_gameFailed || hasNoPictureInTime ? 1 : 0);
             }
+        }
+
+        /// <summary>
+        /// Plays every cue and every tick once through the running game's own speaker and vibrator, as the session
+        /// does when the settings are on, and says what the phone's settings are: a cue the catalogue has no sound for,
+        /// or a sound that fails to play, is an error and fails the check. (A batch-mode Editor may have no sound device:
+        /// then nothing is heard, but the clips are still loaded and handed to the sources.)
+        /// </summary>
+        private static void SoundEveryCueOnce()
+        {
+            GameRoot? root = Object.FindAnyObjectByType<GameRoot>();
+            if (root?.Cues is not ICuePlayer cues)
+            {
+                Debug.LogError("Play mode check: the running game has no cue player.");
+                return;
+            }
+
+            var everyCue = (SoundCue[])System.Enum.GetValues(typeof(SoundCue));
+            ArtCatalogue art = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(ArtCatalogueBuilder.CataloguePath);
+            SoundCue[] withoutASound = everyCue.Where(cue => art.SoundOf(cue) == null).ToArray();
+            if (withoutASound.Length > 0)
+            {
+                Debug.LogError($"Play mode check: the game's catalogue has no sound for {string.Join(", ", withoutASound)}.");
+            }
+
+            foreach (SoundCue cue in everyCue)
+            {
+                cues.Sound(cue);
+            }
+
+            cues.Buzz(Tick.Light);
+            cues.Buzz(Tick.Firm);
+            DeviceSettings settings = DeviceFile.LoadOrMake(Application.persistentDataPath).Settings;
+            Debug.Log($"Play mode check: the running game's player sounded all {everyCue.Length} cues and both ticks; the phone's settings are {settings}.");
         }
 
         private static void KeepTheLastFrame(ScriptableRenderContext context, Camera camera)

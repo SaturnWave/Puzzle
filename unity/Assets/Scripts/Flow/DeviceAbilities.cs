@@ -18,11 +18,10 @@ namespace Puzzle.Client.Flow
         }
 
         /// <summary>
-        /// What this build honours: nothing yet. The game makes no sound and never vibrates, so the card has no
-        /// switch; the sounds and the buzz of play bring <see cref="DeviceSetting.Sound"/> and
-        /// <see cref="DeviceSetting.Vibration"/> here when they come.
+        /// What this build honours: its sounds (stand-ins, SoundCue.cs) and the short buzz under a few of them, so the
+        /// card shows both switches. Music joins them once the game has a track to play.
         /// </summary>
-        public static DeviceAbilities OfThisBuild { get; } = new DeviceAbilities();
+        public static DeviceAbilities OfThisBuild { get; } = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Vibration);
 
         /// <summary>The settings whose rows the card draws, in its order.</summary>
         public IReadOnlyList<DeviceSetting> Settings { get; }

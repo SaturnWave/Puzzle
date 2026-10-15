@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using System.IO;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
@@ -17,8 +18,9 @@ namespace Puzzle.Client.EditorTools
     /// is the player's again. Then in the hall the privacy card counts the records; "Kayıtları sil" asks first and
     /// "Vazgeç" changes nothing; asked again, "Sil" empties the file and the count reads 0, with the progress, the
     /// wallet and the settings as they were; the way back closes the privacy card to the settings card; the support
-    /// card comes and its "Tamam" takes it up; the way back closes the settings (<c>walk-settings-...</c>). The
-    /// build honours no setting yet, so the card has no switch to flip: that step comes with the sounds.
+    /// card comes and its "Tamam" takes it up; the way back closes the settings. Last, the sound's switch is flipped
+    /// off on the card, the card is closed and opened again and shows it kept, and nothing is heard meanwhile; flipped
+    /// on again, its click is heard (<c>walk-settings-...</c>).
     /// </summary>
     internal static partial class GameWalk
     {
@@ -29,11 +31,12 @@ namespace Puzzle.Client.EditorTools
             PlayerProgress standing = StoryStudio.StandingOn(LevelPack.Numbered(studio.Levels, RetriedLevel), studio.Levels);
             AttemptLogFile records = StoryStudio.RecordsOnAPhone(SettingsShots.RecordsOnThePhone);
             var settings = new SettingsInMemory(DeviceSettings.Default);
+            var heard = new CuesHeard();
 
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using var session = new GameSession(
                 studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(standing), records, settings, DeviceAbilities.OfThisBuild,
-                screen, SessionOpening.InTheMuseum);
+                heard, screen, SessionOpening.InTheMuseum);
             var reel = new Reel(session, screen, $"walk-settings-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
             reel.Settle();
             PlayerProgress before = session.Progress;
@@ -53,9 +56,59 @@ namespace Puzzle.Client.EditorTools
             session.GoBack();
             reel.Settle();
             ThroughTheCard.Require(!MuseumOf(session).ShowsTheSettings, "the way back left the settings card hanging");
+            TurnTheSoundOffAndFindItKept(settings, heard, reel);
             TurnThePage(reel, Destination.Map, picturesTheTurn: false);
             reel.WriteSheet();
-            Debug.Log($"Screen shots: walk {reel.Name}: the gear on {PagesWithTheWalletRow.Length} pages, {SettingsShots.RecordsOnThePhone} records deleted after a question, the support card.");
+            Debug.Log(
+                $"Screen shots: walk {reel.Name}: the gear on {PagesWithTheWalletRow.Length} pages, {SettingsShots.RecordsOnThePhone} records deleted after a question, "
+                + $"the support card, the sound turned off and kept, heard {heard} in all.");
+        }
+
+        /// <summary>
+        /// The gear brings the settings card with both switches on; sound's switch turns off at once (the store holds it
+        /// before the knob has slid), and from then on nothing is heard: not its own click, not the card's round button,
+        /// not the card coming down again. Opened again, the card shows the sound off and the vibration on. Turned on
+        /// again, its own click is heard, and the settings are a first start's once more.
+        /// </summary>
+        private static void TurnTheSoundOffAndFindItKept(SettingsInMemory settings, CuesHeard heard, Reel reel)
+        {
+            GameSession session = reel.Session;
+            Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
+            reel.Settle();
+            RequireTheSwitches(MuseumOf(session), soundIsOn: true, "the settings card opened");
+            reel.Shoot("switches-on");
+
+            int heardBefore = heard.SoundsInAll;
+            Press(session, MuseumOf(session).SwitchPixel(DeviceSetting.Sound), "the sound's switch", reel, "sound-switch-pressed");
+            ThroughTheCard.Require(!settings.Settings.Sound && settings.Settings.Vibration, $"the sound's switch left the settings at {settings.Settings}");
+            reel.Settle();
+            RequireTheSwitches(MuseumOf(session), soundIsOn: false, "the sound's switch was turned off");
+            reel.Shoot("sound-off");
+            Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(!MuseumOf(session).ShowsTheSettings, "the settings card's round button did not take it up");
+
+            Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
+            reel.Settle();
+            RequireTheSwitches(MuseumOf(session), soundIsOn: false, "the settings card was opened again");
+            reel.Shoot("sound-off-kept");
+            ThroughTheCard.Require(heard.SoundsInAll == heardBefore, $"with the sound off {heard.SoundsInAll - heardBefore} sounds were heard");
+
+            int togglesBefore = heard.Of(SoundCue.Toggle);
+            Press(session, MuseumOf(session).SwitchPixel(DeviceSetting.Sound), "the sound's switch", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(settings.Settings.Equals(DeviceSettings.Default), $"turned on again, the settings are {settings.Settings}");
+            ThroughTheCard.Require(heard.Of(SoundCue.Toggle) == togglesBefore + 1, "the switch that turned the sound on was not heard");
+            Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button", reel, pressedShot: null);
+            reel.Settle();
+        }
+
+        private static void RequireTheSwitches(MuseumStage museum, bool soundIsOn, string when)
+        {
+            IReadOnlyList<(DeviceSetting Setting, bool IsOn)> shown = museum.SwitchesShown;
+            ThroughTheCard.Require(
+                shown.Count == 2 && shown[0] == (DeviceSetting.Sound, soundIsOn) && shown[1] == (DeviceSetting.Vibration, true),
+                $"when {when} the card's switches showed {string.Join(", ", shown)}");
         }
 
         /// <summary>

@@ -113,6 +113,16 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>The lights on the pieces that have just dropped in, each fading on the timeline.</summary>
         private readonly List<PieceGlow> _glows = new List<PieceGlow>();
 
+        /// <summary>What the stage sounded that its owner has not taken yet: presses, pieces dropping in, the painting made whole.</summary>
+        private readonly CuesSounded _sounded = new CuesSounded();
+
+        /// <summary>
+        /// When on the stage's clock a piece dropping in was last heard; nothing before the first. Pieces placed all
+        /// at once land many to a tenth of a second: they are heard as the score hears one cue of a script, no closer
+        /// than <see cref="SoundScore.SameCueApart"/>.
+        /// </summary>
+        private float? _placedLastHeardAt;
+
         private ScreenShape? _screen;
         private JigsawLayout? _layout;
         private JigsawCut? _cut;
@@ -336,9 +346,13 @@ namespace Puzzle.Client.Jigsaws
             }
             else if (ListensToThePlayer && _presses.FingerUp(out JigsawPress press))
             {
+                _sounded.Add(SoundCue.Press);
                 Follow(press);
             }
         }
+
+        /// <summary>The cues the stage sounded since this was asked last, in the order they fell, each once.</summary>
+        public IReadOnlyList<SoundCue> TakeWhatSounded() => _sounded.TakeAll();
 
         /// <summary>The touch was taken away: a button that was held is not pressed, a piece that was carried goes back to the tray.</summary>
         public void PointerCancelled()
@@ -588,6 +602,7 @@ namespace Puzzle.Client.Jigsaws
             }
 
             int[] landed = _landed.ToArray();
+            HearWhatDroppedIn(landed.Length);
             foreach (int piece in landed)
             {
                 PutInPlace(piece);
@@ -609,6 +624,19 @@ namespace Puzzle.Client.Jigsaws
             {
                 LightUp(piece);
             }
+        }
+
+        /// <summary>Pieces that dropped in during the last step are heard as one, unless one was heard too short a while ago.</summary>
+        private void HearWhatDroppedIn(int pieces)
+        {
+            bool isTooSoon = _placedLastHeardAt is float last && _clock - last < SoundScore.SameCueApart;
+            if (pieces == 0 || isTooSoon)
+            {
+                return;
+            }
+
+            _placedLastHeardAt = _clock;
+            _sounded.Add(SoundCue.PiecePlaced);
         }
 
         /// <summary>A piece that has just dropped in is lit for a moment: its light fades on the timeline and is then taken away.</summary>
@@ -685,6 +713,7 @@ namespace Puzzle.Client.Jigsaws
         private void Celebrate()
         {
             _wholeFor = 0f;
+            _timeline.At(Tempo.PauseBeforeRestored, () => _sounded.Add(SoundCue.PaintingWhole));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredLight, progress => _painting.Canvas.ShowLight(Easing.InOut(progress)));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredSwell, progress => Swell(1f + RestoredSwell * Easing.Arch(progress)));
             if (MakeTheRewardRow())

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using UnityEngine;
 
@@ -39,6 +41,12 @@ namespace Puzzle.Client.Stage
         /// to the wall, a page of the museum turns to the hall), or nothing where there is no way back.
         /// </summary>
         void GoBack();
+
+        /// <summary>
+        /// The cues the stage sounded since this was asked last, in the order they fell, each once: whoever owns the
+        /// stage plays what the player's settings let through. A stage nobody asks keeps only its latest few.
+        /// </summary>
+        IReadOnlyList<SoundCue> TakeWhatSounded();
     }
 
     /// <summary>The camera of a stage: it looks straight at the plane the game is drawn on and shows the screen's points one to one.</summary>

@@ -108,6 +108,10 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\ToggleLook.cs" Link="Unity\Screens\ToggleLook.cs" />
+    <!-- Nor have the sounds: the cues there are, which falls at which moment of play, and what of them the settings let through; nor the build's step that asks the phone for what they need. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\SoundCue.cs" Link="Unity\Flow\SoundCue.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\SoundScore.cs" Link="Unity\Play\SoundScore.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

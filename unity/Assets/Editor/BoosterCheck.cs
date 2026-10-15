@@ -34,7 +34,8 @@ namespace Puzzle.Client.EditorTools
     /// then waits for the board to come to rest. The armed disc, the way back, a lift off the board and the pause disc
     /// put a booster down. The plus on a disc of which none is held offers one for its price, which a press buys and
     /// arms, and which a player without the coins cannot buy. A shuffle the first rule refused on a large open board
-    /// is accepted. It works in a folder of its own (out/unity/booster-check).
+    /// is accepted. The spatula is heard and felt as the phone's settings are at its strike. It works in a folder of its
+    /// own (out/unity/booster-check).
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.BoosterCheck.Run
     /// </summary>
     public static class BoosterCheck
@@ -79,6 +80,7 @@ namespace Puzzle.Client.EditorTools
                 passed.Add(ThePlusOffersOneWhichAPressBuysAndArms(bench));
                 passed.Add(ABoosterThatWinsGoesOnToTheFinaleAndTheCard(bench));
                 passed.Add(AShuffleTheFirstRuleRefusedIsAccepted(bench));
+                passed.Add(TheSpatulaIsHeardAndFeltAsTheSettingsAreAtItsStrike(bench));
                 Debug.Log($"Booster check passed: {string.Join("; ", passed)}.");
             }
             catch (Exception failure) when (failure is InvalidOperationException || failure is ArgumentException || failure is IOException || failure is AttemptReplayException)
@@ -362,6 +364,44 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>Two neighbouring cells of the board with a gem each, low on the board: what a strike hits wherever it is aimed.</summary>
+        /// <summary>
+        /// On the game's own session with the phone's settings, the spatula is heard as it strikes and its pop after it,
+        /// and the phone ticks lightly under it; with the vibration turned off between two uses the next is heard and not
+        /// felt; with the sound off too the third is neither. Each use reads the settings as they are at its moment.
+        /// </summary>
+        private static string TheSpatulaIsHeardAndFeltAsTheSettingsAreAtItsStrike(Bench bench)
+        {
+            var settings = new SettingsInMemory(DeviceSettings.Default);
+            var heard = new CuesHeard();
+            using GameSession session = bench.SessionWithTheCues(OpenLevel, bench.GiftedWallet(), settings, heard);
+
+            UseTheSpatula(session);
+            Require(heard.Of(SoundCue.Booster) == 1 && heard.Of(SoundCue.Match) >= 1 && heard.Of(SoundCue.Press) >= 1, $"with every setting on the spatula was heard as {heard.Of(SoundCue.Booster)} strike(s), {heard.Of(SoundCue.Match)} pop(s), {heard.Of(SoundCue.Press)} press(es)");
+            Require(heard.Of(Tick.Light) >= 1 && heard.Of(Tick.Firm) == 0, $"with every setting on the spatula was felt as {heard.Of(Tick.Light)} light and {heard.Of(Tick.Firm)} firm tick(s)");
+            int ticksBefore = heard.TicksInAll;
+
+            settings.Keep(settings.Settings.With(DeviceSetting.Vibration, isOn: false));
+            UseTheSpatula(session);
+            Require(heard.Of(SoundCue.Booster) == 2 && heard.TicksInAll == ticksBefore, $"with the vibration off the spatula was heard {heard.Of(SoundCue.Booster) - 1} time(s) and felt {heard.TicksInAll - ticksBefore} time(s)");
+
+            settings.Keep(settings.Settings.With(DeviceSetting.Sound, isOn: false));
+            int soundsBefore = heard.SoundsInAll;
+            UseTheSpatula(session);
+            Require(heard.SoundsInAll == soundsBefore && heard.TicksInAll == ticksBefore, $"with both off the spatula was heard {heard.SoundsInAll - soundsBefore} time(s) and felt {heard.TicksInAll - ticksBefore} time(s)");
+            Require(session.Stage.Game.BoostersUsed.Count(name => name == BoosterKind.HitCell.Name()) == 3, "the spatula was not used three times");
+            return $"the spatula heard as it strikes with its pops and felt with a light tick; with the vibration off heard and not felt; with both off neither ({heard} in all)";
+        }
+
+        /// <summary>The spatula by touches: its disc, then a gem's cell; the board comes to rest after it.</summary>
+        private static void UseTheSpatula(GameSession session)
+        {
+            GameStage stage = session.Stage;
+            Tap(session, stage.BoosterDiscPixel(BoosterKind.HitCell), "the spatula's disc");
+            (Position cell, _) = TwoCellsToHit(stage.Game);
+            Tap(session, stage.PixelOf(cell), $"the cell {cell}");
+            StoryStudio.AdvanceUntilSettled(session);
+        }
+
         private static (Position First, Position Second) TwoCellsToHit(Game game)
         {
             BoardShape shape = game.Board.Shape;
@@ -466,6 +506,16 @@ namespace Puzzle.Client.EditorTools
             public GameSession SessionOver(IProgressStore store, IAttemptLog? log = null)
             {
                 var session = new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, store, log ?? StoryStudio.AttemptsKeptInMemory(), Screen, SessionOpening.AtTheBoard);
+                StoryStudio.AdvanceUntilSettled(session);
+                return session;
+            }
+
+            /// <summary>The game's own session at the board of a level, at rest, with the phone's settings in a store and the cues played to a listener.</summary>
+            public GameSession SessionWithTheCues(int levelNumber, Wallet wallet, ISettingsStore settings, ICuePlayer cues)
+            {
+                var session = new GameSession(
+                    _levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(StandingOn(levelNumber, wallet)), StoryStudio.AttemptsKeptInMemory(),
+                    settings, DeviceAbilities.OfThisBuild, cues, Screen, SessionOpening.AtTheBoard);
                 StoryStudio.AdvanceUntilSettled(session);
                 return session;
             }

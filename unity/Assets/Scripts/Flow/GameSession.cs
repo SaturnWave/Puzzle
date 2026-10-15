@@ -105,6 +105,12 @@ namespace Puzzle.Client.Flow
     /// wallet are in another file and are not touched.
     /// </para>
     /// <para>
+    /// What the stage that is seen sounds (a turn's pops, a card coming down, a press, coins counted; Play/SoundScore.cs
+    /// says which cue falls when) is played at every step through the session's cue player, as far as the player's
+    /// settings are on at that step: sound off, nothing is heard; vibration off, nothing is felt. The game's cue player
+    /// is the phone's speaker and vibrator; the Editor's tools give a silent one.
+    /// </para>
+    /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
     /// next one is built, in the dark both of them share, so the change is not seen. The one exception is a board
     /// whose card led to the jigsaw: it steps aside, out of sight, and comes back with its card when the player
@@ -123,6 +129,7 @@ namespace Puzzle.Client.Flow
         private readonly IAttemptLog _attempts;
         private readonly ISettingsStore _settings;
         private readonly DeviceAbilities _abilities;
+        private readonly ICuePlayer _cues;
 
         /// <summary>The newest version of the levels the game carries, as the support card tells it.</summary>
         private readonly ContentVersion _content;
@@ -159,8 +166,9 @@ namespace Puzzle.Client.Flow
         private RoomNumber? _restoredJustNow;
 
         /// <summary>
-        /// A session whose settings are kept in memory as a first start has them, with the switches this build honours:
-        /// the Editor's tools', which must not touch a phone's device file. Otherwise as the session the game opens.
+        /// A session whose settings are kept in memory as a first start has them, with the switches this build honours,
+        /// and that sounds nothing: the Editor's tools', which must not touch a phone's device file and play whole games
+        /// in a moment. Otherwise as the session the game opens.
         /// </summary>
         /// <exception cref="ArgumentException">There is no level to play.</exception>
         /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
@@ -175,7 +183,7 @@ namespace Puzzle.Client.Flow
             IAttemptLog attempts,
             ScreenShape screen,
             SessionOpening opening)
-            : this(levels, art, paintings, rules, clock, store, attempts, new SettingsInMemory(DeviceSettings.Default), DeviceAbilities.OfThisBuild, screen, opening)
+            : this(levels, art, paintings, rules, clock, store, attempts, new SettingsInMemory(DeviceSettings.Default), DeviceAbilities.OfThisBuild, CuePlayer.Silent, screen, opening)
         {
         }
 
@@ -187,6 +195,7 @@ namespace Puzzle.Client.Flow
         /// <param name="attempts">Where the record of every attempt that ends for good goes: the phone's log, or a tool's in memory.</param>
         /// <param name="settings">Where the player's settings are kept: the phone's device file, or a tool's in memory.</param>
         /// <param name="abilities">What the build honours on the phone, whose switches the settings card shows: <see cref="DeviceAbilities.OfThisBuild"/> in the game.</param>
+        /// <param name="cues">Where what the stages sound goes, as far as the settings let it through: the phone's speaker and vibrator in the game, <see cref="CuePlayer.Silent"/> in the tools.</param>
         /// <exception cref="ArgumentException">There is no level to play.</exception>
         /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
@@ -200,6 +209,7 @@ namespace Puzzle.Client.Flow
             IAttemptLog attempts,
             ISettingsStore settings,
             DeviceAbilities abilities,
+            ICuePlayer cues,
             ScreenShape screen,
             SessionOpening opening)
         {
@@ -219,6 +229,7 @@ namespace Puzzle.Client.Flow
             _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _abilities = abilities ?? throw new ArgumentNullException(nameof(abilities));
+            _cues = cues ?? throw new ArgumentNullException(nameof(cues));
             _content = levels.Select(level => level.ContentVersion).Max();
             _screen = screen;
             _saved = store.Load();
@@ -281,6 +292,7 @@ namespace Puzzle.Client.Flow
             DoWhatTheStageAskedFor();
             DoWhatWasAskedOfThePhone();
             KeepWhatWasPlaced();
+            PlayWhatSounded();
             FollowThePlayer();
         }
 
@@ -674,6 +686,28 @@ namespace Puzzle.Client.Flow
                     break;
                 default:
                     throw new InvalidOperationException($"The session does not know the request \"{request}\".");
+            }
+        }
+
+        /// <summary>
+        /// What the stage that is seen sounded since the last step, heard and felt as the player's settings are at this
+        /// moment: a switch turned on the settings card counts from the next cue on, its own click included.
+        /// </summary>
+        private void PlayWhatSounded()
+        {
+            DeviceSettings settings = _settings.Settings;
+            foreach (SoundCue cue in _front.TakeWhatSounded())
+            {
+                (SoundCue? sound, Tick? tick) = SoundScore.Reaching(cue, settings);
+                if (sound is SoundCue heard)
+                {
+                    _cues.Sound(heard);
+                }
+
+                if (tick is Tick felt)
+                {
+                    _cues.Buzz(felt);
+                }
             }
         }
 

@@ -39,10 +39,10 @@ public class DeviceSettingsTests
     }
 
     [Fact]
-    public void This_build_honours_no_setting_yet_so_the_card_offers_no_switch()
+    public void This_build_honours_sound_and_vibration_so_the_card_offers_both_switches_in_the_drawings_order()
     {
-        // The game makes no sound and never vibrates: a switch for either would change nothing.
-        Assert.Empty(DeviceAbilities.OfThisBuild.Settings);
+        // The game sounds its cues and buzzes under a few of them: each switch changes something (SoundScoreTests).
+        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Vibration }, DeviceAbilities.OfThisBuild.Settings);
     }
 
     [Fact]

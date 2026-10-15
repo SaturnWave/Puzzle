@@ -1,15 +1,16 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using Puzzle.Client.Flow;
 using TMPro;
 using UnityEngine;
 
 namespace Puzzle.Client.Art
 {
     /// <summary>
-    /// The game's drawings as sprites, its typefaces, and the materials everything is drawn with. One asset that the
-    /// scene refers to, so a build carries exactly these sprites, fonts and shaders, and nothing is looked up by a
-    /// name at run time. The asset (Assets/Art/ArtCatalogue.asset) is written by the Editor's ArtCatalogueBuilder,
+    /// The game's drawings as sprites, its typefaces, the materials everything is drawn with, and its sounds. One asset
+    /// that the scene refers to, so a build carries exactly these sprites, fonts, shaders and sounds, and nothing is
+    /// looked up by a name at run time. The asset (Assets/Art/ArtCatalogue.asset) is written by the Editor's ArtCatalogueBuilder,
     /// never by hand.
     /// </summary>
     public sealed class ArtCatalogue : ScriptableObject
@@ -33,6 +34,9 @@ namespace Puzzle.Client.Art
 
         /// <summary>One material per <see cref="LetteringStyle"/> member, in the enum's order.</summary>
         [SerializeField] private Material[] _letteringMaterials = Array.Empty<Material>();
+
+        /// <summary>One sound per <see cref="SoundCue"/> member, in the enum's order.</summary>
+        [SerializeField] private AudioClip[] _sounds = Array.Empty<AudioClip>();
 
         /// <summary>The unlit sprite material: the gallery is drawn as painted, with no light of the engine on it.</summary>
         /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
@@ -59,6 +63,13 @@ namespace Puzzle.Client.Art
         /// <summary>The material that draws a style's typeface as the style has it: what is drawn around its strokes and under them.</summary>
         /// <exception cref="InvalidOperationException">The catalogue is older than the list of styles.</exception>
         public Material MaterialOf(LetteringStyle style) => Listed(_letteringMaterials, (int)style, style);
+
+        /// <summary>The sound a cue plays; nothing in a catalogue older than the list of cues, whose player then stays silent for it rather than stop the game.</summary>
+        public AudioClip? SoundOf(SoundCue cue)
+        {
+            int index = (int)cue;
+            return index < _sounds.Length && _sounds[index] != null ? _sounds[index] : null;
+        }
 
         private static T Built<T>(T? held, string what)
             where T : UnityEngine.Object =>
@@ -92,6 +103,9 @@ namespace Puzzle.Client.Art
             _typefaces = InEnumOrder(typefaces);
             _letteringMaterials = InEnumOrder(materials);
         }
+
+        /// <summary>Editor only: replaces the sound of every cue. The list must name every cue.</summary>
+        public void FillSounds(IReadOnlyDictionary<SoundCue, AudioClip> sounds) => _sounds = InEnumOrder(sounds);
 
         private static TValue[] InEnumOrder<TEnum, TValue>(IReadOnlyDictionary<TEnum, TValue> byMember)
             where TEnum : Enum
