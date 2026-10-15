@@ -1270,7 +1270,7 @@ Bu kararlarla 10. aşama başladı.
 - INTERNET izni paketten çıkarıldı (`AndroidBuild.Permissions`). 16 Ekim APK'sında `aapt` ile doğrulandı: paket yalnızca VIBRATE iznini istiyor.
 - Android yedeklemesi açık kalıyor; telefon değişince ilerlemeyi kurtarabilir.
 - 15. aşama APK'dan sonraya bırakıldı.
-- Telefona USB ile kurulum, telefonda USB hata ayıklama izninin verilmesini bekliyor; APK indirme sayfasında da hazır.
+- APK 16 Ekim 01.23'te proje sahibinin telefonuna USB ile kuruldu (eskisinin üstüne) ve açıldı. Eski kayıt okundu: ilk tablonun 5/10 parçası yerinde; cüzdan eski kayıt düzeninden hoş geldin hediyesiyle başladı (200 altın, 5 can).
 - Tailscale hesabındaki cihazlar için bir indirme sayfası açıldı (`tailscale serve`, yalnızca hesaptaki cihazlar; internete açık değil): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
