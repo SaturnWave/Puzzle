@@ -461,7 +461,7 @@ Proje sahibinin 2026-10-15'te belirlediği sıra:
 
 1. 10. aşamadan önce, öteki match-3 oyunlarının bölüm içi booster'ları (ve bölüm öncesi booster, "+5", can) nasıl kullandığının araştırması (`docs/research/in-level-boosters.md`, 2026-10-15'te hazır; PDF'i "Araştırma Notu") ve bu genel belge.
 2. **10. aşama:** bölüm içi booster'lar, araştırmanın önerilerine dayanarak (✅ 2026-10-15).
-3. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Dört taslak `docs/research/avatar-concepts.md` belgesinde (PDF'i "Tasarım Önerisi"); seçim proje sahibinde.
+3. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Çizimini proje sahibi kendisi yapıp verecek (2026-10-15); oyunun istediği çizimler tasarım belgesinin 22. bölümünde.
 4. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
 5. **11–15. aşamalar** (yukarıdaki tablo); ses ve titreşim 14. aşamada yer tutucu olarak gelir.
 

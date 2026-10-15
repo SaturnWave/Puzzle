@@ -73,7 +73,6 @@ DOCUMENTS = (
     Document(Path("docs/PUBLIC_TEST.md"), "Kullanım Kılavuzu"),
     Document(Path("docs/PHONE_TESTS.md"), "Test Planı"),
     Document(Path("docs/research/in-level-boosters.md"), "Araştırma Notu"),
-    Document(Path("docs/research/avatar-concepts.md"), "Tasarım Önerisi"),
     Document(Path("docs/research/spawn-control-and-solvability.md"), "Araştırma Raporu"),
     Document(Path("research.md"), "Araştırma Özeti"),
 )

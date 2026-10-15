@@ -38,7 +38,8 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 **Avatar (§23'e sonra girecek)**
 - Kullanıcı, oyunun müze ve yapboz üzerinden gittiğini, bu yüzden bir avatara ihtiyaç olduğunu söyledi; avatar hikâyenin genç ressamı olacak.
-- İkinci bir ajan tasarım tuvalinin üslubunda dört taslak çizdi: Defne, Kerem, Ela ve Deniz. Seçim belgesi `docs/research/avatar-concepts.md`, PDF'i "Tasarım Önerisi". Önerim Defne; seçim kullanıcıda.
+- İkinci bir ajan tasarım tuvalinin üslubunda dört taslak çizdi (Defne, Kerem, Ela, Deniz).
+- **Kullanıcı taslakları beğenmedi** ("çok kötü, çok çirkin"); avatarı kendisi çizip verecek. Taslaklar belgelerden kaldırıldı (git geçmişinde duruyor). Oyunun istediği çizimlerin listesi tasarım belgesinin 22. bölümüne yazıldı.
 
 **Bot deneyi (sonra)**
 - Booster'lar bitince oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot hazırlanacak. Botun eğilimleri ölçülecek; sahte reklam yalnızca botun kendi kararlarını ölçmek için kullanılacak. Ayrıntılar kullanıcıdan gelecek.

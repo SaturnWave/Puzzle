@@ -999,6 +999,18 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 | 7 | Herkese açık web testindeki oyuncu sayfasına bu görünümün uygulanması | ✅ 2026-10-06, yayında; tasarımın yazı tipleriyle (Google Fonts üzerinden) |
 | 8 | Unity'ye aktarım (SVG'den sprite) | Sürüyor: yazı tipleri, 51 yeni çizim ve ortak parçalar ✅ 2026-10-13 (§23); ekranlar sırada. 2026-10-14: altın ve can satırı, bölüm başı kartı, tahta plaketleri, raf ve kazanma kartı ✅ (arayüz planının 7–9. aşamaları); kalan ekranlar 10–15. aşamalarda |
 
+**Avatar: ressamın çizimi (2026-10-15).** Avatar hikâyenin genç ressamıdır. Çizimini proje sahibi yapacak; ajanın çizdiği dört taslak reddedildi. Oyunun istediği çizimler:
+
+| Çizim | Nerede görünür | Boyut ve biçim |
+|---|---|---|
+| Ayakta tam boy, el sallayan ya da paletli | Salonda tezgâhın yanında (telefonda yaklaşık 450 piksel boyunda) | Saydam arka planlı PNG ya da SVG; en az 900×2100 piksel |
+| Büst (baş ve omuzlar), üç ifade: yol gösteren, düşünen, sevinen | Rehber ve booster tanıtım yazılarının yanında, sonuç kartlarında (telefonda yaklaşık 100 piksel) | Kare, saydam; en az 512×512 piksel; yüz 100 pikselde de okunmalı |
+| Sevinen tam boy (isteğe bağlı) | Oda onarılınca ve tablo tamamlanınca | Tam boyla aynı |
+
+- **Renk:** duvar koyu camgöbeği. Giysinin ağırlıklı rengi camgöbeği ya da yeşil olmamalı; sıcak renkler (hardal, krem, mercan) öne çıkar.
+- **Işık ve çizgi:** taşlarla aynı ışık yönü (sol üst) ve sıcak koyu kahve dış çizgi uyumlu durur; şart değil.
+- **Yer:** tasarım tuvalindeki "Hediye" çerçevesi salonda figürün duracağı yerde asılı. Çizim gelince ikisinin yeri birlikte ayarlanacak.
+
 Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
 
 Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hedefi için önerilen 44 pt'nin altında. Tahta genişliği arayüz fazında ayrıca konuşulacak (§2).
