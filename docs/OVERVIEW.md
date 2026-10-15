@@ -462,7 +462,7 @@ Proje sahibinin 2026-10-15'te belirlediği sıra (akşam güncellendi):
 1. Bölüm içi booster araştırması ve bu genel belge (✅ 2026-10-15; `docs/research/in-level-boosters.md`, PDF'i "Araştırma Notu").
 2. **10. aşama:** bölüm içi booster'lar, araştırmanın önerilerine dayanarak (✅ 2026-10-15).
 3. **11–14. aşamalar** (✅ 2026-10-16). 15. aşama proje sahibinin kararıyla APK'dan sonraya bırakıldı.
-4. **APK telefona:** proje sahibi oyunu kendi telefonunda elde dener; ardından [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulur. 16 Ekim'de 14. aşamaya kadarki her şeyle APK derlendi (283 MB, internet izni yok) ve proje sahibinin telefonuna kuruldu; Tailscale hesabındaki cihazlar için indirme sayfası açık.
+4. **APK telefona:** proje sahibi oyunu kendi telefonunda elde dener; ardından [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulur. 16 Ekim'de 14. aşamaya kadarki her şeyle APK derlendi (283 MB, internet izni yok) ve proje sahibinin telefonuna kuruldu; indirme sayfası Tailscale Funnel ile herkese açık.
 5. **Arayüz iyileştirmeleri:** prototip telefonda denendikten sonraki ilk iş. GitHub'da `arayüz-iyileştirme` etiketli kayıtlar olarak tutuluyor; ilki #2 (renkler genelde mat ve düşük kontrastlı).
 6. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
 7. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Çizimini proje sahibi kendisi yapıp verecek; oyunun istediği çizimler tasarım belgesinin 22. bölümünde. Ertelendi: 3D animasyon gerekecek.

@@ -22,7 +22,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - APK 16 Ekim'de derlendi (Unity 6.6, IL2CPP, ARM64; 12,9 dakika): 283 MB. 8 Ekim'deki 61 MB'tı; fark 100 tablonun tam boy görüntüleri (A32).
 - 16 Ekim APK'sında `aapt` ile doğrulandı: paket yalnızca VIBRATE iznini istiyor.
 - APK 16 Ekim 01.23'te proje sahibinin telefonuna USB ile kuruldu (eskisinin üstüne) ve açıldı. Eski kayıt okundu: ilk tablonun 5/10 parçası yerinde; cüzdan eski kayıt düzeninden hoş geldin hediyesiyle başladı (200 altın, 5 can).
-- İndirme sayfası Tailscale hesabındaki cihazlara açık (`tailscale serve`, internete açık değil): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
+- İndirme sayfası önce yalnızca Tailscale hesabındaki cihazlara açıldı (`tailscale serve`); aynı gece proje sahibinin isteğiyle, tablete indirebilmek için herkese açıldı (`tailscale funnel --https=10000`; kapatmak için `tailscale funnel --https=10000 off`): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
 
 ---
 
