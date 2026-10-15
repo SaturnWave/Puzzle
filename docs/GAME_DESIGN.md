@@ -925,10 +925,10 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
 - **Toplanan veri** (her bölüm denemesi için): bölüm numarası, seed numarası, kullanılan hamle, sonuç, kalan hedefler, "+5" alındı mı, kullanılan booster'lar. Kimlik yalnızca rastgele bir cihaz kimliği. İsim, e-posta ve reklam takibi yok. KVKK ve GDPR için rıza ekranı ve gizlilik politikası.
 - **İstemcide gizlilik ve veri (2026-10-15, arayüz aşaması 13):** ayarlar kartındaki "Gizlilik ve veri" kartı neyin telefonda tutulduğunu söyler (ilerleme, cüzdan, ayarlar, deneme kayıtları). Deneme kayıtlarını sayar ve bir soru sorduktan sonra siler; ilerleme, cüzdan ve ayarlar yerinde kalır.
-  - **Metin, onay bekleyen taslak** (`PrivacyWords.cs`): bu sürüm telefondan dışarı bir şey göndermez; hesap, reklam ağı ve satın alma yoktur; Unity'nin istatistikleri kapalıdır; kayıtlarda ad ya da telefon bilgisi yoktur, yalnızca rastgele bir kimlik vardır; Android yedeklemesi açıksa dosyalar telefonun yedeğine katılabilir.
-  - **Dayanağı:** oyunun kodu ağa hiç çıkmıyor; reklam, satın alma ya da analiz paketi yok; Unity servisleri kapalı; `ProjectSetup` Unity'nin istatistik bayrağını kapatıyor.
+  - **Metin, proje sahibince onaylandı (2026-10-16)** (`PrivacyWords.cs`): bu sürüm telefondan dışarı bir şey göndermez; hesap, reklam ağı ve satın alma yoktur; Unity'nin istatistikleri kapalıdır; kayıtlarda ad ya da telefon bilgisi yoktur, yalnızca rastgele bir kimlik vardır; Android yedeklemesi açıksa dosyalar telefonun yedeğine katılabilir.
+  - **Dayanağı:** oyunun kodu ağa hiç çıkmıyor; paket INTERNET iznini istemiyor (2026-10-16'dan beri); reklam, satın alma ya da analiz paketi yok; Unity servisleri kapalı; `ProjectSetup` Unity'nin istatistik bayrağını kapatıyor.
   - **Rıza ekranı yok,** çünkü telefondan bir şey çıkmıyor. Analiz servisi eklenince rıza ekranı gelecek ve metin değişecek.
-  - **Açık:** APK INTERNET iznini taşıyor (A28); Android yedeklemesi açık (A29). İkisi de proje sahibinin kararını bekliyor.
+  - **Karar (2026-10-16):** INTERNET izni paketten çıkarıldı (A28 kapandı); Android yedeklemesi açık kalıyor (A29 kabul edildi). Reklam, satın alma ya da bir analiz servisi gelince izin geri gelir ve metin değişir.
 - **Veri hattı:** hazır bir analiz servisi (Firebase ya da Unity Analytics; seçim açık). Servisin reklam kimliği toplaması kapatılır. APK testinde yedek: kayıtlar telefonda dosyaya yazılır, test eden kişi dosyayı iletir.
 - **Yayın sırası (karar 2026-10-05):** APK testi → doğrudan dünya geneli. Önceki plandaki birkaç küçük ülkede sınırlı yayın adımı kaldırıldı. Sonucu: limitleri gerçek oyuncu verisiyle ayarlama fırsatı yayından önce yalnızca web testi ve APK testidir; yayından sonraki ayar düzeltme paketleriyle yapılır (aşağıda). Bu yüzden yayın öncesi kalibrasyon bilerek yumuşak tutulur (§8 madde 7 ve 8). Yayında 1000 bölümün tamamı bulunur.
 - **Düzeltme paketleri:** bölümler uygulamanın içinde gelir; sunucudan küçük düzeltme paketleri inebilir (örneğin bir bölümün hamle limiti ya da seed havuzu). Oyun internetsiz de oynanır. Bölüm dosyasındaki `formatVersion` dosya biçimini sürümler; bölümün içeriğini `contentVersion` sürümler.
@@ -1247,9 +1247,31 @@ Bu kararlarla 10. aşama başladı.
 - **Destek:** oyuncu kimliği, sürüm, bölüm içeriği sürümü ve kayıt dosyasının yeri. Destek adresi yok, çünkü henüz verilmedi.
 - **Ayarların kaydı:** `device.json` 2. düzende ayarları da tutar. 1. düzendeki dosya bütün ayarlar açık okunur; bozuk dosya ilerlemeyi ve cüzdanı götürmez. Yeni anahtar denetimi (`Toggle`) hazır.
 - **Unity istatistikleri:** `ProjectSetup` Unity'nin kendi istatistik bayrağını kapatır (`submitAnalytics: 0`).
-- **Bilinen:** APK INTERNET iznini taşıyor (A28); Android yedeklemesi açık (A29); gizlilik metni onay bekliyor. Silme sorusunda "Sil" yeşil, "Vazgeç" mavi, çünkü sanatta kırmızı düğme yok.
+- **Bilinen:** APK INTERNET iznini taşıyor (A28); Android yedeklemesi açık (A29); gizlilik metni onay bekliyor. 2026-10-16: metin onaylandı, izin kaldırıldı, yedekleme açık kalıyor. Silme sorusunda "Sil" yeşil, "Vazgeç" mavi, çünkü sanatta kırmızı düğme yok.
 - **Doğrulama:** 3.648 test. Unity'de bütün denetimler; çark, kartlar ve silme yürüyüşü; ayarlar kartlı tasarım karşılaştırması hatasız. Kart çizimdekinden kısa, çünkü anahtar satırları yok. Gizlilik satırı çizimdeki "Yalnızca anonim oyun verisi toplanır" yerine "Oyun hiçbir şey göndermez" diyor; çizimdeki cümle bu sürüm için doğru olmazdı.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T180–T187.
+
+**Ses ve titreşim, yer tutucular (2026-10-16).** Arayüz planının 14. aşaması.
+
+- **Sesler:** 15 kapalı ses işareti var: basış, ret, değiştirme, eşleşme, özel taş, patlama, booster, şölen atışı, kart inişi, kazanma, kaybetme, altın, parça yerleşmesi, tablo tamamlanması, anahtar.
+  - Hangi sesin ne zaman çalacağını düz bir kural söyler (`SoundScore`).
+  - Sesler tahtanın kendi zaman çizelgesinde çalar; hiçbir tur ses yüzünden uzamaz.
+  - Aynı ses bir hamle ya da şölen içinde en erken 0,12 saniye sonra yinelenir. 12 hamlelik şölen yaklaşık iki atışta bir duyulur.
+- **Titreşim:** dört anda kısa bir tık: özel taş ve booster hafif, kazanma ve tablo tamamlanması güçlü. Paket VIBRATE iznini ister.
+- **Ayarlar:** "Ses" ve "Titreşim" anahtarları ayarlar kartında. Ayar her sesin çaldığı anda okunur; değişiklik hemen geçerli olur ve `device.json`'da saklanır. İlk açılışta ikisi de açık. Müzik satırı yok, çünkü müzik yok.
+- **Ses dosyaları:** Kenney'nin Interface ve Impact paketlerinden 15 kısa CC0 dosyası (toplam 114 KB). `tools/unity/fetch-sounds.js` indirir; kaynaklar, lisanslar ve özetler `art/sounds/licences.json`'da. Dosyalar ad ve ölçüyle (uzunluk, tepe seviyesi) seçildi, kulakla değil.
+- **Bilinmeyen:** seslerin nasıl duyulduğu ve tıkların nasıl hissedildiği (A30). Proje sahibinin kulağı ve eli telefonda karar verecek (T191–T197).
+- **Doğrulama:** 3.666 test. Unity'de bütün denetimler, anahtarı çevirip kartı yeniden açınca ayarın korunduğunu gösteren yürüyüş ve her sesi çalan oyun denetimi hatasız.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T190–T201.
+
+**Gizlilik kararları ve ilk prototip APK'sı (2026-10-16).**
+
+- Proje sahibi gizlilik metnini onayladı.
+- INTERNET izni paketten çıkarıldı (`AndroidBuild.Permissions`). 16 Ekim APK'sında `aapt` ile doğrulandı: paket yalnızca VIBRATE iznini istiyor.
+- Android yedeklemesi açık kalıyor; telefon değişince ilerlemeyi kurtarabilir.
+- 15. aşama APK'dan sonraya bırakıldı.
+- Telefona USB ile kurulum, telefonda USB hata ayıklama izninin verilmesini bekliyor; APK indirme sayfasında da hazır.
+- Tailscale hesabındaki cihazlar için bir indirme sayfası açıldı (`tailscale serve`, yalnızca hesaptaki cihazlar; internete açık değil): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 

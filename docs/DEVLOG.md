@@ -4,6 +4,28 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-16 · Oturum 25 — Ses ve titreşim, ilk prototip APK'sı
+
+**Kullanıcı kararları**
+- Gizlilik metni onaylandı. INTERNET izni paketten çıkarıldı. Android yedeklemesi açık kalıyor.
+- 15. aşama sonraya bırakıldı; önce prototip telefona kuruluyor.
+- APK için Tailscale üzerinden bir indirme bağlantısı istendi.
+
+**Arayüz: planın 14. aşaması (§23)**
+- Yer tutucu sesler (15 ses işareti, Kenney'nin CC0 paketlerinden, toplam 114 KB) ve dört anda kısa titreşim tıkı. Ses ve titreşim anahtarları ayarlar kartında; değişiklik hemen geçerli ve saklanıyor.
+- Sesler tahtanın zaman çizelgesinde çalıyor, hiçbir turu uzatmıyor; aynı ses 0,12 saniyeden sık yinelenmiyor.
+- 3.666 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: ayarlar kartı iki anahtarla çizime uyuyor (müzik satırı yok).
+- Seslerin nasıl duyulduğunu ve tıkların nasıl hissedildiğini yalnızca telefon gösterecek (A30, A31).
+- Telefon testleri T190–T201; toplam 32 bilinen açık, 130 telefon testi.
+
+**İlk prototip APK'sı**
+- APK 16 Ekim'de derlendi (Unity 6.6, IL2CPP, ARM64; 12,9 dakika): 283 MB. 8 Ekim'deki 61 MB'tı; fark 100 tablonun tam boy görüntüleri (A32).
+- 16 Ekim APK'sında `aapt` ile doğrulandı: paket yalnızca VIBRATE iznini istiyor.
+- Telefona USB ile kurulum, telefonda USB hata ayıklama izninin verilmesini bekliyor; APK indirme sayfasında da hazır.
+- İndirme sayfası Tailscale hesabındaki cihazlara açık (`tailscale serve`, internete açık değil): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
+
+---
+
 ## 2026-10-15 · Oturum 24 — Bölüm içi booster araştırması, Genel Belge
 
 **Kullanıcı kararları**

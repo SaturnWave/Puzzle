@@ -122,7 +122,7 @@ Dikey tablolarda dizilim 90 derece döner. Müzenin onarımı hafiftir: tamamlan
 5. **Kazanma kartı:** şölenden sonra kazanılan parça bir oyukta, ilerleme noktaları, sayarak artan "+N" altın ve "Kalan N hamle fırçaya dönüştü". "Devam" salona döner; yeni parça yapbozda yerleştirilir.
 6. **Hamle bitince:** hedefler kalmışsa "+5 hamle" teklifi gelir (900 altın ya da günde 3 ücretsiz reklam; denemede bir kez). "Vazgeç" bir can götürür ve kaybetme kartını açar; "Tekrar dene" aynı bölümün kartına götürür.
 
-**Müzenin dört yeri:** çubukta Mağaza, Koleksiyon, Müze (salon) ve Harita. Mağazada altın paketleri "Yakında" (test sürümü parayla satış yapmaz), iki booster seti ve günde 3 reklamla 4'er altın var. Salondaki "Hediye" çerçevesi takvim gününde bir booster verir; bir tablonun son parçası 80 altın ve bir booster getirir. Cüzdan satırındaki çark ayarlar kartını açar: Dil (Türkçe), Gizlilik ve veri (deneme kayıtlarının sayısı ve "Kayıtları sil"), Destek (oyuncu kimliği, sürüm, kayıt dosyasının yeri). Ses ve titreşim anahtarları 14. aşamada gelecek. Takvim ve etkinlik çerçeveleri tasarım tuvalinde çizili, istemcide henüz yok. İpucu motorda ve web laboratuvarında var, istemcide yok.
+**Müzenin dört yeri:** çubukta Mağaza, Koleksiyon, Müze (salon) ve Harita. Mağazada altın paketleri "Yakında" (test sürümü parayla satış yapmaz), iki booster seti ve günde 3 reklamla 4'er altın var. Salondaki "Hediye" çerçevesi takvim gününde bir booster verir; bir tablonun son parçası 80 altın ve bir booster getirir. Cüzdan satırındaki çark ayarlar kartını açar: Dil (Türkçe), Gizlilik ve veri (deneme kayıtlarının sayısı ve "Kayıtları sil"), Destek (oyuncu kimliği, sürüm, kayıt dosyasının yeri). Ses ve Titreşim anahtarları yer tutucu sesleri ve kısa titreşim tıklarını açıp kapatır. Takvim ve etkinlik çerçeveleri tasarım tuvalinde çizili, istemcide henüz yok. İpucu motorda ve web laboratuvarında var, istemcide yok.
 
 ## 3. İçerik
 
@@ -414,7 +414,7 @@ Tam liste ve seçenekler: Tasarım §9, §20, §23, §24, §25.
 - **Unity denetimleri** (komut satırından): `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck`, `FinaleCheck`, `PlayModeCheck`, `TouchWhileMovingCheck`, `ProgressFileCheck`, `AttemptLogCheck`, `PaintingFormatCheck`, `MuseumReport` ve ekran yürüyüşü (`GameWalk`, `ScreenShots -screenWalk`). Görüntü araçları: `RenderHarness`, `Storyboard`, `FinaleStory`, `DesignPairs` (ekran tasarım çizimiyle yan yana), yazı ve çizim föyleri.
 - **Ekonomi koruması:** denge politikası testleri (`EconomyBalancePolicyTests`), ayar dosyasının okunması (`EconomyFileTests`), oyunun kuralları ile simülatörün aynı cevabı vermesi (`MetaAgainstTheSimulatorTests`), Unity'nin paketi yazıldığı gibi okuması (`EconomyCheck`) ve simülatörün saklı ölçümü bu derlemeyle yeniden oynayıp kabul etmesi.
 - **Bölümlerin bağımsız ölçümü:** her derlemeden sonra `puzzle ladder` bölümleri üreticinin görmediği oyunlarla ölçer; rapor ile bağımsız ölçüm karşılaştırılır.
-- **Telefon test planı:** yalnızca gerçek bir telefonda kanıtlanabilecek davranışlar ve bilinen açıklar [PHONE_TESTS.md](PHONE_TESTS.md) belgesindedir: tam test turunun sırası, bilinen açıklar (A01–A29) ve telefon testleri (T01–T187). Testler proje sahibinin Pixel 9 Pro Fold'unda, zamanı gelince hepsi birden koşulacak.
+- **Telefon test planı:** yalnızca gerçek bir telefonda kanıtlanabilecek davranışlar ve bilinen açıklar [PHONE_TESTS.md](PHONE_TESTS.md) belgesindedir: tam test turunun sırası, bilinen açıklar (A01–A32) ve telefon testleri (T01–T201). Testler proje sahibinin Pixel 9 Pro Fold'unda, zamanı gelince hepsi birden koşulacak.
 - **İş yöntemi:** büyük işler bağımsız eleştiriden geçer (tasarım önerileri, uygulama, ayrı eleştiriciler, düzeltme); sonuçlar görüntülere bakılarak doğrulanır. Belgeler her değişiklikten sonra PDF olarak yeniden basılır.
 
 ## 7. Durum ve yol haritası
@@ -452,8 +452,8 @@ Tasarım tuvalindeki bütün ekranların istemciye gelmesi için yazılan plan (
 | 11 | Hamle bitince: "+5" teklifi, canlandırılmış reklam, vazgeçme | ✅ 2026-10-15 |
 | 12 | Mağaza, artı düğmeleri, hediye ve tablo ödülü | ✅ 2026-10-15 |
 | 13 | Ayarlar, gizlilik ve veri, destek | ✅ 2026-10-15 |
-| 14 | Ses ve titreşim (yer tutucu sesler) | Sıradaki |
-| 15 | Koleksiyon ve harita ayrıntıları, baştan sona yürüyüş, her ekranın çizimle karşılaştırması, belgeler | — |
+| 14 | Ses ve titreşim (yer tutucu sesler) | ✅ 2026-10-16 |
+| 15 | Koleksiyon ve harita ayrıntıları, baştan sona yürüyüş, her ekranın çizimle karşılaştırması, belgeler | Sonraya bırakıldı (önce APK) |
 
 ### Sıradaki işler
 
@@ -461,8 +461,8 @@ Proje sahibinin 2026-10-15'te belirlediği sıra (akşam güncellendi):
 
 1. Bölüm içi booster araştırması ve bu genel belge (✅ 2026-10-15; `docs/research/in-level-boosters.md`, PDF'i "Araştırma Notu").
 2. **10. aşama:** bölüm içi booster'lar, araştırmanın önerilerine dayanarak (✅ 2026-10-15).
-3. **11–15. aşamalar** art arda (yukarıdaki tablo); ses ve titreşim 14. aşamada yer tutucu olarak gelir.
-4. **APK telefona:** proje sahibi oyunu kendi telefonunda elde dener; ardından [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulur. En son APK 2026-10-08'de derlendi, oyun telefonda en son 2026-10-07'de oynandı.
+3. **11–14. aşamalar** (✅ 2026-10-16). 15. aşama proje sahibinin kararıyla APK'dan sonraya bırakıldı.
+4. **APK telefona:** proje sahibi oyunu kendi telefonunda elde dener; ardından [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulur. 16 Ekim'de 14. aşamaya kadarki her şeyle APK derlendi (283 MB, internet izni yok); Tailscale hesabındaki cihazlar için indirme sayfası açık.
 5. **Arayüz iyileştirmeleri:** prototip telefonda denendikten sonraki ilk iş. GitHub'da `arayüz-iyileştirme` etiketli kayıtlar olarak tutuluyor; ilki #2 (renkler genelde mat ve düşük kontrastlı).
 6. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
 7. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Çizimini proje sahibi kendisi yapıp verecek; oyunun istediği çizimler tasarım belgesinin 22. bölümünde. Ertelendi: 3D animasyon gerekecek.
@@ -475,7 +475,6 @@ Planlanan öteki adımlar:
 ### Açık kararlar
 
 - Oyunun adı (en sona bırakıldı) ve kalıcı paket kimliği.
-- Gizlilik metninin onayı (taslak: `PrivacyWords.cs`, Tasarım §20), APK'dan INTERNET izninin kaldırılması (A28) ve Android yedeklemesinin kapatılması (A29). 13. aşamadan, 2026-10-15.
 - Analiz servisi: Firebase mi, Unity Analytics mi (Tasarım §20).
 - Bölüm içi booster fiyatları; altın sayılarının tek tek onayı; yan koleksiyonun büyüklüğü ve parça fiyatı (Tasarım §25).
 - Malzeme indirme bölümlerinin hamle aralığı: şimdilik değişmiyor (karar 2026-10-12); bu bölümler hedefin altında kalıyor (%3,6, hedef %6).
@@ -484,7 +483,7 @@ Planlanan öteki adımlar:
 
 ### Bilinen açıklar
 
-Bilinen ama kapatılmamış ya da bilerek kabul edilmiş eksiklerin tam listesi [PHONE_TESTS.md](PHONE_TESTS.md) §2'dedir. Başlıcaları: kurallar ve kayıt dosyası telefonda ve IL2CPP derlemesinde hiç çalıştırılmadı (A03); bitiş şöleninin telefonda kare hızı ölçülmedi (A04); telefonun saati ileri alınırsa canlar dolar, günün reklam hakları ve hediyesi yenilenir; sunucusuz bir oyunda kapanmaz (A01); bölüm içi booster'ların etkisi ölçülmedi (A09); ses ve titreşim yok (A10); 100 tablonun telefonda bellek ve yükleme süresi ölçülmedi (A14).
+Bilinen ama kapatılmamış ya da bilerek kabul edilmiş eksiklerin tam listesi [PHONE_TESTS.md](PHONE_TESTS.md) §2'dedir. Başlıcaları: kurallar ve kayıt dosyası telefonda ve IL2CPP derlemesinde hiç çalıştırılmadı (A03); bitiş şöleninin telefonda kare hızı ölçülmedi (A04); telefonun saati ileri alınırsa canlar dolar, günün reklam hakları ve hediyesi yenilenir; sunucusuz bir oyunda kapanmaz (A01); bölüm içi booster'ların etkisi ölçülmedi (A09); 100 tablonun telefonda bellek ve yükleme süresi ölçülmedi (A14); APK 283 MB, Play Store'un 200 MB sınırının üstünde (A32).
 
 ## 8. Belgeler ve nerede ne var
 
