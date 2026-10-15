@@ -64,6 +64,12 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Fiyat tekrarlarda artmıyor, "+5" denemede bir kez; ödeme sonrası gizli yardım yok (§17).
 - 3.443 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: kart çizimle birebir.
 
+**Arayüz: planın 12. aşaması (§23)**
+- Mağaza (altın paketleri "Yakında", iki booster seti, günde 3 reklamla 4'er altın), cüzdan satırında artı düğmeleri, salonda günün hediyesi, tablonun son parçasında 80 altın ve bir booster.
+- Bütün cüzdan istekleri tek defterden kurallara gidiyor; ret hiçbir şeyi değiştirmiyor. Motor ve ekonomi değişmedi.
+- 3.560 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: mağaza ve salon çizimle neredeyse birebir; Usta seti 1.250 altında doğru olarak sönük.
+- İki yeni bilinen açık: simülatörle oyunun tablo ödülü anı farklı (A26), eski kayıtlardaki tamamlanmış tablolar ödülsüz (A27).
+
 ## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
 
 **Kullanıcı kararları**
@@ -116,7 +122,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.349 test geçti; Unity'de bütün denetimler hatasız, şölen 5,5 saniye sınırında. Görüntülere baktım: tahta ve kazanma kartı çizimle neredeyse aynı.
 
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 25 bilinen açık, 97 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 27 bilinen açık, 110 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

@@ -120,9 +120,9 @@ Dikey tablolarda dizilim 90 derece döner. Müzenin onarımı hafiftir: tamamlan
 3. **Tahta ekranı:** solda "BÖLÜM N" ve hedefler, sağda "PARÇA k / m" ve tablonun örtülü küçük kopyası (kazanılacak parça yaldızla aydınlanır), hamle madalyonu, altta ahşap raf. Rafın beş yerinden biri duraklatmadır, dördünde bölüm içi booster'lar durur: spatula, satır fırçası, sütun fırçası, karıştırma. Bunlar 7., 12., 16. ve 20. bölümde birer birer açılır. Bir booster tek dokunuşla seçilir ve hedefe dokununca uygulanır; hamle saymaz, ama denemeyi başlatır.
 4. **Duraklatma** çıkma kartını açar; kart çıkmanın bedelini söyler (hamleden sonra bir can, önce hiçbir şey).
 5. **Kazanma kartı:** şölenden sonra kazanılan parça bir oyukta, ilerleme noktaları, sayarak artan "+N" altın ve "Kalan N hamle fırçaya dönüştü". "Devam" salona döner; yeni parça yapbozda yerleştirilir.
-6. **Kaybetme kartı:** "Tekrar dene" aynı bölümün kartına götürür. "+5 hamle" teklifinin kartı ve yeni kaybetme görünümü 11. aşamada gelecek.
+6. **Hamle bitince:** hedefler kalmışsa "+5 hamle" teklifi gelir (900 altın ya da günde 3 ücretsiz reklam; denemede bir kez). "Vazgeç" bir can götürür ve kaybetme kartını açar; "Tekrar dene" aynı bölümün kartına götürür.
 
-Mağaza, ayarlar, takvim ve etkinlik çerçeveleri tasarım tuvalinde çizili, istemcide henüz yok; sonraki aşamaların işi (bkz. bölüm 7). İpucu motorda ve web laboratuvarında var, istemcide yok.
+**Müzenin dört yeri:** çubukta Mağaza, Koleksiyon, Müze (salon) ve Harita. Mağazada altın paketleri "Yakında" (test sürümü parayla satış yapmaz), iki booster seti ve günde 3 reklamla 4'er altın var. Salondaki "Hediye" çerçevesi takvim gününde bir booster verir; bir tablonun son parçası 80 altın ve bir booster getirir. Ayarlar, takvim ve etkinlik çerçeveleri tasarım tuvalinde çizili, istemcide henüz yok; ayarlar 13. aşamanın işi (bkz. bölüm 7). İpucu motorda ve web laboratuvarında var, istemcide yok.
 
 ## 3. İçerik
 
@@ -450,24 +450,25 @@ Tasarım tuvalindeki bütün ekranların istemciye gelmesi için yazılan plan (
 | 9 | Tahta plaketleri, duraklatmalı raf, kazanma kartı | ✅ 2026-10-14 |
 | 10 | Bölüm içi booster'lar: seçme, nişan alma, kullanma, reddetme | ✅ 2026-10-15 |
 | 11 | Hamle bitince: "+5" teklifi, canlandırılmış reklam, vazgeçme | ✅ 2026-10-15 |
-| 12 | Mağaza, artı düğmeleri, hediye ve tablo ödülü | Sıradaki |
-| 13 | Ayarlar, gizlilik ve veri, destek | — |
+| 12 | Mağaza, artı düğmeleri, hediye ve tablo ödülü | ✅ 2026-10-15 |
+| 13 | Ayarlar, gizlilik ve veri, destek | Sıradaki |
 | 14 | Ses ve titreşim (yer tutucu sesler) | — |
 | 15 | Koleksiyon ve harita ayrıntıları, baştan sona yürüyüş, her ekranın çizimle karşılaştırması, belgeler | — |
 
 ### Sıradaki işler
 
-Proje sahibinin 2026-10-15'te belirlediği sıra:
+Proje sahibinin 2026-10-15'te belirlediği sıra (akşam güncellendi):
 
-1. 10. aşamadan önce, öteki match-3 oyunlarının bölüm içi booster'ları (ve bölüm öncesi booster, "+5", can) nasıl kullandığının araştırması (`docs/research/in-level-boosters.md`, 2026-10-15'te hazır; PDF'i "Araştırma Notu") ve bu genel belge.
+1. Bölüm içi booster araştırması ve bu genel belge (✅ 2026-10-15; `docs/research/in-level-boosters.md`, PDF'i "Araştırma Notu").
 2. **10. aşama:** bölüm içi booster'lar, araştırmanın önerilerine dayanarak (✅ 2026-10-15).
-3. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Çizimini proje sahibi kendisi yapıp verecek (2026-10-15); oyunun istediği çizimler tasarım belgesinin 22. bölümünde.
-4. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
-5. **11–15. aşamalar** (yukarıdaki tablo); ses ve titreşim 14. aşamada yer tutucu olarak gelir.
+3. **11–15. aşamalar** art arda (yukarıdaki tablo); ses ve titreşim 14. aşamada yer tutucu olarak gelir.
+4. **APK telefona:** proje sahibi oyunu kendi telefonunda elde dener; ardından [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulur. En son APK 2026-10-08'de derlendi, oyun telefonda en son 2026-10-07'de oynandı.
+5. **Arayüz iyileştirmeleri:** prototip telefonda denendikten sonraki ilk iş. GitHub'da `arayüz-iyileştirme` etiketli kayıtlar olarak tutuluyor; ilki #2 (renkler genelde mat ve düşük kontrastlı).
+6. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
+7. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Çizimini proje sahibi kendisi yapıp verecek; oyunun istediği çizimler tasarım belgesinin 22. bölümünde. Ertelendi: 3D animasyon gerekecek.
 
 Planlanan öteki adımlar:
 
-- **APK ve telefon testleri:** en son APK 2026-10-08'de derlendi, oyun telefonda en son 2026-10-07'de oynandı. Arayüz işinden sonra APK proje sahibinin telefonuna kurulacak ve [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulacak.
 - **Herkese açık test sunucusu:** arayüz işleri bitince yeniden açılacak (karar 2026-10-14).
 - **Yayın:** APK testi, ardından doğrudan dünya geneli (Tasarım §20). Yayın öncesi yapılacaklar arasında: bölüm klasörünün "yayın klasörü" olarak dondurulması, düzeltme paketinin istemcide indirilip uygulanması, analiz servisi, rıza ekranı ve gizlilik politikası, iOS derlemesi, oyunun adı.
 
@@ -482,7 +483,7 @@ Planlanan öteki adımlar:
 
 ### Bilinen açıklar
 
-Bilinen ama kapatılmamış ya da bilerek kabul edilmiş eksiklerin tam listesi [PHONE_TESTS.md](PHONE_TESTS.md) §2'dedir. Başlıcaları: kurallar ve kayıt dosyası telefonda ve IL2CPP derlemesinde hiç çalıştırılmadı (A03); bitiş şöleninin telefonda kare hızı ölçülmedi (A04); telefonun saati ileri alınırsa canlar dolar, sunucusuz bir oyunda kapanmaz (A01); bölüm içi booster'ların etkisi ölçülmedi (A09); ses ve titreşim yok (A10); 100 tablonun telefonda bellek ve yükleme süresi ölçülmedi (A14).
+Bilinen ama kapatılmamış ya da bilerek kabul edilmiş eksiklerin tam listesi [PHONE_TESTS.md](PHONE_TESTS.md) §2'dedir. Başlıcaları: kurallar ve kayıt dosyası telefonda ve IL2CPP derlemesinde hiç çalıştırılmadı (A03); bitiş şöleninin telefonda kare hızı ölçülmedi (A04); telefonun saati ileri alınırsa canlar dolar, günün reklam hakları ve hediyesi yenilenir; sunucusuz bir oyunda kapanmaz (A01); bölüm içi booster'ların etkisi ölçülmedi (A09); ses ve titreşim yok (A10); 100 tablonun telefonda bellek ve yükleme süresi ölçülmedi (A14).
 
 ## 8. Belgeler ve nerede ne var
 

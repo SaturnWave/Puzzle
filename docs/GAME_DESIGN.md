@@ -1212,6 +1212,23 @@ Bu kararlarla 10. aşama başladı.
 - **Doğrulama:** 3.443 test. Unity'de bütün denetimler, iki yeni araç (`OfferCheck`, `OfferShots`), "+5"i bir kez reklamla alıp bir kez vazgeçen ekran yürüyüşü ve tasarımla karşılaştırma hatasız. Kart çizimle birebir; fiyat artık gerçek değer.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T140–T151.
 
+**Mağaza, artı düğmeleri, günün hediyesi ve tablo ödülü (2026-10-15).** Arayüz planının 12. aşaması.
+
+- **Mağaza:** ShopTR çizimindeki sayfa, çubuğun en solunda. Çubukta artık dört yer var: Mağaza, Koleksiyon, Müze, Harita.
+  - Lambalar arasında tabela.
+  - ALTIN bölümünde üç paket. Altlarında "Yakında" yazar: bu test sürümü parayla bir şey satmaz, basınca bir kart bunu söyler.
+  - GÜÇLENDİRİCİLER bölümünde iki set: Başlangıç seti 900, Usta seti 6.300 altın (içindekilerin tek tek fiyatlarının toplamı). Altın yetmezse fiyat düğmesi sönük durur; basınca eksik tutarı söyler.
+  - ÜCRETSİZ şeridinde "İzle" reklam canlandırmasını oynatır, bitince 4 altın verir; günde 3 kez, sonra "Yarın yine".
+
+  Telefonda tek sütun, katlanırın iç ekranında iki sütun; kaydırma yok.
+- **Artı düğmeleri:** cüzdan satırında altının artısı mağazaya, kalbin artısı can kartına götürür (can satılmaz). Altını yetmeyen "daha fazla al" kartında "Mağazaya git" yolu var.
+- **Günün hediyesi:** salondaki "Hediye" çerçevesi (kırmızı nokta) takvim gününde bir kez sıradaki booster'ı verir. Sonra hap oyuncunun gece yarısına kalan saati sayar. Geri alınan saat yeni gün açmaz.
+- **Tablo ödülü:** bir tablonun son parçası yerine oturunca 80 altın ve sıradaki booster gelir. Ödül parçayla aynı kayıtta yazıldığı için bir kez verilir. Bu sürümden önce tamamlanmış tablolar geriye dönük ödenmez.
+- **Tek defter:** her satın alma, reklam altını ve hediye tek bir defterden (`WalletLedger`) kurallara gider ve hemen kaydedilir. Ret hiçbir şeyi değiştirmez; müze nedenini söyler. Motor ve ekonomi değişmedi.
+- **Bilinen:** telefonun saati ileri alınırsa ertesi günün reklamları ve hediyesi açılır (sunucu yok; A01). Simülatör tablo ödülünü onuncu kazanmada veriyor, oyun son parçada (A26). Satın alma ve ödülün sesi ve uçan altın canlandırması yok.
+- **Doğrulama:** 3.560 test. Unity'de bütün denetimler; mağaza, reklam, hediye ve tamamlanan tablo yürüyüşü; mağazalı tasarım karşılaştırması hatasız. Mağaza çizimle neredeyse birebir.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T160–T172.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici

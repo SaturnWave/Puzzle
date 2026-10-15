@@ -25,7 +25,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 
 | Kod | Açık | Nereden | Etki | Plan |
 |---|---|---|---|---|
-| A01 | Telefonun saati ileri alınırsa canlar dolar. | Kurallar, §23 | Düşük; sunucusuz bir oyunda kapanmaz | Kabul edildi; T32 davranışı gözler |
+| A01 | Telefonun saati ileri alınırsa canlar dolar; 12. aşamadan beri günün reklam hakları ve hediyesi de yenilenir. | Kurallar, §23 | Düşük; sunucusuz bir oyunda kapanmaz | Kabul edildi; T32 davranışı gözler, geri alınan saati T167 |
 | A02 | Can kaybedilirken saat geri alınmışsa, saat düzeltilince bir sonraki canın zamanı geçmişte kalır ve can hemen döner. | Kurallar, §23 | Düşük | Kabul edildi; T33 |
 | A03 | Kurallar (`Puzzle.Meta`) ve kayıt dosyası telefonda ve IL2CPP derlemesinde hiç çalıştırılmadı; yalnızca Editor'da ve .NET'te. | 1. aşama | Orta: IL2CPP'de yansıma ve JSON okuma farklı davranabilir | T01, T20 |
 | A04 | Bitiş şöleninin telefonda kare hızı ve gerçek parmakla atlanması ölçülmedi. | §23 | Orta | T12 |
@@ -48,6 +48,8 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
 | A24 | Booster yazısı 9:16 telefonda uzun tahtalarda ve katlanır telefonun yatay iç ekranında en alt sıranın bir kısmını örtüyor. Dokunuşlar geçiyor, ama ilk denemedeki yazı ilk hamleye kadar o taşları gizliyor. | Aşama 10 | Orta | T134; yer ayırmak tahtayı küçültür |
 | A25 | Teklif ya da canlandırma reklamı açıkken uygulama kapatılırsa can gitmez ve kayıt yazılmaz. | Aşama 11 | Düşük | Planın bildiği açık |
+| A26 | Ekonomi simülatörü tablo ödülünü onuncu kazanmada veriyor, oyun son parça yerleşince. Parçalar geç yerleştirilirse ödül oyunda simülatördekinden geç gelir. | Aşama 12 | Düşük; tahminin günü biraz kayabilir | Simülatör son parça anına geçirilecek ya da fark ölçülecek |
+| A27 | Bu sürümden önce tamamlanmış tablolar için ödül verilmez; ödül yalnızca son parçayla gelir. | Aşama 12 | Yalnızca eski test kayıtları | Kabul edildi |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -213,6 +215,24 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T149 | +5 sonrası kazanma | +5'i al ve hamle artırarak kazan | Şölen kalan hamleleri fırçaya çevirir; kazanma kartı onların altınını gösterir | Aşama 11 | Bekliyor |
 | T150 | Katlanır ekranlar | T140, T143 ve T145'i iç (kare) ve dış ekranda tekrarla | Kartlar plaketlerle raf arasına sığar; her düğme ve "Vazgeç" parmakla rahat basılır | Aşama 11 | Bekliyor |
 | T151 | Kayıtlar | +5 alınan ve vazgeçilen birer denemeden sonra `attempts.jsonl` dosyasının son iki satırını oku (adb) | Deneme başına bir satır, deneme kesin bitince yazılmış; +5'li denemede `"extraMovesBought":true` ve +5 eylemi | Aşama 11 | Bekliyor |
+
+### F7. Mağaza, hediye ve tablo ödülü (aşama 12)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T160 | Mağazaya yollar | Salonda altının yeşil artısına bas; haritadan ve koleksiyondan çubuktaki "Mağaza"ya bas; kalbin artısına bas | Mağaza soldan gelir: lambalar arasında tabela, üç paketle ALTIN, iki setle GÜÇLENDİRİCİLER, ÜCRETSİZ şeridi; kaydırmadan hepsi görünür. Kalbin artısı can kartını açar | Aşama 12 | Bekliyor |
+| T161 | Altın paketi | Bir altın paketinin altındaki "Yakında"ya bas | "Altın paketleri: Bu test sürümünde satın alma yok." kartı; Tamam kapatır; altın aynı | Aşama 12 | Bekliyor |
+| T162 | Set almak | En az 900 altınla Başlangıç setinin yeşil 900 düğmesine bas; bir bölümün kartını aç; uygulamayı kapatıp yeniden aç | "Satın alındı" kartında üç başlangıç booster'ı +1; satır 900 geri sayar; bölüm kartında her başlangıç booster'ı bir fazla; yeniden açınca da duruyor | Aşama 12 | Bekliyor |
+| T163 | Altın yetmezse | Usta setinin fiyatından az altınla sönük düğmesine bas | "Altın yetmiyor: Usta seti için N altın daha gerek." kartı; hiçbir şey değişmez | Aşama 12 | Bekliyor |
+| T164 | Reklamla altın | Ücretsiz şeritte "İzle"ye üç kez bas; dördüncüyü dene; aynı gün uygulamayı kapatıp aç; gece yarısından sonra yine bak | Her seferinde "Reklam canlandırması / TEST SÜRÜMÜ" kartı 3 saniye sürer, sonra satır +4 sayar; üçüncüden sonra düğme sönük "Yarın yine", şerit "BUGÜNLÜK BİTTİ" (yeniden açınca da); gece yarısından sonra yine 3 hak | Aşama 12 | Bekliyor |
+| T165 | Reklam sırasında | Canlandırma reklamı sürerken geri tuşuna bas; uygulamayı arka plana alıp dön; bir kez de reklam sırasında uygulamayı kapat | Geri tuşu bir şey yapmaz; reklam biter ve bir kez öder; reklam sırasında kapatılan uygulama ödemez ve hak harcamaz | Aşama 12 | Bekliyor |
+| T166 | Günün hediyesi | Salonda hediye çerçevesine bas (kırmızı nokta, "Hediye"); yine bas; uygulamayı kapatıp aç | "Günün hediyesi" kartında bir booster +1; nokta kalkar, hap gece yarısına kalan saati gösterir; ikinci basış "Bugünkü hediyeni aldın. Yenisi ... sonra." der; yeniden açınca da alınmış | Aşama 12 | Bekliyor |
+| T167 | Saat geri | Hediyeyi aldıktan sonra telefonun tarihini bir gün geri al, oyunu aç, hediyeye bas, reklam şeridine bak; tarihi düzelt | Geri tarihte yeni hediye ve yeni reklam hakkı yok; hap uzun bir bekleme gösterir; tarih düzelince hiçbir şey kaybolmaz | Aşama 12 | Bekliyor |
+| T168 | Ertesi gün | Ertesi takvim günü salonu aç | Kırmızı nokta ve "Hediye" yine orada; hediye sıradaki booster | Aşama 12 | Bekliyor |
+| T169 | Tablo ödülü | Bir tablonun son parçasını yapbozunda yerleştir (bir kez parmakla, bir kez "Otomatik tamamla" ile) | Kutlamadan sonra "Tablo tamamlandı! İşte ödülün", tepside +80 altın ve +1 booster; salonda satır +80 sayar; booster bölüm kartında ya da rafta | Aşama 12 | Bekliyor |
+| T170 | Ödül bir kez | Son parça yerine oturur oturmaz uygulamayı kapat, aç; tabloyu koleksiyonda aç | Ödül tam bir kez verilmiş (+80 altın bir kez); tabloyu bütün olarak görmek bir şey vermez | Aşama 12 | Bekliyor |
+| T171 | Mağazaya git | Bölüm kartında hiç sahip olmadığın ve altının yetmediği bir başlangıç booster'ının artısına bas; "Mağazaya git"e bas | İki kart da kalkar, mağaza gelir; bir şey alınmaz, can gitmez | Aşama 12 | Bekliyor |
+| T172 | Katlanır ekranlar | T160, T162 ve T166'yı açık iç ekranda ve dış ekranda tekrarla | İç ekranda iki sütun (paketler ve setler yan yana, ücretsiz şerit altta), dışta tek sütun; her düğme rahat basılır; hediye çerçevesi tezgâhın yanında | Aşama 12 | Bekliyor |
 
 ### G. Görünüm
 
