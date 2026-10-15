@@ -2,6 +2,8 @@
 
 > Oyun yalnızca iOS ve Android'de yayınlanacak. Bu kılavuz, mobil sürümden önce tanıdıklara tarayıcıdan oynatıp gerçek oyuncu verisi toplamak için kullanılan test sunucusunu anlatır.
 
+> **Durum (2026-10-15): sunucu kapalı.** Yaklaşık 12 Ekim'den beri çalışmıyor (en son 12 Ekim akşamı veri yazdı). Proje sahibinin kararıyla (2026-10-14) Unity istemcisinin arayüz işleri bitince yeniden açılacak; o zamana kadar kapalı kalıyor. Yeniden açarken §3 ve §4'teki adımlar izlenir; sunucu kendi PowerShell penceresinden başlatılır (§7). Kapalıyken toplanan kayıtlar (`recordings/attempts.jsonl`) yerinde durur.
+
 ## 1. Ne işe yarar
 
 - Tanıdıkların bir internet adresinden giriş yapıp bölümleri **gerçek oyundaki gibi sırayla** oynar: kazanınca sonraki bölüm açılır, kaybedince aynı bölüm yeniden denenir.
@@ -132,3 +134,31 @@ Sunucu bölüm dosyalarını yalnızca açılışta okur. Bölümler diskte değ
 - Oyuncu sayfası yazı tiplerini Google Fonts'tan yükler: her ziyarette oyuncunun tarayıcısı `fonts.googleapis.com` ve `fonts.gstatic.com` adreslerine bağlanır (adres ve tarayıcı bilgisi Google'a görünür). Başka hiçbir dış adrese bağlanılmaz; güvenlik politikası yalnızca bu ikisine izin verir.
 - Çok sayıda adresten gelen istek, yeni girişleri geçici olarak engelleyebilir; giriş yapmış oyuncular oynamaya devam eder.
 - Gerçek Funnel üzerinden ilk giriş ve betiğin baştan sona ilk çalışması sahibi tarafından yapılır; yayına açtıktan sonra adresin giriş ekranını gösterdiğini ve `/api/levels` adresinin reddedildiğini bir kez kontrol et.
+
+## 9. Test modunu yerel ağda açma
+
+Laboratuvarı (test modu) aynı Wi-Fi'deki telefon ve bilgisayarlardan açmak için. Bu bölüm 2026-10-15'te `README.md`'den buraya taşındı. Uygulamayı ayrı bir klasöre yayınla, sonra bütün ağ arayüzlerinde başlat; ayrı klasör, geliştirme derlemeleriyle dosya kilidi çakışmasını önler.
+
+```bash
+dotnet publish src/Puzzle.Web -c Release -o out/web
+```
+
+```bash
+dotnet out/web/Puzzle.Web.dll --urls http://0.0.0.0:5180 --contentRoot .
+```
+
+Sonra diğer cihazda `http://<bilgisayarın Wi-Fi IP'si>:5180` adresini aç. Windows Güvenlik Duvarı gelen bağlantıyı engelliyorsa yönetici PowerShell'de şu üç adımı uygula: Wi-Fi'yi "Özel" ağ yap, .NET Host engelleme kurallarını kapat, 5180 portuna izin ver.
+
+```powershell
+Set-NetConnectionProfile -InterfaceAlias "Wi-Fi" -NetworkCategory Private
+```
+
+```powershell
+Get-NetFirewallRule -DisplayName ".NET Host" | Where-Object Action -eq Block | Disable-NetFirewallRule
+```
+
+```powershell
+New-NetFirewallRule -DisplayName "Puzzle Test Lab (5180)" -Direction Inbound -Protocol TCP -LocalPort 5180 -Action Allow -Profile Private
+```
+
+Test modu tünelden gelen istekleri reddeder (§2); oyunu internete açmak için §3 ve §4'teki herkese açık mod kullanılır.

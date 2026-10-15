@@ -1,7 +1,7 @@
 # Oyun Tasarımı ve Algoritma Planı — v0.2
 
-> Durum: Faz 1 (motor + bot) ve Faz 2 (ilk 1000 bölüm) tamamlandı. Tema, ürün ve yayın kararları 2026-10-02'de verildi (§18–§21). Sıradaki iş motoru "hazır" yapmak (§21); arayüz, isim ve görseller en son.
-> Kaynak araştırma: [research.md](../research.md)
+> Durum (2026-10-15): motor "hazır" (2026-10-12, §21); yayındaki 1000 bölüm bölüm bankasından derlendi (§24); müzenin 20 odası ve 100 tablosu oyunda (§18); ekonomi sayıları simülatörden okundu ve yürürlükte (§25). Unity istemcisinde 15 aşamalı arayüz planının 1–9. aşamaları bitti (§23); sıradaki 10. aşama, bölüm içi booster'lar. Oyunun adı en sona kaldı.
+> Projenin kısa özeti: [OVERVIEW.md](OVERVIEW.md) (Genel Belge). Kaynak araştırma: [research.md](../research.md)
 
 ## 0. Temel kararlar
 
@@ -145,7 +145,7 @@ durum: hedefler tamam → KAZANDI · hamle bitti → KAYBETTİ · hamle yok → 
 | Expert | 100 | 0 (her zaman en iyi) | Hatasız ama tek hamle ileriyi gören oyuncu; "çözülemez bölüm" tespiti |
 
 - Botlar eğitilmedi: kurallar ve puanlar elle yazıldı, oynadıkça hiçbir şey öğrenmiyorlar. CNN taklit modeli için gerçek oyuncu verisi gerekir; bu yüzden ilk sürüm **parametrik greedy**. Yayındaki oyuncu verisiyle profiller yeniden kalibre edilir (§20).
-- **Özel taş biriktirme (düzeltildi, 2026-10-03):** harcanan özel taşın değerinin yarısı kayıp sayıldığı için botlar özel taşları biriktiriyordu. 1000 bölüm × 100 oyunluk ölçümde expert, ürettiği özel taşların %19'unu kullanmadan bırakıyordu; zarar neredeyse yalnızca büyük "renk topla" hedefli bölümlerdeydi. Ceza 0,5'ten 0,25'e indi: iki profil için de en iyi değer bu (limitle kazanma expert %84,8 → %86,8, average %64,2 → %65,3). 0 ise eşya indirme bölümlerinde özel taşları erken harcatıyor. Bölümler eski ayarla kalibre edildiği için limitler 6. adımda yeniden üretilecek (§21).
+- **Özel taş biriktirme (düzeltildi, 2026-10-03):** harcanan özel taşın değerinin yarısı kayıp sayıldığı için botlar özel taşları biriktiriyordu. 1000 bölüm × 100 oyunluk ölçümde expert, ürettiği özel taşların %19'unu kullanmadan bırakıyordu; zarar neredeyse yalnızca büyük "renk topla" hedefli bölümlerdeydi. Ceza 0,5'ten 0,25'e indi: iki profil için de en iyi değer bu (limitle kazanma expert %84,8 → %86,8, average %64,2 → %65,3). 0 ise eşya indirme bölümlerinde özel taşları erken harcatıyor. Bölümler eski ayarla kalibre edildiği için limitler 6. adımda yeniden üretilecek (§21). (Yapıldı: 1000 bölüm 2026-10-04'te yeni ayarla yeniden üretildi, §13.)
 - **Usta bot (2026-10-03, `UstaPolicy`):** adil bir ölçüm botu. Limit belirlemez, raporlarda gerçekçi beceri tavanını gösterir; kalibrasyon greedy profillerde kalır (üretici ustayı kalibrasyon botu olarak kabul etmez). Araştırmadaki uyarı (güçlü arama zorluğu düşük gösterir) bu yüzden geçerli değil.
   - **Nasıl oynar:** her hamleyi expert gibi puanlar ve en iyi 8'ini aday seçer; 2 yer özel taş patlatan hamlelere ayrılır. Adayları kendi rastgeleliğiyle örneklediği olası geleceklerde karşılaştırır: her örnekte aday hamleyi oynar, sonra o tahtadaki en iyi ikinci hamleye bakar (iki hamle ileri). Zayıf adaylar art arda yarıya elenir. Bütçe karar başına 24 örnek (8 aday × 1, 4 × 2, 2 × 4); bütün adaylar aynı örnek geleceklerde denenir.
   - **Adillik:** gerçek gelecek taşları ve oyunun gerçek efekt ve karıştırma rastgeleliğini göremez. Olası gelecekleri `Game.CreateImagined(seed)` üretir: bölümün herkese açık spawn kuralları, botun kendi tohumu. Renk dengesi ağırlıkları kopyalanır; bu, geçmiş taşları kusursuz hatırlayan bir oyuncunun bilebileceği bilgi. Testler, aynı tahtada gerçek gelecek farklı olsa da aynı hamlenin seçildiğini ve kararın kalan hamleye bağlı olmadığını doğrular.
@@ -330,7 +330,7 @@ Average bot için hedef kazanma oranı (bölüm ilerledikçe sıkılaşır). Tab
 
 ### Mekanik açılış takvimi
 
-**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil 2026-10-03'te güncellendi; üretilmiş 1000 bölüm 6. adımdaki yeniden üretime kadar eski takvimde (parantez içindeki numaralar). Özel taşların tanıtım bölümleri (3, 5, 8, 12, 15) bir **öğretici takvimidir** (karar 2026-10-03): özel taşlar her bölümde eşleşme şekliyle oluşur, oyun kuralı değişmez; oyuncu o özel taşı ilk kez yaptığında arayüz kısa bir anlatım gösterir. Arayüz fazında yapılacak.
+**Karar (2026-10-02):** yeni engeller tablo başlangıçlarına hizalanır. Her yeni tablo (10 bölüm) yeni bir şey öğretir; her yeni müze odası (50 bölüm) büyük bir yenilik getirir. Profil 2026-10-03'te güncellendi; üretilmiş 1000 bölüm 6. adımdaki yeniden üretime kadar eski takvimde (parantez içindeki numaralar). (Yeniden üretim 2026-10-04'te yapıldı; o günden beri bütün bölümler bu takvimde.) Özel taşların tanıtım bölümleri (3, 5, 8, 12, 15) bir **öğretici takvimidir** (karar 2026-10-03): özel taşlar her bölümde eşleşme şekliyle oluşur, oyun kuralı değişmez; oyuncu o özel taşı ilk kez yaptığında arayüz kısa bir anlatım gösterir. Arayüz fazında yapılacak.
 
 | Bölüm | Yeni öğe |
 |---|---|
@@ -395,28 +395,53 @@ Katmanlar karakter ızgarası olarak tutulur (elle de düzenlenebilir):
 
 ## 11. Proje yapısı
 
+Güncellendi 2026-10-15 (önceki listede `Puzzle.Generator` yoktu ve CLI'ın komut listesi Faz 1'den kalmıştı). Projelerin birbirine bağımlılıkları ve istemcinin yapısı: [OVERVIEW.md](OVERVIEW.md) bölüm 5.
+
+**Kod**
+
 ```
-src/Puzzle.Core     netstandard2.1, C# 9 — simülasyon + spawn yönetmeni (Unity'ye girer)
-src/Puzzle.Bot      netstandard2.1, C# 9 — botlar, çözücü, paralel simülasyon (oyunda ipucu için de)
-src/Puzzle.Tooling  net10.0 — bölüm JSON'u ve bölüm kütüphanesi (CLI, web ve üretici ortak)
-src/Puzzle.Cli      net10.0 — sim / demo / bench / solve / validate (Faz 2'de generate)
-src/Puzzle.Web      net10.0 — tarayıcıda test laboratuvarı (oyna, bot, ipucu, çözücü, simülasyon)
-tests/Puzzle.Core.Tests  net10.0, xUnit
-src/Puzzle.Bank     net10.0 — bölüm bankası ve derleyici: adaylar, ölçüm, saklama, politika, seçim, yayına alma (§24)
-policies/           zorluk politikaları (default.json: oyuncu, paylar, tür hedefleri, sabitlenen bölümler)
-src/Puzzle.Museum   netstandard2.1, C# 9 — müzenin kuralları: odalar, tablolar, yapboz kesimi, ilerleme (Unity'ye girer)
-src/Puzzle.Meta     netstandard2.1, C# 9 — can, coin, booster, ödül, teklif ve mağaza kuralları (Unity'ye girer; §23)
-src/Puzzle.Economy  net10.0 — ekonomi simülatörü (§25)
-economy/            ekonomi ayarları: default.json oyunun ve simülatörün ortak dosyası, yanında değişkenleri
-museum/catalogue.json   odaların ve tabloların veri dosyası (başlık, ressam, yıl, görüntü, kaynak, lisans)
-art/paintings       tabloların lisans listesi (oda oda); görüntüler unity/Assets/Resources/Paintings altında
-unity/              Unity 6.6 projesi — oyunun istemcisi (Android; iOS sonra). Motoru derlenmiş hâliyle kullanır
-art/unity           istemcinin galeri görselleri için SVG kaynakları (duvar, plaket, madalyon, raf, aplik)
-tools/unity         motoru ve bölümleri Unity projesine taşıyan, çizimleri PNG'ye çeviren betikler
-levels/samples      el yapımı örnek bölümler
-recordings/         web test uygulamasının oyun kayıtları (attempts.jsonl); git'e girmez
-tools/docs-pdf      belgelerin PDF baskısını üreten betik (pandoc + Chrome)
-docs/pdf            üretilmiş PDF'ler; kaynak her zaman Markdown dosyasıdır
+src/Puzzle.Core       netstandard2.1, C# 9 — motor, spawn yönetmeni, deneme kaydı (Unity'ye girer)
+src/Puzzle.Bot        netstandard2.1, C# 9 — botlar, merdiven, çözücü, simülasyon (Unity'ye girer)
+src/Puzzle.Museum     netstandard2.1, C# 9 — odalar, tablolar, yapboz, ilerleme (Unity'ye girer)
+src/Puzzle.Meta       netstandard2.1, C# 9 — can, coin, booster, ödül, +5, mağaza (Unity'ye girer)
+src/Puzzle.Tooling    net10.0 — bölüm JSON'u, merdiven ölçümü, insan–bot karşılaştırması
+src/Puzzle.Generator  net10.0 — bölüm üreticisi: plan, şekil ve engel portföyü, kalibrasyon (§9)
+src/Puzzle.Bank       net10.0 — bölüm bankası ve derleyici, politika, yayına alma (§24)
+src/Puzzle.Economy    net10.0 — ekonomi simülatörü (§25)
+src/Puzzle.Cli        net10.0 — puzzle: sim, demo, bench, solve, seeds, generate, botstats, ladder,
+                      validate, humans, players, bank, assemble, compare, promote, patch, economy
+src/Puzzle.Web        net10.0 — web test uygulaması: laboratuvar ve herkese açık test sunucusu
+tests/Puzzle.Core.Tests  net10.0, xUnit — bütün C# testleri, istemcinin Unity'siz dosyaları dahil
+unity/                Unity 6.6 istemcisi (Android; iOS sonra); motoru derlenmiş hâliyle kullanır
+```
+
+**Veri ve içerik**
+
+```
+levels/generated      yayındaki 1000 bölüm; assembly.csv, assembly.manifest, report.csv
+tests/fixtures        testlerin sabitlenmiş dosyaları (motor izi, kayıt örnekleri, ekonomi paketi)
+levels/samples        el yapımı örnek bölümler
+levels/archive        değiştirilen bölümlerin eski sürümleri (kayıtlar karşılaştırılabilsin diye)
+profiles/             üretim profili (default.json: plan, bantlar, boyutlar, palet, mekanik takvimi)
+policies/             zorluk politikası (default.json: oyuncu, paylar, tür hedefleri, sabitlenenler)
+economy/              ekonomi ayarları: default.json (oyun ve simülatör ortak) ve değişkenleri
+museum/catalogue.json odaların ve tabloların veri dosyası (başlık, ressam, yıl, görüntü, lisans)
+art/paintings         lisans listeleri (oda oda); görüntüler unity/Assets/Resources/Paintings
+art/fonts             yazı tiplerinin kaynakları ve lisansları (licences.json)
+art/unity             istemci çizimlerinin SVG kaynakları (duvar, plaket, madalyon, raf, aplik ...)
+reports/              merdiven ve expert ölçümleri (ladder.csv, expert_moves.csv)
+recordings/, data/    web testinin oyun kayıtları ve hesapları; git'e girmez
+```
+
+**Araçlar ve belgeler**
+
+```
+tools/unity           Unity'ye aktarma (motor, bölümler, katalog, ekonomi), tablo ve yazı tipi
+                      indirme, çizimleri PNG'ye çevirme
+tools/web-theme       taş çizimleri ve taş paleti (web testi ve Unity ortak)
+tools/public          herkese açık test sunucusunu başlatan ve durduran betikler
+tools/docs-pdf        belgelerin PDF baskısını üreten betik (pandoc + Chrome)
+docs/                 belgeler; docs/pdf üretilmiş PDF'ler (kaynak her zaman Markdown dosyasıdır)
 ```
 
 **Belgeler.** Tasarım belgeleri Markdown olarak yazılır ve gözden geçirilir; her değişiklikten sonra `py tools/docs-pdf/build.py` ile PDF baskıları yeniden üretilir (kapak, belge künyesi, sayfa numaralı içindekiler, üst ve alt bilgi). Kod, `beautiful-code` standardına göre yazılır (kullanıcı kararı, 2026-10-02).
@@ -429,9 +454,9 @@ docs/pdf            üretilmiş PDF'ler; kaynak her zaman Markdown dosyasıdır
 | 1.5 ✅ | İki bomba, 8 renk + palet, spawn yönetmeni, mükemmel bilgi çözücüsü, web test laboratuvarı |
 | 2 ✅ | Bölüm üretici, 1000 bölüm, zorluk raporu |
 | 2.5 ✅ | Motoru "hazır" yapmak: bot düzeltmesi, usta bot, casual koruması, booster'lar, bitiş şöleni, düzeltme paketleri, 1000 bölümün yeniden üretimi (§21). Bitti: 2026-10-12 |
-| 3 (sürüyor) | Tema ve meta tasarımı: yapboz kesimi (C#) ✅, ilk iki odanın tabloları ✅; kalan: ekonomi simülatörü, 18 odanın tabloları (§18, §19) |
-| 4 | Arayüz. Oyunun adı en sona bırakıldı (karar 2026-10-05) |
-| 5 | Unity: görsel katman, animasyon event'leri, ipucu, analiz; görseller en son. **Başladı 2026-10-06** (kullanıcı kararıyla öne alındı); ilk oynanabilir sürüm telefonda 2026-10-07 (§23) |
+| 3 ✅ | Tema ve meta tasarımı: yapboz kesimi (C#) ✅, ilk iki odanın tabloları ✅; ekonomi simülatörü ✅ 2026-10-13 (§25), 3–20. odaların 90 tablosu ✅ 2026-10-14 (§18). Açık kalan: yan koleksiyonun büyüklüğü ve parça fiyatı (§25) |
+| 4 (sürüyor) | Arayüz: tasarım tuvalindeki ekranlar Unity istemcisinde, 15 aşamalı planla (§23); 1–9. aşamalar ✅ 2026-10-14, sıradaki 10. aşama (bölüm içi booster'lar). Oyunun adı en sona bırakıldı (karar 2026-10-05) |
+| 5 (sürüyor) | Unity: görsel katman, animasyon event'leri, ipucu, analiz; görseller en son. **Başladı 2026-10-06** (kullanıcı kararıyla öne alındı); ilk oynanabilir sürüm telefonda 2026-10-07 (§23). Durum 2026-10-15: tahta, müze ekranları ve bitiş şöleni istemcide; ipucu, analiz ve ses yok; telefonda en son 2026-10-07'de denendi |
 | 6 | Yayın: APK testi → doğrudan dünya geneli (karar 2026-10-05; sınırlı ülke yayını yok, §20) |
 
 Sıra kararı (2026-10-02): tema arayüzden önce gelir, çünkü engellerin görünüşü, renk paleti ve oyunun adı temadan çıkar.
@@ -539,7 +564,7 @@ Sadece "her denemede yeni seed" vermek eşit zorluk sağlamıyor; kalibre edilmi
 - Bu ölçümler özel taş biriktirme düzeltmesinden önce alındı (§7).
 - **Bugünkü bölümlerde (2026-10-06, onaylanan paylar; `reports/expert_moves.csv` yenilendi):** ortalama limit / expert medyanı / expert p90 / limitle kazanma: Kolay 25,0 / 8,8 / 12,6 / %100; Normal 29,3 / 12,9 / 17,9 / %100; Zor 31,9 / 16,0 / 22,8 / %99; Süper Zor 36,7 / 19,6 / 29,0 / %97. Hiçbir bölümde expert'in medyanı limiti aşmıyor; medyanların toplamı 13.279 hamle, limitlerin toplamı 29.603. Güçlü bir oyuncu için oyun artık kolay: limitin yarısından azı yetiyor.
 
-**Usta ve expert** (2026-10-03; 1000 bölüm × 30 oyun, üst sınır 150, `botstats` tohumlarıyla eşleştirilmiş; expert 0,25 cezasıyla). Limitler hâlâ eski ayarla kalibre edilmiş limitler; 6. adımda yeniden üretilecek.
+**Usta ve expert** (2026-10-03; 1000 bölüm × 30 oyun, üst sınır 150, `botstats` tohumlarıyla eşleştirilmiş; expert 0,25 cezasıyla). Limitler hâlâ eski ayarla kalibre edilmiş limitler; 6. adımda yeniden üretilecek (yeniden üretim 2026-10-04'te yapıldı; aşağıda).
 
 | Kademe | Bölüm | Expert limitle kazanma | Usta limitle kazanma | Expert ortanca hamle | Usta ortanca hamle |
 |---|---|---|---|---|---|
@@ -658,7 +683,7 @@ Novice bot (ilk oyuncunun en çok benzediği model) 51. bölümden sonra, yeni l
   | Jöleli | 187 | 78 | 110 |
   | Malzeme indirme | 223 | 70 | 61 |
 
-- **Malzeme bölümleri geri gelmedi.** Nedeni arama değil, mekaniğin kendisi: 55. basamak botu bir malzemeyi indirmek için 15–20 hamle harcıyor; üç malzemeli bir tahta Normal aralığına (20–33 hamle) oturmuyor ve malzeme sayısı engel miktarını izlemiyor (51–250 örneğinde izletmek 200 bölümde yalnızca 4 bölüm kazandırdı, uygulanmadı). Seçenekler: malzemeli bölümlere daha uzun hamle aralığı vermek ya da insanların malzeme bölümlerini nasıl oynadığını görmek (51 ve sonrası oynandıkça). Karar bekliyor.
+- **Malzeme bölümleri geri gelmedi.** Nedeni arama değil, mekaniğin kendisi: 55. basamak botu bir malzemeyi indirmek için 15–20 hamle harcıyor; üç malzemeli bir tahta Normal aralığına (20–33 hamle) oturmuyor ve malzeme sayısı engel miktarını izlemiyor (51–250 örneğinde izletmek 200 bölümde yalnızca 4 bölüm kazandırdı, uygulanmadı). Seçenekler: malzemeli bölümlere daha uzun hamle aralığı vermek ya da insanların malzeme bölümlerini nasıl oynadığını görmek (51 ve sonrası oynandıkça). Karar bekliyor. (Karar 2026-10-12: hamle aralığı şimdilik değişmiyor; §24 "Bilinen sınırlar".)
 - **Gevşetilen 9 bölüm** (limit hamle aralığının dışında, pay hedefte): 52 (44 hamle), 53 (45), 358 (36), 730 (65), 771 (33), 795 (54), 813 (37), 841 (44), 980 (48). Altısı malzeme indirme ya da jöle bandı bölümü: 55. basamak botu üç malzemeyi bu tahtalarda aralıktaki hamleyle indiremiyor. 730 ve 795 elle gözden geçirilmeye aday.
 - Hedeften 7 puandan fazla sapan tek bölüm 899 (%62,5; hedef %55): limit bir hamle azalınca oran hedefin altına düşüyor.
 - İlk üretimde 31 bölüm gevşetilmiş, 14 bölüm hedeften 7 puandan fazla sapmıştı (5 ve 6 hamlelik iki bölüm dahil). Nedeni ve düzeltmesi §9'da ("ikinci arama"); düzeltmeden sonra bu 31 bölümün 26'sı değişti. Tahta başına aramaya geçilince gevşetilen 9 bölüm ve 899 aynı kaldı; 950 bölümün 303'ü değişti, 647'si bayt bayt aynı.
@@ -668,19 +693,19 @@ Novice bot (ilk oyuncunun en çok benzediği model) 51. bölümden sonra, yeni l
 1. ~~Bomba 5x5 mi 3x3 mü?~~ → İkisi de: Bomba 3x3, Büyük Bomba 5x5 (§3).
 2. ~~Dokunarak patlatma?~~ → Evet, 1 hamle.
 3. ~~Boyut değişimi bölüm içinde de mi?~~ → Hayır. Bölüm içinde sabit, bölümler ilerledikçe değişir (profil `sizes`).
-4. ~~Can sistemi / booster ekonomisi?~~ → 5 can + sınırsız can ödülleri, 7 booster, "+5 hamle" teklifi (§18, §19). Fiyatlar ekonomi simülatörüyle belirlenecek.
+4. ~~Can sistemi / booster ekonomisi?~~ → 5 can + sınırsız can ödülleri, 7 booster, "+5 hamle" teklifi (§18, §19). Fiyatlar ekonomi simülatörüyle belirlenecek. (Belirlendi 2026-10-13: §25; bölüm içi booster fiyatları hâlâ yer tutucu.)
 5. ~~Retry politikası?~~ → Farklı desen, aynı kurallar, aynı zorluk (§17).
 6. ~~Başlangıç tahtası?~~ → **Her denemede farklı** (2026-10-01). Sabit tahta desteği motorda duruyor ama kullanılmıyor.
-7. ~~Zorluk hedefleri?~~ → Şimdilik §9 tablosu. Farklı kombinasyonlar profil dosyalarıyla denenecek.
-8. ~~Hedef oyuncu?~~ → 30 yaş üstü rahat oyuncu. Yayından önce limitler `average` bota göre, casual korumasıyla (§8). Gerçek oyuncu verisi geldikçe yeniden ayarlanır (§20).
+7. ~~Zorluk hedefleri?~~ → Şimdilik §9 tablosu. Farklı kombinasyonlar profil dosyalarıyla denenecek. (Güncel: §9 tablosu tarihsel; ilk odada §8 madde 7, 51–1000'de §8 madde 9 geçerli.)
+8. ~~Hedef oyuncu?~~ → 30 yaş üstü rahat oyuncu. Yayından önce limitler `average` bota göre, casual korumasıyla (§8). Gerçek oyuncu verisi geldikçe yeniden ayarlanır (§20). (Güncel: 2026-10-05'ten beri ilk oda zayıf oyuncu modeline göre, 2026-10-06'dan beri 51–1000 ortalama oyuncu sayılan 55. basamağa göre ayarlanır; casual koruması kullanılmıyor: §8 madde 7 ve 9.)
 9. ~~Hamle aralığı?~~ → Bölüm aralığına ve zorluk kademesine göre değişken (profil `bands[].moves`).
 10. ~~Mekanik takvimi?~~ → Tablo başlangıçlarına hizalandı (§9).
-11. **Taşların görseli:** sanat aşamasında seçilecek. Kural: her rengin kendi şekli olur, renkler renk körlüğüne uygun sabit bir set kalır.
-12. **Fiyatlar ve coin miktarları:** ekonomi simülatörüyle (§19).
-13. **20 odanın sanat akımı listesi ve 100 tablo:** tema fazında hazırlanıp onaya sunulacak.
-14. **Oyunun adı:** tema kesinleşti; arayüzle birlikte konuşulacak.
+11. ~~Taşların görseli?~~ → Seçildi (2026-10-05, renkler 2026-10-07): her rengin kendi şekli var, renk körlüğüne uygun sabit set (§22).
+12. ~~Fiyatlar ve coin miktarları?~~ → Simülatörden okundu, yürürlükte (2026-10-13; hoş geldin hediyesi ve reklamla altın 2026-10-14; §25). Açık: bölüm içi booster fiyatları, yan koleksiyon parçasının fiyatı.
+13. ~~20 odanın sanat akımı listesi ve 100 tablo?~~ → Onaylandı ve oyunda (2026-10-14). Odalar akım değil dönemdir; 3–20. odalar zamanda geriye gider (§18).
+14. **Oyunun adı:** tema kesinleşti; arayüzle birlikte konuşulacak. (2026-10-05'ten beri: en sona bırakıldı, §12.)
 15. **Analiz servisi:** Firebase mi Unity Analytics mi (§20).
-16. **Sınırlı yayın ülkeleri** (§20).
+16. ~~Sınırlı yayın ülkeleri?~~ → Sınırlı ülke yayını yok; APK testinden sonra doğrudan dünya geneli (karar 2026-10-05, §20).
 
 ## 15. Paralel çalışan algoritmalar — mimari
 
@@ -689,7 +714,7 @@ Oyun tek bir algoritma değil, aynı anda çalışan birkaç sistemden oluşuyor
 | Katman | Algoritmalar | Nerede çalışır | Durum |
 |---|---|---|---|
 | **Spawn yönetmeni** | Denge (dueness) + hedef eğilimi + kaskad kontrolü + DDA yardımı, her taş için birlikte | Oyun içi (Core) | ✅ |
-| **Oyuncu botları** | Random, Greedy (4 profil), usta (örneklemeli iki hamle arama), çözücü (beam search, mükemmel bilgi) | Analiz, ipucu (Bot) | ✅ |
+| **Oyuncu botları** | Random, Greedy (4 profil; 2026-10-06'dan beri 15 basamaklı beceri merdiveni, §7), usta (örneklemeli iki hamle arama), çözücü (beam search, mükemmel bilgi) | Analiz, ipucu (Bot) | ✅ |
 | **Paralel simülasyon** | Yüzlerce oyun 12 çekirdekte aynı anda; tek seri tüm kazanma eğrisini verir | Kalibrasyon (Bot) | ✅ |
 | **Jeneratör portföyü** | 7 şekil stili × engel desenleri, beslenebilirlik analizi, bot kalibrasyonu, eşit zorluk havuzu | Üretim (`Puzzle.Generator`) | ✅ |
 | **Oyun içi eşzamanlı sistemler** | İpucu botu, beceri takibi (EWMA), DDA denetleyicisi (yalnızca yardım), near-miss tespiti (yalnızca ölçüm), telemetri | Unity (Faz 3) | Plan |
@@ -720,7 +745,7 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
   | Kum saati | +2 hamle, nadir ödül |
 
   Her yeni özel taş yeni bir `TileKind`. Kapalı küme testleri hangi switch'lerin güncelleneceğini gösterir (Büyük Bomba eklenirken bu sistem eksik switch'i anında yakaladı).
-- **Temalar:** her 50 bölüm bir müze odası, yani bir sanat akımı (§18). Oda kendi arka planını ve renk paletini getirir. Mekanik değişmez; yalnızca Unity görsel katmanı.
+- **Temalar:** her 50 bölüm bir müze odası, yani bir sanat akımı (§18). (2026-10-13'ten beri oda bir dönemdir, akım değil.) Oda kendi arka planını ve renk paletini getirir. Mekanik değişmez; yalnızca Unity görsel katmanı.
 
 ## 17. Retry politikası ve etik korkuluklar
 
@@ -758,16 +783,18 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 | Birim | Bölüm | Üreticideki karşılığı |
 |---|---|---|
 | 1 tablo | 10 | Zorluk testere dişi (`cycle`). Döngünün son ve en zor bölümü tablonun son parçalarını verir |
-| 1 müze odası = 1 sanat akımı | 50 (5 tablo) | Renk paleti grubu (`palette.chapterSize`) |
+| 1 müze odası = 1 sanat akımı (2026-10-13'ten beri 1 dönem) | 50 (5 tablo) | Renk paleti grubu (`palette.chapterSize`) |
 | Yayındaki oyun | 1000 (100 tablo, 20 oda) | — |
 
 - **Oda sırası:** en sevilen akımlarla başlar (Empresyonizm, Post-empresyonizm), kronolojik değil. İlk 100 bölüm oyuncuyu tutmak için en kritik dönem; en renkli ve en tanınan tablolar orada olmalı.
 - **Oda finali:** her odanın 5. tablosu o akımın en ünlü eseri. Her 50 bölümde bir büyük ödül anı olur.
+- **Güncelleme (2026-10-13 ve 2026-10-14):** ilk iki oda (Empresyonizm, Post-empresyonizm) yerinde kaldı; 3–20. odalar birer **dönemdir** ve zamanda geriye, 15. yüzyıla kadar gider (aşağıda "Müzenin 100 tablosu"). Her tablo odasının döneminden olur, tür serbesttir; ressamın ünlü olması gerekmez, ünlü portreler aranır (DEVLOG Oturum 20).
 - **İlk iki tablo (2026-10-05):** 1–20. bölümler düz ve kolaydır; "tablonun son bölümü en zorudur" kuralı üçüncü tablodan (21–30) itibaren geçerlidir (§8 madde 7).
 
 **Tablolar**
 - **Ana içerik:** kamu malı ünlü tablolar, güvenli olmak için 1900 öncesi sanatçılarla sınırlı. Kaynak: müzelerin açık erişim koleksiyonları (Art Institute of Chicago, The Met, Rijksmuseum). Yalnızca Art Institute of Chicago'da yaklaşık 2.000 kamu malı tablo var (2026-10-02 sorgusu).
 - **Lisans listesi:** her görüntünün kaynağı ve lisansı kaydedilir, tek tek kontrol edilir. Aynı müzede "American Gothic" ve "Nighthawks" telifli.
+- **Güncelleme (2026-10-13):** kural sıkılaştı: görüntü yalnızca eserin sahibi müzenin kendisinin her kullanıma serbest bıraktığı fotoğraf olabilir. Yayındaki 100 tablonun kaynakları: Art Institute of Chicago (1. ve 2. odalar) ile National Gallery of Art, The Met, Rijksmuseum, SMK, Nationalmuseum, Cleveland, Skokloster Şatosu, Getty ve Finlandiya Ulusal Galerisi (aşağıda). Mauritshuis görüntülerini ticari kullanıma serbest bırakmadığı için kullanılmaz (DEVLOG Oturum 20).
 - **Yan koleksiyon:** bizim çizdiğimiz özgün tablolar ve etkinlik tabloları. Parçaları coinle alınır. Ana tablolar bölümlere bağlı kalır.
 
 **Yapboz**
@@ -783,7 +810,7 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 | 301–600 | 30 | 3 | 6×5 |
 | 601–1000 | 40 | 4 | 8×5 |
 
-10 parçayı düz ızgarayla bölmenin tek yolu 5×2; yaygın tablo oranlarında ince uzun parçalar veriyor. 3-4-3 diziliminde parçalar kareye yakın kalıyor (prototipte karşılaştırıldı, kullanıcı 3-4-3'ü seçti). Dikey tablolarda dizilimler 90 derece döner. Prototip atılabilir bir JS denemesi; gerçek kesim kodu C# ile yazılacak (§12, Faz 3).
+10 parçayı düz ızgarayla bölmenin tek yolu 5×2; yaygın tablo oranlarında ince uzun parçalar veriyor. 3-4-3 diziliminde parçalar kareye yakın kalıyor (prototipte karşılaştırıldı, kullanıcı 3-4-3'ü seçti). Dikey tablolarda dizilimler 90 derece döner. Prototip atılabilir bir JS denemesi; gerçek kesim kodu C# ile yazılacak (§12, Faz 3). (Yazıldı: `src/Puzzle.Museum`, 2026-10-08; §23.)
 
 **Uygulama durumu (2026-10-08).** Bu bölümdeki yapı, yapboz tablosu ve 3-4-3 dizilimi Unity istemcisinde çalışıyor (§23). İlk odanın tabloları: Sainte-Adresse Plajı (Monet, 1867), Kız Kardeş (Terasta) (Renoir, 1881), Yağmurlu Gün (Caillebotte, 1877), Nilüferler (Monet, 1906), Buğday Yığınları (Yaz Sonu) (Monet, 1890–91); hepsi Art Institute of Chicago'da kamu malı, lisans listesi `art/paintings/room-01/licences.json`. 2. odanın tabloları 2026-10-08'de, 3–20. odalarınki 2026-10-14'te geldi (aşağıda). Yan koleksiyon, coinle parça ve etkinlik tabloları yok.
 
@@ -868,7 +895,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Karıştırma** yalnızca gerçek bir yeniden dizilişi kabul eder: serbest taşlar yer değiştirir, hiçbiri yeniden boyanmaz, en az bir hücrede başka bir taş durur, tahtada eşleşme oluşmaz ve hamle kalır. Kutu, zincirli taş, özel taş ve malzeme yerinde kalır. Böyle bir diziliş bulunamazsa (örneğin tek serbest taş) kullanım reddedilir. Hamle kalmadığında oyunun kendi yaptığı karıştırma bundan farklıdır: oyun sürsün diye son çare olarak taşları yeniden boyayabilir.
 - Kaç booster'ın bulunduğu ve nasıl kazanıldığı motorun değil meta katmanın işidir. Kullanılan booster'lar deneme kaydına sırasıyla yazılır.
 - **Bilinen sınır (2026-10-14 kapandı):** kayıt, kullanılan booster'ların adlarını tutar; hangi hücreye ve hangi hamleden sonra kullanıldıklarını tutmaz. Booster'lı bir deneme kayıttan birebir yeniden oynatılamaz. İstemciye booster gelmeden önce hamle, booster ve "+5 hamle"yi aynı sırada tutan tek bir eylem kaydı eklenmeli (kayıt biçimine eklemeli değişiklik). Eklendi: kaydın isteğe bağlı `actions` alanı hamleyi, booster'ı nişanıyla, "+5"i ve reddedilen istekleri sırasıyla tutar; `AttemptReplay` denemeyi birebir yeniden oynatır (§23).
-- İstemcide (Unity) booster düğmeleri ve animasyonları yok; sıradaki istemci işi.
+- İstemcide (Unity) booster düğmeleri ve animasyonları yok; sıradaki istemci işi. **Güncelleme (2026-10-14):** bölüm öncesi booster'lar istemcide (bölüm başı kartı, arayüz planının 8. aşaması, §23). Bölüm içi dört booster 10. aşamanın işi ve sıradaki iş; raftaki dört yerleri ayrıldı (9. aşama).
 
 ## 19. Ürün kararları
 
@@ -888,11 +915,11 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 
 **Karar (2026-10-02).**
 
-- **Yayın öncesi kalibrasyon:** `average` bot + casual koruması (§8). İnsan verisi yayından önce az olacağı için ilk sürüm botla ayarlanır.
+- **Yayın öncesi kalibrasyon:** `average` bot + casual koruması (§8). İnsan verisi yayından önce az olacağı için ilk sürüm botla ayarlanır. **Güncelleme:** ilk insan verisinden sonra ilk oda (1–50) 2026-10-05'ten beri zayıf oyuncu modeline (random ve novice), 51–1000 2026-10-06'dan beri ortalama oyuncu sayılan 55. basamak botuna göre ayarlanır; casual koruması artık kullanılmıyor (§8 madde 7 ve 9).
 - **Deneme kaydı (uygulandı, 2026-10-03):** her oyun denemesi tek bir kayıt. Kayıt tipi `Puzzle.Core/Recording` içinde tanımlı, yani mobil oyun aynı biçimi kullanacak: bölüm, deneme tohumları, hamle limiti, kullanılan hamle, sonuç (kazandı / hamle bitti / hamle kalmadı / yarıda bırakıldı), her hedefin son durumu, "+5" alındı mı, booster'lar, rastgele cihaz kimliği, başlangıç ve bitiş zamanı. Web test uygulamasında ayrıca oynanan hamleler de saklanır; deneme birebir tekrar oynatılabilir.
 - **Web test uygulaması:** oynanan her deneme `recordings/attempts.jsonl` dosyasına bir satır olarak yazılır (git'e girmez). Deneme bitince, yarıda bırakılınca, oturum zaman aşımına uğrayınca ve sunucu kapanırken kaydedilir; yazılamayan kayıt bekletilip yeniden denenir. Deneme numarasını sunucu verir. İpucu, çözücü, bot hamlesi ya da DDA yardımıyla oynanan denemeler ve elle seçilen tohumlar kaydedilir ama karşılaştırmaya girmez.
 - **İnsan ve bot karşılaştırması:** `puzzle humans` komutu ve web'deki "Kayıtlar" paneli. Her insan denemesinin oyununu (aynı tohumlar, aynı hamle limiti) dört greedy profile oynatır, limitte kazanma oranlarını yan yana koyar ve en yakın profili söyler. Yarıda bırakılan denemeler kazanma oranını yükseltmesin diye iki oran verilir: biten denemeler üzerinden ve yarıda bırakılanlar kayıp sayılarak (alt sınır).
-- **Herkese açık web testi (2026-10-04, APK'dan önce):** web test uygulamasının "herkese açık" modu. Tanıdıklar internet adresinden giriş yapıp bölümleri gerçek oyundaki gibi sırayla oynar; her deneme kaydedilir. Test paneli yalnızca sahibine, yönetici anahtarıyla açıktır. Yayın Tailscale Funnel ile yapılır. Kullanım: [PUBLIC_TEST.md](PUBLIC_TEST.md).
+- **Herkese açık web testi (2026-10-04, APK'dan önce):** web test uygulamasının "herkese açık" modu. Tanıdıklar internet adresinden giriş yapıp bölümleri gerçek oyundaki gibi sırayla oynar; her deneme kaydedilir. Test paneli yalnızca sahibine, yönetici anahtarıyla açıktır. Yayın Tailscale Funnel ile yapılır. Kullanım: [PUBLIC_TEST.md](PUBLIC_TEST.md). **Durum (2026-10-15):** sunucu yaklaşık 12 Ekim'den beri kapalı (en son 12 Ekim akşamı veri yazdı); sahibinin kararıyla (2026-10-14) arayüz işleri bitince yeniden açılacak.
 - **İlk insan verisi (2026-10-04/05):** deneyimli tek bir oyuncunun 37 denemesi novice botla aynı kazanma oranını verdi (§13). Sonuç: **yayın öncesi kalibrasyonda ilk oda novice bota göre ayarlanır** (§8 madde 7); 51 ve sonrası için karar daha çok veriyle verilecek. Tek bölüm için karar eşiği: 35 ilk deneme bir oranı ancak ±10 puana sabitler; daha azıyla bölüm bazında sayı değiştirilmez.
 - **Canlı testte bölüm değiştirme:** sunucu bölümleri yalnızca açılışta okur. Dosyalar diskte değişir, eski sürümler `levels/archive/` altına alınır, sunucu yeniden başlatılır. Yarım kalmış denemesi olan oyuncunun o denemesi düşer; oyuncu bulunduğu bölümün yeni sürümünden devam eder.
 - **APK testi:** Play Store'dan önce kullanıcı ve birkaç kişi APK ile oynar. Hataları bulur ve insanların hangi bota benzediğini kabaca gösterir. 1000 bölümün limitlerini tek tek ayarlamaya yetmez; bunun için bölüm başına yüzlerce deneme gerekir.
@@ -970,7 +997,7 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 | 5 | Bölüm başı (hedefler, bölüm öncesi booster'lar), kazanma (bitiş şöleni, parça ödülü), kaybetme ("+5 hamle" teklifi) | ✅ 2026-10-05 |
 | 6 | Müze haritası (kat planı), koleksiyon (salon duvarı), mağaza ve ayarlar | ✅ 2026-10-05 (fiyatlar `[fiyat]`; altın paket miktarları, set içerikleri ve oda planı örnek) |
 | 7 | Herkese açık web testindeki oyuncu sayfasına bu görünümün uygulanması | ✅ 2026-10-06, yayında; tasarımın yazı tipleriyle (Google Fonts üzerinden) |
-| 8 | Unity'ye aktarım (SVG'den sprite) | Sürüyor: yazı tipleri, 51 yeni çizim ve ortak parçalar ✅ 2026-10-13 (§23); ekranlar sırada |
+| 8 | Unity'ye aktarım (SVG'den sprite) | Sürüyor: yazı tipleri, 51 yeni çizim ve ortak parçalar ✅ 2026-10-13 (§23); ekranlar sırada. 2026-10-14: altın ve can satırı, bölüm başı kartı, tahta plaketleri, raf ve kazanma kartı ✅ (arayüz planının 7–9. aşamaları); kalan ekranlar 10–15. aşamalarda |
 
 Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
 
@@ -978,7 +1005,9 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 
 ## 23. Unity istemcisi
 
-**Durum (2026-10-08).** Android'de çalışan sürümde: müzenin salonu, harita, koleksiyon, yapboz, tahta, hamle animasyonları, sonuç kartı, bölümden çıkış, ilerlemenin kaydı. İlk odanın beş tablosu var; müze tabloların bittiği yerde biter. Mağaza, altın, can, booster ve hesap yok.
+**Durum (2026-10-15).** İstemcide: müzenin salonu, harita, koleksiyon, yapboz; tahta ve hamle animasyonları; bitiş şöleni; salon, harita ve koleksiyonda altın ve can satırı, can kartı; bölüm başı kartı ve bölüm öncesi booster'lar (karttan satın alma dahil); tahta plaketleri, duraklatmalı raf, çıkma kartı ve kazanma kartı; cüzdanı da tutan kayıt dosyası (katman 3); telefonda deneme kaydı ve cihaz kimliği. Müzenin 20 odası ve 100 tablosu var. Yok: bölüm içi booster'lar (10. aşama, sıradaki), "+5 hamle" teklifi ve yeni kaybetme kartı (11), mağaza ve ödüllerin gösterilmesi (12), ayarlar (13), ses ve titreşim (14), hesap. Bu işler 15 aşamalı arayüz planının parçasıdır (aşağıda; 1–9. aşamalar bitti). Telefonda en son 2026-10-07'de oynandı, son APK 2026-10-08'de derlendi; sonraki işler yalnızca Editor'da ve .NET'te denendi (`docs/PHONE_TESTS.md`).
+
+*Önceki durum (2026-10-08):* Android'de çalışan sürümde müzenin salonu, harita, koleksiyon, yapboz, tahta, hamle animasyonları, sonuç kartı, bölümden çıkış, ilerlemenin kaydı vardı; ilk odanın beş tablosu; mağaza, altın, can, booster ve hesap yoktu.
 
 **Kararlar**
 - **Unity 6.6 (6000.6.4f1), URP 2B.** Unity Personal lisansı. LTS olmayan "Supported" koluyla başlandı, çünkü bilgisayarın diski iki Editor'ı kaldırmıyor.
@@ -1020,7 +1049,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 
 **Bitiş şöleni (2026-10-13).** Kazandıran hamle sonuna kadar gösterilip tahta durduktan sonra, hamle kaldıysa şölen oynar (§19); kaybedilen oyunda ve son hamlede kazanılan bölümde şölen yoktur.
 
-- **Oyuncunun gördüğü:** HAMLE madalyonunda ışık açılır; kalan her hamle için madalyondan bir yaldız kıvılcımı çıkıp bir taşa uçar, sayı birer birer düşer. Kıvılcımın konduğu taş fırça kovanına döner; kovanlar kısa bir an durur, sırayla patlar; tahta çöker ve dolar; sonra sonuç kartı bugünkü gibi gelir. Hedef sayaçları kıpırdamaz. Coin gösterilmez (ekonomi kararı bekliyor).
+- **Oyuncunun gördüğü:** HAMLE madalyonunda ışık açılır; kalan her hamle için madalyondan bir yaldız kıvılcımı çıkıp bir taşa uçar, sayı birer birer düşer. Kıvılcımın konduğu taş fırça kovanına döner; kovanlar kısa bir an durur, sırayla patlar; tahta çöker ve dolar; sonra sonuç kartı bugünkü gibi gelir. Hedef sayaçları kıpırdamaz. Coin gösterilmez (ekonomi kararı bekliyor). (Güncelleme: kalan hamle başına 4 altın 2026-10-13'te kararlaştırıldı, §25; ödenen altın 2026-10-14'ten beri şölenden sonra kazanma kartında sayarak gösterilir, aşağıda arayüz planının 9. aşaması.)
 - **Süre:** 1 hamle için yaklaşık 1,3–1,7 saniye, 3 hamle için 2–3, 5 hamle için 2,5–3,5, 12 hamle için 4–4,6, 30 hamle için yaklaşık 4 saniye; kaç hamle kalırsa kalsın 5,5 saniyeyi geçmez (uzun şölenin dolma kısmı hızlandırılır, motorun yaptığı hiçbir şey atlanmaz). Tahtada taş hamleden azsa şölen dalga dalga sürer.
 - **Atlama:** ekrana dokunmak (ikinci bir parmak dahil) ya da geri tuşu şöleni o anda bitirir; tahta motorun son hâlini gösterir ve kart gelir. Şölen sürerken raf yazı göstermez.
 - **Kazanım güvende:** ilerleme kazandıran hamle oynandığı anda kaydedilir; şölen izlenmese ya da uygulama o sırada kapansa da kazanım durur.
@@ -1072,7 +1101,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Motor:** `GameOptions.RecordActions` açıkken oyuncunun yaptıklarını sırasıyla tutar. Tutulanlar: hamleler, nişanıyla booster'lar, alınan "+5", karıştırma akışından çekip reddedilen karıştırma ve "+5" istekleri. Kapalıyken hiçbir şey tutulmaz ve oyun eskisi gibi oynar: motor izi aynı; ekonomi simülatörünün denetimi 48 saklı oyunu bu derlemeyle yeniden oynayıp kabul etti.
 - **Kayıt ve yeniden oynatma:** deneme kaydının son alanı `actions` isteğe bağlıdır; şema 1 kalır, eski satırlar okunur. `AttemptReplay` bir denemeyi kaydından yeniden oynatır, her eylemi ve sonu denetler. §18'deki "booster'lı deneme yeniden oynatılamaz" sınırı böylece kapandı.
 - **Telefonda:** biten her deneme (kazanılan, kesin kaybedilen ya da hamleden sonra bırakılan) için bir satır `attempts.jsonl` dosyasına eklenir. Araçların okuduğu satırın aynısıdır. Yazılamayan satır bekletilir ve yeniden denenir (en çok 64). `device.json` rastgele 128 bitlik bir cihaz kimliği tutar. Teklif açıkken kayıt yazılmaz.
-- **Bilinen:** ekranlar henüz booster ya da "+5" sunmadığı için oyunun yazdığı kayıtlarda yalnızca hamle var. Bölüm ortasında kapatılan oyun kayıt bırakmaz. Dosya sınırsız büyür (deneme başına yaklaşık 1,1 KB) ve henüz "Kayıtları sil" yok.
+- **Bilinen:** ekranlar henüz booster ya da "+5" sunmadığı için oyunun yazdığı kayıtlarda yalnızca hamle var. (Güncelleme: 8. aşamadan beri bölüm öncesi booster'lar da kayda girer; bölüm içi booster'lar ve "+5" 10. ve 11. aşamalarda gelecek.) Bölüm ortasında kapatılan oyun kayıt bırakmaz. Dosya sınırsız büyür (deneme başına yaklaşık 1,1 KB) ve henüz "Kayıtları sil" yok.
 - **Sonraki aşamalara notlar:**
   - Karıştırma booster'ı eşleşme içeren her dizilimi reddediyor; büyük tahtalarda oyuncu sık sık "reddedildi" görebilir.
   - Bugün deneme ancak bir hamleden sonra sayılıyor; yalnızca booster kullanıp çıkmak kayıt bırakmıyor ve can götürmüyor. Bu karar 10. aşamada verilecek.

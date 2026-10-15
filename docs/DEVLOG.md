@@ -4,6 +4,31 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-15 · Oturum 24 — Bölüm içi booster araştırması, Genel Belge
+
+**Kullanıcı kararları**
+- 10. aşamanın kodlamasından önce öteki match-3 oyunlarının bölüm içi booster'ları (ve komşu sistemleri) nasıl kullandığına bakılsın, not edilsin; sonra kodlamaya geçilsin.
+- İş bitince bir bot deneyi yapılacak; ayrıntısı sonra. Bot deneyi en sonda.
+- PDF'ler güncellensin; oyunu ve yazılımı baştan sona anlatan genel bir belge hazırlansın.
+- Bu iki iş için iki ajan aynı anda çalışabilir.
+
+**Araştırma: bölüm içi booster'lar (`docs/research/in-level-boosters.md`)**
+- Candy Crush, Royal Match, Homescapes/Gardenscapes, Toon Blast, Fishdom, Lily's Garden, Matchington Mansion ve Project Makeover incelendi. 49 kaynak var; her bilginin ne kadar güvenilir olduğu not edildi.
+- Bulgular:
+  - Bizim dört booster'ımız türün standart takımı: tek taş, satır, sütun, karıştırma.
+  - Booster hamle saymaz. Bir vuruş engelden bir kat alır.
+  - Kurma her oyunda iki dokunuştur: önce simge, sonra hedef. Onay adımı yok.
+  - Hiçbir oyun karıştırmayı reddetmiyor. Bizim motorumuz büyük açık tahtalarda ilk istekleri sık reddediyor.
+  - Booster'lar birer birer, ilk kullanımı gösterilerek açılıyor; çekiç 7–10. bölüm civarında.
+- Bizim §17'mizle çelişen iki alışkanlık not edildi: ödemeden sonra kazandıracak yere konan yardım, kayıpta sıfırlanan seri ödülü. Bunlar bizde olmayacak.
+- Sahibine sorulacak kararlar: karıştırma reddi (motor değişikliği), booster kullanımının denemeyi başlatıp başlatmadığı, booster'ların açılış bölümleri ve bunun hoş geldin hediyesine etkisi.
+
+**Genel Belge (`docs/OVERVIEW.md`)**
+- Yeni belge, 19 sayfa. Sekiz bölüm: oyun bir bakışta, nasıl oynanır, içerik, ekonomi, yazılım mimarisi, kalite ve test, durum ve yol haritası, belgelerin rehberi.
+- Tasarım belgesinin eskimiş durum satırları düzeltildi (her düzeltme tarihli): proje listesi, yol haritası, açık sorular, odaların sırası, Unity istemcisinin durumu. README kısa bir giriş sayfasına dönüştü. Kullanım kılavuzuna sunucunun kapalı olduğu ve ne zaman açılacağı yazıldı.
+- Test planında üç eskimiş satır düzeltildi (T23, T27, T111).
+- Kod grafiği (graphify) güncellendi.
+
 ## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
 
 **Kullanıcı kararları**
