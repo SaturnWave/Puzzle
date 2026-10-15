@@ -95,7 +95,7 @@ namespace Puzzle.Client.EditorTools
             Game game = GameAfter(plan.MovesPlayed, level);
             using GameStage stage = GameStage.Open(game, art, effectArt, paintings, brief, StoryStudio.ShelfOf(game));
             stage.Fit(screen);
-            stage.Tell(StoryStudio.CanvasWallet);
+            stage.Tell(StoryStudio.CanvasWallet, StoryStudio.CanvasExtraMoves);
             float clock = 0f;
             foreach (Moment moment in plan.Moments)
             {

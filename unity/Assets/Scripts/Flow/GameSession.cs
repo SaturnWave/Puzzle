@@ -73,7 +73,10 @@ namespace Puzzle.Client.Flow
     /// the economy's rules, and saved at once; the row counts its price down.
     /// </para>
     /// <para>
-    /// The board is told the wallet at every step too: its shelf counts the boosters of play, and one bought on the
+    /// The board is told the wallet at every step too, with what the extra moves cost on the player's calendar day,
+    /// which the card of a game out of moves shows. Extra moves the engine gave are paid here by the rules (the coins
+    /// charged, or the day's ad counted) and saved as a move is kept; until the offer is answered nothing ends the
+    /// attempt, so no life goes and no record is written. Its shelf counts the boosters of play, and one bought on the
     /// card its plus hangs is bought here by the same rules, saved at once, and armed on the board. A booster of play the
     /// engine accepts is spent and saved as a move is kept; the first of them counts as the attempt's first move. A
     /// session that opens on a save from before the boosters of play opened one at a time first gives the gifts that
@@ -324,6 +327,9 @@ namespace Puzzle.Client.Flow
         /// <summary>The player's wallet as the rules have it now: lives that came back since the last loss are there.</summary>
         private WalletView WalletNow => WalletView.Of(_progress.Wallet, _rules.Lives, _clock.Now);
 
+        /// <summary>What the extra moves cost the player now: coins, or one of the free ads left on the player's calendar day.</summary>
+        private ExtraMovesTerms ExtraMovesNow => _rules.ExtraMoves.TermsFor(_progress.Wallet, DayStamp.Of(_clock.Now));
+
         /// <summary>Tells the museum or the board, whichever is the stage that is seen, of the wallet as it is at this step.</summary>
         private void TellTheStageTheWallet()
         {
@@ -335,7 +341,7 @@ namespace Puzzle.Client.Flow
             }
             else if (Board is GameStage board)
             {
-                board.Tell(WalletNow);
+                board.Tell(WalletNow, ExtraMovesNow);
             }
         }
 
@@ -475,10 +481,10 @@ namespace Puzzle.Client.Flow
                 ThisClient,
                 _clock.Now,
                 game.ShuffleBoosterRule);
-            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters));
+            var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters), _rules.Ads);
             GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, shelf, opening);
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
-            stage.Tell(WalletNow);
+            stage.Tell(WalletNow, ExtraMovesNow);
             return stage;
         }
 

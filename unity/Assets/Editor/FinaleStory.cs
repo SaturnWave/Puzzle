@@ -110,7 +110,7 @@ namespace Puzzle.Client.EditorTools
         {
             GameStage stage = GameStage.Open(game, art, effectArt, paintings, brief, StoryStudio.ShelfOf(game));
             stage.Fit(screen);
-            stage.Tell(StoryStudio.CanvasWallet);
+            stage.Tell(StoryStudio.CanvasWallet, StoryStudio.CanvasExtraMoves);
             StageSteps.Settle(stage);
             return stage;
         }

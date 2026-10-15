@@ -79,6 +79,7 @@ public partial class LetteringTests
     [Theory]
     [InlineData("Flow", "MuseumWords.cs")]
     [InlineData("Flow", "LevelResult.cs")]
+    [InlineData("Flow", "Ads.cs")]
     [InlineData("Flow", "AttemptWords.cs")]
     [InlineData("Flow", "WalletWords.cs")]
     [InlineData("Flow", "NumberWords.cs")]

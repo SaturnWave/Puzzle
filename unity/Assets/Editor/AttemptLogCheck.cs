@@ -27,14 +27,17 @@ namespace Puzzle.Client.EditorTools
     /// calls and JSON reader. The device file makes a random id on the first start, in the layout the tests pin, and a
     /// restart reads the same id; a damaged device file is moved aside for a new id, and a later game's file is left as
     /// it is. Then a won, a lost and a left attempt are played by bot through the game's own session, on a log of its
-    /// own: each is a line in the log the moment it ends (the won and the lost one at their deciding move, before any of
-    /// it is shown; the left one at the press of the leaving card's museum button), and a level left before its first
-    /// move leaves no line. An attempt gone into by touches through the level's card, with two start boosters chosen
+    /// own: each is a line in the log the moment it ends for good (the won one at its deciding move, before any of it is
+    /// shown; the lost one when its offer of extra moves is given up, never while it hangs; the left one at the press of
+    /// the leaving card's museum button), and a level left before its first move leaves no line. The offer is taken by
+    /// touches too, paid with coins and with an ad: no line while it hangs or when the moves are given, and one that
+    /// says they were taken when the attempt ends; and a board made by hand that no shuffle brings back is refused
+    /// them, its line ending with the refusal. An attempt gone into by touches through the level's card, with two start boosters chosen
     /// there, is played by bot too: closing the card and leaving the board before a move spend nothing and write
     /// nothing, and the attempt played to its end spends the two at its first move and is a line that names them. An
     /// attempt in which every booster of play is used by touches on the shelf, the first of them before any move, is
     /// played to its end by bot: the booster counts as the first move, every one is spent, and its line names the
-    /// shuffle rule of today. An attempt with every booster of play and the extra moves, which no screen offers yet,
+    /// shuffle rule of today. An attempt with all three start boosters, every booster of play and the extra moves,
     /// is played on the engine alone and logged the same way. A new player on the spatula's level is given its three,
     /// once, in the save file. Last, the file is read back with Unity's reader, and every record is played again on
     /// the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves used and goals;
@@ -95,6 +98,7 @@ namespace Puzzle.Client.EditorTools
                 LeaveBeforeAndAfterAMove(bench, ended);
                 PlayWithStartBoostersChosenOnTheCard(bench, ended);
                 PlayWithEveryBoosterOnTheShelf(bench, ended);
+                PlayThroughTheOffer(bench, ended);
                 PlayWithEveryBoosterOnTheEngine(bench, ended);
                 ANewPlayerOnTheSpatulasLevelIsGivenItsThreeOnce(bench);
 
@@ -169,8 +173,16 @@ namespace Puzzle.Client.EditorTools
                 int linesBefore = LinesInTheLog();
                 FlowStory.PlayTheGame(session, bot, rng);
                 Game game = session.Stage.Game;
-                ended.Add(Ending.Of(game, $"level {levelNumber} {game.Status} after {game.MovesUsed} moves"));
-                Require(LinesInTheLog() == linesBefore + 1, $"no line was written at the move that decided attempt {attempt} of level {levelNumber}");
+                bool isOffered = OutOfMovesOffer.IsMadeIn(game);
+                if (isOffered)
+                {
+                    // The moves ran out: nothing ends the attempt until the offer of five more is answered, here by giving up.
+                    Require(LinesInTheLog() == linesBefore, $"a line was written while attempt {attempt} of level {levelNumber} was offered extra moves");
+                    AtTheOffer.GiveUp(session);
+                }
+
+                ended.Add(Ending.Of(game, $"level {levelNumber} {game.Status} after {game.MovesUsed} moves{(isOffered ? ", the extra moves given up" : string.Empty)}"));
+                Require(LinesInTheLog() == linesBefore + 1, $"no line was written when attempt {attempt} of level {levelNumber} was decided for good");
                 if (isTheEnding(game.Status))
                 {
                     return;
@@ -362,7 +374,57 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>
-        /// An attempt as no screen lets a player play it yet: all three start boosters, every booster of play, the
+        /// The offer of extra moves by touches on the game's own session: on level 40, played by the random bot until
+        /// its moves run out, the five more paid with coins and, on another attempt, with an ad; no line is written
+        /// while the offer hangs or when the moves are given, and the attempt played on to its end is one line that
+        /// says the moves were taken. Then a board made by hand that no shuffle brings back is refused the moves: its
+        /// line ends with the refusal, which drew from the shuffle stream.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">A line was written too soon or not at all, or the moves were not given or refused as the board says.</exception>
+        private static void PlayThroughTheOffer(Bench bench, List<Ending> ended)
+        {
+            Wallet rich = StoryStudio.Economy.StartingWallet.WithCoins(new Coins(1250));
+            foreach (ExtraMovesPayment paidBy in new[] { ExtraMovesPayment.ByCoins, ExtraMovesPayment.ByAd })
+            {
+                var rng = new Rng(BotSeed, BotStream);
+                for (int attempt = 0; ; attempt++)
+                {
+                    Require(attempt < MostAttempts, $"{MostAttempts} attempts of level {LostLevel} did not run out of moves; pick another bot or level");
+                    using GameSession session = bench.SessionAt(LostLevel, attempt, rich);
+                    StoryStudio.AdvanceUntilSettled(session);
+                    int linesBefore = LinesInTheLog();
+                    FlowStory.PlayTheGame(session, new RandomPolicy(), rng);
+                    Game game = session.Stage.Game;
+                    if (!OutOfMovesOffer.IsMadeIn(game))
+                    {
+                        ended.Add(Ending.Of(game, $"level {LostLevel} {game.Status} after {game.MovesUsed} moves"));
+                        Require(LinesInTheLog() == linesBefore + 1, $"no line was written when attempt {attempt} of level {LostLevel} was decided");
+                        continue;
+                    }
+
+                    Require(LinesInTheLog() == linesBefore, "a line was written while the offer of extra moves hung");
+                    AtTheOffer.Take(session, paidBy);
+                    Require(game.ExtraMovesTaken && game.Status == GameStatus.Playing && LinesInTheLog() == linesBefore, $"the extra moves paid {paidBy} were not given, or a line was written when they were");
+                    FlowStory.PlayTheGame(session, new RandomPolicy(), rng);
+                    ended.Add(Ending.Of(game, $"level {LostLevel} with the extra moves paid {paidBy}, {game.Status} after {game.MovesUsed} moves"));
+                    Require(LinesInTheLog() == linesBefore + 1 && File.ReadAllLines(LogPath).Last().Contains("\"extraMovesBought\":true"), $"the attempt with the extra moves paid {paidBy} is not one line that says they were taken");
+                    break;
+                }
+            }
+
+            using GameSession onTheDeadBoard = bench.SessionOn(HandMadeBoards.NoShuffleBringsBack(), rich);
+            StoryStudio.AdvanceUntilSettled(onTheDeadBoard);
+            int linesBeforeTheRefusal = LinesInTheLog();
+            Require(onTheDeadBoard.TryPlay(Move.Tap(HandMadeBoards.TheRocket)), "the rocket of the board made by hand was not fired");
+            AtTheOffer.Take(onTheDeadBoard, ExtraMovesPayment.ByCoins);
+            Game refused = onTheDeadBoard.Stage.Game;
+            Require(!refused.ExtraMovesTaken && refused.Actions.Last() is AttemptAction.ExtraMovesRefused, "the board made by hand was given the extra moves, or the refusal was not kept");
+            ended.Add(Ending.Of(refused, $"the board made by hand {refused.Status} with the extra moves refused"));
+            Require(LinesInTheLog() == linesBeforeTheRefusal + 1, "the attempt whose extra moves were refused is not one line");
+        }
+
+        /// <summary>
+        /// An attempt as no screen lets a player play it: all three start boosters, every booster of play, the
         /// shuffle asked for until it is accepted, and the extra moves if the moves run out. It is played on the engine
         /// as the game starts it, and logged as the game logs an attempt.
         /// </summary>
@@ -486,7 +548,22 @@ namespace Puzzle.Client.EditorTools
 
             public AttemptLogFile Log { get; }
 
-            public LevelDefinition Level(int number) => LevelPack.Numbered(_levels, number);
+            /// <summary>A level of the pack, or the board made by hand that no shuffle brings back.</summary>
+            public LevelDefinition Level(int number) => number == HandMadeBoards.NoShuffleBringsBackNumber
+                ? HandMadeBoards.NoShuffleBringsBack()
+                : LevelPack.Numbered(_levels, number);
+
+            /// <summary>The game's own session at the board of a level, for a player with a wallet who has tried it so many times before, on the check's log.</summary>
+            public GameSession SessionAt(int levelNumber, int attempt, Wallet wallet)
+            {
+                PlayerProgress standing = StoryStudio.StandingOn(Level(levelNumber), _levels);
+                var progress = new PlayerProgress(standing.LevelsWon, attempt).WithWallet(wallet);
+                return new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(progress), Log, Screen, SessionOpening.AtTheBoard);
+            }
+
+            /// <summary>The game's own session at the board of a level that is the whole pack, for a new player with a wallet, on the check's log.</summary>
+            public GameSession SessionOn(LevelDefinition level, Wallet wallet) =>
+                new GameSession(new[] { level }, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0).WithWallet(wallet)), Log, Screen, SessionOpening.AtTheBoard);
 
             /// <summary>The game's own session in the hall of a new player who stands on a level, on the check's log.</summary>
             public GameSession SessionInTheHall(int levelNumber) =>

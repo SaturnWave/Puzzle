@@ -160,6 +160,19 @@ namespace Puzzle.Client.Play
         }
 
         /// <summary>
+        /// The script of what the extra moves bring a board that has no move left (Game.TryTakeExtraMoves): the gems
+        /// dealt anew, as the game deals them when no move is left after a turn. No move is spent, and no goal counts.
+        /// </summary>
+        /// <param name="events">The engine's events of the extra moves: the reshuffle's, or none where the board had a move.</param>
+        /// <exception cref="InvalidOperationException">An event does not fit the ledger: the view and the engine have come apart.</exception>
+        public static TurnScript ComposeTheExtraMoves(PieceLedger ledger, IReadOnlyList<GameEvent> events, Board boardAfterwards)
+        {
+            var choreographer = new TurnChoreographer(ledger, Array.Empty<GoalSpec>(), events, boardAfterwards, isTheFinale: false);
+            choreographer.TimeEveryEvent();
+            return choreographer.ToScript();
+        }
+
+        /// <summary>
         /// The script of a booster used during play, and the ledger brought forward to the board after it: the tool
         /// is seen at work (<see cref="Cue.ToolUsed"/>): the spatula strikes its cell, the brush paints its row or
         /// column one cell after another, and the shuffle deals the gems anew as the game does when no move is left.

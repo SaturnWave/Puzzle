@@ -5,13 +5,15 @@ using System.Globalization;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
 using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
 {
     /// <summary>
     /// What the stage is told about the attempt it shows, beyond the game itself: the things only the player's
-    /// progress knows, and the economy's rule for what a win pays, which the plaques and the result panel say.
+    /// progress knows, the economy's rule for what a win pays, which the plaques and the result panel say, and the
+    /// build's for how an ad is shown, which the offer of extra moves plays.
     /// </summary>
     public sealed class AttemptBrief
     {
@@ -19,8 +21,10 @@ namespace Puzzle.Client.Flow
         /// <param name="winPays">What a win pays, as the attempt's ledger pays it (<see cref="AttemptLedger"/>): the card shows those coins.</param>
         /// <param name="reward">The jigsaw pieces winning this attempt gives; nothing when it gives none.</param>
         /// <param name="startBoosters">The start boosters the player took into the attempt; nothing when they took none.</param>
+        /// <param name="adsShownAs">How the build shows the ad that pays for extra moves (the settings' build.ads); a test build knows the simulated one alone.</param>
         /// <exception cref="ArgumentOutOfRangeException">The attempt number is less than 1.</exception>
-        public AttemptBrief(int attemptNumber, bool isOnLastLevel, WinReward winPays, PieceReward? reward = null, StartChoice? startBoosters = null)
+        public AttemptBrief(
+            int attemptNumber, bool isOnLastLevel, WinReward winPays, PieceReward? reward = null, StartChoice? startBoosters = null, AdSource adsShownAs = AdSource.Simulated)
         {
             if (attemptNumber < 1)
             {
@@ -32,6 +36,7 @@ namespace Puzzle.Client.Flow
             WinPays = winPays ?? throw new ArgumentNullException(nameof(winPays));
             Reward = reward;
             StartBoosters = startBoosters ?? StartChoice.None;
+            AdsShownAs = adsShownAs;
         }
 
         public int AttemptNumber { get; }
@@ -48,11 +53,18 @@ namespace Puzzle.Client.Flow
         /// <summary>The start boosters the player took into the attempt: they leave the shelf with its first move.</summary>
         public StartChoice StartBoosters { get; }
 
+        /// <summary>How the ad that pays for the extra moves is shown: the economy's rule, which refuses any way a build does not have.</summary>
+        public AdSource AdsShownAs { get; }
+
         /// <summary>A first try at a level that has a level after it and gives no jigsaw piece: what a picture of a single level shows.</summary>
         public static AttemptBrief FirstTry(WinReward winPays) => new AttemptBrief(attemptNumber: 1, isOnLastLevel: false, winPays);
     }
 
-    /// <summary>Where the player goes on to from a result's card.</summary>
+    /// <summary>
+    /// What the player chose on a card in front of the board: where they go on to from a decided game's card, or, on a
+    /// card that does not end the attempt (the question whether to leave, the offer of extra moves), what becomes of
+    /// the game.
+    /// </summary>
     public enum ResultChoice
     {
         /// <summary>On with the levels, through the hall: the next one after a win, the same one again after a loss (<see cref="LevelResult.GoingOnLeadsTo"/>).</summary>
@@ -66,26 +78,48 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The player asked to leave a level and thought better of it: the card goes up and the game goes on.</summary>
         Stay,
+
+        /// <summary>The green button of the card of a game out of moves: five more moves, paid with coins.</summary>
+        TakeTheMovesForCoins,
+
+        /// <summary>Its blue button: five more moves, paid with one of the day's free ads.</summary>
+        TakeTheMovesForAnAd,
+
+        /// <summary>Its "Vazgeç": the game is lost for good, which costs a life.</summary>
+        GiveUp,
     }
 
-    /// <summary>How a lost game was lost.</summary>
+    /// <summary>How a lost game was lost for good.</summary>
     public enum LossReason
     {
-        /// <summary>The moves ran out before the goals were met.</summary>
+        /// <summary>The moves ran out before the goals were met, after the extra moves were taken once.</summary>
         OutOfMoves,
 
         /// <summary>No move was possible even after the board was shuffled; a validated level never gets here.</summary>
         NoMovePossible,
+
+        /// <summary>The moves ran out and the player turned the offer of extra moves down.</summary>
+        GaveUp,
+
+        /// <summary>The moves ran out and the extra moves were asked for, but the board has no move a shuffle could bring back: the engine gave none, and nothing was paid.</summary>
+        ExtraMovesRefused,
     }
 
     /// <summary>
     /// What the card that hangs in front of a board tells. A closed set (private constructor): a decided attempt is
-    /// either <see cref="Won"/> or <see cref="Lost"/>, and an attempt that is still being played has a card only while
-    /// its player is asked whether they mean to leave it (<see cref="Leaving"/>). This file has no Unity dependency,
-    /// so the repository's tests compile it too.
+    /// either <see cref="Won"/> or <see cref="Lost"/>; a game whose moves ran out for the first time is offered five
+    /// more (<see cref="OutOfMoves"/>) before it is lost; and an attempt that is still being played has a card only
+    /// while its player is asked whether they mean to leave it (<see cref="Leaving"/>). This file has no Unity
+    /// dependency, so the repository's tests compile it too.
     /// </summary>
     public abstract class LevelResult
     {
+        /// <summary>
+        /// A game out of moves was close to its win when at least this share of its goals was done, in percent: the
+        /// near-miss line the level reports use, so the card never tells a player far from the goals that it was close.
+        /// </summary>
+        public const int CloseFromGoalsDonePercent = 80;
+
         private LevelResult(int levelNumber)
         {
             LevelNumber = levelNumber;
@@ -100,17 +134,22 @@ namespace Puzzle.Client.Flow
         /// after a loss, and after the last level won once more, to the hall with the card of the same level coming
         /// down, so it is tried again with its start boosters chosen anew.
         /// </summary>
-        /// <exception cref="InvalidOperationException">The card asks whether to leave: its green button keeps the player in the game.</exception>
+        /// <exception cref="InvalidOperationException">The card asks whether to leave, or offers extra moves: the game is not decided, and the card leads nowhere in the museum.</exception>
         public MuseumDoor GoingOnLeadsTo() => this switch
         {
             Won { IsLastLevel: true } => MuseumDoor.HomeWithTheStartCard,
             Won _ => MuseumDoor.Home,
             Lost _ => MuseumDoor.HomeWithTheStartCard,
             Leaving _ => throw new InvalidOperationException("The card that asks whether to leave keeps the player in the game; it leads nowhere in the museum."),
+            OutOfMoves _ => throw new InvalidOperationException("The card that offers extra moves decides the game first; it leads nowhere in the museum."),
             _ => throw new InvalidOperationException($"A result of the kind {GetType().Name} leads nowhere."),
         };
 
-        /// <summary>The result of a game that is over.</summary>
+        /// <summary>
+        /// The result of a game that is over for good, by the way the engine ended it. A game whose moves ran out is
+        /// lost for good only once the extra moves were taken, or turned down (<see cref="LostForGood"/>); while they
+        /// are offered its card is the offer's (<see cref="OfferTo"/>).
+        /// </summary>
         /// <exception cref="InvalidOperationException">The game is still being played.</exception>
         public static LevelResult Of(Game game, AttemptBrief brief)
         {
@@ -124,6 +163,18 @@ namespace Puzzle.Client.Flow
                 _ => throw new InvalidOperationException($"A game that ended as {game.Status} is not known to the result panel."),
             };
         }
+
+        /// <summary>The result of a lost game that is lost for good for a reason the engine's status does not tell: the offer of extra moves turned down, or refused by the engine.</summary>
+        /// <exception cref="InvalidOperationException">The game is not lost.</exception>
+        public static LevelResult LostForGood(Game game, AttemptBrief brief, LossReason reason) => game.Status.IsLoss()
+            ? new Lost(game.Level.Id.Value, reason, brief.AttemptNumber, OpenGoalsOf(game))
+            : throw new InvalidOperationException($"Level {game.Level.Id.Value} is {game.Status}; only a lost game is lost for good.");
+
+        /// <summary>What a player is shown whose moves ran out for the first time: what is left of the goals, and the offer of five more moves.</summary>
+        /// <exception cref="InvalidOperationException">The offer is not made to the game (<see cref="OutOfMovesOffer.IsMadeIn"/>).</exception>
+        public static OutOfMoves OfferTo(Game game, AttemptBrief brief) => OutOfMovesOffer.IsMadeIn(game)
+            ? new OutOfMoves(game.Level.Id.Value, brief.AttemptNumber, OpenGoalsOf(game), isClose: game.Goals.OverallProgress * 100.0 >= CloseFromGoalsDonePercent)
+            : throw new InvalidOperationException($"Level {game.Level.Id.Value} is {game.Status}{(game.ExtraMovesTaken ? " and took its extra moves" : string.Empty)}; it is offered no extra moves.");
 
         /// <summary>What a player is shown who asks to leave the game they are playing.</summary>
         /// <exception cref="InvalidOperationException">The game is decided: it has a result, and nothing is left to leave.</exception>
@@ -198,7 +249,31 @@ namespace Puzzle.Client.Flow
             public IReadOnlyList<GoalFigure> OpenGoals { get; }
         }
 
-        /// <summary>The game ended with goals still open.</summary>
+        /// <summary>
+        /// The moves ran out with goals still open, for the first time in the attempt: the game is not lost yet. Its
+        /// card offers five more moves for coins or for one of the day's free ads, and giving up, which loses it for good.
+        /// </summary>
+        public sealed class OutOfMoves : LevelResult
+        {
+            public OutOfMoves(int levelNumber, int attemptNumber, IReadOnlyList<GoalFigure> openGoals, bool isClose)
+                : base(levelNumber)
+            {
+                AttemptNumber = attemptNumber;
+                OpenGoals = openGoals;
+                IsClose = isClose;
+            }
+
+            /// <summary>Which try at the level this is, counted from 1.</summary>
+            public int AttemptNumber { get; }
+
+            /// <summary>What is left to do: the goals not reached yet, each with what is left of it.</summary>
+            public IReadOnlyList<GoalFigure> OpenGoals { get; }
+
+            /// <summary>True when the game had done at least <see cref="CloseFromGoalsDonePercent"/> percent of its goals: the card says it was close.</summary>
+            public bool IsClose { get; }
+        }
+
+        /// <summary>The game ended with goals still open, and nothing brings it back.</summary>
         public sealed class Lost : LevelResult
         {
             public Lost(int levelNumber, LossReason reason, int attemptNumber, IReadOnlyList<GoalFigure> openGoals)
@@ -221,47 +296,93 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// What the result panel says, in the player's language. The titles and the button's labels are the web test
-    /// page's (result-panel.js), which are the design's.
+    /// page's (result-panel.js) and the design canvas' (WinTR, LoseTR).
     /// </summary>
     public static class ResultWords
     {
+        /// <summary>The offer's card: "Vazgeç", underlined, beside what giving up costs (LoseTR).</summary>
+        public const string GiveUp = "Vazgeç";
+
+        /// <summary>What the offer's blue button says while the day has a free ad left for the extra moves, and once it has none (the button is dimmed then).</summary>
+        public const string WatchAnAd = "Reklam izle";
+        public const string NoAdLeftToday = "Bugünlük bitti";
+
+        /// <summary>On the pill of a card whose heart says what a life is: one life fewer.</summary>
+        public const string OneLifeFewer = "–1";
+
         /// <summary>The nameplate: what happened.</summary>
         public static string Title(LevelResult result) => result switch
         {
             LevelResult.Won _ => "Bölüm tamamlandı!",
-            LevelResult.Lost { Reason: LossReason.OutOfMoves } => "Hamle bitti!",
-            LevelResult.Lost { Reason: LossReason.NoMovePossible } => "Oynanacak hamle kalmadı!",
+            LevelResult.OutOfMoves _ => OutOfMovesTitle,
+            LevelResult.Lost { Reason: LossReason.NoMovePossible } => NoMoveLeftTitle,
+            LevelResult.Lost { Reason: LossReason.ExtraMovesRefused } => NoMoveLeftTitle,
+            LevelResult.Lost _ => OutOfMovesTitle,
             LevelResult.Leaving _ => "Bölümden çık?",
             _ => throw Unknown(result),
         };
 
         /// <summary>
         /// The line under the alcove: what a won game gave, or, where it gave nothing and for a lost game, the level
-        /// with the moves it took or the attempt it was.
+        /// with the moves it took or the attempt it was. On the offer of extra moves, over the goals that are left:
+        /// that the game was close where it was (<see cref="LevelResult.OutOfMoves.IsClose"/>), and a plain line where it was not.
         /// </summary>
         public static string Headline(LevelResult result) => result switch
         {
             LevelResult.Won { Reward: PieceReward reward } => MuseumWords.Earned(reward),
             LevelResult.Won won => LevelAndMoves(won),
-            LevelResult.Lost lost => $"Bölüm {Number(lost.LevelNumber)} · {Number(lost.AttemptNumber)}. deneme",
-            LevelResult.Leaving leaving => $"Bölüm {Number(leaving.LevelNumber)} · {Number(leaving.AttemptNumber)}. deneme",
+            LevelResult.OutOfMoves { IsClose: true } => "Az kaldı!",
+            LevelResult.OutOfMoves _ => "Kalan hedefler",
+            LevelResult.Lost lost => LevelAndAttempt(lost.LevelNumber, lost.AttemptNumber),
+            LevelResult.Leaving leaving => LevelAndAttempt(leaving.LevelNumber, leaving.AttemptNumber),
             _ => throw Unknown(result),
         };
 
         /// <summary>
-        /// The smaller line under the headline of a card of what is left: for a lost game, what the alcove above it
-        /// shows; a player who asks to leave is told what leaving costs, the life that leaving after a move takes
-        /// (<see cref="AttemptLedger"/>) or that nothing is lost before one.
+        /// The smaller line under the headline of a card of what is left: what the alcove above it shows, or, for a
+        /// game whose extra moves the engine refused, why it is lost and that nothing was paid for them.
         /// </summary>
-        /// <exception cref="InvalidOperationException">The game is won: its card says what the moves left over became beside its coins (<see cref="MovesLeftOver"/>).</exception>
+        /// <exception cref="InvalidOperationException">
+        /// The game is won: its card says what the moves left over became beside its coins (<see cref="MovesLeftOver"/>);
+        /// or it is offered extra moves: its goals are under the headline, and what giving up costs is beside <see cref="GiveUp"/>.
+        /// </exception>
         public static string Footnote(LevelResult result) => result switch
         {
             LevelResult.Won _ => throw new InvalidOperationException("A won level's card has no footnote: beside its coins it says what the moves left over became."),
-            LevelResult.Lost _ => "Hedefe bu kadar kaldı",
+            LevelResult.OutOfMoves _ => throw new InvalidOperationException("The offer's card has no footnote: its goals stand under the headline, and what giving up costs beside \"Vazgeç\"."),
+            LevelResult.Lost { Reason: LossReason.ExtraMovesRefused } => "+5 hamle verilemedi, bir şey harcanmadı",
+            LevelResult.Lost _ => WhatIsLeftOfTheGoals,
+            LevelResult.Leaving _ => WhatIsLeftOfTheGoals,
+            _ => throw Unknown(result),
+        };
+
+        /// <summary>
+        /// Beside the heart of a card: what the attempt costs in lives (<see cref="AttemptLedger"/>). A loss for good
+        /// took one; leaving after a move takes one and leaving before any takes none; giving up on the offer of extra
+        /// moves takes one.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The game is won: a win costs no life, and its card says nothing of lives.</exception>
+        public static string Lives(LevelResult result) => result switch
+        {
+            LevelResult.Won _ => throw new InvalidOperationException("A won level's card says nothing of lives: a win costs none."),
+            LevelResult.OutOfMoves _ => "1 can gider",
+            LevelResult.Lost _ => "1 can gitti",
             LevelResult.Leaving { HasPlayed: true } => "Çıkarsan 1 can gider",
             LevelResult.Leaving _ => "Henüz hamle yapmadın, can gitmez",
             _ => throw Unknown(result),
         };
+
+        /// <summary>True when the card's heart stands on a pill that says one life fewer: the attempt costs, or cost, a life.</summary>
+        public static bool CostsALife(LevelResult result) => !(result is LevelResult.Won || result is LevelResult.Leaving { HasPlayed: false });
+
+        /// <summary>The offer's green button: the moves it gives while the coins cover their price; that they do not, where they do not (the button is dimmed then).</summary>
+        public static string TakeTheMovesForCoins(ExtraMovesTerms terms) => terms.CoinsCoverIt ? $"+{ExtraMovesOffer.Moves} hamle" : LevelStartWords.CoinsShort;
+
+        /// <summary>The offer's blue button: an ad pays for the moves while the day has one left for them.</summary>
+        public static string TakeTheMovesForAnAd(ExtraMovesTerms terms) => terms.AnAdPaysToday ? WatchAnAd : NoAdLeftToday;
+
+        /// <summary>The price of the extra moves in the pill on the green button, as the wallet writes an amount.</summary>
+        public static string PriceOfTheMoves(ExtraMovesTerms terms) => WalletWords.Amount(terms.Price);
 
         /// <summary>The coins a win paid, on their pill (WinTR, "+45").</summary>
         public static string CoinsWon(Coins coins) => $"+{NumberWords.Amount(coins.Amount)}";
@@ -275,12 +396,14 @@ namespace Puzzle.Client.Flow
             : $"Kalan {Number(won.MovesLeft)} hamle\nfırçaya dönüştü";
 
         /// <summary>The green button: on with the levels, or, for a player who asked to leave, on with the game.</summary>
+        /// <exception cref="InvalidOperationException">The card offers extra moves: its green button pays for them (<see cref="TakeTheMovesForCoins"/>).</exception>
         public static string GoOn(LevelResult result) => result switch
         {
             LevelResult.Leaving _ => "Oyna",
             LevelResult.Won { IsLastLevel: true } => "Tekrar oyna",
             LevelResult.Won _ => "Devam",
             LevelResult.Lost _ => "Tekrar dene",
+            LevelResult.OutOfMoves _ => throw new InvalidOperationException("The offer's green button pays for the extra moves; it does not go on."),
             _ => throw Unknown(result),
         };
 
@@ -291,7 +414,13 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public static string GoOnOnANarrowButton(LevelResult result) => GoOn(result).Replace(' ', '\n');
 
+        private const string OutOfMovesTitle = "Hamle bitti!";
+        private const string NoMoveLeftTitle = "Oynanacak hamle kalmadı!";
+        private const string WhatIsLeftOfTheGoals = "Hedefe bu kadar kaldı";
+
         private static string LevelAndMoves(LevelResult.Won won) => $"Bölüm {Number(won.LevelNumber)} · {Number(won.MovesUsed)} hamlede";
+
+        private static string LevelAndAttempt(int levelNumber, int attemptNumber) => $"Bölüm {Number(levelNumber)} · {Number(attemptNumber)}. deneme";
 
         private static string Number(int number) => number.ToString(CultureInfo.InvariantCulture);
 

@@ -291,6 +291,9 @@ public class GameFlowTests
         Assert.Equal(game.Goals[1].Remaining, open.Remaining);
         Assert.Equal("Hamle bitti!", ResultWords.Title(result));
         Assert.Equal("Bölüm 1 · 3. deneme", ResultWords.Headline(result));
+        Assert.Equal("Hedefe bu kadar kaldı", ResultWords.Footnote(result));
+        Assert.Equal("1 can gitti", ResultWords.Lives(result));
+        Assert.True(ResultWords.CostsALife(result));
         Assert.Equal("Tekrar dene", ResultWords.GoOn(result));
     }
 
@@ -314,8 +317,11 @@ public class GameFlowTests
         Assert.Equal(PieceArt.GoalRed, open.Icon);
         Assert.Equal("Bölümden çık?", ResultWords.Title(later));
         Assert.Equal("Bölüm 1 · 3. deneme", ResultWords.Headline(later));
-        Assert.Equal("Çıkarsan 1 can gider", ResultWords.Footnote(later));
-        Assert.Equal("Henüz hamle yapmadın, can gitmez", ResultWords.Footnote(first));
+        Assert.Equal("Hedefe bu kadar kaldı", ResultWords.Footnote(later));
+        Assert.Equal("Çıkarsan 1 can gider", ResultWords.Lives(later));
+        Assert.Equal("Henüz hamle yapmadın, can gitmez", ResultWords.Lives(first));
+        Assert.True(ResultWords.CostsALife(later));
+        Assert.False(ResultWords.CostsALife(first));
         Assert.Equal("Oyna", ResultWords.GoOn(later));
     }
 
@@ -424,6 +430,7 @@ public class GameFlowTests
         ResultCardKind.WonWithAPiece,
         ResultCardKind.WonWithoutAPiece,
         ResultCardKind.WhatIsLeft,
+        ResultCardKind.OutOfMoves,
     };
 
     [Theory]
@@ -438,7 +445,7 @@ public class GameFlowTests
         Assert.InRange(rows[0].Top, ResultCardLayout.RidesAbove, ResultCardLayout.BodyHeight);
         Assert.InRange(rows[^1].Bottom, rows[0].Top, ResultCardLayout.BodyHeight);
         Assert.Equal(CardRowContent.Alcove, rows[0].Content);
-        Assert.Equal(CardRowContent.Buttons, rows[^1].Content);
+        Assert.Equal(kind == ResultCardKind.OutOfMoves ? CardRowContent.GiveUp : CardRowContent.Buttons, rows[^1].Content);
         Assert.Equal(rows.Count, rows.Select(row => row.Content).Distinct().Count());
     }
 
@@ -459,8 +466,27 @@ public class GameFlowTests
         Assert.True(ResultCardLayout.Has(ResultCardKind.WonWithoutAPiece, CardRowContent.Coins));
         Assert.False(ResultCardLayout.Has(ResultCardKind.WhatIsLeft, CardRowContent.Coins));
         Assert.Throws<ArgumentException>(() => ResultCardLayout.RowOf(ResultCardKind.WhatIsLeft, CardRowContent.Pips));
-        Assert.Equal((AlcoveFrame.Wide, 1f), (ResultCardLayout.FrameOf(ResultCardKind.WonWithAPiece), ResultCardLayout.AlcoveScale(ResultCardKind.WonWithAPiece)));
-        Assert.Equal(AlcoveFrame.WebPage, ResultCardLayout.FrameOf(ResultCardKind.WhatIsLeft));
+    }
+
+    [Fact]
+    public void A_card_of_what_is_left_has_the_won_cards_rhythm_with_the_lives_where_the_coins_stand()
+    {
+        // The canvas draws no card of a level lost for good or of the question to leave: they follow WinTR, the alcove
+        // in its place, the level and its attempt where the piece's line stands, the line about the alcove where the
+        // pips are, the rule, the heart on its pill where the coins stand, and the buttons where they stand.
+        Assert.Equal(ResultCardLayout.RowOf(ResultCardKind.WonWithAPiece, CardRowContent.Alcove), ResultCardLayout.RowOf(ResultCardKind.WhatIsLeft, CardRowContent.Alcove));
+        Assert.Equal(Span(ResultCardKind.WonWithAPiece, CardRowContent.Headline), Span(ResultCardKind.WhatIsLeft, CardRowContent.Headline));
+        Assert.Equal(Span(ResultCardKind.WonWithAPiece, CardRowContent.Rule), Span(ResultCardKind.WhatIsLeft, CardRowContent.Rule));
+        Assert.Equal(Span(ResultCardKind.WonWithAPiece, CardRowContent.Coins), Span(ResultCardKind.WhatIsLeft, CardRowContent.Lives));
+        Assert.Equal(Span(ResultCardKind.WonWithAPiece, CardRowContent.Buttons), Span(ResultCardKind.WhatIsLeft, CardRowContent.Buttons));
+        Assert.InRange(ResultCardLayout.RowOf(ResultCardKind.WhatIsLeft, CardRowContent.Footnote).Middle, 267f, 299f);
+
+        // A life that goes stands on a pill as the coins do; where none goes the words stand alone, centred.
+        CoinRowPlaces costs = ResultCardLayout.LivesRow(ResultCardLayout.PillWidth(20f), wordsWidth: 60f);
+        CoinRowPlaces free = ResultCardLayout.LivesRow(pillWidth: null, wordsWidth: 160f);
+        Assert.Equal(ResultCardLayout.CoinRow(ResultCardLayout.PillWidth(20f), 60f, hasABrush: false).WordsLeft, costs.WordsLeft);
+        Assert.Null(free.Coins);
+        Assert.Equal((-80f, 80f), (free.WordsLeft, free.WordsRight));
     }
 
     [Fact]

@@ -483,7 +483,7 @@ namespace Puzzle.Client.EditorTools
                 Game game = Game.Start(level, 1, new GameOptions { RecordEvents = true, RecordActions = true });
                 GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry(StoryStudio.Economy.Win), ShelfBrief.Of(OpenLevel, attemptsBefore: 1, StoryStudio.Economy));
                 stage.Fit(Screen);
-                stage.Tell(WalletView.Of(GiftedWallet(), StoryStudio.Economy.Lives, StoryStudio.Clock.Now));
+                stage.Tell(WalletView.Of(GiftedWallet(), StoryStudio.Economy.Lives, StoryStudio.Clock.Now), StoryStudio.ExtraMovesFor(GiftedWallet()));
                 StageSteps.Settle(stage);
                 return stage;
             }

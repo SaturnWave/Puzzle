@@ -15,19 +15,26 @@ using UnityEngine;
 namespace Puzzle.Client.Gallery
 {
     /// <summary>
-    /// The lit alcove of a result's card: a piece of the gallery wall in a beaded gilt frame, with a shelf on which
-    /// stands what the game left behind. A level won leaves the jigsaw pieces it gave, in a warm light and among
-    /// sparkles (or its star, where it gave none); a lost one leaves the goals it did not reach, each with what was
-    /// left of it on a teal badge, and so does a level its player asks to leave: what is still to do. Sizes and
-    /// places are the web test page's (gallery.css, .alcove), in points around the middle of the frame; the design
-    /// canvas' frame is wider (<see cref="AlcoveFrame.Wide"/>), and what stands in it is spread over its width.
+    /// The lit alcove of a result's card: a piece of the gallery wall in the design canvas' wide beaded gilt frame
+    /// (WinTR, LoseTR), with a shelf on which stands what the game left behind. A level won leaves the jigsaw pieces
+    /// it gave, in a warm light and among sparkles (or its star, where it gave none); a game whose moves ran out
+    /// shows the gilt +5 it is offered among three sparkles (LoseTR); a level lost for good leaves the goals it did
+    /// not reach, each with what was left of it on a teal badge, and so does a level its player asks to leave: what is
+    /// still to do. Sizes and places are the web test page's (gallery.css, .alcove) spread over the canvas' wider
+    /// niche, and the canvas' own for the +5, in points around the middle of the frame.
     /// </summary>
     public sealed class ResultAlcove : IDisposable
     {
         /// <summary>The wall and shelf inside the frame's band: as wide as the frame has them, and as high in both.</summary>
-        private const float WebPageNicheWidth = 288f;
-        private const float WideNicheWidth = 316f;
+        private const float NicheWidth = 316f;
         private const float NicheHeight = 188f;
+
+        /// <summary>The +5 a game out of moves is offered (LoseTR): 154 across, its middle this far under the niche's.</summary>
+        private const float ExtraMovesSize = 154f;
+        private const float ExtraMovesUnderMiddle = 13.55f;
+
+        /// <summary>The +5 is a drawing in a box of 100 points.</summary>
+        private const float MarkBox = 100f;
 
         /// <summary>The middle of the shelf's top, where things stand, lies this far under the frame's middle.</summary>
         private const float ShelfUnderMiddle = 76f;
@@ -84,6 +91,14 @@ namespace Puzzle.Client.Gallery
             (0.78f, 0.10f, 8f, 0.12f),
         };
 
+        /// <summary>The three sparkles around the +5, where LoseTR places them, in the same terms.</summary>
+        private static readonly (float Across, float Down, float Size, float Phase)[] SparklesAroundTheOffer =
+        {
+            (54f / NicheWidth, 52f / NicheHeight, 20f, 0f),
+            (264f / NicheWidth, 40f / NicheHeight, 15f, 0.53f),
+            (256f / NicheWidth, 112f / NicheHeight, 10f, 0.24f),
+        };
+
         /// <summary>One open goal alone stands this large; several stand smaller, side by side with this much room between them and beside the row.</summary>
         private const float LonePieceSize = 109f;
         private const float LargestPieceInARow = 76f;
@@ -103,7 +118,6 @@ namespace Puzzle.Client.Gallery
         private const float BadgePictureHeight = 40f;
 
         private readonly Transform _root;
-        private readonly float _nicheWidth;
 
         /// <summary>What pops up on the shelf, in the order it does; each grows from nothing to its own size.</summary>
         private readonly List<Transform> _exhibits = new List<Transform>();
@@ -111,18 +125,11 @@ namespace Puzzle.Client.Gallery
         private readonly List<LoosePiece> _pieces = new List<LoosePiece>();
         private SpriteRenderer? _winLight;
 
-        private ResultAlcove(Transform card, ArtCatalogue art, AlcoveFrame frame)
+        private ResultAlcove(Transform card, ArtCatalogue art)
         {
             _root = new GameObject("Alcove").transform;
             _root.SetParent(card, worldPositionStays: false);
-            (GalleryArt drawing, float nicheWidth) = frame switch
-            {
-                AlcoveFrame.WebPage => (GalleryArt.Alcove, WebPageNicheWidth),
-                AlcoveFrame.Wide => (GalleryArt.WideAlcove, WideNicheWidth),
-                _ => throw new ArgumentOutOfRangeException(nameof(frame), frame, "A frame no alcove is drawn in."),
-            };
-            _nicheWidth = nicheWidth;
-            SceneObjects.AddSprite("Niche", _root, art.Of(drawing), art.SpriteMaterial, DrawOrder.CardArt);
+            SceneObjects.AddSprite("Niche", _root, art.Of(GalleryArt.WideAlcove), art.SpriteMaterial, DrawOrder.CardArt);
         }
 
         public Transform Transform => _root;
@@ -132,10 +139,9 @@ namespace Puzzle.Client.Gallery
 
         /// <summary>Builds the alcove of a result with its exhibits, which are not seen until <see cref="Pop"/> shows them.</summary>
         /// <param name="paintings">Where the picture of a piece that was won comes from.</param>
-        /// <param name="frame">The beaded frame the alcove is drawn in, which decides how wide its niche is.</param>
-        public static ResultAlcove Create(Transform card, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, AlcoveFrame frame)
+        public static ResultAlcove Create(Transform card, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result)
         {
-            var alcove = new ResultAlcove(card, art, frame);
+            var alcove = new ResultAlcove(card, art);
             switch (result)
             {
                 case LevelResult.Won { Reward: PieceReward reward }:
@@ -143,6 +149,9 @@ namespace Puzzle.Client.Gallery
                     break;
                 case LevelResult.Won _:
                     alcove.StandTheStar(art, effects);
+                    break;
+                case LevelResult.OutOfMoves _:
+                    alcove.StandTheExtraMoves(art);
                     break;
                 case LevelResult.Lost lost:
                     alcove.StandWhatWasLeft(lost.OpenGoals, art);
@@ -204,7 +213,7 @@ namespace Puzzle.Client.Gallery
             Transform stand = AddExhibit("Star", new Vector2(0f, StandingHeight(StarSize)));
             AddWinLight(stand, art, effects);
             SceneObjects.AddSprite("Star", stand, art.Of(PieceArt.Star), art.SpriteMaterial, DrawOrder.CardExhibit).transform.localScale = new Vector3(StarSize, StarSize, 1f);
-            AddSparkles(art);
+            AddSparkles(art, Sparkles);
         }
 
         /// <summary>The jigsaw pieces a won level gave, side by side on the shelf, centred as a row, each as large as its share of the row allows.</summary>
@@ -213,7 +222,7 @@ namespace Puzzle.Client.Gallery
             int count = reward.Pieces.Count;
             var box = count == 1
                 ? LonePieceBox
-                : new Vector2((_nicheWidth - 2f * RoomBesideTheRow - GapBetweenPieces * (count - 1)) / count, TallestPieceInARow);
+                : new Vector2((NicheWidth - 2f * RoomBesideTheRow - GapBetweenPieces * (count - 1)) / count, TallestPieceInARow);
             float left = -(count * box.x + (count - 1) * GapBetweenPieces) / 2f;
             for (int index = 0; index < count; index++)
             {
@@ -230,7 +239,16 @@ namespace Puzzle.Client.Gallery
                 _pieces.Add(piece);
             }
 
-            AddSparkles(art);
+            AddSparkles(art, Sparkles);
+        }
+
+        /// <summary>The gilt +5 a game out of moves is offered, standing in the alcove's own light among three sparkles (LoseTR).</summary>
+        private void StandTheExtraMoves(ArtCatalogue art)
+        {
+            Transform stand = AddExhibit("Extra moves", new Vector2(0f, -ExtraMovesUnderMiddle));
+            float scale = ExtraMovesSize / MarkBox;
+            SceneObjects.AddSprite("Five more moves", stand, art.Of(GalleryArt.IconFiveMoves), art.SpriteMaterial, DrawOrder.CardExhibit).transform.localScale = new Vector3(scale, scale, 1f);
+            AddSparkles(art, SparklesAroundTheOffer);
         }
 
         /// <summary>How wide the whole painting is when one of its pieces is drawn so that its cell just fits a box.</summary>
@@ -246,14 +264,14 @@ namespace Puzzle.Client.Gallery
         {
             _winLight = SceneObjects.AddSprite("Light", stand, effects.Glow, art.SpriteMaterial, DrawOrder.CardLight);
             _winLight.transform.localPosition = new Vector3(0f, WinLightAboveStar, 0f);
-            _winLight.transform.localScale = new Vector3(_nicheWidth - 2f * WinLightInFromSides, WinLightHeight, 1f);
+            _winLight.transform.localScale = new Vector3(NicheWidth - 2f * WinLightInFromSides, WinLightHeight, 1f);
         }
 
-        private void AddSparkles(ArtCatalogue art)
+        private void AddSparkles(ArtCatalogue art, (float Across, float Down, float Size, float Phase)[] sparkles)
         {
-            foreach ((float across, float down, float size, float phase) in Sparkles)
+            foreach ((float across, float down, float size, float phase) in sparkles)
             {
-                var place = new Vector2((across - 0.5f) * _nicheWidth, (0.5f - down) * NicheHeight);
+                var place = new Vector2((across - 0.5f) * NicheWidth, (0.5f - down) * NicheHeight);
                 Transform sparkle = SceneObjects.AddSprite("Sparkle", AddExhibit("Sparkle", place), art.Of(GalleryArt.Sparkle), art.SpriteMaterial, DrawOrder.CardExhibit).transform;
                 _sparkles.Add((sparkle, size, phase));
             }
@@ -270,7 +288,7 @@ namespace Puzzle.Client.Gallery
                 return; // a game is not lost with every goal met; an empty shelf is the honest picture of it all the same
             }
 
-            float widestInARow = (_nicheWidth - 2f * RoomBesideTheRow - GapBetweenPieces * (count - 1)) / count;
+            float widestInARow = (NicheWidth - 2f * RoomBesideTheRow - GapBetweenPieces * (count - 1)) / count;
             float size = count == 1 ? LonePieceSize : Mathf.Min(LargestPieceInARow, widestInARow);
             float left = -(count * size + (count - 1) * GapBetweenPieces) / 2f;
             for (int goal = 0; goal < count; goal++)

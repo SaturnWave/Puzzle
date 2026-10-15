@@ -89,11 +89,24 @@ namespace Puzzle.Client.Stage
     /// (<see cref="TakeWhatWasAskedFor"/>).
     /// </para>
     /// <para>
+    /// When the moves run out with goals open for the first time in the attempt, the game is not lost yet: the
+    /// card that hangs offers five more (Puzzle.Meta's terms, which the owner of the wallet tells the stage at every
+    /// step with the wallet). Its green button pays coins and its blue one plays an ad, each dimmed with the reason
+    /// where the terms do not allow it; "Vazgeç" gives up. The engine is asked first (Game.TryTakeExtraMoves): when it
+    /// gives the moves, the payment is reported, the card goes up, the room lights, the medallion counts the five up
+    /// and play goes on (a board with no move left is dealt anew with them); paid by an ad, a card that stands in for
+    /// one hangs in front for its seconds first, and the payment is reported when it is over. When the engine refuses
+    /// (no shuffle can bring the board back), nothing is paid and the card of a loss for good comes down in its place,
+    /// as it does after giving up. While the offer hangs the board takes no touch, nothing ends the attempt, and the
+    /// way back does nothing: it costs no life. A second run-out, and a board with no move possible, are lost for
+    /// good at once.
+    /// </para>
+    /// <para>
     /// What happens in the attempt that changes the player's progress is reported, in order, at the moment the
-    /// engine says so: the first move (a booster the engine accepts counts as one), a booster used, the move or the
-    /// booster that wins, the one after which the game is lost for good, and the press that leaves the level
-    /// (<see cref="TakeWhatHappened"/>). The stage keeps no progress itself; whoever owns it takes the reports and
-    /// keeps them.
+    /// engine says so: the first move (a booster the engine accepts counts as one), a booster used, the extra moves
+    /// paid for, the move or the booster that wins, the one after which the game is lost for good (or the answer to
+    /// the offer that loses it), and the press that leaves the level (<see cref="TakeWhatHappened"/>). The stage keeps
+    /// no progress itself; whoever owns it takes the reports and keeps them.
     /// </para>
     /// </remarks>
     public sealed class GameStage : IStage
@@ -104,6 +117,9 @@ namespace Puzzle.Client.Stage
 
         /// <summary>The skipped finale's board is shown under one blink of light, this many times the tray's longer side across.</summary>
         private const float SkipBlinkAcross = 1.5f;
+
+        /// <summary>The extra moves are counted up on the medallion one after another, each with a swell of its number, this far apart.</summary>
+        private const float ExtraMovesCountedApart = Tempo.MovesSwell;
 
         /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set (private constructor).</summary>
         private abstract class StageControl
@@ -234,6 +250,15 @@ namespace Puzzle.Client.Stage
         private readonly ShelfDiscs _discs;
         private readonly ShelfPill _pill;
 
+        /// <summary>The dark over the card of the offer while the card that stands in for an ad hangs in front of it.</summary>
+        private readonly Veil _secondVeil;
+
+        /// <summary>What the extra moves cost the player now, as the stage was last told; nothing before it was told.</summary>
+        private ExtraMovesTerms? _extraMoves;
+
+        /// <summary>The ad that pays for the extra moves the engine gave, while it is shown; nothing otherwise.</summary>
+        private AdOnTheStage? _ad;
+
         /// <summary>What the stage asked of the player's wallet since it was last asked: a booster bought on the offer's card.</summary>
         private readonly List<WalletRequest> _asked = new List<WalletRequest>();
 
@@ -317,6 +342,7 @@ namespace Puzzle.Client.Stage
             _discs.Guide(shelf.Introduced);
             _pill = ShelfPill.Create(_root.transform, art);
             _veil = Veil.Create(_root.transform, art);
+            _secondVeil = Veil.Create(_root.transform, art, DrawOrder.SecondVeil);
             _effectArt = effectArt;
             _pickedMark = new PickedMark(_board.Root, _effectArt, art);
             _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
@@ -333,10 +359,10 @@ namespace Puzzle.Client.Stage
 
         /// <summary>
         /// True when nothing on the stage is moving any more: the board's entrance, the last turn and a won game's
-        /// finale are over, and the result's card, if there is one, hangs in its place. What only twinkles does
-        /// not count. A turn or a finale that has run out counts as moving until the stage has finished it.
+        /// finale are over, the result's card, if there is one, hangs in its place, and no ad is being shown. What
+        /// only twinkles does not count. A turn or a finale that has run out counts as moving until the stage has finished it.
         /// </summary>
-        public bool IsSettled => _tweens.IsIdle && _timeline.IsDone && _playing == Playback.Nothing;
+        public bool IsSettled => _tweens.IsIdle && _timeline.IsDone && _playing == Playback.Nothing && _ad == null;
 
         /// <summary>
         /// Where the player goes on to, once they have pressed a button of the result's card and the card has gone up
@@ -356,7 +382,25 @@ namespace Puzzle.Client.Stage
         public MuseumDoor GoingOnLeadsTo() => LevelResult.Of(_game, _brief).GoingOnLeadsTo();
 
         /// <summary>True while the card that asks whether the player means to leave hangs in front of the board, or is coming or going.</summary>
-        public bool IsAskingWhetherToLeave => _result != null && _game.Status == GameStatus.Playing;
+        public bool IsAskingWhetherToLeave => _result?.Tells is LevelResult.Leaving;
+
+        /// <summary>True while the card that offers a game out of moves five more hangs in front of the board, or is coming or going.</summary>
+        public bool IsOfferingExtraMoves => _result?.Tells is LevelResult.OutOfMoves;
+
+        /// <summary>True while a card hangs in its place in front of the board and listens: a result's, the offer of extra moves, or the question whether to leave.</summary>
+        public bool HangsACardInItsPlace => ListensToTheCard;
+
+        /// <summary>What the card in front of the board tells; nothing while none hangs.</summary>
+        public LevelResult? CardTells => _result?.Tells;
+
+        /// <summary>The terms of the extra moves the offer's buttons show now; nothing while no offer hangs.</summary>
+        public ExtraMovesTerms? ExtraMovesOnTheCard => _result?.TermsShown;
+
+        /// <summary>True while the card that stands in for an ad hangs in front of the offer, or is coming or going.</summary>
+        public bool IsShowingTheAd => _ad != null;
+
+        /// <summary>How far the ad being shown has come, 0 to 1; nothing while none is shown.</summary>
+        public float? AdProgress => _ad?.Ad.Progress;
 
         /// <summary>
         /// The pixel of the screen in the middle of the pause disc on the shelf, which asks whether to leave the
@@ -370,9 +414,18 @@ namespace Puzzle.Client.Stage
         /// <summary>
         /// The pixel of the screen in the middle of the result card's green button, which leads on with the levels,
         /// counted from the screen's lower left corner: where a finger presses it. Nothing while no card hangs at
-        /// rest in its place.
+        /// rest in its place, and on the card that offers extra moves, whose buttons pay for them.
         /// </summary>
-        public Vector2? ResultButtonPixel => _result != null && ListensToTheCard ? PixelOf(_result.GoOnButtonMiddle) : null;
+        public Vector2? ResultButtonPixel => _result?.GoOnButtonMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
+
+        /// <summary>The pixel in the middle of the offer's green button, which pays coins for the moves, lit or dimmed; nothing while the offer does not hang at rest.</summary>
+        public Vector2? TakeTheMovesForCoinsPixel => _result?.TakeForCoinsMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
+
+        /// <summary>The pixel in the middle of the offer's blue button, which plays an ad for them, lit or dimmed; nothing while the offer does not hang at rest.</summary>
+        public Vector2? TakeTheMovesForAnAdPixel => _result?.TakeForAnAdMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
+
+        /// <summary>The pixel in the middle of the offer's "Vazgeç"; nothing while the offer does not hang at rest.</summary>
+        public Vector2? GiveUpPixel => _result?.GiveUpMiddle is Vector2 link && ListensToTheCard ? PixelOf(link) : null;
 
         /// <summary>The same for the card's teal button, which leads back to the museum.</summary>
         public Vector2? MuseumButtonPixel => _result?.MuseumButtonMiddle is Vector2 button && ListensToTheCard ? PixelOf(button) : null;
@@ -419,6 +472,9 @@ namespace Puzzle.Client.Stage
 
         /// <summary>The booster whose disc is ringed with light on its first use; nothing for none.</summary>
         public BoosterKind? GuidedBooster => _discs.Guided;
+
+        /// <summary>The numbers the plaques show now, as far as they have been counted; the game's own whenever nothing moves.</summary>
+        public HudFigures Plaques => _figures;
 
         /// <summary>The script of the booster used last; nothing before the first.</summary>
         public TurnScript? LastBooster { get; private set; }
@@ -517,16 +573,21 @@ namespace Puzzle.Client.Stage
             _discs.Place(layout);
             _pill.Place(layout);
             _veil.Fit(layout.View);
+            _secondVeil.Fit(layout.View);
             _result?.Place(layout);
             _offer?.Card.Place(layout.PlaceOfACard(_offer.Card.Width, _offer.Card.Height), layout.View);
+            _ad?.Card.Place(layout.PlaceOfACard(_ad.Card.Width, _ad.Card.Height), layout.View);
         }
 
         /// <summary>
-        /// Tells the stage what the player holds now, which the shelf's discs count and the offer's card prices: the
-        /// owner of the wallet tells it at every step. A booster bought on the offer's card is armed the moment it is held.
+        /// Tells the stage what the player holds now, which the shelf's discs count and the offer's card prices, and
+        /// what the extra moves cost them now, which the card of a game out of moves shows: the owner of the wallet
+        /// tells it at every step. A booster bought on the offer's card is armed the moment it is held.
         /// </summary>
-        public void Tell(WalletView wallet)
+        public void Tell(WalletView wallet, ExtraMovesTerms extraMoves)
         {
+            _extraMoves = extraMoves ?? throw new ArgumentNullException(nameof(extraMoves));
+            _result?.ShowTerms(extraMoves);
             _owned = wallet.Shelf;
             _coins = wallet.Coins;
             if (_arming is Arming.Armed armed && !_owned.Has(armed.Booster))
@@ -571,6 +632,7 @@ namespace Puzzle.Client.Stage
             _tweens.Advance(deltaSeconds);
             ShowThePickedPiece();
             _result?.Twinkle(_clock);
+            ShowTheAd(deltaSeconds);
             _timeline.Advance(deltaSeconds * PaceOfTheTimeline());
             if (_timeline.IsDone)
             {
@@ -587,7 +649,8 @@ namespace Puzzle.Client.Stage
         /// <summary>
         /// The player asked for the way back, by the device's back button or gesture. While the game is played that
         /// asks whether they mean to leave; under that question it means "no"; under a result's card it leads to
-        /// the museum; and a won game's finale it ends, as a touch does.
+        /// the museum; and a won game's finale it ends, as a touch does. Under the offer of extra moves, and while an
+        /// ad is shown, it does nothing: nothing it could mean there costs nothing, and giving up costs a life.
         /// </summary>
         public void GoBack()
         {
@@ -615,7 +678,7 @@ namespace Puzzle.Client.Stage
             {
                 AskToLeave();
             }
-            else if (ListensToTheCard)
+            else if (ListensToTheCard && !IsOfferingExtraMoves)
             {
                 SendTheCardUp(_result, IsAskingWhetherToLeave ? ResultChoice.Stay : ResultChoice.ToTheMuseum);
             }
@@ -824,7 +887,7 @@ namespace Puzzle.Client.Stage
             {
                 if (ListensToTheCard && _result.FingerUp(out ResultChoice choice))
                 {
-                    SendTheCardUp(_result, choice);
+                    Choose(_result, choice);
                 }
             }
             else if (_arming is Arming.Armed armed)
@@ -865,8 +928,10 @@ namespace Puzzle.Client.Stage
             _shelf.Dispose();
             _pill.Dispose();
             _veil.Dispose();
+            _secondVeil.Dispose();
             _result?.Dispose();
             _offer?.Dispose();
+            _ad?.Card.Dispose();
             SceneObjects.Destroy(_root);
         }
 
@@ -909,8 +974,8 @@ namespace Puzzle.Client.Stage
 
         /// <summary>
         /// The engine has just played a move or used a booster: if that decided the game, it is reported now, before
-        /// any of it is shown. In this build a game out of moves is lost for good at once: no offer of extra moves is
-        /// made yet.
+        /// any of it is shown. A game whose moves ran out for the first time is not decided yet: the offer of extra
+        /// moves is answered first, and the answer reports what it leads to.
         /// </summary>
         private void ReportTheStatus()
         {
@@ -920,6 +985,8 @@ namespace Puzzle.Client.Stage
                     break;
                 case GameStatus.Won:
                     _happened.Add(new AttemptEvent.Won(_game.MovesLeft));
+                    break;
+                case GameStatus.LostOutOfMoves when OutOfMovesOffer.IsMadeIn(_game):
                     break;
                 case GameStatus.LostOutOfMoves:
                     _happened.Add(new AttemptEvent.LostForGood(LossReason.OutOfMoves));
@@ -1156,8 +1223,9 @@ namespace Puzzle.Client.Stage
         }
 
         /// <summary>
-        /// The game is decided: the board is left to be seen for a moment, then the room goes dark, the result's
-        /// card comes down on its wires, and what it shows in its alcove pops up as it settles.
+        /// The game is decided, or its moves have run out for the first time: the board is left to be seen for a
+        /// moment, then the room goes dark, the result's card (or the offer of extra moves) comes down on its wires,
+        /// and what it shows in its alcove pops up as it settles.
         /// </summary>
         private void HangTheResult()
         {
@@ -1166,14 +1234,16 @@ namespace Puzzle.Client.Stage
             _isAskedToLeave = false;
             _controls.FingerGone();
             PutTheBoosterDown();
-            HangACard(LevelResult.Of(_game, _brief), piecesWaiting, comesIn: Tempo.PauseBeforeResult);
+            ResultPanel card = OutOfMovesOffer.IsMadeIn(_game)
+                ? ResultPanel.OfferTheMoves(_root.transform, _art, _effectArt, _paintings, LevelResult.OfferTo(_game, _brief), TermsOfTheExtraMoves)
+                : ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.Of(_game, _brief), piecesWaiting);
+            HangACard(card, comesIn: Tempo.PauseBeforeResult, roomIsDark: false);
         }
 
-        /// <summary>The room goes dark and a card comes down on its wires; what it shows in its alcove pops up as it settles.</summary>
-        /// <param name="comesIn">How long the board is left to be seen before the room darkens.</param>
-        private void HangACard(LevelResult tells, int piecesWaiting, float comesIn)
+        /// <summary>The room goes dark, unless it is already, and a card comes down on its wires; what it shows in its alcove pops up as it settles.</summary>
+        /// <param name="comesIn">How long the board, or the card going up before it, is left to be seen before the room darkens and the card comes.</param>
+        private void HangACard(ResultPanel card, float comesIn, bool roomIsDark)
         {
-            ResultPanel card = ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, tells, piecesWaiting);
             if (_layout is ScreenLayout layout)
             {
                 card.Place(layout);
@@ -1183,10 +1253,19 @@ namespace Puzzle.Client.Stage
             _isCardDown = false;
             float cardComes = comesIn + Tempo.CardAfterDark;
             float exhibitsSeconds = card.ExhibitsSeconds;
-            _timeline.Add(comesIn, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)), _lamps.PutOut);
+            if (!roomIsDark)
+            {
+                _timeline.Add(comesIn, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)), _lamps.PutOut);
+            }
+
             _timeline.Add(cardComes, Tempo.CardComesDown, card.ComeDown, () => _isCardDown = true);
             _timeline.Add(cardComes + Tempo.ExhibitsAfterCard, exhibitsSeconds, progress => card.ShowExhibits(progress * exhibitsSeconds));
         }
+
+        /// <summary>The terms of the extra moves the stage was told last, which the offer's card shows.</summary>
+        /// <exception cref="InvalidOperationException">Nobody told the stage the terms (<see cref="Tell"/>): its owner must, before a game can run out of moves.</exception>
+        private ExtraMovesTerms TermsOfTheExtraMoves => _extraMoves
+            ?? throw new InvalidOperationException("The stage was never told what the extra moves cost; whoever owns the wallet tells it with Tell.");
 
         /// <summary>
         /// The player wants to leave the level (the pause disc, or the way back). From now on the board takes no
@@ -1217,7 +1296,7 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            HangACard(LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0, comesIn: 0f);
+            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0), comesIn: 0f, roomIsDark: false);
         }
 
         /// <summary>
@@ -1293,6 +1372,191 @@ namespace Puzzle.Client.Stage
             }
 
             _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerChose = choice);
+        }
+
+        // ---------- the offer of extra moves ----------
+
+        /// <summary>A button of the card in front of the board was pressed: the offer's are answered here, every other card's lead on.</summary>
+        private void Choose(ResultPanel card, ResultChoice choice)
+        {
+            switch (choice)
+            {
+                case ResultChoice.TakeTheMovesForCoins:
+                    TakeTheMoves(ExtraMovesPayment.ByCoins);
+                    break;
+                case ResultChoice.TakeTheMovesForAnAd:
+                    TakeTheMoves(ExtraMovesPayment.ByAd);
+                    break;
+                case ResultChoice.GiveUp:
+                    _happened.Add(OutOfMovesOffer.GiveUp(_game));
+                    ReplaceTheOfferWith(LevelResult.LostForGood(_game, _brief, LossReason.GaveUp));
+                    break;
+                default:
+                    SendTheCardUp(card, choice);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// The player asked for the extra moves, paid one way. A way the terms do not allow is dimmed and takes no
+        /// finger, so a press that gets here anyway changes nothing. Otherwise the engine is asked: refused, nothing is
+        /// paid and the card of the loss for good takes the offer's place; given and paid with coins, the payment is
+        /// reported and the game goes on; given and paid with an ad, the ad is shown first.
+        /// </summary>
+        private void TakeTheMoves(ExtraMovesPayment paidBy)
+        {
+            switch (OutOfMovesOffer.Take(_game, paidBy, TermsOfTheExtraMoves))
+            {
+                case OfferAnswer.CannotPay _:
+                    break;
+                case OfferAnswer.Refused refused:
+                    _happened.Add(refused.Loss);
+                    ReplaceTheOfferWith(LevelResult.LostForGood(_game, _brief, refused.Loss.Reason));
+                    break;
+                case OfferAnswer.MovesGiven given when paidBy == ExtraMovesPayment.ByAd:
+                    ShowAnAdFor(given.Payment);
+                    break;
+                case OfferAnswer.MovesGiven given:
+                    _happened.Add(given.Payment);
+                    GoOnWithTheExtraMoves();
+                    break;
+                default:
+                    throw new InvalidOperationException("The offer of extra moves gave an answer the stage does not know.");
+            }
+        }
+
+        /// <summary>The offer was turned down or refused: its card goes up in the dark room and the card of the loss for good comes down in its place.</summary>
+        private void ReplaceTheOfferWith(LevelResult lost)
+        {
+            ResultPanel offer = _result ?? throw new InvalidOperationException("No offer hangs to be replaced.");
+            _isCardDown = false;
+            offer.FingerGone();
+            _timeline.Add(0f, Tempo.CardGoesUp, offer.GoUp, offer.Dispose);
+            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, lost, piecesWaiting: 0), comesIn: Tempo.CardGoesUp, roomIsDark: true);
+        }
+
+        /// <summary>
+        /// The engine gave the moves: the offer's card goes up, the room lights, and the medallion counts the moves
+        /// up one at a time, each with a swell of its number; a board that had no move left is dealt anew meanwhile.
+        /// Once all of it is over the board is the player's again, and the shelf with it.
+        /// </summary>
+        private void GoOnWithTheExtraMoves()
+        {
+            ResultPanel offer = _result ?? throw new InvalidOperationException("No offer hangs to go up.");
+            _isCardDown = false;
+            offer.FingerGone();
+            float roomLit = Tempo.CardGoesUp / 2f + Tempo.RoomLightens;
+            _timeline.Add(0f, Tempo.CardGoesUp, offer.GoUp);
+            _timeline.Add(
+                Tempo.CardGoesUp / 2f,
+                Tempo.RoomLightens,
+                progress => _veil.Darken(1f - Easing.Out(progress)),
+                () =>
+                {
+                    offer.Dispose();
+                    _result = null;
+                    _lamps.LightAgain();
+                });
+
+            HudFigures countedUp = HudFigures.Of(_game);
+            int shownBefore = _figures.MovesLeft;
+            for (int shown = shownBefore + 1; shown <= countedUp.MovesLeft; shown++)
+            {
+                HudFigures counted = countedUp.WithMovesShown(shown);
+                _timeline.At(roomLit + (shown - shownBefore - 1) * ExtraMovesCountedApart, () => CountAnExtraMoveUp(counted));
+            }
+
+            ShowTheReshuffleOfTheExtraMoves();
+        }
+
+        /// <summary>One more of the extra moves is counted on the medallion, whose number swells as it does.</summary>
+        private void CountAnExtraMoveUp(HudFigures counted)
+        {
+            _figures = counted;
+            _hud.Show(_figures);
+
+            // A tween and not an act: this is called by an act, which may not add acts to the timeline it is shown by.
+            _tweens.Start(new Tween(0f, Tempo.MovesSwell, progress => 1f - Easing.In(progress), _hud.SwellTheMoves));
+        }
+
+        /// <summary>
+        /// A board that had no move left was dealt anew with the extra moves: that is shown as a turn's reshuffle is,
+        /// and the stage comes to rest on the engine's board after it. A board that had a move gets nothing to show.
+        /// </summary>
+        private void ShowTheReshuffleOfTheExtraMoves()
+        {
+            if (_game.LastEvents.Count == 0)
+            {
+                return;
+            }
+
+            _playing = Playback.ATurn;
+            try
+            {
+                _turnPlayer.Play(TurnChoreographer.ComposeTheExtraMoves(_ledger, _game.LastEvents, _game.Board));
+            }
+            catch (InvalidOperationException fault)
+            {
+                // The engine has dealt the board anew: only its picture is lost, as a turn's would be.
+                _faultsOfTheTurn.Add($"the reshuffle of the extra moves could not be shown: {fault.Message}");
+                _effects.ClearAway();
+                _ledger.StartAgainFrom(_game.Board);
+                _board.ShowAnew(_ledger);
+            }
+        }
+
+        /// <summary>
+        /// The engine gave the moves for an ad: the room behind darkens once more and the card that stands in for an
+        /// ad comes down in front of the offer's. Its seconds run once it hangs in its place; the payment is reported
+        /// when it is over (<see cref="ShowTheAd"/>).
+        /// </summary>
+        private void ShowAnAdFor(AttemptEvent.ExtraMovesTaken payment)
+        {
+            _isCardDown = false;
+            _result?.FingerGone();
+            var card = new SimulatedAdCard(_root.transform, _art, (int)DrawOrder.OverACard);
+            if (_layout is ScreenLayout layout)
+            {
+                card.Place(layout.PlaceOfACard(card.Width, card.Height), layout.View);
+            }
+
+            var ad = new AdOnTheStage(card, Ads.Show(_brief.AdsShownAs), payment);
+            _ad = ad;
+            _timeline.Add(0f, Tempo.RoomDarkens, progress => _secondVeil.Darken(Easing.Out(progress)));
+            _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.ComeDown, () => ad.IsDown = true);
+        }
+
+        /// <summary>
+        /// The ad's seconds run while its card hangs in its place, and its bar shows them. When it is over the
+        /// payment is reported, its card goes up, the second dark lifts, and the game goes on with the extra moves.
+        /// </summary>
+        private void ShowTheAd(float deltaSeconds)
+        {
+            if (!(_ad is AdOnTheStage ad) || !ad.IsDown || ad.HasPaid)
+            {
+                return;
+            }
+
+            ad.Ad.Advance(deltaSeconds);
+            ad.Card.Show(ad.Ad);
+            if (!ad.Ad.IsOver)
+            {
+                return;
+            }
+
+            ad.HasPaid = true;
+            _happened.Add(ad.Payment);
+            _timeline.Add(0f, Tempo.CardGoesUp, ad.Card.GoUp);
+            _timeline.Add(
+                Tempo.CardGoesUp / 2f,
+                Tempo.RoomLightens,
+                progress => _secondVeil.Darken(1f - Easing.Out(progress)),
+                () =>
+                {
+                    ad.Card.Dispose();
+                    _ad = null;
+                });
+            GoOnWithTheExtraMoves();
         }
 
         // ---------- the boosters of the shelf ----------
@@ -1681,6 +1945,29 @@ namespace Puzzle.Client.Stage
                     piece.Place = Vector2.Lerp(from, to, reach * Easing.Arch(progress));
                 },
                 () => piece.Rest(cell));
+        }
+
+        /// <summary>An ad shown for the extra moves the engine gave: its card, the ad as it runs, and the payment it is.</summary>
+        private sealed class AdOnTheStage
+        {
+            public AdOnTheStage(SimulatedAdCard card, IAdShowing ad, AttemptEvent.ExtraMovesTaken payment)
+            {
+                Card = card;
+                Ad = ad;
+                Payment = payment;
+            }
+
+            public SimulatedAdCard Card { get; }
+
+            public IAdShowing Ad { get; }
+
+            public AttemptEvent.ExtraMovesTaken Payment { get; }
+
+            /// <summary>True once the card hangs in its place: the ad's seconds run from then.</summary>
+            public bool IsDown { get; set; }
+
+            /// <summary>True once the ad was over and its payment reported: the card is on its way up.</summary>
+            public bool HasPaid { get; set; }
         }
 
         /// <summary>A gesture that waits for the board to come to rest, and when on the stage's clock it was made.</summary>

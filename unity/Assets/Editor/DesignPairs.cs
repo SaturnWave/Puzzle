@@ -41,7 +41,7 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The card of that level won (WinTR).</summary>
         Won,
 
-        /// <summary>The card of that level lost (LoseTR).</summary>
+        /// <summary>The card of that level once its moves ran out: the offer of five more (LoseTR).</summary>
         Lost,
 
         /// <summary>The card before that level, come down over the hall, its first start booster chosen (LevelStartTR).</summary>

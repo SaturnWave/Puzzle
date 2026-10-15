@@ -100,6 +100,22 @@ namespace Puzzle.Client.Gallery
             return new HudFigures(Math.Max(0, MovesLeft - rockets), movesAreFew: false, Goals, MovesTurnedIntoRockets + rockets);
         }
 
+        /// <summary>
+        /// These numbers while the medallion still counts the moves up to them, as it does with the extra moves a game
+        /// that ran out of moves was given: it shows so many of them so far. Whether moves are few is these numbers'
+        /// own, not the count's: a game given five is not warned at one, two and three.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The medallion would show fewer than none, or more moves than are left.</exception>
+        public HudFigures WithMovesShown(int movesShown)
+        {
+            if (movesShown < 0 || movesShown > MovesLeft)
+            {
+                throw new ArgumentOutOfRangeException(nameof(movesShown), movesShown, $"The medallion counts up to the {MovesLeft} moves left, from none.");
+            }
+
+            return new HudFigures(movesShown, MovesAreFew, Goals, MovesTurnedIntoRockets);
+        }
+
         /// <summary>The numbers with one more of a goal done; a goal that is met stays met.</summary>
         public HudFigures WithOneCounted(int goalIndex)
         {

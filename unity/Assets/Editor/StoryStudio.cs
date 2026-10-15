@@ -57,12 +57,18 @@ namespace Puzzle.Client.EditorTools
         /// What the design canvas' player holds on the board's shelf (BoardTR): three spatulas, two of each brush, no
         /// shuffle, the three start boosters the welcome gift gives, 1.250 coins and every life.
         /// </summary>
-        public static WalletView CanvasWallet => WalletView.Of(
-            Economy.StartingWallet
-                .WithCoins(new Coins(1250))
-                .WithShelf(Economy.StartingWallet.Shelf.With(BoosterKind.HitCell, 3).With(BoosterKind.HitRow, 2).With(BoosterKind.HitColumn, 2)),
-            Economy.Lives,
-            Clock.Now);
+        public static WalletView CanvasWallet => WalletView.Of(CanvasPlayersWallet, Economy.Lives, Clock.Now);
+
+        /// <summary>What the extra moves cost the design canvas' player at the tools' instant: 1.250 coins cover them, and no ad was watched today.</summary>
+        public static ExtraMovesTerms CanvasExtraMoves => ExtraMovesFor(CanvasPlayersWallet);
+
+        /// <summary>What the extra moves cost a wallet at the tools' instant, by the economy the tools play by.</summary>
+        public static ExtraMovesTerms ExtraMovesFor(Wallet wallet) => Economy.ExtraMoves.TermsFor(wallet, DayStamp.Of(Clock.Now));
+
+        /// <summary>The design canvas' player's wallet itself (BoardTR): what <see cref="CanvasWallet"/> shows.</summary>
+        public static Wallet CanvasPlayersWallet => Economy.StartingWallet
+            .WithCoins(new Coins(1250))
+            .WithShelf(Economy.StartingWallet.Shelf.With(BoosterKind.HitCell, 3).With(BoosterKind.HitRow, 2).With(BoosterKind.HitColumn, 2));
 
         /// <summary>An attempt log that forgets, for a tool's session: the tools must not write a player's log.</summary>
         public static IAttemptLog AttemptsKeptInMemory() => new AttemptsInMemory(Device);

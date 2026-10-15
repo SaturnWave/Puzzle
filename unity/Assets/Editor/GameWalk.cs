@@ -10,6 +10,7 @@ using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
+using Puzzle.Client.Stage;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
@@ -236,9 +237,11 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>
-        /// Through the card with the colour bomb chosen, a loss, "Tekrar dene", the hall with the same level's card
-        /// down (the colour bomb one fewer), "Oyna" with nothing chosen, the level's second board; played to its end,
-        /// the pause disc under its card listens to nothing, and the device's way back leads to the bare hall.
+        /// Through the card with the colour bomb chosen, a loss (where the moves ran out, the offer's ad buys five more,
+        /// which run out too), "Tekrar dene", the hall with the same level's card down (the colour bomb one fewer),
+        /// "Oyna" with nothing chosen, the level's second board; played to its end, the pause disc under its card
+        /// listens to nothing, the device's way back under an offer of extra moves does nothing and the offer is
+        /// given up, and the way back under the card of the loss leads to the bare hall.
         /// </summary>
         private static void WalkARetry(PlayerProgress standing, ScreenShape screen, Studio studio)
         {
@@ -257,6 +260,12 @@ namespace Puzzle.Client.EditorTools
 
             FlowStory.PlayToTheEnding(session, FlowEnding.Lost, new RandomPolicy());
             reel.Settle();
+            if (session.Stage.IsOfferingExtraMoves)
+            {
+                reel.Shoot("offer");
+                TakeTheMovesForAnAdAndRunOutAgain(reel);
+            }
+
             reel.Shoot("card-lost");
             int lostLevel = session.Stage.Game.Level.Id.Value;
             Press(session, session.Stage.ResultButtonPixel, "the lost card's Tekrar dene", reel, "retry-pressed");
@@ -281,6 +290,14 @@ namespace Puzzle.Client.EditorTools
             FlowStory.PlayTheGame(session, new RandomPolicy(), new Rng(BotSeed, BotStream));
             reel.Settle();
             ThroughTheCard.Require(session.Stage.PauseButtonPixel == null, "the pause disc listens under a result's card; the card has its own ways out");
+            if (session.Stage.IsOfferingExtraMoves)
+            {
+                session.GoBack();
+                reel.Settle();
+                ThroughTheCard.Require(session.Board != null && session.Stage.IsOfferingExtraMoves, "the device's way back under the offer of extra moves took the offer away");
+                AtTheOffer.GiveUp(session);
+            }
+
             session.GoBack();
             WaitFor(session, () => session.Museum != null, "the device's way back under the card opened no museum");
             reel.Settle();
@@ -290,7 +307,7 @@ namespace Puzzle.Client.EditorTools
             Debug.Log($"Screen shots: walk {reel.Name}: level {lostLevel} lost with the colour bomb, Tekrar dene, the hall with its card, its second board, the hall; the player now stands at \"{session.Progress}\".");
         }
 
-        /// <summary>The same level with one life: lost, its card's "Tekrar dene" brings the lives card down, and no level's card and no board.</summary>
+        /// <summary>The same level with one life: lost (where the moves ran out, the offer is given up, which takes the life), its card's "Tekrar dene" brings the lives card down, and no level's card and no board.</summary>
         private static void WalkTheLastLifeLost(PlayerProgress standing, ScreenShape screen, Studio studio)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -303,6 +320,13 @@ namespace Puzzle.Client.EditorTools
             ThroughTheCard.IntoTheLevel(session, Array.Empty<BoosterKind>());
             FlowStory.PlayToTheEnding(session, FlowEnding.Lost, new RandomPolicy());
             reel.Settle();
+            if (session.Stage.IsOfferingExtraMoves)
+            {
+                reel.Shoot("offer");
+                ThroughTheCard.Require(session.Progress.Wallet.Lives.SettledAt(StoryStudio.Clock.Now, lives).LivesUnder(lives) == 1, "the last life went before the offer of extra moves was answered");
+                AtTheOffer.GiveUp(session);
+            }
+
             reel.Shoot("card-lost");
             Press(session, session.Stage.ResultButtonPixel, "the lost card's Tekrar dene", reel, pressedShot: null);
             WaitFor(session, () => session.Museum != null, "the lost card's Tekrar dene opened no museum");
@@ -566,14 +590,50 @@ namespace Puzzle.Client.EditorTools
             return new[] { BoosterKind.HitCell };
         }
 
+        /// <summary>The level played to its end by the strong bot; where its moves run out, the offer of five more is turned down.</summary>
         private static GameStatus PlayTheLevel(Reel reel)
         {
             GameSession session = reel.Session;
             FlowStory.PlayTheGame(session, Expert(), new Rng(BotSeed, BotStream));
             GameStatus ending = session.Stage.Game.Status;
             reel.Settle();
+            if (session.Stage.IsOfferingExtraMoves)
+            {
+                reel.Shoot("offer");
+                AtTheOffer.GiveUp(session);
+            }
+
             reel.Shoot($"card-{ending.ToString().ToLowerInvariant()}");
             return ending;
+        }
+
+        /// <summary>
+        /// The offer's blue button: the card that stands in for an ad comes down, its bar fills, and when it is over
+        /// the game goes on with five more moves; the random bot plays them until the moves run out once more, and the
+        /// card of the loss for good comes, with no offer.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The ad did not come, run or end as it should, or the game was won after all.</exception>
+        private static void TakeTheMovesForAnAdAndRunOutAgain(Reel reel)
+        {
+            GameSession session = reel.Session;
+            GameStage stage = session.Stage;
+            Press(session, stage.TakeTheMovesForAnAdPixel, "the offer's Reklam izle", reel, "ad-pressed");
+            WaitFor(session, () => stage.AdProgress > 0f, "the card that stands in for an ad did not come down and begin");
+            reel.Shoot("ad-begins");
+            for (float waited = 0f; stage.AdProgress < 1f; waited += StoryStudio.FrameSeconds)
+            {
+                ThroughTheCard.Require(waited <= 2f * SimulatedAd.Seconds, $"the ad is not over {2f * SimulatedAd.Seconds} s after it began");
+                session.Advance(StoryStudio.FrameSeconds);
+            }
+
+            reel.Shoot("ad-ends");
+            reel.Settle();
+            reel.Shoot("moves-taken");
+            ThroughTheCard.Require(stage.Game.Status == GameStatus.Playing && stage.Plaques.MovesLeft == ExtraMovesOffer.Moves, "after the ad the game does not go on with five more moves on the plaque");
+
+            FlowStory.PlayTheGame(session, new RandomPolicy(), new Rng(BotSeed, BotStream));
+            reel.Settle();
+            ThroughTheCard.Require(stage.Game.Status.IsLoss() && !stage.IsOfferingExtraMoves && stage.ResultButtonPixel != null, $"after the extra moves the game is {stage.Game.Status}, or the offer came a second time");
         }
 
         /// <summary>

@@ -51,6 +51,9 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLogFile.cs" Link="Unity\Flow\AttemptLogFile.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceDocument.cs" Link="Unity\Flow\DeviceDocument.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelResult.cs" Link="Unity\Flow\LevelResult.cs" />
+    <!-- Nor have the offer of extra moves to a game out of them, and the ad a test build shows in place of one. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\OutOfMovesOffer.cs" Link="Unity\Flow\OutOfMovesOffer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\Ads.cs" Link="Unity\Flow\Ads.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\PieceArt.cs" Link="Unity\Art\PieceArt.cs" />

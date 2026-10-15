@@ -29,7 +29,7 @@ namespace Puzzle.Client.EditorTools
     /// that comes down in the middle of it ends it in that same call, on the engine's board, and the card is in
     /// its place as soon after as after any win; the finger presses nothing of that card. A second finger does the
     /// same while the first one rests, and so does the way back. The shelf's pause disc does not listen
-    /// meanwhile. A win on the last move and a lost game have no finale, and their card comes as it always did.
+    /// meanwhile. A win on the last move and a lost game have no finale: the one's card comes as it always did, the other's offer of extra moves.
     /// And a finale that cannot be shown costs its picture and not the card, in two ways. The check plays the
     /// engine's finale behind the stage's back, so the stage's own is refused. And it wins a game on a stage that
     /// was never laid out for a screen: the engine plays that finale and its script is written, but the stage
@@ -227,6 +227,7 @@ namespace Puzzle.Client.EditorTools
         {
             using Trial trial = bench.LostOneMoveShortOfTheWin();
             trial.RequireTheCardWithNoFinaleBeforeIt("a lost game");
+            trial.Require(trial.Stage.IsOfferingExtraMoves, "the card of a game out of moves does not offer five more");
             trial.Require(trial.Stage.Finale == null, "a lost game has a finale's script");
             trial.Require(trial.Stage.WordsOnTheShelf.Length == 0, $"the pill over the shelf of a lost game says \"{trial.Stage.WordsOnTheShelf}\"");
             trial.RequireNoFault("the last move of a lost game");
@@ -360,7 +361,7 @@ namespace Puzzle.Client.EditorTools
             public void RequireTheCardWithNoFinaleBeforeIt(string what)
             {
                 float longest = LongestTurnSeconds + CardIsDownWithin;
-                for (float waited = 0f; Stage.ResultButtonPixel == null; waited += StoryStudio.FrameSeconds)
+                for (float waited = 0f; !Stage.HangsACardInItsPlace; waited += StoryStudio.FrameSeconds)
                 {
                     Require(!Stage.IsShowingTheFinale, $"{what} has a finale");
                     Require(waited < longest, $"{StoryStudio.Seconds(longest)} s after the deciding move of {what} the result's card does not hang in its place");
@@ -404,7 +405,7 @@ namespace Puzzle.Client.EditorTools
             public void RequireTheCardWithin(float seconds, string after)
             {
                 Advance(seconds);
-                Require(Stage.ResultButtonPixel != null, $"{StoryStudio.Seconds(seconds)} s after {after} the result's card does not hang in its place");
+                Require(Stage.HangsACardInItsPlace, $"{StoryStudio.Seconds(seconds)} s after {after} the result's card does not hang in its place");
             }
 
             /// <summary>

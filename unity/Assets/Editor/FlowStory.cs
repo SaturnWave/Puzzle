@@ -34,8 +34,10 @@ namespace Puzzle.Client.EditorTools
     /// A level that is won with moves left over has its finale before the card: a few moments of it are pictured
     /// too, and the story requires that the win and its coins are on file the moment the winning move is played
     /// and that a restart as the finale begins opens the next level, so closing the game during the finale loses
-    /// nothing. A lost level must have cost one life the moment the losing move is played, with the next life due
-    /// one life's time after it on the tools' clock (StoryStudio.Clock).
+    /// nothing. A level whose moves ran out is offered five more first: until the offer is answered no life goes, and
+    /// the story gives up on it ("Vazgeç") and pictures the card of the loss for good that comes in its place. A lost
+    /// level must have cost one life the moment it was lost for good (the losing move, or the press that gave up), with
+    /// the next life due one life's time after it on the tools' clock (StoryStudio.Clock).
     /// Pictures go to out/unity/shots/flow-level-NNNN-SIZE-won-NN-what.png (or -lost-), with one sheet of them all.
     /// </summary>
     internal static class FlowStory
@@ -70,6 +72,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The moments of the next board's coming out of the dark that are pictured, in seconds after it opened.</summary>
         private static readonly float[] NextMoments = { 0.08f, 0.24f };
 
+        /// <summary>The moments after "Vazgeç" on the offer that are pictured: the offer going up, the card of the loss coming down.</summary>
+        private static readonly float[] GivingUpMoments = { 0.12f, 0.36f, 0.6f };
+
         /// <summary>Tells the story of one ending on one level and one screen.</summary>
         /// <param name="player">The bot that plays; a strong one for a level to be won, a weak one for a level to be lost.</param>
         /// <exception cref="InvalidOperationException">The story did not go as the game's rules say it must, or the bot never reached the ending.</exception>
@@ -94,10 +99,16 @@ namespace Puzzle.Client.EditorTools
             LevelDefinition decided = session.Stage.Game.Level;
             var restart = new Restart(folder, levels, art, screen, start);
 
-            // The clock stands at the deciding move: nothing of it was shown yet, and what it decided must be on file already.
+            // The clock stands at the deciding move: nothing of it was shown yet, and what it decided must be on file
+            // already; a game whose moves ran out is offered five more first, and no life goes before the answer.
+            bool isOfferedMoves = OutOfMovesOffer.IsMadeIn(session.Stage.Game);
             if (ending == FlowEnding.Won)
             {
                 restart.RequireTheLevelAfter(decided, session.Stage.Game.MovesLeft, "right after the winning move, before any of it was shown");
+            }
+            else if (isOfferedMoves)
+            {
+                restart.RequireEveryLife(decided, "right after the move that ran out of moves, while the offer of five more is still to come");
             }
             else
             {
@@ -111,6 +122,12 @@ namespace Puzzle.Client.EditorTools
             }
 
             PictureTheResult(reel);
+            if (isOfferedMoves)
+            {
+                PictureGivingUp(reel);
+                restart.RequireTheFirstLifeLost(decided, "right after Vazgeç was pressed on the offer");
+            }
+
             PictureGoingOn(reel);
 
             CheckWhereThePlayerStands(session, decided, decidedWith, ending, levels);
@@ -154,6 +171,11 @@ namespace Puzzle.Client.EditorTools
                 }
 
                 StoryStudio.AdvanceUntilSettled(session);
+                if (session.Stage.IsOfferingExtraMoves)
+                {
+                    AtTheOffer.GiveUp(session);
+                }
+
                 PressTheButton(session);
                 session.PointerUp();
                 AdvanceToTheNextStage(session);
@@ -252,6 +274,29 @@ namespace Puzzle.Client.EditorTools
             reel.Settle();
             RefuseFaults(reel.Session.Stage);
             reel.Shoot("result");
+        }
+
+        /// <summary>
+        /// A finger presses the offer's "Vazgeç" and lifts: the offer goes up in the dark room and the card of the loss
+        /// for good comes down in its place.
+        /// </summary>
+        private static void PictureGivingUp(Reel reel)
+        {
+            GameSession session = reel.Session;
+            session.PointerDown(session.Stage.GiveUpPixel ?? throw new InvalidOperationException("The offer of extra moves shows no Vazgeç at rest."));
+            reel.Advance(PressedMoment);
+            reel.Shoot("give-up-pressed");
+            session.PointerUp();
+            float clock = 0f;
+            foreach (float moment in GivingUpMoments)
+            {
+                clock = reel.AdvanceTo(moment, clock);
+                reel.Shoot($"lost-t{StoryStudio.Seconds(moment)}");
+            }
+
+            reel.Settle();
+            RefuseFaults(session.Stage);
+            reel.Shoot("lost");
         }
 
         /// <summary>
@@ -419,9 +464,27 @@ namespace Puzzle.Client.EditorTools
             }
 
             /// <summary>
-            /// A loss for good costs a life from the move that lost: the file holds one life fewer than full, the next
-            /// due one life's time after the tools' clock. Every game the story played before the losing one was won,
-            /// and a win costs no life, so this is the story's first.
+            /// The moves ran out and the offer of five more is still to come: the game is not lost yet, and the file
+            /// holds every life the story began with.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">The file holds a life fewer.</exception>
+            public void RequireEveryLife(LevelDefinition outOfMoves, string when)
+            {
+                PlayerProgress onFile = FileIn(_folder).Load();
+                if (!onFile.Wallet.Lives.Equals(_start.Wallet.Lives))
+                {
+                    throw new InvalidOperationException(
+                        $"Level {outOfMoves.Id.Value} ran out of moves, and {when} the progress file holds lives \"{onFile.Wallet.Lives}\", not \"{_start.Wallet.Lives}\": the offer was not answered yet.");
+                }
+
+                Debug.Log($"Storyboard: flow: level {outOfMoves.Id.Value} ran out of moves; {when} the progress file holds every life the story began with.");
+            }
+
+            /// <summary>
+            /// A loss for good costs a life from the move that lost, or from the answer to the offer of extra moves
+            /// that lost it: the file holds one life fewer than full, the next due one life's time after the tools'
+            /// clock. Every game the story played before the losing one was won, and a win costs no life, so this is
+            /// the story's first.
             /// </summary>
             /// <exception cref="InvalidOperationException">The story did not start with every life, or the file does not hold the life lost and when the next comes back.</exception>
             public void RequireTheFirstLifeLost(LevelDefinition lost, string when)

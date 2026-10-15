@@ -41,9 +41,9 @@ namespace Puzzle.Client.Screens
     /// places the button may draw it smaller.
     /// </summary>
     /// <remarks>
-    /// Not here yet, because no screen of the game has it: the design's blue "Reklam izle" (LoseTR), whose white
-    /// triangle is drawn 24 points across and centred together with its words. A mark here is a drawing in a box
-    /// of 100 points, 46 across, at the pill's left end.
+    /// A mark is a drawing in a box of 100 points, 46 across, at the pill's left end. A glyph is drawn at its own
+    /// size and centred together with the words of a one-line label, as the design's blue "Reklam izle" has its white
+    /// triangle (LoseTR).
     /// </remarks>
     public sealed class PushButton : IPressable
     {
@@ -87,9 +87,15 @@ namespace Puzzle.Client.Screens
         private const float LabelAboveMiddleOverAPrice = 15.5f;
         private const float PriceUnderMiddle = 10f;
 
+        /// <summary>A glyph stands this far before the words it is centred with (LoseTR, the triangle of "Reklam izle").</summary>
+        private const float GapGlyphToWords = 5f;
+
         private readonly ButtonPill _pill;
         private readonly SpriteRenderer? _mark;
         private readonly PricePill? _price;
+
+        /// <summary>The glyph centred together with the words, and how wide it is drawn; nothing on a button without one.</summary>
+        private readonly (SpriteRenderer Picture, float Width)? _glyph;
         private readonly ArtCatalogue _art;
         private readonly ButtonLook _look;
         private readonly DrawOrder _letteringOrder;
@@ -129,13 +135,13 @@ namespace Puzzle.Client.Screens
         public PushButton(
             string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, float width, float labelSize,
             DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark = null, float? wordsApart = null, float labelLift = 0f, float markSize = MarkSize)
-            : this(name, parent, art, look, label, price: null, width, labelSize, faceOrder, letteringOrder, mark, wordsApart, labelLift, markSize)
+            : this(name, parent, art, look, label, price: null, glyph: null, width, labelSize, faceOrder, letteringOrder, mark, wordsApart, labelLift, markSize)
         {
         }
 
         private PushButton(
-            string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, string? price, float width, float labelSize,
-            DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark, float? wordsApart, float labelLift, float markSize)
+            string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, string? price, (GalleryArt Drawing, float Width)? glyph, float width,
+            float labelSize, DrawOrder faceOrder, DrawOrder letteringOrder, GalleryArt? mark, float? wordsApart, float labelLift, float markSize)
         {
             _art = art;
             _look = look;
@@ -165,6 +171,11 @@ namespace Puzzle.Client.Screens
                 _price = new PricePill(_pill.Pill, art, faceOrder, letteringOrder);
                 _price.Transform.localPosition = new Vector3(0f, -PriceUnderMiddle, 0f);
                 _price.Say(price, room: width - 2f * LabelInFromEnds);
+            }
+
+            if (glyph.HasValue)
+            {
+                _glyph = (SceneObjects.AddSprite("Glyph", _pill.Pill, art.Of(glyph.Value.Drawing), art.SpriteMaterial, letteringOrder), glyph.Value.Width);
             }
 
             Say(label);
@@ -203,8 +214,19 @@ namespace Puzzle.Client.Screens
                     nameof(letteringOrder));
             }
 
-            return new PushButton(name, parent, art, look, label, price, width, labelSize, faceOrder, letteringOrder, mark: null, wordsApart: null, labelLift: 0f, markSize: MarkSize);
+            return new PushButton(name, parent, art, look, label, price, glyph: null, width, labelSize, faceOrder, letteringOrder, mark: null, wordsApart: null, labelLift: 0f, markSize: MarkSize);
         }
+
+        /// <summary>
+        /// A button whose one-line label has a glyph before its words, the two centred together on the pill, as the
+        /// design draws the button that plays an ad (LoseTR, the triangle of "Reklam izle", 24 points across, 5 before
+        /// the words). A glyph is drawn at its own size, as large as the design shows it.
+        /// </summary>
+        /// <param name="glyphWidth">How wide the glyph's drawing is, in points.</param>
+        public static PushButton WithAGlyph(
+            string name, Transform parent, ArtCatalogue art, ButtonLook look, string label, GalleryArt glyph, float glyphWidth, float width, float labelSize,
+            DrawOrder faceOrder, DrawOrder letteringOrder) =>
+            new PushButton(name, parent, art, look, label, price: null, (glyph, glyphWidth), width, labelSize, faceOrder, letteringOrder, mark: null, wordsApart: null, labelLift: 0f, markSize: MarkSize);
 
         /// <summary>Puts the middle of the pill at a place of what the button stands on, drawn at a share of its full size.</summary>
         public void Place(Vector2 middle, float scale = 1f) => _pill.Place(middle, scale);
@@ -219,13 +241,13 @@ namespace Puzzle.Client.Screens
         /// Changes what the button says, where it stands: a line break in the words makes two lines, and a line
         /// too long for the pill is set smaller, as when the button was made. A button with a price says one line.
         /// </summary>
-        /// <exception cref="ArgumentException">A button with a price is given two lines: there is room for one over the price.</exception>
+        /// <exception cref="ArgumentException">A button with a price or a glyph is given two lines: there is room for one beside them.</exception>
         public void Say(string label)
         {
             string[] words = label.Split('\n');
-            if (_price != null && words.Length > 1)
+            if ((_price != null || _glyph.HasValue) && words.Length > 1)
             {
-                throw new ArgumentException("A button with a price has room for one line over the price.", nameof(label));
+                throw new ArgumentException("A button with a price or a glyph has room for one line beside it.", nameof(label));
             }
 
             while (_lines.Count > words.Length)
@@ -240,6 +262,12 @@ namespace Puzzle.Client.Screens
             }
 
             float middleOfTheLines = (_price != null ? LabelAboveMiddleOverAPrice : LabelAboveMiddle) + _labelLift;
+            if (_glyph is (SpriteRenderer glyph, float glyphWidth))
+            {
+                SayBesideTheGlyph(_lines[0], words[0], glyph, glyphWidth, middleOfTheLines);
+                return;
+            }
+
             float top = middleOfTheLines + (words.Length - 1) * LineApart * _labelSize / 2f;
             for (int line = 0; line < words.Length; line++)
             {
@@ -249,6 +277,16 @@ namespace Puzzle.Client.Screens
                 float lineMiddle = top - line * LineApart * _labelSize;
                 written.transform.localPosition = new Vector3(_labelMiddle, lineMiddle - Lettering.FigureDrop(_look.Lettering) * written.fontSize, 0f);
             }
+        }
+
+        /// <summary>The glyph and the words after it, centred together on the label's place, the glyph's middle level with the line's.</summary>
+        private void SayBesideTheGlyph(TextMeshPro line, string words, SpriteRenderer glyph, float glyphWidth, float lineMiddle)
+        {
+            Lettering.SayWithin(line, words, _labelSize, _labelRoom - glyphWidth - GapGlyphToWords);
+            float wordsWidth = Lettering.WidthOf(line, words);
+            float left = _labelMiddle - (glyphWidth + GapGlyphToWords + wordsWidth) / 2f;
+            glyph.transform.localPosition = new Vector3(left + glyphWidth / 2f, lineMiddle, 0f);
+            line.transform.localPosition = new Vector3(left + glyphWidth + GapGlyphToWords + wordsWidth / 2f, lineMiddle - Lettering.FigureDrop(_look.Lettering) * line.fontSize, 0f);
         }
 
         /// <summary>Changes the price the button states beside its coin; the dark pill widens or narrows with it.</summary>
@@ -279,6 +317,11 @@ namespace Puzzle.Client.Screens
             if (_mark != null)
             {
                 _mark.color = colour;
+            }
+
+            if (_glyph is (SpriteRenderer glyph, _))
+            {
+                glyph.color = colour;
             }
 
             _price?.DrawIn(colour);
