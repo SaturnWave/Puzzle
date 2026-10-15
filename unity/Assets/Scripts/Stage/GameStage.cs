@@ -1514,7 +1514,7 @@ namespace Puzzle.Client.Stage
         {
             _isCardDown = false;
             _result?.FingerGone();
-            var card = new SimulatedAdCard(_root.transform, _art, (int)DrawOrder.OverACard);
+            var card = new SimulatedAdCard(_root.transform, _art, new AdPrize.ExtraMoves(), (int)DrawOrder.OverACard);
             if (_layout is ScreenLayout layout)
             {
                 card.Place(layout.PlaceOfACard(card.Width, card.Height), layout.View);

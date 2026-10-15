@@ -95,6 +95,11 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\ShelfBrief.cs" Link="Unity\Flow\ShelfBrief.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PillWords.cs" Link="Unity\Flow\PillWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ResultCardLayout.cs" Link="Unity\Layout\ResultCardLayout.cs" />
+    <!-- Nor has the shop: what it and the hall's gift frame show, their words, where the shop's parts stand, and what a request of the wallet's does by the rules. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopView.cs" Link="Unity\Flow\ShopView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopWords.cs" Link="Unity\Flow\ShopWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletLedger.cs" Link="Unity\Flow\WalletLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ShopLayout.cs" Link="Unity\Layout\ShopLayout.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

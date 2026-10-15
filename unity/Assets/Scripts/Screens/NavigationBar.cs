@@ -13,10 +13,11 @@ namespace Puzzle.Client.Screens
     /// <summary>
     /// The bar at the foot of the museum's pages, as the design canvas draws it (HomeTR, MapTR): a dark teal band
     /// under a gilt line, with the mark of every destination on it. The destination that is shown stands out: its
-    /// mark is larger and rises over the bar's edge, on a raised teal plate, with its name under it. Sizes are in
-    /// points from the middle of the bar's top edge at full size; a short screen draws the bar smaller
-    /// (<see cref="PageLayout.BarScale"/>). The design's bar also leads to a shop, a collection and a calendar;
-    /// the bar shows the destinations the game has (<see cref="Destinations.OnTheBar"/>).
+    /// mark is larger and rises over the bar's edge, on a raised teal plate, with its name under it; a thin light
+    /// line stands between two places where neither is the one shown (ShopTR, HomeTR). Sizes are in points from the
+    /// middle of the bar's top edge at full size; a short screen draws the bar smaller (<see cref="PageLayout.BarScale"/>).
+    /// The design's bar also leads to the events' calendar; the bar shows the destinations the game has
+    /// (<see cref="Destinations.OnTheBar"/>): the shop, the collection, the hall and the map.
     /// </summary>
     public sealed class NavigationBar : IDisposable
     {
@@ -59,8 +60,15 @@ namespace Puzzle.Client.Screens
         private const float PlatePictureMargin = 58f;
         private const float PlatePictureHeight = 128f;
 
+        /// <summary>A divider: 1.5 wide, from 14 to 58 under the bar's top edge, white that is strongest (16 %) in its middle.</summary>
+        private const float DividerWidth = 1.5f;
+        private const float DividerTop = 14f;
+        private const float DividerFoot = 58f;
+        private static readonly Color DividerLight = new Color(1f, 1f, 1f, 0.16f);
+
         private readonly Transform _root;
         private readonly PaintedShape _band;
+        private readonly PaintedShape _dividers;
         private readonly SpriteRenderer _plate;
         private readonly TextMeshPro _name;
         private readonly Dictionary<Destination, Tab> _tabs = new Dictionary<Destination, Tab>();
@@ -73,6 +81,7 @@ namespace Puzzle.Client.Screens
             _root = new GameObject("Navigation bar").transform;
             _root.SetParent(parent, worldPositionStays: false);
             _band = PaintedShape.Create("Band", _root, art.PaintMaterial, DrawOrder.Bar);
+            _dividers = PaintedShape.Create("Dividers", _root, art.PaintMaterial, DrawOrder.BarDivider);
             _plate = SceneObjects.AddSprite("Chosen plate", _root, art.Of(GalleryArt.Tab), art.SpriteMaterial, DrawOrder.BarTab);
             _plate.drawMode = SpriteDrawMode.Sliced; // the picture's middle stretches under a longer name; its round corners keep their shape
             _name = Lettering.Write("Chosen name", _root, art, LetteringStyle.OnTeal, NameSize, Color.white, DrawOrder.BarLettering);
@@ -129,6 +138,7 @@ namespace Puzzle.Client.Screens
         public void Dispose()
         {
             _band.Dispose();
+            _dividers.Dispose();
             SceneObjects.DestroyObjectOf(_root);
         }
 
@@ -154,6 +164,7 @@ namespace Puzzle.Client.Screens
             }
 
             int count = Destinations.OnTheBar.Count;
+            _dividers.Show(BuildDividers(page, count));
             foreach (Destination destination in Destinations.OnTheBar)
             {
                 float middle = page.TabMiddle(Destinations.PlaceOf(destination), count) / page.BarScale;
@@ -169,6 +180,28 @@ namespace Puzzle.Client.Screens
                     _name.transform.localPosition = new Vector3(middle, -NameDown, 0f);
                 }
             }
+        }
+
+        /// <summary>A thin light line between two neighbouring places where neither is the one shown; in the bar's own points.</summary>
+        private Mesh BuildDividers(PageLayout page, int count)
+        {
+            var sketch = new MeshSketch();
+            var clear = new Color(DividerLight.r, DividerLight.g, DividerLight.b, 0f);
+            float middleHeight = -(DividerTop + DividerFoot) / 2f;
+            for (int place = 0; place + 1 < count; place++)
+            {
+                if (Destinations.OnTheBar[place] == _chosen || Destinations.OnTheBar[place + 1] == _chosen)
+                {
+                    continue;
+                }
+
+                float between = (page.TabMiddle(place, count) + page.TabMiddle(place + 1, count)) / 2f / page.BarScale;
+                float left = between - DividerWidth / 2f;
+                AddUprightBlend(sketch, new Rect(left, -DividerFoot, DividerWidth, DividerFoot + middleHeight), clear, DividerLight);
+                AddUprightBlend(sketch, new Rect(left, middleHeight, DividerWidth, -DividerTop - middleHeight), DividerLight, clear);
+            }
+
+            return sketch.ToMesh("Navigation dividers");
         }
 
         /// <summary>The band from its top edge down to the screen's foot, its gilt line, and its shadow above it; in the bar's own points.</summary>

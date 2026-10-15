@@ -68,9 +68,12 @@ namespace Puzzle.Client.Flow
     /// <para>
     /// The museum is told the player's wallet at every step, as the rules have it at that instant: its row counts the
     /// lives back and the wait down as the clock runs, and a player without a life is shown the lives card instead of
-    /// a level. Coins won on a board arrive in the museum's row when the player comes back to it: the row opens with
-    /// the amount it showed last and counts up to the new one. A booster bought on a museum card is bought here, by
-    /// the economy's rules, and saved at once; the row counts its price down.
+    /// a level; with the wallet it is told the shop and the gift as the rules have them on the player's calendar day.
+    /// Coins won on a board arrive in the museum's row when the player comes back to it: the row opens with the amount
+    /// it showed last and counts up to the new one. What the museum asks of the wallet (a booster bought on a card, a
+    /// set bought in the shop, a pack of coins, the coins of an ad that was watched, the day's gift) is done here by
+    /// the economy's rules (<see cref="WalletLedger"/>) and saved at once; the museum is told what the rules said, and
+    /// a refusal changes nothing. The row counts the coins down or up.
     /// </para>
     /// <para>
     /// The board is told the wallet at every step too, with what the extra moves cost on the player's calendar day,
@@ -82,6 +85,11 @@ namespace Puzzle.Client.Flow
     /// session that opens on a save from before the boosters of play opened one at a time first gives the gifts that
     /// save is owed, once (AttemptLedger.WithTheOpeningGiftsDue), and a win gives the gift of a booster that opens on the
     /// level it leads to.
+    /// </para>
+    /// <para>
+    /// The piece that completes a painting on its jigsaw gives the painting's reward (coins, and the booster of the
+    /// rotation) in the same save as the piece, so it is given once: a painting opened again once whole gives nothing.
+    /// The jigsaw shows that reward when its last piece is in place.
     /// </para>
     /// <para>
     /// The start boosters chosen on a level's card are taken into its attempt: their specials lie on the board as it
@@ -107,6 +115,7 @@ namespace Puzzle.Client.Flow
         private readonly IProgressStore _store;
         private readonly IAttemptLog _attempts;
         private readonly AttemptLedger _ledger;
+        private readonly WalletLedger _walletLedger;
         private readonly EconomyRules _rules;
         private readonly IWallClock _clock;
 
@@ -166,6 +175,7 @@ namespace Puzzle.Client.Flow
             _art = art;
             _paintings = paintings;
             _ledger = new AttemptLedger(rules, levels.Count);
+            _walletLedger = new WalletLedger(rules);
             _rules = rules;
             _clock = clock;
             _store = store;
@@ -330,13 +340,16 @@ namespace Puzzle.Client.Flow
         /// <summary>What the extra moves cost the player now: coins, or one of the free ads left on the player's calendar day.</summary>
         private ExtraMovesTerms ExtraMovesNow => _rules.ExtraMoves.TermsFor(_progress.Wallet, DayStamp.Of(_clock.Now));
 
+        /// <summary>The shop and the gift as the rules have them for the player now, on their calendar day.</summary>
+        private ShopView ShopNow => ShopView.Of(_rules, _progress.Wallet, _clock.Now);
+
         /// <summary>Tells the museum or the board, whichever is the stage that is seen, of the wallet as it is at this step.</summary>
         private void TellTheStageTheWallet()
         {
             if (Museum is MuseumStage museum)
             {
                 WalletView wallet = WalletNow;
-                museum.Tell(wallet);
+                museum.Tell(wallet, ShopNow);
                 _coinsLastShown = wallet.Coins;
             }
             else if (Board is GameStage board)
@@ -442,17 +455,21 @@ namespace Puzzle.Client.Flow
             var visit = new MuseumVisit(_progress.Museum, _paintings.Catalogue, level.Id.Value, hasWonEveryLevel: _progress.LevelsWon >= _levels.Count);
             LevelBrief brief = LevelBrief.Of(level, PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue), _rules, LevelStart.Rules);
             WalletView wallet = WalletNow;
-            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, brief, opening);
+            MuseumStage museum = MuseumStage.Open(visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, brief, opening);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;
             return museum;
         }
 
-        /// <summary>Opens the jigsaw of a painting as the progress has it, out of the dark the stage before left behind.</summary>
+        /// <summary>
+        /// Opens the jigsaw of a painting as the progress has it, out of the dark the stage before left behind, with
+        /// what completing the painting will give for its finished face to show; nothing for a painting whole already.
+        /// </summary>
         private IStage OpenTheJigsaw(PaintingNumber painting)
         {
-            JigsawStage jigsaw = JigsawStage.Open(painting, _progress.Museum, _paintings, _art, StageOpening.OutOfTheDark);
+            JigsawStage jigsaw = JigsawStage.Open(
+                painting, _progress.Museum, _paintings, _art, StageOpening.OutOfTheDark, _walletLedger.RewardForCompleting(_progress, painting));
             jigsaw.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _piecesKept = jigsaw.Table.InPlace.Count;
             return jigsaw;
@@ -510,8 +527,10 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// What the presses of the museum or of the board asked of the wallet since it was last asked, done by the
-        /// economy's rules and saved at once: a booster bought for its price. The stage is told the wallet after it at
-        /// once: the museum's row counts the coins down to it, and a booster bought on the board is armed.
+        /// economy's rules at the player's time and saved at once, as one save however much it was: a booster or a set
+        /// bought, a pack of coins, the coins of an ad, the day's gift. A request the rules refuse changes nothing. The
+        /// stage is told the wallet after it at once (the museum's row counts the coins, and a booster bought on the
+        /// board is armed), and the museum is told what the rules said to each request, for its cards to say.
         /// </summary>
         private void DoWhatTheStageAskedFor()
         {
@@ -526,31 +545,34 @@ namespace Puzzle.Client.Flow
                 return;
             }
 
+            DateTimeOffset now = _clock.Now;
+            var answered = new List<(WalletRequest Request, WalletAnswer Answer)>();
             foreach (WalletRequest request in asked)
             {
-                _progress = _progress.WithWallet(WalletAfter(request, _progress.Wallet));
+                WalletAnswer answer = _walletLedger.Answer(request, _progress.Wallet, now);
+                switch (answer)
+                {
+                    case WalletAnswer.Received received:
+                        _progress = _progress.WithWallet(received.Wallet);
+                        break;
+                    case WalletAnswer.Refused refused:
+                        Debug.Log($"The rules refused \"{request}\" for a wallet of {_progress.Wallet.Coins} coins: {refused.Why}; nothing changed.");
+                        break;
+                    default:
+                        throw new InvalidOperationException($"The session does not know the answer \"{answer}\".");
+                }
+
+                answered.Add((request, answer));
             }
 
             SaveProgress();
             TellTheStageTheWallet();
-        }
-
-        /// <summary>The wallet after a request of the museum's, by the economy's rules; the wallet as it was where the rules refuse it.</summary>
-        private Wallet WalletAfter(WalletRequest request, Wallet wallet)
-        {
-            switch (request)
+            if (Museum is MuseumStage asking)
             {
-                case WalletRequest.BuyABooster buy:
-                    if (_rules.Shop.BuyOne(buy.Booster, wallet) is Purchase.Bought bought)
-                    {
-                        return bought.Wallet;
-                    }
-
-                    // The card that offered it dims its button when the coins fall short; a press that gets here anyway changes nothing.
-                    Debug.LogWarning($"One {buy.Booster.Name()} was asked for with {wallet.Coins} coins, short of its price of {_rules.Shop.PriceOf(buy.Booster)}; nothing was bought.");
-                    return wallet;
-                default:
-                    throw new InvalidOperationException($"The session does not know the museum's request \"{request}\".");
+                foreach ((WalletRequest request, WalletAnswer answer) in answered)
+                {
+                    asking.Hear(request, answer);
+                }
             }
         }
 
@@ -624,7 +646,10 @@ namespace Puzzle.Client.Flow
             }
         }
 
-        /// <summary>The pieces that lie in place on the open jigsaw become the progress' own; a room whose last painting they complete is remembered for the hall.</summary>
+        /// <summary>
+        /// The pieces that lie in place on the open jigsaw become the progress' own, with the painting's reward where
+        /// they complete it; a room whose last painting they complete is remembered for the hall.
+        /// </summary>
         private void TakeInThePiecesInPlace()
         {
             // Asked in every step of the clock: nothing is looked through while no piece has come into place since the last time.
@@ -636,13 +661,7 @@ namespace Puzzle.Client.Flow
             PaintingNumber painting = jigsaw.Table.Painting;
             PlayerProgress before = _progress;
             _piecesKept = jigsaw.Table.InPlace.Count;
-            foreach (int piece in jigsaw.Table.InPlace)
-            {
-                if (!_progress.Museum.Placed.IsPlaced(painting, piece))
-                {
-                    _progress = _progress.WithPiecePlaced(painting, piece);
-                }
-            }
+            _progress = _walletLedger.WithPiecesInPlace(_progress, painting, jigsaw.Table.InPlace);
 
             bool isNewlyPlaced = !ReferenceEquals(before, _progress);
             if (isNewlyPlaced && !IsRestored(painting.Room, before) && IsRestored(painting.Room, _progress))

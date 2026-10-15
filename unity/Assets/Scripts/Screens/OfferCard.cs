@@ -9,13 +9,29 @@ using UnityEngine;
 
 namespace Puzzle.Client.Screens
 {
+    /// <summary>A quiet way out under an offer's button, where the coins do not cover its price: its words, and what a press on them asks for.</summary>
+    /// <typeparam name="TPress">What a press on the card asks for.</typeparam>
+    public sealed class OfferWayOut<TPress>
+    {
+        public OfferWayOut(string words, TPress asks)
+        {
+            Words = words ?? throw new ArgumentNullException(nameof(words));
+            Asks = asks;
+        }
+
+        public string Words { get; }
+
+        public TPress Asks { get; }
+    }
+
     /// <summary>
     /// The card that offers one booster the player holds none of, wherever the plus on its disc was pressed: in front
     /// of the card before a level for a start booster (<see cref="GetMoreCard"/>), over the dimmed board for a booster
     /// used during play. It says the booster's name on its nameplate, shows its disc with the plus, says what it does
     /// and one line more, and has the green "Satın al" with the single price from the settings. When the coins do not
-    /// cover the price the button says "Altın yetmiyor" and is dimmed. A press asks for one booster; whoever owns the
-    /// wallet buys it by the economy's rules. Closed by its round button and by the way back.
+    /// cover the price the button says "Altın yetmiyor" and is dimmed, and a card that has a way out shows it under the
+    /// button (the museum's: to the shop). A press asks for one booster; whoever owns the wallet buys it by the
+    /// economy's rules. Closed by its round button and by the way back.
     /// </summary>
     /// <remarks>
     /// The design canvas draws no such card. It is built in the language of the cards it does draw (LevelStartTR,
@@ -25,8 +41,10 @@ namespace Puzzle.Client.Screens
     /// <typeparam name="TPress">What a press on the card asks for.</typeparam>
     public sealed class OfferCard<TPress> : IDisposable
     {
-        /// <summary>The body, and the nameplate as wide as the card's before a level, with one line.</summary>
+        /// <summary>The body, and the nameplate as wide as the card's before a level, with one line; a card with a way out is taller by the link's band.</summary>
         private static readonly Vector2 Body = new Vector2(300f, 300f);
+        private const float WayOutBand = 40f;
+        private const float WayOutDown = 318f;
         private const float NameplateWidth = 212f;
         private const float TitleSize = 22f;
 
@@ -48,18 +66,21 @@ namespace Puzzle.Client.Screens
 
         private readonly HangingCard<TPress> _card;
         private readonly PushButton _buy;
+        private readonly TextLink? _wayOut;
 
         /// <summary>Whether the coins covered the price when the card was last told; nothing before it was.</summary>
         private bool? _isAffordable;
 
         /// <param name="booster">What is offered: its name, its picture and its record name for the disc.</param>
         /// <param name="raisedBy">Added to the card's places in the drawing order: <see cref="DrawOrder.OverACard"/> for a card in front of another card.</param>
+        /// <param name="wayOut">A way out under the button for a player whose coins do not cover the price; nothing for a card without one (the board's).</param>
         public OfferCard(
             Transform parent, ArtCatalogue art, BoosterKind booster, string name, BoosterPicture picture, string whatItDoes, string secondLine, Coins price,
-            TPress close, TPress buy, int raisedBy)
+            TPress close, TPress buy, int raisedBy, OfferWayOut<TPress>? wayOut = null)
         {
+            Vector2 body = wayOut == null ? Body : Body + new Vector2(0f, WayOutBand);
             _card = new HangingCard<TPress>(
-                "Get more card", parent, art, Body, new CardNameplate(name, NameplateWidth, TitleSize), CardHanging.FromPinsInTheWall, raisedBy: raisedBy);
+                "Get more card", parent, art, body, new CardNameplate(name, NameplateWidth, TitleSize), CardHanging.FromPinsInTheWall, raisedBy: raisedBy);
             _card.AddCloseButton(close);
 
             var disc = new BoosterDisc(booster.Name(), _card.Content, art, picture, DiscSize, DrawOrder.CardDisc + raisedBy, BoosterFace.Of(0, BoosterChoice.Waiting));
@@ -78,6 +99,12 @@ namespace Puzzle.Client.Screens
                 DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
             _buy.Place(_card.At(ButtonDown));
             _card.Listen(_buy, buy);
+            if (wayOut != null)
+            {
+                _wayOut = new TextLink("Way out", _card.Content, art, wayOut.Words, cost: null, DrawOrder.CardLettering + raisedBy);
+                _wayOut.Place(_card.At(WayOutDown));
+                _card.Listen(_wayOut, wayOut.Asks);
+            }
         }
 
         /// <summary>The card itself: where it hangs, how far it has come down, and what a finger on it presses.</summary>
@@ -85,6 +112,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The middle of the green button, in the layout's points: where a finger presses it. A dimmed button takes no finger.</summary>
         public Vector2 BuyButtonMiddle => _card.InTheLayout(_buy.Middle);
+
+        /// <summary>The middle of the way out under the button, in the layout's points; nothing for a card without one.</summary>
+        public Vector2? WayOutMiddle => _wayOut != null ? _card.InTheLayout(_wayOut.Middle) : (Vector2?)null;
 
         /// <summary>Shows whether the coins cover the price now: the button is lit and buys, or is dimmed and says that the coins are short.</summary>
         public void ShowAffordable(bool isAffordable)
@@ -99,6 +129,10 @@ namespace Puzzle.Client.Screens
             _buy.Dim(!isAffordable);
         }
 
-        public void Dispose() => _card.Dispose();
+        public void Dispose()
+        {
+            _wayOut?.Dispose();
+            _card.Dispose();
+        }
     }
 }

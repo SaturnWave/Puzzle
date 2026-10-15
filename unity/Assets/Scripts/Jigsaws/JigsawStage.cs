@@ -11,6 +11,7 @@ using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
+using Puzzle.Meta;
 using Puzzle.Museum;
 using Puzzle.Museum.Jigsaw;
 using UnityEngine;
@@ -22,7 +23,9 @@ namespace Puzzle.Client.Jigsaws
     /// pieces that are in place, the pieces the player has won waiting in the wooden tray, and the player's finger
     /// that carries a piece from the tray to its place. A piece let go near its place drops in; let go anywhere
     /// else it goes back to the tray, so no piece is ever lost. The blue button places every waiting piece for the
-    /// player. When the last piece is in, a light runs over the painting and sparkles burst around its frame.
+    /// player. When the last piece is in, a light runs over the painting and sparkles burst around its frame, and the
+    /// tray's well shows what completing the painting gave: its coins and the booster the rotation gives, each with
+    /// the pill that counts it. A painting that was whole when the screen opened gave its reward then, and shows none.
     /// </summary>
     /// <remarks>
     /// Like the other stages it has a clock that only <see cref="Advance"/> moves and one camera that draws all of
@@ -67,6 +70,15 @@ namespace Puzzle.Client.Jigsaws
         private const float PlaceAllWordsApart = 4f / 18f;
         private const float DoneLabelSize = 29f;
 
+        /// <summary>
+        /// The reward in the tray's well: discs at most 52 across, or as large as the well leaves room for them and
+        /// the pills under them (drawn at three quarters, 18 high), standing this many discs apart.
+        /// </summary>
+        private const float LargestRewardDisc = 52f;
+        private const float RewardPillHeight = 18f;
+        private const float RewardInTheWell = 0.92f;
+        private const float RewardStep = 1.6f;
+
         private readonly GameObject _root;
         private readonly PaintingLook _look;
         private readonly Wall _wall;
@@ -82,6 +94,13 @@ namespace Puzzle.Client.Jigsaws
         private readonly Veil _veil;
         private readonly Timeline _timeline = new Timeline();
         private readonly PressSet<JigsawPress> _presses = new PressSet<JigsawPress>();
+        private readonly ArtCatalogue _art;
+
+        /// <summary>What completing the painting gives, shown once it is whole; nothing for a painting that was whole when the screen opened.</summary>
+        private readonly Reward? _reward;
+
+        /// <summary>The reward in the tray's well, once the painting is whole; nothing before.</summary>
+        private GoodsRow? _rewardRow;
 
         /// <summary>The pieces that are on their way to their place, and the ones that arrived or came back to the tray in the step of the clock that is on.</summary>
         private readonly HashSet<int> _flying = new HashSet<int>();
@@ -114,9 +133,11 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>True when the blue button was pressed while a piece was still moving: the others leave once it is at rest.</summary>
         private bool _waitsToPlaceThemAll;
 
-        private JigsawStage(PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art)
+        private JigsawStage(PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art, Reward? reward)
         {
             Table = new JigsawTable(painting, progress);
+            _art = art;
+            _reward = Table.IsWhole ? null : reward;
             _row = new TrayRow(Table.Waiting, placeCount: 1);
             _look = paintings.LookOf(painting);
             _root = new GameObject("Jigsaw");
@@ -164,6 +185,9 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>The piece a finger is carrying; nothing while none is carried.</summary>
         public int? PieceInTheHand => _carried?.Piece;
 
+        /// <summary>The reward the tray's well shows: once the painting has become whole on this screen; nothing before, and nothing for one that was whole when it opened.</summary>
+        public Reward? RewardShown => _rewardRow != null ? _reward : null;
+
         /// <summary>The pieces the tray shows, from left to right: the ones a finger can pick up.</summary>
         public IReadOnlyList<int> PiecesInTheTray => _row.Shown.ToArray();
 
@@ -182,10 +206,12 @@ namespace Puzzle.Client.Jigsaws
 
         /// <summary>Builds the jigsaw of a painting as a player's progress has it. Call <see cref="Fit"/> before the first picture.</summary>
         /// <param name="opening">In the lit room, as a picture command shows it; or out of the dark the stage before left behind.</param>
+        /// <param name="reward">What completing the painting gives, which its finished face shows (the rules give it, whoever keeps the progress); nothing to show none.</param>
         public static JigsawStage Open(
-            PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art, StageOpening opening = StageOpening.InTheLitRoom)
+            PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art, StageOpening opening = StageOpening.InTheLitRoom,
+            Reward? reward = null)
         {
-            var stage = new JigsawStage(painting, progress, paintings, art);
+            var stage = new JigsawStage(painting, progress, paintings, art, reward);
             if (opening == StageOpening.OutOfTheDark)
             {
                 stage._veil.Darken(1f);
@@ -230,6 +256,7 @@ namespace Puzzle.Client.Jigsaws
 
             _row = new TrayRow(Table.Waiting, layout.TrayPlaces);
             _tray.Lay(_row);
+            PlaceTheReward(1f);
             ShowTheTable();
             ShowTheSparkles();
         }
@@ -347,6 +374,11 @@ namespace Puzzle.Client.Jigsaws
             _painting.Dispose();
             _pips.Dispose();
             _tray.Dispose();
+            if (_rewardRow != null)
+            {
+                SceneObjects.DestroyObjectOf(_rewardRow.Transform);
+            }
+
             _sparkles.Dispose();
             _veil.Dispose();
             SceneObjects.Destroy(_root);
@@ -646,12 +678,52 @@ namespace Puzzle.Client.Jigsaws
             _tray.ShowBehind(_row.Behind);
         }
 
-        /// <summary>The painting is whole: after a breath a light runs over it and its frame swells once; the sparkles follow the time it has been whole.</summary>
+        /// <summary>
+        /// The painting is whole: after a breath a light runs over it and its frame swells once, and what it gave pops
+        /// up in the tray's well; the sparkles follow the time it has been whole.
+        /// </summary>
         private void Celebrate()
         {
             _wholeFor = 0f;
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredLight, progress => _painting.Canvas.ShowLight(Easing.InOut(progress)));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredSwell, progress => Swell(1f + RestoredSwell * Easing.Arch(progress)));
+            if (MakeTheRewardRow())
+            {
+                PlaceTheReward(0f);
+                _timeline.Add(Tempo.PauseBeforeRestored, Tempo.TrayRefills, progress => PlaceTheReward(Easing.Overshoot(progress)));
+            }
+        }
+
+        /// <summary>Builds the row of what completing the painting gave, once; nothing for a painting that gives nothing on this screen.</summary>
+        /// <returns>True when the row was built now.</returns>
+        private bool MakeTheRewardRow()
+        {
+            if (!(_reward is Reward reward) || _rewardRow != null)
+            {
+                return false;
+            }
+
+            _rewardRow = new GoodsRow(
+                "Reward", _root.transform, _art, GoodsItem.Of(reward), LargestRewardDisc, RewardStep * LargestRewardDisc, pillScale: 0.75f,
+                DrawOrder.TrayReward, DrawOrder.TrayRewardPill, DrawOrder.TrayRewardLettering);
+            return true;
+        }
+
+        /// <summary>The reward in the middle of the tray's well, its discs and their pills as large as the well has room for, at a share of that size as it pops up.</summary>
+        private void PlaceTheReward(float grown)
+        {
+            if (_rewardRow == null || _layout is not JigsawLayout layout)
+            {
+                return;
+            }
+
+            Box well = layout.Well;
+            float disc = Mathf.Min(LargestRewardDisc, RewardInTheWell * well.Height - RewardPillHeight);
+            float scale = disc / LargestRewardDisc;
+
+            // The discs and the pills under them, as one block, in the middle of the well.
+            float discMiddle = well.MiddleY + RewardPillHeight * scale / 2f;
+            _rewardRow.Place(new Vector2(well.MiddleX, discMiddle), scale * grown);
         }
 
         /// <summary>The sparkles of a painting that is whole, as long after its last piece as it is; none around one that is not.</summary>
@@ -700,6 +772,12 @@ namespace Puzzle.Client.Jigsaws
 
             _painting.Canvas.ShowLight(0f);
             Swell(1f);
+            if (Table.IsWhole)
+            {
+                MakeTheRewardRow(); // the last piece was put in place here, with no celebration to show it
+            }
+
+            PlaceTheReward(1f);
             _veil.Darken(_isLeaving ? 1f : 0f);
             PlayerLeft = _isLeaving;
         }
@@ -710,7 +788,10 @@ namespace Puzzle.Client.Jigsaws
             _counter.Show(Table);
             _pips.Show(Table);
             _painting.Show(Table.InPlace.ToArray(), new CanvasHelp(showsGhost: true, PlacesAskedFor()));
-            _tray.Say(Table.IsWhole ? MuseumWords.PaintingRestored : Table.Waiting.Count > 0 ? MuseumWords.DragHint(Table.Waiting.Count) : MuseumWords.NoPieceWaits);
+            _tray.Say(
+                Table.IsWhole ? (_reward != null ? ShopWords.PaintingsReward : MuseumWords.PaintingRestored)
+                : Table.Waiting.Count > 0 ? MuseumWords.DragHint(Table.Waiting.Count)
+                : MuseumWords.NoPieceWaits);
 
             bool canPlaceAll = Table.Waiting.Count > _flying.Count;
             _placeAll.Show(canPlaceAll && !_isPlacingThemAll);

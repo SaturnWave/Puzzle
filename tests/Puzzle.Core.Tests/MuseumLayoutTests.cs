@@ -1,5 +1,7 @@
+using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Screens;
 using Puzzle.Museum;
 
 namespace Puzzle.Core.Tests;
@@ -149,6 +151,19 @@ public class MuseumLayoutTests
         Assert.Throws<ArgumentOutOfRangeException>(() => page.TabMiddle(2, 2));
     }
 
+    [Fact]
+    public void The_bar_has_four_places_the_shop_leftmost_and_each_place_as_wide_as_a_quarter_of_a_phone()
+    {
+        PageLayout page = PageLayout.Of(new ScreenShape(1080, 1920));
+        int count = Destinations.OnTheBar.Count;
+
+        Assert.Equal(new[] { Destination.Shop, Destination.Collection, Destination.Home, Destination.Map }, Destinations.OnTheBar);
+        Assert.Equal(new[] { -135f, -45f, 45f, 135f }, Destinations.OnTheBar.Select(place => page.TabMiddle(Destinations.PlaceOf(place), count)));
+        Assert.Equal(90f, page.TabWidth(count));
+        Assert.Equal(PageLayout.WidestTab, PageLayout.Of(new ScreenShape(2076, 2152)).TabWidth(count));
+        Assert.Equal(("Mağaza", GalleryArt.IconShop), (Destinations.NameOf(Destination.Shop), Destinations.MarkOf(Destination.Shop)));
+    }
+
     public static TheoryData<int, int, int, int, float> EveryScreenAndPicture()
     {
         var cases = new TheoryData<int, int, int, int, float>();
@@ -192,6 +207,23 @@ public class MuseumLayoutTests
         {
             Assert.Equal(HallLayout.SmallestBench, hall.BenchScale, precision: 3);
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(EveryScreenAndPicture))]
+    public void The_gift_frame_hangs_on_the_wall_beside_the_bench_between_the_skirting_and_the_plate(int width, int height, int top, int bottom, float aspect)
+    {
+        HallLayout hall = HallLayout.Of(new ScreenShape(width, height, top, bottom), aspect);
+        Box gift = hall.GiftButton;
+
+        // The workbench's table is 200 of its drawing's points wide: the frame hangs at its right, not behind it.
+        float tableRight = 100f * hall.BenchScale;
+        Assert.True(gift.Bottom >= hall.FloorLine + HallLayout.SkirtingHeight - 0.01f, "the gift frame stands on the skirting board");
+        Assert.True(gift.Top <= hall.Hanging.PlateBottom - 0.01f, "the gift frame reaches the painting's plate");
+        Assert.True(gift.Left >= tableRight, $"the gift frame hangs behind the workbench ({gift.Left:0.#} against {tableRight:0.#})");
+        Assert.True(gift.Right <= hall.Page.View.Right, "the gift frame is cut off at the side");
+        Assert.True(gift.Height >= 44f, $"the gift frame is only {gift.Height:0.#} points high for a finger");
+        Assert.InRange(hall.GiftScale, 0.5f, hall.Page.WalletRowScale);
     }
 
     [Fact]

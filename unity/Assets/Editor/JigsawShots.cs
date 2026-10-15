@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using Puzzle.Client.Flow;
 using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
@@ -30,6 +31,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The blue button pressed and every waiting piece in place; if that makes the painting whole, in the middle of its celebration.</summary>
         Restored,
+
+        /// <summary>The same once everything is at rest: a painting made whole there shows in the tray what completing it gave.</summary>
+        Rewarded,
     }
 
     /// <summary>
@@ -61,7 +65,8 @@ namespace Puzzle.Client.EditorTools
             {
                 // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-                using JigsawStage jigsaw = JigsawStage.Open(painting, state.Progress.Museum, studio.Paintings, studio.Art);
+                using JigsawStage jigsaw = JigsawStage.Open(
+                    painting, state.Progress.Museum, studio.Paintings, studio.Art, reward: new WalletLedger(StoryStudio.Economy).RewardForCompleting(state.Progress, painting));
                 jigsaw.Fit(screen);
                 if (Reach(moment, jigsaw, screen))
                 {
@@ -95,6 +100,14 @@ namespace Puzzle.Client.EditorTools
                     return PressPlaceThemAll(jigsaw, FlyingMoment);
                 case JigsawMoment.Restored:
                     return PlaceThemAll(jigsaw);
+                case JigsawMoment.Rewarded:
+                    if (!PlaceThemAll(jigsaw))
+                    {
+                        return false;
+                    }
+
+                    StageSteps.Settle(jigsaw);
+                    return true;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(moment), moment, "A moment of the jigsaw the picture command does not know.");
             }

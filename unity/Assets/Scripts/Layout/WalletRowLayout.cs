@@ -75,6 +75,9 @@ namespace Puzzle.Client.Layout
         /// <summary>The place of the coins' plus.</summary>
         public Box CoinsPlus => Box.Around(CoinsPillBox.Right - PlusInFromPillEnd, CoinsPillBox.MiddleY, PlusSize, PlusSize);
 
+        /// <summary>All that a finger presses for the shop: the coin, its pill and its plus.</summary>
+        public Box CoinsButton => new Box(Coin.Left, -Height / 2f, CoinsPlus.Right - Coin.Left, Height);
+
         /// <summary>The heart, the first thing of the lives' button.</summary>
         public Box Heart => Box.Around(CoinsPlus.Right + GapBetweenButtons + MarkSize / 2f, 0f, MarkSize, MarkSize);
 

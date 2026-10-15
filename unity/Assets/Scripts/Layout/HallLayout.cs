@@ -94,6 +94,33 @@ namespace Puzzle.Client.Layout
         private const float BannerClearance = 10f;
         private const float BannerSideMargin = 14f;
 
+        /// <summary>
+        /// The gift frame on the wall at the workbench's right (HomeTR), in the canvas' points around the frame's
+        /// middle: a gilt frame of 60 by 60, its picture 50 by 50 in it; the pin it hangs from 39.5 over its middle,
+        /// the wire running from the pin to 18 at each side 27 over the middle, behind the frame; the pill of 21
+        /// with its middle 34.5 under the frame's; the red dot (13 across) at its upper right. From the pin's top to
+        /// the pill's foot it is 87 high, the frame's middle 42 under the top. Its middle stands 149 to the right of
+        /// the screen's middle, and never nearer the screen's side than 46.
+        /// </summary>
+        public const float GiftFrameSize = 60f;
+        public const float GiftPictureSize = 50f;
+        public const float GiftPinOverMiddle = 39.5f;
+        public const float GiftWireEndsAcross = 18f;
+        public const float GiftWireEndsOverMiddle = 27f;
+        public const float GiftPillUnderMiddle = 34.5f;
+        public const float GiftPillHeight = 21f;
+        public const float GiftDotSize = 13f;
+        public static readonly (float Across, float Up) GiftDotFromMiddle = (28.5f, 30.5f);
+        private const float GiftHeight = 87f;
+        private const float GiftMiddleUnderTop = 42f;
+        private const float GiftAcross = 149f;
+        private const float GiftFromTheSide = 46f;
+
+        /// <summary>The gift's foot stands this far over the skirting board, on a tight screen and a roomy one; its pin keeps this far under the brass plate.</summary>
+        private const float TightGiftOverTheSkirting = 6f;
+        private const float RoomyGiftOverTheSkirting = 26f;
+        private const float GiftUnderThePlate = 4f;
+
         private HallLayout(PageLayout page, float pictureAspect, bool hasJigsawButton)
         {
             Page = page;
@@ -134,6 +161,12 @@ namespace Puzzle.Client.Layout
             float slack = tallestPicture - pictureHeight;
             float pictureTop = view.OnWholePixels(roomTop - FrameWidth - slack / 2);
             Picture = new Box(view.OnWholePixels(-pictureWidth / 2), pictureTop - pictureHeight, pictureWidth, pictureHeight);
+
+            // The gift frame is drawn as large as the wallet row, and smaller where the wall between the skirting and the plate is shorter.
+            float giftFoot = FloorLine + SkirtingHeight + page.Between(TightGiftOverTheSkirting, RoomyGiftOverTheSkirting);
+            GiftScale = Math.Min(page.WalletRowScale, (Hanging.PlateBottom - GiftUnderThePlate - giftFoot) / GiftHeight);
+            float giftMiddleX = Math.Min(GiftAcross * GiftScale, view.Right - GiftFromTheSide * GiftScale);
+            GiftMiddle = (giftMiddleX, giftFoot + (GiftHeight - GiftMiddleUnderTop) * GiftScale);
         }
 
         public PageLayout Page { get; }
@@ -199,6 +232,19 @@ namespace Puzzle.Client.Layout
 
         /// <summary>Where the painting hangs: its picture, and the rail its wires come down from.</summary>
         public FramePlace Hanging => new FramePlace(Picture, Page.RailBottom);
+
+        /// <summary>How large the gift frame and all of it is drawn: a share of the canvas' points.</summary>
+        public float GiftScale { get; }
+
+        /// <summary>The middle of the gift frame.</summary>
+        public (float X, float Y) GiftMiddle { get; }
+
+        /// <summary>What a finger presses for the gift: from the pin's top to the pill's foot, as wide as the frame.</summary>
+        public Box GiftButton => new Box(
+            GiftMiddle.X - GiftFrameSize / 2f * GiftScale,
+            GiftMiddle.Y - (GiftHeight - GiftMiddleUnderTop) * GiftScale,
+            GiftFrameSize * GiftScale,
+            GiftHeight * GiftScale);
 
         /// <summary>The bare wall between a side of the screen and the frame.</summary>
         public float WallBesideTheFrame => Frame.Left - Page.View.Left;

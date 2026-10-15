@@ -33,6 +33,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The teal badge across the disc's foot that names the level the booster opens on: "Bölüm 7".</summary>
         OpensOn,
+
+        /// <summary>None: the disc shows a booster that is sold or given, not the player's stock (ShopTR's sets, a reward).</summary>
+        None,
     }
 
     /// <summary>
@@ -43,11 +46,12 @@ namespace Puzzle.Client.Screens
     /// </summary>
     public readonly struct BoosterFace : IEquatable<BoosterFace>
     {
-        private BoosterFace(int owned, BoosterChoice choice, int? opensOn = null)
+        private BoosterFace(int owned, BoosterChoice choice, int? opensOn = null, bool isGoods = false)
         {
             Owned = owned;
             Choice = choice;
             OpensOn = opensOn;
+            IsGoods = isGoods;
         }
 
         /// <summary>How many of the booster the player owns.</summary>
@@ -58,8 +62,18 @@ namespace Puzzle.Client.Screens
         /// <summary>The level a locked booster opens on; nothing for a booster that is open.</summary>
         public int? OpensOn { get; }
 
-        /// <summary>The level a locked booster opens on; the count while the player owns any; the plus of "get more" once none is left.</summary>
-        public BoosterBadge Badge => Choice == BoosterChoice.Locked ? BoosterBadge.OpensOn
+        /// <summary>True for a booster shown as what a set holds or a reward gives (<see cref="Goods"/>): its disc is bare.</summary>
+        public bool IsGoods { get; }
+
+        /// <summary>
+        /// The face of a booster shown as goods rather than as the player's stock: a bare disc, no badge, no ring, as
+        /// the canvas draws a set's boosters over the pills that count them (ShopTR), and as a reward shows what it gives.
+        /// </summary>
+        public static BoosterFace Goods => new BoosterFace(0, BoosterChoice.Waiting, isGoods: true);
+
+        /// <summary>No badge on goods; the level a locked booster opens on; the count while the player owns any; the plus of "get more" once none is left.</summary>
+        public BoosterBadge Badge => IsGoods ? BoosterBadge.None
+            : Choice == BoosterChoice.Locked ? BoosterBadge.OpensOn
             : Owned > 0 ? BoosterBadge.Count
             : BoosterBadge.GetMore;
 
@@ -105,13 +119,13 @@ namespace Puzzle.Client.Screens
             ? new BoosterFace(0, BoosterChoice.Locked, level)
             : throw new ArgumentOutOfRangeException(nameof(level), level, "A booster is locked only until a later level than the first.");
 
-        public bool Equals(BoosterFace other) => Owned == other.Owned && Choice == other.Choice && OpensOn == other.OpensOn;
+        public bool Equals(BoosterFace other) => Owned == other.Owned && Choice == other.Choice && OpensOn == other.OpensOn && IsGoods == other.IsGoods;
 
         public override bool Equals(object? obj) => obj is BoosterFace other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(Owned, Choice, OpensOn);
+        public override int GetHashCode() => HashCode.Combine(Owned, Choice, OpensOn, IsGoods);
 
-        public override string ToString() => OpensOn is int level ? $"locked until level {level}" : $"{Owned} owned, {Choice}";
+        public override string ToString() => IsGoods ? "goods" : OpensOn is int level ? $"locked until level {level}" : $"{Owned} owned, {Choice}";
 
         public static bool operator ==(BoosterFace left, BoosterFace right) => left.Equals(right);
 

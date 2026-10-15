@@ -92,9 +92,13 @@ namespace Puzzle.Client.Screens
         }
 
         /// <param name="point">A point of what the button stands on.</param>
-        public bool IsUnder(Vector2 point)
+        public bool IsUnder(Vector2 point) => !IsDimmed && Covers(point);
+
+        /// <summary>True when a point lies on the pill or its lip of a button in sight, whether it is dimmed or not.</summary>
+        /// <param name="point">A point of what the button stands on.</param>
+        public bool Covers(Vector2 point)
         {
-            if (IsDimmed || !_root.gameObject.activeSelf)
+            if (!_root.gameObject.activeSelf)
             {
                 return false;
             }

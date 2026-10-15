@@ -89,6 +89,9 @@ namespace Puzzle.Client.Screens
         /// <summary>The middle of the pill, in the points of what the button stands on.</summary>
         public Vector2 Middle => _pill.Middle;
 
+        /// <summary>True while the button is drawn dimmed: it cannot be used just now.</summary>
+        public bool IsDimmed => _pill.IsDimmed;
+
         /// <summary>Puts the middle of the pill at a place of what the button stands on, drawn at a share of its full size.</summary>
         public void Place(Vector2 middle, float scale = 1f) => _pill.Place(middle, scale);
 
@@ -132,6 +135,10 @@ namespace Puzzle.Client.Screens
 
         /// <param name="point">A point of what the button stands on.</param>
         public bool IsUnder(Vector2 point) => _pill.IsUnder(point);
+
+        /// <summary>True when a point lies on the button in sight, whether it is dimmed or not: what a page that explains a dimmed button asks.</summary>
+        /// <param name="point">A point of what the button stands on.</param>
+        public bool Covers(Vector2 point) => _pill.Covers(point);
 
         public void ShowPressed(bool isPressed) => _pill.ShowPressed(isPressed);
 

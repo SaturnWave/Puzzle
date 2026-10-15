@@ -22,8 +22,9 @@ namespace Puzzle.Client.Hall
     /// workbench on the floor, and the green button that opens the level the player stands on. While pieces of the
     /// painting wait to be placed, the next of them leans on the workbench among sparkles, and the blue "Tablo"
     /// button stands beside the green one, with a row of pips under its word for the pieces in place and a red badge
-    /// that counts the ones that wait: it leads to the painting's jigsaw. Over the plaque the museum's stage shows
-    /// the player's coins and lives (<see cref="WalletRow"/>).
+    /// that counts the ones that wait: it leads to the painting's jigsaw. On the wall at the workbench's right hangs
+    /// the gift frame (<see cref="GiftFrame"/>): the daily reward, with a red dot while it waits. Over the plaque the
+    /// museum's stage shows the player's coins and lives (<see cref="WalletRow"/>).
     /// </summary>
     /// <remarks>
     /// The hall has two more faces, which the design canvas does not draw:
@@ -36,11 +37,10 @@ namespace Puzzle.Client.Hall
     /// light and among sparkles, and where the workbench stands a banner that says so and what comes next. Its
     /// green button leads on to the hall as the player's progress has it.</item>
     /// </list>
-    /// Left out of the design, because the game has nothing behind them yet: the event and gift frames beside the
-    /// workbench, and on the wallet row the plus buttons and the settings' button (the shop's and the settings'
-    /// stages bring them).
+    /// Left out of the design, because the game has nothing behind them yet: the event frame at the workbench's left,
+    /// and on the wallet row the settings' button (the settings' stage brings it).
     /// </remarks>
-    public sealed class HomePage : IMuseumPage, IMovingPage
+    public sealed class HomePage : IMuseumPage, IMovingPage, IShopPage
     {
         /// <summary>
         /// The buttons' labels, as the design sets them (HomeTR): "Bölüm 47" at 29 points; "Tablo" at 19 beside a
@@ -114,6 +114,9 @@ namespace Puzzle.Client.Hall
         /// <summary>The pill over the play button that says why nothing is being restored; nothing while a painting is.</summary>
         private readonly Transform? _note;
 
+        /// <summary>The gift frame beside the workbench; nothing in the hall of a room that has just been restored, where the bench stands aside too.</summary>
+        private readonly GiftFrame? _gift;
+
         /// <summary>What a room that has just been restored adds to its hall; nothing in the hall as the progress has it.</summary>
         private readonly RoomBanner? _banner;
         private readonly RestoredSparkles? _sparkles;
@@ -163,9 +166,13 @@ namespace Puzzle.Client.Hall
                 _banner = new RoomBanner(_root, art, room, MuseumWords.AfterTheRoom(room.Number, paintings.Catalogue));
                 _sparkles = RestoredSparkles.Create(_root, art);
             }
-            else if (NoteFor(visit.Standing.Task) is string note)
+            else
             {
-                _note = AddNote(art, note);
+                _gift = new GiftFrame(_root, art);
+                if (NoteFor(visit.Standing.Task) is string note)
+                {
+                    _note = AddNote(art, note);
+                }
             }
         }
 
@@ -179,6 +186,9 @@ namespace Puzzle.Client.Hall
 
         /// <summary>True while the hall shows a room that has just been restored: its green button leads on, not into a level.</summary>
         public bool ShowsARestoredRoom => _banner != null;
+
+        /// <summary>The gift frame, for whoever presses it or reads what it shows; nothing in a restored room's hall.</summary>
+        public GiftFrame? Gift => _gift;
 
         /// <param name="restored">The room that has just been restored, which the hall then shows; nothing for the hall as the player's progress has it.</param>
         public static HomePage Create(Transform parent, ArtCatalogue art, PaintingGallery paintings, MuseumVisit visit, RoomNumber? restored = null) =>
@@ -206,6 +216,7 @@ namespace Puzzle.Client.Hall
 
             _banner?.Place(layout.Banner, layout.BannerScale);
             _sparkles?.Place(layout.Hanging.Frame);
+            _gift?.Place(layout);
             HangTheLamps(layout);
         }
 
@@ -216,7 +227,15 @@ namespace Puzzle.Client.Hall
             {
                 presses.Add(_toTheJigsaw, new MuseumPress.Restore(_shown));
             }
+
+            if (_gift != null)
+            {
+                presses.Add(_gift, new MuseumPress.TakeTheGift());
+            }
         }
+
+        /// <summary>The gift frame shows whether the day's gift waits.</summary>
+        public void Tell(ShopView shop) => _gift?.Show(shop.Gift);
 
         /// <summary>A restored room's light runs over its last painting once, and its sparkles burst and go on twinkling; the hall as the progress has it stands still.</summary>
         public void Move(float secondsOnThePage)
@@ -241,6 +260,7 @@ namespace Puzzle.Client.Hall
             _plaque.Dispose();
             _painting.Dispose();
             _sparkles?.Dispose();
+            _gift?.Dispose();
             _pips?.Dispose();
             _waitingPiece?.Dispose();
             SceneObjects.DestroyObjectOf(_root);

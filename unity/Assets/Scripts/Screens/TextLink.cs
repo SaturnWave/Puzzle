@@ -11,7 +11,7 @@ namespace Puzzle.Client.Screens
     /// <summary>
     /// Words a finger presses, underlined as a link is, with a heart and a smaller line after them that say what the
     /// press costs, as the design draws the quiet way out under a card's buttons (LoseTR: "Vazgeç", and "1 can gider"
-    /// beside the heart). The words are Gabarito ExtraBold of 15.5 with a line of 1.5 five points under their baseline;
+    /// beside the heart); a way out that costs nothing has its words alone. The words are Gabarito ExtraBold of 15.5 with a line of 1.5 five points under their baseline;
     /// 12 after them the heart of 20, and 3 after that the cost in Gabarito Bold of 12.5. The row is centred on its
     /// place, and the finger may press anywhere in a band as high as a finger needs around it. Sizes are in points of
     /// what the link stands on, around its middle.
@@ -42,9 +42,9 @@ namespace Puzzle.Client.Screens
         private readonly float _width;
 
         /// <param name="words">What the link says, underlined.</param>
-        /// <param name="cost">What a press costs, beside the heart.</param>
+        /// <param name="cost">What a press costs, beside the heart; nothing for a way out that costs nothing, which has its words alone.</param>
         /// <param name="order">The place of the lettering in the drawing order; the underline and the heart take the same.</param>
-        public TextLink(string name, Transform parent, ArtCatalogue art, string words, string cost, DrawOrder order)
+        public TextLink(string name, Transform parent, ArtCatalogue art, string words, string? cost, DrawOrder order)
         {
             _root = new GameObject(name).transform;
             _root.SetParent(parent, worldPositionStays: false);
@@ -53,19 +53,26 @@ namespace Puzzle.Client.Screens
 
             TextMeshPro said = Lettering.Write("Words", _row, art, LetteringStyle.Label, WordsSize, Lettering.Ink, order);
             Lettering.Say(said, words);
-            TextMeshPro costs = Lettering.Write("Cost", _row, art, LetteringStyle.Soft, CostSize, Lettering.SoftInk, order);
-            Lettering.Say(costs, cost);
             float wordsWidth = Lettering.WidthOf(said, words);
-            float costWidth = Lettering.WidthOf(costs, cost);
-            _width = wordsWidth + GapWordsToHeart + HeartSize + GapHeartToCost + costWidth;
+            _width = wordsWidth;
+            TextMeshPro? costs = null;
+            if (cost != null)
+            {
+                costs = Lettering.Write("Cost", _row, art, LetteringStyle.Soft, CostSize, Lettering.SoftInk, order);
+                Lettering.Say(costs, cost);
+                _width += GapWordsToHeart + HeartSize + GapHeartToCost + Lettering.WidthOf(costs, cost);
+            }
 
             // Each line is centred on the row by the middle of its capitals, as a row of boxes of one line each centres them.
             float left = -_width / 2f;
             Lettering.SayFromLeft(said, words, left, 0f);
-            Transform heart = SceneObjects.AddSprite("Heart", _row, art.Of(GalleryArt.IconHeart), art.SpriteMaterial, order).transform;
-            heart.localPosition = new Vector3(left + wordsWidth + GapWordsToHeart + HeartSize / 2f, 0f, 0f);
-            heart.localScale = new Vector3(HeartSize / MarkBox, HeartSize / MarkBox, 1f);
-            Lettering.SayFromLeft(costs, cost, left + wordsWidth + GapWordsToHeart + HeartSize + GapHeartToCost, 0f);
+            if (costs != null && cost != null)
+            {
+                Transform heart = SceneObjects.AddSprite("Heart", _row, art.Of(GalleryArt.IconHeart), art.SpriteMaterial, order).transform;
+                heart.localPosition = new Vector3(left + wordsWidth + GapWordsToHeart + HeartSize / 2f, 0f, 0f);
+                heart.localScale = new Vector3(HeartSize / MarkBox, HeartSize / MarkBox, 1f);
+                Lettering.SayFromLeft(costs, cost, left + wordsWidth + GapWordsToHeart + HeartSize + GapHeartToCost, 0f);
+            }
 
             float baseline = -Lettering.CapitalsHeight(LetteringStyle.Label) * WordsSize / 2f;
             _underline = PaintedShape.Create("Underline", _row, art.PaintMaterial, order);

@@ -16,17 +16,17 @@ namespace Puzzle.Client.Screens
     /// The row of the player's coins and lives over a museum page's plaque, as the design canvas draws it (HomeTR,
     /// MapTR, CollectionTR): a cream pill in a gilt rim with the coin standing on its left end and the amount in it,
     /// and a second pill with the heart on its left end, the lives that are there written on the heart, and in the
-    /// pill "Dolu" or how long until the next life is back. The museum's stage owns the row, as it owns the
-    /// navigation bar, so a page turns under it and the row stays. The heart's pill is pressed to open the lives
-    /// card. Where everything stands is <see cref="WalletRowLayout"/>'s; sizes are the canvas' points, drawn at the
-    /// share of them the page has (<see cref="PageLayout.WalletRowScale"/>).
+    /// pill "Dolu" or how long until the next life is back; at each pill's right end the green plus of "get more".
+    /// The museum's stage owns the row, as it owns the navigation bar, so a page turns under it and the row stays.
+    /// The coin, its pill and its plus are pressed to go to the shop; the heart, its pill and its plus to open the
+    /// lives card (no life is sold). Where everything stands is <see cref="WalletRowLayout"/>'s; sizes are the
+    /// canvas' points, drawn at the share of them the page has (<see cref="PageLayout.WalletRowScale"/>).
     /// </summary>
     /// <remarks>
     /// The row has no clock of its own and is no act of the museum's timeline: the stage tells it how much time has
     /// passed, and coins that arrive count up as a function of that time (<see cref="Tempo.CoinsCount"/>), so the
     /// museum listens to the player while they do. The countdown to the next life is what the wallet it is told says.
-    /// Not drawn yet, their places kept: the green plus at each pill's right end (the coins' leads to the shop) and
-    /// the round button of the settings at the row's right end.
+    /// Not drawn yet, its place kept: the round button of the settings at the row's right end.
     /// </remarks>
     public sealed class WalletRow : IDisposable
     {
@@ -52,7 +52,10 @@ namespace Puzzle.Client.Screens
         private readonly SpriteRenderer _heart;
         private readonly TextMeshPro _heartCount;
         private readonly TextMeshPro _wait;
-        private readonly LivesButton _livesButton;
+        private readonly DiscButton _coinsPlus;
+        private readonly DiscButton _livesPlus;
+        private readonly RowButton _coinsButton;
+        private readonly RowButton _livesButton;
 
         private WalletRowLayout _layout = WalletRowLayout.ForAnAmount(0f);
 
@@ -79,7 +82,10 @@ namespace Puzzle.Client.Screens
             _heart = AddMark("Heart", art, GalleryArt.IconHeart);
             _heartCount = Lettering.Write("Lives", _root, art, LetteringStyle.OnHeart, HeartCountSize, Color.white, DrawOrder.WalletLettering);
             _wait = Lettering.Write("Next life", _root, art, LetteringStyle.Figure, WaitSize, Lettering.Ink, DrawOrder.WalletLettering);
-            _livesButton = new LivesButton(this);
+            _coinsPlus = new DiscButton("Coins plus", _root, art, DiscGlyph.Plus, DrawOrder.WalletButton);
+            _livesPlus = new DiscButton("Lives plus", _root, art, DiscGlyph.Plus, DrawOrder.WalletButton);
+            _coinsButton = new RowButton(this, layout => layout.CoinsButton, _coinsPill, _coin, _coinsPlus);
+            _livesButton = new RowButton(this, layout => layout.LivesButton, _livesPill, _heart, _livesPlus);
 
             _countFrom = _countTo = _shown = wallet.Coins;
             Wallet = wallet;
@@ -95,6 +101,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The middle of the lives' button, in the layout's points: where a finger presses it. Nothing before the row is placed.</summary>
         public Vector2? LivesButtonMiddle => _page is PageLayout page ? InTheLayout(page, new Vector2(_layout.LivesButton.MiddleX, _layout.LivesButton.MiddleY)) : (Vector2?)null;
+
+        /// <summary>The middle of the coins' plus, in the layout's points: a finger that presses it goes to the shop. Nothing before the row is placed.</summary>
+        public Vector2? CoinsPlusMiddle => _page is PageLayout page ? InTheLayout(page, new Vector2(_layout.CoinsPlus.MiddleX, _layout.CoinsPlus.MiddleY)) : (Vector2?)null;
 
         /// <summary>Builds the row showing a wallet as it is, with nothing counting. Call <see cref="Place"/> before the first picture.</summary>
         public static WalletRow Create(Transform parent, ArtCatalogue art, WalletView wallet) => new WalletRow(parent, art, wallet);
@@ -137,8 +146,12 @@ namespace Puzzle.Client.Screens
             ShowTheAmount(evenIfShown: false);
         }
 
-        /// <summary>Tells a set of pressable controls about the row's: the lives' button asks for the lives card.</summary>
-        public void AddPressables(PressSet<MuseumPress> presses) => presses.Add(_livesButton, new MuseumPress.OpenTheLivesCard());
+        /// <summary>Tells a set of pressable controls about the row's: the coins' button asks for the shop, the lives' button for the lives card.</summary>
+        public void AddPressables(PressSet<MuseumPress> presses)
+        {
+            presses.Add(_coinsButton, new MuseumPress.Visit(Destination.Shop));
+            presses.Add(_livesButton, new MuseumPress.OpenTheLivesCard());
+        }
 
         public void Dispose() => SceneObjects.DestroyObjectOf(_root);
 
@@ -191,6 +204,7 @@ namespace Puzzle.Client.Screens
             _coinsPill.size = new Vector2(coinsPill.Width + PillPictureMargin, PillPictureHeight);
             _coin.transform.localPosition = new Vector3(WalletRowLayout.Coin.MiddleX, WalletRowLayout.Coin.MiddleY, 0f);
             _amount.transform.localPosition = new Vector3(_layout.AmountMiddle, WordsHeight(coinsPill, LetteringStyle.Figure, _amount), 0f);
+            _coinsPlus.Place(new Vector2(_layout.CoinsPlus.MiddleX, _layout.CoinsPlus.MiddleY));
 
             Box livesPill = _layout.LivesPillBox;
             _livesPill.transform.localPosition = new Vector3(livesPill.MiddleX, livesPill.MiddleY, 0f);
@@ -199,6 +213,7 @@ namespace Puzzle.Client.Screens
             _heartCount.transform.localPosition = new Vector3(
                 _layout.Heart.MiddleX, _layout.Heart.MiddleY + HeartCountOverMiddle - Lettering.FigureDrop(LetteringStyle.OnHeart) * _heartCount.fontSize, 0f);
             _wait.transform.localPosition = new Vector3(_layout.WaitMiddle, WordsHeight(livesPill, LetteringStyle.Figure, _wait), 0f);
+            _livesPlus.Place(new Vector2(_layout.LivesPlus.MiddleX, _layout.LivesPlus.MiddleY));
         }
 
         /// <summary>Where a pill's words stand upright: as the canvas centres them in the pill, figures seated as a stylesheet seats them.</summary>
@@ -209,14 +224,27 @@ namespace Puzzle.Client.Screens
         private static Vector2 InTheLayout(PageLayout page, Vector2 onTheRow) =>
             new Vector2(page.WalletRow.Left + onTheRow.x * page.WalletRowScale, page.WalletRow.MiddleY + onTheRow.y * page.WalletRowScale);
 
-        /// <summary>The heart, its pill and the plus's place: one button that opens the lives card.</summary>
-        private sealed class LivesButton : IPressable
+        /// <summary>
+        /// A mark, its pill and its plus as one button, as the canvas makes each a button (HomeTR): the coin's leads to
+        /// the shop, the heart's opens the lives card. Held, the pill and the mark lose a little light and the plus
+        /// goes down onto its lip.
+        /// </summary>
+        private sealed class RowButton : IPressable
         {
             private readonly WalletRow _row;
+            private readonly Func<WalletRowLayout, Box> _box;
+            private readonly SpriteRenderer _pill;
+            private readonly SpriteRenderer _mark;
+            private readonly DiscButton _plus;
 
-            public LivesButton(WalletRow row)
+            /// <param name="box">Where the button lies on the row, in the row's points, as the row's layout has it for the amount it shows.</param>
+            public RowButton(WalletRow row, Func<WalletRowLayout, Box> box, SpriteRenderer pill, SpriteRenderer mark, DiscButton plus)
             {
                 _row = row;
+                _box = box;
+                _pill = pill;
+                _mark = mark;
+                _plus = plus;
             }
 
             public bool IsUnder(Vector2 point)
@@ -227,14 +255,15 @@ namespace Puzzle.Client.Screens
                 }
 
                 var onTheRow = new Vector2((point.x - page.WalletRow.Left) / page.WalletRowScale, (point.y - page.WalletRow.MiddleY) / page.WalletRowScale);
-                return _row._layout.LivesButton.Contains(onTheRow.x, onTheRow.y);
+                return _box(_row._layout).Contains(onTheRow.x, onTheRow.y);
             }
 
             public void ShowPressed(bool isPressed)
             {
                 Color light = Dimming.Of(isDimmed: false, isHeld: isPressed);
-                _row._livesPill.color = light;
-                _row._heart.color = light;
+                _pill.color = light;
+                _mark.color = light;
+                _plus.ShowPressed(isPressed);
             }
         }
     }

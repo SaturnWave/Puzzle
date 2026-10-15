@@ -61,6 +61,12 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The level's board coming in with each start booster chosen on its card, and with all three: a few moments and at rest.</summary>
         Entrance,
+
+        /// <summary>The shop, as the player's coins and the day's ads have it.</summary>
+        Shop,
+
+        /// <summary>The hall's gift frame pressed: the hall before, the card that answers, and the hall once it is closed.</summary>
+        Gift,
     }
 
     /// <summary>
@@ -86,6 +92,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The player's wallet as the museum's row shows it at the tools' instant.</summary>
         public WalletView Wallet => WalletView.Of(Progress.Wallet, StoryStudio.Economy.Lives, StoryStudio.Clock.Now);
 
+        /// <summary>The shop and the hall's gift as the rules have them for the player at the tools' instant.</summary>
+        public ShopView Shop => ShopView.Of(StoryStudio.Economy, Progress.Wallet, StoryStudio.Clock.Now);
+
         /// <summary>
         /// Reads "46" (46 levels won, no piece placed) or "46+42" (and 42 pieces in place, in the museum's order:
         /// painting by painting, each painting's pieces by their numbers). Asking for more pieces than the levels
@@ -94,8 +103,9 @@ namespace Puzzle.Client.EditorTools
         /// with fewer lives than the most; a whole life's time when left out), boosters=2 (of every kind), starts=2:1:0
         /// (of the three start boosters, in the order the card before a level shows them, after boosters), inlevel=3:2:2:0
         /// (of the four boosters of play, in the order the board's shelf shows them, after boosters), ads=1 (watched
-        /// today for extra moves and for coins each). What is not named is the starting wallet's, with the gift of every
-        /// booster of play that opened on the way to the level the player stands on: "46+42;coins=1250;lives=3;next=12:34".
+        /// today for extra moves and for coins each), gifts=1 (daily rewards given, the latest today). What is not named
+        /// is the starting wallet's, with the gift of every booster of play that opened on the way to the level the player
+        /// stands on: "46+42;coins=1250;lives=3;next=12:34".
         /// </summary>
         /// <exception cref="ArgumentException">The text is none of these.</exception>
         public static PlayerState Parse(string text)
@@ -193,8 +203,14 @@ namespace Puzzle.Client.EditorTools
                         wallet = wallet.WithAds(new AdsWatched(DayStamp.Of(now), forExtraMoves: watched, forCoins: watched));
                         label += $"-a{watched}";
                         break;
+                    case "gifts":
+                        int given = ShotPlan.WholeNumber(value);
+                        RewardsGiven counted = wallet.Rewards;
+                        wallet = wallet.WithRewards(new RewardsGiven(counted.ForPaintings, given, given > 0 ? DayStamp.Of(now) : (DayStamp?)null, counted.UnlockGifts));
+                        label += $"-g{given}";
+                        break;
                     default:
-                        throw new ArgumentException($"\"{nameAndValue[0]}\" is nothing a wallet has: write coins, lives, next, boosters, starts or ads.");
+                        throw new ArgumentException($"\"{nameAndValue[0]}\" is nothing a wallet has: write coins, lives, next, boosters, starts, inlevel, ads or gifts.");
                 }
             }
 
@@ -334,9 +350,9 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
-    /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored]
+    /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk]</c>.
     /// A state is the levels won, or the levels won and the pieces in place, with the wallet after it where it is
     /// not a new player's (<c>46+42;coins=1250;lives=3;next=12:34</c>, see <see cref="PlayerState.Parse"/>). Each page, state and screen gives
@@ -422,6 +438,8 @@ namespace Puzzle.Client.EditorTools
             ShotPage.LevelStartChosen => LevelStartShots.ShootTheCard(StartCardMoment.Chosen, state, screen, studio),
             ShotPage.GetMore => LevelStartShots.ShootTheCard(StartCardMoment.GetMore, state, screen, studio),
             ShotPage.Entrance => LevelStartShots.ShootTheEntrances(state, screen, studio),
+            ShotPage.Shop => ShootThePage(new MuseumDoor(Destination.Shop), "shop", state, screen, studio),
+            ShotPage.Gift => ShootTheGift(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 
@@ -554,6 +572,48 @@ namespace Puzzle.Client.EditorTools
             return 1;
         }
 
+        /// <summary>
+        /// The hall as the player has it, on the game's own session; its gift frame pressed, and the card that answers
+        /// (the day's gift, or when the next one comes); and the hall once that card is closed. The gift is given once:
+        /// the progress counts one daily reward more after the press, or none where it was not due.
+        /// </summary>
+        private static int ShootTheGift(PlayerState state, ScreenShape screen, Studio studio)
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            using var session = new GameSession(studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), StoryStudio.AttemptsKeptInMemory(), screen, SessionOpening.InTheMuseum);
+            StoryStudio.AdvanceUntilSettled(session);
+            MuseumStage museum = session.Museum ?? throw new InvalidOperationException("The session did not open in the museum.");
+            bool wasDue = state.Shop.Gift is GiftView.Due;
+            WritePicture(museum, screen, studio.FileName("gift-hall", state, screen));
+
+            session.PointerDown(museum.GiftPixel ?? throw new InvalidOperationException("The hall shows no gift frame to press."));
+            session.PointerUp();
+            StoryStudio.AdvanceUntilSettled(session);
+            if (museum.NoticeShown != ShopWords.GiftTitle)
+            {
+                throw new InvalidOperationException($"A press on the gift frame brought the card \"{museum.NoticeShown}\", not the gift's.");
+            }
+
+            int expected = state.Progress.Wallet.Rewards.Daily + (wasDue ? 1 : 0);
+            if (session.Progress.Wallet.Rewards.Daily != expected)
+            {
+                throw new InvalidOperationException($"After the gift frame the player has had {session.Progress.Wallet.Rewards.Daily} daily rewards, not {expected}.");
+            }
+
+            WritePicture(museum, screen, studio.FileName("gift-card", state, screen));
+            session.PointerDown(museum.NoticeDonePixel ?? throw new InvalidOperationException("The gift's card has no Tamam to press."));
+            session.PointerUp();
+            StoryStudio.AdvanceUntilSettled(session);
+            if (museum.GiftShown is not (bool waits, string says) || waits)
+            {
+                throw new InvalidOperationException($"Once the day's gift was taken the frame still shows one waiting ({museum.GiftShown}).");
+            }
+
+            WritePicture(museum, screen, studio.FileName("gift-taken", state, screen));
+            Debug.Log($"Screen shots: the gift frame of the player {state.Label} {(wasDue ? "gave the day's gift" : "had none to give")}; its pill now says \"{says}\".");
+            return 3;
+        }
+
         private static string CollectionName(ShotPlan plan) =>
             plan.CollectionRoom is RoomNumber room ? $"collection-room{room.Value:D2}" : "collection";
 
@@ -601,7 +661,7 @@ namespace Puzzle.Client.EditorTools
             var visit = new MuseumVisit(
                 progress.Museum, studio.Paintings.Catalogue, level.Id.Value, hasWonEveryLevel: progress.LevelsWon >= studio.Levels.Count);
             var brief = LevelBrief.Of(level, PieceReward.ForWinning(progress, studio.Levels.Count, studio.Paintings.Catalogue), StoryStudio.Economy, LevelStart.Rules);
-            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet, brief);
+            MuseumStage museum = MuseumStage.Open(visit, studio.Paintings, studio.Art, door, state.Wallet, state.Shop, brief);
             museum.Fit(screen);
             return museum;
         }

@@ -51,6 +51,16 @@ namespace Puzzle.Client
         SheetLabelLettering = -640,
         SheetPin = -639,
 
+        /// <summary>
+        /// The hall's gift frame on the wall beside the workbench, behind it (HomeTR): its picture, the gilt frame over
+        /// it with the pin it hangs from, the pill under it and its words, and the red dot of a gift that waits.
+        /// </summary>
+        GiftPicture = -630,
+        GiftFrame = -629,
+        GiftPill = -628,
+        GiftLettering = -627,
+        GiftDot = -626,
+
         /// <summary>The picture frame over what hangs in it, its light over the frame, the brass plate that names it, the workbench on the floor.</summary>
         PictureFrame = -620,
         PictureLight = -619,
@@ -126,6 +136,14 @@ namespace Puzzle.Client
         TrayLabelLettering = 1031,
 
         /// <summary>
+        /// What a painting made whole gives, shown in the tray's well: each booster's disc and the pile of coins (the
+        /// disc's parts take the places above, <see cref="DiscPart"/>), the pills that count them and their figures.
+        /// </summary>
+        TrayReward = 1040,
+        TrayRewardPill = 1046,
+        TrayRewardLettering = 1047,
+
+        /// <summary>
         /// The small card over the board's shelf that says what the shelf has to say, and its words; the ring of light
         /// around the disc of a booster shown for the first time, over the disc.
         /// </summary>
@@ -150,6 +168,27 @@ namespace Puzzle.Client
         /// </summary>
         PlaquePictureLit = 1106,
         PlaquePictureLines = 1107,
+
+        /// <summary>
+        /// The shop's panels stand at the plaque's places, its sign over them (ShopTR): a pack's teal velvet, the gilt
+        /// frame over it, the coins in it and their sparkles; a set's wooden shelf and its discs (whose parts take the
+        /// places above, <see cref="DiscPart"/>); the cream pills that count and their figures; the small buttons and
+        /// their words; the panels' other lines; the sign's brass plate, its lettering and its studs and pin.
+        /// </summary>
+        ShopVelvet = 1110,
+        ShopFrame = 1111,
+        ShopGoods = 1112,
+        ShopSparkle = 1113,
+        ShopShelf = 1114,
+        ShopDisc = 1115,
+        ShopPill = 1122,
+        ShopPillLettering = 1123,
+        ShopButton = 1124,
+        ShopButtonLettering = 1125,
+        ShopLettering = 1126,
+        ShopSign = 1127,
+        ShopSignLettering = 1128,
+        ShopSignStud = 1129,
 
         /// <summary>The ring of light that widens from a plaque's rim as a won game's finale opens: over the plaques, under what then leaves them.</summary>
         PlaqueRing = 1140,
@@ -179,6 +218,9 @@ namespace Puzzle.Client
         BarTab = 1501,
         BarIcon = 1502,
         BarLettering = 1503,
+
+        /// <summary>The thin light lines between two places of the bar where neither is the one shown (ShopTR, HomeTR).</summary>
+        BarDivider = 1504,
 
         /// <summary>
         /// The row of the player's coins and lives over a museum page's plaque, which the stage owns as it owns

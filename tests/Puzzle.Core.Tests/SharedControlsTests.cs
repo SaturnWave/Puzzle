@@ -120,6 +120,17 @@ public class SharedControlsTests
     }
 
     [Fact]
+    public void A_booster_shown_as_goods_has_a_bare_disc_that_is_neither_ringed_nor_faint()
+    {
+        BoosterFace goods = BoosterFace.Goods;
+
+        Assert.Equal((BoosterBadge.None, true), (goods.Badge, goods.IsGoods));
+        Assert.False(goods.IsRinged || goods.IsTicked || goods.IsFaint);
+        Assert.NotEqual(BoosterFace.Of(owned: 0, BoosterChoice.Waiting), goods);
+        Assert.Equal(BoosterFace.Goods, goods);
+    }
+
+    [Fact]
     public void A_booster_that_is_set_aside_is_faint_whatever_the_player_owns_of_it()
     {
         Assert.True(BoosterFace.Of(owned: 4, BoosterChoice.SetAside).IsFaint);

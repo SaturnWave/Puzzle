@@ -11,9 +11,10 @@ namespace Puzzle.Client.Screens
 {
     /// <summary>
     /// The card a test build hangs in place of an ad (the settings' build.ads "simulated"): it says on its nameplate
-    /// that it stands in for one and that this is the test build, shows the +5 it pays for in a gilt alcove, says in
-    /// words that no ad is shown, and fills a bar as the stand-in's seconds run, the seconds left beside it. It has
-    /// nothing to press and goes up by itself when the ad is over. Nothing is advertised, nothing is loaded.
+    /// that it stands in for one and that this is the test build, shows what it pays for in a gilt alcove (the +5 of
+    /// a game out of moves, or the shop's pile of coins with their number), says in words that no ad is shown and
+    /// what it pays, and fills a bar as the stand-in's seconds run, the seconds left beside it. It has nothing to press
+    /// and goes up by itself when the ad is over. Nothing is advertised, nothing is loaded.
     /// </summary>
     /// <remarks>
     /// The design canvas draws no such card. It is built in the language of the cards it does draw (LoseTR's card on
@@ -34,6 +35,11 @@ namespace Puzzle.Client.Screens
         private const float ExtraMovesSize = 112f;
         private const float ExtraMovesUnderMiddle = 10f;
         private const float MarkBox = 100f;
+
+        /// <summary>The shop's coins in the alcove: the pile, and their number beside it in the figures of a teal ground, the two centred together.</summary>
+        private const float CoinPileSize = 84f;
+        private const float CoinsNumberSize = 34f;
+        private const float GapPileToNumber = 4f;
 
         /// <summary>The two lines under the alcove.</summary>
         private const float FirstLineDown = 214f;
@@ -65,8 +71,9 @@ namespace Puzzle.Client.Screens
         private readonly TextMeshPro _seconds;
         private readonly float _barLeft;
 
-        /// <param name="raisedBy">Added to the card's places in the drawing order: <see cref="DrawOrder.OverACard"/>, as it hangs in front of the card that offered the moves.</param>
-        public SimulatedAdCard(Transform parent, ArtCatalogue art, int raisedBy)
+        /// <param name="prize">What the ad pays for once it is over, which the card shows and says.</param>
+        /// <param name="raisedBy">Added to the card's places in the drawing order: <see cref="DrawOrder.OverACard"/> where it hangs in front of the card that offered the moves.</param>
+        public SimulatedAdCard(Transform parent, ArtCatalogue art, AdPrize prize, int raisedBy)
         {
             _card = new HangingCard<NoPress>(
                 "Simulated ad card", parent, art, Body, new CardNameplate(AdWords.Title, NameplateWidth, TitleSize, AdWords.TestBuild), CardHanging.OnWiresFromAbove, raisedBy: raisedBy);
@@ -74,16 +81,14 @@ namespace Puzzle.Client.Screens
             Transform alcove = SceneObjects.AddSprite("Alcove", _card.Content, art.Of(GalleryArt.WideAlcove), art.SpriteMaterial, DrawOrder.CardArt + raisedBy).transform;
             alcove.localPosition = _card.At(AlcoveDown);
             alcove.localScale = new Vector3(AlcoveScale, AlcoveScale, 1f);
-            Transform moves = SceneObjects.AddSprite("Five more moves", _card.Content, art.Of(GalleryArt.IconFiveMoves), art.SpriteMaterial, DrawOrder.CardExhibit + raisedBy).transform;
-            moves.localPosition = _card.At(AlcoveDown + ExtraMovesUnderMiddle);
-            moves.localScale = new Vector3(ExtraMovesSize / MarkBox, ExtraMovesSize / MarkBox, 1f);
+            ShowThePrize(prize, art, raisedBy);
 
             float room = Body.x - 2f * LinesInFromSides;
             TextMeshPro first = Lettering.Write("Nothing is shown", _card.Content, art, LetteringStyle.Label, FirstLineSize, Lettering.Ink, DrawOrder.CardLettering + raisedBy);
             Lettering.SayWithin(first, AdWords.NothingIsShown, FirstLineSize, room);
             first.transform.localPosition = _card.At(FirstLineDown);
             TextMeshPro second = Lettering.Write("What it pays for", _card.Content, art, LetteringStyle.Soft, SecondLineSize, Lettering.SoftInk, DrawOrder.CardLettering + raisedBy);
-            Lettering.SayWithin(second, AdWords.ItPaysFor, SecondLineSize, room);
+            Lettering.SayWithin(second, AdWords.ItPaysFor(prize), SecondLineSize, room);
             second.transform.localPosition = _card.At(SecondLineDown);
 
             float rowLeft = -(BarWidth + GapBarToSeconds + SecondsRoom) / 2f;
@@ -135,5 +140,33 @@ namespace Puzzle.Client.Screens
         }
 
         public void Dispose() => _card.Dispose();
+
+        /// <summary>What the ad pays for, in the alcove: the +5 of a game out of moves, or the shop's pile of coins and their number.</summary>
+        private void ShowThePrize(AdPrize prize, ArtCatalogue art, int raisedBy)
+        {
+            switch (prize)
+            {
+                case AdPrize.ExtraMoves _:
+                    Transform moves = SceneObjects.AddSprite("Five more moves", _card.Content, art.Of(GalleryArt.IconFiveMoves), art.SpriteMaterial, DrawOrder.CardExhibit + raisedBy).transform;
+                    moves.localPosition = _card.At(AlcoveDown + ExtraMovesUnderMiddle);
+                    moves.localScale = new Vector3(ExtraMovesSize / MarkBox, ExtraMovesSize / MarkBox, 1f);
+                    break;
+                case AdPrize.CoinsInTheShop coins:
+                    string words = ShopWords.More(coins.Amount.Amount);
+                    TextMeshPro number = Lettering.Write("Coins", _card.Content, art, LetteringStyle.OnTeal, CoinsNumberSize, Color.white, DrawOrder.CardLettering + raisedBy);
+                    Lettering.Say(number, words);
+                    float numberWidth = Lettering.WidthOf(number, words);
+                    float left = -(CoinPileSize + GapPileToNumber + numberWidth) / 2f;
+                    Vector3 middle = _card.At(AlcoveDown);
+                    Transform pile = SceneObjects.AddSprite("Coins", _card.Content, art.Of(GalleryArt.CoinPile), art.SpriteMaterial, DrawOrder.CardExhibit + raisedBy).transform;
+                    pile.localPosition = middle + new Vector3(left + CoinPileSize / 2f, 0f, 0f);
+                    pile.localScale = new Vector3(CoinPileSize / MarkBox, CoinPileSize / MarkBox, 1f);
+                    number.transform.localPosition = middle + new Vector3(
+                        left + CoinPileSize + GapPileToNumber + numberWidth / 2f, -Lettering.FigureDrop(LetteringStyle.OnTeal) * CoinsNumberSize, 0f);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(prize), prize, "An ad's prize the card cannot show.");
+            }
+        }
     }
 }

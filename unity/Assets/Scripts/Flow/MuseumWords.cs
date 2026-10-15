@@ -13,6 +13,7 @@ namespace Puzzle.Client.Flow
     public static class MuseumWords
     {
         /// <summary>The names of the navigation bar's destinations.</summary>
+        public const string ShopTab = "Mağaza";
         public const string HomeTab = "Müze";
         public const string MapTab = "Harita";
         public const string CollectionTab = "Koleksiyon";

@@ -68,15 +68,19 @@ namespace Puzzle.Client.Hall
 
         /// <summary>Draws the room for a page.</summary>
         /// <param name="floorLine">The height where the wall meets the floor; nothing for a room that shows no floor.</param>
-        public void Show(PageLayout page, float? floorLine)
+        /// <param name="hasARail">False for a page on which nothing hangs from the picture rail (the shop, ShopTR): the wall runs on under the cornice.</param>
+        public void Show(PageLayout page, float? floorLine, bool hasARail = true)
         {
             ScreenView view = page.View;
             float softEdge = 1f / view.PixelsPerPoint;
             var mouldings = new MeshSketch();
             AddShade(mouldings, view, page.CorniceBottom, ShadeUnderCornice, strength: 1f);
             AddMoulding(mouldings, view, view.Top, page.CorniceBottom, grooveDown: 0.62f, MouldingFoot);
-            AddShade(mouldings, view, page.RailBottom, ShadeUnderRail, RailShadeStrength);
-            AddMoulding(mouldings, view, page.RailTop, page.RailBottom, grooveDown: null, MouldingFoot);
+            if (hasARail)
+            {
+                AddShade(mouldings, view, page.RailBottom, ShadeUnderRail, RailShadeStrength);
+                AddMoulding(mouldings, view, page.RailTop, page.RailBottom, grooveDown: null, MouldingFoot);
+            }
 
             var floor = new MeshSketch();
             if (floorLine is float line)

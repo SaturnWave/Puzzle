@@ -324,7 +324,8 @@ public class OutOfMovesOfferTests
         Assert.Equal("0 sn", AdWords.SecondsLeft(ad.SecondsLeft));
         Assert.Throws<ArgumentOutOfRangeException>(() => ad.Advance(-0.1f));
         Assert.Throws<ArgumentOutOfRangeException>(() => Ads.Show((AdSource)7));
-        Assert.Equal("Ödülün: +5 hamle", AdWords.ItPaysFor);
+        Assert.Equal("Ödülün: +5 hamle", AdWords.ItPaysFor(new AdPrize.ExtraMoves()));
+        Assert.Equal("Ödülün: +4 altın", AdWords.ItPaysFor(new AdPrize.CoinsInTheShop(new Coins(4))));
     }
 
     private static (float Top, float Bottom) Span(CardRowContent content)

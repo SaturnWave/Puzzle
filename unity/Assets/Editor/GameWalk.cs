@@ -25,7 +25,8 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// A walk through the game for <see cref="ScreenShots"/>, on the game's own session and by touches alone, with
-    /// a picture at every stop: the hall, the collection and the map (a page turning is pictured too), the play
+    /// a picture at every stop: the hall, where the day's gift is taken if it waits, the shop, the collection and the
+    /// map (a page turning is pictured too), the play
     /// button and the level's card coming down, a start booster chosen on it and the card closed (which spends
     /// nothing), the card again, the booster chosen and "Oyna", the board with the booster's special, the round
     /// button that asks whether to leave (answered first with "no" by the device's way back, then with "yes", which
@@ -42,10 +43,11 @@ namespace Puzzle.Client.EditorTools
     /// board; with the last life lost instead, the lives card comes down and no board opens
     /// (<c>walk-retry-...</c>, <c>walk-lastlife-...</c>); and a start booster held none of is bought on the card
     /// that offers it, chosen and taken into the level, while with too few coins nothing is bought
-    /// (<c>walk-buy-...</c>). The walk fails when a touch does not lead where it should, or when what was placed,
-    /// spent or bought is not in the player's progress.
+    /// (<c>walk-buy-...</c>); and the walks of the shop, the gift and a painting's reward (GameWalk.Shop.cs). The walk
+    /// fails when a touch does not lead where it should, or when what was placed, spent, bought or given is not in the
+    /// player's progress.
     /// </summary>
-    internal static class GameWalk
+    internal static partial class GameWalk
     {
         /// <summary>The bot's choices are random where several moves are equally good; the walk always makes the same ones.</summary>
         private const ulong BotSeed = 20261007;
@@ -92,6 +94,9 @@ namespace Puzzle.Client.EditorTools
 
             reel.Settle();
             reel.Shoot("home");
+            TakeTheGift(reel);
+            TurnThePage(reel, Destination.Shop, picturesTheTurn: false);
+            reel.Shoot("shop");
             TurnThePage(reel, Destination.Collection, picturesTheTurn: false);
             reel.Shoot("collection");
             TurnThePage(reel, Destination.Map, picturesTheTurn: true);
@@ -138,7 +143,7 @@ namespace Puzzle.Client.EditorTools
             }
 
             reel.WriteSheet();
-            Debug.Log($"Screen shots: walk {reel.Name}: hall, collection, map, the level's card closed, the card, level {levelToPlay} with [{string.Join(", ", taken.Select(BoosterKinds.Name))}] ({ending}), {atTheJigsaw}, hall, collection; the player now stands at \"{session.Progress}\".");
+            Debug.Log($"Screen shots: walk {reel.Name}: hall (the day's gift taken where it waited), shop, collection, map, the level's card closed, the card, level {levelToPlay} with [{string.Join(", ", taken.Select(BoosterKinds.Name))}] ({ending}), {atTheJigsaw}, hall, collection; the player now stands at \"{session.Progress}\".");
             WalkWithoutALife(state, screen, studio);
         }
 
@@ -154,6 +159,7 @@ namespace Puzzle.Client.EditorTools
             WalkARetry(standing, screen, studio);
             WalkTheLastLifeLost(standing, screen, studio);
             WalkABuy(standing, screen, studio);
+            RunTheShopWalks(screen, studio);
         }
 
         /// <summary>
@@ -654,6 +660,7 @@ namespace Puzzle.Client.EditorTools
 
             PaintingNumber painting = JigsawOf(session).Table.Painting;
             int waited = JigsawOf(session).Table.Waiting.Count;
+            int paintingRewardsBefore = session.Progress.Wallet.Rewards.ForPaintings;
             CarryThePieceHome(reel);
             if (JigsawOf(session).Table.Waiting.Count > 0)
             {
@@ -669,6 +676,11 @@ namespace Puzzle.Client.EditorTools
             {
                 throw new InvalidOperationException($"After the jigsaw of painting {painting} the progress is \"{session.Progress}\": pieces still wait, or what was placed is not saved.");
             }
+
+            int rewardsDue = session.Progress.Museum.IsComplete(painting) ? 1 : 0;
+            ThroughTheCard.Require(
+                session.Progress.Wallet.Rewards.ForPaintings == paintingRewardsBefore + rewardsDue,
+                $"the jigsaw of painting {painting} gave {session.Progress.Wallet.Rewards.ForPaintings - paintingRewardsBefore} painting rewards, not {rewardsDue}");
 
             bool restoredTheRoom = RoomWall.Of(painting.Room, session.Progress.Museum, reel.Catalogue).IsRestored;
             Press(session, JigsawOf(session).BackButtonPixel, "the jigsaw's back button", reel, "back-pressed");

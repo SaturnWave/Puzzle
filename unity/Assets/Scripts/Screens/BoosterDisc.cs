@@ -87,8 +87,9 @@ namespace Puzzle.Client.Screens
     /// <remarks>
     /// The disc is as large as its place asks (60 on the board's shelf, 66 before a level, 44 in the shop) and its
     /// picture grows with it, while its badges keep their size, as the canvas has them on a disc of 60 and on one
-    /// of 66. Whoever places the disc may draw all of it smaller. A disc always carries its badge: the shop's
-    /// discs, which the canvas draws bare over pills that count a set's boosters (ShopTR), are not this face yet.
+    /// of 66. Whoever places the disc may draw all of it smaller. A disc of the player's stock carries its badge;
+    /// a disc of goods (<see cref="BoosterFace.Goods"/>) is bare, as the canvas draws a set's boosters over the pills
+    /// that count them (ShopTR).
     /// </remarks>
     public sealed class BoosterDisc : IPressable
     {
@@ -155,6 +156,9 @@ namespace Puzzle.Client.Screens
         /// <summary>The middle of the disc, in the points of what it stands on.</summary>
         public Vector2 Middle => _root.localPosition;
 
+        /// <summary>The disc with all that is on it, under what it stands on.</summary>
+        public Transform Transform => _root;
+
         /// <summary>What the disc shows now.</summary>
         public BoosterFace Face { get; private set; }
 
@@ -178,6 +182,12 @@ namespace Puzzle.Client.Screens
             _ring.enabled = face.IsRinged;
             _tickBadge.enabled = face.IsTicked;
             _tick.enabled = face.IsTicked;
+            _badge.Transform.gameObject.SetActive(face.Badge != BoosterBadge.None);
+            if (face.Badge == BoosterBadge.None)
+            {
+                ShowItsLight();
+                return; // goods: the bare disc, its count told by a pill under it
+            }
 
             _badge.Show(face.Badge switch
             {

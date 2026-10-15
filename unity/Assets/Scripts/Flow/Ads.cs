@@ -64,6 +64,30 @@ namespace Puzzle.Client.Flow
         };
     }
 
+    /// <summary>What an ad pays for once it is over. A closed set (private constructor).</summary>
+    public abstract class AdPrize
+    {
+        private AdPrize()
+        {
+        }
+
+        /// <summary>The five more moves of a game that ran out of them.</summary>
+        public sealed class ExtraMoves : AdPrize
+        {
+        }
+
+        /// <summary>Coins in the shop (the settings' shop.adForCoins).</summary>
+        public sealed class CoinsInTheShop : AdPrize
+        {
+            public CoinsInTheShop(Coins amount)
+            {
+                Amount = amount;
+            }
+
+            public Coins Amount { get; }
+        }
+    }
+
     /// <summary>What the card that stands in for an ad says, in the player's language.</summary>
     public static class AdWords
     {
@@ -74,7 +98,12 @@ namespace Puzzle.Client.Flow
         /// <summary>Under its alcove: that no ad is shown, and what it pays for.</summary>
         public const string NothingIsShown = "Bu test sürümünde reklam gösterilmez.";
 
-        public static string ItPaysFor => $"Ödülün: +{ExtraMovesOffer.Moves} hamle";
+        public static string ItPaysFor(AdPrize prize) => prize switch
+        {
+            AdPrize.ExtraMoves _ => $"Ödülün: +{ExtraMovesOffer.Moves} hamle",
+            AdPrize.CoinsInTheShop coins => $"Ödülün: +{NumberWords.Amount(coins.Amount.Amount)} altın",
+            _ => throw new ArgumentOutOfRangeException(nameof(prize), prize, "An ad's prize the card has no words for."),
+        };
 
         /// <summary>Beside its bar: how many seconds are left, a part of one counted as a whole.</summary>
         public static string SecondsLeft(float seconds) => $"{(int)Math.Ceiling(Math.Max(0f, seconds))} sn";

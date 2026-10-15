@@ -15,6 +15,9 @@ namespace Puzzle.Client.Screens
     /// </summary>
     public enum Destination
     {
+        /// <summary>The shop: sets of boosters for coins, coins for an ad, and the coin packs a test build does not sell.</summary>
+        Shop,
+
         /// <summary>The hall: the painting being restored, and the way into the next level.</summary>
         Home,
 
@@ -28,8 +31,11 @@ namespace Puzzle.Client.Screens
     /// <summary>What the navigation bar shows of each destination.</summary>
     public static class Destinations
     {
-        /// <summary>The destinations as they stand on the bar, from left to right, as on the design canvas: the collection, the hall, the map.</summary>
-        public static readonly IReadOnlyList<Destination> OnTheBar = new[] { Destination.Collection, Destination.Home, Destination.Map };
+        /// <summary>
+        /// The destinations as they stand on the bar, from left to right, as on the design canvas: the shop, the
+        /// collection, the hall, the map. The canvas' fifth place, the events' calendar, has nothing behind it.
+        /// </summary>
+        public static readonly IReadOnlyList<Destination> OnTheBar = new[] { Destination.Shop, Destination.Collection, Destination.Home, Destination.Map };
 
         /// <summary>A destination's place on the bar, counted from 0 at the left.</summary>
         public static int PlaceOf(Destination destination)
@@ -47,6 +53,7 @@ namespace Puzzle.Client.Screens
 
         public static string NameOf(Destination destination) => destination switch
         {
+            Destination.Shop => MuseumWords.ShopTab,
             Destination.Home => MuseumWords.HomeTab,
             Destination.Map => MuseumWords.MapTab,
             Destination.Collection => MuseumWords.CollectionTab,
@@ -55,6 +62,7 @@ namespace Puzzle.Client.Screens
 
         public static GalleryArt MarkOf(Destination destination) => destination switch
         {
+            Destination.Shop => GalleryArt.IconShop,
             Destination.Home => GalleryArt.IconMuseum,
             Destination.Map => GalleryArt.IconMap,
             Destination.Collection => GalleryArt.IconCollection,
@@ -68,8 +76,9 @@ namespace Puzzle.Client.Screens
     /// <summary>
     /// What a press on a page of the museum, or on a card that hangs over it, asks for. A closed set (private
     /// constructor): the player goes to another page, asks for the level they stand on, chooses its start boosters
-    /// and goes into it, buys a booster, opens a painting's jigsaw, opens or closes a card that hangs over the page,
-    /// or does something that stays on the page that is shown.
+    /// and goes into it, buys a booster or a set of them, asks for coins (a pack, an ad) or for the day's gift, opens
+    /// a painting's jigsaw, opens or closes a card that hangs over the page, or does something that stays on the page
+    /// that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -109,7 +118,42 @@ namespace Puzzle.Client.Screens
             public BoosterKind Booster { get; }
         }
 
-        /// <summary>A place on the navigation bar: to that page.</summary>
+        /// <summary>
+        /// The green button of a set of boosters in the shop: the set, for its price. A button the coins do not cover
+        /// is dimmed and is pressed all the same: the rules then say why nothing was bought.
+        /// </summary>
+        public sealed class BuyASet : MuseumPress
+        {
+            public BuyASet(BoosterSet set)
+            {
+                Set = set ?? throw new ArgumentNullException(nameof(set));
+            }
+
+            public BoosterSet Set { get; }
+        }
+
+        /// <summary>The button of a pack of coins in the shop: the rules say whether this build sells it.</summary>
+        public sealed class BuyACoinPack : MuseumPress
+        {
+            public BuyACoinPack(CoinPack pack)
+            {
+                Pack = pack ?? throw new ArgumentNullException(nameof(pack));
+            }
+
+            public CoinPack Pack { get; }
+        }
+
+        /// <summary>The blue button of the shop's free strip: an ad, and coins once it is over.</summary>
+        public sealed class WatchAnAdForCoins : MuseumPress
+        {
+        }
+
+        /// <summary>The hall's gift frame: the daily reward, or when the next one comes.</summary>
+        public sealed class TakeTheGift : MuseumPress
+        {
+        }
+
+        /// <summary>A place on the navigation bar, the coins' plus, or a card's way to the shop: to that page.</summary>
         public sealed class Visit : MuseumPress
         {
             public Visit(Destination to)
@@ -183,6 +227,44 @@ namespace Puzzle.Client.Screens
             public BoosterKind Booster { get; }
 
             public override string ToString() => $"buy one {Booster.Name()}";
+        }
+
+        /// <summary>A set of boosters of the shop's, for its price.</summary>
+        public sealed class BuyASet : WalletRequest
+        {
+            public BuyASet(BoosterSet set)
+            {
+                Set = set ?? throw new ArgumentNullException(nameof(set));
+            }
+
+            public BoosterSet Set { get; }
+
+            public override string ToString() => $"buy the {Set}";
+        }
+
+        /// <summary>A pack of coins for real money.</summary>
+        public sealed class BuyACoinPack : WalletRequest
+        {
+            public BuyACoinPack(CoinPack pack)
+            {
+                Pack = pack ?? throw new ArgumentNullException(nameof(pack));
+            }
+
+            public CoinPack Pack { get; }
+
+            public override string ToString() => $"buy the {Pack}";
+        }
+
+        /// <summary>The coins of an ad for coins that was watched to its end.</summary>
+        public sealed class CoinsForAnAd : WalletRequest
+        {
+            public override string ToString() => "coins for an ad";
+        }
+
+        /// <summary>The daily reward, if one is due.</summary>
+        public sealed class TakeTheDailyGift : WalletRequest
+        {
+            public override string ToString() => "the daily gift";
         }
     }
 
