@@ -9,10 +9,11 @@ namespace Puzzle.Client.Flow
     /// are written in the design canvas' manner.
     /// </summary>
     /// <remarks>
-    /// DRAFT, for the owner to approve before any public build. Every sentence is true of this build as it was checked
-    /// on 2026-10-15: the game's code makes no network call and links no network, advertising, purchase or account
-    /// library; Unity's services (analytics, ads, purchasing, crash and performance reports, engine diagnostics) are
-    /// off in the project, and ProjectSetup switches Unity's own hardware statistics off; the progress
+    /// Approved by the owner on 2026-10-16. Every sentence is true of this build as it was checked on 2026-10-15: the
+    /// game's code makes no network call and links no network, advertising, purchase or account library; the package
+    /// does not ask for the internet permission (AndroidBuild.Permissions withdraws it); Unity's services (analytics,
+    /// ads, purchasing, crash and performance reports, engine diagnostics) are off in the project, and ProjectSetup
+    /// switches Unity's own hardware statistics off; the progress
     /// (progress.json), the phone's id and settings (device.json) and the attempt records (attempts.jsonl) lie in the
     /// game's own data folder. Android's own backup, when the player has it on, may copy that folder into the
     /// player's backup, which the game neither asks for nor sees; the last sentence says so. Whatever changes one of

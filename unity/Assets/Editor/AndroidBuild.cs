@@ -60,13 +60,16 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// What the package's manifest says of Android's permissions beyond what Unity writes, one line each, in the
-        /// order they are written (<see cref="AndroidManifestStep"/>). The internet permission Unity asks for stays as it
-        /// is until the owner decides: a line PermissionLine.Withdraw("android.permission.INTERNET") would take it out
-        /// of the merged manifest. The application's backup flag is not this step's.
+        /// order they are written (<see cref="AndroidManifestStep"/>). The internet permission Unity asks for is taken
+        /// out (the owner's decision, 2026-10-16): the game calls no network, and without the permission the privacy
+        /// card's "sends nothing" holds by construction (Flow/PrivacyWords.cs). Ads, purchases or a reporting service
+        /// bring it back, together with a new privacy text. The application's backup flag is not this step's; it stays
+        /// on by the same decision.
         /// </summary>
         internal static readonly PermissionLine[] Permissions =
         {
             PermissionLine.Ask("android.permission.VIBRATE"), // the short ticks of play (Scripts/Sound/Haptics.cs)
+            PermissionLine.Withdraw("android.permission.INTERNET"), // nothing leaves the phone
         };
 
         /// <summary>A 64-bit ARM package in portrait: what current phones run and what the stores ask for.</summary>
