@@ -92,8 +92,10 @@ namespace Puzzle.Client.EditorTools
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using EffectArt effectArt = EffectArt.Paint();
-            using GameStage stage = GameStage.Open(GameAfter(plan.MovesPlayed, level), art, effectArt, paintings, brief);
+            Game game = GameAfter(plan.MovesPlayed, level);
+            using GameStage stage = GameStage.Open(game, art, effectArt, paintings, brief, StoryStudio.ShelfOf(game));
             stage.Fit(screen);
+            stage.Tell(StoryStudio.CanvasWallet);
             float clock = 0f;
             foreach (Moment moment in plan.Moments)
             {

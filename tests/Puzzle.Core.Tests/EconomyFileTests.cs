@@ -119,7 +119,24 @@ public class EconomyFileTests
         var noPack = new EconomyFile();
 
         Assert.Contains("format version 0", Assert.Throws<EconomyFormatException>(() => EconomyFileMapper.ToRules(noPack)).Message);
-        Assert.Contains("format version 2", Refused(pack => pack.formatVersion = 2).Message);
+        Assert.Contains("format version 1", Refused(pack => pack.formatVersion = 1).Message);
+        Assert.Contains("format version 3", Refused(pack => pack.formatVersion = 3).Message);
+    }
+
+    [Fact]
+    public void The_boosters_used_during_play_open_on_their_levels_with_their_gift_and_no_start_booster_has_either()
+    {
+        EconomyRules rules = MetaSupport.Rules();
+
+        Assert.Equal(new[] { 7, 12, 16, 20 }, BoosterKinds.InLevel.Select(rules.Unlocks.LevelOf));
+        Assert.Equal((3, 2, 1, 0), (rules.Unlocks.Gift.Count(BoosterKind.HitCell), rules.Unlocks.Gift.Count(BoosterKind.HitRow), rules.Unlocks.Gift.Count(BoosterKind.HitColumn), rules.Unlocks.Gift.Count(BoosterKind.Shuffle)));
+        Assert.Contains("lacks shuffle", Refused(pack => pack.boosterUnlocks.levels = pack.boosterUnlocks.levels.Where(opens => opens.booster != "shuffle").ToArray()).Message);
+        Assert.Contains("lacks hit-row", Refused(pack => pack.boosterUnlocks.gift = pack.boosterUnlocks.gift.Where(given => given.booster != "hit-row").ToArray()).Message);
+        Assert.Contains("a start booster", Refused(pack => pack.boosterUnlocks.levels = [.. pack.boosterUnlocks.levels, MetaSupport.Opens("start-color-bomb", 3)]).Message);
+        Assert.Contains("a start booster", Refused(pack => pack.boosterUnlocks.gift = [.. pack.boosterUnlocks.gift, MetaSupport.Count("start-color-bomb", 1)]).Message);
+        Assert.Contains("boosterUnlocks.levels.hit-cell 0 must be at least 1", Refused(pack => pack.boosterUnlocks.levels[0].level = 0).Message);
+        Assert.Contains("boosterUnlocks.gift.hit-cell -1 must be at least 0", Refused(pack => pack.boosterUnlocks.gift[0].count = -1).Message);
+        Assert.Contains("states 'hit-row' twice", Refused(pack => pack.boosterUnlocks.levels = [.. pack.boosterUnlocks.levels, MetaSupport.Opens("hit-row", 3)]).Message);
     }
 
     [Fact]

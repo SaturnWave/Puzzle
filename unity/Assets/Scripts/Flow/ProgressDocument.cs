@@ -11,26 +11,33 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// The saved progress as the file writes it:
-    /// <c>{"version":3,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...}}</c>
+    /// <c>{"version":4,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...}}</c>
     /// (the wallet's block is <see cref="WalletDocument"/>). The fields are public and named as the document names
-    /// them, because that is how Unity's JSON reader maps a document. Two earlier layouts are still read. Layout 1,
+    /// them, because that is how Unity's JSON reader maps a document. Three earlier layouts are still read. Layout 1,
     /// written before the game had a museum, has no <c>placed</c>: it reads as progress with no jigsaw piece in place
     /// yet, so the pieces of every level won before then wait on their trays. Layouts 1 and 2 have no wallet: their
-    /// player holds what the rules give a new player, with every life. Unity's reader makes 0 of a number a document
-    /// does not have, so whether the wallet is there is decided by the layout's number, never by a zero.
+    /// player holds what the rules give a new player, with every life; the gifts of the boosters used during play
+    /// that are open where the player stands are given to them the first time the game opens (Puzzle.Meta's
+    /// BoosterUnlocks). Layout 3 keeps a wallet but not which of those gifts were given: its player was given all of
+    /// them in the welcome gift before the first level, as the game did then, so all count as given and none comes a
+    /// second time. Unity's reader makes 0 of a number a document does not have, so whether the wallet and the gifts
+    /// are there is decided by the layout's number, never by a zero.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     [Serializable]
     public sealed class ProgressDocument
     {
         /// <summary>The layout this code writes. A file of a later layout is not guessed at.</summary>
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         /// <summary>The oldest layout a player can have on a device; this code reads it as it reads its own.</summary>
         private const int FirstVersion = 1;
 
         /// <summary>The first layout that keeps the player's wallet.</summary>
         private const int FirstVersionWithAWallet = 3;
+
+        /// <summary>The first layout that keeps which boosters used during play have had their opening gift.</summary>
+        private const int FirstVersionWithUnlockGifts = 4;
 
         public int version;
         public int levelsWon;
@@ -80,7 +87,9 @@ namespace Puzzle.Client.Flow
 
             bool hasCounts = document.levelsWon >= 0 && document.attemptsOnLevel >= 0;
             PlacedPieces? placed = hasCounts ? PossiblePlacedPiecesOf(document) : null;
-            Wallet? wallet = document.version < FirstVersionWithAWallet ? startingWallet : document.wallet?.PossibleWallet();
+            Wallet? wallet = document.version < FirstVersionWithAWallet
+                ? startingWallet
+                : document.wallet?.PossibleWallet(givenAllInTheWelcomeGift: document.version < FirstVersionWithUnlockGifts);
             if (document.version > CurrentVersion)
             {
                 // Later layouts are expected to add to this one, so what this game knows is looked for in them too:
@@ -140,12 +149,14 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// The player's wallet as the file writes it (Puzzle.Meta.Wallet, field by field):
     /// <c>{"coins":1250,"livesShort":2,"nextLifeAtUnixSeconds":1792000800,"boosters":[{"name":"hit-row","count":3},...],
-    /// "day":739537,"adsForMovesToday":1,"adsForCoinsToday":0,"paintingRewards":3,"dailyRewards":0,"lastDailyDay":0}</c>.
+    /// "day":739537,"adsForMovesToday":1,"adsForCoinsToday":0,"paintingRewards":3,"dailyRewards":0,"lastDailyDay":0,
+    /// "unlockGifts":["hit-cell","hit-row"]}</c>.
     /// Lives are kept as how many are missing, so a full meter is 0 and the time of the next life is 0 with it. An
     /// instant is kept in whole seconds since 1970 (UTC), which is what every clock of the game hands out
     /// (<see cref="IWallClock"/>); one between two seconds is written as the later second, so a wait is never cut
     /// short. A calendar day is kept as its number (Puzzle.Meta.DayStamp); the day of the latest daily reward is 0
-    /// while none was given. Every booster of the game is written, by the name its records give it.
+    /// while none was given. Every booster of the game is written, by the name its records give it; the boosters used
+    /// during play whose opening gift was given are named in <c>unlockGifts</c>, in the engine's order.
     /// </summary>
     [Serializable]
     public sealed class WalletDocument
@@ -161,6 +172,9 @@ namespace Puzzle.Client.Flow
         public int dailyRewards;
         public int lastDailyDay;
 
+        /// <summary>The boosters used during play whose opening gift was given, by their record names; in the file since layout 4.</summary>
+        public string[] unlockGifts = Array.Empty<string>();
+
         /// <summary>The block that keeps a wallet.</summary>
         public static WalletDocument Of(Wallet wallet) => new WalletDocument
         {
@@ -174,19 +188,26 @@ namespace Puzzle.Client.Flow
             paintingRewards = wallet.Rewards.ForPaintings,
             dailyRewards = wallet.Rewards.Daily,
             lastDailyDay = wallet.Rewards.LastDailyOn?.Number ?? 0,
+            unlockGifts = wallet.Rewards.UnlockGifts.Kinds.Select(BoosterKinds.Name).ToArray(),
         };
 
         /// <summary>
         /// The wallet the block holds; nothing when no wallet can be so: a negative amount or count, a time for a
         /// full meter or a day for a daily reward never given, a day or an instant outside the calendar, a booster
-        /// this game does not have, one named twice, or one not named at all.
+        /// this game does not have, one named twice, or one not named at all; an opening gift of a booster this game
+        /// does not have, of a start booster, or named twice.
         /// </summary>
-        public Wallet? PossibleWallet()
+        /// <param name="givenAllInTheWelcomeGift">
+        /// True for a block of a layout that kept no opening gifts (layout 3): its player was given every one of them
+        /// in the welcome gift, and the block's <c>unlockGifts</c> are not looked at.
+        /// </param>
+        public Wallet? PossibleWallet(bool givenAllInTheWelcomeGift)
         {
             BoosterShelf? shelf = PossibleShelf();
+            BoosterKindSet? gifts = givenAllInTheWelcomeGift ? BoosterKindSet.Of(BoosterKinds.InLevel) : PossibleUnlockGifts();
             bool statesNoTimeForAFullMeter = livesShort > 0 || nextLifeAtUnixSeconds == 0;
             bool statesNoDayWithoutADailyReward = dailyRewards > 0 || lastDailyDay == 0;
-            if (shelf == null || coins < 0 || !statesNoTimeForAFullMeter || !statesNoDayWithoutADailyReward)
+            if (shelf == null || !(gifts is BoosterKindSet given) || coins < 0 || !statesNoTimeForAFullMeter || !statesNoDayWithoutADailyReward)
             {
                 return null;
             }
@@ -199,7 +220,7 @@ namespace Puzzle.Client.Flow
                     new LifeMeter(livesShort, livesShort > 0 ? DateTimeOffset.FromUnixTimeSeconds(nextLifeAtUnixSeconds) : (DateTimeOffset?)null),
                     shelf,
                     new AdsWatched(new DayStamp(day), adsForMovesToday, adsForCoinsToday),
-                    new RewardsGiven(paintingRewards, dailyRewards, dailyRewards > 0 ? new DayStamp(lastDailyDay) : (DayStamp?)null));
+                    new RewardsGiven(paintingRewards, dailyRewards, dailyRewards > 0 ? new DayStamp(lastDailyDay) : (DayStamp?)null, given));
             }
             catch (ArgumentException)
             {
@@ -223,6 +244,23 @@ namespace Puzzle.Client.Flow
             }
 
             return named.Count == BoosterKinds.All.Count ? shelf : null;
+        }
+
+        /// <summary>The boosters the block names as having had their opening gift: each a booster used during play, once; nothing otherwise.</summary>
+        private BoosterKindSet? PossibleUnlockGifts()
+        {
+            BoosterKindSet given = BoosterKindSet.None;
+            foreach (string name in ProgressDocument.ListOrNone(unlockGifts))
+            {
+                if (!(BoosterKinds.Find(name ?? string.Empty) is BoosterKind kind) || !kind.IsInLevel() || given.Contains(kind))
+                {
+                    return null;
+                }
+
+                given = given.With(kind);
+            }
+
+            return given;
         }
 
         /// <summary>An instant as whole seconds since 1970 (UTC); one between two seconds as the later of them.</summary>

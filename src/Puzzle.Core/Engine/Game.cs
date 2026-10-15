@@ -136,6 +136,9 @@ namespace Puzzle.Core.Engine
         /// <summary>Whether the "+5 moves" offer was taken in this attempt.</summary>
         public bool ExtraMovesTaken { get; private set; }
 
+        /// <summary>The rule the shuffle booster follows in this game, which its attempt's record names (<see cref="AttemptStart.ShuffleRule"/>).</summary>
+        public ShuffleBoosterRule ShuffleBoosterRule => _options.ShuffleBoosterRule;
+
         /// <summary>
         /// What the player did in this attempt, in order, as a replay needs it (<see cref="AttemptAction"/>): the moves and
         /// boosters the game accepted, the extra moves taken, and the refused requests that drew from the shuffle stream.
@@ -311,8 +314,9 @@ namespace Puzzle.Core.Engine
 
         /// <summary>
         /// Uses a booster. It costs no move. A booster that would change nothing (a strike on cells with nothing to hit,
-        /// a shuffle of a board that cannot be rearranged) is rejected and the board stays as it was. A rejected shuffle
-        /// has still drawn from the shuffle stream, so asking again may find an arrangement the first try missed.
+        /// a shuffle of a board that cannot be rearranged) is rejected and the board stays as it was. The shuffle follows
+        /// <see cref="GameOptions.ShuffleBoosterRule"/>; under the first rule a rejected shuffle has still drawn from the
+        /// shuffle stream, so asking again may find an arrangement the first try missed.
         /// </summary>
         /// <exception cref="InvalidOperationException">The game is already over.</exception>
         public bool TryUseBooster(BoosterUse booster)
@@ -335,13 +339,13 @@ namespace Puzzle.Core.Engine
             }
 
             bool changedTheBoard = booster is BoosterUse.Shuffle
-                ? _shuffler.TryRearrangeOrLeave()
+                ? TryShuffleAsABooster()
                 : TryStrike(CellsStruckBy(booster));
             if (!changedTheBoard)
             {
                 if (booster is BoosterUse.Shuffle)
                 {
-                    // The shuffle drew from the shuffle stream before it gave up: a replay has to ask for it here too.
+                    // The shuffle may have drawn from the shuffle stream before it gave up: a replay asks for it here too.
                     _actions?.Add(new AttemptAction.ShuffleRefused());
                 }
 
@@ -470,6 +474,13 @@ namespace Puzzle.Core.Engine
                 _events.Add(new GameEvent.SpecialCreated(Board.Shape.PositionOf(cell), special));
             }
         }
+
+        private bool TryShuffleAsABooster() => _options.ShuffleBoosterRule switch
+        {
+            ShuffleBoosterRule.RandomOrders => _shuffler.TryRearrangeOrLeave(),
+            ShuffleBoosterRule.LaidWithoutAMatch => _shuffler.TryLayWithoutAMatchOrLeave(),
+            _ => throw new InvalidOperationException($"Unhandled shuffle booster rule {_options.ShuffleBoosterRule}."),
+        };
 
         /// <summary>The cells a striking booster hits; none when it aims outside the board.</summary>
         private List<int> CellsStruckBy(BoosterUse booster)

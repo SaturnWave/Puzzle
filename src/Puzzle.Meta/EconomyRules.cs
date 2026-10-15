@@ -19,6 +19,7 @@ namespace Puzzle.Meta
             StartBoosterRules startBoosters,
             Shop shop,
             Wallet startingWallet,
+            BoosterUnlocks unlocks,
             AdSource ads)
         {
             Lives = lives ?? throw new ArgumentNullException(nameof(lives));
@@ -29,6 +30,7 @@ namespace Puzzle.Meta
             StartBoosters = startBoosters ?? throw new ArgumentNullException(nameof(startBoosters));
             Shop = shop ?? throw new ArgumentNullException(nameof(shop));
             StartingWallet = startingWallet ?? throw new ArgumentNullException(nameof(startingWallet));
+            Unlocks = unlocks ?? throw new ArgumentNullException(nameof(unlocks));
             Ads = ads;
         }
 
@@ -49,6 +51,9 @@ namespace Puzzle.Meta
 
         /// <summary>What a new player holds: the settings' starting coins and boosters, every life, nothing used.</summary>
         public Wallet StartingWallet { get; }
+
+        /// <summary>When the boosters used during play open, and the gift each brings then: the welcome gift's part for them.</summary>
+        public BoosterUnlocks Unlocks { get; }
 
         /// <summary>Where this build's ads come from: what the client shows when a rule asks for one.</summary>
         public AdSource Ads { get; }

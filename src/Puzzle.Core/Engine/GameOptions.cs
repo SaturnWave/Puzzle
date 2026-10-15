@@ -9,6 +9,7 @@ namespace Puzzle.Core.Engine
         private readonly int? _moveLimitOverride;
         private readonly int _assistPercent;
         private readonly IReadOnlyList<StartBooster> _startBoosters = Array.Empty<StartBooster>();
+        private readonly ShuffleBoosterRule _shuffleBoosterRule = ShuffleBoosterRule.LaidWithoutAMatch;
 
         public static GameOptions Default { get; } = new GameOptions();
 
@@ -23,6 +24,19 @@ namespace Puzzle.Core.Engine
         /// plays the same either way.
         /// </summary>
         public bool RecordActions { get; init; }
+
+        /// <summary>
+        /// How the shuffle booster finds its arrangement; the rule of today unless a replay asks for the one its record
+        /// was played under (<see cref="Recording.AttemptStart.ShuffleRule"/>). Bots use no booster, so it changes no
+        /// measurement.
+        /// </summary>
+        public ShuffleBoosterRule ShuffleBoosterRule
+        {
+            get => _shuffleBoosterRule;
+            init => _shuffleBoosterRule = Enum.IsDefined(typeof(ShuffleBoosterRule), value)
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(ShuffleBoosterRule), value, "Unknown shuffle booster rule.");
+        }
 
         /// <summary>
         /// Replaces the level's move limit. The bot calibration plays with a large override to learn how many

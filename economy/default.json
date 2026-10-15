@@ -1,8 +1,8 @@
 {
   // The game's economy settings, which are the economy simulator's too: who plays, how they play, what the game
   // gives and what things cost. The game reads lives, coins, rewards, extraMovesOffer, the booster prices, start,
-  // startBoosters, shop and build (tools/unity/sync-engine.js packs them for it); the simulator reads everything
-  // and simulates all but the last three.
+  // boosterUnlocks, startBoosters, shop and build (tools/unity/sync-engine.js packs them for it); the simulator reads
+  // everything and simulates all but the last three.
   // Every field must be stated; the code holds no default. Each comment ends with where the value comes from:
   //   [decided]     a product decision (docs/GAME_DESIGN.md section 19) or a fact of the engine
   //   [assumed n]   starting assumption n, approved by the owner as a default
@@ -135,9 +135,24 @@
     // sell something on the first visit, and well under the price of a +5, so the first +5 for coins is earned.
     // The owner's number of 2026-10-14; the balance policy (docs/GAME_DESIGN.md section 25) holds it. [decided]
     "coins": 200,
-    // Boosters a new player starts with: three of each, so the first levels can be eased and every booster is met
-    // without coins. Every booster is stated; 0 gives none. The owner's number of 2026-10-14. [decided]
-    "boosters": { "start-rocket-and-bomb": 3, "start-color-bomb": 3, "start-extra-moves": 3, "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
+    // Boosters a new player starts with: three of each start booster, so the first levels can be eased and every
+    // booster is met without coins (the owner's number of 2026-10-14). The welcome gift's three of each booster used
+    // during play come when that booster opens (boosterUnlocks.gift, the owner's decision of 2026-10-15), so none of
+    // them is here. Every booster is stated; 0 gives none. [decided]
+    "boosters": { "start-rocket-and-bomb": 3, "start-color-bomb": 3, "start-extra-moves": 3, "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
+  },
+
+  // The boosters used during play open one at a time (the owner's decision of 2026-10-15): before its level a
+  // booster's disc is locked, on its level it is shown once with a word on its first use, and its gift is given then,
+  // once for good. The levels are calibrated without boosters, so opening them changes no level's difficulty; it
+  // keeps the first levels' recordings free of boosters. A simulated player uses none before its level.
+  "boosterUnlocks": {
+    // The level each opens on: the spatula on 7, the brush across a row on 12, the brush down a column on 16, the
+    // palette shuffle on 20. Every booster used during play is stated, and no start booster. [decided]
+    "levels": { "hit-cell": 7, "hit-row": 12, "hit-column": 16, "shuffle": 20 },
+    // Boosters of its own kind each one brings as it opens: the welcome gift's three, given on its level instead of
+    // before the first. A save from before this rule that is past a level is given that gift once. [decided]
+    "gift": { "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
   },
 
   // FOR THE GAME ALONE, from here to "build". The simulator checks that these are well formed and simulates nothing

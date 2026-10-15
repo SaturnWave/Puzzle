@@ -5,6 +5,7 @@ using Puzzle.Client.Boards;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Painting;
 using Puzzle.Client.Stage;
+using Puzzle.Core.Engine;
 using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Model;
 using UnityEngine;
@@ -80,6 +81,15 @@ namespace Puzzle.Client.Play
 
         /// <summary>The object every effect's sprite hangs under: a layer of the board's own, with the board's unit and origin.</summary>
         private readonly Transform _layer;
+
+        /// <summary>
+        /// Where an armed booster is aimed while the finger is down: a gilt ring under the cell's piece, and for a brush
+        /// a stroke of pale light over its row or column. They are no effect of a turn: they hang beside the layer,
+        /// which a turn's end clears, and come and go as the finger does.
+        /// </summary>
+        private readonly Transform _aim;
+        private readonly SpriteRenderer _aimRing;
+        private readonly SpriteRenderer[] _aimBand = new SpriteRenderer[3];
         private readonly BoardShape _shape;
         private readonly EffectArt _art;
         private readonly ArtCatalogue _catalogue;
@@ -100,6 +110,92 @@ namespace Puzzle.Client.Play
             _art = art;
             _catalogue = catalogue;
             _timeline = timeline;
+
+            _aim = new GameObject("Aim").transform;
+            _aim.SetParent(board, worldPositionStays: false);
+            _aimRing = SceneObjects.AddSprite("Aimed cell", _aim, art.Mark, catalogue.SpriteMaterial, DrawOrder.UnderPieces);
+            Sprite[] band = { art.StrokeEnd, art.StrokeMiddle, art.StrokeEnd };
+            for (int part = 0; part < band.Length; part++)
+            {
+                _aimBand[part] = SceneObjects.AddSprite("Aimed line", _aim, band[part], catalogue.SpriteMaterial, DrawOrder.EffectLight);
+                _aimBand[part].maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+            }
+
+            ShowTheAim(null, null);
+        }
+
+        /// <summary>The stroke of light an aimed brush lays over its row or column shows this much of the light: the pieces under it stay plain to see.</summary>
+        private const float AimedLineStrength = 0.4f;
+
+        /// <summary>The stroke of an aimed brush is drawn this many cells across: its soft edges then lie on the cells' own.</summary>
+        private const float AimedLineAcross = 1.35f;
+
+        /// <summary>
+        /// Shows where an armed booster is aimed: the cell the finger is over, ringed in gilt light, and for a brush
+        /// a stroke of pale light over all of its row or column, where the brush will paint. Nothing for no booster or no cell.
+        /// </summary>
+        public void ShowTheAim(BoosterUse? aimedAt, float? clockSeconds)
+        {
+            Position? cell = aimedAt switch
+            {
+                BoosterUse.HitCell hitCell => hitCell.At,
+                BoosterUse.HitRow row => row.At,
+                BoosterUse.HitColumn column => column.At,
+                _ => null,
+            };
+            _aim.gameObject.SetActive(cell != null);
+            if (!(cell is Position at))
+            {
+                return;
+            }
+
+            // The ring breathes as the picked piece's does, so an aim looks alive under a still finger.
+            float breath = clockSeconds is float seconds ? (Mathf.Sin(seconds * 2f * Mathf.PI / 1.1f) + 1f) / 2f : 1f;
+            Put(_aimRing, PieceSprite.MiddleOf(at), 1f);
+            _aimRing.color = Faded(WarmLight, Mathf.Lerp(0.85f, 1f, breath));
+
+            bool isAlongTheRow = aimedAt is BoosterUse.HitRow;
+            bool hasALine = aimedAt is BoosterUse.HitRow || aimedAt is BoosterUse.HitColumn;
+            foreach (SpriteRenderer part in _aimBand)
+            {
+                part.enabled = hasALine;
+                part.color = Faded(WarmLight, AimedLineStrength);
+            }
+
+            if (hasALine)
+            {
+                const float EndLength = 0.5f;
+                float length = isAlongTheRow ? _shape.Width : _shape.Height;
+                float line = isAlongTheRow ? at.Y + 0.5f : at.X + 0.5f;
+                float turn = isAlongTheRow ? 0f : -90f;
+                Vector2 PlaceAlong(float along) => isAlongTheRow ? new Vector2(along, line) : new Vector2(line, along);
+                Put(_aimBand[0], PlaceAlong(EndLength), 1f, AimedLineAcross, turn);
+                Put(_aimBand[1], PlaceAlong(length / 2f), Mathf.Max(0f, length - 2f * EndLength), AimedLineAcross, turn);
+                Put(_aimBand[2], PlaceAlong(length - EndLength), 1f, AimedLineAcross, turn + 180f);
+            }
+        }
+
+        /// <summary>
+        /// The tool of a booster used during play at work (<see cref="Cue.ToolUsed"/>): the spatula comes down onto
+        /// its cell, strikes it with a blink and a ring of light, and lifts away; the brush comes in over the board's
+        /// edge and paints its row or column, a stroke of ink behind it. The hits come by cues of their own.
+        /// </summary>
+        public void ShowTheTool(Cue.ToolUsed tool)
+        {
+            switch (tool.Booster)
+            {
+                case BoosterUse.HitCell cell:
+                    StrikeWithTheSpatula(tool, cell.At);
+                    break;
+                case BoosterUse.HitRow row:
+                    PaintWithTheBrush(tool, row.At.Y, isAlongTheRow: true);
+                    break;
+                case BoosterUse.HitColumn column:
+                    PaintWithTheBrush(tool, column.At.X, isAlongTheRow: false);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tool), tool.Booster, "A booster without a tool to show.");
+            }
         }
 
         /// <summary>
@@ -447,6 +543,72 @@ namespace Puzzle.Client.Play
                     Put(head, origin + (isAlongTheRow ? new Vector2(flown, 0f) : new Vector2(0f, flown)), BoardView.PieceScale);
                 });
             }
+        }
+
+        /// <summary>
+        /// The spatula, as large as one and a half cells, comes down from over the cell's upper right with its blade
+        /// first, strikes, and lifts away the way it came, fading. Its blade is the lower left of its picture.
+        /// </summary>
+        private void StrikeWithTheSpatula(Cue.ToolUsed tool, Position cell)
+        {
+            const float Across = 1.5f;
+            Vector2 at = PieceSprite.MiddleOf(cell);
+            // The blade's tip lies this far down and to the left of the picture's middle: it strikes the cell's middle.
+            Vector2 resting = at + new Vector2(0.44f, -0.46f);
+            Vector2 high = resting + new Vector2(0.9f, -1.1f);
+            Sprite spatula = _catalogue.Of(GalleryArt.IconSpatula);
+            Show(tool.Start, tool.Seconds, spatula, DrawOrder.Flight, isCutAtTheEdge: false, (sprite, progress) =>
+            {
+                float elapsed = progress * tool.Seconds;
+                float coming = Easing.In(Easing.Within(elapsed, 0f, tool.StrikesAt));
+                float going = Easing.Out(Easing.Within(elapsed, tool.StrikesAt + 0.06f, tool.Seconds));
+                Vector2 place = Vector2.Lerp(Vector2.Lerp(high, resting, coming), high, going);
+                float squash = 1f - 0.12f * Easing.Arch(Easing.Within(elapsed, tool.StrikesAt - 0.02f, tool.StrikesAt + 0.08f));
+                Put(sprite, place, Across * squash / 100f, Across / squash / 100f, 12f * (1f - coming) + 18f * going);
+                sprite.color = Faded(Light, Easing.Within(elapsed, 0f, 0.06f) * (1f - going));
+            });
+            Flash(tool.StrikesAt, at, 1.7f, WarmLight, 0.85f);
+            Wave(tool.StrikesAt, at, 2.2f);
+        }
+
+        /// <summary>
+        /// The brush, lying for a row and standing for a column, comes in over the board's edge and travels to the
+        /// other, a stroke of ink growing behind it that fades once it is through. It reaches the middle of the first
+        /// cell when the strike begins and every next cell one step later, as the hits come.
+        /// </summary>
+        private void PaintWithTheBrush(Cue.ToolUsed tool, int line, bool isAlongTheRow)
+        {
+            const float EndLength = 0.5f;
+            float length = isAlongTheRow ? _shape.Width : _shape.Height;
+            float across = line + 0.5f;
+            float turn = isAlongTheRow ? 0f : -90f;
+            float throughAt = tool.StrikesAt + (length - 1f) * Tempo.BrushPerCell;
+            Vector2 PlaceAlong(float along) => isAlongTheRow ? new Vector2(along, across) : new Vector2(across, along);
+            float HeadAfter(float elapsed) => 0.5f + (elapsed - tool.StrikesAt) / Tempo.BrushPerCell;
+            Color InkAfter(float elapsed) => Faded(Light, 1f - Easing.In(Easing.Within(elapsed, throughAt, tool.Seconds)));
+
+            float tail = -OverTheEdge;
+
+            // No ink before the brush has come over the edge far enough for a stroke with its two round ends.
+            void ShowPart(Sprite part, Action<SpriteRenderer, float> pose) =>
+                Show(tool.Start, tool.Seconds, part, DrawOrder.Effect, isCutAtTheEdge: true, (sprite, progress) =>
+                {
+                    float elapsed = progress * tool.Seconds;
+                    float head = Mathf.Min(length + OverTheEdge, HeadAfter(elapsed));
+                    pose(sprite, head);
+                    sprite.color = head < tail + 2f * EndLength ? Faded(Light, 0f) : InkAfter(elapsed);
+                });
+
+            ShowPart(_art.StrokeEnd, (end, head) => Put(end, PlaceAlong(tail + EndLength), 1f, 1f, turn));
+            ShowPart(_art.StrokeMiddle, (body, head) => Put(body, PlaceAlong((tail + head) / 2f), Mathf.Max(0f, head - tail - 2f * EndLength), 1f, turn));
+            ShowPart(_art.StrokeEnd, (end, head) => Put(end, PlaceAlong(Mathf.Max(tail + 2f * EndLength, head) - EndLength), 1f, 1f, turn + 180f));
+
+            Sprite brush = _catalogue.Of(isAlongTheRow ? PieceArt.RocketHorizontal : PieceArt.RocketVertical);
+            Show(tool.Start, throughAt + 2f * Tempo.BrushPerCell - tool.Start, brush, DrawOrder.EffectPiece, isCutAtTheEdge: true, (head, progress) =>
+            {
+                float elapsed = progress * (throughAt + 2f * Tempo.BrushPerCell - tool.Start);
+                Put(head, PlaceAlong(HeadAfter(elapsed)), BoardView.PieceScale);
+            });
         }
 
         /// <summary>A bomb's blot of ink: it spreads fast, stands for a moment and fades.</summary>

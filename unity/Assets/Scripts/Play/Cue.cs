@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using Puzzle.Core.Engine;
 using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Model;
 
@@ -346,6 +347,27 @@ namespace Puzzle.Client.Play
 
             /// <summary>Every piece that was dealt, with the cell it lies in and what it shows from now on.</summary>
             public IReadOnlyList<PlacedPiece> Dealt { get; }
+        }
+
+        /// <summary>
+        /// The tool of a booster used during play: the spatula comes down onto its cell, strikes it and lifts away;
+        /// the brush comes in over the board's edge and paints its row or column. The hits come by cues of their own,
+        /// as the tool reaches each cell. No move is spent.
+        /// </summary>
+        public sealed class ToolUsed : Cue
+        {
+            public ToolUsed(float start, float seconds, BoosterUse booster, float strikesAt)
+                : base(start, seconds)
+            {
+                Booster = booster;
+                StrikesAt = strikesAt;
+            }
+
+            /// <summary>The booster, with the cell it was aimed at.</summary>
+            public BoosterUse Booster { get; }
+
+            /// <summary>When the tool reaches the board: the spatula strikes its cell, the brush its row's or column's first cell.</summary>
+            public float StrikesAt { get; }
         }
 
         /// <summary>The finale of a won game opens: light widens at the moves medallion.</summary>

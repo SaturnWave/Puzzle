@@ -12,6 +12,7 @@ using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
+using Puzzle.Core.Model;
 using Puzzle.Core.Randomness;
 using Puzzle.Meta;
 using Puzzle.Museum;
@@ -102,8 +103,9 @@ namespace Puzzle.Client.EditorTools
             LeaveTheLevelAndComeBack(reel, levelToPlay, taken);
             BoosterShelf beforeTheLevel = session.Progress.Wallet.Shelf;
             Coins coinsBeforeTheLevel = session.Progress.Wallet.Coins;
+            BoosterKind[] usedOnTheShelf = UseTheSpatulaWhereItIsHeld(reel);
             GameStatus ending = PlayTheLevel(reel);
-            RequireSpent(session, beforeTheLevel, taken, "the level's first move");
+            RequireSpent(session, beforeTheLevel, taken.Concat(usedOnTheShelf).ToArray(), "the level's first move and the shelf's spatula");
             RequireTheCoinsOnTheCardPaid(session, coinsBeforeTheLevel, ending);
             bool hadPiecesToPlace = session.Stage.PlaceButtonPixel != null;
             string atTheJigsaw = hadPiecesToPlace ? PlaceWhatWasWon(reel) : "no piece to place";
@@ -537,6 +539,33 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>Through the open level to its card.</summary>
+        /// <summary>
+        /// Where the spatula is open and held, it is used by touches before any move: its disc, then a gem in the
+        /// board's lower half. It is the attempt's first move then, and is spent with the start boosters taken.
+        /// </summary>
+        /// <returns>The spatula when it was used; none where the level has it locked or the player holds none.</returns>
+        private static BoosterKind[] UseTheSpatulaWhereItIsHeld(Reel reel)
+        {
+            GameSession session = reel.Session;
+            reel.Settle();
+            if (!(session.Stage.BoosterDiscPixel(BoosterKind.HitCell) is Vector2 disc) || !session.Progress.Wallet.Shelf.Has(BoosterKind.HitCell))
+            {
+                return Array.Empty<BoosterKind>();
+            }
+
+            Press(session, disc, "the spatula's disc", reel, pressedShot: null);
+            reel.Shoot("spatula-armed");
+            Game game = session.Stage.Game;
+            Position target = Enumerable.Range(0, game.Board.Shape.Height).Reverse().SelectMany(y => Enumerable.Range(0, game.Board.Shape.Width).Select(x => new Position(x, y)))
+                .First(cell => game.Board.Shape.IsPlayable(cell) && game.Board.TileAt(cell).IsGem);
+            Press(session, session.Stage.PixelOf(target), "a gem for the spatula", reel, pressedShot: null);
+            reel.Advance(Tempo.SpatulaStrikes);
+            reel.Shoot("spatula-strikes");
+            reel.Settle();
+            ThroughTheCard.Require(game.BoostersUsed.Contains(BoosterNames.Of(new BoosterUse.HitCell(target))) && game.MovesUsed == 0, "the spatula used on the shelf did not strike before any move");
+            return new[] { BoosterKind.HitCell };
+        }
+
         private static GameStatus PlayTheLevel(Reel reel)
         {
             GameSession session = reel.Session;

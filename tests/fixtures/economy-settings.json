@@ -113,6 +113,13 @@
     "boosters": { "start-rocket-and-bomb": 0, "start-color-bomb": 0, "start-extra-moves": 0, "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
   },
 
+  // When the boosters used during play open and what each brings then. The simulator was first built before they
+  // opened one at a time: here every one is open from the first level and brings nothing. [placeholder]
+  "boosterUnlocks": {
+    "levels": { "hit-cell": 1, "hit-row": 1, "hit-column": 1, "shuffle": 1 },
+    "gift": { "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
+  },
+
   // FOR THE GAME ALONE, from here to "build": read and checked by the simulator, simulated by nothing. The fixture
   // states them because a settings file must; no test of a simulator's rule counts with one.
 

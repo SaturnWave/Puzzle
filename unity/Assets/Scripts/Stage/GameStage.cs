@@ -14,6 +14,7 @@ using Puzzle.Core.Engine;
 using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
+using Puzzle.Meta;
 using UnityEngine;
 
 namespace Puzzle.Client.Stage
@@ -64,17 +65,35 @@ namespace Puzzle.Client.Stage
     /// <para>
     /// A level can be left at any time. The pause disc on the shelf's left end, and the device's way back
     /// (<see cref="GoBack"/>), ask first: a card comes down that says what leaving costs (a life once a move was
-    /// played, nothing before), and the player stays or goes to the museum. From the press on the board takes no
-    /// touch: what the finger did before is forgotten, and a move still being shown is finished before the card
+    /// played or a booster used, nothing before), and the player stays or goes to the museum. From the press on the
+    /// board takes no touch: what the finger did before is forgotten, an armed booster is put down, and a move still
+    /// being shown is finished before the card
     /// comes. Asking first matters on a phone, where a swipe from the screen's edge is the way back and the board
     /// reaches that edge. Under any card the pause disc lies in the dark with the shelf and listens to nothing:
     /// every card has its own way out.
     /// </para>
     /// <para>
+    /// The four boosters used during play stand on the shelf after the pause disc (<see cref="ShelfBrief"/>). A
+    /// press on a disc arms its booster: it is ringed, the others are set aside, and a pill over the shelf says what
+    /// it is, what it does and what to pick. While a finger is down on the board the cell, row or column it aims at
+    /// is lit and follows the finger as it slides; lifting over the board uses the booster there, and lifting off it,
+    /// the armed disc, the pause disc or the way back put it down again. The shuffle is used at once. A disc may be
+    /// armed while pieces move; a use made then waits for the board to come to rest, as a gesture does. The engine
+    /// decides (Game.TryUseBooster): a use it accepts is shown as a turn is, with the tool's own picture and no move
+    /// spent (TurnChoreographer.ComposeBooster); one that would change nothing is refused, the disc shakes, the pill
+    /// says why and nothing is spent. A disc of which none is held shows a plus, which hangs a card over the dimmed
+    /// board that sells one for its single price; once the wallet holds it the card goes up and the booster is
+    /// armed. A booster not open yet is dimmed with the level it opens on and takes no finger; on that level, on its
+    /// first try, it is ringed with light and the pill says how it is used, until it is first touched. The stage
+    /// does not hold the wallet: it is told it (<see cref="Tell"/>), and what it asks of it waits to be taken
+    /// (<see cref="TakeWhatWasAskedFor"/>).
+    /// </para>
+    /// <para>
     /// What happens in the attempt that changes the player's progress is reported, in order, at the moment the
-    /// engine says so: the first move, the move that wins, the move after which the game is lost for good, and the
-    /// press that leaves the level (<see cref="TakeWhatHappened"/>). The stage keeps no progress itself; whoever
-    /// owns it takes the reports and keeps them.
+    /// engine says so: the first move (a booster the engine accepts counts as one), a booster used, the move or the
+    /// booster that wins, the one after which the game is lost for good, and the press that leaves the level
+    /// (<see cref="TakeWhatHappened"/>). The stage keeps no progress itself; whoever owns it takes the reports and
+    /// keeps them.
     /// </para>
     /// </remarks>
     public sealed class GameStage : IStage
@@ -86,11 +105,89 @@ namespace Puzzle.Client.Stage
         /// <summary>The skipped finale's board is shown under one blink of light, this many times the tray's longer side across.</summary>
         private const float SkipBlinkAcross = 1.5f;
 
-        /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set.</summary>
-        private enum StageControl
+        /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set (private constructor).</summary>
+        private abstract class StageControl
         {
+            private StageControl()
+            {
+            }
+
             /// <summary>The pause disc on the shelf: it asks whether to leave the level.</summary>
-            Pause,
+            public sealed class Pause : StageControl
+            {
+            }
+
+            /// <summary>A booster's disc on the shelf: it arms the booster, puts it down again, uses the shuffle, or offers one more where none is held.</summary>
+            public sealed class Disc : StageControl
+            {
+                public Disc(BoosterKind booster)
+                {
+                    Booster = booster;
+                }
+
+                public BoosterKind Booster { get; }
+            }
+        }
+
+        /// <summary>What the boosters of the shelf are doing. A closed set (private constructor).</summary>
+        private abstract class Arming
+        {
+            private Arming()
+            {
+            }
+
+            /// <summary>No booster is armed: a finger on the board moves pieces.</summary>
+            public static Arming None { get; } = new Nothing();
+
+            public sealed class Nothing : Arming
+            {
+            }
+
+            /// <summary>A booster that strikes is armed: a finger on the board aims it, and lifting over the board uses it there.</summary>
+            public sealed class Armed : Arming
+            {
+                public Armed(BoosterKind booster)
+                {
+                    Booster = booster;
+                }
+
+                public BoosterKind Booster { get; }
+            }
+
+            /// <summary>A use was made while the board was moving: it is made the moment the board comes to rest, its aim still shown.</summary>
+            public sealed class Waiting : Arming
+            {
+                public Waiting(BoosterUse use)
+                {
+                    Use = use;
+                }
+
+                public BoosterUse Use { get; }
+            }
+        }
+
+        /// <summary>What a press on the card that offers a booster asks for. A closed set (private constructor).</summary>
+        private abstract class OfferPress
+        {
+            private OfferPress()
+            {
+            }
+
+            /// <summary>The round button with the cross, and the way back: the card goes up.</summary>
+            public sealed class Close : OfferPress
+            {
+            }
+
+            /// <summary>The green button: one of the booster, for its price.</summary>
+            public sealed class Buy : OfferPress
+            {
+                public Buy(BoosterKind booster)
+                {
+                    Booster = booster;
+                }
+
+                public BoosterKind Booster { get; }
+            }
         }
 
         /// <summary>What the stage's timeline is showing of the game. A closed set.</summary>
@@ -104,6 +201,9 @@ namespace Puzzle.Client.Stage
 
             /// <summary>The finale of the won game.</summary>
             TheFinale,
+
+            /// <summary>The booster that was used last: its tool, and what it set off.</summary>
+            ABooster,
         }
 
         private readonly GameObject _root;
@@ -130,6 +230,29 @@ namespace Puzzle.Client.Stage
         private readonly Timeline _timeline = new Timeline();
         private readonly DiscButton _pause;
         private readonly PressSet<StageControl> _controls = new PressSet<StageControl>();
+        private readonly ShelfBrief _shelfBrief;
+        private readonly ShelfDiscs _discs;
+        private readonly ShelfPill _pill;
+
+        /// <summary>What the stage asked of the player's wallet since it was last asked: a booster bought on the offer's card.</summary>
+        private readonly List<WalletRequest> _asked = new List<WalletRequest>();
+
+        /// <summary>The boosters the player holds and the coins, as the stage was last told, less what it has used since.</summary>
+        private BoosterShelf _owned = BoosterShelf.Empty;
+        private Coins _coins = Coins.None;
+        private Arming _arming = Arming.None;
+
+        /// <summary>The booster whose use the engine refused last, and until when on the stage's clock the pill says why; nothing while it says nothing of it.</summary>
+        private (BoosterKind Booster, float Until)? _refused;
+
+        /// <summary>The card that offers a booster held none of, over the dimmed board; nothing while none hangs.</summary>
+        private OfferCard<OfferPress>? _offer;
+
+        /// <summary>True while the offer's card hangs in its place: from the moment it has come down until a button of it is pressed.</summary>
+        private bool _isOfferDown;
+
+        /// <summary>The booster bought on the offer's card, which is armed the moment the wallet is told to hold it; nothing otherwise.</summary>
+        private BoosterKind? _armOnceHeld;
 
         private ScreenLayout? _layout;
 
@@ -161,7 +284,7 @@ namespace Puzzle.Client.Stage
         /// <summary>What happened in the attempt that changes the player's progress and nobody has taken yet, in the order it happened.</summary>
         private readonly List<AttemptEvent> _happened = new List<AttemptEvent>();
 
-        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief)
+        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf)
         {
             bool hasItemsToDrop = game.Level.Goals.Any(goal => goal is GoalSpec.DropItems);
             _art = art;
@@ -181,15 +304,25 @@ namespace Puzzle.Client.Stage
             _frame = BoardFrame.Create(_root.transform, art, _shape);
             _board = BoardView.Create(_root.transform, art, _ledger, showExits: hasItemsToDrop);
             _shelf = Shelf.Create(_root.transform, art);
-            _shelf.Say(AttemptWords.OnTheShelf(brief));
+            _shelf.Say(string.Empty); // the plank is the boosters'; what the shelf has to say stands on the pill over it
             _pause = new DiscButton("Pause", _root.transform, art, DiscGlyph.Pause, DrawOrder.ShelfButton);
-            _controls.Add(_pause, StageControl.Pause);
+            _controls.Add(_pause, new StageControl.Pause());
+            _shelfBrief = shelf;
+            _discs = new ShelfDiscs(_root.transform, art, effectArt, shelf);
+            foreach (KeyValuePair<BoosterKind, BoosterDisc> disc in _discs.All)
+            {
+                _controls.Add(disc.Value, new StageControl.Disc(disc.Key));
+            }
+
+            _discs.Guide(shelf.Introduced);
+            _pill = ShelfPill.Create(_root.transform, art);
             _veil = Veil.Create(_root.transform, art);
             _effectArt = effectArt;
             _pickedMark = new PickedMark(_board.Root, _effectArt, art);
             _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
             _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal, CountAMoveThrown);
             _pointer = new BoardPointer(game);
+            ShowTheShelf();
         }
 
         /// <summary>The one camera everything is drawn by, text included, so its picture is the whole screen.</summary>
@@ -260,10 +393,55 @@ namespace Puzzle.Client.Stage
         public bool IsShowingTheFinale => _playing == Playback.TheFinale;
 
         /// <summary>
-        /// The line on the shelf under the board: how the game is played, or which try this is. No words at all
-        /// from the moment a won game's finale begins.
+        /// What the pill over the shelf says now, as one line of words: until the attempt has begun how the game is
+        /// played, or which try this is; a booster's first use on its level; what an armed booster is and what to pick
+        /// for it; why a use was refused. Nothing once the attempt has begun and nothing is armed, and nothing while a
+        /// card hangs or a won game's finale is shown.
         /// </summary>
-        public string WordsOnTheShelf => _shelf.Words;
+        public string WordsOnTheShelf => _pill.Words.ToString();
+
+        /// <summary>What the pill over the shelf says now, as it sets its lines.</summary>
+        public PillWords WhatThePillSays => _pill.Words;
+
+        /// <summary>The booster that is armed, or whose use waits for the board to come to rest; nothing while none is.</summary>
+        public BoosterKind? ArmedBooster => _arming switch
+        {
+            Arming.Armed armed => armed.Booster,
+            Arming.Waiting waiting => BoosterKinds.Of(waiting.Use),
+            _ => null,
+        };
+
+        /// <summary>The cell an armed booster is aimed at while a finger is down on the board; nothing otherwise.</summary>
+        public Position? AimedAt => _pointer.AimedAt;
+
+        /// <summary>What each booster's disc on the shelf shows now.</summary>
+        public IReadOnlyDictionary<BoosterKind, BoosterFace> ShelfFaces => _discs.All.ToDictionary(disc => disc.Key, disc => disc.Value.Face);
+
+        /// <summary>The booster whose disc is ringed with light on its first use; nothing for none.</summary>
+        public BoosterKind? GuidedBooster => _discs.Guided;
+
+        /// <summary>The script of the booster used last; nothing before the first.</summary>
+        public TurnScript? LastBooster { get; private set; }
+
+        /// <summary>The booster the card over the board offers; nothing while no such card hangs.</summary>
+        public BoosterKind? OfferedBooster { get; private set; }
+
+        /// <summary>
+        /// The pixel of the screen in the middle of a booster's disc on the shelf, where a finger presses it; nothing
+        /// while the shelf is not listening, and for a disc that takes no finger (locked, or set aside while another
+        /// is armed).
+        /// </summary>
+        public Vector2? BoosterDiscPixel(BoosterKind booster) =>
+            ListensForTheShelf && !_discs[booster].Face.IsFaint ? PixelOf(_discs.MiddleOf(booster)) : null;
+
+        /// <summary>The pixel of the screen in the middle of a booster's disc, whether it takes a finger or not: where a finger that tries a locked disc lands. Nothing before the stage has a screen.</summary>
+        public Vector2? DiscPixel(BoosterKind booster) => PixelOf(_discs.MiddleOf(booster));
+
+        /// <summary>The pixel in the middle of the offer card's green button; nothing while no such card hangs at rest, or its button is dimmed.</summary>
+        public Vector2? OfferBuyPixel => _offer != null && _isOfferDown ? PixelOf(_offer.BuyButtonMiddle) : null;
+
+        /// <summary>The pixel in the middle of the offer card's round button with the cross; nothing while no such card hangs at rest.</summary>
+        public Vector2? OfferClosePixel => _offer?.Card.CloseButtonMiddle is Vector2 close && _isOfferDown ? PixelOf(close) : null;
 
         /// <summary>
         /// Where the stage did not show the game in the last turn and, after a win, in its finale, one line per
@@ -275,8 +453,8 @@ namespace Puzzle.Client.Stage
         /// </summary>
         public IReadOnlyList<string> LastTurnFaults { get; private set; } = Array.Empty<string>();
 
-        /// <summary>The board listens to the player while the game goes on, nothing is moving, and the player has not asked to leave it.</summary>
-        private bool TakesInput => IsSettled && _game.Status == GameStatus.Playing && _result == null && !_isAskedToLeave;
+        /// <summary>The board listens to the player while the game goes on, nothing is moving, no card hangs and the player has not asked to leave it.</summary>
+        private bool TakesInput => IsSettled && _game.Status == GameStatus.Playing && _result == null && _offer == null && !_isAskedToLeave;
 
         /// <summary>
         /// The card listens to the player from the moment it hangs in its place: what is still popping up in its
@@ -289,7 +467,13 @@ namespace Puzzle.Client.Stage
         /// them. Once pressed it has asked; under a card it does not listen: every card has its own way out.
         /// </summary>
         private bool ListensForThePauseButton =>
-            !PlayerWentOn && _result == null && _game.Status == GameStatus.Playing && !_isAskedToLeave;
+            !PlayerWentOn && _result == null && _offer == null && _game.Status == GameStatus.Playing && !_isAskedToLeave;
+
+        /// <summary>The boosters' discs listen when the pause disc does: while the game is played, also while pieces move; a use made then waits for rest.</summary>
+        private bool ListensForTheShelf => ListensForThePauseButton;
+
+        /// <summary>The offer's card listens from the moment it hangs in its place until a button of it is pressed.</summary>
+        private bool ListensToTheOffer => _offer != null && _isOfferDown;
 
         /// <summary>Builds the stage of a game and starts the board's entrance. Call <see cref="Fit"/> before the first picture.</summary>
         /// <param name="game">A game that records its events (GameOptions.RecordEvents): the stage plays them back.</param>
@@ -300,9 +484,11 @@ namespace Puzzle.Client.Stage
         /// </param>
         /// <param name="paintings">The museum's paintings: the result's card shows the jigsaw pieces a win gives.</param>
         /// <param name="brief">What the player's progress knows about this attempt, for the shelf and the result's card.</param>
-        public static GameStage Open(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, StageOpening opening = StageOpening.InTheLitRoom)
+        /// <param name="shelf">Which boosters used during play are open on the level, the one shown for the first time, and their prices. What the player holds is told after (<see cref="Tell"/>).</param>
+        public static GameStage Open(
+            Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf, StageOpening opening = StageOpening.InTheLitRoom)
         {
-            var stage = new GameStage(game, art, effectArt, paintings, brief);
+            var stage = new GameStage(game, art, effectArt, paintings, brief, shelf);
             // The engine's last events are its start's while no move is played: the specials of the start boosters.
             IReadOnlyList<GameEvent> startEvents = game.MovesUsed == 0 ? game.LastEvents : Array.Empty<GameEvent>();
             BoardEntrance.Play(stage._board, stage._tweens, stage._effects, startEvents);
@@ -328,8 +514,50 @@ namespace Puzzle.Client.Stage
             _effects.Place(layout);
             _shelf.Place(layout);
             _pause.Place(new Vector2(layout.PauseButton.MiddleX, layout.PauseButton.MiddleY), layout.PauseButton.Width / DiscButton.Size);
+            _discs.Place(layout);
+            _pill.Place(layout);
             _veil.Fit(layout.View);
             _result?.Place(layout);
+            _offer?.Card.Place(layout.PlaceOfACard(_offer.Card.Width, _offer.Card.Height), layout.View);
+        }
+
+        /// <summary>
+        /// Tells the stage what the player holds now, which the shelf's discs count and the offer's card prices: the
+        /// owner of the wallet tells it at every step. A booster bought on the offer's card is armed the moment it is held.
+        /// </summary>
+        public void Tell(WalletView wallet)
+        {
+            _owned = wallet.Shelf;
+            _coins = wallet.Coins;
+            if (_arming is Arming.Armed armed && !_owned.Has(armed.Booster))
+            {
+                PutTheBoosterDown(); // the wallet holds none of it any more
+            }
+
+            if (_offer is OfferCard<OfferPress> offer && OfferedBooster is BoosterKind offered)
+            {
+                offer.ShowAffordable(_shelfBrief.CanBuy(offered, _coins));
+            }
+
+            if (_armOnceHeld is BoosterKind bought && _owned.Has(bought))
+            {
+                _armOnceHeld = null;
+                TakeTheOfferUp();
+                if (bought != BoosterKind.Shuffle)
+                {
+                    Arm(bought);
+                }
+            }
+
+            ShowTheShelf();
+        }
+
+        /// <summary>What the stage asked of the player's wallet since this was asked last, in the order it was asked, each once.</summary>
+        public IReadOnlyList<WalletRequest> TakeWhatWasAskedFor()
+        {
+            WalletRequest[] taken = _asked.ToArray();
+            _asked.Clear();
+            return taken;
         }
 
         /// <summary>
@@ -350,7 +578,10 @@ namespace Puzzle.Client.Stage
             }
 
             ActOnTheWaitingGesture();
+            ActOnTheWaitingUse();
             AskWhetherToLeaveOnceAtRest();
+            _discs.Advance(_clock);
+            ShowTheShelf();
         }
 
         /// <summary>
@@ -368,6 +599,17 @@ namespace Puzzle.Client.Stage
             if (IsShowingTheFinale)
             {
                 SkipTheFinale();
+            }
+            else if (_offer != null)
+            {
+                if (ListensToTheOffer)
+                {
+                    TakeTheOfferUp();
+                }
+            }
+            else if (_arming is Arming.Armed)
+            {
+                PutTheBoosterDown(); // the way back puts an armed booster down first
             }
             else if (_result == null)
             {
@@ -393,13 +635,15 @@ namespace Puzzle.Client.Stage
 
             _pointer.ClearSelection();
             ShowThePickedPiece();
+            bool hadBegun = AttemptBegun.In(_game);
             if (!_game.TryPlay(move))
             {
                 ShowRefused(move);
                 return false;
             }
 
-            ReportWhatTheMoveDid();
+            ReportTheBeginning(hadBegun);
+            ReportTheStatus();
             _playing = Playback.ATurn;
             try
             {
@@ -463,17 +707,24 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            if (ListensForThePauseButton)
+            if (ListensForTheShelf)
             {
                 _controls.FingerDown(PointAt(pixel, layout));
             }
 
             if (_controls.IsHolding)
             {
-                return; // the finger is the pause disc's until it lifts
+                return; // the finger is the pause disc's or a booster's disc's until it lifts
             }
 
-            if (_result != null)
+            if (_offer != null)
+            {
+                if (ListensToTheOffer)
+                {
+                    _offer.Card.FingerDown(PointAt(pixel, layout));
+                }
+            }
+            else if (_result != null)
             {
                 if (ListensToTheCard)
                 {
@@ -483,7 +734,14 @@ namespace Puzzle.Client.Stage
             else if (_game.Status == GameStatus.Playing && !_isAskedToLeave)
             {
                 (float column, float row) = layout.BoardPointAt(pixel.x, pixel.y);
-                _pointer.Down(column, row);
+                if (_arming is Arming.Armed)
+                {
+                    _pointer.AimDown(column, row);
+                }
+                else
+                {
+                    _pointer.Down(column, row);
+                }
             }
         }
 
@@ -514,7 +772,14 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            if (_result != null)
+            if (_offer != null)
+            {
+                if (ListensToTheOffer)
+                {
+                    _offer.Card.FingerMovedTo(PointAt(pixel, layout));
+                }
+            }
+            else if (_result != null)
             {
                 if (ListensToTheCard)
                 {
@@ -524,7 +789,11 @@ namespace Puzzle.Client.Stage
             else
             {
                 (float column, float row) = layout.BoardPointAt(pixel.x, pixel.y);
-                if (_pointer.MovedTo(column, row) is BoardGesture swipe)
+                if (_arming is Arming.Armed)
+                {
+                    _pointer.AimMovedTo(column, row);
+                }
+                else if (_pointer.MovedTo(column, row) is BoardGesture swipe)
                 {
                     Take(swipe);
                 }
@@ -536,19 +805,38 @@ namespace Puzzle.Client.Stage
         {
             if (_controls.IsHolding)
             {
-                if (_controls.FingerUp(out StageControl _))
+                if (_controls.FingerUp(out StageControl pressed))
                 {
-                    AskToLeave(); // as the device's way back does while the game is played: the disc listens only then
+                    Press(pressed);
                 }
 
                 return;
             }
 
-            if (_result != null)
+            if (_offer != null)
+            {
+                if (ListensToTheOffer && _offer.Card.FingerUp(out OfferPress asked))
+                {
+                    Answer(asked);
+                }
+            }
+            else if (_result != null)
             {
                 if (ListensToTheCard && _result.FingerUp(out ResultChoice choice))
                 {
                     SendTheCardUp(_result, choice);
+                }
+            }
+            else if (_arming is Arming.Armed armed)
+            {
+                // Lifting over the board uses the booster where it was aimed; lifting off the board puts it down.
+                if (_pointer.AimUp() is BoardGesture.Aim aim)
+                {
+                    Use(UseOf(armed.Booster, aim.Cell));
+                }
+                else
+                {
+                    PutTheBoosterDown();
                 }
             }
             else if (_pointer.Up() is BoardGesture tap)
@@ -564,6 +852,7 @@ namespace Puzzle.Client.Stage
             _waiting = null;
             _controls.FingerGone();
             _result?.FingerGone();
+            _offer?.Card.FingerGone();
         }
 
         public void Dispose()
@@ -574,8 +863,10 @@ namespace Puzzle.Client.Stage
             _frame.Dispose();
             _board.Dispose();
             _shelf.Dispose();
+            _pill.Dispose();
             _veil.Dispose();
             _result?.Dispose();
+            _offer?.Dispose();
             SceneObjects.Destroy(_root);
         }
 
@@ -605,18 +896,24 @@ namespace Puzzle.Client.Stage
         }
 
         /// <summary>
-        /// The engine has just played a move: if it was the attempt's first, or decided the game, that is reported
-        /// now, before any of it is shown. In this build a game out of moves is lost for good at once: no offer of
-        /// extra moves is made yet.
+        /// The engine has just played a move or used a booster: if nothing had begun the attempt before it, it is the
+        /// attempt's first move, which is reported now, before any of it is shown (a booster counts as a move).
         /// </summary>
-        private void ReportWhatTheMoveDid()
+        private void ReportTheBeginning(bool hadBegun)
         {
-            bool wasTheFirstMove = _game.MovesUsed == 1;
-            if (wasTheFirstMove)
+            if (!hadBegun)
             {
                 _happened.Add(new AttemptEvent.FirstMove(_brief.StartBoosters));
             }
+        }
 
+        /// <summary>
+        /// The engine has just played a move or used a booster: if that decided the game, it is reported now, before
+        /// any of it is shown. In this build a game out of moves is lost for good at once: no offer of extra moves is
+        /// made yet.
+        /// </summary>
+        private void ReportTheStatus()
+        {
             switch (_game.Status)
             {
                 case GameStatus.Playing:
@@ -677,7 +974,7 @@ namespace Puzzle.Client.Stage
             }
         }
 
-        /// <summary>The timeline has run out: if it was showing a turn or a finale, that is finished now.</summary>
+        /// <summary>The timeline has run out: if it was showing a turn, a booster or a finale, that is finished now.</summary>
         private void FinishWhatWasShown()
         {
             switch (_playing)
@@ -685,6 +982,7 @@ namespace Puzzle.Client.Stage
                 case Playback.Nothing:
                     break;
                 case Playback.ATurn:
+                case Playback.ABooster:
                     FinishTheTurn();
                     break;
                 case Playback.TheFinale:
@@ -750,6 +1048,7 @@ namespace Puzzle.Client.Stage
             _playing = Playback.TheFinale;
             _isAskedToLeave = false;
             _controls.FingerGone();
+            PutTheBoosterDown();
 
             // The shelf told how to play, or which try this is. The game is decided, and a touch now ends the finale:
             // the plank is left bare rather than asking for the very touch that throws the reward away.
@@ -866,6 +1165,7 @@ namespace Puzzle.Client.Stage
             int piecesWaiting = _game.Status == GameStatus.Won ? _brief.Reward?.WaitingWithThem ?? 0 : 0;
             _isAskedToLeave = false;
             _controls.FingerGone();
+            PutTheBoosterDown();
             HangACard(LevelResult.Of(_game, _brief), piecesWaiting, comesIn: Tempo.PauseBeforeResult);
         }
 
@@ -900,6 +1200,7 @@ namespace Puzzle.Client.Stage
             _pointer.Cancel();
             _pointer.ClearSelection();
             _waiting = null;
+            PutTheBoosterDown();
             AskWhetherToLeaveOnceAtRest();
         }
 
@@ -988,10 +1289,304 @@ namespace Puzzle.Client.Stage
 
             if (IsAskingWhetherToLeave)
             {
-                _happened.Add(new AttemptEvent.Left(afterAMove: _game.MovesUsed > 0));
+                _happened.Add(new AttemptEvent.Left(afterAMove: AttemptBegun.In(_game)));
             }
 
             _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerChose = choice);
+        }
+
+        // ---------- the boosters of the shelf ----------
+
+        /// <summary>A finger pressed something on the shelf: the pause disc asks whether to leave, a booster's disc does what it does.</summary>
+        private void Press(StageControl pressed)
+        {
+            switch (pressed)
+            {
+                case StageControl.Pause _:
+                    AskToLeave(); // as the device's way back does while the game is played: the disc listens only then
+                    break;
+                case StageControl.Disc disc:
+                    PressTheDisc(disc.Booster);
+                    break;
+                default:
+                    throw new InvalidOperationException($"The shelf has nothing of the kind {pressed.GetType().Name}.");
+            }
+        }
+
+        /// <summary>
+        /// A booster's disc was pressed: its first touch ends its word on the first use. With none held it offers
+        /// one more; the armed one is put down; the shuffle is used at once; another booster is armed. While a use
+        /// waits for the board to come to rest, a disc does nothing more.
+        /// </summary>
+        private void PressTheDisc(BoosterKind booster)
+        {
+            if (_discs.Guided == booster)
+            {
+                _discs.Guide(null);
+            }
+
+            if (_arming is Arming.Waiting)
+            {
+                return;
+            }
+
+            if (!_owned.Has(booster))
+            {
+                HangTheOffer(booster);
+            }
+            else if (_arming is Arming.Armed armed && armed.Booster == booster)
+            {
+                PutTheBoosterDown();
+            }
+            else if (booster == BoosterKind.Shuffle)
+            {
+                Use(new BoosterUse.Shuffle());
+            }
+            else
+            {
+                Arm(booster);
+            }
+        }
+
+        /// <summary>Arms a booster that strikes: a piece picked is put down and a gesture that waits is forgotten, and the board's finger aims from now on.</summary>
+        private void Arm(BoosterKind booster)
+        {
+            _pointer.Cancel();
+            _pointer.ClearSelection();
+            _waiting = null;
+            _refused = null;
+            _arming = new Arming.Armed(booster);
+            ShowTheShelf();
+        }
+
+        /// <summary>Puts an armed booster down again, and drops a use that waits; the board's finger moves pieces again.</summary>
+        private void PutTheBoosterDown()
+        {
+            if (_arming is Arming.Nothing)
+            {
+                return;
+            }
+
+            _pointer.Cancel();
+            _arming = Arming.None;
+            ShowTheShelf();
+        }
+
+        /// <summary>A use is made at once on a board at rest; on a board that moves it waits for the rest, its aim shown meanwhile.</summary>
+        private void Use(BoosterUse use)
+        {
+            if (TakesInput)
+            {
+                TryUse(use);
+            }
+            else if (_game.Status == GameStatus.Playing && !_isAskedToLeave)
+            {
+                _arming = new Arming.Waiting(use);
+                ShowTheShelf();
+            }
+        }
+
+        /// <summary>Once the board has come to rest, the use that waited for it is made, unless the game was decided meanwhile.</summary>
+        private void ActOnTheWaitingUse()
+        {
+            if (!(_arming is Arming.Waiting waiting) || !IsSettled)
+            {
+                return;
+            }
+
+            if (TakesInput)
+            {
+                TryUse(waiting.Use);
+            }
+            else
+            {
+                PutTheBoosterDown();
+            }
+        }
+
+        /// <summary>
+        /// Asks the engine to use a booster the player holds. Refused, nothing is spent: the disc shakes and the pill
+        /// says why, and a booster that strikes stays armed for another aim. Accepted, it is reported (as the first
+        /// move when nothing began the attempt before) and shown as a turn is, with its tool and no move spent.
+        /// </summary>
+        private void TryUse(BoosterUse use)
+        {
+            BoosterKind booster = BoosterKinds.Of(use);
+            bool hadBegun = AttemptBegun.In(_game);
+            if (!_owned.Has(booster))
+            {
+                PutTheBoosterDown(); // the wallet was told it holds none since it was armed
+                return;
+            }
+
+            if (!_game.TryUseBooster(use))
+            {
+                _refused = (booster, _clock + Tempo.RefusalSaid);
+                _discs.Shake(booster, _clock);
+                _arming = booster == BoosterKind.Shuffle ? Arming.None : new Arming.Armed(booster);
+                ShowTheShelf();
+                return;
+            }
+
+            _owned = _owned.WithOneFewer(booster);
+            _refused = null;
+            _arming = Arming.None;
+            ReportTheBeginning(hadBegun);
+            _happened.Add(new AttemptEvent.BoosterAccepted(booster));
+            ReportTheStatus();
+            _playing = Playback.ABooster;
+            try
+            {
+                TurnScript script = TurnChoreographer.ComposeBooster(_ledger, _game.Level.Goals, _game.LastEvents, _game.Board);
+                LastBooster = script;
+                _turnPlayer.Play(script);
+            }
+            catch (InvalidOperationException fault)
+            {
+                // The engine has used the booster, so it counts. Only its picture is lost, as a turn's would be.
+                _faultsOfTheTurn.Add($"the booster could not be shown: {fault.Message}");
+                _timeline.Clear();
+                ShowTheEnginesBoardAnew();
+            }
+
+            ShowTheShelf();
+        }
+
+        /// <summary>The booster a disc of the shelf aims at a cell.</summary>
+        private static BoosterUse UseOf(BoosterKind booster, Position cell) => booster switch
+        {
+            BoosterKind.HitCell => new BoosterUse.HitCell(cell),
+            BoosterKind.HitRow => new BoosterUse.HitRow(cell),
+            BoosterKind.HitColumn => new BoosterUse.HitColumn(cell),
+            BoosterKind.Shuffle => new BoosterUse.Shuffle(),
+            _ => throw new ArgumentException($"{booster.Name()} is taken before a level; nothing aims it on the board.", nameof(booster)),
+        };
+
+        /// <summary>The plus on a disc of which none is held: the room darkens and the card that sells one comes down over the board.</summary>
+        private void HangTheOffer(BoosterKind booster)
+        {
+            PutTheBoosterDown();
+            _pointer.Cancel();
+            _pointer.ClearSelection();
+            _waiting = null;
+            _controls.FingerGone();
+            var offer = new OfferCard<OfferPress>(
+                _root.transform, _art, booster, BoosterWords.NameOf(booster), PlayBoosterPictures.Of(booster), BoosterWords.OnTheCard(booster),
+                BoosterWords.CostsNoMove, _shelfBrief.PriceOf(booster), new OfferPress.Close(), new OfferPress.Buy(booster), raisedBy: 0);
+            offer.ShowAffordable(_shelfBrief.CanBuy(booster, _coins));
+            if (_layout is ScreenLayout layout)
+            {
+                offer.Card.Place(layout.PlaceOfACard(offer.Card.Width, offer.Card.Height), layout.View);
+            }
+
+            _offer = offer;
+            OfferedBooster = booster;
+            _isOfferDown = false;
+            _timeline.Add(0f, Tempo.RoomDarkens, progress => _veil.Darken(Easing.Out(progress)));
+            _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, offer.Card.ComeDown, () => _isOfferDown = true);
+            ShowTheShelf();
+        }
+
+        /// <summary>A button of the offer's card was pressed: the cross takes it up, the green button asks for one booster, which the wallet's answer arms.</summary>
+        private void Answer(OfferPress asked)
+        {
+            switch (asked)
+            {
+                case OfferPress.Close _:
+                    TakeTheOfferUp();
+                    break;
+                case OfferPress.Buy buy:
+                    _asked.Add(new WalletRequest.BuyABooster(buy.Booster));
+                    _armOnceHeld = buy.Booster;
+                    break;
+                default:
+                    throw new InvalidOperationException($"The offer's card has no button of the kind {asked.GetType().Name}.");
+            }
+        }
+
+        /// <summary>The offer's card goes up, the room lights again, and once it is gone the board is the player's as before.</summary>
+        private void TakeTheOfferUp()
+        {
+            if (!(_offer is OfferCard<OfferPress> offer))
+            {
+                return;
+            }
+
+            _isOfferDown = false;
+            _armOnceHeld = null;
+            offer.Card.FingerGone();
+            _timeline.Add(0f, Tempo.CardGoesUp, offer.Card.GoUp);
+            _timeline.Add(
+                Tempo.CardGoesUp / 2f,
+                Tempo.RoomLightens,
+                progress => _veil.Darken(1f - Easing.Out(progress)),
+                () =>
+                {
+                    offer.Dispose();
+                    if (ReferenceEquals(_offer, offer))
+                    {
+                        _offer = null;
+                        OfferedBooster = null;
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Shows the shelf as the stage stands: each disc's face, the aim of an armed booster under the finger (or of
+        /// a use that waits), and what the pill says. Asked at every step; what has not changed is not drawn anew.
+        /// </summary>
+        private void ShowTheShelf()
+        {
+            bool isPlayed = _game.Status == GameStatus.Playing && !PlayerWentOn && !IsShowingTheFinale;
+            _discs.Show(_owned, ArmedBooster, isListening: isPlayed && ListensForTheShelf);
+            BoosterUse? aimed = _arming switch
+            {
+                Arming.Armed armed when _pointer.AimedAt is Position cell => UseOf(armed.Booster, cell),
+                Arming.Waiting waiting => waiting.Use,
+                _ => null,
+            };
+            _effects.ShowTheAim(aimed, _clock);
+            PillWords words = PillNow(isPlayed);
+            if (!words.Equals(_pill.Words))
+            {
+                _pill.Show(words);
+            }
+
+            _pill.LetTheBoardShowThrough(_pointer.AimedAt != null);
+        }
+
+        /// <summary>
+        /// What the pill says at this step: why a use was refused, for a moment after; what the armed booster is and
+        /// what to pick; the word on a booster's first use, until the attempt begins; until then, how to play or which
+        /// try this is. Nothing while a card hangs, once the game is decided, and once the attempt has begun.
+        /// </summary>
+        private PillWords PillNow(bool isPlayed)
+        {
+            if (!isPlayed || _result != null || _offer != null)
+            {
+                return PillWords.None;
+            }
+
+            if (_refused.HasValue && _clock < _refused.Value.Until)
+            {
+                return new PillWords.Line(BoosterWords.Refused(_refused.Value.Booster));
+            }
+
+            if (ArmedBooster is BoosterKind armed)
+            {
+                return armed == BoosterKind.Shuffle
+                    ? new PillWords.Line(BoosterWords.Armed(armed))
+                    : new PillWords.Armed(BoosterWords.Armed(armed), BoosterWords.WhatToPick(armed));
+            }
+
+            if (AttemptBegun.In(_game))
+            {
+                return PillWords.None;
+            }
+
+            return _discs.Guided is BoosterKind guided
+                ? new PillWords.Guide(BoosterWords.FirstUse(guided), _shelfBrief.SaysEveryLevelWithout ? BoosterWords.EveryLevelWithout : null)
+                : new PillWords.Line(AttemptWords.OnTheShelf(_brief));
         }
 
         /// <summary>The pixel of the screen at which a point of the layout lies; nothing before the stage has a screen.</summary>

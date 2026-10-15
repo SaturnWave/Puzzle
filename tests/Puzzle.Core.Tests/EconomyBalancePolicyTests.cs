@@ -26,12 +26,28 @@ public class EconomyBalancePolicyTests
     [Fact]
     public void The_welcome_gift_holds_every_booster_and_favours_none()
     {
-        IReadOnlyDictionary<BoosterKind, int> gift = Shipped.Start.Boosters;
+        EconomySettings settings = Shipped;
+
+        // A booster used during play is given as it opens (its unlock gift), a start booster before the first level.
+        Dictionary<BoosterKind, int> gift = BoosterKinds.All.ToDictionary(
+            kind => kind,
+            kind => settings.Start.Boosters[kind] + (kind.IsInLevel() ? settings.Unlocks.Gift[kind] : 0));
 
         // Every booster is met once without coins, and the gift does not steer the player to one of them.
-        Assert.Equal(BoosterKinds.All.Order(), gift.Keys.Order());
-        Assert.All(gift.Values, count => Assert.True(count >= 1, "a booster is missing from the welcome gift"));
+        Assert.All(gift, given => Assert.True(given.Value >= 1, $"{given.Key.Name()} is missing from the welcome gift"));
         Assert.Single(gift.Values.Distinct());
+    }
+
+    [Fact]
+    public void A_booster_used_during_play_is_given_as_it_opens_and_not_before_the_first_level()
+    {
+        EconomySettings settings = Shipped;
+
+        // The owner's decision of 2026-10-15: the spatula on level 7, the brushes on 12 and 16, the shuffle on 20.
+        Assert.All(BoosterKinds.All.Where(BoosterKinds.IsInLevel), kind => Assert.Equal(0, settings.Start.Boosters[kind]));
+        Assert.Equal(
+            new[] { 7, 12, 16, 20 },
+            new[] { BoosterKind.HitCell, BoosterKind.HitRow, BoosterKind.HitColumn, BoosterKind.Shuffle }.Select(kind => settings.Unlocks.Levels[kind].Value));
     }
 
     [Fact]

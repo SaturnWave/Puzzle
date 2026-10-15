@@ -32,11 +32,15 @@ namespace Puzzle.Client.EditorTools
     /// move leaves no line. An attempt gone into by touches through the level's card, with two start boosters chosen
     /// there, is played by bot too: closing the card and leaving the board before a move spend nothing and write
     /// nothing, and the attempt played to its end spends the two at its first move and is a line that names them. An
-    /// attempt with every booster of play and the extra moves, which no screen offers yet, is played on the engine
-    /// alone and logged the same way. Last, the file is read back with Unity's reader, and every record is
-    /// played again on the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves
-    /// used and goals. It works in a folder of its own (out/unity/attempt-log). The damaged and the later device file
-    /// write two warnings to the log on purpose.
+    /// attempt in which every booster of play is used by touches on the shelf, the first of them before any move, is
+    /// played to its end by bot: the booster counts as the first move, every one is spent, and its line names the
+    /// shuffle rule of today. An attempt with every booster of play and the extra moves, which no screen offers yet,
+    /// is played on the engine alone and logged the same way. A new player on the spatula's level is given its three,
+    /// once, in the save file. Last, the file is read back with Unity's reader, and every record is played again on
+    /// the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves used and goals;
+    /// and the records written before the shuffle rule changed (tests/fixtures/attempt-records.first-shuffle-rule.jsonl),
+    /// which name no rule, are read the same way and replay by the first rule to their end. It works in a folder of its
+    /// own (out/unity/attempt-log). The damaged and the later device file write two warnings to the log on purpose.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.AttemptLogCheck.Run
     /// </summary>
     public static class AttemptLogCheck
@@ -63,6 +67,13 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A later game's device file, with an id this game reads and something it does not know.</summary>
         private const string LaterDeviceDocument = "{\"version\":2,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"sound\":false}";
 
+        /// <summary>Records the game wrote before the shuffle booster's rule changed, which name no rule.</summary>
+        private const string FirstRuleRecords = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
+
+        /// <summary>The level every booster of play is open on, and the spatula's own.</summary>
+        private const int OpenLevel = 40;
+        private const int SpatulasLevel = 7;
+
         private static readonly ScreenShape Screen = new ScreenShape(1080, 2340);
 
         private static string LogPath => Path.Combine(Folder, AttemptLogFile.FileName);
@@ -83,10 +94,13 @@ namespace Puzzle.Client.EditorTools
                 PlayUntil(bench, LostLevel, status => status.IsLoss(), new RandomPolicy(), ended);
                 LeaveBeforeAndAfterAMove(bench, ended);
                 PlayWithStartBoostersChosenOnTheCard(bench, ended);
+                PlayWithEveryBoosterOnTheShelf(bench, ended);
                 PlayWithEveryBoosterOnTheEngine(bench, ended);
+                ANewPlayerOnTheSpatulasLevelIsGivenItsThreeOnce(bench);
 
                 int replayed = EveryLineReadsBackAndReplaysToTheEndSeen(bench, ended);
-                Debug.Log($"Attempt log check passed: device {device}; {replayed} records in {LogPath} ({string.Join("; ", ended.Select(end => end.What))}), each read back with Unity's reader and replayed on the engine to the end seen.");
+                int beforeTheRule = RecordsBeforeTheShuffleRuleReplayByTheFirstRule(bench);
+                Debug.Log($"Attempt log check passed: device {device}; {replayed} records in {LogPath} ({string.Join("; ", ended.Select(end => end.What))}), each read back with Unity's reader and replayed on the engine to the end seen; {beforeTheRule} records written before the shuffle rule changed replayed by the first rule.");
             }
             catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException || failure is InvalidOperationException
                 || failure is ArgumentException || failure is AttemptReplayException || failure is LevelFormatException)
@@ -231,6 +245,100 @@ namespace Puzzle.Client.EditorTools
             Require(session.Progress.Wallet.Shelf.Equals(spent), $"after the attempt the shelf holds {session.Progress.Wallet.Shelf}, not {spent}");
         }
 
+        /// <summary>
+        /// Every booster of play used by touches on the shelf of level 40, the spatula before any move; then the bot
+        /// plays the attempt to its end. The spatula counts the attempt as a first move does, each booster is spent,
+        /// and the attempt is one line that names the shuffle rule of today.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">A booster was not used or not spent, or the line is not as the game writes it.</exception>
+        private static void PlayWithEveryBoosterOnTheShelf(Bench bench, List<Ending> ended)
+        {
+            using GameSession session = bench.SessionAt(OpenLevel, attempt: 0);
+            StoryStudio.AdvanceUntilSettled(session);
+            PlayerProgress before = session.Progress;
+            int linesBefore = LinesInTheLog();
+            foreach (BoosterKind booster in BoosterKinds.InLevel)
+            {
+                Press(session, session.Stage.BoosterDiscPixel(booster), $"the disc of {booster.Name()}");
+                if (booster != BoosterKind.Shuffle)
+                {
+                    Press(session, session.Stage.PixelOf(AGemLowOnTheBoard(session.Stage.Game)), $"a cell for {booster.Name()}");
+                }
+
+                StoryStudio.AdvanceUntilSettled(session);
+                Require(session.Progress.Wallet.Shelf.Count(booster) == before.Wallet.Shelf.Count(booster) - 1, $"the {booster.Name()} used on the shelf was not spent");
+            }
+
+            Require(session.Progress.AttemptsOnLevel == before.AttemptsOnLevel + 1 && session.Stage.Game.MovesUsed == 0, "the spatula used before any move did not count the attempt");
+            Game game = session.Stage.Game;
+            FlowStory.PlayTheGame(session, new RandomPolicy(), new Rng(BotSeed, BotStream));
+            ended.Add(Ending.Of(game, $"level {OpenLevel} with every booster of play used on the shelf, {game.Status} after {game.MovesUsed} moves"));
+            Require(LinesInTheLog() == linesBefore + 1, "the attempt with the boosters of the shelf wrote no line, or more than one");
+            Require(File.ReadAllLines(LogPath).Last().Contains("\"shuffleRule\":2,\"actions\":["), "the line of an attempt played today does not name the shuffle rule it was played under");
+        }
+
+        /// <summary>A gem in the board's lower half, where a strike always finds something to hit.</summary>
+        private static Position AGemLowOnTheBoard(Game game)
+        {
+            BoardShape shape = game.Board.Shape;
+            for (int y = shape.Height - 2; y > 0; y--)
+            {
+                for (int x = 1; x < shape.Width - 1; x++)
+                {
+                    var cell = new Position(x, y);
+                    if (shape.IsPlayable(cell) && game.Board.TileAt(cell).IsGem)
+                    {
+                        return cell;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException($"Level {game.Level.Id} has no gem to aim at.");
+        }
+
+        /// <summary>
+        /// A new player who stands on the spatula's level is given its three as the session opens, kept as given in the
+        /// save file; a second session over that file gives none more.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The gift was not given, not saved, or given twice.</exception>
+        private static void ANewPlayerOnTheSpatulasLevelIsGivenItsThreeOnce(Bench bench)
+        {
+            string folder = Path.Combine(Folder, "spatula-gift");
+            Directory.CreateDirectory(folder);
+            var store = new ProgressFile(folder, StoryStudio.Economy.StartingWallet);
+            store.Save(bench.StandingOn(SpatulasLevel).WithWallet(StoryStudio.Economy.StartingWallet)); // a save from before the gifts
+            using (GameSession first = bench.SessionOver(store))
+            {
+                Require(first.Progress.Wallet.Shelf.Count(BoosterKind.HitCell) == 3, $"a new player on level {SpatulasLevel} holds {first.Progress.Wallet.Shelf.Count(BoosterKind.HitCell)} spatulas, not the gift of 3");
+            }
+
+            PlayerProgress saved = new ProgressFile(folder, StoryStudio.Economy.StartingWallet).Load();
+            Require(saved.Wallet.Shelf.Count(BoosterKind.HitCell) == 3 && saved.Wallet.Rewards.UnlockGifts.Contains(BoosterKind.HitCell), "the spatula's gift is not in the save file");
+            Require(File.ReadAllText(Path.Combine(folder, ProgressFile.FileName)).Contains("\"unlockGifts\":[\"hit-cell\"]"), "the save file does not name the spatula's gift as given");
+            using GameSession second = bench.SessionOver(new ProgressFile(folder, StoryStudio.Economy.StartingWallet));
+            Require(second.Progress.Wallet.Shelf.Count(BoosterKind.HitCell) == 3, "a second session gave the spatula's gift again");
+        }
+
+        /// <summary>
+        /// The records the game wrote before the shuffle rule changed are read with Unity's reader: they name no rule,
+        /// read as played under the first one, and replay by it to their end, refused shuffles included.
+        /// </summary>
+        /// <returns>How many were replayed.</returns>
+        /// <exception cref="InvalidOperationException">A record reads as another rule, or names no refused shuffle where the file has one.</exception>
+        private static int RecordsBeforeTheShuffleRuleReplayByTheFirstRule(Bench bench)
+        {
+            string[] lines = File.ReadAllLines(FirstRuleRecords);
+            Require(lines.Length > 0 && lines.Any(line => line.Contains("shuffle-refused")), $"{FirstRuleRecords} holds no record with a refused shuffle");
+            foreach (string line in lines)
+            {
+                AttemptRecord record = JsonUtility.FromJson<RecordLineDocument>(line).ToRecord();
+                Require(record.Start.ShuffleRule == ShuffleBoosterRule.RandomOrders, $"a record that names no rule reads as {record.Start.ShuffleRule}");
+                AttemptReplay.Of(record, bench.Level(record.Start.Level.Value));
+            }
+
+            return lines.Length;
+        }
+
         /// <summary>The shelf's pause disc asks whether to leave; the card's museum button leaves for the hall.</summary>
         private static void Leave(GameSession session)
         {
@@ -280,7 +388,7 @@ namespace Puzzle.Client.EditorTools
             }
 
             DateTimeOffset now = StoryStudio.Clock.Now;
-            var start = new AttemptStart(level.Id, level.ContentVersion, level.MoveLimit, seeds, attempt: 0, bench.Log.Device, "unity", now);
+            var start = new AttemptStart(level.Id, level.ContentVersion, level.MoveLimit, seeds, attempt: 0, bench.Log.Device, "unity", now, game.ShuffleBoosterRule);
             bench.Log.Append(new AttemptRecord(start, AttemptOutcome.Of(game, now), lab: null, game.Actions));
             string actions = string.Join(" ", game.Actions.Where(action => !(action is AttemptAction.MovePlayed)).Select(AttemptActionNames.Of));
             ended.Add(Ending.Of(game, $"level {LostLevel} on the engine with {actions}, {game.Status} after {game.MovesUsed} moves"));
@@ -391,6 +499,13 @@ namespace Puzzle.Client.EditorTools
                 var progress = new PlayerProgress(standing.LevelsWon, attempt).WithWallet(standing.Wallet);
                 return new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(progress), Log, Screen, SessionOpening.AtTheBoard);
             }
+
+            /// <summary>A new player who stands on a level, never having tried it.</summary>
+            public PlayerProgress StandingOn(int levelNumber) => StoryStudio.StandingOn(Level(levelNumber), _levels);
+
+            /// <summary>The game's own session at the board of the level the store's progress stands on, on a log that forgets.</summary>
+            public GameSession SessionOver(IProgressStore store) =>
+                new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, store, StoryStudio.AttemptsKeptInMemory(), Screen, SessionOpening.AtTheBoard);
         }
 
         /// <summary>Where a game stood when its attempt ended, as far as a replay must come to the same.</summary>
@@ -470,6 +585,8 @@ namespace Puzzle.Client.EditorTools
         public string client = string.Empty;
         public string startedUtc = string.Empty;
         public string endedUtc = string.Empty;
+        /// <summary>The shuffle booster's rule by its number; Unity's reader makes 0 of a line that names none, which is the first rule.</summary>
+        public int shuffleRule;
         public ActionLineDocument[] actions = Array.Empty<ActionLineDocument>();
 
         /// <exception cref="ArgumentException">A value is not one a record can have.</exception>
@@ -485,7 +602,8 @@ namespace Puzzle.Client.EditorTools
                 attempt,
                 new DeviceId(deviceId),
                 client,
-                Instant(startedUtc));
+                Instant(startedUtc),
+                shuffleRule == 0 ? ShuffleBoosterRule.RandomOrders : (ShuffleBoosterRule)shuffleRule);
             var outcome = new AttemptOutcome(
                 ResultNamed(result),
                 movesUsed,

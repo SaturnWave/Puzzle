@@ -182,6 +182,14 @@ namespace Puzzle.Client.Layout
         public const float SmallestDiscInTheHand = 40f;
 
         /// <summary>
+        /// A booster's disc takes a finger at least this far across in the hand, wider than it is drawn
+        /// (docs/research/in-level-boosters.md, section 5, point 4: seen at 40, touched at 44), and a little beyond
+        /// its rim where it is larger (<see cref="FingerBeyondTheDisc"/>).
+        /// </summary>
+        public const float SmallestTouchInTheHand = 44f;
+        public const float FingerBeyondTheDisc = 4f;
+
+        /// <summary>
         /// The gilt frame reaches this far past the board's cells on every side (8.1, and its soft edge). It is
         /// three quarters as wide as the web test page's: on a phone every point of it is taken from the cells.
         /// </summary>
@@ -225,6 +233,7 @@ namespace Puzzle.Client.Layout
             BoardLeft = boardLeft;
             BoardTop = boardTop;
             ShelfDiscs = DiscsOnTheShelf();
+            ShelfTouchReach = TouchReachOnTheShelf();
         }
 
         /// <summary>The screen in points, as every screen of the game measures it.</summary>
@@ -271,6 +280,13 @@ namespace Puzzle.Client.Layout
 
         /// <summary>The pause disc on the shelf's left end: it asks whether the player means to leave the level.</summary>
         public Box PauseButton => ShelfDiscs[0];
+
+        /// <summary>
+        /// How far from a booster disc's middle a finger still presses it, in the layout's points: the disc's own
+        /// reach (<see cref="FingerBeyondTheDisc"/> past its rim), at least <see cref="SmallestTouchInTheHand"/> across
+        /// in the hand, and never so far that two discs' reaches meet.
+        /// </summary>
+        public float ShelfTouchReach { get; }
 
         /// <summary>The side of a cell; a whole number of pixels, so every cell is drawn as wide as its neighbour.</summary>
         public float CellSize { get; }
@@ -382,6 +398,15 @@ namespace Puzzle.Client.Layout
             }
 
             return discs;
+        }
+
+        private float TouchReachOnTheShelf()
+        {
+            Box first = ShelfDiscs[1];
+            float wanted = Math.Max(first.Width / 2 + FingerBeyondTheDisc * ShelfScale, SmallestTouchInTheHand / 2 / PointInTheHand);
+            float halfwayToTheNext = (ShelfDiscs[2].MiddleX - first.MiddleX) / 2;
+            float halfwayToThePause = first.MiddleX - PauseButton.MiddleX - PauseButton.Width / 2;
+            return Math.Min(wanted, Math.Min(halfwayToTheNext, halfwayToThePause));
         }
 
         /// <summary>

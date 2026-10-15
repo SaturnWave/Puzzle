@@ -101,6 +101,12 @@ public enum CoinSource
 
     /// <summary>What a new player is given before the first level: the settings' start section.</summary>
     WelcomeGift,
+
+    /// <summary>
+    /// What a booster used during play brings as it opens, on its level: the welcome gift's part for it
+    /// (the settings' boosterUnlocks.gift). Boosters only, no coins.
+    /// </summary>
+    UnlockGift,
 }
 
 /// <summary>What coins are spent on in this version. Closed set.</summary>

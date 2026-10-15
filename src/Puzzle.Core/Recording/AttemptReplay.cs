@@ -16,7 +16,8 @@ namespace Puzzle.Core.Recording
     {
         /// <summary>
         /// The game of the attempt <paramref name="record"/> keeps, played again on <paramref name="level"/> up to where
-        /// the attempt ended, with the same result, moves used, goals, boosters used and extra moves. An attempt left
+        /// the attempt ended, with the same result, moves used, goals, boosters used and extra moves. The shuffle booster
+        /// follows the rule the record names (<see cref="AttemptStart.ShuffleRule"/>), the first one when it names none. An attempt left
         /// before it was decided is replayed to the game as it was being played.
         /// </summary>
         /// <param name="level">The level the attempt was played on: its number, content version and move limit are the record's.</param>
@@ -37,7 +38,7 @@ namespace Puzzle.Core.Recording
                     nameof(level));
             }
 
-            Game game = Play(level, start.Seeds, StartBoostersOf(record.Outcome), record.Lab?.AssistPercent ?? 0, actions);
+            Game game = Play(level, start.Seeds, StartBoostersOf(record.Outcome), record.Lab?.AssistPercent ?? 0, start.ShuffleRule, actions);
             if (DifferenceBetween(AttemptOutcome.Of(game, record.Outcome.EndedUtc), record.Outcome) is string difference)
             {
                 throw new AttemptReplayException(actions.Count, $"The replay of all {actions.Count} actions ends otherwise than the attempt: {difference}.");
@@ -48,15 +49,33 @@ namespace Puzzle.Core.Recording
 
         /// <summary>
         /// The game <paramref name="actions"/> play on <paramref name="level"/> from the start that the seeds and the start
-        /// boosters give, as the released game plays (no assist). The game keeps its own actions, equal to these.
+        /// boosters give, as the released game plays (no assist), its shuffle booster following <paramref name="shuffleRule"/>.
+        /// The game keeps its own actions, equal to these.
         /// </summary>
         /// <exception cref="AttemptReplayException">The game did not do one of the actions as the list says.</exception>
-        public static Game Play(LevelDefinition level, AttemptSeeds seeds, IReadOnlyList<StartBooster> startBoosters, IReadOnlyList<AttemptAction> actions) =>
-            Play(level, seeds, startBoosters, assistPercent: 0, actions);
+        public static Game Play(
+            LevelDefinition level,
+            AttemptSeeds seeds,
+            IReadOnlyList<StartBooster> startBoosters,
+            ShuffleBoosterRule shuffleRule,
+            IReadOnlyList<AttemptAction> actions) =>
+            Play(level, seeds, startBoosters, assistPercent: 0, shuffleRule, actions);
 
-        private static Game Play(LevelDefinition level, AttemptSeeds seeds, IReadOnlyList<StartBooster> startBoosters, int assistPercent, IReadOnlyList<AttemptAction> actions)
+        private static Game Play(
+            LevelDefinition level,
+            AttemptSeeds seeds,
+            IReadOnlyList<StartBooster> startBoosters,
+            int assistPercent,
+            ShuffleBoosterRule shuffleRule,
+            IReadOnlyList<AttemptAction> actions)
         {
-            var options = new GameOptions { StartBoosters = startBoosters, AssistPercent = assistPercent, RecordActions = true };
+            var options = new GameOptions
+            {
+                StartBoosters = startBoosters,
+                AssistPercent = assistPercent,
+                ShuffleBoosterRule = shuffleRule,
+                RecordActions = true,
+            };
             Game game = Game.Start(level, seeds, options);
             for (int index = 0; index < actions.Count; index++)
             {

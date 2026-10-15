@@ -1,4 +1,7 @@
+using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
+using Puzzle.Core.Engine;
+using Puzzle.Core.Levels;
 using Puzzle.Meta;
 using static Puzzle.Core.Tests.MetaSupport;
 
@@ -11,7 +14,8 @@ namespace Puzzle.Core.Tests;
 /// it. <c>AttemptLedger</c> and <c>WallClock</c> are the Unity project's source files, compiled into these tests. The
 /// rules are the tests' pack (<see cref="MetaSupport"/>): 10 coins a move left and 25 a level, five lives and
 /// thirty minutes, the +5 for 900 coins or one of three ads a day, a new player with 100 coins, one rocket-and-bomb
-/// and two shuffles.
+/// and two shuffles, the boosters used during play opening on levels 7, 12, 16 and 20 with three, two, one and no
+/// boosters of their kind.
 /// </summary>
 public class AttemptLedgerTests
 {
@@ -21,8 +25,12 @@ public class AttemptLedgerTests
 
     private static readonly AttemptLedger Ledger = new(TheRules, LevelsInThePack);
 
-    /// <summary>A new player on level 40 after two attempts there.</summary>
+    /// <summary>A new player on level 40 after two attempts there, whose save has none of the opening gifts yet.</summary>
     private static PlayerProgress OnLevelForty() => new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2).WithWallet(TheRules.StartingWallet);
+
+    /// <summary>A player on a level who was given every opening gift due there, before any attempt at it.</summary>
+    private static PlayerProgress OnTheLevel(int level) =>
+        Ledger.WithTheOpeningGiftsDue(new PlayerProgress(levelsWon: level - 1, attemptsOnLevel: 0).WithWallet(TheRules.StartingWallet));
 
     private static PlayerProgress Apply(PlayerProgress progress, params AttemptEvent[] happened) =>
         happened.Aggregate(progress, (kept, each) => Ledger.Apply(kept, each, Evening));
@@ -46,7 +54,8 @@ public class AttemptLedgerTests
 
         PlayerProgress won = Ledger.Apply(before, new AttemptEvent.Won(movesLeft: 4), Evening);
 
-        Assert.Equal(before.WithLevelWon(LevelsInThePack).WithWallet(before.Wallet.WithCoins(new Coins(165))), won);
+        // A new player's wallet on level 40 had none of the opening gifts yet: the win gives what is owed with its coins.
+        Assert.Equal(before.WithLevelWon(LevelsInThePack).WithWallet(TheRules.Unlocks.GivenTo(before.Wallet.WithCoins(new Coins(165)), level: 41)), won);
         Assert.Equal((40, 0), (won.LevelsWon, won.AttemptsOnLevel));
         Assert.Equal(before.Wallet.Lives, won.Wallet.Lives);
     }
@@ -161,6 +170,73 @@ public class AttemptLedgerTests
 
         Assert.Throws<InvalidOperationException>(() => Apply(OnLevelForty(), takenByCoins)); // 100 coins of 900
         Assert.Throws<InvalidOperationException>(() => Apply(noAdLeft, takenByAd));
+    }
+
+    [Theory]
+    [InlineData(6, BoosterKind.HitCell, 3)]
+    [InlineData(11, BoosterKind.HitRow, 2)]
+    [InlineData(15, BoosterKind.HitColumn, 1)]
+    [InlineData(19, BoosterKind.Shuffle, 0)]
+    public void Winning_the_level_before_a_boosters_own_gives_its_gift_once_and_the_level_before_that_does_not(int levelBefore, BoosterKind opens, int gift)
+    {
+        PlayerProgress twoBefore = OnTheLevel(levelBefore - 1);
+
+        PlayerProgress onTheLevelBefore = Apply(twoBefore, new AttemptEvent.Won(movesLeft: 0));
+        PlayerProgress onItsLevel = Apply(onTheLevelBefore, new AttemptEvent.Won(movesLeft: 0));
+        PlayerProgress past = Apply(onItsLevel, new AttemptEvent.Won(movesLeft: 0));
+
+        Assert.False(onTheLevelBefore.Wallet.Rewards.UnlockGifts.Contains(opens));
+        Assert.Equal(twoBefore.Wallet.Shelf, onTheLevelBefore.Wallet.Shelf);
+        Assert.True(onItsLevel.Wallet.Rewards.UnlockGifts.Contains(opens));
+        Assert.Equal(onTheLevelBefore.Wallet.Shelf.With(opens, gift), onItsLevel.Wallet.Shelf);
+        Assert.Equal(onItsLevel.Wallet.Shelf, past.Wallet.Shelf);
+    }
+
+    [Fact]
+    public void A_save_from_before_the_opening_gifts_past_their_levels_is_given_each_once_and_never_again()
+    {
+        PlayerProgress oldSave = OnLevelForty();
+
+        PlayerProgress given = Ledger.WithTheOpeningGiftsDue(oldSave);
+
+        Assert.Equal(BoosterKindSet.Of(BoosterKinds.InLevel), given.Wallet.Rewards.UnlockGifts);
+        Assert.Equal((3, 2, 1, 2), (given.Wallet.Shelf.Count(BoosterKind.HitCell), given.Wallet.Shelf.Count(BoosterKind.HitRow), given.Wallet.Shelf.Count(BoosterKind.HitColumn), given.Wallet.Shelf.Count(BoosterKind.Shuffle)));
+        Assert.Same(given, Ledger.WithTheOpeningGiftsDue(given));
+
+        // Before the first booster's level nothing is due, and the progress is the very one it was.
+        PlayerProgress onSix = new PlayerProgress(levelsWon: 5, attemptsOnLevel: 0).WithWallet(TheRules.StartingWallet);
+        Assert.Same(onSix, Ledger.WithTheOpeningGiftsDue(onSix));
+    }
+
+    [Fact]
+    public void A_booster_before_any_move_counts_as_the_first_move_so_leaving_after_it_costs_a_life()
+    {
+        PlayerProgress before = Ledger.WithTheOpeningGiftsDue(OnLevelForty());
+        var picked = Assert.IsType<StartToggle.Changed>(TheRules.StartBoosters.Toggled(StartChoice.None, BoosterKind.StartRocketAndBomb, before.Wallet.Shelf));
+
+        // What the board reports when a spatula is the first thing the engine accepts.
+        PlayerProgress used = Apply(before, new AttemptEvent.FirstMove(picked.Choice), new AttemptEvent.BoosterAccepted(BoosterKind.HitCell));
+        PlayerProgress left = Apply(used, new AttemptEvent.Left(afterAMove: true));
+
+        Assert.Equal(before.AttemptsOnLevel + 1, used.AttemptsOnLevel);
+        Assert.Equal((0, 2), (used.Wallet.Shelf.Count(BoosterKind.StartRocketAndBomb), used.Wallet.Shelf.Count(BoosterKind.HitCell)));
+        Assert.Equal(4, left.Wallet.Lives.LivesUnder(TheRules.Lives));
+    }
+
+    [Fact]
+    public void An_attempt_has_begun_after_a_move_or_a_booster_used_during_play_and_not_with_the_start_boosters_alone()
+    {
+        LevelDefinition level = GameTests.OpenLevel();
+        Game untouched = LevelStart.Attempt(level, attempt: 0, new[] { StartBooster.ColorBomb, StartBooster.ExtraMoves });
+        Game afterABooster = LevelStart.Attempt(level, attempt: 0);
+        Game afterAMove = LevelStart.Attempt(level, attempt: 0);
+
+        Assert.True(afterABooster.TryUseBooster(new BoosterUse.Shuffle()));
+        Assert.True(afterAMove.TryPlay(afterAMove.FindLegalMoves()[0]));
+
+        Assert.False(AttemptBegun.In(untouched));
+        Assert.True(AttemptBegun.In(afterABooster));
+        Assert.True(AttemptBegun.In(afterAMove));
     }
 
     [Fact]

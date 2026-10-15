@@ -254,6 +254,7 @@ public static class SettingsLoader
                     CoinsOf(file.Start.Coins, "start.coins"),
                     ByBooster(file.Start.Boosters, BoosterKinds.All, "start.boosters")
                         .ToDictionary(held => held.Key, held => AtLeast(held.Value, 0, $"start.boosters.{held.Key.Name()}"))),
+                Unlocks = UnlocksOf(file.BoosterUnlocks),
                 Game = GameOnlyOf(file),
                 Player = player,
                 Measurement = measurement,
@@ -517,6 +518,17 @@ public static class SettingsLoader
             };
         }
 
+        /// <summary>The level each booster used during play opens on, from 1, and the gift it brings then, none or more.</summary>
+        private BoosterUnlockSettings UnlocksOf(BoosterUnlocksFile file)
+        {
+            BoosterKind[] inLevel = BoosterKinds.All.Where(BoosterKinds.IsInLevel).ToArray();
+            return new BoosterUnlockSettings(
+                ByBooster(file.Levels, inLevel, "boosterUnlocks.levels")
+                    .ToDictionary(opens => opens.Key, opens => new LevelId(AtLeast(opens.Value, 1, $"boosterUnlocks.levels.{opens.Key.Name()}"))),
+                ByBooster(file.Gift, inLevel, "boosterUnlocks.gift")
+                    .ToDictionary(given => given.Key, given => AtLeast(given.Value, 0, $"boosterUnlocks.gift.{given.Key.Name()}")));
+        }
+
         /// <summary>The values of an object that must state exactly <paramref name="expected"/>, by booster.</summary>
         private Dictionary<BoosterKind, TValue> ByBooster<TValue>(Dictionary<string, TValue> stated, IReadOnlyList<BoosterKind> expected, string field)
         {
@@ -604,6 +616,8 @@ public static class SettingsLoader
         public required PricesFile Prices { get; init; }
 
         public required StartFile Start { get; init; }
+
+        public required BoosterUnlocksFile BoosterUnlocks { get; init; }
 
         public required StartBoostersAllowedFile StartBoosters { get; init; }
 
@@ -706,6 +720,13 @@ public static class SettingsLoader
         public required long Coins { get; init; }
 
         public required Dictionary<string, int> Boosters { get; init; }
+    }
+
+    private sealed class BoosterUnlocksFile
+    {
+        public required Dictionary<string, int> Levels { get; init; }
+
+        public required Dictionary<string, int> Gift { get; init; }
     }
 
     /// <summary>The game's own cap; what a simulated player takes is <see cref="StartBoostersFile.PerAttempt"/>.</summary>

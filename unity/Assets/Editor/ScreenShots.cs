@@ -92,9 +92,10 @@ namespace Puzzle.Client.EditorTools
         /// gave places them all. After either, the wallet may be named, each part after a semicolon, in any order:
         /// coins=1250, lives=3 (of the most a meter holds), next=12:34 (minutes and seconds until the next life,
         /// with fewer lives than the most; a whole life's time when left out), boosters=2 (of every kind), starts=2:1:0
-        /// (of the three start boosters, in the order the card before a level shows them, after boosters), ads=1
-        /// (watched today for extra moves and for coins each). What is not named is the starting wallet's:
-        /// "46+42;coins=1250;lives=3;next=12:34".
+        /// (of the three start boosters, in the order the card before a level shows them, after boosters), inlevel=3:2:2:0
+        /// (of the four boosters of play, in the order the board's shelf shows them, after boosters), ads=1 (watched
+        /// today for extra moves and for coins each). What is not named is the starting wallet's, with the gift of every
+        /// booster of play that opened on the way to the level the player stands on: "46+42;coins=1250;lives=3;next=12:34".
         /// </summary>
         /// <exception cref="ArgumentException">The text is none of these.</exception>
         public static PlayerState Parse(string text)
@@ -109,18 +110,18 @@ namespace Puzzle.Client.EditorTools
             var won = new PlayerProgress(ShotPlan.WholeNumber(match.Groups[1].Value), attemptsOnLevel: 0);
             int asked = match.Groups[2].Success ? ShotPlan.WholeNumber(match.Groups[2].Value) : 0;
             PlayerProgress placed = won.WithWaitingPiecesPlaced(Math.Min(asked, won.Museum.PiecesWaiting));
-            (Wallet wallet, string named) = WalletNamedIn(match.Groups[3].Value);
+            (Wallet wallet, string named) = WalletNamedIn(match.Groups[3].Value, standsOn: won.LevelsWon + 1);
             PlayerProgress progress = placed.WithWallet(wallet);
             return new PlayerState(progress, $"won{progress.LevelsWon}-placed{progress.Museum.PiecesPlaced}{named}");
         }
 
         /// <summary>The wallet the parts after the progress name, from the starting wallet, and what they add to the state's label.</summary>
         /// <exception cref="ArgumentException">A part names nothing a wallet has, or a value it cannot have.</exception>
-        private static (Wallet Wallet, string Label) WalletNamedIn(string parts)
+        private static (Wallet Wallet, string Label) WalletNamedIn(string parts, int standsOn)
         {
             EconomyRules rules = StoryStudio.Economy;
             DateTimeOffset now = StoryStudio.Clock.Now;
-            Wallet wallet = rules.StartingWallet;
+            Wallet wallet = rules.Unlocks.GivenTo(rules.StartingWallet, standsOn);
             int? lives = null;
             TimeSpan? next = null;
             string label = string.Empty;
@@ -168,6 +169,24 @@ namespace Puzzle.Client.EditorTools
                         wallet = wallet.WithShelf(shelf);
 
                         label += $"-s{value.Replace(":", string.Empty)}";
+                        break;
+                    case "inlevel":
+                        string[] held = value.Split(':');
+                        if (held.Length != BoosterKinds.InLevel.Count)
+                        {
+                            throw new ArgumentException($"\"{value}\" does not count the {BoosterKinds.InLevel.Count} boosters of play: write inlevel=3:2:2:0.");
+                        }
+
+                        BoosterShelf withTheseInLevel = wallet.Shelf;
+                        for (int place = 0; place < held.Length; place++)
+                        {
+                            BoosterKind booster = BoosterKinds.InLevel[place];
+                            int count = ShotPlan.WholeNumber(held[place]);
+                            withTheseInLevel = Enumerable.Range(0, withTheseInLevel.Count(booster)).Aggregate(withTheseInLevel, (shelf, _) => shelf.WithOneFewer(booster)).With(booster, count);
+                        }
+
+                        wallet = wallet.WithShelf(withTheseInLevel);
+                        label += $"-i{value.Replace(":", string.Empty)}";
                         break;
                     case "ads":
                         int watched = ShotPlan.WholeNumber(value);

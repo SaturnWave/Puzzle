@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Linq;
+using Puzzle.Core.Engine;
 using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
@@ -14,7 +16,9 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// Something that happened in an attempt and changes the player's progress, as the board's stage reports it at
     /// the moment the engine says so. A closed set (private constructor): the first move, a booster the engine
-    /// accepted, extra moves the engine gave, a win, a loss for good, and leaving the level.
+    /// accepted, extra moves the engine gave, a win, a loss for good, and leaving the level. A booster used during
+    /// play that the engine accepts counts as a move (the owner's decision of 2026-10-15): when it comes first it is
+    /// the attempt's first move, and leaving after it is leaving after a move.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public abstract class AttemptEvent
@@ -29,7 +33,10 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public bool EndsTheAttempt => this is Won || this is LostForGood || (this is Left left && left.AfterAMove);
 
-        /// <summary>The attempt's first move was played: the attempt counts, and the start boosters taken into it are spent.</summary>
+        /// <summary>
+        /// The attempt's first move was played, or a booster used during play that the engine accepted before any move,
+        /// which counts as one: the attempt counts, and the start boosters taken into it are spent.
+        /// </summary>
         public sealed class FirstMove : AttemptEvent
         {
             public FirstMove(StartChoice startBoosters)
@@ -103,7 +110,7 @@ namespace Puzzle.Client.Flow
         /// <summary>The player left the level while it was still being played.</summary>
         public sealed class Left : AttemptEvent
         {
-            /// <param name="afterAMove">True when a move had been played in the attempt.</param>
+            /// <param name="afterAMove">True when a move had been played in the attempt, or a booster used during play, which counts as one (<see cref="AttemptBegun"/>).</param>
             public Left(bool afterAMove)
             {
                 AfterAMove = afterAMove;
@@ -116,11 +123,22 @@ namespace Puzzle.Client.Flow
     }
 
     /// <summary>
-    /// What each event of an attempt does to the player's progress, by the rules of the economy: the first move
-    /// makes the attempt count and spends the start boosters taken into it; a booster the engine accepted leaves
-    /// the shelf; extra moves are paid for; a win moves the player on and pays its coins in the same change, so one
-    /// save holds both; a loss for good, and leaving a level after a move, cost a life. Leaving before the first move
-    /// costs nothing. Closing the game in the middle of a level is no event and costs nothing either.
+    /// Whether an attempt has begun: a move was played in it, or a booster used during play that the engine accepted,
+    /// which counts as a move. The start boosters a board opens with do not begin it: a board nobody touched is left
+    /// at no cost. This file has no Unity dependency, so the repository's tests compile it too.
+    /// </summary>
+    public static class AttemptBegun
+    {
+        public static bool In(Game game) => game.MovesUsed > 0 || game.BoostersUsed.Any(name => BoosterNames.StartBoosterNamed(name) == null);
+    }
+
+    /// <summary>
+    /// What each event of an attempt does to the player's progress, by the rules of the economy: the first move (or
+    /// a booster that counts as one) makes the attempt count and spends the start boosters taken into it; a booster
+    /// the engine accepted leaves the shelf; extra moves are paid for; a win moves the player on and pays its coins in
+    /// the same change, so one save holds both, with the gift of every booster used during play that opens on the
+    /// level it leads to; a loss for good, and leaving a level after a move, cost a life. Leaving before the first
+    /// move costs nothing. Closing the game in the middle of a level is no event and costs nothing either.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class AttemptLedger
@@ -158,7 +176,7 @@ namespace Puzzle.Client.Flow
                 case AttemptEvent.ExtraMovesTaken taken:
                     return progress.WithWallet(PaidForTheExtraMoves(wallet, taken.PaidBy, now));
                 case AttemptEvent.Won won:
-                    return progress.WithLevelWon(_levelCount).WithWallet(wallet.WithCoins(wallet.Coins + _rules.Win.Of(won.MovesLeft)));
+                    return WithTheOpeningGiftsDue(progress.WithLevelWon(_levelCount).WithWallet(wallet.WithCoins(wallet.Coins + _rules.Win.Of(won.MovesLeft))));
                 case AttemptEvent.LostForGood _:
                 case AttemptEvent.Left { AfterAMove: true }:
                     return progress.WithWallet(wallet.WithLives(OneLifeLess(wallet.Lives, now)));
@@ -167,6 +185,18 @@ namespace Puzzle.Client.Flow
                 default:
                     throw new InvalidOperationException($"The ledger does not know the event {happened.GetType().Name}.");
             }
+        }
+
+        /// <summary>
+        /// The progress with the gift of every booster used during play that is open on the level the player stands
+        /// on and was not given yet (Puzzle.Meta's BoosterUnlocks); the very progress when none is due. A win gives
+        /// what the next level opens; a session gives, as it opens, what a save from before the gifts is owed.
+        /// </summary>
+        public PlayerProgress WithTheOpeningGiftsDue(PlayerProgress progress)
+        {
+            int standsOn = progress.LevelIndexIn(_levelCount) + 1;
+            Wallet given = _rules.Unlocks.GivenTo(progress.Wallet, standsOn);
+            return given.Equals(progress.Wallet) ? progress : progress.WithWallet(given);
         }
 
         private Wallet PaidForTheExtraMoves(Wallet wallet, ExtraMovesPayment paidBy, DateTimeOffset now)

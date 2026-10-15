@@ -53,7 +53,7 @@ namespace Puzzle.Client.EditorTools
     /// design canvas' own picture of the screen at the left, scaled to the same height, and at the right what the
     /// game's camera shows of the same screen on the phone the canvas is drawn for.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.DesignPairs.Run
-    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost,levelstart] [-pairState 46+45;coins=1250;starts=2:1:0] [-pairDrawings ../out/design/next/project]
+    ///            [-pairScreens home,map,collection,jigsaw,board,won,lost,levelstart] [-pairState 46+45;coins=1250;starts=2:1:0;inlevel=3:2:2:0] [-pairDrawings ../out/design/next/project]
     ///   -pairScreens   which screens (all of them when left out)
     ///   -pairState     the player, as the picture command is told of one: levels won, or levels won + pieces in
     ///                  place, and the wallet after it. Left out, it is the player the canvas draws: on level 47,
@@ -74,9 +74,10 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// The player of the canvas: 46 levels won, four paintings whole and five pieces of the fifth in place, its
-        /// sixth waiting; 1.250 coins, every life, and two, one and none of the start boosters (LevelStartTR).
+        /// sixth waiting; 1.250 coins, every life, two, one and none of the start boosters (LevelStartTR), and three, two,
+        /// two and none of the boosters of play (BoardTR).
         /// </summary>
-        private const string PlayerOfTheCanvas = "46+45;coins=1250;starts=2:1:0";
+        private const string PlayerOfTheCanvas = "46+45;coins=1250;starts=2:1:0;inlevel=3:2:2:0";
 
         /// <summary>The two pictures stand this many pixels apart, on the sheet's own dark.</summary>
         private const int Gap = 24;

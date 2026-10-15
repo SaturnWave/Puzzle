@@ -42,7 +42,9 @@ public sealed class PlayerSimulator
     public void Play(SimulatedPlayer player, IJourneyLog log)
     {
         var journey = new Journey(player, new LifeMeter(_settings.Lives));
-        GiveTheWelcomeGift(journey, PlayerTime.At(new DayNumber(1), _settings.Habit.SessionStarts[0]), log);
+        PlayerTime firstSession = PlayerTime.At(new DayNumber(1), _settings.Habit.SessionStarts[0]);
+        GiveTheWelcomeGift(journey, firstSession, log);
+        GiveTheGiftsOpeningOn(new LevelId(1), journey, firstSession, log);
         for (int day = 1; day <= _settings.Players.HorizonDays && !IsOver(journey); day++)
         {
             PlayDay(journey, new DayNumber(day), log);
@@ -137,7 +139,7 @@ public sealed class PlayerSimulator
         GameMet met = GameMet.By(journey.Player.Seed, level, attempt, line, _half);
         AttemptReading reading = _reader.Read(
             met.In(line),
-            new AttemptTerms(line.MoveLimit, taken == BoosterKind.StartExtraMoves, InLevelBoosterAtHand(journey.Shelf), attempt.LossesBefore, journey.Balance, journey.FreeAdsLeft));
+            new AttemptTerms(line.MoveLimit, taken == BoosterKind.StartExtraMoves, InLevelBoosterAtHand(journey.Shelf, level), attempt.LossesBefore, journey.Balance, journey.FreeAdsLeft));
         Settle(journey, reading);
 
         TimeSpan playTime = _settings.Habit.PerMove * reading.MovesPlayed.Value;
@@ -150,6 +152,11 @@ public sealed class PlayerSimulator
         if (reading.Ending is AttemptEnding.Won && level.Value % MuseumPlan.LevelsPerPainting == 0)
         {
             Give(journey, CoinSource.PaintingCompleted, _settings.Rewards.PaintingCompleted, journey.PaintingRewards++, decidedAt, log);
+        }
+
+        if (reading.Ending is AttemptEnding.Won)
+        {
+            GiveTheGiftsOpeningOn(new LevelId(journey.LevelsWon + 1), journey, decidedAt, log);
         }
 
         return duration;
@@ -215,12 +222,12 @@ public sealed class PlayerSimulator
         }
     }
 
-    /// <summary>The first in-level booster, in the engine's order, that the player holds and the settings assume an effect for.</summary>
-    private BoosterKind? InLevelBoosterAtHand(BoosterShelf shelf)
+    /// <summary>The first in-level booster, in the engine's order, that is open on the level, the player holds, and the settings assume an effect for.</summary>
+    private BoosterKind? InLevelBoosterAtHand(BoosterShelf shelf, LevelId level)
     {
         foreach (BoosterKind booster in _inLevelBoostersWithAnEffect)
         {
-            if (shelf.Has(booster))
+            if (shelf.Has(booster) && _settings.Unlocks.IsOpenOn(booster, level))
             {
                 return booster;
             }
@@ -247,6 +254,19 @@ public sealed class PlayerSimulator
         if (_settings.Start.Coins != Coins.None || boosters.Length > 0)
         {
             Receive(journey, CoinSource.WelcomeGift, _settings.Start.Coins, boosters, at, log);
+        }
+    }
+
+    /// <summary>
+    /// The player has come to a level: the boosters used during play that open on it bring their gift, the welcome
+    /// gift's part for them. A level on which nothing opens, or whose openings bring nothing, gives nothing.
+    /// </summary>
+    private void GiveTheGiftsOpeningOn(LevelId level, Journey journey, PlayerTime at, IJourneyLog log)
+    {
+        BoosterKind[] gift = _settings.Unlocks.GiftOpeningOn(level).ToArray();
+        if (gift.Length > 0)
+        {
+            Receive(journey, CoinSource.UnlockGift, Coins.None, gift, at, log);
         }
     }
 

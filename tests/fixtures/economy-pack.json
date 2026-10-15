@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "lives": {
     "max": 5,
     "minutesPerLife": 30
@@ -88,6 +88,44 @@
         "booster": "start-extra-moves",
         "count": 3
       },
+      {
+        "booster": "hit-cell",
+        "count": 0
+      },
+      {
+        "booster": "hit-row",
+        "count": 0
+      },
+      {
+        "booster": "hit-column",
+        "count": 0
+      },
+      {
+        "booster": "shuffle",
+        "count": 0
+      }
+    ]
+  },
+  "boosterUnlocks": {
+    "levels": [
+      {
+        "booster": "hit-cell",
+        "level": 7
+      },
+      {
+        "booster": "hit-row",
+        "level": 12
+      },
+      {
+        "booster": "hit-column",
+        "level": 16
+      },
+      {
+        "booster": "shuffle",
+        "level": 20
+      }
+    ],
+    "gift": [
       {
         "booster": "hit-cell",
         "count": 3

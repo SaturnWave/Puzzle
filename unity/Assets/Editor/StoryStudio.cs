@@ -50,10 +50,28 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The tools' phone: an id of its own, which no phone's random id is likely to be.</summary>
         public static DeviceId Device { get; } = new DeviceId("00000000000000000000000000000000");
 
+        /// <summary>The board's shelf of a first try at the game's level, by the economy the tools play by.</summary>
+        public static ShelfBrief ShelfOf(Puzzle.Core.Engine.Game game) => ShelfBrief.Of(game.Level.Id.Value, attemptsBefore: 0, Economy);
+
+        /// <summary>
+        /// What the design canvas' player holds on the board's shelf (BoardTR): three spatulas, two of each brush, no
+        /// shuffle, the three start boosters the welcome gift gives, 1.250 coins and every life.
+        /// </summary>
+        public static WalletView CanvasWallet => WalletView.Of(
+            Economy.StartingWallet
+                .WithCoins(new Coins(1250))
+                .WithShelf(Economy.StartingWallet.Shelf.With(BoosterKind.HitCell, 3).With(BoosterKind.HitRow, 2).With(BoosterKind.HitColumn, 2)),
+            Economy.Lives,
+            Clock.Now);
+
         /// <summary>An attempt log that forgets, for a tool's session: the tools must not write a player's log.</summary>
         public static IAttemptLog AttemptsKeptInMemory() => new AttemptsInMemory(Device);
 
-        /// <summary>The progress of a new player who stands on a level, never having tried it.</summary>
+        /// <summary>
+        /// The progress of a new player who stands on a level, never having tried it: the welcome gift and the gift of
+        /// every booster of play that opened on the way there, as a player who came so far was given them, so a session
+        /// that opens on it has nothing more to give.
+        /// </summary>
         /// <exception cref="ArgumentException">The pack has no such level.</exception>
         public static PlayerProgress StandingOn(LevelDefinition level, IReadOnlyList<LevelDefinition> levels)
         {
@@ -61,7 +79,7 @@ namespace Puzzle.Client.EditorTools
             {
                 if (levels[index].Id.Value == level.Id.Value)
                 {
-                    return new PlayerProgress(levelsWon: index, attemptsOnLevel: 0).WithWallet(Economy.StartingWallet);
+                    return new PlayerProgress(levelsWon: index, attemptsOnLevel: 0).WithWallet(Economy.Unlocks.GivenTo(Economy.StartingWallet, index + 1));
                 }
             }
 

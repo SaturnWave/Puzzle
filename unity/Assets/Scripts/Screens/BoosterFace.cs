@@ -17,6 +17,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>Set aside for now: another booster is armed, or the shelf does not listen.</summary>
         SetAside,
+
+        /// <summary>Not open yet: the booster opens on a later level, which the disc names (the owner's decision of 2026-10-15).</summary>
+        Locked,
     }
 
     /// <summary>The badge at the lower right of a booster's disc. A closed set.</summary>
@@ -27,6 +30,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The green badge with a plus: the player owns none, and the disc offers more.</summary>
         GetMore,
+
+        /// <summary>The teal badge across the disc's foot that names the level the booster opens on: "Bölüm 7".</summary>
+        OpensOn,
     }
 
     /// <summary>
@@ -37,10 +43,11 @@ namespace Puzzle.Client.Screens
     /// </summary>
     public readonly struct BoosterFace : IEquatable<BoosterFace>
     {
-        private BoosterFace(int owned, BoosterChoice choice)
+        private BoosterFace(int owned, BoosterChoice choice, int? opensOn = null)
         {
             Owned = owned;
             Choice = choice;
+            OpensOn = opensOn;
         }
 
         /// <summary>How many of the booster the player owns.</summary>
@@ -48,8 +55,13 @@ namespace Puzzle.Client.Screens
 
         public BoosterChoice Choice { get; }
 
-        /// <summary>The count while the player owns any; the plus of "get more" once none is left.</summary>
-        public BoosterBadge Badge => Owned > 0 ? BoosterBadge.Count : BoosterBadge.GetMore;
+        /// <summary>The level a locked booster opens on; nothing for a booster that is open.</summary>
+        public int? OpensOn { get; }
+
+        /// <summary>The level a locked booster opens on; the count while the player owns any; the plus of "get more" once none is left.</summary>
+        public BoosterBadge Badge => Choice == BoosterChoice.Locked ? BoosterBadge.OpensOn
+            : Owned > 0 ? BoosterBadge.Count
+            : BoosterBadge.GetMore;
 
         /// <summary>True for a disc in the green ring: a booster that is chosen for the level, or armed in it.</summary>
         public bool IsRinged => Choice == BoosterChoice.Chosen || Choice == BoosterChoice.Armed;
@@ -57,17 +69,25 @@ namespace Puzzle.Client.Screens
         /// <summary>True for a disc with the tick on its upper right: a booster chosen for the level.</summary>
         public bool IsTicked => Choice == BoosterChoice.Chosen;
 
-        /// <summary>True for a disc that is drawn faint and takes no finger: one that is set aside.</summary>
-        public bool IsFaint => Choice == BoosterChoice.SetAside;
+        /// <summary>True for a disc that is drawn faint and takes no finger: one that is set aside, or not open yet.</summary>
+        public bool IsFaint => Choice == BoosterChoice.SetAside || Choice == BoosterChoice.Locked;
 
         /// <summary>The face of a booster of which the player owns so many and has done this with.</summary>
         /// <exception cref="ArgumentOutOfRangeException">The count is less than nothing.</exception>
-        /// <exception cref="ArgumentException">A booster the player owns none of is said to be chosen or armed: only what is owned can be.</exception>
+        /// <exception cref="ArgumentException">
+        /// A booster the player owns none of is said to be chosen or armed: only what is owned can be; or a booster
+        /// is said to be locked without the level it opens on (<see cref="LockedUntil"/>).
+        /// </exception>
         public static BoosterFace Of(int owned, BoosterChoice choice)
         {
             if (owned < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(owned), owned, "A player owns none of a booster at the least.");
+            }
+
+            if (choice == BoosterChoice.Locked)
+            {
+                throw new ArgumentException("A locked booster's face names the level it opens on: BoosterFace.LockedUntil.", nameof(choice));
             }
 
             bool isInUse = choice == BoosterChoice.Chosen || choice == BoosterChoice.Armed;
@@ -79,13 +99,19 @@ namespace Puzzle.Client.Screens
             return new BoosterFace(owned, choice);
         }
 
-        public bool Equals(BoosterFace other) => Owned == other.Owned && Choice == other.Choice;
+        /// <summary>The face of a booster that is not open yet: dimmed, under no finger, the level it opens on across its foot. What is owned of it is not shown.</summary>
+        /// <exception cref="ArgumentOutOfRangeException">The level is below 2: a booster that opens on the first level is never locked.</exception>
+        public static BoosterFace LockedUntil(int level) => level >= 2
+            ? new BoosterFace(0, BoosterChoice.Locked, level)
+            : throw new ArgumentOutOfRangeException(nameof(level), level, "A booster is locked only until a later level than the first.");
+
+        public bool Equals(BoosterFace other) => Owned == other.Owned && Choice == other.Choice && OpensOn == other.OpensOn;
 
         public override bool Equals(object? obj) => obj is BoosterFace other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(Owned, Choice);
+        public override int GetHashCode() => HashCode.Combine(Owned, Choice, OpensOn);
 
-        public override string ToString() => $"{Owned} owned, {Choice}";
+        public override string ToString() => OpensOn is int level ? $"locked until level {level}" : $"{Owned} owned, {Choice}";
 
         public static bool operator ==(BoosterFace left, BoosterFace right) => left.Equals(right);
 

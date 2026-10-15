@@ -156,6 +156,46 @@ public class EconomyBoosterAndRewardTests
     }
 
     [Fact]
+    public void A_booster_used_during_play_brings_its_gift_when_the_player_comes_to_its_level_and_not_before()
+    {
+        EconomySettings settings = OnePlayer(
+            """{ "boosterUnlocks": { "levels": { "hit-cell": 1, "hit-row": 3, "hit-column": 3, "shuffle": 6 }, "gift": { "hit-cell": 2, "hit-row": 3, "hit-column": 1, "shuffle": 0 } } }""");
+        HandMadeLevels levels = new HandMadeLevels().EasyLevels(8);
+
+        RewardGiven[] gifts = Journey(settings, levels).Rewards.Where(reward => reward.Source == CoinSource.UnlockGift).ToArray();
+
+        // The spatula opens on the first level and comes before the first attempt; both brushes on the third, as the
+        // second is won; the shuffle brings nothing and so is no gift at all.
+        Assert.Equal(2, gifts.Length);
+        Assert.Equal([BoosterKind.HitCell, BoosterKind.HitCell], gifts[0].Boosters);
+        Assert.Equal(0, gifts[0].After.LevelsWon);
+        Assert.Equal([BoosterKind.HitRow, BoosterKind.HitRow, BoosterKind.HitRow, BoosterKind.HitColumn], gifts[1].Boosters);
+        Assert.Equal(2, gifts[1].After.LevelsWon);
+        Assert.All(gifts, gift => Assert.Equal(Coins.None, gift.Coins));
+    }
+
+    [Fact]
+    public void An_in_level_booster_held_before_its_level_is_not_used_there()
+    {
+        EconomySettings settings = OnePlayer(
+            HitCellEveryDay,
+            """{ "player": { "inLevelBoosters": { "assumedMovesWorth": { "hit-cell": 3 } } } }""",
+            """{ "boosterUnlocks": { "levels": { "hit-cell": 2, "hit-row": 1, "hit-column": 1, "shuffle": 1 } } }""");
+        HandMadeLevels levels = new HandMadeLevels()
+            .Level(Limit, Always(Won(Limit + 2, nearlyDoneOn: 10)))
+            .Level(Limit, Always(Won(Limit + 2, nearlyDoneOn: 10)));
+
+        AttemptPlayed[] attempts = Journey(settings, levels).Attempts.ToArray();
+
+        // On the first level the spatula from the daily reward waits; on the second it is open and wins the level.
+        AttemptPlayed onTheFirst = attempts.First();
+        Assert.Null(onTheFirst.Reading.InLevelBoosterUsed);
+        Assert.False(onTheFirst.IsWon);
+        Assert.Equal(1, onTheFirst.After.Held.Count(BoosterKind.HitCell));
+        Assert.DoesNotContain(attempts, attempt => attempt.Level.Value == 1 && attempt.Reading.InLevelBoosterUsed is not null);
+    }
+
+    [Fact]
     public void A_completed_painting_pays_once_and_in_the_settings_rotation()
     {
         EconomySettings settings = OnePlayer(

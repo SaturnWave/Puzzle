@@ -22,7 +22,8 @@ internal static class MetaSupport
 
     /// <summary>
     /// The tests' pack: five lives and thirty minutes as decided; 10 coins a move left and 25 a level; the +5 for
-    /// 900 coins or one of 3 ads a day; a new player with 100 coins, one rocket-and-bomb and two shuffles; two start
+    /// 900 coins or one of 3 ads a day; a new player with 100 coins, one rocket-and-bomb and two shuffles; the boosters
+    /// used during play opening on levels 7, 12, 16 and 20 with three, two, one and none of their kind; two start
     /// boosters an attempt; a starter set for 2 100 and a master set for 6 300; 50 coins for one of 2 ads a day.
     /// </summary>
     public static EconomyFile Pack() => new()
@@ -52,6 +53,11 @@ internal static class MetaSupport
                 Count("start-rocket-and-bomb", 1), Count("start-color-bomb", 0), Count("start-extra-moves", 0),
                 Count("hit-cell", 0), Count("hit-row", 0), Count("hit-column", 0), Count("shuffle", 2),
             ],
+        },
+        boosterUnlocks =
+        {
+            levels = [Opens("hit-cell", 7), Opens("hit-row", 12), Opens("hit-column", 16), Opens("shuffle", 20)],
+            gift = [Count("hit-cell", 3), Count("hit-row", 2), Count("hit-column", 1), Count("shuffle", 0)],
         },
         startBoosters = { perAttempt = 2 },
         shop =
@@ -91,4 +97,6 @@ internal static class MetaSupport
     public static BoosterPriceFile Price(string booster, long coins) => new() { booster = booster, coins = coins };
 
     public static BoosterCountFile Count(string booster, int count) => new() { booster = booster, count = count };
+
+    public static BoosterLevelFile Opens(string booster, int level) => new() { booster = booster, level = level };
 }

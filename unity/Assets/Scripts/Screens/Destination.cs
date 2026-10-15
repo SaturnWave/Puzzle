@@ -162,18 +162,18 @@ namespace Puzzle.Client.Screens
     }
 
     /// <summary>
-    /// What a press in the museum asks of the player's wallet, which the museum shows and does not hold: whoever owns
-    /// the museum's stage applies it by the economy's rules, keeps the wallet after it, and tells the stage of it. A
-    /// closed set (private constructor).
+    /// What a press in the museum or on a board asks of the player's wallet, which the stages show and do not hold:
+    /// whoever owns the stage applies it by the economy's rules, keeps the wallet after it, and tells the stage of it.
+    /// A closed set (private constructor).
     /// </summary>
-    public abstract class MuseumRequest
+    public abstract class WalletRequest
     {
-        private MuseumRequest()
+        private WalletRequest()
         {
         }
 
         /// <summary>One booster of a kind, for its single price.</summary>
-        public sealed class BuyABooster : MuseumRequest
+        public sealed class BuyABooster : WalletRequest
         {
             public BuyABooster(BoosterKind booster)
             {

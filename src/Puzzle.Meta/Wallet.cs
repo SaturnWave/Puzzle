@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Puzzle.Meta
 {
@@ -66,15 +67,28 @@ namespace Puzzle.Meta
     }
 
     /// <summary>
-    /// How many rewards a player has been given, by kind. A reward's number decides what it holds (the rotation), so
-    /// the counts are part of what a player owns and are saved with it.
+    /// How many rewards a player has been given, by kind, and the boosters whose opening gift was given
+    /// (<see cref="BoosterUnlocks"/>). A reward's number decides what it holds (the rotation), and a gift is given
+    /// once for good, so both are part of what a player owns and are saved with it.
     /// </summary>
     public readonly struct RewardsGiven : IEquatable<RewardsGiven>
     {
-        /// <param name="lastDailyOn">The day the latest daily reward was given; absent when none was.</param>
+        /// <summary>Rewards counted with no booster's opening gift given yet.</summary>
         /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
         /// <exception cref="ArgumentException">A day is stated for a daily reward that was never given, or none for one that was.</exception>
         public RewardsGiven(int forPaintings, int daily, DayStamp? lastDailyOn)
+            : this(forPaintings, daily, lastDailyOn, BoosterKindSet.None)
+        {
+        }
+
+        /// <param name="lastDailyOn">The day the latest daily reward was given; absent when none was.</param>
+        /// <param name="unlockGifts">The boosters used during play whose opening gift was given.</param>
+        /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
+        /// <exception cref="ArgumentException">
+        /// A day is stated for a daily reward that was never given, or none for one that was; or a start booster is
+        /// said to have had an opening gift, which only the boosters used during play have.
+        /// </exception>
+        public RewardsGiven(int forPaintings, int daily, DayStamp? lastDailyOn, BoosterKindSet unlockGifts)
         {
             if (forPaintings < 0)
             {
@@ -91,9 +105,15 @@ namespace Puzzle.Meta
                 throw new ArgumentException("The day of the latest daily reward is stated exactly when one was given.", nameof(lastDailyOn));
             }
 
+            if (unlockGifts.Kinds.Any(BoosterKinds.IsStart))
+            {
+                throw new ArgumentException("Only a booster used during play has an opening gift.", nameof(unlockGifts));
+            }
+
             ForPaintings = forPaintings;
             Daily = daily;
             LastDailyOn = lastDailyOn;
+            UnlockGifts = unlockGifts;
         }
 
         /// <summary>No reward yet: a new player.</summary>
@@ -108,17 +128,24 @@ namespace Puzzle.Meta
         /// <summary>The day the latest daily reward was given; absent when none was.</summary>
         public DayStamp? LastDailyOn { get; }
 
-        public RewardsGiven WithOneForAPainting() => new RewardsGiven(ForPaintings + 1, Daily, LastDailyOn);
+        /// <summary>The boosters used during play whose opening gift was given (<see cref="BoosterUnlocks"/>).</summary>
+        public BoosterKindSet UnlockGifts { get; }
 
-        public RewardsGiven WithTheDailyOf(DayStamp today) => new RewardsGiven(ForPaintings, Daily + 1, today);
+        public RewardsGiven WithOneForAPainting() => new RewardsGiven(ForPaintings + 1, Daily, LastDailyOn, UnlockGifts);
 
-        public bool Equals(RewardsGiven other) => ForPaintings == other.ForPaintings && Daily == other.Daily && LastDailyOn == other.LastDailyOn;
+        public RewardsGiven WithTheDailyOf(DayStamp today) => new RewardsGiven(ForPaintings, Daily + 1, today, UnlockGifts);
+
+        /// <exception cref="ArgumentException">The booster is a start booster, which has no opening gift.</exception>
+        public RewardsGiven WithTheUnlockGiftOf(BoosterKind kind) => new RewardsGiven(ForPaintings, Daily, LastDailyOn, UnlockGifts.With(kind));
+
+        public bool Equals(RewardsGiven other) =>
+            ForPaintings == other.ForPaintings && Daily == other.Daily && LastDailyOn == other.LastDailyOn && UnlockGifts == other.UnlockGifts;
 
         public override bool Equals(object? obj) => obj is RewardsGiven other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(ForPaintings, Daily, LastDailyOn);
+        public override int GetHashCode() => HashCode.Combine(ForPaintings, Daily, LastDailyOn, UnlockGifts);
 
-        public override string ToString() => $"{ForPaintings} painting rewards, {Daily} daily rewards";
+        public override string ToString() => $"{ForPaintings} painting rewards, {Daily} daily rewards, opening gifts of {UnlockGifts}";
 
         public static bool operator ==(RewardsGiven left, RewardsGiven right) => left.Equals(right);
 

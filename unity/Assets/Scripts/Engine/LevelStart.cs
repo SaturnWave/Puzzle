@@ -65,9 +65,19 @@ namespace Puzzle.Client.Engine
         public static AttemptSeeds SeedsOf(LevelDefinition level, int attempt) =>
             level.Attempts.SeedsFor(attempt, unpooledSeed: (uint)(level.Id.Value + attempt));
 
-        /// <summary>A player's game: it records the events the view plays and the actions the record keeps.</summary>
+        /// <summary>
+        /// A player's game: it records the events the view plays and the actions the record keeps, and its shuffle
+        /// booster always shuffles a board that can be shuffled (the rule its record names, Game.ShuffleBoosterRule).
+        /// </summary>
         private static GameOptions Played(IReadOnlyList<StartBooster> startBoosters) =>
-            new GameOptions { Rules = Rules, RecordEvents = true, RecordActions = true, StartBoosters = startBoosters };
+            new GameOptions
+            {
+                Rules = Rules,
+                RecordEvents = true,
+                RecordActions = true,
+                StartBoosters = startBoosters,
+                ShuffleBoosterRule = ShuffleBoosterRule.LaidWithoutAMatch,
+            };
 
         /// <summary>True for a start booster that puts a special on the board, which needs a free gem to lie on; the extra moves need none.</summary>
         private static bool PutsASpecialOnTheBoard(StartBooster booster) => booster switch

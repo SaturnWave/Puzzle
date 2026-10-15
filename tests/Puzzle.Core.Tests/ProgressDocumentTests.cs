@@ -28,13 +28,22 @@ public class ProgressDocumentTests
     private const string DocumentBeforeTheWallet =
         """{"version":2,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":1,"pieces":[0,1,2,3,4,5,6,7,8,9]},{"painting":4,"pieces":[0,2]}]}""";
 
-    /// <summary>The same player with <see cref="WalletInUse"/>, as this game writes it (layout 3).</summary>
-    private const string DocumentWithAWallet =
+    /// <summary>The same player with <see cref="WalletInUse"/> but for its opening gifts, as the game before them wrote it (layout 3).</summary>
+    private const string DocumentOfLayoutThree =
         """{"version":3,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":1,"pieces":[0,1,2,3,4,5,6,7,8,9]},{"painting":4,"pieces":[0,2]}],"""
         + "\"wallet\":{\"coins\":1234,\"livesShort\":2,\"nextLifeAtUnixSeconds\":1791970200,"
         + "\"boosters\":[{\"name\":\"start-rocket-and-bomb\",\"count\":0},{\"name\":\"start-color-bomb\",\"count\":2},{\"name\":\"start-extra-moves\",\"count\":0},"
         + """{"name":"hit-cell","count":0},{"name":"hit-row","count":1},{"name":"hit-column","count":0},{"name":"shuffle","count":5}],"""
         + "\"day\":739902,\"adsForMovesToday\":1,\"adsForCoinsToday\":2,\"paintingRewards\":3,\"dailyRewards\":4,\"lastDailyDay\":739901}}";
+
+    /// <summary>The same player with <see cref="WalletInUse"/>, as this game writes it (layout 4): the spatula's and the row brush's opening gifts given.</summary>
+    private const string DocumentWithAWallet =
+        """{"version":4,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":1,"pieces":[0,1,2,3,4,5,6,7,8,9]},{"painting":4,"pieces":[0,2]}],"""
+        + "\"wallet\":{\"coins\":1234,\"livesShort\":2,\"nextLifeAtUnixSeconds\":1791970200,"
+        + "\"boosters\":[{\"name\":\"start-rocket-and-bomb\",\"count\":0},{\"name\":\"start-color-bomb\",\"count\":2},{\"name\":\"start-extra-moves\",\"count\":0},"
+        + """{"name":"hit-cell","count":0},{"name":"hit-row","count":1},{"name":"hit-column","count":0},{"name":"shuffle","count":5}],"""
+        + "\"day\":739902,\"adsForMovesToday\":1,\"adsForCoinsToday\":2,\"paintingRewards\":3,\"dailyRewards\":4,\"lastDailyDay\":739901,"
+        + "\"unlockGifts\":[\"hit-cell\",\"hit-row\"]}}";
 
     /// <summary>Noon on 14 October 2026 in Istanbul: 09:00 at Greenwich, day 739 902 of the calendar.</summary>
     private static readonly DateTimeOffset Noon = new(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3));
@@ -57,7 +66,7 @@ public class ProgressDocumentTests
         new LifeMeter(shortOfFull: 2, Noon.AddMinutes(30)),
         BoosterShelf.Empty.With(BoosterKind.StartColorBomb, 2).With(BoosterKind.HitRow, 1).With(BoosterKind.Shuffle, 5),
         new AdsWatched(DayStamp.Of(Noon), forExtraMoves: 1, forCoins: 2),
-        new RewardsGiven(forPaintings: 3, daily: 4, lastDailyOn: new DayStamp(DayStamp.Of(Noon).Number - 1)));
+        new RewardsGiven(forPaintings: 3, daily: 4, lastDailyOn: new DayStamp(DayStamp.Of(Noon).Number - 1), BoosterKindSet.Of(new[] { BoosterKind.HitCell, BoosterKind.HitRow })));
 
     [Fact]
     public void A_file_written_before_the_museum_gives_its_player_the_pieces_of_every_level_they_won_and_a_new_players_wallet()
@@ -97,7 +106,7 @@ public class ProgressDocumentTests
 
         // Saved again, it is in the current layout and reads back the same.
         string written = Written(read);
-        Assert.StartsWith("""{"version":3,""", written, StringComparison.Ordinal);
+        Assert.StartsWith("""{"version":4,""", written, StringComparison.Ordinal);
         Assert.Equal(read, Assert.IsType<ProgressReading.Sound>(Read(written, shipped.StartingWallet)).Progress);
     }
 
@@ -159,7 +168,7 @@ public class ProgressDocumentTests
     public void Whether_a_wallet_is_there_is_decided_by_the_layout_never_by_a_zero()
     {
         // Layout 3 with no coin and every life: no coin is no coin, and not what a new player holds.
-        string nothing = DocumentWithAWallet
+        string nothing = DocumentOfLayoutThree
             .Replace("\"coins\":1234", "\"coins\":0", StringComparison.Ordinal)
             .Replace("\"livesShort\":2,\"nextLifeAtUnixSeconds\":1791970200", "\"livesShort\":0,\"nextLifeAtUnixSeconds\":0", StringComparison.Ordinal);
         Assert.Equal(Coins.None, SoundProgressOf(nothing).Wallet.Coins);
@@ -170,18 +179,56 @@ public class ProgressDocumentTests
         Assert.IsType<ProgressReading.Damaged>(Read("""{"version":3,"levelsWon":39,"attemptsOnLevel":2,"placed":[],"wallet":null}"""));
 
         // Layout 2 with numbers where a later wallet would be: the layout says there is none, and they are not read.
-        PlayerProgress older = SoundProgressOf(DocumentWithAWallet.Replace("""{"version":3,""", """{"version":2,""", StringComparison.Ordinal));
+        PlayerProgress older = SoundProgressOf(DocumentOfLayoutThree.Replace("""{"version":3,""", """{"version":2,""", StringComparison.Ordinal));
         Assert.Equal(StartingWallet, older.Wallet);
+    }
+
+    [Fact]
+    public void A_wallet_of_layout_three_had_every_opening_gift_in_its_welcome_gift_and_is_given_none_again()
+    {
+        PlayerProgress read = SoundProgressOf(DocumentOfLayoutThree);
+
+        // The game that wrote layout 3 gave three of each booster used during play before the first level.
+        Assert.Equal(BoosterKindSet.Of(BoosterKinds.InLevel), read.Wallet.Rewards.UnlockGifts);
+        Assert.Equal(WalletInUse().Shelf, read.Wallet.Shelf);
+        Assert.Same(read.Wallet, MetaSupport.Rules().Unlocks.GivenTo(read.Wallet, level: 40));
+    }
+
+    [Fact]
+    public void A_file_before_the_wallet_gives_no_opening_gift_itself_so_the_rule_gives_each_once()
+    {
+        PlayerProgress read = SoundProgressOf(DocumentBeforeTheWallet);
+        EconomyRules rules = MetaSupport.Rules();
+
+        Wallet given = rules.Unlocks.GivenTo(read.Wallet, level: 40);
+
+        Assert.Equal(BoosterKindSet.None, read.Wallet.Rewards.UnlockGifts);
+        Assert.Equal(BoosterKindSet.Of(BoosterKinds.InLevel), given.Rewards.UnlockGifts);
+        Assert.Equal((3, 2, 1), (given.Shelf.Count(BoosterKind.HitCell), given.Shelf.Count(BoosterKind.HitRow), given.Shelf.Count(BoosterKind.HitColumn)));
+        Assert.Equal(given, SoundProgressOf(Written(read.WithWallet(given))).Wallet);
+    }
+
+    [Theory]
+    [InlineData("[\"hit-cell\",\"hit-cell\"]")] // a gift twice
+    [InlineData("[\"start-color-bomb\"]")] // a start booster has no opening gift
+    [InlineData("[\"hit-diagonal\"]")] // no booster of this game
+    [InlineData("[null]")]
+    public void Opening_gifts_no_game_could_have_given_make_the_wallet_damaged(string gifts)
+    {
+        string json = DocumentWithAWallet.Replace("[\"hit-cell\",\"hit-row\"]", gifts, StringComparison.Ordinal);
+
+        Assert.NotEqual(DocumentWithAWallet, json);
+        Assert.IsType<ProgressReading.Damaged>(Read(json));
     }
 
     [Fact]
     public void A_later_games_document_is_told_apart_and_what_this_game_knows_of_it_is_read()
     {
-        string laterGames = DocumentWithAWallet.Replace("""{"version":3,""", """{"version":4,""", StringComparison.Ordinal).Replace("}}", """},"device":"phone"}""", StringComparison.Ordinal);
+        string laterGames = DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal).Replace("}}", """},"device":"phone"}""", StringComparison.Ordinal);
 
         var later = Assert.IsType<ProgressReading.OfALaterGame>(Read(laterGames));
 
-        Assert.Equal(4, later.Version);
+        Assert.Equal(5, later.Version);
         Assert.Equal(PlacedPlayer().WithWallet(WalletInUse()), later.Understood);
     }
 
@@ -189,15 +236,15 @@ public class ProgressDocumentTests
     public void Of_a_later_games_document_whose_pieces_or_wallet_this_game_cannot_read_the_players_place_is_still_known()
     {
         var later = Assert.IsType<ProgressReading.OfALaterGame>(
-            Read("""{"version":4,"levelsWon":12,"attemptsOnLevel":1,"placed":[{"painting":140,"pieces":[5]}]}"""));
+            Read("""{"version":5,"levelsWon":12,"attemptsOnLevel":1,"placed":[{"painting":140,"pieces":[5]}]}"""));
         Assert.Equal(new PlayerProgress(levelsWon: 12, attemptsOnLevel: 1).WithWallet(StartingWallet), later.Understood);
 
         // A booster this game does not know: the wallet is the later game's, and this game plays on the starting one.
         var unknownBooster = Assert.IsType<ProgressReading.OfALaterGame>(
-            Read(DocumentWithAWallet.Replace("""{"version":3,""", """{"version":4,""", StringComparison.Ordinal).Replace("hit-cell", "hit-diagonal", StringComparison.Ordinal)));
+            Read(DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal).Replace("hit-cell", "hit-diagonal", StringComparison.Ordinal)));
         Assert.Equal(PlacedPlayer().WithWallet(StartingWallet), unknownBooster.Understood);
 
-        var unreadable = Assert.IsType<ProgressReading.OfALaterGame>(Read("""{"version":4,"levelsWon":-12,"attemptsOnLevel":1}"""));
+        var unreadable = Assert.IsType<ProgressReading.OfALaterGame>(Read("""{"version":5,"levelsWon":-12,"attemptsOnLevel":1}"""));
         Assert.Null(unreadable.Understood);
     }
 

@@ -125,6 +125,14 @@ namespace Puzzle.Client
         TrayLabel = 1030,
         TrayLabelLettering = 1031,
 
+        /// <summary>
+        /// The small card over the board's shelf that says what the shelf has to say, and its words; the ring of light
+        /// around the disc of a booster shown for the first time, over the disc.
+        /// </summary>
+        ShelfPill = 1060,
+        ShelfPillLettering = 1061,
+        ShelfGuide = 1062,
+
         Plaque = 1100,
         PlaqueArt = 1101,
         PlaqueLettering = 1102,

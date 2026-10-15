@@ -100,7 +100,8 @@ namespace Puzzle.Client.EditorTools
         private static Vector2 AFinaleWatchedToItsEndLeavesNoFaultAndTheCardHangs(Bench bench)
         {
             using Trial trial = bench.WonWith(MovesLeft);
-            trial.Require(trial.Stage.WordsOnTheShelf == AttemptWords.HowToPlay, $"the shelf of a first try says \"{trial.Stage.WordsOnTheShelf}\" while the winning move is shown");
+            // Since stage 10 the pill over the shelf says how to play until the attempt has begun, and nothing after.
+            trial.Require(trial.Stage.WordsOnTheShelf.Length == 0, $"the pill over the shelf of a first try says \"{trial.Stage.WordsOnTheShelf}\" while the winning move is shown, long after the attempt began");
 
             // The finger of the winning move is still down when the finale begins, and lifts then: that is no touch.
             trial.Stage.PointerDown(trial.Stage.PixelOf(new Position(0, 0)));
@@ -217,7 +218,7 @@ namespace Puzzle.Client.EditorTools
             using Trial trial = bench.WonWith(movesLeft: 0);
             trial.RequireTheCardWithNoFinaleBeforeIt("a win on the last move");
             trial.Require(trial.Stage.Finale == null, "a win on the last move has a finale's script");
-            trial.Require(trial.Stage.WordsOnTheShelf == AttemptWords.HowToPlay, "the shelf of a win on the last move does not say what it always said");
+            trial.Require(trial.Stage.WordsOnTheShelf.Length == 0, $"the pill over the shelf of a win on the last move says \"{trial.Stage.WordsOnTheShelf}\"");
             trial.RequireNoFault("a win on the last move");
             trial.RequireTheCoinsOfTheWin(movesLeft: 0, "a win on the last move");
         }
@@ -227,7 +228,7 @@ namespace Puzzle.Client.EditorTools
             using Trial trial = bench.LostOneMoveShortOfTheWin();
             trial.RequireTheCardWithNoFinaleBeforeIt("a lost game");
             trial.Require(trial.Stage.Finale == null, "a lost game has a finale's script");
-            trial.Require(trial.Stage.WordsOnTheShelf == AttemptWords.HowToPlay, "the shelf of a lost game does not say what it always said");
+            trial.Require(trial.Stage.WordsOnTheShelf.Length == 0, $"the pill over the shelf of a lost game says \"{trial.Stage.WordsOnTheShelf}\"");
             trial.RequireNoFault("the last move of a lost game");
         }
 
@@ -303,7 +304,7 @@ namespace Puzzle.Client.EditorTools
 
             private GameStage OpenAtRestWithoutAScreen(Game game, EffectArt effectArt)
             {
-                GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry(StoryStudio.Economy.Win));
+                GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry(StoryStudio.Economy.Win), StoryStudio.ShelfOf(game));
                 StageSteps.Settle(stage);
                 return stage;
             }

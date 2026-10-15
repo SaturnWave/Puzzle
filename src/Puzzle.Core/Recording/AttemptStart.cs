@@ -21,6 +21,10 @@ namespace Puzzle.Core.Recording
         /// <param name="device">The anonymous device that played.</param>
         /// <param name="client">The program that played, e.g. "web-lab": lowercase letters, digits and '-'.</param>
         /// <param name="startedUtc">When the attempt started; stored in UTC.</param>
+        /// <param name="shuffleRule">
+        /// The rule the game's shuffle booster followed (<see cref="Game.ShuffleBoosterRule"/>). Left out, it is the first
+        /// rule, the rule of every record written before records named one, and of the lab's games, which use no booster.
+        /// </param>
         /// <exception cref="ArgumentException">A value is out of range or malformed.</exception>
         public AttemptStart(
             LevelId level,
@@ -30,7 +34,8 @@ namespace Puzzle.Core.Recording
             int? attempt,
             DeviceId device,
             string client,
-            DateTimeOffset startedUtc)
+            DateTimeOffset startedUtc,
+            ShuffleBoosterRule shuffleRule = ShuffleBoosterRule.RandomOrders)
         {
             Level = level;
             ContentVersion = contentVersion;
@@ -46,6 +51,9 @@ namespace Puzzle.Core.Recording
                 ? client
                 : throw new ArgumentException($"A client name is 1..{MaxClientLength} lowercase letters, digits or '-'.", nameof(client));
             StartedUtc = startedUtc.ToUniversalTime();
+            ShuffleRule = Enum.IsDefined(typeof(ShuffleBoosterRule), shuffleRule)
+                ? shuffleRule
+                : throw new ArgumentOutOfRangeException(nameof(shuffleRule), shuffleRule, "Unknown shuffle booster rule.");
         }
 
         public LevelId Level { get; }
@@ -70,6 +78,12 @@ namespace Puzzle.Core.Recording
         public string Client { get; }
 
         public DateTimeOffset StartedUtc { get; }
+
+        /// <summary>
+        /// The rule the game's shuffle booster followed; a replay plays by it (<see cref="AttemptReplay.Of"/>). The first
+        /// rule for every record that names none.
+        /// </summary>
+        public ShuffleBoosterRule ShuffleRule { get; }
 
         private static bool IsClientName(string? name)
         {

@@ -39,6 +39,7 @@ public class MetaAgainstTheSimulatorTests
         [
             """{ "start": { "coins": 450, "boosters": { "start-rocket-and-bomb": 2, "start-color-bomb": 1, "start-extra-moves": 0, "hit-cell": 1, "hit-row": 0, "hit-column": 0, "shuffle": 3 } } }""",
             """{ "player": { "startBoosters": { "useAfterLossesOnLevel": 1, "buyAfterLossesOnLevel": 2 } } }""",
+            """{ "boosterUnlocks": { "levels": { "hit-cell": 1, "hit-row": 2, "hit-column": 3, "shuffle": 3 }, "gift": { "hit-cell": 3, "hit-row": 2, "hit-column": 0, "shuffle": 1 } } }""",
         ],
     ];
 
@@ -228,6 +229,7 @@ public class MetaAgainstTheSimulatorTests
             ("a painting's reward", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.PaintingCompleted)),
             ("a daily reward", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.Daily)),
             ("a welcome gift", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.WelcomeGift)),
+            ("a booster's opening gift", met.OfType<RewardGiven>().Any(reward => reward.Source == CoinSource.UnlockGift)),
         }.Where(part => !part.Met).Select(part => part.What).ToArray();
         Assert.Empty(neverMet);
     }
@@ -267,6 +269,8 @@ public class MetaAgainstTheSimulatorTests
         pack.prices.boosters = settings.Prices.Boosters.Select(price => MetaSupport.Price(price.Key.Name(), price.Value.Amount)).ToArray();
         pack.start.coins = settings.Start.Coins.Amount;
         pack.start.boosters = settings.Start.Boosters.Select(held => new BoosterCountFile { booster = held.Key.Name(), count = held.Value }).ToArray();
+        pack.boosterUnlocks.levels = settings.Unlocks.Levels.Select(opens => new BoosterLevelFile { booster = opens.Key.Name(), level = opens.Value.Value }).ToArray();
+        pack.boosterUnlocks.gift = settings.Unlocks.Gift.Select(given => new BoosterCountFile { booster = given.Key.Name(), count = given.Value }).ToArray();
         return EconomyFileMapper.ToRules(pack);
     }
 
@@ -385,6 +389,13 @@ public class MetaAgainstTheSimulatorTests
                 case CoinSource.WelcomeGift:
                     Assert.Equal(Meta.Wallet.Empty, wallet);
                     return game.StartingWallet;
+                case CoinSource.UnlockGift:
+                    // The player has come to a level: the game gives every gift that is due there and was not given yet.
+                    Meta.Wallet given = game.Unlocks.GivenTo(wallet, reward.After.LevelsWon + 1);
+                    Assert.Equal(
+                        reward.Boosters.Select(BoosterKinds.Name),
+                        Meta.BoosterKinds.All.SelectMany(kind => Enumerable.Repeat(Meta.BoosterKinds.Name(kind), given.Shelf.Count(kind) - wallet.Shelf.Count(kind))));
+                    return given;
                 case CoinSource.Finale or CoinSource.LevelWon:
                     throw new InvalidOperationException($"The simulator told of a reward for {reward.Source}, which is a win's pay and no reward.");
                 default:

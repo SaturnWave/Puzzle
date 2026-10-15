@@ -11,7 +11,10 @@ namespace Puzzle.Tooling.Recording;
 /// <c>[fromX, fromY, toX, toY]</c> for a swap; times are ISO 8601 in UTC. Unknown fields are ignored, so later
 /// schema versions may add fields without breaking older readers. The optional <c>actions</c> come last, each one
 /// <c>{"act":name,"at":cells}</c> as <see cref="AttemptActionNames"/> spells it (<c>at</c> left out for an action that
-/// takes no aim); a line without them reads as a record that keeps none. The Unity game writes the same lines by hand
+/// takes no aim); a line without them reads as a record that keeps none. Just before them, the optional
+/// <c>shuffleRule</c> names the rule the shuffle booster followed by its number (<see cref="ShuffleBoosterRule"/>); it is
+/// left out for the first rule, so a line without it, as every line written before it existed, reads as played under
+/// that one. The Unity game writes the same lines by hand
 /// (unity/Assets/Scripts/Flow/AttemptLine.cs).
 /// </summary>
 public static class AttemptRecordJson
@@ -83,6 +86,7 @@ public static class AttemptRecordJson
             StartedUtc = start.StartedUtc,
             EndedUtc = outcome.EndedUtc,
             Lab = record.Lab is { } lab ? ToLabLine(lab) : null,
+            ShuffleRule = start.ShuffleRule == ShuffleBoosterRule.RandomOrders ? null : (int)start.ShuffleRule,
             Actions = record.Actions?.Select(ToActionLine).ToArray(),
         };
     }
@@ -97,7 +101,8 @@ public static class AttemptRecordJson
             attempt: line.Attempt,
             device: new DeviceId(line.DeviceId),
             client: line.Client,
-            startedUtc: line.StartedUtc);
+            startedUtc: line.StartedUtc,
+            shuffleRule: KnownRuleOf(line.ShuffleRule) ?? ShuffleBoosterRule.RandomOrders);
         var outcome = new AttemptOutcome(
             ParseResult(line.Result),
             line.MovesUsed,
@@ -105,8 +110,23 @@ public static class AttemptRecordJson
             line.ExtraMovesBought,
             line.BoostersUsed,
             line.EndedUtc);
-        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, ToActions(line.Actions));
+        AttemptAction[]? actions = KnownRuleOf(line.ShuffleRule) is null ? null : ToActions(line.Actions);
+        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions);
     }
+
+    /// <summary>
+    /// The shuffle booster rule a line names, the first one when it names none; nothing for a rule this build does not
+    /// know, a rule of a later game. Such a line reads as one with an action this build does not know: it still counts,
+    /// and keeps no actions, as they cannot be replayed here.
+    /// </summary>
+    /// <exception cref="ArgumentException">The number is no rule number at all.</exception>
+    private static ShuffleBoosterRule? KnownRuleOf(int? number) => number switch
+    {
+        null => ShuffleBoosterRule.RandomOrders,
+        < 1 or > byte.MaxValue => throw new ArgumentException($"Shuffle rule {number} is no rule number; rules are numbered from 1."),
+        _ when Enum.IsDefined(typeof(ShuffleBoosterRule), (byte)number) => (ShuffleBoosterRule)number,
+        _ => null,
+    };
 
     /// <summary><see cref="AttemptSeeds.WithFixedBoard"/> is the general two-seed form; for equal seeds it equals <see cref="AttemptSeeds.From"/>.</summary>
     private static AttemptSeeds SeedsOf(ulong board, ulong play) => AttemptSeeds.WithFixedBoard(board, play);
@@ -237,6 +257,9 @@ public static class AttemptRecordJson
 
         /// <summary>Web lab only.</summary>
         public LabLine? Lab { get; init; }
+
+        /// <summary>The number of the shuffle booster's rule; absent for the first rule, which every record played under before it existed.</summary>
+        public int? ShuffleRule { get; init; }
 
         /// <summary>What the player did, in order; absent in the lab's records and in records from before the list existed.</summary>
         public ActionLine[]? Actions { get; init; }

@@ -64,6 +64,7 @@ namespace Puzzle.Meta.Settings
                 startBoosters: StartBoostersOf(file.startBoosters),
                 shop: ShopOf(file, win, realMoney),
                 startingWallet: StartingWalletOf(file.start),
+                unlocks: UnlocksOf(file.boosterUnlocks),
                 ads: AdsOf(file.build));
         }
 
@@ -167,6 +168,54 @@ namespace Puzzle.Meta.Settings
             Dictionary<BoosterKind, int> boosters = CountsOf(file.boosters, Field, leastCount: 0);
             RequireEveryBooster(boosters.Keys, Field);
             return Wallet.Empty.WithCoins(CoinsOf(file.coins, "start.coins")).WithShelf(ShelfOf(boosters));
+        }
+
+        /// <summary>
+        /// The levels the boosters used during play open on and their gifts: each of the four stated once in both, on a
+        /// level from 1 and with none or more of its own kind; a start booster, open from the first level on, in neither.
+        /// </summary>
+        private static BoosterUnlocks UnlocksOf(BoosterUnlocksFile file)
+        {
+            const string LevelsField = "boosterUnlocks.levels";
+            const string GiftField = "boosterUnlocks.gift";
+            var levels = new Dictionary<BoosterKind, int>();
+            foreach (BoosterLevelFile entry in ListOrNone(file.levels))
+            {
+                BoosterKind kind = InLevelBoosterOf(entry.booster, LevelsField);
+                if (levels.ContainsKey(kind))
+                {
+                    throw Invalid($"{LevelsField} states '{entry.booster}' twice");
+                }
+
+                levels[kind] = AtLeast(entry.level, 1, $"{LevelsField}.{entry.booster}");
+            }
+
+            Dictionary<BoosterKind, int> gift = CountsOf(file.gift, GiftField, leastCount: 0);
+            foreach (BoosterKind kind in gift.Keys)
+            {
+                InLevelBoosterOf(kind.Name(), GiftField);
+            }
+
+            RequireEveryInLevelBooster(levels.Keys, LevelsField);
+            RequireEveryInLevelBooster(gift.Keys, GiftField);
+            return new BoosterUnlocks(levels, ShelfOf(gift));
+        }
+
+        private static BoosterKind InLevelBoosterOf(string name, string field)
+        {
+            BoosterKind kind = BoosterOf(name, field);
+            return kind.IsInLevel()
+                ? kind
+                : throw Invalid($"{field} names '{name}', a start booster, which is open from the first level on ({BoosterNamesListed(BoosterKinds.InLevel)} open on a level)");
+        }
+
+        private static void RequireEveryInLevelBooster(IEnumerable<BoosterKind> stated, string field)
+        {
+            BoosterKind[] missing = BoosterKinds.InLevel.Except(stated).ToArray();
+            if (missing.Length > 0)
+            {
+                throw Invalid($"{field} must state every booster used during play; it lacks {BoosterNamesListed(missing)}");
+            }
         }
 
         /// <summary>How many of each booster a list of names and counts states: no kind twice, no count below <paramref name="leastCount"/>.</summary>

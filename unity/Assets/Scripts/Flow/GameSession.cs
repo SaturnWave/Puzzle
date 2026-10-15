@@ -73,6 +73,14 @@ namespace Puzzle.Client.Flow
     /// the economy's rules, and saved at once; the row counts its price down.
     /// </para>
     /// <para>
+    /// The board is told the wallet at every step too: its shelf counts the boosters of play, and one bought on the
+    /// card its plus hangs is bought here by the same rules, saved at once, and armed on the board. A booster of play the
+    /// engine accepts is spent and saved as a move is kept; the first of them counts as the attempt's first move. A
+    /// session that opens on a save from before the boosters of play opened one at a time first gives the gifts that
+    /// save is owed, once (AttemptLedger.WithTheOpeningGiftsDue), and a win gives the gift of a booster that opens on the
+    /// level it leads to.
+    /// </para>
+    /// <para>
     /// The start boosters chosen on a level's card are taken into its attempt: their specials lie on the board as it
     /// opens and their moves are on the plaque, and they leave the shelf with the attempt's first move, so a card
     /// closed, or a level left before its first move, spends nothing. A board with no free gem for a special opens
@@ -160,8 +168,15 @@ namespace Puzzle.Client.Flow
             _store = store;
             _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
             _screen = screen;
-            _progress = store.Load();
-            _saved = _progress;
+            _saved = store.Load();
+
+            // A save from before the boosters used during play opened one at a time is owed their gifts once.
+            _progress = _ledger.WithTheOpeningGiftsDue(_saved);
+            if (HasUnsavedProgress)
+            {
+                SaveProgress();
+            }
+
             _effectArt = EffectArt.Paint();
             _front = opening switch
             {
@@ -207,10 +222,10 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public void Advance(float deltaSeconds)
         {
-            TellTheMuseumTheWallet();
+            TellTheStageTheWallet();
             _front.Advance(deltaSeconds);
             KeepWhatHappened();
-            DoWhatTheMuseumAskedFor();
+            DoWhatTheStageAskedFor();
             KeepWhatWasPlaced();
             FollowThePlayer();
         }
@@ -239,7 +254,7 @@ namespace Puzzle.Client.Flow
         {
             _front.PointerUp();
             KeepWhatHappened();
-            DoWhatTheMuseumAskedFor();
+            DoWhatTheStageAskedFor();
         }
 
         /// <summary>
@@ -309,14 +324,18 @@ namespace Puzzle.Client.Flow
         /// <summary>The player's wallet as the rules have it now: lives that came back since the last loss are there.</summary>
         private WalletView WalletNow => WalletView.Of(_progress.Wallet, _rules.Lives, _clock.Now);
 
-        /// <summary>Tells the museum, if it is the stage that is seen, of the wallet as it is at this step.</summary>
-        private void TellTheMuseumTheWallet()
+        /// <summary>Tells the museum or the board, whichever is the stage that is seen, of the wallet as it is at this step.</summary>
+        private void TellTheStageTheWallet()
         {
             if (Museum is MuseumStage museum)
             {
                 WalletView wallet = WalletNow;
                 museum.Tell(wallet);
                 _coinsLastShown = wallet.Coins;
+            }
+            else if (Board is GameStage board)
+            {
+                board.Tell(WalletNow);
             }
         }
 
@@ -444,13 +463,22 @@ namespace Puzzle.Client.Flow
             LevelDefinition level = LevelToPlay;
             int attempt = _progress.AttemptsOnLevel;
             _rewardOfTheBoard = PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue);
-            _startOfTheBoard = new AttemptStart(
-                level.Id, level.ContentVersion, level.MoveLimit, LevelStart.SeedsOf(level, attempt), attempt, _attempts.Device, ThisClient, _clock.Now);
-
             Game game = LevelStart.Attempt(level, attempt, startBoosters.ForTheEngine());
+            ShelfBrief shelf = ShelfBrief.Of(level.Id.Value, attempt, _rules);
+            _startOfTheBoard = new AttemptStart(
+                level.Id,
+                level.ContentVersion,
+                level.MoveLimit,
+                LevelStart.SeedsOf(level, attempt),
+                attempt,
+                _attempts.Device,
+                ThisClient,
+                _clock.Now,
+                game.ShuffleBoosterRule);
             var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters));
-            GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, opening);
+            GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, shelf, opening);
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
+            stage.Tell(WalletNow);
             return stage;
         }
 
@@ -475,38 +503,38 @@ namespace Puzzle.Client.Flow
         }
 
         /// <summary>
-        /// What the museum's presses asked of the wallet since it was last asked, done by the economy's rules and
-        /// saved at once: a booster bought for its price. The museum is told the wallet after it at once, and its
-        /// row counts the coins down to it.
+        /// What the presses of the museum or of the board asked of the wallet since it was last asked, done by the
+        /// economy's rules and saved at once: a booster bought for its price. The stage is told the wallet after it at
+        /// once: the museum's row counts the coins down to it, and a booster bought on the board is armed.
         /// </summary>
-        private void DoWhatTheMuseumAskedFor()
+        private void DoWhatTheStageAskedFor()
         {
-            if (!(Museum is MuseumStage museum))
+            IReadOnlyList<WalletRequest> asked = _front switch
             {
-                return;
-            }
-
-            IReadOnlyList<MuseumRequest> asked = museum.TakeWhatWasAskedFor();
+                MuseumStage museum => museum.TakeWhatWasAskedFor(),
+                GameStage board => board.TakeWhatWasAskedFor(),
+                _ => Array.Empty<WalletRequest>(),
+            };
             if (asked.Count == 0)
             {
                 return;
             }
 
-            foreach (MuseumRequest request in asked)
+            foreach (WalletRequest request in asked)
             {
                 _progress = _progress.WithWallet(WalletAfter(request, _progress.Wallet));
             }
 
             SaveProgress();
-            TellTheMuseumTheWallet();
+            TellTheStageTheWallet();
         }
 
         /// <summary>The wallet after a request of the museum's, by the economy's rules; the wallet as it was where the rules refuse it.</summary>
-        private Wallet WalletAfter(MuseumRequest request, Wallet wallet)
+        private Wallet WalletAfter(WalletRequest request, Wallet wallet)
         {
             switch (request)
             {
-                case MuseumRequest.BuyABooster buy:
+                case WalletRequest.BuyABooster buy:
                     if (_rules.Shop.BuyOne(buy.Booster, wallet) is Purchase.Bought bought)
                     {
                         return bought.Wallet;

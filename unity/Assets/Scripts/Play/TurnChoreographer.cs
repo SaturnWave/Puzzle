@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Core.Engine;
 using Puzzle.Core.Engine.Events;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
@@ -158,12 +159,72 @@ namespace Puzzle.Client.Play
             return choreographer.ToScript();
         }
 
-        private void TimeEveryEvent()
+        /// <summary>
+        /// The script of a booster used during play, and the ledger brought forward to the board after it: the tool
+        /// is seen at work (<see cref="Cue.ToolUsed"/>): the spatula strikes its cell, the brush paints its row or
+        /// column one cell after another, and the shuffle deals the gems anew as the game does when no move is left.
+        /// What it hits, sets off and lets fall is timed as in a move. No move is spent, and the goals count as in a
+        /// move.
+        /// </summary>
+        /// <param name="events">The engine's events of the booster, in the engine's order: the booster used first.</param>
+        /// <exception cref="InvalidOperationException">The events are not a booster's, or one does not fit the ledger.</exception>
+        public static TurnScript ComposeBooster(PieceLedger ledger, IReadOnlyList<GoalSpec> goals, IReadOnlyList<GameEvent> events, Board boardAfterwards)
         {
-            for (int index = 0; index < _events.Count; index++)
+            if (events.Count == 0 || !(events[0] is GameEvent.BoosterUsed used))
+            {
+                throw new InvalidOperationException("A booster's events begin with the booster used.");
+            }
+
+            var choreographer = new TurnChoreographer(ledger, goals, events, boardAfterwards, isTheFinale: false);
+            choreographer.UseTheTool(used.Booster);
+            choreographer.TimeEveryEvent(from: 1);
+            return choreographer.ToScript();
+        }
+
+        private void TimeEveryEvent(int from = 0)
+        {
+            for (int index = from; index < _events.Count; index++)
             {
                 Time(_events[index], index);
             }
+        }
+
+        // ---------- a booster's tool ----------
+
+        /// <summary>The tool comes to the board, and what it hits is hit as it reaches each cell; the shuffle has no tool but the reshuffle itself.</summary>
+        private void UseTheTool(BoosterUse booster)
+        {
+            switch (booster)
+            {
+                case BoosterUse.HitCell _:
+                    StartTheStrike(Tempo.SpatulaStrikes, Strike.AllAtOnce(Tempo.SpatulaStrikes));
+                    Emit(new Cue.ToolUsed(0f, Tempo.SpatulaStrikes + Tempo.SpatulaLifts, booster, Tempo.SpatulaStrikes));
+                    break;
+                case BoosterUse.HitRow row:
+                    PaintWithTheBrush(booster, new Position(0, row.At.Y), isAlongTheRow: true);
+                    break;
+                case BoosterUse.HitColumn column:
+                    PaintWithTheBrush(booster, new Position(column.At.X, 0), isAlongTheRow: false);
+                    break;
+                case BoosterUse.Shuffle _:
+                    break;
+                default:
+                    throw new InvalidOperationException($"The view has no tool for the booster {booster}.");
+            }
+        }
+
+        private void PaintWithTheBrush(BoosterUse booster, Position first, bool isAlongTheRow)
+        {
+            Strike brush = Strike.OfABrush(first, isAlongTheRow, _ledger.Shape, Tempo.BrushLead);
+            StartTheStrike(Tempo.BrushLead, brush);
+            Emit(new Cue.ToolUsed(0f, Tempo.BrushLead + brush.Seconds, booster, Tempo.BrushLead));
+        }
+
+        private void StartTheStrike(float at, Strike strike)
+        {
+            _phaseStart = at;
+            _lastHitAt = at;
+            _strike = strike;
         }
 
         private TurnScript ToScript()

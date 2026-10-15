@@ -123,6 +123,9 @@ namespace Puzzle.Client.Screens
         private readonly SpriteRenderer _tick;
         private bool _isPressed;
 
+        /// <summary>How far from the disc's middle a finger presses it, in the points of what it stands on, where its place says; nothing for its own reach.</summary>
+        private float? _touchReach;
+
         /// <param name="diameter">How far across the disc is at full size: 60 on the board's shelf, 66 before a level, 44 in the shop.</param>
         /// <param name="order">The disc's place in the drawing order; what stands on it takes the places above (<see cref="DiscPart"/>).</param>
         /// <param name="face">What the disc shows first.</param>
@@ -162,6 +165,9 @@ namespace Puzzle.Client.Screens
             _root.localScale = new Vector3(scale, scale, 1f);
         }
 
+        /// <summary>Lets a finger press the disc this far from its middle, in the points of what it stands on (the board's shelf: ScreenLayout.ShelfTouchReach).</summary>
+        public void TouchFrom(float reach) => _touchReach = reach;
+
         /// <summary>Shows the disc, or takes it out of sight; a disc out of sight is not under any finger.</summary>
         public void Show(bool isShown) => _root.gameObject.SetActive(isShown);
 
@@ -177,19 +183,21 @@ namespace Puzzle.Client.Screens
             {
                 BoosterBadge.Count => BadgeFace.Owned(face.Owned),
                 BoosterBadge.GetMore => BadgeFace.GetMore,
+                BoosterBadge.OpensOn => BadgeFace.OpensOn(face.OpensOn ?? throw new InvalidOperationException("A locked face names the level it opens on.")),
                 _ => throw new InvalidOperationException($"A booster's disc has no badge of the kind {face.Badge}."),
             });
 
-            // A badge that widens for a longer number keeps its right end where it was.
-            _badge.Transform.localPosition = new Vector3(
-                _diameter / 2f + BadgeBeyondTheSide - _badge.Width / 2f, -(_diameter / 2f + CountBeyondTheFoot - CountBadge.Size / 2f), 0f);
+            // A badge that widens for a longer number keeps its right end where it was; the level a locked booster
+            // opens on stands across the disc's foot, in the middle.
+            float badgeX = face.Badge == BoosterBadge.OpensOn ? 0f : _diameter / 2f + BadgeBeyondTheSide - _badge.Width / 2f;
+            _badge.Transform.localPosition = new Vector3(badgeX, -(_diameter / 2f + CountBeyondTheFoot - CountBadge.Size / 2f), 0f);
             ShowItsLight();
         }
 
         /// <param name="point">A point of what the disc stands on.</param>
         public bool IsUnder(Vector2 point)
         {
-            float reach = (_diameter / 2f + FingerBeyondTheDisc) * _root.localScale.x;
+            float reach = _touchReach ?? (_diameter / 2f + FingerBeyondTheDisc) * _root.localScale.x;
             return !Face.IsFaint && _root.gameObject.activeSelf && (point - Middle).sqrMagnitude <= reach * reach;
         }
 
@@ -229,7 +237,8 @@ namespace Puzzle.Client.Screens
                 drawn.color = colour;
             }
 
-            _badge.DrawIn(Dimming.Of(Face.IsFaint));
+            // The level a locked booster opens on is what the player is to read on it: its badge keeps its light.
+            _badge.DrawIn(Dimming.Of(Face.IsFaint && Face.Badge != BoosterBadge.OpensOn));
         }
     }
 }

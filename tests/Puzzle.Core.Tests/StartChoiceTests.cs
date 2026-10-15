@@ -136,7 +136,7 @@ public class StartChoiceTests
     }
 
     [Fact]
-    public void The_shipped_settings_give_a_new_player_three_of_each_booster_and_let_one_attempt_take_all_three_start_boosters()
+    public void The_shipped_settings_give_a_new_player_three_of_each_start_booster_and_let_one_attempt_take_all_three()
     {
         EconomyRules shipped = EconomyFileMapper.ToRules(JsonSerializer.Deserialize<EconomyFile>(File.ReadAllText(RepoFiles.EconomyPackPath), new JsonSerializerOptions { IncludeFields = true })!);
         LevelBrief brief = BriefOf(TwoGoalLevel(), rules: shipped);
@@ -144,7 +144,9 @@ public class StartChoiceTests
 
         StartChoice all = LevelBrief.StartBoosters.Aggregate(StartChoice.None, (choice, booster) => Chosen(brief, choice, booster, owned));
 
-        Assert.All(BoosterKinds.All, booster => Assert.Equal(3, owned.Count(booster)));
+        // The boosters used during play come with three of their kind as each opens (Puzzle.Meta's BoosterUnlocks).
+        Assert.All(BoosterKinds.All, booster => Assert.Equal(booster.IsStart() ? 3 : 0, owned.Count(booster)));
+        Assert.All(BoosterKinds.InLevel, booster => Assert.Equal(3, shipped.Unlocks.Gift.Count(booster)));
         Assert.Equal(3, all.Count);
         Assert.Equal(new[] { StartBooster.RocketAndBomb, StartBooster.ColorBomb, StartBooster.ExtraMoves }, all.ForTheEngine());
     }

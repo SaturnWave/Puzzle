@@ -108,8 +108,9 @@ namespace Puzzle.Client.EditorTools
         /// </summary>
         internal static GameStage OpenAtRest(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, ScreenShape screen, AttemptBrief brief)
         {
-            GameStage stage = GameStage.Open(game, art, effectArt, paintings, brief);
+            GameStage stage = GameStage.Open(game, art, effectArt, paintings, brief, StoryStudio.ShelfOf(game));
             stage.Fit(screen);
+            stage.Tell(StoryStudio.CanvasWallet);
             StageSteps.Settle(stage);
             return stage;
         }

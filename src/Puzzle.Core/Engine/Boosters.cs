@@ -44,6 +44,30 @@ namespace Puzzle.Core.Engine
     }
 
     /// <summary>
+    /// How the shuffle booster looks for its new arrangement (<see cref="GameOptions.ShuffleBoosterRule"/>). The game's
+    /// own shuffle of a board without a move follows neither: it is the same under both. An attempt's record names the
+    /// rule its game was played under (<see cref="Recording.AttemptStart.ShuffleRule"/>), so that it replays to the same
+    /// end after the rule changed. The numbers are written into records that outlive a build: a number is never changed
+    /// or given to another rule, and a new rule gets the next one.
+    /// </summary>
+    public enum ShuffleBoosterRule : byte
+    {
+        /// <summary>
+        /// The first rule, until 2026-10-15, and the rule of every record that names none: up to
+        /// <see cref="RuleSet.ShuffleAttempts"/> random orders of the free gems, refused when none of them leaves the
+        /// board without a ready match, with a move and other than before. On large open boards it was refused often.
+        /// </summary>
+        RandomOrders = 1,
+
+        /// <summary>
+        /// Since 2026-10-15: the free gems are laid one by one in random order so that none completes a match, the
+        /// rule the shuffle booster always follows. Refused only when the free gems are all one kind, so no order can
+        /// change the board, or when no laying of them leaves a match-free board with a move (a tiny board).
+        /// </summary>
+        LaidWithoutAMatch = 2,
+    }
+
+    /// <summary>
     /// The names boosters go by in attempt records (<see cref="Recording.AttemptOutcome.BoostersUsed"/>). They are
     /// written into files that outlive a build: a name is never changed or given to another booster.
     /// </summary>

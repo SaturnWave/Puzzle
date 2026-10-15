@@ -68,7 +68,7 @@ test("pack_keepsTheGamesSectionsOnly_andListsWhatTheSettingsKeyByName", () => {
   const packed = packedEconomy(shippedText(), SETTINGS);
   const settings = parsedSettings(shippedText(), SETTINGS);
 
-  assert.deepEqual(Object.keys(packed), ["formatVersion", "lives", "coins", "rewards", "extraMovesOffer", "prices", "start", "startBoosters", "shop", "build"]);
+  assert.deepEqual(Object.keys(packed), ["formatVersion", "lives", "coins", "rewards", "extraMovesOffer", "prices", "start", "boosterUnlocks", "startBoosters", "shop", "build"]);
   for (const simulatorsOwn of ["name", "players", "habit", "player", "measurement", "report", "observed"]) {
     assert.ok(Object.hasOwn(settings, simulatorsOwn), `the settings have a section ${simulatorsOwn}`);
     assert.ok(!Object.hasOwn(packed, simulatorsOwn), `the pack has no section ${simulatorsOwn}`);
@@ -78,6 +78,8 @@ test("pack_keepsTheGamesSectionsOnly_andListsWhatTheSettingsKeyByName", () => {
   assert.deepEqual(packed.prices.boosters.map((price) => price.booster), Object.keys(settings.prices.boosters));
   assert.deepEqual(packed.prices.boosters.map((price) => price.coins), Object.values(settings.prices.boosters));
   assert.deepEqual(packed.start.boosters.map((held) => [held.booster, held.count]), Object.entries(settings.start.boosters));
+  assert.deepEqual(packed.boosterUnlocks.levels.map((opens) => [opens.booster, opens.level]), Object.entries(settings.boosterUnlocks.levels));
+  assert.deepEqual(packed.boosterUnlocks.gift.map((given) => [given.booster, given.count]), Object.entries(settings.boosterUnlocks.gift));
   assert.deepEqual(packed.shop.coinPacks.map((coinPack) => coinPack.name), Object.keys(settings.shop.coinPacks));
   assert.deepEqual(packed.shop.boosterSets.map((set) => set.name), Object.keys(settings.shop.boosterSets));
   const [firstSet] = packed.shop.boosterSets;
@@ -89,10 +91,12 @@ test("pack_ofSettingsWithAMissingPrice_stopsByTheFieldsName", () => {
   const withoutThePrice = shippedWith((settings) => delete settings.extraMovesOffer.priceCoins);
   const withoutASetsPrice = shippedWith((settings) => delete settings.shop.boosterSets.starter.priceCoins);
   const withoutTheShop = shippedWith((settings) => delete settings.shop);
+  const withoutTheLevels = shippedWith((settings) => delete settings.boosterUnlocks.levels);
 
   assert.throws(() => packedEconomy(withoutThePrice, "changed.json"), /changed\.json: 'extraMovesOffer\.priceCoins' is missing/);
   assert.throws(() => packedEconomy(withoutASetsPrice, "changed.json"), /changed\.json: 'shop\.boosterSets\.starter\.priceCoins' is missing/);
   assert.throws(() => packedEconomy(withoutTheShop, "changed.json"), /changed\.json: 'shop' is missing/);
+  assert.throws(() => packedEconomy(withoutTheLevels, "changed.json"), /changed\.json: 'boosterUnlocks\.levels' is missing/);
 });
 
 test("pack_ofSettingsWithAMisshapenValue_stopsByTheFieldsName", () => {

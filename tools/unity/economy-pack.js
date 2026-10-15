@@ -1,6 +1,6 @@
 // Packs the game's economy settings for the Unity client: the sections of economy/default.json that the game plays
-// by (lives, coins, rewards, the extra-moves offer, the booster prices, the start, the shop and what the build can
-// do), without the sections that only describe simulated players, and with a list of named entries wherever the
+// by (lives, coins, rewards, the extra-moves offer, the booster prices, the start, when the boosters used during play
+// open, the shop and what the build can do), without the sections that only describe simulated players, and with a list of named entries wherever the
 // settings have an object keyed by a name, because Unity's JSON reader knows no such object.
 // tools/unity/sync-engine.js writes the pack to unity/Assets/Generated/Resources/Economy.json; the game reads it
 // through Puzzle.Meta's EconomyFileMapper, which checks what the numbers mean. This script checks only that every
@@ -15,7 +15,7 @@ const SETTINGS = "economy/default.json";
 const PINNED_PACK = "tests/fixtures/economy-pack.json";
 
 // The layout of the pack; Puzzle.Meta's EconomyFile.CurrentFormatVersion is the reader's side of it.
-const FORMAT_VERSION = 1;
+const FORMAT_VERSION = 2;
 
 const TRAILING_COMMA_CLOSES = /\s*[}\]]/y;
 
@@ -179,6 +179,7 @@ function packedEconomy(settingsText, fileName) {
   const settings = new Section(parsedSettings(settingsText, fileName), fileName, "");
   const rewards = settings.section("rewards");
   const start = settings.section("start");
+  const unlocks = settings.section("boosterUnlocks");
   const build = settings.section("build");
   return {
     formatVersion: FORMAT_VERSION,
@@ -191,6 +192,7 @@ function packedEconomy(settingsText, fileName) {
     extraMovesOffer: settings.section("extraMovesOffer").numbers("freeAdsPerDay", "priceCoins"),
     prices: { boosters: listed(settings.section("prices").section("boosters"), "booster", "coins") },
     start: { coins: start.number("coins"), boosters: listed(start.section("boosters"), "booster", "count") },
+    boosterUnlocks: { levels: listed(unlocks.section("levels"), "booster", "level"), gift: listed(unlocks.section("gift"), "booster", "count") },
     startBoosters: settings.section("startBoosters").numbers("perAttempt"),
     shop: shopOf(settings.section("shop")),
     build: { ads: build.word("ads"), realMoneyPurchases: build.word("realMoneyPurchases") },

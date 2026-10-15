@@ -16,7 +16,7 @@ namespace Puzzle.Meta.Settings
     [Serializable]
     public sealed class EconomyFile
     {
-        public const int CurrentFormatVersion = 1;
+        public const int CurrentFormatVersion = 2;
 
         public int formatVersion;
         public LivesFile lives = new LivesFile();
@@ -25,6 +25,7 @@ namespace Puzzle.Meta.Settings
         public ExtraMovesOfferFile extraMovesOffer = new ExtraMovesOfferFile();
         public PricesFile prices = new PricesFile();
         public StartFile start = new StartFile();
+        public BoosterUnlocksFile boosterUnlocks = new BoosterUnlocksFile();
         public StartBoostersFile startBoosters = new StartBoostersFile();
         public ShopFile shop = new ShopFile();
         public BuildFile build = new BuildFile();
@@ -109,6 +110,25 @@ namespace Puzzle.Meta.Settings
 
         /// <summary>One entry for each of the seven boosters; a count may be 0.</summary>
         public BoosterCountFile[] boosters = Array.Empty<BoosterCountFile>();
+    }
+
+    /// <summary>When the boosters used during play open, and what each brings then; in the pack since format version 2.</summary>
+    [Serializable]
+    public sealed class BoosterUnlocksFile
+    {
+        /// <summary>One entry for each of the four boosters used during play.</summary>
+        public BoosterLevelFile[] levels = Array.Empty<BoosterLevelFile>();
+
+        /// <summary>One entry for each of the four boosters used during play; a count may be 0.</summary>
+        public BoosterCountFile[] gift = Array.Empty<BoosterCountFile>();
+    }
+
+    [Serializable]
+    public sealed class BoosterLevelFile
+    {
+        /// <summary>The booster's record name.</summary>
+        public string booster = string.Empty;
+        public int level;
     }
 
     [Serializable]

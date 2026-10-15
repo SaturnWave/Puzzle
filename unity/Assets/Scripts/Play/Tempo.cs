@@ -88,6 +88,22 @@ namespace Puzzle.Client.Play
         public const float Reshuffle = 0.55f;
 
         /// <summary>
+        /// A booster used during play shows its tool for no more than about a second (docs/research/in-level-boosters.md,
+        /// section 5, point 8), and the board then settles as after a move. The spatula comes down onto its cell
+        /// and strikes it after <see cref="SpatulaStrikes"/>, then lifts away. The brush comes in over the board's
+        /// edge and reaches the first cell of its row or column after <see cref="BrushLead"/>, then paints on at
+        /// <see cref="BrushPerCell"/>: a row of eleven is painted in half a second.
+        /// </summary>
+        public const float SpatulaStrikes = 0.2f;
+        public const float SpatulaLifts = 0.24f;
+        public const float BrushLead = 0.12f;
+        public const float BrushPerCell = 0.04f;
+
+        /// <summary>A disc whose use the engine refused shakes this long; the pill says why for <see cref="RefusalSaid"/>.</summary>
+        public const float DiscShakes = 0.36f;
+        public const float RefusalSaid = 1.8f;
+
+        /// <summary>
         /// The finale of a won game with moves left over. Light opens at the moves medallion
         /// (<see cref="MedallionLights"/>) for <see cref="FinaleLead"/> before the first move leaves it.
         /// </summary>

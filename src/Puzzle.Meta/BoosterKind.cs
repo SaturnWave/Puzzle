@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Puzzle.Core.Engine;
 
 namespace Puzzle.Meta
@@ -80,6 +81,9 @@ namespace Puzzle.Meta
                 throw new ArgumentException($"{kind.Name()} is used during play, not taken before a level starts.", nameof(kind)),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown booster."),
         };
+
+        /// <summary>The four boosters used during play, in the engine's order.</summary>
+        public static IReadOnlyList<BoosterKind> InLevel { get; } = All.Where(IsInLevel).ToArray();
 
         /// <summary>The booster a record name names; absent for any other text.</summary>
         public static BoosterKind? Find(string name)

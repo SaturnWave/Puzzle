@@ -116,6 +116,9 @@ namespace Puzzle.Client.Play
                 case Cue.FinaleOpens opens:
                     _effects.LightTheMedallion(opens);
                     break;
+                case Cue.ToolUsed tool:
+                    _effects.ShowTheTool(tool);
+                    break;
                 case Cue.MoveThrown thrown:
                     _timeline.At(thrown.Start, _whenAMoveIsThrown);
                     _effects.Throw(thrown);

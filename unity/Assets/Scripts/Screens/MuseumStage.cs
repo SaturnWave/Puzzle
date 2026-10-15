@@ -111,7 +111,7 @@ namespace Puzzle.Client.Screens
         private readonly List<IMuseumCard> _cards = new List<IMuseumCard>();
 
         /// <summary>What presses asked of the wallet that the stage's owner has not taken yet, in the order they were made.</summary>
-        private readonly List<MuseumRequest> _asked = new List<MuseumRequest>();
+        private readonly List<WalletRequest> _asked = new List<WalletRequest>();
 
         /// <summary>The page that is shown, or that is coming in while a page is turned.</summary>
         private IMuseumPage _page;
@@ -305,14 +305,14 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>What presses asked of the wallet since the owner last took it, in order: the owner applies it by the rules and tells the stage the wallet after it.</summary>
-        public IReadOnlyList<MuseumRequest> TakeWhatWasAskedFor()
+        public IReadOnlyList<WalletRequest> TakeWhatWasAskedFor()
         {
             if (_asked.Count == 0)
             {
-                return Array.Empty<MuseumRequest>();
+                return Array.Empty<WalletRequest>();
             }
 
-            MuseumRequest[] taken = _asked.ToArray();
+            WalletRequest[] taken = _asked.ToArray();
             _asked.Clear();
             return taken;
         }
@@ -440,7 +440,7 @@ namespace Puzzle.Client.Screens
                     StartTheLevel(start);
                     break;
                 case MuseumPress.BuyABooster buy:
-                    _asked.Add(new MuseumRequest.BuyABooster(buy.Booster));
+                    _asked.Add(new WalletRequest.BuyABooster(buy.Booster));
                     TakeTheCardInFrontUp();
                     break;
                 case MuseumPress.Restore restore:

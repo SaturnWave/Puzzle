@@ -8,13 +8,14 @@ using UnityEngine;
 
 namespace Puzzle.Client.Screens
 {
-    /// <summary>What a small round badge says, and in which of the design's colours. A closed set of three.</summary>
+    /// <summary>What a small round badge says, and in which of the design's colours. A closed set of four.</summary>
     public readonly struct BadgeFace
     {
-        private BadgeFace(BadgeColour colour, int count)
+        private BadgeFace(BadgeColour colour, int count, string? words = null)
         {
             Colour = colour;
             Count = count;
+            Words = words;
         }
 
         /// <summary>The green badge with a plus: none is owned, and more can be had (BoardTR, LevelStartTR).</summary>
@@ -24,11 +25,17 @@ namespace Puzzle.Client.Screens
 
         internal int Count { get; }
 
+        /// <summary>Words the badge says instead of a count; nothing for a badge with a count or a plus.</summary>
+        internal string? Words { get; }
+
         /// <summary>The red badge with a count of what waits for the player (HomeTR, CollectionTR).</summary>
         public static BadgeFace Waiting(int count) => new BadgeFace(BadgeColour.Red, count);
 
         /// <summary>The teal badge with a count of what the player owns (BoardTR, LevelStartTR).</summary>
         public static BadgeFace Owned(int count) => new BadgeFace(BadgeColour.Teal, count);
+
+        /// <summary>The teal badge with the level a booster opens on, "Bölüm 7", on a booster's disc that is locked until then.</summary>
+        public static BadgeFace OpensOn(int level) => new BadgeFace(BadgeColour.Teal, level, BoardWords.OpensOn(level));
     }
 
     /// <summary>A badge's colour, which is also what its count is a count of.</summary>
@@ -43,12 +50,16 @@ namespace Puzzle.Client.Screens
     /// A small round badge on the corner of a button, a painting or a disc, as the design canvas draws them: a disc
     /// of colour in a white ring, 22 points across, with a number that says how many (red: pieces that wait; teal:
     /// boosters that are owned), or green with a plus where none is owned. It widens for a number of two figures,
-    /// and what it says can be changed where it stands.
+    /// and for the level a locked booster opens on, which it says in smaller type; what it says can be changed where
+    /// it stands.
     /// </summary>
     public sealed class CountBadge
     {
         /// <summary>The badge's body at its narrowest: a disc.</summary>
         public const float Size = 22f;
+
+        /// <summary>Words on a teal badge are set this large, smaller than its count: "Bölüm 7" across a disc of 60.</summary>
+        private const float WordsTypeSize = 10f;
 
         private readonly ArtCatalogue _art;
         private readonly SpriteRenderer _badge;
@@ -81,10 +92,11 @@ namespace Puzzle.Client.Screens
         public void Show(BadgeFace face)
         {
             Look look = LookOf(face.Colour);
-            string words = face.Colour == BadgeColour.Green ? "+" : MuseumWords.Count(face.Count);
+            string words = face.Words ?? (face.Colour == BadgeColour.Green ? "+" : MuseumWords.Count(face.Count));
+            float typeSize = face.Words == null ? look.TypeSize : WordsTypeSize;
             _badge.sprite = _art.Of(look.Picture);
-            _line.fontSize = look.TypeSize;
-            _line.transform.localPosition = new Vector3(0f, -Lettering.FigureDrop(LetteringStyle.Figure) * look.TypeSize, 0f);
+            _line.fontSize = typeSize;
+            _line.transform.localPosition = new Vector3(0f, -Lettering.FigureDrop(LetteringStyle.Figure) * typeSize, 0f);
             Lettering.Say(_line, words);
 
             float wider = Mathf.Max(0f, Lettering.WidthOf(_line, words) - look.RoomForWords);

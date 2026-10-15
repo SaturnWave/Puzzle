@@ -6,8 +6,9 @@ using Puzzle.Core.Model;
 namespace Puzzle.Client.Play
 {
     /// <summary>
-    /// What a finger did on the board, before anyone asks what it means: it tapped a cell, or it swiped from a cell
-    /// towards a neighbour. A closed set: the private constructor keeps both kinds inside this file. What a gesture
+    /// What a finger did on the board, before anyone asks what it means: it tapped a cell, it swiped from a cell
+    /// towards a neighbour, or it aimed an armed booster at a cell. A closed set: the private constructor keeps the
+    /// kinds inside this file. What a gesture
     /// means depends on the board it meets (<see cref="BoardPointer.MoveMeantBy"/>), so a gesture made while the
     /// pieces are still moving can be kept and asked about once they have come to rest.
     /// </summary>
@@ -41,13 +42,26 @@ namespace Puzzle.Client.Play
 
             public Position Toward { get; }
         }
+
+        /// <summary>The finger came down to aim an armed booster, may have slid, and lifted over this cell of the board.</summary>
+        public sealed class Aim : BoardGesture
+        {
+            public Aim(Position cell)
+            {
+                Cell = cell;
+            }
+
+            public Position Cell { get; }
+        }
     }
 
     /// <summary>
     /// What a finger on the board means. Dragging a piece towards a neighbour trades the two as soon as the finger
     /// has gone far enough, without waiting for it to lift. A touch that stays where it was is a tap: on a special
     /// piece it sets the piece off; on another piece it picks that piece, and a tap on a neighbour then trades the
-    /// two. Places are told in cells: (2.5, 0.5) is the middle of the third cell of the top row.
+    /// two. Places are told in cells: (2.5, 0.5) is the middle of the third cell of the top row. While a booster is
+    /// armed the finger aims instead (<see cref="AimDown"/>): the cell under it is lit while it is down and follows
+    /// it as it slides, and lifting uses the booster there; lifting off the board's cells aims at nothing.
     /// </summary>
     /// <remarks>
     /// Reading a finger is two steps. <see cref="Down"/>, <see cref="MovedTo"/> and <see cref="Up"/> only follow
@@ -72,6 +86,12 @@ namespace Puzzle.Client.Play
 
         /// <summary>The piece that was picked by a tap and waits for its neighbour to be tapped.</summary>
         public Position? Selected { get; private set; }
+
+        /// <summary>The cell an armed booster is aimed at while the finger is down; nothing while no finger aims, or it is off the board's cells.</summary>
+        public Position? AimedAt { get; private set; }
+
+        /// <summary>True from the moment a finger came down to aim until it lifted or was taken away.</summary>
+        private bool _isAiming;
 
         /// <summary>A finger came down. A touch outside the board's cells starts nothing.</summary>
         public void Down(float column, float row)
@@ -113,8 +133,39 @@ namespace Puzzle.Client.Play
             return press is null || press.HasDragged ? null : new BoardGesture.Tap(press.Cell);
         }
 
-        /// <summary>The touch was taken away (a call came in, the game lost the screen): it means nothing.</summary>
-        public void Cancel() => _press = null;
+        /// <summary>A finger came down to aim an armed booster: the cell under it is aimed at, if it is one of the board's.</summary>
+        public void AimDown(float column, float row)
+        {
+            _press = null;
+            _isAiming = true;
+            AimedAt = PlayableCellAt(column, row);
+        }
+
+        /// <summary>The aiming finger slid: the aim follows it to the cell it is over now, or to nothing off the board's cells.</summary>
+        public void AimMovedTo(float column, float row)
+        {
+            if (_isAiming)
+            {
+                AimedAt = PlayableCellAt(column, row);
+            }
+        }
+
+        /// <summary>The aiming finger lifted: the aim at the cell it lifted over; nothing when it lifted off the board's cells, which cancels.</summary>
+        public BoardGesture? AimUp()
+        {
+            Position? aimedAt = _isAiming ? AimedAt : null;
+            _isAiming = false;
+            AimedAt = null;
+            return aimedAt is Position cell ? new BoardGesture.Aim(cell) : null;
+        }
+
+        /// <summary>The touch was taken away (a call came in, the game lost the screen): it means nothing, and aims at nothing.</summary>
+        public void Cancel()
+        {
+            _press = null;
+            _isAiming = false;
+            AimedAt = null;
+        }
 
         /// <summary>Forgets the picked piece: the board has changed under it.</summary>
         public void ClearSelection() => Selected = null;
@@ -132,6 +183,8 @@ namespace Puzzle.Client.Play
                     return Move.Swap(swipe.From, swipe.Toward);
                 case BoardGesture.Tap tap:
                     return MoveMeantByATapOn(tap.Cell);
+                case BoardGesture.Aim _:
+                    throw new InvalidOperationException("An aim uses the armed booster; it means no move.");
                 default:
                     throw new InvalidOperationException($"A {gesture.GetType().Name} is not a gesture the board knows.");
             }
@@ -160,6 +213,12 @@ namespace Puzzle.Client.Play
 
             Selected = CanBeTraded(cell) ? cell : (Position?)null;
             return null;
+        }
+
+        private Position? PlayableCellAt(float column, float row)
+        {
+            var cell = new Position((int)Math.Floor(column), (int)Math.Floor(row));
+            return _game.Board.Shape.IsPlayable(cell) ? cell : (Position?)null;
         }
 
         /// <summary>Gems, special pieces and items can be traded, unless tape holds them.</summary>

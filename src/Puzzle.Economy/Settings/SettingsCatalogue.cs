@@ -101,6 +101,10 @@ public static class SettingsCatalogue
         new("start.coins", Coins, Provenance.Decided),
         new("start.boosters.*", Boosters, Provenance.Decided),
 
+        // The boosters used during play open one at a time, and bring the welcome gift's part for them as they open.
+        new("boosterUnlocks.levels.*", "level", Provenance.Decided),
+        new("boosterUnlocks.gift.*", Boosters, Provenance.Decided),
+
         // What the game reads and no simulated player meets: a simulated player takes one start booster per attempt
         // (player.startBoosters.perAttempt), never opens the shop and watches no ad for coins.
         new("startBoosters.perAttempt", Boosters, Provenance.Proposed, SettingUse.GameOnly),

@@ -89,6 +89,8 @@
     <Compile Include="..\..\unity\Assets\Scripts\Engine\LevelStart.cs" Link="Unity\Engine\LevelStart.cs" />
     <!-- Nor have the board's plaques and the result's card: what the plaques say by the piece a level gives, and the rows of the card. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\BoardWords.cs" Link="Unity\Flow\BoardWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ShelfBrief.cs" Link="Unity\Flow\ShelfBrief.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PillWords.cs" Link="Unity\Flow\PillWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ResultCardLayout.cs" Link="Unity\Layout\ResultCardLayout.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -108,5 +110,6 @@
     <None Include="..\fixtures\attempt-records.schema-1.jsonl" Link="fixtures\attempt-records.schema-1.jsonl" CopyToOutputDirectory="PreserveNewest" />
     <!-- The same format with the optional action list, which the Unity game writes by hand: both writers are held to it. -->
     <None Include="..\fixtures\attempt-records.actions.jsonl" Link="fixtures\attempt-records.actions.jsonl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\fixtures\attempt-records.first-shuffle-rule.jsonl" Link="fixtures\attempt-records.first-shuffle-rule.jsonl" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

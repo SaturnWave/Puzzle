@@ -37,7 +37,8 @@ namespace Puzzle.Client.EditorTools
             "{\"levelsWon\":3,\"attemptsOnLevel\":1}",
             "{\"version\":1,\"levelsWon\":-4,\"attemptsOnLevel\":0}",
             "{\"version\":2,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[{\"painting\":1,\"pieces\":[3]}]}", // three levels give the pieces 0 to 2
-            "{\"version\":3,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // the current layout without its wallet is not a wallet of zeros
+            "{\"version\":3,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // a layout with a wallet, without it, is not a wallet of zeros
+            "{\"version\":4,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // the current layout without its wallet neither
         };
 
         /// <summary>What the first Android build wrote: the layout before the museum.</summary>
@@ -47,16 +48,20 @@ namespace Puzzle.Client.EditorTools
         private const string DocumentBeforeTheWallet =
             "{\"version\":2,\"levelsWon\":39,\"attemptsOnLevel\":2,\"placed\":[{\"painting\":1,\"pieces\":[0,1,2,3,4,5,6,7,8,9]},{\"painting\":4,\"pieces\":[0,2]}]}";
 
-        /// <summary>The same player with <see cref="WalletInUse"/>, as this game writes it (layout 3).</summary>
+        /// <summary>
+        /// The same player with <see cref="WalletInUse"/>, as this game writes it (layout 4): the spatula's and the row
+        /// brush's opening gifts given. The pinned text lives twice, here and in ProgressDocumentTests: change both together.
+        /// </summary>
         private const string DocumentWithAWallet =
-            "{\"version\":3,\"levelsWon\":39,\"attemptsOnLevel\":2,\"placed\":[{\"painting\":1,\"pieces\":[0,1,2,3,4,5,6,7,8,9]},{\"painting\":4,\"pieces\":[0,2]}],"
+            "{\"version\":4,\"levelsWon\":39,\"attemptsOnLevel\":2,\"placed\":[{\"painting\":1,\"pieces\":[0,1,2,3,4,5,6,7,8,9]},{\"painting\":4,\"pieces\":[0,2]}],"
             + "\"wallet\":{\"coins\":1234,\"livesShort\":2,\"nextLifeAtUnixSeconds\":1791970200,"
             + "\"boosters\":[{\"name\":\"start-rocket-and-bomb\",\"count\":0},{\"name\":\"start-color-bomb\",\"count\":2},{\"name\":\"start-extra-moves\",\"count\":0},"
             + "{\"name\":\"hit-cell\",\"count\":0},{\"name\":\"hit-row\",\"count\":1},{\"name\":\"hit-column\",\"count\":0},{\"name\":\"shuffle\",\"count\":5}],"
-            + "\"day\":739902,\"adsForMovesToday\":1,\"adsForCoinsToday\":2,\"paintingRewards\":3,\"dailyRewards\":4,\"lastDailyDay\":739901}}";
+            + "\"day\":739902,\"adsForMovesToday\":1,\"adsForCoinsToday\":2,\"paintingRewards\":3,\"dailyRewards\":4,\"lastDailyDay\":739901,"
+            + "\"unlockGifts\":[\"hit-cell\",\"hit-row\"]}}";
 
         /// <summary>The document of a later game: what this game writes, and something it does not know.</summary>
-        private static readonly string LaterDocument = DocumentWithAWallet.Replace("{\"version\":3,", "{\"version\":4,").Replace("}}", "},\"device\":\"phone\"}");
+        private static readonly string LaterDocument = DocumentWithAWallet.Replace("{\"version\":4,", "{\"version\":5,").Replace("}}", "},\"device\":\"phone\"}");
 
         /// <summary>Noon on 14 October 2026 in Istanbul, a whole second as every clock of the game tells: when the check loses a life.</summary>
         private static readonly IWallClock Clock = new FixedWallClock(new DateTimeOffset(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3)));
@@ -196,6 +201,8 @@ namespace Puzzle.Client.EditorTools
             DocumentWithAWallet.Replace("\"dailyRewards\":4", "\"dailyRewards\":0"), // a day for a daily reward never given
             DocumentWithAWallet.Replace("\"day\":739902", "\"day\":-1"),
             DocumentWithAWallet.Replace("\"nextLifeAtUnixSeconds\":1791970200", "\"nextLifeAtUnixSeconds\":999999999999"), // after the calendar's last day
+            DocumentWithAWallet.Replace("[\"hit-cell\",\"hit-row\"]", "[\"start-color-bomb\"]"), // a start booster has no opening gift
+            DocumentWithAWallet.Replace("[\"hit-cell\",\"hit-row\"]", "[\"hit-cell\",\"hit-cell\"]"), // a gift twice
         };
 
         /// <summary>A player who has won 39 levels and placed the first painting's pieces and two of the fourth's; an empty wallet.</summary>
@@ -215,7 +222,7 @@ namespace Puzzle.Client.EditorTools
                 new LifeMeter(shortOfFull: 2, Clock.Now.AddMinutes(30)),
                 BoosterShelf.Empty.With(BoosterKind.StartColorBomb, 2).With(BoosterKind.HitRow, 1).With(BoosterKind.Shuffle, 5),
                 new AdsWatched(day, forExtraMoves: 1, forCoins: 2),
-                new RewardsGiven(forPaintings: 3, daily: 4, lastDailyOn: new DayStamp(day.Number - 1)));
+                new RewardsGiven(forPaintings: 3, daily: 4, lastDailyOn: new DayStamp(day.Number - 1), BoosterKindSet.Of(new[] { BoosterKind.HitCell, BoosterKind.HitRow })));
         }
 
         /// <summary>The file as a game that was closed and opened again finds it.</summary>
@@ -249,7 +256,7 @@ namespace Puzzle.Client.EditorTools
             catch (ProgressOfALaterGameException later)
             {
                 bool isLeft = File.Exists(path) && File.ReadAllText(path) == LaterDocument;
-                if (!isLeft || later.Version != 4 || !understood.Equals(later.Understood))
+                if (!isLeft || later.Version != 5 || !understood.Equals(later.Understood))
                 {
                     throw new InvalidOperationException(
                         $"A later game's file was not left as it was (still there unchanged: {isLeft}), or the game was told layout {later.Version} and \"{later.Understood}\".");

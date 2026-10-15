@@ -30,6 +30,9 @@ public sealed record EconomySettings
     /// <summary>What a new player is given before the first level (the file's start section).</summary>
     public required WelcomeGift Start { get; init; }
 
+    /// <summary>When the boosters used during play open, and what each brings then (the file's boosterUnlocks section).</summary>
+    public required BoosterUnlockSettings Unlocks { get; init; }
+
     /// <summary>What the file states for the game alone; nothing of it is simulated.</summary>
     public required GameOnlySettings Game { get; init; }
 
@@ -178,6 +181,23 @@ public sealed record WelcomeGift(Coins Coins, IReadOnlyDictionary<BoosterKind, i
 {
     /// <summary>The boosters one by one, in the engine's order of kinds.</summary>
     public IEnumerable<BoosterKind> BoostersOneByOne => BoosterKinds.All.SelectMany(kind => Enumerable.Repeat(kind, Boosters[kind]));
+}
+
+/// <summary>
+/// When the boosters used during play open to a player, and the gift each brings then: the welcome gift's part for
+/// them, given on the booster's level instead of before the first (the owner's decision of 2026-10-15). A simulated
+/// player uses none before its level. The game keeps the same rule (Puzzle.Meta's BoosterUnlocks).
+/// </summary>
+/// <param name="Levels">The level each booster used during play opens on.</param>
+/// <param name="Gift">Boosters of its own kind each brings as it opens; a count may be 0.</param>
+public sealed record BoosterUnlockSettings(IReadOnlyDictionary<BoosterKind, LevelId> Levels, IReadOnlyDictionary<BoosterKind, int> Gift)
+{
+    /// <summary>True when the booster can be used on the level: a start booster always, one used during play from its own level on.</summary>
+    public bool IsOpenOn(BoosterKind kind, LevelId level) => kind.IsStart() || level.Value >= Levels[kind].Value;
+
+    /// <summary>The gift of every booster that opens on exactly this level, booster by booster, in the engine's order of kinds.</summary>
+    public IEnumerable<BoosterKind> GiftOpeningOn(LevelId level) =>
+        BoosterKinds.All.Where(kind => kind.IsInLevel() && Levels[kind] == level).SelectMany(kind => Enumerable.Repeat(kind, Gift[kind]));
 }
 
 /// <summary>

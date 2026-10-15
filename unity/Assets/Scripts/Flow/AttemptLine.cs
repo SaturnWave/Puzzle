@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 
@@ -56,6 +57,11 @@ namespace Puzzle.Client.Flow
             Text(line, "client", start.Client);
             Text(line, "startedUtc", Time(start.StartedUtc));
             Text(line, "endedUtc", Time(outcome.EndedUtc));
+            if (start.ShuffleRule != ShuffleBoosterRule.RandomOrders)
+            {
+                Number(line, "shuffleRule", (long)start.ShuffleRule);
+            }
+
             if (record.Actions is IReadOnlyList<AttemptAction> actions)
             {
                 List(line, "actions", actions.Select(Action));

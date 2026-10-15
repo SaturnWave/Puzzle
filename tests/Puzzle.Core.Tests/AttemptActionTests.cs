@@ -73,14 +73,16 @@ public class AttemptActionTests
         Assert.Equal(new AttemptAction[] { new AttemptAction.MovePlayed(first) }, game.Actions);
     }
 
-    [Fact]
-    public void An_attempt_with_every_booster_and_the_extra_moves_is_replayed_from_its_record_to_the_same_end()
+    [Theory]
+    [InlineData(ShuffleBoosterRule.RandomOrders, 5UL)]
+    [InlineData(ShuffleBoosterRule.LaidWithoutAMatch, 6UL)]
+    public void An_attempt_with_every_booster_and_the_extra_moves_is_replayed_from_its_record_to_the_same_end(ShuffleBoosterRule rule, ulong playSeed)
     {
         LevelDefinition level = GameTests.OpenLevel().WithMoveLimit(8);
         StartBooster[] startBoosters = { StartBooster.RocketAndBomb, StartBooster.ColorBomb, StartBooster.ExtraMoves };
         AttemptSeeds seeds = AttemptSeeds.WithFixedBoard(7, 21);
-        Game game = Game.Start(level, seeds, new GameOptions { StartBoosters = startBoosters, RecordActions = true });
-        var rng = new Rng(5);
+        Game game = Game.Start(level, seeds, new GameOptions { StartBoosters = startBoosters, RecordActions = true, ShuffleBoosterRule = rule });
+        var rng = new Rng(playSeed);
 
         Assert.True(game.TryUseBooster(new BoosterUse.HitCell(P(3, 3))));
         PlayRandomly(game, rng, moves: 1);
@@ -99,16 +101,17 @@ public class AttemptActionTests
         string[] expected = new[] { "hit-cell", "move", "hit-row", "hit-column", "move" }.Concat(Enumerable.Repeat("shuffle-refused", refusals)).Append("shuffle").ToArray();
         Assert.Equal(expected, game.Actions.Take(expected.Length).Select(action => AttemptActionNames.Of(action)));
         Assert.Contains(new AttemptAction.ExtraMovesTaken(), game.Actions);
+        Assert.Equal(rule, record.Start.ShuffleRule);
         AssertTheSameEnd(game, replayed);
     }
 
     [Fact]
-    public void A_refused_shuffle_drew_from_the_shuffle_stream_so_the_replay_asks_for_it_too()
+    public void A_refused_shuffle_of_the_first_rule_drew_from_the_shuffle_stream_so_the_replay_asks_for_it_too()
     {
         // Seven rockets and two red gems: every order of the gems is the order on the board, and each try draws.
         LevelDefinition level = Level(Blank(3, 3, 'H').With(0, 0, 'r').With(2, 2, 'r'));
         AttemptSeeds seeds = AttemptSeeds.From(1);
-        Game game = Game.Start(level, seeds, Recording);
+        Game game = Game.Start(level, seeds, new GameOptions { RecordActions = true, ShuffleBoosterRule = ShuffleBoosterRule.RandomOrders });
 
         Assert.False(game.TryUseBooster(new BoosterUse.Shuffle()));
         Assert.True(game.TryPlay(Move.Tap(P(1, 1))));
@@ -124,7 +127,7 @@ public class AttemptActionTests
         AssertTheSameEnd(game, AttemptReplay.Of(RecordOf(game, seeds), level));
 
         // Without the refusal the accepted shuffle draws other numbers and leaves another board.
-        Game withoutTheRefusal = AttemptReplay.Play(level, seeds, Array.Empty<StartBooster>(), expected.Skip(1).ToArray());
+        Game withoutTheRefusal = AttemptReplay.Play(level, seeds, Array.Empty<StartBooster>(), ShuffleBoosterRule.RandomOrders, expected.Skip(1).ToArray());
         Assert.NotEqual(game.Board.ComputeHash(), withoutTheRefusal.Board.ComputeHash());
     }
 
@@ -258,7 +261,7 @@ public class AttemptActionTests
     internal static AttemptRecord RecordOf(Game game, AttemptSeeds seeds)
     {
         LevelDefinition level = game.Level;
-        var start = new AttemptStart(level.Id, level.ContentVersion, level.MoveLimit, seeds, attempt: 0, Phone, "unity", Noon);
+        var start = new AttemptStart(level.Id, level.ContentVersion, level.MoveLimit, seeds, attempt: 0, Phone, "unity", Noon, game.ShuffleBoosterRule);
         return new AttemptRecord(start, AttemptOutcome.Of(game, Noon.AddMinutes(3)), lab: null, game.Actions);
     }
 
@@ -284,8 +287,9 @@ public class AttemptActionTests
     }
 
     /// <summary>
-    /// Asks for the shuffle booster again and again, as a player may: on a large board a rearrangement without a match
-    /// is rare, and each try draws other numbers. Returns how often it was refused first.
+    /// Asks for the shuffle booster again and again, as a player may: under the first rule a rearrangement without a
+    /// match is rare on a large board, and each try draws other numbers; the rule of today is never refused there.
+    /// Returns how often it was refused first.
     /// </summary>
     private static int AskForAShuffleUntilOneIsAccepted(Game game)
     {
@@ -294,6 +298,11 @@ public class AttemptActionTests
         {
             refusals++;
             Assert.True(refusals < 50, "fifty shuffles in a row were refused");
+        }
+
+        if (game.ShuffleBoosterRule == ShuffleBoosterRule.LaidWithoutAMatch)
+        {
+            Assert.Equal(0, refusals);
         }
 
         return refusals;

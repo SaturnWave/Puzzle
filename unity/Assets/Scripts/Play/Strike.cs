@@ -16,6 +16,9 @@ namespace Puzzle.Client.Play
     {
         private readonly EffectKind? _kind;
         private readonly int _radius;
+
+        /// <summary>How long the strike takes to reach one cell further, where it is not the effect's own pace: a brush's.</summary>
+        private readonly float? _perCell;
         private readonly float _rayEvery;
         private readonly Dictionary<Position, float> _rayArrivals = new Dictionary<Position, float>();
         private readonly int _raysPlanned;
@@ -24,10 +27,11 @@ namespace Puzzle.Client.Play
         private Position? _flightTarget;
         private float _flightLands;
 
-        private Strike(EffectKind? kind, Position origin, int radius, float start, bool carriesASpecial, int cellsReached, float reachSeconds)
+        private Strike(EffectKind? kind, Position origin, int radius, float start, bool carriesASpecial, int cellsReached, float reachSeconds, float? perCell = null)
         {
             _kind = kind;
             _radius = radius;
+            _perCell = perCell;
             _raysPlanned = Math.Max(1, cellsReached);
             _rayEvery = Math.Min(Tempo.RayEvery, Tempo.RaysWithin / _raysPlanned);
             Origin = origin;
@@ -44,7 +48,7 @@ namespace Puzzle.Client.Play
         public float Seconds { get; }
 
         /// <summary>How long a spreading effect takes to get one cell further; nothing for hits that do not spread.</summary>
-        public float SecondsPerCell => _kind switch
+        public float SecondsPerCell => _perCell ?? _kind switch
         {
             EffectKind.ClearRow => Tempo.RocketPerCell,
             EffectKind.ClearColumn => Tempo.RocketPerCell,
@@ -71,6 +75,20 @@ namespace Puzzle.Client.Play
         /// <summary>Hits that all come at one moment: a match, or the special piece the player set off.</summary>
         public static Strike AllAtOnce(float start) =>
             new Strike(kind: null, default, radius: 0, start, carriesASpecial: false, cellsReached: 0, reachSeconds: 0f);
+
+        /// <summary>
+        /// The brush of a booster used during play: it paints a row from its left end, or a column from its top, one
+        /// cell after another at the brush's pace (<see cref="Tempo.BrushPerCell"/>), reaching the first cell at
+        /// <paramref name="start"/>.
+        /// </summary>
+        /// <param name="first">The row's first cell or the column's.</param>
+        public static Strike OfABrush(Position first, bool isAlongTheRow, BoardShape board, float start)
+        {
+            int cells = isAlongTheRow ? board.Width : board.Height;
+            return new Strike(
+                isAlongTheRow ? EffectKind.ClearRow : EffectKind.ClearColumn, first, radius: 0, start, carriesASpecial: false, cellsReached: cells,
+                reachSeconds: (cells - 1) * Tempo.BrushPerCell, perCell: Tempo.BrushPerCell);
+        }
 
         /// <param name="cellsReached">How many cells the effect reaches; only a colour bomb's rays are spaced by it.</param>
         public static Strike Of(GameEvent.EffectTriggered effect, float start, BoardShape board, bool carriesASpecial, int cellsReached)
