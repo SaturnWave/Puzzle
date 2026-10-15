@@ -1146,6 +1146,19 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 - **Doğrulama:** 3.349 test. Unity'de bütün denetimler, yeni durumlarıyla şölen ve dokunma denetimleri, oynatma kipi, ekran yürüyüşü ve tasarımla karşılaştırma hatasız. Tahta ve kazanma kartı çizimle neredeyse aynı.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T110–T119.
 
+**Bölüm içi booster kararları (2026-10-15).** Kullanıcı, araştırma notunun (`docs/research/in-level-boosters.md`) üç önerisini onayladı:
+
+1. **Karıştırma booster'ı hep karıştırır.** İlk dizilimde eşleşme varsa reddetmez; yeniden çeker ya da eşleşmesiz bir dizilim kurar. Yalnızca hiçbir karıştırmanın bir şey değiştiremeyeceği tahtada reddeder. Motorun hamle kalmayınca yaptığı karıştırma değişmez; bölümlerin ayarı ve motor izi aynı kalır. Kural sürümlenir: değişiklikten önce yazılmış deneme kayıtları da birebir yeniden oynatılır.
+2. **Booster da denemeyi başlatır.** Motorun kabul ettiği bölüm içi booster ilk hamle gibi sayılır: deneme sayılır, kartta seçilen bölüm öncesi booster'lar harcanır, bundan sonra çıkmak can götürür, kayıt yazılır. Hiç dokunulmamış tahtadan çıkmak bedava kalır.
+3. **Bölüm içi booster'lar birer birer açılır.**
+   - Spatula 7., satır fırçası 12., sütun fırçası 16., karıştırma 20. bölümde açılır.
+   - O bölüme kadar disk kilitlidir: sönük, üstünde "Bölüm N".
+   - Açıldığı bölümde bir kez halkayla ve tek cümlelik bir yazıyla gösterilir.
+   - Hoş geldin hediyesindeki 3'er adet bölüm içi booster açıldıkları bölümde verilir. Bölüm öncesi booster'lar baştan açık kalır, 3'er adetleri baştan verilir.
+   - İlk tanıtımda "Her bölüm booster'sız geçilebilir" cümlesi yer alır; bölümler booster'sız ayarlandığı için bu ölçümle de doğru.
+
+Bu kararlarla 10. aşama başladı.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici

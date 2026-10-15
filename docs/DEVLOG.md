@@ -29,6 +29,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Test planında üç eskimiş satır düzeltildi (T23, T27, T111).
 - Kod grafiği (graphify) güncellendi.
 
+**Kullanıcı kararları: 10. aşama (§23)**
+- Karıştırma booster'ı hep karıştırsın; motorun kendi karıştırması ve bölümlerin ayarı değişmesin; kural sürümlensin.
+- Kabul edilen bölüm içi booster ilk hamle gibi denemeyi başlatsın.
+- Bölüm içi booster'lar birer birer açılsın: spatula 7., satır 12., sütun 16., karıştırma 20. bölüm. Hediyedeki 3'er adetleri açıldıkları bölümde verilsin.
+- Her Markdown belgesinin yanında PDF'i de olsun (zaten böyle; kural kalıcı).
+- Bu kararlarla 10. aşama tek ajanla başladı.
+
 ## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
 
 **Kullanıcı kararları**
