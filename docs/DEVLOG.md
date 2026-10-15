@@ -54,6 +54,16 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Bilinen açık: bazı ekranlarda booster yazısı en alt sıranın bir kısmını örtüyor (A24).
 - Ajan bu aşamada yaklaşık 955 bin token kullandı; şimdiye kadarki en büyük aşama.
 
+**Kullanıcı kararları (akşam)**
+- Önce 11–15. aşamalar bitecek; sonra APK telefona kurulup elde denenecek; sonra telefon testleri. Avatar şimdilik atlanıyor (3D animasyon gerekecek).
+- Prototip telefonda denendikten sonraki ilk iş arayüz iyileştirmeleri; GitHub'da issue olarak takip edilecek (etiket `arayüz-iyileştirme`, kilometre taşı "Prototip sonrası arayüz iyileştirmeleri"). İlk kayıt: renkler genelde mat ve düşük kontrastlı (#2).
+- Kullanıcının bir sonraki oyunu: ızgaraya parça yerleştirmeli blok bulmaca (dünya pazarı; rekabet, mağaza, reklam), ayrı bir bulut oturumunda yapılacak. Başlangıç metni `docs/next-game/BLOCK_PUZZLE_PROMPT.md` (PDF'i "Başlangıç Metni").
+
+**Arayüz: planın 11. aşaması (§23)**
+- Hamle bitince "+5 hamle" teklif kartı (altın ya da günde 3 ücretsiz reklam), "TEST SÜRÜMÜ" yazılı reklam canlandırması, vazgeçme ve kaybetme kartı tasarımdaki hâlinde. Teklif açıkken deneme bitmiyor.
+- Fiyat tekrarlarda artmıyor, "+5" denemede bir kez; ödeme sonrası gizli yardım yok (§17).
+- 3.443 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: kart çizimle birebir.
+
 ## 2026-10-14 · Oturum 23 — Hoş geldin hediyesi, denge politikası, müzenin 100 tablosu, cüzdan kayıtta
 
 **Kullanıcı kararları**
@@ -106,7 +116,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.349 test geçti; Unity'de bütün denetimler hatasız, şölen 5,5 saniye sınırında. Görüntülere baktım: tahta ve kazanma kartı çizimle neredeyse aynı.
 
 **Telefon test planı**
-- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 24 bilinen açık, 85 telefon testi.
+- Yeni belge `docs/PHONE_TESTS.md` ("Test Planı" PDF'i): tam test turunun sırası, 25 bilinen açık, 97 telefon testi.
 
 **Diğer**
 - Kullanım kılavuzunda bozuk bir komut yolu düzeltildi; bölümlerin yayına alınma notu güncellendi.

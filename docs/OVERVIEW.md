@@ -449,8 +449,8 @@ Tasarım tuvalindeki bütün ekranların istemciye gelmesi için yazılan plan (
 | 8 | Bölüm başı kartı ve bölüm öncesi booster'lar | ✅ 2026-10-14 |
 | 9 | Tahta plaketleri, duraklatmalı raf, kazanma kartı | ✅ 2026-10-14 |
 | 10 | Bölüm içi booster'lar: seçme, nişan alma, kullanma, reddetme | ✅ 2026-10-15 |
-| 11 | Hamle bitince: "+5" teklifi, canlandırılmış reklam, vazgeçme | Sıradaki |
-| 12 | Mağaza, artı düğmeleri, hediye ve tablo ödülü | — |
+| 11 | Hamle bitince: "+5" teklifi, canlandırılmış reklam, vazgeçme | ✅ 2026-10-15 |
+| 12 | Mağaza, artı düğmeleri, hediye ve tablo ödülü | Sıradaki |
 | 13 | Ayarlar, gizlilik ve veri, destek | — |
 | 14 | Ses ve titreşim (yer tutucu sesler) | — |
 | 15 | Koleksiyon ve harita ayrıntıları, baştan sona yürüyüş, her ekranın çizimle karşılaştırması, belgeler | — |

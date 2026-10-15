@@ -47,6 +47,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A20 | Cüzdan oyunda görünmüyordu. **Kapandı (2026-10-14, aşama 7):** altın ve canlar müze sayfalarında; can bitince bölüm açılmıyor. | Aşama 2 | — | T90–T97 |
 | A23 | Telefondaki deneme dosyası sınırsız büyür (deneme başına yaklaşık 1,1 KB); "Kayıtları sil" yok. Bölüm ortasında kapatılan oyun kayıt bırakmaz. | Aşama 3 | Düşük | Ayarlar ekranı aşamasında |
 | A24 | Booster yazısı 9:16 telefonda uzun tahtalarda ve katlanır telefonun yatay iç ekranında en alt sıranın bir kısmını örtüyor. Dokunuşlar geçiyor, ama ilk denemedeki yazı ilk hamleye kadar o taşları gizliyor. | Aşama 10 | Orta | T134; yer ayırmak tahtayı küçültür |
+| A25 | Teklif ya da canlandırma reklamı açıkken uygulama kapatılırsa can gitmez ve kayıt yazılmaz. | Aşama 11 | Düşük | Planın bildiği açık |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -195,6 +196,23 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T132 | Dokunma alanı | Diskin kenarına (bir parmak genişliği içinde) ve iki diskin arasına dokun | Kenar diski basar; arası en çok bir diski basar; diskler dış ve iç ekranda elde en az 40 puan | Aşama 10 | Bekliyor |
 | T133 | Eski kayıtla açılış | Bu derlemeyi 20. bölümü geçmiş bir oyuncuyla 2.–9. aşama derlemesinin üstüne kur | Bölüm içi booster'lar yeniden verilmez (eski hediyeyle gelmişlerdi); cüzdandan önceki kayıtlı oyuncu (katman 1–2) her birinden 3 alır | Aşama 10 | Bekliyor |
 | T134 | Katlanır, yatay | Katlanır telefonu açıp yatay tut, uzun bir tahtada booster seç | Yazı okunur; en alt sıranın ne kadarını örttüğünü not et (bilinen açık A24) | Aşama 10 | Bekliyor |
+
+### F6. Hamle bitince (aşama 11)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T140 | Teklif kartı | Bir bölümü hedefler kalmışken hamlesi bitene kadar oyna | "Hamle bitti!" kartı: yaldızlı +5, kalan hedeflerin üstünde "Az kaldı!" ya da "Kalan hedefler", 900'lü "+5 hamle", "Reklam izle", "Vazgeç ♥ 1 can gider"; başka hiçbir şey kıpırdamaz | Aşama 11 | Bekliyor |
+| T141 | Altınla +5 | En az 900 altınla "+5 hamle"ye bas | Kart kalkar, oda aydınlanır, madalyon 1'den 5'e sayar, tahta sürer; salonda tam 900 altın eksik, can aynı | Aşama 11 | Bekliyor |
+| T142 | Altın yetmezse | 900'den az altınla yeşil düğmeye bas | Düğme sönük, "Altın yetmiyor" der; bir şey olmaz | Aşama 11 | Bekliyor |
+| T143 | Reklamla +5 | "Reklam izle"ye bas; aynı gün üç kez, sonra dördüncüde dene; ertesi gün yine bak | "Reklam canlandırması / TEST SÜRÜMÜ" kartı 3 saniyede dolar ve hamleler gelir; dördüncüde düğme sönük ve "Bugünlük bitti"; ertesi gün yine 3 hak | Aşama 11 | Bekliyor |
+| T144 | İkinci teklif yok | +5'i aldıktan sonra hamleler yine bitsin | İkinci teklif gelmez; "–1" can hapı, "1 can gitti", Tekrar dene ve Müze; salonda bir can eksik | Aşama 11 | Bekliyor |
+| T145 | Vazgeç | Teklifte "Vazgeç"; sonra "Tekrar dene"; tek can kalmışken tekrarla | Teklif kalkar, kaybetme kartı iner ("1 can gitti"); Tekrar dene bölümün kartını açar; son can gidince can kartı gelir | Aşama 11 | Bekliyor |
+| T146 | Teklif açıkken | Teklif açıkken geri hareketi yap, tahtada kaydır, duraklatmaya dokun | Hiçbir şey olmaz, can gitmez, teklif kalır | Aşama 11 | Bekliyor |
+| T147 | Reklam sırasında | Canlandırma reklamı sırasında geri tuşuna bas; uygulamadan ana ekrana çıkıp dön | Geri tuşu bir şey yapmaz; reklam sürer ve biter, sonra hamleler gelir | Aşama 11 | Bekliyor |
+| T148 | Çıkma kartının yeni hâli | Hamle yapmadan duraklat; sonra bir hamleden sonra duraklat | Önce "Henüz hamle yapmadın, can gitmez"; sonra "–1" can hapı ve "Çıkarsan 1 can gider"; "Oyna" tahtaya döner | Aşama 11 | Bekliyor |
+| T149 | +5 sonrası kazanma | +5'i al ve hamle artırarak kazan | Şölen kalan hamleleri fırçaya çevirir; kazanma kartı onların altınını gösterir | Aşama 11 | Bekliyor |
+| T150 | Katlanır ekranlar | T140, T143 ve T145'i iç (kare) ve dış ekranda tekrarla | Kartlar plaketlerle raf arasına sığar; her düğme ve "Vazgeç" parmakla rahat basılır | Aşama 11 | Bekliyor |
+| T151 | Kayıtlar | +5 alınan ve vazgeçilen birer denemeden sonra `attempts.jsonl` dosyasının son iki satırını oku (adb) | Deneme başına bir satır, deneme kesin bitince yazılmış; +5'li denemede `"extraMovesBought":true` ve +5 eylemi | Aşama 11 | Bekliyor |
 
 ### G. Görünüm
 

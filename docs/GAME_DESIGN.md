@@ -1195,6 +1195,23 @@ Bu kararlarla 10. aşama başladı.
 - **Doğrulama:** 3.424 test. Ekonomi denetimi oyunları bu derlemeyle kabul etti. Unity'de bütün denetimler, iki yeni araç (`BoosterCheck`, `BoosterShots`), oynatma kipi, ekran yürüyüşü ve tasarımla karşılaştırma hatasız.
 - **Telefon testleri:** `docs/PHONE_TESTS.md`, T120–T134.
 
+**Hamle bitince: "+5" teklifi, reklam canlandırması, vazgeçme (2026-10-15).** Arayüz planının 11. aşaması.
+
+- **Teklif kartı:** hedefler kalmışken hamle bitince LoseTR çizimindeki kart iner:
+  - "Hamle bitti!" ve yaldızlı +5;
+  - hedeflerin yüzde 80'i yapıldıysa "Az kaldı!", yapılmadıysa "Kalan hedefler", altında kalan hedefler;
+  - fiyatıyla "+5 hamle" (900), "Reklam izle" ve "Vazgeç ♥ 1 can gider".
+
+  Kart açıkken deneme bitmez: can gitmez, kayıt yazılmaz, dokunuş, duraklatma ve geri tuşu bir şey yapmaz.
+- **Ödeme:** önce motora sorulur. Altınla tam fiyat düşer. Reklam seçilirse üç saniyelik, "TEST SÜRÜMÜ" yazılı bir canlandırma kartı gelir; ağa bağlanmaz, günün 3 ücretsiz reklamından birini harcar. Aynı deneme beş hamle daha sürer. Ödenemeyen yol nedeniyle sönük durur ("Altın yetmiyor", "Bugünlük bitti").
+- **Ret:** hiçbir karıştırmanın canlandıramayacağı tahtada teklif reddedilir, hiçbir şey ödenmez, kart "Oynanacak hamle kalmadı!" der.
+- **Vazgeç:** bir can götürür, kaydı yazar, son kaybetme kartını gösterir. Oradan "Tekrar dene" bölüm başı kartına, can yoksa can kartına götürür.
+- **Kartlar:** son kaybetme kartı ve duraklatmadaki çıkma kartı tasarımdaki görünüme geçti ("–1" can hapı).
+- **Adalet (§17):** teklifin fiyatı tekrarlandıkça artmaz; "+5" bir denemede bir kez alınır; ödemeden sonra kazandıracak bir yardım konmaz.
+- **Bilinen:** teklif ya da reklam açıkken uygulama kapatılırsa can gitmez ve kayıt yazılmaz (planın bildiği açık). Gerçek reklam eklendiğinde "izlenmedi" sonu da gerekecek.
+- **Doğrulama:** 3.443 test. Unity'de bütün denetimler, iki yeni araç (`OfferCheck`, `OfferShots`), "+5"i bir kez reklamla alıp bir kez vazgeçen ekran yürüyüşü ve tasarımla karşılaştırma hatasız. Kart çizimle birebir; fiyat artık gerçek değer.
+- **Telefon testleri:** `docs/PHONE_TESTS.md`, T140–T151.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
