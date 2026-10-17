@@ -16,7 +16,8 @@ namespace Puzzle.Client.Screens
     /// back and until all are. A player without a life is told that a life must come first. It is opened by the
     /// heart's pill of the wallet row, and by the play button of a player without a life (over the card before a
     /// level by that card's green button), and closed by its round button, by its "Tamam" and by the way back. No
-    /// life is sold here: coins do not buy lives in this game.
+    /// life is sold here: coins do not buy lives in this game. In the tester mode the heart says "∞" and the figures
+    /// "Sınırsız", and the lines say that the mode is on and that a loss takes no life.
     /// </summary>
     /// <remarks>
     /// The design canvas draws no such card. It is built in the language of the cards it does draw (LevelStartTR,
@@ -101,12 +102,18 @@ namespace Puzzle.Client.Screens
         /// <summary>Tells of the wallet as it is now: the lives, and the waits that count down while the card hangs.</summary>
         public void Tell(WalletView wallet)
         {
+            Lettering.ReadyForAFigure(_heartCount, HeartCountSize, isASign: wallet.IsUnlimited);
             Lettering.Say(_heartCount, WalletWords.OnTheHeart(wallet));
             Lettering.Say(_ofMost, WalletWords.LivesOfMost(wallet));
             Lettering.DrawIn(_ofMost, wallet.HasALife ? Lettering.Ink : Lettering.Danger);
 
             var said = new List<string>();
-            if (wallet.UntilNextLife is TimeSpan next && wallet.UntilFull is TimeSpan full)
+            if (wallet.IsUnlimited)
+            {
+                said.Add(WalletWords.TesterModeOn);
+                said.Add(WalletWords.NoLifeIsLost);
+            }
+            else if (wallet.UntilNextLife is TimeSpan next && wallet.UntilFull is TimeSpan full)
             {
                 said.Add(WalletWords.NextLife(next));
                 said.Add(WalletWords.FullAfter(full));

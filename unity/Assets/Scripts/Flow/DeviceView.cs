@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -10,12 +11,13 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// What the settings card and the cards it opens show of the phone and of this build: the player's settings and
     /// which of them the build honours, the phone's id, the game's version and its levels', the attempt records kept
-    /// and where, and the build's marks. Whoever owns the museum makes it, and makes it anew when the player has
-    /// changed something of it (a setting, the records deleted). No Unity dependency.
+    /// and where, and the build's marks, which also say whether the build has the tester mode. Whoever owns the
+    /// museum makes it, and makes it anew when the player has changed something of it (a setting, the records
+    /// deleted). No Unity dependency.
     /// </summary>
     public sealed class DeviceView
     {
-        /// <param name="settingRows">The settings whose rows the card draws: those the build honours (<see cref="DeviceAbilities"/>).</param>
+        /// <param name="honoured">The settings the build honours (<see cref="DeviceAbilities"/>), in the card's order.</param>
         /// <param name="gameVersion">The game's version as the build states it ("1.0").</param>
         /// <param name="content">The newest version of the levels the game carries.</param>
         /// <param name="recordsKept">How many attempt records the phone keeps; nothing when they could not be read to count them.</param>
@@ -23,11 +25,11 @@ namespace Puzzle.Client.Flow
         /// <param name="ads">How this build shows an ad, from its marks.</param>
         /// <param name="realMoney">What this build sells for money, from its marks.</param>
         public DeviceView(
-            DeviceSettings settings, IReadOnlyList<DeviceSetting> settingRows, DeviceId device, string gameVersion, ContentVersion content,
+            DeviceSettings settings, IReadOnlyList<DeviceSetting> honoured, DeviceId device, string gameVersion, ContentVersion content,
             int? recordsKept, string? recordsFile, AdSource ads, RealMoneySales realMoney)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            SettingRows = settingRows ?? throw new ArgumentNullException(nameof(settingRows));
+            Honoured = honoured ?? throw new ArgumentNullException(nameof(honoured));
             Device = device ?? throw new ArgumentNullException(nameof(device));
             GameVersion = gameVersion ?? throw new ArgumentNullException(nameof(gameVersion));
             Content = content;
@@ -39,7 +41,11 @@ namespace Puzzle.Client.Flow
 
         public DeviceSettings Settings { get; }
 
-        public IReadOnlyList<DeviceSetting> SettingRows { get; }
+        /// <summary>The settings the build honours, in the card's order.</summary>
+        public IReadOnlyList<DeviceSetting> Honoured { get; }
+
+        /// <summary>The settings whose rows the settings card draws: those the build honours, and under them the tester mode's while it is on.</summary>
+        public IReadOnlyList<DeviceSetting> SettingRows => IsInTesterMode ? Honoured.Append(DeviceSetting.TesterMode).ToArray() : Honoured;
 
         public DeviceId Device { get; }
 
@@ -59,5 +65,11 @@ namespace Puzzle.Client.Flow
 
         /// <summary>True when there is a record to delete.</summary>
         public bool HasRecords => RecordsKept > 0;
+
+        /// <summary>True while the tester mode holds: turned on, in a build that has it.</summary>
+        public bool IsInTesterMode => TesterMode.HandlingFor(Settings, Ads, RealMoney) == WalletHandling.Unlimited;
+
+        /// <summary>True when the support card may ask whether to turn the tester mode on: the build has it, and it is off.</summary>
+        public bool CanTurnOnTheTesterMode => TesterMode.IsOfferedBy(Ads, RealMoney) && !Settings.TesterMode;
     }
 }

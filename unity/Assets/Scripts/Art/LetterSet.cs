@@ -26,8 +26,8 @@ namespace Puzzle.Client.Art
         /// <summary>What Turkish needs beyond those.</summary>
         private const string TurkishLetters = "ĞİŞğış";
 
-        /// <summary>The marks the game's sentences use.</summary>
-        private const string Marks = "·…’“”–×";
+        /// <summary>The marks the game's sentences use, and "∞", which the tester mode shows for its coins and lives.</summary>
+        private const string Marks = "·…’“”–×∞";
 
         /// <summary>Every letter of the set, each once.</summary>
         public static string All { get; } = Build();

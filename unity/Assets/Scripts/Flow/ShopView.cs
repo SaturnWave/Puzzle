@@ -113,15 +113,23 @@ namespace Puzzle.Client.Flow
         /// <summary>A daily reward is due this many days after the one before it.</summary>
         public int GiftEveryDays { get; }
 
-        /// <summary>The shop and the gift as the rules have them for a wallet at an instant of the player's clock.</summary>
+        /// <summary>The shop and the gift as the rules have them for a wallet at an instant of the player's clock, held as the rules have it.</summary>
         /// <param name="now">The player's time, with the offset of their time zone: a calendar day is theirs.</param>
         /// <exception cref="ArgumentNullException">No rules or no wallet.</exception>
-        public static ShopView Of(EconomyRules rules, Wallet wallet, DateTimeOffset now)
+        public static ShopView Of(EconomyRules rules, Wallet wallet, DateTimeOffset now) => Of(rules, wallet, now, WalletHandling.Normal);
+
+        /// <summary>
+        /// The shop and the gift as the rules have them for a wallet at an instant of the player's clock, held as the
+        /// client holds it: in the tester mode every set is covered.
+        /// </summary>
+        /// <param name="now">The player's time, with the offset of their time zone: a calendar day is theirs.</param>
+        /// <exception cref="ArgumentNullException">No rules or no wallet.</exception>
+        public static ShopView Of(EconomyRules rules, Wallet wallet, DateTimeOffset now, WalletHandling handling)
         {
             Shop shop = (rules ?? throw new ArgumentNullException(nameof(rules))).Shop;
             Wallet held = wallet ?? throw new ArgumentNullException(nameof(wallet));
             DayStamp today = DayStamp.Of(now);
-            SetOffer[] sets = shop.BoosterSets.Select(set => new SetOffer(set, held.Coins)).ToArray();
+            SetOffer[] sets = shop.BoosterSets.Select(set => new SetOffer(set, handling.ToPay(set.Price, held).Coins)).ToArray();
             return new ShopView(
                 shop.CoinPacks, sets, shop.AdForCoins.Coins, shop.AdsForCoinsLeft(held, today), shop.AdForCoins.PerDay, rules.Ads, shop.RealMoney,
                 GiftOf(rules.Daily, held, now), rules.Daily.EveryDays);

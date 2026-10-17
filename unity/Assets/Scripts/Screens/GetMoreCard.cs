@@ -24,7 +24,7 @@ namespace Puzzle.Client.Screens
         {
             _brief = brief;
             _booster = booster;
-            OfferWayOut<MuseumPress>? toTheShop = brief.CanBuy(booster, wallet.Coins)
+            OfferWayOut<MuseumPress>? toTheShop = brief.CanBuy(booster, wallet)
                 ? null
                 : new OfferWayOut<MuseumPress>(ShopWords.ToTheShop, new MuseumPress.Visit(Destination.Shop));
             _offer = new OfferCard<MuseumPress>(
@@ -52,7 +52,7 @@ namespace Puzzle.Client.Screens
             new GetMoreCard(parent, art, booster, brief, wallet, raisedBy);
 
         /// <summary>Shows whether the coins cover the price now: the button is lit and buys, or is dimmed and says that the coins are short.</summary>
-        public void Tell(WalletView wallet) => _offer.ShowAffordable(_brief.CanBuy(_booster, wallet.Coins));
+        public void Tell(WalletView wallet) => _offer.ShowAffordable(_brief.CanBuy(_booster, wallet));
 
         public void Dispose() => _offer.Dispose();
     }

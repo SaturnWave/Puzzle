@@ -82,6 +82,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\NumberWords.cs" Link="Unity\Flow\NumberWords.cs" />
     <!-- Nor has the wallet row of the museum's pages: what it shows of a wallet at an instant, its words, where its parts stand. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletView.cs" Link="Unity\Flow\WalletView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletHandling.cs" Link="Unity\Flow\WalletHandling.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletWords.cs" Link="Unity\Flow\WalletWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\WalletRowLayout.cs" Link="Unity\Layout\WalletRowLayout.cs" />
     <!-- Nor has the card before a level: what it shows of the level and offers for it, its words, where its parts stand, and where a press in the museum leads. -->
@@ -104,6 +105,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceView.cs" Link="Unity\Flow\DeviceView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TesterMode.cs" Link="Unity\Flow\TesterMode.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SettingsWords.cs" Link="Unity\Flow\SettingsWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />

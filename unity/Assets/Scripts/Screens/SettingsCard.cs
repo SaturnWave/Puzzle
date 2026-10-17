@@ -21,7 +21,8 @@ namespace Puzzle.Client.Screens
 
     /// <summary>
     /// The settings card, as the design canvas draws it (SettingsTR), over a museum page: the brass nameplate
-    /// "Ayarlar", a row with a switch for every setting the build honours, a gilt rule under them, then the language,
+    /// "Ayarlar", a row with a switch for every setting the build honours (and the tester mode's while it holds, with
+    /// the coin for its mark: the canvas draws no such row), a gilt rule under them, then the language,
     /// which only says "Türkçe", and the rows that open the privacy card and the support card, each with its teal disc
     /// and mark; at its foot the player's id and the game's version, and under them what kind of build this is. It is
     /// opened by the gear of the wallet row and closed by its round button and by the way back; the two cards it opens
@@ -30,7 +31,8 @@ namespace Puzzle.Client.Screens
     /// <remarks>
     /// A switch slides when its row is pressed, and its owner keeps the setting at once; the card shows the settings
     /// it is told (<see cref="Tell(DeviceView)"/>). A whole row is what a finger presses, as large as the canvas
-    /// draws it, not only its switch or chevron.
+    /// draws it, not only its switch or chevron. The rows are those of the phone as the card came down: the tester
+    /// mode's row turned off stays, off, until the card is opened again.
     /// </remarks>
     public sealed class SettingsCard : IMuseumCard, IDeviceCard
     {
@@ -54,7 +56,8 @@ namespace Puzzle.Client.Screens
 
         private SettingsCard(Transform parent, ArtCatalogue art, DeviceView device)
         {
-            _layout = SettingsLayout.For(device.SettingRows.Count);
+            IReadOnlyList<DeviceSetting> switches = device.SettingRows;
+            _layout = SettingsLayout.For(switches.Count);
             _card = new HangingCard<MuseumPress>(
                 "Settings card", parent, art, new Vector2(SettingsLayout.BodyWidth, _layout.BodyHeight),
                 new CardNameplate(SettingsWords.Title, SettingsLayout.NameplateWidth, SettingsLayout.TitleSize), CardHanging.FromPinsInTheWall);
@@ -62,7 +65,7 @@ namespace Puzzle.Client.Screens
 
             foreach (SettingsRowPlace row in _layout.Rows)
             {
-                AddRow(row, device, art);
+                AddRow(row, switches, device.Settings, art);
             }
 
             _rules = PaintedShape.Create("Rules", _card.Content, art.PaintMaterial, DrawOrder.CardArt);
@@ -140,15 +143,15 @@ namespace Puzzle.Client.Screens
 
         private Vector3 RowMiddle(SettingsRowPlace row) => _card.At(row.Middle) + new Vector3((SettingsLayout.RowsLeft + SettingsLayout.RowsRight) / 2f, 0f, 0f);
 
-        private void AddRow(SettingsRowPlace row, DeviceView device, ArtCatalogue art)
+        private void AddRow(SettingsRowPlace row, IReadOnlyList<DeviceSetting> switches, DeviceSettings settings, ArtCatalogue art)
         {
             Vector3 middle = _card.At(row.Middle);
             switch (row.Kind)
             {
                 case SettingsRowKind.Switch:
-                    DeviceSetting setting = device.SettingRows[row.SwitchIndex];
+                    DeviceSetting setting = switches[row.SwitchIndex];
                     AddDiscAndName(row, MarkOf(setting), SettingsWords.NameOf(setting), art);
-                    var toggle = new Toggle($"{setting} switch", _card.Content, art, device.Settings.IsOn(setting), DrawOrder.CardDisc);
+                    var toggle = new Toggle($"{setting} switch", _card.Content, art, settings.IsOn(setting), DrawOrder.CardDisc);
                     toggle.Place(new Vector2(SettingsLayout.SwitchMiddle, middle.y));
                     _switches.Add(setting, toggle);
                     _card.Listen(new RowButton(row, toggle), new MuseumPress.FlipASwitch(setting));
@@ -243,6 +246,7 @@ namespace Puzzle.Client.Screens
         {
             DeviceSetting.Sound => GalleryArt.IconSound,
             DeviceSetting.Vibration => GalleryArt.IconBuzz,
+            DeviceSetting.TesterMode => GalleryArt.IconCoin,
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a mark."),
         };
 

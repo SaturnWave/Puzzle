@@ -8,7 +8,8 @@ namespace Puzzle.Core.Tests;
 /// <summary>
 /// The phone's own file, device.json, in what it holds: a random id of 128 bits in 32 lowercase hexadecimal digits,
 /// which the attempt records carry as the only identity, and since layout 2 the player's settings, which a file of
-/// layout 1 reads with as a first start has them. <c>DeviceDocument</c> is the Unity project's source file,
+/// layout 1 reads with as a first start has them; since layout 3 the tester mode among them, which a file of an
+/// earlier layout reads with off. <c>DeviceDocument</c> is the Unity project's source file,
 /// compiled into these tests; here System.Text.Json fills it, in the game Unity's reader does
 /// (unity/Assets/Editor/AttemptLogCheck.cs checks the real file with that one).
 /// </summary>
@@ -37,7 +38,7 @@ public class DeviceDocumentTests
 
         string written = JsonSerializer.Serialize(DeviceDocument.Of(id, settings), AsUnityMapsIt);
 
-        Assert.Equal("{\"version\":2,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true}}", written);
+        Assert.Equal("{\"version\":3,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false}}", written);
         var read = Assert.IsType<DeviceReading.Sound>(Read(written));
         Assert.Equal((id, settings), (read.Device, read.Settings));
     }
@@ -55,7 +56,7 @@ public class DeviceDocumentTests
     [Fact]
     public void A_document_of_this_layout_without_its_block_of_settings_reads_with_the_settings_of_a_first_start()
     {
-        var read = Assert.IsType<DeviceReading.Sound>(Read("{\"version\":2,\"id\":\"" + AnId + "\",\"settings\":null}"));
+        var read = Assert.IsType<DeviceReading.Sound>(Read("{\"version\":3,\"id\":\"" + AnId + "\",\"settings\":null}"));
 
         Assert.Equal(DeviceSettings.Default, read.Settings);
     }
@@ -97,11 +98,11 @@ public class DeviceDocumentTests
     public void A_later_layout_is_told_apart_and_its_id_and_settings_are_used_as_far_as_they_read()
     {
         var withItsId = Assert.IsType<DeviceReading.OfALaterGame>(
-            Read("{\"version\":3,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"music\":false}}"));
-        var withoutOne = Assert.IsType<DeviceReading.OfALaterGame>(Read("{\"version\":3,\"id\":\"a later spelling\"}"));
+            Read("{\"version\":4,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":true,\"music\":false}}"));
+        var withoutOne = Assert.IsType<DeviceReading.OfALaterGame>(Read("{\"version\":4,\"id\":\"a later spelling\"}"));
 
-        Assert.Equal((3, new DeviceId(AnId)), (withItsId.Version, withItsId.Device));
-        Assert.Equal(new DeviceSettings(sound: false, vibration: true), withItsId.Settings);
+        Assert.Equal((4, new DeviceId(AnId)), (withItsId.Version, withItsId.Device));
+        Assert.Equal(new DeviceSettings(sound: false, vibration: true, testerMode: true), withItsId.Settings);
         Assert.Null(withoutOne.Device);
     }
 }

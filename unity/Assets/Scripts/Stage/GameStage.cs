@@ -262,9 +262,9 @@ namespace Puzzle.Client.Stage
         /// <summary>What the stage asked of the player's wallet since it was last asked: a booster bought on the offer's card.</summary>
         private readonly List<WalletRequest> _asked = new List<WalletRequest>();
 
-        /// <summary>The boosters the player holds and the coins, as the stage was last told, less what it has used since.</summary>
+        /// <summary>The boosters the player holds, as the stage was last told, less what it has used since; and the wallet as it was told, whose coins the offer's card prices.</summary>
         private BoosterShelf _owned = BoosterShelf.Empty;
-        private Coins _coins = Coins.None;
+        private WalletView _wallet;
         private Arming _arming = Arming.None;
 
         /// <summary>The booster whose use the engine refused last, and until when on the stage's clock the pill says why; nothing while it says nothing of it.</summary>
@@ -592,7 +592,7 @@ namespace Puzzle.Client.Stage
             _extraMoves = extraMoves ?? throw new ArgumentNullException(nameof(extraMoves));
             _result?.ShowTerms(extraMoves);
             _owned = wallet.Shelf;
-            _coins = wallet.Coins;
+            _wallet = wallet;
             if (_arming is Arming.Armed armed && !_owned.Has(armed.Booster))
             {
                 PutTheBoosterDown(); // the wallet holds none of it any more
@@ -600,7 +600,7 @@ namespace Puzzle.Client.Stage
 
             if (_offer is OfferCard<OfferPress> offer && OfferedBooster is BoosterKind offered)
             {
-                offer.ShowAffordable(_shelfBrief.CanBuy(offered, _coins));
+                offer.ShowAffordable(_shelfBrief.CanBuy(offered, _wallet));
             }
 
             if (_armOnceHeld is BoosterKind bought && _owned.Has(bought))
@@ -1260,8 +1260,8 @@ namespace Puzzle.Client.Stage
             _controls.FingerGone();
             PutTheBoosterDown();
             ResultPanel card = OutOfMovesOffer.IsMadeIn(_game)
-                ? ResultPanel.OfferTheMoves(_root.transform, _art, _effectArt, _paintings, LevelResult.OfferTo(_game, _brief), TermsOfTheExtraMoves)
-                : ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.Of(_game, _brief), piecesWaiting);
+                ? ResultPanel.OfferTheMoves(_root.transform, _art, _effectArt, _paintings, LevelResult.OfferTo(_game, _brief), TermsOfTheExtraMoves, _wallet.Handling)
+                : ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.Of(_game, _brief), piecesWaiting, _wallet.Handling);
             HangACard(card, comesIn: Tempo.PauseBeforeResult, roomIsDark: false);
         }
 
@@ -1322,7 +1322,7 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0), comesIn: 0f, roomIsDark: false);
+            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0, _wallet.Handling), comesIn: 0f, roomIsDark: false);
         }
 
         /// <summary>
@@ -1459,7 +1459,7 @@ namespace Puzzle.Client.Stage
             _isCardDown = false;
             offer.FingerGone();
             _timeline.Add(0f, Tempo.CardGoesUp, offer.GoUp, offer.Dispose);
-            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, lost, piecesWaiting: 0), comesIn: Tempo.CardGoesUp, roomIsDark: true);
+            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, lost, piecesWaiting: 0, _wallet.Handling), comesIn: Tempo.CardGoesUp, roomIsDark: true);
         }
 
         /// <summary>
@@ -1769,7 +1769,7 @@ namespace Puzzle.Client.Stage
             var offer = new OfferCard<OfferPress>(
                 _root.transform, _art, booster, BoosterWords.NameOf(booster), PlayBoosterPictures.Of(booster), BoosterWords.OnTheCard(booster),
                 BoosterWords.CostsNoMove, _shelfBrief.PriceOf(booster), new OfferPress.Close(), new OfferPress.Buy(booster), raisedBy: 0);
-            offer.ShowAffordable(_shelfBrief.CanBuy(booster, _coins));
+            offer.ShowAffordable(_shelfBrief.CanBuy(booster, _wallet));
             if (_layout is ScreenLayout layout)
             {
                 offer.Card.Place(layout.PlaceOfACard(offer.Card.Width, offer.Card.Height), layout.View);

@@ -105,6 +105,14 @@ namespace Puzzle.Client.Flow
     /// wallet are in another file and are not touched.
     /// </para>
     /// <para>
+    /// In a test build the player's settings may hold the tester mode (<see cref="TesterMode"/>), turned on from the
+    /// support card: while it holds, the wallet is held unlimited (<see cref="WalletHandling.Unlimited"/>) wherever the
+    /// rules are asked of it here, by both ledgers, for the extra moves' terms and for the shop, and the stages are told
+    /// so with the wallet: no loss takes a life, no level waits for one, and no price leaves the coins. It holds from
+    /// the step after it is turned on to the step it is turned off, which is only ever done in the museum, so an
+    /// attempt is played wholly in it or wholly out of it, and its record says which.
+    /// </para>
+    /// <para>
     /// What the stage that is seen sounds (a turn's pops, a card coming down, a press, coins counted; Play/SoundScore.cs
     /// says which cue falls when) is played at every step through the session's cue player, as far as the player's
     /// settings are on at that step: sound off, nothing is heard; vibration off, nothing is felt. The game's cue player
@@ -388,14 +396,18 @@ namespace Puzzle.Client.Flow
         /// <summary>The level the player stands on.</summary>
         private LevelDefinition LevelToPlay => _levels[_progress.LevelIndexIn(_levels.Count)];
 
+        /// <summary>How the wallet is held to the rules now: unlimited while the tester mode holds, as the rules have it otherwise.</summary>
+        private WalletHandling HandlingNow => TesterMode.HandlingFor(_settings.Settings, _rules.Ads, _rules.Shop.RealMoney);
+
         /// <summary>The player's wallet as the rules have it now: lives that came back since the last loss are there.</summary>
-        private WalletView WalletNow => WalletView.Of(_progress.Wallet, _rules.Lives, _clock.Now);
+        private WalletView WalletNow => WalletView.Of(_progress.Wallet, _rules.Lives, _clock.Now, HandlingNow);
 
         /// <summary>What the extra moves cost the player now: coins, or one of the free ads left on the player's calendar day.</summary>
-        private ExtraMovesTerms ExtraMovesNow => _rules.ExtraMoves.TermsFor(_progress.Wallet, DayStamp.Of(_clock.Now));
+        private ExtraMovesTerms ExtraMovesNow =>
+            _rules.ExtraMoves.TermsFor(HandlingNow.ToPay(_rules.ExtraMoves.Price, _progress.Wallet), DayStamp.Of(_clock.Now));
 
         /// <summary>The shop and the gift as the rules have them for the player now, on their calendar day.</summary>
-        private ShopView ShopNow => ShopView.Of(_rules, _progress.Wallet, _clock.Now);
+        private ShopView ShopNow => ShopView.Of(_rules, _progress.Wallet, _clock.Now, HandlingNow);
 
         /// <summary>The phone as the settings card shows it now: the settings kept, the records there are, this build's versions and marks.</summary>
         private DeviceView DeviceNow => new DeviceView(
@@ -606,10 +618,11 @@ namespace Puzzle.Client.Flow
             }
 
             DateTimeOffset now = _clock.Now;
+            WalletHandling handling = HandlingNow;
             var answered = new List<(WalletRequest Request, WalletAnswer Answer)>();
             foreach (WalletRequest request in asked)
             {
-                WalletAnswer answer = _walletLedger.Answer(request, _progress.Wallet, now);
+                WalletAnswer answer = _walletLedger.Answer(request, _progress.Wallet, now, handling);
                 switch (answer)
                 {
                     case WalletAnswer.Received received:
@@ -744,33 +757,36 @@ namespace Puzzle.Client.Flow
             }
 
             DateTimeOffset now = _clock.Now;
+            WalletHandling handling = HandlingNow;
             bool hasEnded = false;
             foreach (AttemptEvent each in happened)
             {
-                _progress = _ledger.Apply(_progress, each, now);
+                _progress = _ledger.Apply(_progress, each, now, handling);
                 hasEnded |= each.EndsTheAttempt;
             }
 
             SaveProgress();
             if (hasEnded)
             {
-                RecordTheAttempt(board.Game, now);
+                RecordTheAttempt(board.Game, now, handling);
             }
         }
 
         /// <summary>
         /// Writes the record of the open attempt, which has just ended for good, to the phone's log: once, with the
-        /// game as it stood when it ended. A clock that was set back since the attempt began (a time sync) gives an
-        /// attempt that ends as it began rather than one that ends before. A log that cannot be written does not stop
-        /// the game: the record waits there and is written with the next one.
+        /// game as it stood when it ended, marked where it was played in the tester mode. A clock that was set back
+        /// since the attempt began (a time sync) gives an attempt that ends as it began rather than one that ends
+        /// before. A log that cannot be written does not stop the game: the record waits there and is written with the next one.
         /// </summary>
+        /// <param name="handling">How the wallet was held while the attempt was played; the tester mode cannot change on a board.</param>
         /// <exception cref="InvalidOperationException">The attempt's record was written before, or the attempt never began.</exception>
-        private void RecordTheAttempt(Game game, DateTimeOffset now)
+        private void RecordTheAttempt(Game game, DateTimeOffset now, WalletHandling handling)
         {
             AttemptStart start = _startOfTheBoard ?? throw new InvalidOperationException("An attempt ended a second time, or without having begun.");
             _startOfTheBoard = null;
             DateTimeOffset ended = now < start.StartedUtc ? start.StartedUtc : now;
-            var record = new AttemptRecord(start, AttemptOutcome.Of(game, ended), lab: null, game.Actions);
+            var record = new AttemptRecord(
+                start, AttemptOutcome.Of(game, ended), lab: null, game.Actions, testerMode: handling == WalletHandling.Unlimited);
             try
             {
                 _attempts.Append(record);

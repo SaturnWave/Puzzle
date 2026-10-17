@@ -14,8 +14,9 @@ namespace Puzzle.Tooling.Recording;
 /// takes no aim); a line without them reads as a record that keeps none. Just before them, the optional
 /// <c>shuffleRule</c> names the rule the shuffle booster followed by its number (<see cref="ShuffleBoosterRule"/>); it is
 /// left out for the first rule, so a line without it, as every line written before it existed, reads as played under
-/// that one. The Unity game writes the same lines by hand
-/// (unity/Assets/Scripts/Flow/AttemptLine.cs).
+/// that one. The optional <c>testerMode</c>, after the times, is written only as <c>true</c>, for an attempt the released game
+/// played in its tester mode; a line without it, as every line written before it existed, reads as one played outside it.
+/// The Unity game writes the same lines by hand (unity/Assets/Scripts/Flow/AttemptLine.cs).
 /// </summary>
 public static class AttemptRecordJson
 {
@@ -86,6 +87,7 @@ public static class AttemptRecordJson
             StartedUtc = start.StartedUtc,
             EndedUtc = outcome.EndedUtc,
             Lab = record.Lab is { } lab ? ToLabLine(lab) : null,
+            TesterMode = record.TesterMode ? true : null,
             ShuffleRule = start.ShuffleRule == ShuffleBoosterRule.RandomOrders ? null : (int)start.ShuffleRule,
             Actions = record.Actions?.Select(ToActionLine).ToArray(),
         };
@@ -111,7 +113,7 @@ public static class AttemptRecordJson
             line.BoostersUsed,
             line.EndedUtc);
         AttemptAction[]? actions = KnownRuleOf(line.ShuffleRule) is null ? null : ToActions(line.Actions);
-        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions);
+        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions, testerMode: line.TesterMode == true);
     }
 
     /// <summary>
@@ -257,6 +259,9 @@ public static class AttemptRecordJson
 
         /// <summary>Web lab only.</summary>
         public LabLine? Lab { get; init; }
+
+        /// <summary>True for an attempt played in the released game's tester mode; absent otherwise, never false.</summary>
+        public bool? TesterMode { get; init; }
 
         /// <summary>The number of the shuffle booster's rule; absent for the first rule, which every record played under before it existed.</summary>
         public int? ShuffleRule { get; init; }

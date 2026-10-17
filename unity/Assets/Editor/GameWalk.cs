@@ -162,6 +162,7 @@ namespace Puzzle.Client.EditorTools
             WalkABuy(standing, screen, studio);
             RunTheShopWalks(screen, studio);
             RunTheSettingsWalk(screen, studio);
+            RunTheTesterModeWalk(screen, studio);
         }
 
         /// <summary>

@@ -19,7 +19,8 @@ namespace Puzzle.Client.Screens
     /// pill "Dolu" or how long until the next life is back; at each pill's right end the green plus of "get more".
     /// The museum's stage owns the row, as it owns the navigation bar, so a page turns under it and the row stays.
     /// The coin, its pill and its plus are pressed to go to the shop; the heart, its pill and its plus to open the
-    /// lives card (no life is sold); the teal gear at the row's right end to open the settings card. Where everything
+    /// lives card (no life is sold); the teal gear at the row's right end to open the settings card. In the tester mode
+    /// the amount and the count on the heart are "∞" and the lives pill says "Test" (<see cref="WalletWords"/>). Where everything
     /// stands is <see cref="WalletRowLayout"/>'s; sizes are the canvas' points, drawn at the share of them the page
     /// has (<see cref="PageLayout.WalletRowScale"/>).
     /// </summary>
@@ -126,7 +127,7 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// Shows the wallet as it is now: the lives at once, the coins counting from the amount shown to the new
-        /// one when it differs from what the row was told before.
+        /// one when it differs from what the row was told before; the tester mode turned on or off at once.
         /// </summary>
         public void Tell(WalletView wallet)
         {
@@ -138,13 +139,14 @@ namespace Puzzle.Client.Screens
             }
 
             bool livesChanged = wallet.WithCoins(Wallet.Coins) != Wallet;
+            bool handlingChanged = wallet.Handling != Wallet.Handling;
             Wallet = wallet;
             if (livesChanged)
             {
                 ShowTheLives();
             }
 
-            ShowTheAmount(evenIfShown: false);
+            ShowTheAmount(evenIfShown: handlingChanged);
         }
 
         /// <summary>Moves the row's clock on: an amount that counts shows where it has got to.</summary>
@@ -190,16 +192,17 @@ namespace Puzzle.Client.Screens
             }
 
             _shown = now;
-            string words = WalletWords.Amount(now);
-            _amount.fontSize = AmountSize;
+            string words = WalletWords.AmountOnTheRow(Wallet, now);
+            Lettering.ReadyForAFigure(_amount, AmountSize, isASign: Wallet.IsUnlimited);
             _layout = WalletRowLayout.ForAnAmount(Lettering.WidthOf(_amount, words));
-            Lettering.SayWithin(_amount, words, AmountSize, _layout.AmountRoom);
+            Lettering.SayWithin(_amount, words, _amount.fontSize, _layout.AmountRoom);
             Arrange();
         }
 
         /// <summary>The count on the heart and the words in its pill, as the wallet the row was told of has them.</summary>
         private void ShowTheLives()
         {
+            Lettering.ReadyForAFigure(_heartCount, HeartCountSize, isASign: Wallet.IsUnlimited);
             Lettering.Say(_heartCount, WalletWords.OnTheHeart(Wallet));
             Lettering.SayWithin(_wait, WalletWords.LivesPill(Wallet), WaitSize, WalletRowLayout.WaitRoom);
             Arrange();
@@ -212,7 +215,8 @@ namespace Puzzle.Client.Screens
             _coinsPill.transform.localPosition = new Vector3(coinsPill.MiddleX, coinsPill.MiddleY, 0f);
             _coinsPill.size = new Vector2(coinsPill.Width + PillPictureMargin, PillPictureHeight);
             _coin.transform.localPosition = new Vector3(WalletRowLayout.Coin.MiddleX, WalletRowLayout.Coin.MiddleY, 0f);
-            _amount.transform.localPosition = new Vector3(_layout.AmountMiddle, WordsHeight(coinsPill, LetteringStyle.Figure, _amount), 0f);
+            float amountSize = Wallet.IsUnlimited ? AmountSize : _amount.fontSize; // a sign stands on the middle of the figures it stands for
+            _amount.transform.localPosition = new Vector3(_layout.AmountMiddle, WordsHeight(coinsPill, LetteringStyle.Figure, amountSize), 0f);
             _coinsPlus.Place(new Vector2(_layout.CoinsPlus.MiddleX, _layout.CoinsPlus.MiddleY));
 
             Box livesPill = _layout.LivesPillBox;
@@ -220,14 +224,14 @@ namespace Puzzle.Client.Screens
             _livesPill.size = new Vector2(livesPill.Width + PillPictureMargin, PillPictureHeight);
             _heart.transform.localPosition = new Vector3(_layout.Heart.MiddleX, _layout.Heart.MiddleY, 0f);
             _heartCount.transform.localPosition = new Vector3(
-                _layout.Heart.MiddleX, _layout.Heart.MiddleY + HeartCountOverMiddle - Lettering.FigureDrop(LetteringStyle.OnHeart) * _heartCount.fontSize, 0f);
-            _wait.transform.localPosition = new Vector3(_layout.WaitMiddle, WordsHeight(livesPill, LetteringStyle.Figure, _wait), 0f);
+                _layout.Heart.MiddleX, _layout.Heart.MiddleY + HeartCountOverMiddle - Lettering.FigureDrop(LetteringStyle.OnHeart) * HeartCountSize, 0f);
+            _wait.transform.localPosition = new Vector3(_layout.WaitMiddle, WordsHeight(livesPill, LetteringStyle.Figure, _wait.fontSize), 0f);
             _livesPlus.Place(new Vector2(_layout.LivesPlus.MiddleX, _layout.LivesPlus.MiddleY));
         }
 
         /// <summary>Where a pill's words stand upright: as the canvas centres them in the pill, figures seated as a stylesheet seats them.</summary>
-        private static float WordsHeight(Box pill, LetteringStyle style, TextMeshPro words) =>
-            pill.MiddleY - WordsUnderPillMiddle - Lettering.FigureDrop(style) * words.fontSize;
+        private static float WordsHeight(Box pill, LetteringStyle style, float size) =>
+            pill.MiddleY - WordsUnderPillMiddle - Lettering.FigureDrop(style) * size;
 
         /// <summary>Where a point of the row, in the canvas' points, lies on the page.</summary>
         private static Vector2 InTheLayout(PageLayout page, Vector2 onTheRow) =>

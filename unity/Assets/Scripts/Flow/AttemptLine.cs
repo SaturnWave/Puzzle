@@ -15,7 +15,8 @@ namespace Puzzle.Client.Flow
     /// wire form the tools read (Puzzle.Tooling's AttemptRecordJson, schema 1): the same fields in the same order, and an
     /// optional field that is absent is left out, never written as a zero. The line is built by hand: the game has no
     /// System.Text.Json, and Unity's JSON writer writes every field a document has. A record of the game has no lab
-    /// part; its move limit is the level's own, without what a start booster or the extra moves added.
+    /// part; its move limit is the level's own, without what a start booster or the extra moves added. An attempt
+    /// played in the tester mode says so (<c>"testerMode":true</c>); any other leaves the field out.
     /// This file has no Unity dependency, so the repository's tests compile it too and hold its lines against the
     /// tools' reader and writer.
     /// </summary>
@@ -57,6 +58,11 @@ namespace Puzzle.Client.Flow
             Text(line, "client", start.Client);
             Text(line, "startedUtc", Time(start.StartedUtc));
             Text(line, "endedUtc", Time(outcome.EndedUtc));
+            if (record.TesterMode)
+            {
+                Field(line, "testerMode").Append("true");
+            }
+
             if (start.ShuffleRule != ShuffleBoosterRule.RandomOrders)
             {
                 Number(line, "shuffleRule", (long)start.ShuffleRule);

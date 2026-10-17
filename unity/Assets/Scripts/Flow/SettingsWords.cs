@@ -39,11 +39,21 @@ namespace Puzzle.Client.Flow
         public const string RecordsKeptInMemory = "bu oturumda bellekte";
         public const string WhatToTell = "Bir sorun bildirirken oyuncu kimliğini ve sürümü söyle.";
 
+        /// <summary>
+        /// The question the support card asks after seven taps in a row on its version row, in a test build, the line
+        /// under it, and its two answers.
+        /// </summary>
+        public const string TesterModeQuestion = "Test modu açılsın mı?";
+        public const string TesterModeTells = "Altın ve can sınırsız olur; Ayarlar'dan kapatılır.";
+        public const string TurnTesterModeOn = "Aç";
+        public const string LeaveTesterModeOff = "Vazgeç";
+
         /// <summary>The name of a setting's row.</summary>
         public static string NameOf(DeviceSetting setting) => setting switch
         {
             DeviceSetting.Sound => "Ses",
             DeviceSetting.Vibration => "Titreşim",
+            DeviceSetting.TesterMode => "Test modu",
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a name."),
         };
 

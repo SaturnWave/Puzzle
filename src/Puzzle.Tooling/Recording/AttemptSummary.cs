@@ -13,6 +13,7 @@ namespace Puzzle.Tooling.Recording;
 /// <param name="MedianWinMoves">The median moves of the comparable attempts won within the limit; absent without such a win.</param>
 /// <param name="Assisted">Attempts left out because help shaped them.</param>
 /// <param name="ChosenSeeds">Attempts left out because their seeds were chosen by hand.</param>
+/// <param name="TesterMode">Attempts left out because the released game played them in its tester mode.</param>
 /// <param name="LastPlayedUtc">When the latest attempt ended.</param>
 public sealed record LevelAttempts(
     LevelId Level,
@@ -23,13 +24,15 @@ public sealed record LevelAttempts(
     double? MedianWinMoves,
     int Assisted,
     int ChosenSeeds,
+    int TesterMode,
     DateTimeOffset LastPlayedUtc);
 
 /// <param name="Levels">Each level version and move limit played, the most recently played first.</param>
 /// <param name="Overall">Every comparable attempt, of every level, without bot rates.</param>
 /// <param name="Assisted">Attempts left out of the comparison because help shaped them.</param>
 /// <param name="ChosenSeeds">Attempts left out of the comparison because their seeds were chosen by hand.</param>
-public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, ComparisonFigures Overall, int Assisted, int ChosenSeeds)
+/// <param name="TesterMode">Attempts left out of the comparison because the released game played them in its tester mode.</param>
+public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, ComparisonFigures Overall, int Assisted, int ChosenSeeds, int TesterMode)
 {
     /// <summary>
     /// Sums <paramref name="records"/> up by level version and move limit: what the players did, before any bot plays.
@@ -49,7 +52,8 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
             levels,
             ComparisonFigures.Of(byStanding[AttemptStanding.Comparable].ToArray(), []),
             byStanding[AttemptStanding.Assisted].Count(),
-            byStanding[AttemptStanding.ChosenSeeds].Count());
+            byStanding[AttemptStanding.ChosenSeeds].Count(),
+            byStanding[AttemptStanding.TesterMode].Count());
     }
 
     private static LevelAttempts SummarizeLevel(LevelId level, ContentVersion contentVersion, int moveLimit, IReadOnlyList<AttemptRecord> records)
@@ -68,6 +72,7 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
             AttemptCounting.MedianWinMoves(comparable),
             byStanding[AttemptStanding.Assisted].Count(),
             byStanding[AttemptStanding.ChosenSeeds].Count(),
+            byStanding[AttemptStanding.TesterMode].Count(),
             latest.Outcome.EndedUtc);
     }
 }

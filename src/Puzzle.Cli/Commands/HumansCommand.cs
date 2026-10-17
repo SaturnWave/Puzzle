@@ -134,7 +134,7 @@ internal static class HumansCommand
     {
         RecordTally tally = report.Records;
         Console.WriteLine(
-            $"records: {tally.Total} read, {tally.Compared} compared; left out: {tally.Assisted} assisted, "
+            $"records: {tally.Total} read, {tally.Compared} compared; left out: {tally.Assisted} assisted, {tally.TesterMode} in the game's tester mode, "
             + $"{tally.ChosenSeeds} hand-picked seeds, {tally.UnknownLevel} not in the level folder (or changed since), {unreadableLines} unreadable lines");
         Console.WriteLine($"bots: {runs} games per profile on each attempt's own seeds, at its move limit");
         string header = $"{"level",6} {"limit",5} {"finished",8} {"abandoned",9} {"humans",7} {"low",7} "

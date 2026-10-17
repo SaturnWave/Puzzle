@@ -32,6 +32,9 @@ namespace Puzzle.Client.Gallery
         /// <summary>The cream of lettering that stands on the gallery's dark teal with no plate under it.</summary>
         public static readonly Color CreamOnTeal = Tint.Of(0xFFF4C4);
 
+        /// <summary>How much larger than the figures a sign the typefaces draw small is set where it stands for a number (<see cref="ReadyForAFigure"/>).</summary>
+        public const float SignLarger = 1.8f;
+
         /// <summary>TextMesh Pro counts the room between letters and between words in hundredths of the type size.</summary>
         private const float HundredthsOfTheTypeSize = 100f;
 
@@ -114,6 +117,18 @@ namespace Puzzle.Client.Gallery
         {
             line.color = colour;
             line.ForceMeshUpdate();
+        }
+
+        /// <summary>
+        /// Readies a line laid out for figures of a size to say a number, centred on its capitals as every line is, or
+        /// a sign that the game's typefaces draw as small and as low as a small letter ("∞", the tester mode's coins and
+        /// lives): set <see cref="SignLarger"/> times larger and centred on its own drawing, it stands about as large
+        /// as the figures and on their middle. The line keeps the figures' place; say the words after this.
+        /// </summary>
+        public static void ReadyForAFigure(TextMeshPro line, float figureSize, bool isASign)
+        {
+            line.fontSize = isASign ? figureSize * SignLarger : figureSize;
+            line.verticalAlignment = isASign ? VerticalAlignmentOptions.Geometry : VerticalAlignmentOptions.Capline;
         }
 
         /// <summary>

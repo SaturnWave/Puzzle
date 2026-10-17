@@ -44,8 +44,9 @@ namespace Puzzle.Client.EditorTools
     /// attempt in which every booster of play is used by touches on the shelf, the first of them before any move, is
     /// played to its end by bot: the booster counts as the first move, every one is spent, and its line names the
     /// shuffle rule of today. An attempt with all three start boosters, every booster of play and the extra moves,
-    /// is played on the engine alone and logged the same way. A new player on the spatula's level is given its three,
-    /// once, in the save file. Last, the file is read back with Unity's reader, and every record is played again on
+    /// is played on the engine alone and logged the same way. An attempt played in the tester mode, left after a move,
+    /// takes no life and no coin and its line alone is marked ("testerMode":true). A new player on the spatula's level
+    /// is given its three, once, in the save file. Last, the file is read back with Unity's reader, and every record is played again on
     /// the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves used and goals;
     /// and the records written before the shuffle rule changed (tests/fixtures/attempt-records.first-shuffle-rule.jsonl),
     /// which name no rule, are read the same way and replay by the first rule to their end. It works in a folder of its
@@ -74,7 +75,7 @@ namespace Puzzle.Client.EditorTools
         private const ulong BotStream = 3;
 
         /// <summary>A later game's device file, with an id and settings this game reads and something it does not know.</summary>
-        private const string LaterDeviceDocument = "{\"version\":3,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"music\":false}}";
+        private const string LaterDeviceDocument = "{\"version\":4,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"music\":false}}";
 
         /// <summary>Records the game wrote before the shuffle booster's rule changed, which name no rule.</summary>
         private const string FirstRuleRecords = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
@@ -108,6 +109,7 @@ namespace Puzzle.Client.EditorTools
                 PlayWithEveryBoosterOnTheShelf(bench, ended);
                 PlayThroughTheOffer(bench, ended);
                 PlayWithEveryBoosterOnTheEngine(bench, ended);
+                AnAttemptInTheTesterModeIsMarkedAndCostsNothing(bench, ended);
                 ANewPlayerOnTheSpatulasLevelIsGivenItsThreeOnce(bench);
 
                 int replayed = EveryLineReadsBackAndReplaysToTheEndSeen(bench, ended);
@@ -137,7 +139,7 @@ namespace Puzzle.Client.EditorTools
         {
             DeviceId made = DeviceFile.LoadOrMake(Folder).Device;
             string written = File.ReadAllText(Path.Combine(Folder, DeviceFile.FileName));
-            Require(written == "{\"version\":2,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true}}", $"the first start wrote the device file as {written}");
+            Require(written == "{\"version\":3,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false}}", $"the first start wrote the device file as {written}");
             DeviceFile afterARestart = DeviceFile.LoadOrMake(Folder);
             Require(afterARestart.Device.Equals(made), $"a restart read the id {afterARestart.Device}, not {made}");
             Require(afterARestart.Settings.Equals(DeviceSettings.Default), $"a restart read the settings {afterARestart.Settings}, not a first start's");
@@ -169,7 +171,7 @@ namespace Puzzle.Client.EditorTools
             Require(read.Device.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a" && read.Settings.Equals(DeviceSettings.Default), $"a file of the first layout read as {read.Settings} of {read.Device}");
             Require(File.ReadAllText(olderFile) == firstLayout, "a file of the first layout was written before anything was changed");
             read.Keep(quiet);
-            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":2,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
+            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":3,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
         }
 
         /// <summary>
@@ -235,9 +237,9 @@ namespace Puzzle.Client.EditorTools
             Require(!kept.Settings.Sound, $"a later game's settings read as {kept.Settings}");
             kept.Keep(DeviceSettings.Default);
             Require(File.ReadAllText(laterFile) == LaterDeviceDocument, "a setting changed on a later game's device file was written over it");
-            File.WriteAllText(laterFile, "{\"version\":3,\"id\":\"a later spelling\"}");
+            File.WriteAllText(laterFile, "{\"version\":4,\"id\":\"a later spelling\"}");
             DeviceFile.LoadOrMake(later);
-            Require(File.ReadAllText(laterFile) == "{\"version\":3,\"id\":\"a later spelling\"}", "a later game's device file was written over");
+            Require(File.ReadAllText(laterFile) == "{\"version\":4,\"id\":\"a later spelling\"}", "a later game's device file was written over");
         }
 
         /// <summary>
@@ -298,6 +300,35 @@ namespace Puzzle.Client.EditorTools
                 Leave(session);
                 Require(LinesInTheLog() == linesBefore + 1, "no line was written when a level was left after a move");
             }
+        }
+
+        /// <summary>
+        /// The game's own session at a board with the tester mode on in its settings: a move played and the level left
+        /// after it take neither a life nor a coin, and the attempt's line is marked; no line before it is.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">A life or a coin went, the line is not marked, or a line before it is.</exception>
+        private static void AnAttemptInTheTesterModeIsMarkedAndCostsNothing(Bench bench, List<Ending> ended)
+        {
+            string[] before = File.Exists(LogPath) ? File.ReadAllLines(LogPath) : Array.Empty<string>();
+            Require(before.All(line => !line.Contains("\"testerMode\"")), "a line played outside the tester mode is marked as played in it");
+
+            var testerMode = new SettingsInMemory(DeviceSettings.Default.With(DeviceSetting.TesterMode, isOn: true));
+            using GameSession session = bench.SessionAt(LeftLevel, attempt: 0, testerMode);
+            StoryStudio.AdvanceUntilSettled(session);
+            Wallet wallet = session.Progress.Wallet;
+            Game game = session.Stage.Game;
+            Move move = Bot(SkillProfile.Expert.Name).ChooseMove(game, game.FindLegalMoves(), new Rng(BotSeed, BotStream));
+            Require(session.TryPlay(move) && game.Status == GameStatus.Playing, $"the move {move} of level {LeftLevel} was refused or decided the level");
+            StoryStudio.AdvanceUntilSettled(session);
+            ended.Add(Ending.Of(game, $"level {LeftLevel} left after {game.MovesUsed} move in the tester mode").InTheTesterMode());
+            Leave(session);
+
+            string[] after = File.ReadAllLines(LogPath);
+            Require(after.Length == before.Length + 1, "no line was written when a level was left after a move in the tester mode");
+            Require(after[after.Length - 1].Contains("\"testerMode\":true"), $"the line of an attempt in the tester mode is not marked: {after[after.Length - 1]}");
+            Require(
+                session.Progress.Wallet.Lives.Equals(wallet.Lives) && session.Progress.Wallet.Coins == wallet.Coins,
+                $"leaving after a move in the tester mode left the wallet at {session.Progress.Wallet}, from {wallet}");
         }
 
         /// <summary>
@@ -594,6 +625,7 @@ namespace Puzzle.Client.EditorTools
 
                 Ending replayed = Ending.Of(AttemptReplay.Of(record, level), ended[index].What);
                 Require(replayed.Equals(ended[index]), $"line {index + 1} replays to {replayed}, and the attempt ended at {ended[index]}");
+                Require(record.TesterMode == ended[index].IsInTheTesterMode, $"line {index + 1} reads back {(record.TesterMode ? "in" : "out of")} the tester mode: {lines[index]}");
             }
 
             return lines.Length;
@@ -658,6 +690,16 @@ namespace Puzzle.Client.EditorTools
             public GameSession SessionInTheHall(int levelNumber) =>
                 new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(StoryStudio.StandingOn(Level(levelNumber), _levels)), Log, Screen, SessionOpening.InTheMuseum);
 
+            /// <summary>The game's own session at the board of a level, for a new player who has tried it so many times before, on the check's log, with the settings of a store.</summary>
+            public GameSession SessionAt(int levelNumber, int attempt, ISettingsStore settings)
+            {
+                PlayerProgress standing = StoryStudio.StandingOn(Level(levelNumber), _levels);
+                var progress = new PlayerProgress(standing.LevelsWon, attempt).WithWallet(standing.Wallet);
+                return new GameSession(
+                    _levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(progress), Log, settings, DeviceAbilities.OfThisBuild,
+                    CuePlayer.Silent, Screen, SessionOpening.AtTheBoard);
+            }
+
             /// <summary>The game's own session at the board of a level, for a new player who has tried it so many times before, on the check's log.</summary>
             public GameSession SessionAt(int levelNumber, int attempt)
             {
@@ -677,8 +719,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>Where a game stood when its attempt ended, as far as a replay must come to the same.</summary>
         private sealed class Ending : IEquatable<Ending>
         {
-            private Ending(int level, GameStatus status, int movesUsed, string goalsDone, ulong board, int actions, string what)
+            private Ending(int level, GameStatus status, int movesUsed, string goalsDone, ulong board, int actions, string what, bool isInTheTesterMode = false)
             {
+                IsInTheTesterMode = isInTheTesterMode;
                 Level = level;
                 Status = status;
                 MovesUsed = movesUsed;
@@ -702,6 +745,12 @@ namespace Puzzle.Client.EditorTools
 
             /// <summary>The attempt in words, for the log.</summary>
             public string What { get; }
+
+            /// <summary>True for an attempt played in the tester mode, whose line must say so; no part of where the game stood.</summary>
+            public bool IsInTheTesterMode { get; }
+
+            /// <summary>The same ending, of an attempt played in the tester mode.</summary>
+            public Ending InTheTesterMode() => new Ending(Level, Status, MovesUsed, GoalsDone, Board, Actions, What, isInTheTesterMode: true);
 
             public static Ending Of(Game game, string what) => new Ending(
                 game.Level.Id.Value,
@@ -751,6 +800,10 @@ namespace Puzzle.Client.EditorTools
         public string client = string.Empty;
         public string startedUtc = string.Empty;
         public string endedUtc = string.Empty;
+
+        /// <summary>True for an attempt played in the tester mode; Unity's reader makes false of a line that does not say so, as every other line.</summary>
+        public bool testerMode;
+
         /// <summary>The shuffle booster's rule by its number; Unity's reader makes 0 of a line that names none, which is the first rule.</summary>
         public int shuffleRule;
         public ActionLineDocument[] actions = Array.Empty<ActionLineDocument>();
@@ -777,7 +830,7 @@ namespace Puzzle.Client.EditorTools
                 extraMovesBought,
                 boostersUsed,
                 Instant(endedUtc));
-            return new AttemptRecord(start, outcome, lab: null, actions.Select(action => action.ToAction()).ToArray());
+            return new AttemptRecord(start, outcome, lab: null, actions.Select(action => action.ToAction()).ToArray(), testerMode);
         }
 
         private static DateTimeOffset Instant(string text) => DateTimeOffset.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.None);

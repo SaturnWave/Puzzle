@@ -96,7 +96,9 @@ namespace Puzzle.Client.Flow
     /// economy and at the time of the player's clock: a booster or a set bought for its price, a pack of coins that a
     /// test build does not sell, the coins of an ad that was watched, the daily reward; and the reward of a painting,
     /// given in the same change as the piece that completes it. A request the rules refuse changes nothing and says
-    /// why. Whoever holds the progress keeps what comes back and saves it at once.
+    /// why. In the tester mode (<see cref="WalletHandling.Unlimited"/>) a booster or a set is bought by the same rules
+    /// and its price never leaves the coins; a pack, an ad and the daily reward are as ever. Whoever holds the progress
+    /// keeps what comes back and saves it at once.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class WalletLedger
@@ -108,17 +110,23 @@ namespace Puzzle.Client.Flow
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
         }
 
-        /// <summary>The rules' answer to a request made at <paramref name="now"/> on the player's clock.</summary>
+        /// <summary>The rules' answer to a request made at <paramref name="now"/> on the player's clock, for a wallet held as the rules have it.</summary>
         /// <exception cref="ArgumentException">A set or a pack is asked for that is not the shop's: a price comes from the settings, never from a caller.</exception>
-        public WalletAnswer Answer(WalletRequest request, Wallet wallet, DateTimeOffset now)
+        public WalletAnswer Answer(WalletRequest request, Wallet wallet, DateTimeOffset now) => Answer(request, wallet, now, WalletHandling.Normal);
+
+        /// <summary>The rules' answer to a request made at <paramref name="now"/> on the player's clock, for a wallet held as the client holds it.</summary>
+        /// <exception cref="ArgumentException">A set or a pack is asked for that is not the shop's: a price comes from the settings, never from a caller.</exception>
+        public WalletAnswer Answer(WalletRequest request, Wallet wallet, DateTimeOffset now, WalletHandling handling)
         {
             DayStamp today = DayStamp.Of(now);
             switch (request)
             {
                 case WalletRequest.BuyABooster buy:
-                    return AnswerTo(_rules.Shop.BuyOne(buy.Booster, wallet), new Reward(Coins.None, new[] { buy.Booster }));
+                    Purchase one = handling.Buy(_rules.Shop.PriceOf(buy.Booster), wallet, paying => _rules.Shop.BuyOne(buy.Booster, paying));
+                    return AnswerTo(one, new Reward(Coins.None, new[] { buy.Booster }));
                 case WalletRequest.BuyASet buy:
-                    return AnswerTo(_rules.Shop.Buy(buy.Set, wallet), new Reward(Coins.None, EachOf(buy.Set.Boosters)));
+                    Purchase set = handling.Buy(buy.Set.Price, wallet, paying => _rules.Shop.Buy(buy.Set, paying));
+                    return AnswerTo(set, new Reward(Coins.None, EachOf(buy.Set.Boosters)));
                 case WalletRequest.BuyACoinPack buy:
                     if (!_rules.Shop.CoinPacks.Contains(buy.Pack))
                     {

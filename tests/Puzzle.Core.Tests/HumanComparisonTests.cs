@@ -40,7 +40,7 @@ public class HumanComparisonTests
 
         HumanBotReport report = HumanBotComparison.Compare(log.ReadAll().Records, new[] { level }, botRuns: 2);
 
-        Assert.Equal(new RecordTally(Compared: 6, Assisted: 2, ChosenSeeds: 1, UnknownLevel: 1), report.Records);
+        Assert.Equal(new RecordTally(Compared: 6, Assisted: 2, ChosenSeeds: 1, UnknownLevel: 1, TesterMode: 0), report.Records);
         LevelComparison row = Assert.Single(report.Levels);
         Assert.Equal(level.Id, row.Level);
         Assert.Equal(30, row.MoveLimit);

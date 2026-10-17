@@ -310,6 +310,9 @@ namespace Puzzle.Client.Flow
         /// <summary>On the pill of a card whose heart says what a life is: one life fewer.</summary>
         public const string OneLifeFewer = "–1";
 
+        /// <summary>Where a card would say a life goes, in the tester mode, which takes none (<see cref="WalletHandling.Unlimited"/>).</summary>
+        public const string NoLifeInTheTesterMode = "Test modu · can gitmez";
+
         /// <summary>The nameplate: what happened.</summary>
         public static string Title(LevelResult result) => result switch
         {
@@ -374,6 +377,25 @@ namespace Puzzle.Client.Flow
 
         /// <summary>True when the card's heart stands on a pill that says one life fewer: the attempt costs, or cost, a life.</summary>
         public static bool CostsALife(LevelResult result) => !(result is LevelResult.Won || result is LevelResult.Leaving { HasPlayed: false });
+
+        /// <summary>
+        /// Beside the heart of a card, for a wallet held as the client holds it: as <see cref="Lives(LevelResult)"/>
+        /// says, but in the tester mode, where the attempt would have cost a life and costs none, that it costs none.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The game is won: its card says nothing of lives.</exception>
+        public static string Lives(LevelResult result, WalletHandling handling) =>
+            CostsALife(result) && !CostsALife(result, handling) ? NoLifeInTheTesterMode : Lives(result);
+
+        /// <summary>True when the card's heart stands on a pill that says one life fewer, for a wallet held as the client holds it: never in the tester mode.</summary>
+        public static bool CostsALife(LevelResult result, WalletHandling handling) => handling switch
+        {
+            WalletHandling.Normal => CostsALife(result),
+            WalletHandling.Unlimited => false,
+            _ => throw new ArgumentOutOfRangeException(nameof(handling), handling, "A way of holding the wallet the card does not know."),
+        };
+
+        /// <summary>What giving up the offer of extra moves costs, beside the heart after "Vazgeç": a life; nothing in the tester mode, where "Vazgeç" stands alone.</summary>
+        public static string? GiveUpCosts(LevelResult.OutOfMoves offer, WalletHandling handling) => CostsALife(offer, handling) ? Lives(offer) : null;
 
         /// <summary>The offer's green button: the moves it gives while the coins cover their price; that they do not, where they do not (the button is dimmed then).</summary>
         public static string TakeTheMovesForCoins(ExtraMovesTerms terms) => terms.CoinsCoverIt ? $"+{ExtraMovesOffer.Moves} hamle" : LevelStartWords.CoinsShort;

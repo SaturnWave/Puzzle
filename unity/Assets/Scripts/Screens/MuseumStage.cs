@@ -97,7 +97,9 @@ namespace Puzzle.Client.Screens
     /// The gear of the wallet row brings the settings card down, whose rows open the privacy card and the support card
     /// in front of it. What those ask of the phone (a setting turned, the attempt records deleted after a question)
     /// the stage passes on to its owner too (<see cref="TakeWhatWasAskedOfThePhone"/>), who keeps it and tells the
-    /// stage the phone as it is after it (<see cref="Tell(DeviceView)"/>).
+    /// stage the phone as it is after it (<see cref="Tell(DeviceView)"/>). In a test build the support card's version
+    /// row asks, after seven taps in a row, whether the tester mode is to be turned on; its "Aç" asks the owner to turn
+    /// it on and takes every card up, so the row shows at once the wallet the owner tells after it, without an end.
     /// </para>
     /// <para>
     /// The card before a level is the one door into it. The play button opens it, or, for a player without a life,
@@ -354,8 +356,19 @@ namespace Puzzle.Client.Screens
 
         public Vector2? ConfirmDeletePixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.ConfirmButtonMiddle) : null;
 
-        /// <summary>The pixel in the middle of the support card's "Tamam"; nothing while that card is not down in front.</summary>
+        /// <summary>The pixel in the middle of the support card's "Tamam"; nothing while that card is not down in front, or asks about the tester mode.</summary>
         public Vector2? SupportDonePixel => TopCard is SupportCard support ? PixelOnTheCard(support.DoneButtonMiddle) : null;
+
+        /// <summary>The pixel in the middle of the support card's version row; nothing while that card is not down in front, or its row opens no door.</summary>
+        public Vector2? VersionRowPixel => TopCard is SupportCard support ? PixelOnTheCard(support.VersionRowMiddle) : null;
+
+        /// <summary>True while the support card in front asks whether the tester mode is to be turned on.</summary>
+        public bool AsksAboutTheTesterMode => TopCard is SupportCard { AsksAboutTheTesterMode: true };
+
+        /// <summary>The pixels in the middle of the tester mode question's "Vazgeç" and "Aç"; nothing while the question is not asked in front.</summary>
+        public Vector2? LeaveTheTesterModeOffPixel => TopCard is SupportCard support ? PixelOnTheCard(support.LeaveOffButtonMiddle) : null;
+
+        public Vector2? TurnOnTheTesterModePixel => TopCard is SupportCard support ? PixelOnTheCard(support.TurnOnButtonMiddle) : null;
 
         /// <summary>The museum listens to the player while nothing of it moves and the player has not left it.</summary>
         private bool ListensToThePlayer => IsSettled && !_isLeaving && PlayerLeftFor == null;
@@ -680,6 +693,18 @@ namespace Puzzle.Client.Screens
                     // The question goes at once; the count the card shows next is what the owner tells after the deletion.
                     privacy.TakeTheQuestionBack();
                     _askedOfThePhone.Add(new DeviceRequest.DeleteTheRecords());
+                    break;
+                case MuseumPress.TapTheVersion _ when TopCard is SupportCard support:
+                    support.CountATap();
+                    break;
+                case MuseumPress.LeaveTheTesterModeOff _ when TopCard is SupportCard support:
+                    support.TakeTheQuestionBack();
+                    break;
+                case MuseumPress.TurnOnTheTesterMode _ when TopCard is SupportCard:
+                    // The owner keeps the mode and tells the wallet without an end; once every card is up, the page is the player's again.
+                    _askedOfThePhone.Add(new DeviceRequest.TurnASetting(DeviceSetting.TesterMode, isOn: true));
+                    TakeEveryCardUp();
+                    _turnsToOnceTheCardsAreUp = Showing;
                     break;
                 case MuseumPress.Visit visit when _cards.Count > 0:
                     // A card's way to the shop: every card goes up, and then the page turns.

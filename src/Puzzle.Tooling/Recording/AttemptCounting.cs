@@ -16,6 +16,12 @@ public enum AttemptStanding
     /// replay past the seed pool, a device the browser does not keep). Either may replay a game already seen.
     /// </summary>
     ChosenSeeds,
+
+    /// <summary>
+    /// Played in the released game's tester mode, with coins and lives that have no end: the owner's testing, where a
+    /// loss costs nothing, not a player's play.
+    /// </summary>
+    TesterMode,
 }
 
 /// <summary>How an attempt stands at its move limit.</summary>
@@ -34,9 +40,14 @@ public enum LimitVerdict
 /// </summary>
 public static class AttemptCounting
 {
-    /// <summary>The standing of <paramref name="record"/>; help outranks hand-chosen seeds.</summary>
+    /// <summary>The standing of <paramref name="record"/>; the tester mode outranks help, and help outranks hand-chosen seeds.</summary>
     public static AttemptStanding Standing(AttemptRecord record)
     {
+        if (record.TesterMode)
+        {
+            return AttemptStanding.TesterMode;
+        }
+
         bool helped = record.Lab?.IsAssisted == true || record.Outcome.BoostersUsed.Count > 0;
         if (helped)
         {

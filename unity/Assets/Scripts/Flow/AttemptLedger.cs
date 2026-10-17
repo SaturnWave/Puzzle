@@ -138,7 +138,9 @@ namespace Puzzle.Client.Flow
     /// the engine accepted leaves the shelf; extra moves are paid for; a win moves the player on and pays its coins in
     /// the same change, so one save holds both, with the gift of every booster used during play that opens on the
     /// level it leads to; a loss for good, and leaving a level after a move, cost a life. Leaving before the first
-    /// move costs nothing. Closing the game in the middle of a level is no event and costs nothing either.
+    /// move costs nothing. Closing the game in the middle of a level is no event and costs nothing either. In the
+    /// tester mode (<see cref="WalletHandling.Unlimited"/>) no loss costs a life and the extra moves paid with coins
+    /// leave the coins as they were; everything else is as the rules have it.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class AttemptLedger
@@ -159,12 +161,19 @@ namespace Puzzle.Client.Flow
             _levelCount = levelCount;
         }
 
-        /// <summary>The progress after <paramref name="happened"/>, which happened at <paramref name="now"/> on the player's clock.</summary>
+        /// <summary>The progress after <paramref name="happened"/>, which happened at <paramref name="now"/> on the player's clock, for a wallet held as the rules have it.</summary>
         /// <exception cref="InvalidOperationException">
         /// The event spends what the player does not have (a booster not held, extra moves the coins do not cover or
         /// an ad the day has none of left): the screen that offered it should not have.
         /// </exception>
-        public PlayerProgress Apply(PlayerProgress progress, AttemptEvent happened, DateTimeOffset now)
+        public PlayerProgress Apply(PlayerProgress progress, AttemptEvent happened, DateTimeOffset now) => Apply(progress, happened, now, WalletHandling.Normal);
+
+        /// <summary>The progress after <paramref name="happened"/>, which happened at <paramref name="now"/> on the player's clock, for a wallet held as the client holds it.</summary>
+        /// <exception cref="InvalidOperationException">
+        /// The event spends what the player does not have (a booster not held, extra moves the coins do not cover or
+        /// an ad the day has none of left): the screen that offered it should not have.
+        /// </exception>
+        public PlayerProgress Apply(PlayerProgress progress, AttemptEvent happened, DateTimeOffset now, WalletHandling handling)
         {
             Wallet wallet = progress.Wallet;
             switch (happened)
@@ -174,12 +183,12 @@ namespace Puzzle.Client.Flow
                 case AttemptEvent.BoosterAccepted used:
                     return progress.WithWallet(wallet.WithShelf(wallet.Shelf.WithOneFewer(used.Booster)));
                 case AttemptEvent.ExtraMovesTaken taken:
-                    return progress.WithWallet(PaidForTheExtraMoves(wallet, taken.PaidBy, now));
+                    return progress.WithWallet(PaidForTheExtraMoves(wallet, taken.PaidBy, now, handling));
                 case AttemptEvent.Won won:
                     return WithTheOpeningGiftsDue(progress.WithLevelWon(_levelCount).WithWallet(wallet.WithCoins(wallet.Coins + _rules.Win.Of(won.MovesLeft))));
                 case AttemptEvent.LostForGood _:
                 case AttemptEvent.Left { AfterAMove: true }:
-                    return progress.WithWallet(wallet.WithLives(OneLifeLess(wallet.Lives, now)));
+                    return handling == WalletHandling.Unlimited ? progress : progress.WithWallet(wallet.WithLives(OneLifeLess(wallet.Lives, now)));
                 case AttemptEvent.Left _:
                     return progress;
                 default:
@@ -199,12 +208,12 @@ namespace Puzzle.Client.Flow
             return given.Equals(progress.Wallet) ? progress : progress.WithWallet(given);
         }
 
-        private Wallet PaidForTheExtraMoves(Wallet wallet, ExtraMovesPayment paidBy, DateTimeOffset now)
+        private Wallet PaidForTheExtraMoves(Wallet wallet, ExtraMovesPayment paidBy, DateTimeOffset now, WalletHandling handling)
         {
             switch (paidBy)
             {
                 case ExtraMovesPayment.ByCoins:
-                    return _rules.ExtraMoves.PaidWithCoins(wallet) is Purchase.Bought bought
+                    return handling.Buy(_rules.ExtraMoves.Price, wallet, _rules.ExtraMoves.PaidWithCoins) is Purchase.Bought bought
                         ? bought.Wallet
                         : throw new InvalidOperationException($"Extra moves were given for {_rules.ExtraMoves.Price} coins, and the player has {wallet.Coins}.");
                 case ExtraMovesPayment.ByAd:

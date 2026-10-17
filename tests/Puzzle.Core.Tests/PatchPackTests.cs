@@ -326,6 +326,6 @@ public class PatchPackTests
         Assert.Equal(
             new[] { (1, 2), (2, 0) },
             summary.Levels.OrderBy(level => level.ContentVersion.Value).Select(level => (level.ContentVersion.Value, level.Play.Finished - level.Play.Wins)).ToArray());
-        Assert.Equal(new RecordTally(Compared: 1, Assisted: 0, ChosenSeeds: 0, UnknownLevel: 2), againstThePatchedLevel.Records);
+        Assert.Equal(new RecordTally(Compared: 1, Assisted: 0, ChosenSeeds: 0, UnknownLevel: 2, TesterMode: 0), againstThePatchedLevel.Records);
     }
 }

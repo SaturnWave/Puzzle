@@ -19,8 +19,13 @@ namespace Puzzle.Core.Recording
         /// What the player did, in order (<see cref="Engine.Game.Actions"/>), for a replay (<see cref="AttemptReplay"/>);
         /// absent in the lab's records, whose moves replay them, and in records written before the list existed.
         /// </param>
+        /// <param name="testerMode">
+        /// True for an attempt the released game played in its tester mode, with coins and lives that have no end: such
+        /// an attempt is the owner's testing, not a player's, and is left out of what records are counted for. False
+        /// for every other attempt, and for every record written before the mark existed.
+        /// </param>
         /// <exception cref="ArgumentException">A part is missing, or the attempt ends before it starts.</exception>
-        public AttemptRecord(AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null)
+        public AttemptRecord(AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false)
         {
             Start = start ?? throw new ArgumentNullException(nameof(start));
             Outcome = outcome ?? throw new ArgumentNullException(nameof(outcome));
@@ -31,6 +36,7 @@ namespace Puzzle.Core.Recording
 
             Lab = lab;
             Actions = actions is null ? null : Array.AsReadOnly(CheckedActions(actions));
+            TesterMode = testerMode;
         }
 
         public AttemptStart Start { get; }
@@ -45,6 +51,9 @@ namespace Puzzle.Core.Recording
         /// list existed, which then cannot be replayed with boosters or the extra moves.
         /// </summary>
         public IReadOnlyList<AttemptAction>? Actions { get; }
+
+        /// <summary>True when the released game played the attempt in its tester mode, with coins and lives that have no end.</summary>
+        public bool TesterMode { get; }
 
         private static AttemptAction[] CheckedActions(IReadOnlyList<AttemptAction> actions) => actions.All(action => action is not null)
             ? actions.ToArray()

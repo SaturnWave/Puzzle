@@ -151,14 +151,16 @@ public class StartChoiceTests
         Assert.Equal(new[] { StartBooster.RocketAndBomb, StartBooster.ColorBomb, StartBooster.ExtraMoves }, all.ForTheEngine());
     }
 
+    private static WalletView WalletOf(Coins coins) => WalletView.Of(TheRules.StartingWallet.WithCoins(coins), TheRules.Lives, Evening);
+
     [Fact]
     public void A_booster_held_none_of_is_offered_at_its_single_price_which_the_coins_must_cover()
     {
         LevelBrief brief = BriefOf(TwoGoalLevel());
 
         Assert.Equal(new Coins(1000), brief.PriceOf(BoosterKind.StartColorBomb));
-        Assert.False(brief.CanBuy(BoosterKind.StartColorBomb, new Coins(999)));
-        Assert.True(brief.CanBuy(BoosterKind.StartColorBomb, new Coins(1000)));
+        Assert.False(brief.CanBuy(BoosterKind.StartColorBomb, WalletOf(new Coins(999))));
+        Assert.True(brief.CanBuy(BoosterKind.StartColorBomb, WalletOf(new Coins(1000))));
         Assert.Equal(TheRules.Shop.PriceOf(BoosterKind.StartExtraMoves), brief.PriceOf(BoosterKind.StartExtraMoves));
     }
 

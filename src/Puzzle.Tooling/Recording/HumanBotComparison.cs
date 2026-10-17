@@ -85,9 +85,10 @@ public sealed record ComparisonFigures(int Finished, int Abandoned, int Wins, in
 public sealed record LevelComparison(LevelId Level, string LevelFingerprint, int MoveLimit, double? MedianWinMoves, ComparisonFigures Figures);
 
 /// <summary>What happened to each record: compared, or left out and why.</summary>
-public sealed record RecordTally(int Compared, int Assisted, int ChosenSeeds, int UnknownLevel)
+/// <param name="TesterMode">Records of attempts played in the released game's tester mode.</param>
+public sealed record RecordTally(int Compared, int Assisted, int ChosenSeeds, int UnknownLevel, int TesterMode)
 {
-    public int Total => Compared + Assisted + ChosenSeeds + UnknownLevel;
+    public int Total => Compared + Assisted + ChosenSeeds + UnknownLevel + TesterMode;
 }
 
 /// <param name="Bots">The bot profiles compared, weakest first; every <see cref="ComparisonFigures.Bots"/> list follows this order.</param>
@@ -99,8 +100,8 @@ public sealed record HumanBotReport(IReadOnlyList<string> Bots, IReadOnlyList<Le
 /// §20) as a paired comparison: the bots replay each attempt's own game — its seeds, so its starting board and every
 /// refill — under the attempt's move limit, and each human rate stands beside the bots' rates on the games it covers
 /// (<see cref="BotWinRate"/>). Only comparable attempts (<see cref="AttemptCounting.Standing"/>) are
-/// compared: no help from the lab's tools or from boosters, and seeds drawn from the level's attempt policy, since a
-/// hand-chosen seed may replay one already seen.
+/// compared: no help from the lab's tools or from boosters, seeds drawn from the level's attempt policy, since a
+/// hand-chosen seed may replay one already seen, and none played in the released game's tester mode.
 /// </summary>
 public static class HumanBotComparison
 {
@@ -121,6 +122,7 @@ public static class HumanBotComparison
         int assisted = 0;
         int chosenSeeds = 0;
         int unknownLevel = 0;
+        int testerMode = 0;
         foreach (AttemptRecord record in records)
         {
             switch (AttemptCounting.Standing(record))
@@ -130,6 +132,9 @@ public static class HumanBotComparison
                     break;
                 case AttemptStanding.ChosenSeeds:
                     chosenSeeds++;
+                    break;
+                case AttemptStanding.TesterMode:
+                    testerMode++;
                     break;
                 case AttemptStanding.Comparable when LevelOf(record, known) is { } level:
                     compared.Add(new MatchedAttempt(record, level, new HumanGame(level.Level, record.Start.Seeds, record.Start.MoveLimit)));
@@ -149,7 +154,7 @@ public static class HumanBotComparison
             .ThenBy(group => group.Key.MoveLimit)
             .Select(group => CompareLevel(group.Key.Level, group.Key.MoveLimit, group.ToArray(), bots))
             .ToArray();
-        return new HumanBotReport(bots.Names, rows, Figures(compared, bots), new RecordTally(compared.Count, assisted, chosenSeeds, unknownLevel));
+        return new HumanBotReport(bots.Names, rows, Figures(compared, bots), new RecordTally(compared.Count, assisted, chosenSeeds, unknownLevel, testerMode));
     }
 
     /// <summary>The one level the record was played on; absent when none or several match.</summary>

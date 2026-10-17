@@ -71,6 +71,7 @@ namespace Puzzle.Client.Flow
         /// <summary>One booster's single price, which the card that offers one asks.</summary>
         public Coins PriceOf(BoosterKind booster) => _shop.PriceOf(booster);
 
-        public bool CanBuy(BoosterKind booster, Coins coins) => coins.Covers(PriceOf(booster));
+        /// <summary>True when the wallet pays for one booster of the kind: its coins cover the price, or have no end.</summary>
+        public bool CanBuy(BoosterKind booster, WalletView wallet) => wallet.CanPay(PriceOf(booster));
     }
 }

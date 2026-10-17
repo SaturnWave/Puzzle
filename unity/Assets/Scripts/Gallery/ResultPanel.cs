@@ -99,9 +99,14 @@ namespace Puzzle.Client.Gallery
         /// <summary>The green button, and the button beside it with where it leads: to the jigsaw, or to the museum. Nothing on the offer's card, whose buttons pay for moves.</summary>
         private (PushButton GoOn, PushButton Other, ResultChoice OtherLeadsTo)? _buttons;
 
-        private ResultPanel(Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, int piecesWaiting, ExtraMovesTerms? terms)
+        /// <summary>How the wallet is held while the card hangs: in the tester mode it says that no life goes.</summary>
+        private readonly WalletHandling _handling;
+
+        private ResultPanel(
+            Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, int piecesWaiting, ExtraMovesTerms? terms, WalletHandling handling)
         {
             _art = art;
+            _handling = handling;
             Tells = result;
             _kind = KindOf(result);
             _card = new HangingCard<ResultChoice>(
@@ -124,7 +129,7 @@ namespace Puzzle.Client.Gallery
                 case LevelResult.OutOfMoves outOfMoves:
                     WriteLine("Headline", ResultWords.Headline(result), LetteringStyle.Figure, OfferHeadlineSize, Lettering.Ink, Row(CardRowContent.Headline).Middle);
                     StandTheGoalsLeft(outOfMoves.OpenGoals);
-                    _offer = new OfferButtons(this, terms ?? throw new ArgumentNullException(nameof(terms), "The offer's card states the terms of the extra moves."));
+                    _offer = new OfferButtons(this, outOfMoves, terms ?? throw new ArgumentNullException(nameof(terms), "The offer's card states the terms of the extra moves."));
                     break;
                 default:
                     WriteLine("Headline", ResultWords.Headline(result), LetteringStyle.Label, HeadlineSize, Lettering.Ink, Row(CardRowContent.Headline).Middle);
@@ -165,15 +170,19 @@ namespace Puzzle.Client.Gallery
         /// <summary>Builds the card of a result, out of sight above the screen. Call <see cref="Place"/> before the first picture.</summary>
         /// <param name="paintings">Where the picture of a piece that was won comes from.</param>
         /// <param name="piecesWaiting">How many pieces of the painting the level belongs to wait to be placed; while any does, a won level's card leads to the jigsaw.</param>
+        /// <param name="handling">How the wallet is held: in the tester mode the card says that no life goes where one would.</param>
         /// <exception cref="ArgumentException">The result offers extra moves: its card is made with their terms (<see cref="OfferTheMoves"/>).</exception>
-        public static ResultPanel Create(Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, int piecesWaiting) =>
+        public static ResultPanel Create(
+            Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result, int piecesWaiting, WalletHandling handling) =>
             result is LevelResult.OutOfMoves
                 ? throw new ArgumentException("The card of a game out of moves states the terms of the extra moves; make it with OfferTheMoves.", nameof(result))
-                : new ResultPanel(parent, art, effects, paintings, result, piecesWaiting, terms: null);
+                : new ResultPanel(parent, art, effects, paintings, result, piecesWaiting, terms: null, handling);
 
         /// <summary>Builds the card that offers a game out of moves five more, with the terms the player has now, out of sight above the screen.</summary>
-        public static ResultPanel OfferTheMoves(Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult.OutOfMoves offer, ExtraMovesTerms terms) =>
-            new ResultPanel(parent, art, effects, paintings, offer, piecesWaiting: 0, terms);
+        /// <param name="handling">How the wallet is held: in the tester mode "Vazgeç" costs no life and says none.</param>
+        public static ResultPanel OfferTheMoves(
+            Transform parent, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult.OutOfMoves offer, ExtraMovesTerms terms, WalletHandling handling) =>
+            new ResultPanel(parent, art, effects, paintings, offer, piecesWaiting: 0, terms, handling);
 
         /// <summary>
         /// Tells the card anew how many pieces wait, when the player comes back from the jigsaw: once none does,
@@ -323,10 +332,10 @@ namespace Puzzle.Client.Gallery
             float rowDown = Row(CardRowContent.Lives).Middle;
             float rowY = OnTheCard(rowDown);
             TextMeshPro words = Lettering.Write("Lives", _card.Content, _art, LetteringStyle.Soft, WordsBesideThePillSize, Lettering.SoftInk, DrawOrder.CardLettering);
-            string said = ResultWords.Lives(result);
+            string said = ResultWords.Lives(result, _handling);
             Lettering.Say(words, said);
             float wordsWidth = Lettering.WidthOf(words, said);
-            if (!ResultWords.CostsALife(result))
+            if (!ResultWords.CostsALife(result, _handling))
             {
                 CoinRowPlaces alone = ResultCardLayout.LivesRow(pillWidth: null, wordsWidth);
                 Lettering.SayFromLeft(words, said, alone.WordsLeft, rowY);
@@ -416,7 +425,7 @@ namespace Puzzle.Client.Gallery
         /// </summary>
         private sealed class OfferButtons : IDisposable
         {
-            public OfferButtons(ResultPanel panel, ExtraMovesTerms terms)
+            public OfferButtons(ResultPanel panel, LevelResult.OutOfMoves offer, ExtraMovesTerms terms)
             {
                 Terms = terms;
                 HangingCard<ResultChoice> card = panel._card;
@@ -431,7 +440,7 @@ namespace Puzzle.Client.Gallery
                 ForCoins.Place(panel.At(forCoins, row));
                 ForAnAd.Place(panel.At(forAnAd, row));
 
-                GiveUp = new TextLink("Give up", card.Content, panel._art, ResultWords.GiveUp, ResultWords.Lives(panel.Tells), DrawOrder.CardLettering);
+                GiveUp = new TextLink("Give up", card.Content, panel._art, ResultWords.GiveUp, ResultWords.GiveUpCosts(offer, panel._handling), DrawOrder.CardLettering);
                 GiveUp.Place(panel.At(0f, ResultCardLayout.RowOf(ResultCardKind.OutOfMoves, CardRowContent.GiveUp).Middle));
 
                 card.Listen(ForCoins, ResultChoice.TakeTheMovesForCoins);

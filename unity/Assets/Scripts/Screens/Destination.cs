@@ -231,6 +231,21 @@ namespace Puzzle.Client.Screens
         {
         }
 
+        /// <summary>The support card's version row, in a test build with the tester mode off: the seventh tap in a row asks whether to turn it on.</summary>
+        public sealed class TapTheVersion : MuseumPress
+        {
+        }
+
+        /// <summary>The tester mode question's "Aç": the mode is turned on, and every card goes up.</summary>
+        public sealed class TurnOnTheTesterMode : MuseumPress
+        {
+        }
+
+        /// <summary>The tester mode question's "Vazgeç": nothing changes, and the support card is as it was.</summary>
+        public sealed class LeaveTheTesterModeOff : MuseumPress
+        {
+        }
+
         /// <summary>
         /// Something the page does by itself (it turns to another room, it brings a painting forward): the page
         /// does it, and the stage then asks the page anew what can be pressed.

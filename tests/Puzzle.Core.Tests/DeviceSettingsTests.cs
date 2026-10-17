@@ -11,24 +11,26 @@ namespace Puzzle.Core.Tests;
 public class DeviceSettingsTests
 {
     [Fact]
-    public void A_first_start_has_every_setting_on()
+    public void A_first_start_has_every_setting_on_but_the_tester_mode()
     {
-        Assert.All(Enum.GetValues<DeviceSetting>(), setting => Assert.True(DeviceSettings.Default.IsOn(setting)));
+        Assert.All(Enum.GetValues<DeviceSetting>(), setting => Assert.Equal(setting != DeviceSetting.TesterMode, DeviceSettings.Default.IsOn(setting)));
     }
 
     [Theory]
     [InlineData(DeviceSetting.Sound)]
     [InlineData(DeviceSetting.Vibration)]
+    [InlineData(DeviceSetting.TesterMode)]
     public void Turning_one_setting_changes_that_one_and_no_other(DeviceSetting turned)
     {
-        DeviceSettings off = DeviceSettings.Default.With(turned, isOn: false);
+        DeviceSettings first = DeviceSettings.Default;
+        DeviceSettings changed = first.With(turned, isOn: !first.IsOn(turned));
 
         foreach (DeviceSetting setting in Enum.GetValues<DeviceSetting>())
         {
-            Assert.Equal(setting != turned, off.IsOn(setting));
+            Assert.Equal(setting == turned ? !first.IsOn(setting) : first.IsOn(setting), changed.IsOn(setting));
         }
 
-        Assert.Equal(DeviceSettings.Default, off.With(turned, isOn: true));
+        Assert.Equal(first, changed.With(turned, isOn: first.IsOn(turned)));
     }
 
     [Fact]
