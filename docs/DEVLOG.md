@@ -24,6 +24,18 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - APK 16 Ekim 01.23'te proje sahibinin telefonuna USB ile kuruldu (eskisinin üstüne) ve açıldı. Eski kayıt okundu: ilk tablonun 5/10 parçası yerinde; cüzdan eski kayıt düzeninden hoş geldin hediyesiyle başladı (200 altın, 5 can).
 - İndirme sayfası önce yalnızca Tailscale hesabındaki cihazlara açıldı (`tailscale serve`); aynı gece proje sahibinin isteğiyle, tablete indirebilmek için herkese açıldı (`tailscale funnel --https=10000`; kapatmak için `tailscale funnel --https=10000 off`): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
 
+**Prototipten sonra proje sahibinin notları (2026-10-17)**
+Proje sahibi oyunu bir süre oynadıktan sonra şu eksikleri yazdı; her biri GitHub'da bir kayıt oldu (kilometre taşı "Prototip sonrası arayüz iyileştirmeleri"). Telefon testinden sonra, proje sahibi "başla" deyince ele alınacak.
+- #3 Ekranlar arasında kaydırarak geçiş yok; yalnızca düğmelerle geçiliyor.
+- #4 Harita yeniden tasarlanmalı: oyuncunun yeri ve sonraki hedefler görünmüyor.
+- #5 Oyun için öğretici yok (yeni başlayan için ilk bölümler rehberli olmalı).
+- #6 İpucu yok. İpucu algoritması kararlarıyla birlikte motorun parçası olarak tasarlanmalı.
+- #7 Yeni açılan booster için görsel tanıtım (döngülü canlandırma ya da oyun içinde rehberli kullanım).
+- #8 Dil desteği yok; oyun yalnızca Türkçe.
+- #9 Oyun müziği yok; proje sahibinin Suno Premier üyeliğiyle üretilecek.
+- İlk kayıt #2 (renkler mat ve düşük kontrastlı) 15 Ekim'den beri açık.
+- Ekranların hepsi "Oyun Ekranları" sayfasında (E01–E31); proje sahibi ekranların üstüne işaretli not bırakabiliyor.
+
 ---
 
 ## 2026-10-15 · Oturum 24 — Bölüm içi booster araştırması, Genel Belge
