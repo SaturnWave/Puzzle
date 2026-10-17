@@ -36,6 +36,18 @@ Proje sahibi oyunu bir süre oynadıktan sonra şu eksikleri yazdı; her biri Gi
 - İlk kayıt #2 (renkler mat ve düşük kontrastlı) 15 Ekim'den beri açık.
 - Ekranların hepsi "Oyun Ekranları" sayfasında (E01–E31); proje sahibi ekranların üstüne işaretli not bırakabiliyor.
 
+**Test modu (#10)**
+- Proje sahibi telefonda sınırsız altın ve can istedi. Destek kartındaki sürüm satırına 7 dokunuşla açılan gizli bir test modu yapıldı; ayarlardan kapatılıyor. Kurallar ve ekonomi değişmedi; test modunun denemeleri kayıtta işaretli ve karşılaştırmaya girmiyor.
+- İlk turda kaybetme kartı hâlâ "1 can gitti" diyordu; düzeltildi. Soru kartındaki "Jeton" sözcüğü oyunun diliyle "Altın" yapıldı.
+- 3.685 test geçti; Unity'deki bütün denetimler hatasız. Telefon testleri T210–T223.
+- Test modlu APK 17 Ekim'de derlendi (9,7 dakika, 283 MB; `aapt`: yalnızca VIBRATE izni) ve indirme sayfasında 16 Ekim APK'sının yerini aldı.
+
+**Telefon testi turu (durduruldu)**
+- Proje sahibi A ve B bölümlerini tablette iki gün boyunca denedi, sorun görmedi. C'den sonrakileri Claude telefonda USB üzerinden yapıyor: ekran görüntüsünden tahtayı okuyup hamle yapan küçük bir çözücüyle (`out/phone-test/`).
+- 130 testin 43'ü geçti (10'u proje sahibinin, 33'ü Claude'un). Sonuçlar "Telefon Testi" kontrol listesinde.
+- Telefonda görüldü: A25 telefonda da geçerli; "+5" teklifi açıkken uygulama kapatılırsa can gitmiyor.
+- Proje sahibinin isteğiyle tur durduruldu; sonra sürecek. Saat, katlanır ekran ve ses testleri proje sahibinin.
+
 ---
 
 ## 2026-10-15 · Oturum 24 — Bölüm içi booster araştırması, Genel Belge

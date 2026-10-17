@@ -1273,6 +1273,16 @@ Bu kararlarla 10. aşama başladı.
 - APK 16 Ekim 01.23'te proje sahibinin telefonuna USB ile kuruldu (eskisinin üstüne) ve açıldı. Eski kayıt okundu: ilk tablonun 5/10 parçası yerinde; cüzdan eski kayıt düzeninden hoş geldin hediyesiyle başladı (200 altın, 5 can).
 - Bir indirme sayfası açıldı; önce yalnızca Tailscale hesabındaki cihazlara, aynı gece proje sahibinin isteğiyle herkese (Tailscale Funnel, 10000 numaralı kapı): https://arc.tail0b9256.ts.net:10000/ (bu bilgisayar açıkken ve D: takılıyken çalışır; sunucu `tools/apk-share/serve.mjs`, yalnızca 127.0.0.1'de)
 
+**Gizli test modu (2026-10-17, #10).** Proje sahibi oyunu durmadan deneyebilsin diye istedi.
+
+- **Açma:** çark > Destek > "Sürüm" satırına art arda 7 dokunuş. "Test modu açılsın mı?" sorusuna "Aç". Ayarlar kartında "Test modu" anahtarı görünür; oradan kapatılır.
+- **Açıkken:** cüzdan satırında altın ve kalpte "∞", can hapında "Test". Satın almak altın düşürmez (setler, başlangıç booster'ları, raftaki artı, altınla "+5"). Kaybetmek ya da hamleden sonra çıkmak can götürmez. Kaybetme ve çıkma kartları "Test modu · can gitmez" der, teklifte "Vazgeç" yalnız durur. Kazanç, reklam hakları, günün hediyesi ve parçalar olağan kurallarla çalışır.
+- **Kurallar değişmedi:** `Puzzle.Meta`, `Puzzle.Economy` ve ekonomi ayarları aynı. Test modu istemcide cüzdanın bir türü (`WalletHandling`: `Normal | Unlimited`). Yalnızca kuralların sürüm işaretleri test sürümü dediği sürece var (reklam canlandırma, parayla satış kapalı); mağaza sürümünde yok.
+- **Kayıt:** `device.json` 3. düzende `testerMode` tutar; eski dosya kapalı okunur. Deneme kaydına isteğe bağlı `"testerMode": true` alanı eklendi (yalnızca doğruyken yazılır, şema 1, motor izi aynı). `puzzle humans` ve özet bu denemeleri karşılaştırmaya katmaz, ayrı sayar.
+- **Yazı tipleri:** dört yazı tipi "∞" işaretini içerecek biçimde yeniden üretildi.
+- **Doğrulama:** 3.685 test. Unity'de bütün denetimler ve test modu yürüyüşü hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T210–T223.
+- **Prototip APK'sı (2026-10-17):** Test modlu APK 17 Ekim'de derlendi (9,7 dakika, 283 MB; `aapt`: yalnızca VIBRATE izni) ve indirme sayfasında 16 Ekim APK'sının yerini aldı. İndirme sayfasındaki eski APK'nın yerini aldı.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
