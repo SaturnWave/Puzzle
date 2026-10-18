@@ -1294,6 +1294,17 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** uçta esnerken sayfanın ötesinde duvar deseni olmayan düz bir şerit görünüyor (A34). Komşu sayfa ilk sürüklemede kuruluyor, telefonda takılabilir (T240).
 - **Doğrulama:** 3.721 test. Unity'de bütün denetimler ve kaydırma yürüyüşü hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T230–T241.
 
+**Dil desteği, 1. adım: altyapı, Türkçe, İngilizce, Korece (2026-10-18, #8).**
+
+- **Çeviri tabloları:** oyuncunun gördüğü her yazı dil başına bir tablodan gelir; anahtarlar kapalı bir türdür (`WordId`, 200 anahtar). Kaynak `words/tr.json`'dur ve her girişte çevirmen için bir not vardır; `words/en.json` ve `words/ko.json` onu çevirir. Kod içinde tablo dışında oyuncu yazısı kalırsa bir test kırılır.
+- **Biçimler:** binlik işareti (1.250 / 1,250), kısa süreler ("2 sa 59 dk", "2h 59m", "2시간 59분"), çoğullar (Rusçanın bir/birkaç/çok biçimi hazır) ve sıra sayıları dile göre.
+- **Dil seçimi:** proje sahibinin seçtiği 13 dil kapalı bir tür. İlk dil telefonun dili: her Portekizce Brezilya'nınki, Tayvan, Hong Kong ve Makao geleneksel Çince, başka her şey İngilizce. Ayarlardaki "Dil" satırı dil kartını açar; her dil kendi adıyla yazılır; seçim bütün sayfaları ve kartları hemen değiştirir, sonraki tahta yeni dilde kurulur. Seçim `device.json`'da (4. düzen); eski dosya telefonun dilini izler. Bir dil, tablosu tamamsa kartta görünür; bu adımda Türkçe, İngilizce ve Korece.
+- **Yazı tipleri:** Noto Sans KR ExtraBold ve Noto Serif KR Bold (OFL) tasarım yazı tiplerinin arkasında, tabloların kullandığı 416 Korece hecelik sabit atlaslar olarak durur; lisansları `art/fonts/licences.json`'da. Depoya yaklaşık 29 MB ekledi; APK'ya tahminen 1–2 MB.
+- **Tablo ve oda adları:** `museum/catalogue.json` değişmedi; dil başına adlar `museum/titles/<dil>.json`'da. Korece 22 tablo adı Wikidata'daki yerleşik adlardır (her biri tablosuyla karşılaştırıldı), 78'i çeviridir ve öyle işaretlidir. Ressam adları değişmez.
+- **Sığdırma:** uzun tablo adları plaketlerde iki dengeli satıra bölünür (Türkçede de); harita etiketleri oda duvarının içine sığacak kadar küçülür; Korece sözcük aralarından kırılır.
+- **Bilinen:** çeviriler makine çevirisidir, yayından önce ana dili olan birinin gözden geçirmesi gerekir. Dar dikey tabloların ressam satırı eskisi gibi küçülüyor (yaklaşık %46).
+- **Doğrulama:** 3.882 test; ekonomi denetimi aynı. Unity'de bütün denetimler; Türkçe, İngilizce ve Korece yürüyüşler; dil kartında dil değiştiren yürüyüş hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T250–T265.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici

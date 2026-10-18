@@ -20,6 +20,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 **Dil desteği (#8)**
 - İki adım: önce altyapı ile Türkçe, İngilizce ve Korece (Korece yeni yazı tipi düzenini kanıtlar); sonra kalan 10 dil.
+- **1. adım bitti:** 200 anahtarlı çeviri tabloları (Türkçe kaynak, çevirmen notlarıyla), dile göre sayı ve süre biçimleri, telefonun dilinden gelen ilk dil, ayarlarda dil kartı, Korece için Noto yazı tipleri, tablo ve oda adları dil başına dosyalarda (Korecede 22 yerleşik ad Wikidata'dan). Uzun tablo adları artık iki satır.
+- 3.882 test geçti; Unity'deki bütün denetimler ve üç dilde yürüyüşler hatasız. İngilizce ve Korece ekranlara baktım: hepsi sığıyor ve okunuyor.
+- Çeviriler makine çevirisi; yayından önce ana dili olan biri gözden geçirmeli (A35). Telefon testleri T250–T265.
+- 2. adım iki parçada: Latin harfli altı dil (Almanca, Fransızca, İspanyolca, Portekizce, İtalyanca, Endonezce), sonra Rusça, Japonca ve iki Çince.
+
+**Play Console'a bakış (proje sahibinin isteğiyle, Chrome'dan)**
+- Masa: kapalı test açık, 6 kişi katılmış. Dress & Paint: kapalı test açık, 1 kişi katılmış. Sketch & Paint: taslak, kapalı testte sürüm yok, yalnızca iç test. Yayına çıkmak için kapalı testte 12 kişinin 14 gün katılmış olması gerekiyor. Hiçbir ayar değiştirilmedi.
 
 ---
 

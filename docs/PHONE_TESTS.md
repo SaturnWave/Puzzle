@@ -57,6 +57,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A32 | APK 283 MB (16 Ekim; 8 Ekim'de 61 MB'tı). Fark 100 tablonun tam boy görüntüleri. Play Store'da tek paketin temel modülü en çok 200 MB olabilir. | APK, 2026-10-16 | Yayını engeller | Yayından önce: tabloları küçültmek ya da ayrı indirmek (Play Asset Delivery); telefonda bellek ve yükleme süresi A14 ile birlikte ölçülür |
 | A33 | Test modunda cüzdan satırında kalbin üstündeki "∞" biraz gözlüğe benziyor (can kartında iyi okunuyor). Ayarlardaki test modu satırının işareti yer tutucu. | Test modu | Düşük | Çizilmiş bir ∞ işareti, proje sahibi isterse |
 | A34 | Kaydırmada son sayfanın ötesine çekince sayfa esnerken kenarda duvar deseni olmayan düz bir şerit görünüyor (en çok genişliğin %15'i, bırakınca kaybolur). Katlanırın iç ekranında daha belirgin. | #3 | Düşük, görünüm | Sayfaların arkasında duran sabit bir duvar |
+| A35 | İngilizce ve Korece çeviriler makine çevirisi; Korece tablo adlarının 78'i çeviri (22'si Wikidata'daki yerleşik ad). Kayıtta en emin olunmayan ifadeler: 하트 (can), 이동 (hamle), booster adları, ressam adlarının yanındaki "atfedilen", "Yaşlı/Genç". | #8 | Orta: yayın öncesi | Her dilin ana dili olan birinin gözden geçirmesi |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -306,6 +307,27 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T239 | Katlanır iç ekran | T230–T236'yı açık iç ekranda tekrarla; sürüklemenin ortasında telefonu aç ya da kapat | Aynı davranış; geniş ekranın üçte biri sayfayı çevirir; sürükleme ortasında katlama sayfayı hemen yerine koyar, bir şey bozulmaz | Kaydırma | Bekliyor |
 | T240 | İlk sürüklemede akıcılık | Müze yeni açılmışken salondan koleksiyona ve mağazadan koleksiyona doğru yavaş bir kaydırma başlat; ilk anlara bak | Komşu sayfa belirirken gözle görülür bir takılma yok (sayfa o anda kuruluyor) | Kaydırma | Bekliyor |
 | T241 | Tahta ve yapboz | Bir bölümde ekran kenarlarına yakın taşları kaydır; yapbozda parçaları yana sürükle | Değiş tokuşlar ve parça sürüklemeleri eskisi gibi; sayfa çevrilmez | Kaydırma | Bekliyor |
+
+### F12. Dil desteği, 1. adım (#8)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T250 | Türkçe telefonda ilk açılış | Telefon Türkçeyken temiz kurulum | Oyun Türkçe; Ayarlar'da "Dil · Türkçe" | Diller | Bekliyor |
+| T251 | İngilizce ve Korece telefonda ilk açılış | Telefon İngilizceyken, sonra Koreceyken temiz kurulum (ya da device.json silinmiş) | Oyun o dilde açılır | Diller | Bekliyor |
+| T252 | Desteklenmeyen telefon dili | Telefon henüz sunulmayan bir dildeyken (o an hangisi sunulmuyorsa) | Oyun İngilizce açılır | Diller | Bekliyor |
+| T253 | Dil kartı | Ayarlar > Dil | Kart sunulan dilleri kendi adlarıyla listeler, konuşulan işaretli; Tamam, yuvarlak düğme ve geri hareketi kapatır | Diller | Bekliyor |
+| T254 | İngilizceye geçiş | English'i seç; kartları kapat; harita, koleksiyon, mağaza, hediye, can kartına bak | Dil kartı, arkasındaki ayarlar kartı ve salon hemen değişir; hepsi İngilizce | Diller | Bekliyor |
+| T255 | Seçim kalır | Uygulamayı tamamen kapatıp aç; telefonun dilini değiştir | Telefon Türkçe olsa da seçilen dilde kalır; telefonun dili seçimi ezmez | Diller | Bekliyor |
+| T256 | Korece görünüm | 한국어'yu seç | Hiçbir yerde boş kutu yok; başlıklar ve plaketler Korece serif yazıyla; yeşil ve mavi düğmelerde Korece harflerin koyu çizgisi duruyor | Diller | Bekliyor |
+| T257 | Korece bölüm | Korece bir bölüm oyna | Plaketler, raf yazısı (seçili booster "블록 선택"), ilk kullanım satırı, kazanma kartı, +5 teklifi, reklam canlandırması, kaybetme kartı sığar ve doğal okunur | Diller | Bekliyor |
+| T258 | Uzun adlar | Korece ve İngilizcede koleksiyonda uzun adlı tablolar; salon, harita ve koleksiyon plaketinde 12., 18. ve 19. odalar | Uzun tablo adları iki satır; oda adları sığar | Diller | Bekliyor |
+| T259 | Katlanır ekran | T254–T258'i iç ekranda (2076×2152) ve dış ekranda tekrarla; oyun ortasında telefonu aç | Aynı sonuçlar; açınca bozulma yok | Diller | Bekliyor |
+| T260 | Sayılar ve süreler | Altını, can bekleme süresini ve hediye hapını üç dilde oku | Altın İngilizce ve Korecede "1,250", Türkçede "1.250"; can bekleme "1h 42m" / "1시간 42분" / "1 sa 42 dk" | Diller | Bekliyor |
+| T261 | Gizlilik kartı | İngilizce ve Korecede gizlilik kartını aç; kayıtları sil | Korece satırlar sözcük aralarından kırılır; "Kayıtları sil" önce sorar, sonra siler | Diller | Bekliyor |
+| T262 | Destek ve test modu | İngilizce ve Korecede destek kartında sürüme 7 kez dokun | Test modu sorusu o dilde gelir | Diller | Bekliyor |
+| T263 | Türkçeye dönüş | Türkçeyi seç | Bütün sayfalar ve kartlar yine Türkçe; sonraki bölümün tahtası Türkçe | Diller | Bekliyor |
+| T264 | Hızlı geçişler | Dilleri art arda birkaç kez değiştir | Takılma yok, kartlar ikilenmiyor, bellek sabit | Diller | Bekliyor |
+| T265 | Android'in uygulama dili | Telefon Korece, oyun İngilizce seçiliyken (telefon sunuyorsa) Android'in uygulama başına dil ayarına bak | Oyunun kendi seçimi karışmaz | Diller | Bekliyor |
 
 ### G. Görünüm
 
