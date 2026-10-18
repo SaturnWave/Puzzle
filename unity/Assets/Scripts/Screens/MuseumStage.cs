@@ -109,6 +109,15 @@ namespace Puzzle.Client.Screens
     /// painting's jigsaw), and whoever owns the stage opens it, out of the same dark.
     /// </para>
     /// <para>
+    /// A page is also turned by a swipe (<see cref="PageSwipe"/>): a finger that goes clearly sideways drags the page
+    /// that is shown, and its neighbour on the bar comes in beside it; let go, the row settles on the neighbour or
+    /// springs back, and the bar marks the page it settled on. Beyond the bar's first and last page the page only
+    /// stretches. A swipe on the collection's plaque turns its rooms instead, the same way. A touch stays a tap
+    /// until it is a swipe, and a swipe presses nothing it began on. No swipe is taken while a card hangs, while a
+    /// painting of the collection hangs forward, nor from the screen's side edges, where the phone's own back
+    /// gesture begins.
+    /// </para>
+    /// <para>
     /// To add a page: add its <see cref="Destination"/>, build it in <see cref="BuildPage"/>, and give it a render
     /// state in the Editor's ScreenShots command. A page needs no clock of its own while nothing on it moves; one
     /// on which something does is given the stage's timeline when it is built.
@@ -148,6 +157,9 @@ namespace Puzzle.Client.Screens
         private readonly Timeline _timeline = new Timeline();
         private readonly PressSet<MuseumPress> _presses = new PressSet<MuseumPress>();
 
+        /// <summary>What a finger on the page means: a tap, or a swipe that drags the pages or the collection's rooms.</summary>
+        private readonly PageSwipe _swipe = new PageSwipe();
+
         /// <summary>The cards that hang over the page, coming down or going up, from the one at the back to the one in front: none, one or two.</summary>
         private readonly List<IMuseumCard> _cards = new List<IMuseumCard>();
 
@@ -163,8 +175,14 @@ namespace Puzzle.Client.Screens
         /// <summary>The page that is shown, or that is coming in while a page is turned.</summary>
         private IMuseumPage _page;
 
-        /// <summary>The page that is leaving while a page is turned; nothing otherwise.</summary>
+        /// <summary>The page that is leaving while a page is turned or settles after a swipe; nothing otherwise.</summary>
         private IMuseumPage? _leaving;
+
+        /// <summary>What the finger that is down swipes, should it swipe; nothing while it may not swipe at all.</summary>
+        private SwipedRow? _swiped;
+
+        /// <summary>The neighbouring page a swipe drags in beside the shown one, with its destination; nothing otherwise.</summary>
+        private (IMuseumPage Page, Destination Destination)? _pageBeside;
 
         /// <summary>The screen the stage was last fitted to; nothing before the first <see cref="Fit"/>.</summary>
         private ScreenShape? _screen;
@@ -203,8 +221,8 @@ namespace Puzzle.Client.Screens
         /// <summary>The destination whose page is shown, or is coming in.</summary>
         public Destination Showing { get; private set; }
 
-        /// <summary>True when no page is turning, no card is on its way, no ad is being shown, and the room is neither lighting up nor going dark.</summary>
-        public bool IsSettled => _timeline.IsDone && _ad == null && _turnsToOnceTheCardsAreUp == null;
+        /// <summary>True when no page is turning or being dragged, no card is on its way, no ad is being shown, and the room is neither lighting up nor going dark.</summary>
+        public bool IsSettled => IsStill && !_swipe.IsDragging;
 
         /// <summary>
         /// What the player has left the museum for, once they pressed what leads there and the room has gone dark:
@@ -262,6 +280,9 @@ namespace Puzzle.Client.Screens
         public Vector2? PreviousRoomPixel => _page is CollectionPage collection ? PixelWhileListening(collection.PreviousRoomMiddle) : null;
 
         public Vector2? NextRoomPixel => _page is CollectionPage collection ? PixelWhileListening(collection.NextRoomMiddle) : null;
+
+        /// <summary>The pixel in the middle of the collection's plaque, where a swipe turns the rooms; nothing on another page.</summary>
+        public Vector2? PlaquePixel => _page is CollectionPage collection ? PixelWhileListening(collection.PlaqueMiddle) : null;
 
         /// <summary>The painting of the collection that is looked at by itself; nothing while none is.</summary>
         public PaintingNumber? PaintingViewed => (_page as CollectionPage)?.Viewed;
@@ -370,8 +391,14 @@ namespace Puzzle.Client.Screens
 
         public Vector2? TurnOnTheTesterModePixel => TopCard is SupportCard support ? PixelOnTheCard(support.TurnOnButtonMiddle) : null;
 
-        /// <summary>The museum listens to the player while nothing of it moves and the player has not left it.</summary>
-        private bool ListensToThePlayer => IsSettled && !_isLeaving && PlayerLeftFor == null;
+        /// <summary>
+        /// The museum listens to the player while nothing of it moves by itself and the player has not left it; a
+        /// page the finger drags moves with the finger, which the museum goes on listening to.
+        /// </summary>
+        private bool ListensToThePlayer => IsStill && !_isLeaving && PlayerLeftFor == null;
+
+        /// <summary>True when no page is turning or settling, no card is on its way, no ad is being shown, and the room is neither lighting up nor going dark.</summary>
+        private bool IsStill => _timeline.IsDone && _ad == null && _turnsToOnceTheCardsAreUp == null;
 
         /// <summary>The card in front, which takes the presses; nothing while no card hangs.</summary>
         private IMuseumCard? TopCard => _cards.Count > 0 ? _cards[_cards.Count - 1] : null;
@@ -411,6 +438,7 @@ namespace Puzzle.Client.Screens
 
         public void Fit(ScreenShape screen)
         {
+            ForgetTheSwipe(); // a page dragged on the screen before has no place on this one
             _screen = screen;
             PageLayout layout = PageLayout.Of(screen);
             StageCamera.Show(Camera, layout.View);
@@ -471,6 +499,7 @@ namespace Puzzle.Client.Screens
 
             (_page as IShopPage)?.Tell(shop);
             (_leaving as IShopPage)?.Tell(shop);
+            (_pageBeside?.Page as IShopPage)?.Tell(shop);
         }
 
         /// <summary>
@@ -527,11 +556,12 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// The device's way back: the card in front goes up (a question on it with it); a painting that hangs forward
-        /// goes back to the wall; from the map and the collection it leads to the hall; in the hall it leads nowhere.
+        /// goes back to the wall; from the map and the collection it leads to the hall; in the hall it leads nowhere;
+        /// while a finger drags a page, nothing: the page is the finger's until it lets go.
         /// </summary>
         public void GoBack()
         {
-            if (!ListensToThePlayer)
+            if (!ListensToThePlayer || _swipe.IsDragging)
             {
                 return;
             }
@@ -563,13 +593,15 @@ namespace Puzzle.Client.Screens
                 return;
             }
 
+            Vector2 point = PointAt(pixel, screen);
             if (TopCard is IMuseumCard card)
             {
-                card.Card.FingerDown(PointAt(pixel, screen));
+                card.Card.FingerDown(point);
             }
             else
             {
-                _presses.FingerDown(PointAt(pixel, screen));
+                _presses.FingerDown(point);
+                FollowASwipeFrom(point, ScreenView.Of(screen).Width);
             }
         }
 
@@ -580,18 +612,30 @@ namespace Puzzle.Client.Screens
                 return;
             }
 
+            Vector2 point = PointAt(pixel, screen);
             if (TopCard is IMuseumCard card)
             {
-                card.Card.FingerMovedTo(PointAt(pixel, screen));
+                card.Card.FingerMovedTo(point);
+            }
+            else if (_swipe.MovedTo(point.x, point.y, _timeline.Now) is SwipeReading.Drag drag)
+            {
+                _presses.FingerGone(); // a swipe presses nothing it began on
+                Drag(drag, ScreenView.Of(screen).Width);
             }
             else
             {
-                _presses.FingerMovedTo(PointAt(pixel, screen));
+                _presses.FingerMovedTo(point);
             }
         }
 
         public void PointerUp()
         {
+            if (_swipe.Up(_timeline.Now) is SwipeReading.Settle settle)
+            {
+                Settle(settle);
+                return;
+            }
+
             if (!ListensToThePlayer)
             {
                 return;
@@ -610,12 +654,17 @@ namespace Puzzle.Client.Screens
         {
             _presses.FingerGone();
             TopCard?.Card.FingerGone();
+            if (_swipe.Cancel() is SwipeReading.Settle settle)
+            {
+                Settle(settle); // springs back to the page that was shown
+            }
         }
 
         public void Dispose()
         {
             _page.Dispose();
             _leaving?.Dispose();
+            _pageBeside?.Page.Dispose();
             _bar.Dispose();
             _wallet.Dispose();
             foreach (IMuseumCard card in _cards)
@@ -780,6 +829,7 @@ namespace Puzzle.Client.Screens
         private void Hang(IMuseumCard card, bool roomIsDark)
         {
             Veil dark = _cards.Count == 0 ? _veil : _secondVeil;
+            ForgetTheSwipe(); // no page moves under a card
             TopCard?.Card.FingerGone();
             _cards.Add(card);
             if (_screen is ScreenShape screen)
@@ -1025,6 +1075,159 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>
+        /// A finger came down on the page: should it swipe, it turns the pages of the bar, or from the collection's
+        /// plaque its rooms. Nothing swipes while a painting of the collection hangs forward: it takes every touch.
+        /// </summary>
+        private void FollowASwipeFrom(Vector2 point, float width)
+        {
+            CollectionPage? collection = _page as CollectionPage;
+            if (collection?.Viewed != null)
+            {
+                _swipe.Cancel();
+                _swiped = null;
+                return;
+            }
+
+            bool turnsTheRooms = collection != null && collection.IsOnThePlaque(point);
+            _swiped = turnsTheRooms ? SwipedRow.Rooms : SwipedRow.Pages;
+            SwipeRow row = turnsTheRooms && collection != null
+                ? new SwipeRow(collection.RoomsToVisit, collection.Room.Value - 1, width)
+                : new SwipeRow(Destinations.OnTheBar.Count, Destinations.PlaceOf(Showing), width);
+            _swipe.Down(point.x, point.y, _timeline.Now, row);
+        }
+
+        private void Drag(SwipeReading.Drag drag, float width)
+        {
+            if (_swiped == SwipedRow.Rooms && _page is CollectionPage collection)
+            {
+                collection.DragTheRooms(drag, width);
+            }
+            else
+            {
+                DragThePages(drag, width);
+            }
+        }
+
+        private void Settle(SwipeReading.Settle settle)
+        {
+            SwipedRow? swiped = _swiped;
+            _swiped = null;
+            if (_screen is not ScreenShape screen)
+            {
+                return; // nothing is dragged before there is a screen to drag it on
+            }
+
+            float width = ScreenView.Of(screen).Width;
+            if (swiped == SwipedRow.Rooms && _page is CollectionPage collection)
+            {
+                _presses.Clear();
+                collection.SettleTheRooms(settle, width, settled: ListenToThePage);
+            }
+            else
+            {
+                SettleThePages(settle, width);
+            }
+        }
+
+        /// <summary>
+        /// The finger drags the pages: the shown one follows it, and the neighbour it drags in stands beside it, built
+        /// the first time it is needed; beyond the bar's ends the page only stretches, with nothing beside it.
+        /// </summary>
+        private void DragThePages(SwipeReading.Drag drag, float width)
+        {
+            Destination? beside = drag.Beside is int place ? Destinations.OnTheBar[place] : (Destination?)null;
+            if (_pageBeside?.Destination != beside)
+            {
+                TakeDownThePageBeside();
+                if (beside is Destination destination && _screen is ScreenShape screen)
+                {
+                    IMuseumPage page = BuildPage(destination, collectionRoom: null);
+                    page.Fit(screen);
+                    (page as IShopPage)?.Tell(_shop);
+                    _pageBeside = (page, destination);
+                }
+            }
+
+            _page.Root.localPosition = new Vector3(drag.By, 0f, 0f);
+            if (_pageBeside is { } pageBeside)
+            {
+                pageBeside.Page.Root.localPosition = new Vector3(drag.By - Math.Sign(drag.By) * width, 0f, 0f);
+            }
+        }
+
+        /// <summary>
+        /// The finger let go of the pages: they go the rest of their way, already moving. Settled on the neighbour, the
+        /// bar marks it at once and the page that was shown is taken down once it is out of sight; sprung back, the
+        /// neighbour is. Meanwhile nothing is pressed.
+        /// </summary>
+        private void SettleThePages(SwipeReading.Settle settle, float width)
+        {
+            IMuseumPage shown = _page;
+            IMuseumPage? beside = _pageBeside?.Page;
+            Destination settledOn = Destinations.OnTheBar[settle.Place];
+            bool turns = _pageBeside?.Destination == settledOn && settledOn != Showing;
+            _pageBeside = null;
+            float from = settle.From;
+            float side = from < 0f ? -1f : 1f;
+            float to = turns ? side * width : 0f;
+            if (turns && beside != null)
+            {
+                _page = beside;
+                _leaving = shown;
+                _secondsOnThePage = 0f;
+                Showing = settledOn;
+                _bar.Choose(settledOn);
+            }
+            else
+            {
+                _leaving = beside;
+            }
+
+            _presses.Clear();
+            _timeline.Add(
+                0f,
+                Tempo.PageSettlesIn((to - from) / width),
+                progress =>
+                {
+                    float at = from + (to - from) * Easing.Out(progress);
+                    shown.Root.localPosition = new Vector3(at, 0f, 0f);
+                    if (beside != null)
+                    {
+                        beside.Root.localPosition = new Vector3(at - side * width, 0f, 0f);
+                    }
+                },
+                () =>
+                {
+                    _leaving?.Dispose();
+                    _leaving = null;
+                    ListenToThePage();
+                });
+        }
+
+        /// <summary>A swipe is given up without settling, as when a card comes down or the screen changes: the page, or the room, stands in its place at once.</summary>
+        private void ForgetTheSwipe()
+        {
+            if (_swipe.Cancel() is SwipeReading.Settle)
+            {
+                if (_swiped == SwipedRow.Rooms && _page is CollectionPage collection)
+                {
+                    collection.ForgetTheRoomsDrag();
+                }
+
+                _page.Root.localPosition = Vector3.zero;
+                TakeDownThePageBeside();
+            }
+
+            _swiped = null;
+        }
+
+        private void TakeDownThePageBeside()
+        {
+            _pageBeside?.Page.Dispose();
+            _pageBeside = null;
+        }
+
+        /// <summary>
         /// Asks the bar and the page what can be pressed. The page's controls are asked first where they lie over
         /// the bar's: a painting that hangs forward on the collection's page takes every touch.
         /// </summary>
@@ -1048,7 +1251,7 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The pixel of a point of the page that is shown; nothing while the stage has no screen, does not listen to the player, or a card hangs over the page.</summary>
         private Vector2? PixelWhileListening(Vector2? point) =>
-            point is Vector2 at && ListensToThePlayer && _cards.Count == 0 && _screen is ScreenShape screen ? PixelOf(at, screen) : (Vector2?)null;
+            point is Vector2 at && ListensToThePlayer && !_swipe.IsDragging && _cards.Count == 0 && _screen is ScreenShape screen ? PixelOf(at, screen) : (Vector2?)null;
 
         /// <summary>The pixel of a point of the card in front; nothing while a card is on its way, or the stage has no screen.</summary>
         private Vector2? PixelOnTheCard(Vector2? point) =>
@@ -1064,6 +1267,13 @@ namespace Puzzle.Client.Screens
         {
             (float pixelX, float pixelY) = ScreenView.Of(screen).PixelOfPoint(point.x, point.y);
             return new Vector2(pixelX, pixelY);
+        }
+
+        /// <summary>What a swipe on the museum's pages moves: the pages of the bar, or the collection's rooms from its plaque.</summary>
+        private enum SwipedRow
+        {
+            Pages,
+            Rooms,
         }
 
         /// <summary>The stand-in ad for coins over the shop: its card, and the ad as it runs.</summary>

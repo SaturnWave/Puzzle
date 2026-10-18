@@ -168,6 +168,14 @@ namespace Puzzle.Client.Play
         /// <summary>A page of the museum is turned: the next one slides in from its side while the one shown slides out.</summary>
         public const float PageTurns = 0.3f;
 
+        /// <summary>
+        /// A page a finger dragged and let go goes the rest of its way, to its neighbour or back to its place,
+        /// already moving: a whole page's width in <see cref="PageSettles"/>, a part of it in that part of the
+        /// time, and never in less than <see cref="PageSettlesAtLeast"/>, so even the last few points are seen.
+        /// </summary>
+        public const float PageSettles = 0.28f;
+        public const float PageSettlesAtLeast = 0.08f;
+
         /// <summary>A switch of the settings card is pressed: its knob slides to the other end of its track.</summary>
         public const float SwitchSlides = 0.16f;
 
@@ -242,5 +250,9 @@ namespace Puzzle.Client.Play
         /// </summary>
         public static float FinaleMayTake(int moves) =>
             Math.Min(FinaleLongest, FinaleOfAFewMoves + FinalePerMove * Math.Max(0, moves - AFewMovesLeft));
+
+        /// <summary>How long a page let go by the finger takes for the rest of its way, a share of a page's width (<see cref="PageSettles"/>).</summary>
+        public static float PageSettlesIn(float shareOfAPage) =>
+            Math.Max(PageSettlesAtLeast, PageSettles * Math.Min(1f, Math.Abs(shareOfAPage)));
     }
 }
