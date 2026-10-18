@@ -103,6 +103,9 @@ namespace Puzzle.Client.Maps
         private const float NameSize = 16f;
         private const float PicturesBeginIn = 14f;
         private const float CountAfterPictures = 13f;
+
+        /// <summary>A room's lines end this far before its right wall, set smaller where they would come closer.</summary>
+        private const float LinesClearOfTheWall = 8f;
         private static readonly Color SheetLabelInk = Tint.Of(0x5E3305);
         private const float PadlockIn = 39f;
         private const float PadlockSize = 46f;
@@ -630,8 +633,8 @@ namespace Puzzle.Client.Maps
             padlock.localScale = new Vector3(PadlockSize / PadlockBox, PadlockSize / PadlockBox, 1f);
 
             float left = floor.Left + LinesBesidePadlockIn;
-            WriteLabel(MuseumWords.RoomOfRooms(room), left, floor.MiddleY + 25f);
-            WriteName(wall.Name, left, floor.MiddleY + 8.5f, floor.Right - left - 8f);
+            WriteLabel(MuseumWords.RoomOfRooms(room), left, floor.MiddleY + 25f, floor.Right - left - LinesClearOfTheWall);
+            WriteName(wall.Name, left, floor.MiddleY + 8.5f, floor.Right - left - LinesClearOfTheWall);
 
             string opens = access == RoomAccess.ToCome ? MuseumWords.RoomToCome : MuseumWords.OpensAt(room);
             TextMeshPro words = WritePillLine(opens);
@@ -650,8 +653,8 @@ namespace Puzzle.Client.Maps
             Lettering.Say(number, wall.Number.Value.ToString(CultureInfo.InvariantCulture));
 
             float left = floor.Left + LinesBeginIn;
-            WriteLabel(MuseumWords.RoomOfRooms(wall.Number), left, middle + LabelOverBadgeMiddle);
-            WriteName(wall.Name, left, middle - NameUnderBadgeMiddle, floor.Right - left - 8f);
+            WriteLabel(MuseumWords.RoomOfRooms(wall.Number), left, middle + LabelOverBadgeMiddle, floor.Right - left - LinesClearOfTheWall);
+            WriteName(wall.Name, left, middle - NameUnderBadgeMiddle, floor.Right - left - LinesClearOfTheWall);
         }
 
         private void AddPictures(Box floor, RoomWall wall, float middle)
@@ -660,13 +663,16 @@ namespace Puzzle.Client.Maps
             float left = floor.Left + PicturesBeginIn;
             pictures.Transform.localPosition = new Vector3(left + PaintingThumbs.RowWidth / 2f, middle, 0f);
             _drawn.Add(pictures);
-            WriteLabel(MuseumWords.PaintingsWhole(wall.PaintingsWhole), left + PaintingThumbs.RowWidth + CountAfterPictures, middle);
+            float countLeft = left + PaintingThumbs.RowWidth + CountAfterPictures;
+            WriteLabel(MuseumWords.PaintingsWhole(wall.PaintingsWhole), countLeft, middle, floor.Right - countLeft - LinesClearOfTheWall);
         }
 
-        private void WriteLabel(string words, float left, float height)
+        /// <summary>A label of small capitals from a place, set smaller where its words would run into the room's wall (English's "0 / 5 PAINTINGS").</summary>
+        private void WriteLabel(string words, float left, float height, float room)
         {
             TextMeshPro label = Lettering.Write("Label", Content, _art, LetteringStyle.Label, PagePlaque.LabelSize, SheetLabelInk, DrawOrder.SheetLettering);
             label.characterSpacing = 9f;
+            label.fontSize = PagePlaque.LabelSize * Mathf.Min(1f, room / Lettering.WidthOf(label, words));
             Lettering.SayFromLeft(label, words, left, height);
         }
 

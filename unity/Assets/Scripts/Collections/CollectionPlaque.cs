@@ -103,7 +103,7 @@ namespace Puzzle.Client.Collections
                 return;
             }
 
-            (string first, string second) = SplitInTwo(name);
+            (string first, string second) = BalancedLines.SplitInTwo(name, words => Lettering.WidthOf(_roomNameGoesOn, words));
             float size = Mathf.Min(SizeToFit(first), SizeToFit(second));
             float apart = TwoLinesApart * size;
             Lettering.SayWithin(_roomName, first, size, RoomBetweenButtons);
@@ -123,29 +123,6 @@ namespace Puzzle.Client.Collections
         {
             _roomNameGoesOn.fontSize = LargestTwoLineNameSize;
             return LargestTwoLineNameSize * Mathf.Min(1f, RoomBetweenButtons / Lettering.WidthOf(_roomNameGoesOn, words));
-        }
-
-        /// <summary>
-        /// The name broken at the space that leaves the longer of its two lines the shortest, so the two can be set
-        /// as large as possible; a name without a space stays whole on the first line.
-        /// </summary>
-        private (string First, string Second) SplitInTwo(string name)
-        {
-            (string First, string Second) best = (name, string.Empty);
-            float bestLonger = float.MaxValue;
-            for (int space = name.IndexOf(' '); space > 0; space = name.IndexOf(' ', space + 1))
-            {
-                string first = name.Substring(0, space);
-                string second = name.Substring(space + 1);
-                float longer = Mathf.Max(Lettering.WidthOf(_roomNameGoesOn, first), Lettering.WidthOf(_roomNameGoesOn, second));
-                if (longer < bestLonger)
-                {
-                    best = (first, second);
-                    bestLonger = longer;
-                }
-            }
-
-            return best;
         }
 
         private static void MoveDownTo(TextMeshPro line, float height)

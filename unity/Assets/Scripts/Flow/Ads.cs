@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Globalization;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Meta;
 
@@ -88,24 +90,26 @@ namespace Puzzle.Client.Flow
         }
     }
 
-    /// <summary>What the card that stands in for an ad says, in the player's language.</summary>
+    /// <summary>What the card that stands in for an ad says, in the language the game speaks.</summary>
     public static class AdWords
     {
         /// <summary>The card's nameplate, on two lines: what it is, and that it is the test build's.</summary>
-        public const string Title = "Reklam canlandırması";
-        public const string TestBuild = "TEST SÜRÜMÜ";
+        public static string Title => Speech.Say(WordId.AdTitle);
+        public static string TestBuild => Speech.Say(WordId.AdTestBuild);
 
         /// <summary>Under its alcove: that no ad is shown, and what it pays for.</summary>
-        public const string NothingIsShown = "Bu test sürümünde reklam gösterilmez.";
+        public static string NothingIsShown => Speech.Say(WordId.AdNothingIsShown);
 
         public static string ItPaysFor(AdPrize prize) => prize switch
         {
-            AdPrize.ExtraMoves _ => $"Ödülün: +{ExtraMovesOffer.Moves} hamle",
-            AdPrize.CoinsInTheShop coins => $"Ödülün: +{NumberWords.Amount(coins.Amount.Amount)} altın",
+            AdPrize.ExtraMoves _ => Speech.SayCounted(
+                WordId.AdPaysMoves, ExtraMovesOffer.Moves, ("moves", ExtraMovesOffer.Moves.ToString(CultureInfo.InvariantCulture))),
+            AdPrize.CoinsInTheShop coins => Speech.SayCounted(
+                WordId.AdPaysCoins, coins.Amount.Amount, ("coins", NumberWords.Amount(coins.Amount.Amount))),
             _ => throw new ArgumentOutOfRangeException(nameof(prize), prize, "An ad's prize the card has no words for."),
         };
 
         /// <summary>Beside its bar: how many seconds are left, a part of one counted as a whole.</summary>
-        public static string SecondsLeft(float seconds) => $"{(int)Math.Ceiling(Math.Max(0f, seconds))} sn";
+        public static string SecondsLeft(float seconds) => NumberWords.Seconds((int)Math.Ceiling(Math.Max(0f, seconds)));
     }
 }

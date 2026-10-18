@@ -39,6 +39,18 @@ internal static class RepoFiles
     /// <summary>The museum's rooms and paintings, as the game and the tools read them.</summary>
     public static string MuseumCataloguePath => Find("museum", "catalogue.json");
 
+    /// <summary>A language's table of the words the game says (words/&lt;code&gt;.json); the Turkish one is the source.</summary>
+    public static string WordTablePath(string code) => Find("words", $"{code}.json");
+
+    /// <summary>The folder of the tables of words: one file a language.</summary>
+    public static string WordTablesFolder => Path.GetDirectoryName(Find("words", "tr.json"))!;
+
+    /// <summary>A language's words for the museum's rooms and plates (museum/titles/&lt;code&gt;.json); Turkish has the catalogue's own and no such file.</summary>
+    public static string CaptionTablePath(string code) => Find("museum", "titles", $"{code}.json");
+
+    /// <summary>The folder of the museum's words in the other languages.</summary>
+    public static string CaptionTablesFolder => Path.GetDirectoryName(Find("museum", "catalogue.json"))! + Path.DirectorySeparatorChar + "titles";
+
     /// <summary>The catalogue as it was when only the first room had its paintings: a museum that ends after room 1.</summary>
     public static string OneRoomCataloguePath => Find("tests", "fixtures", "catalogue-one-room.json");
 

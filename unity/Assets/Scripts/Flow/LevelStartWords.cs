@@ -1,31 +1,33 @@
 #nullable enable
 using System;
 using System.Globalization;
+using Puzzle.Client.Words;
 using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
 {
     /// <summary>
-    /// What the card before a level says, in the player's language: the design canvas' words (LevelStartTR), and
-    /// those of the card that offers a start booster the player holds none of, which the canvas does not draw.
+    /// What the card before a level says, in the language the game speaks (<see cref="Speech"/>): in Turkish the
+    /// design canvas' words (LevelStartTR), and those of the card that offers a start booster the player holds none
+    /// of, which the canvas does not draw.
     /// No Unity dependency.
     /// </summary>
     public static class LevelStartWords
     {
         /// <summary>The headers over the goals and over the boosters, and the label over the moves.</summary>
-        public const string Goals = "HEDEFLER";
-        public const string ChooseBoosters = "GÜÇLENDİRİCİ SEÇ";
-        public const string Moves = "HAMLE";
+        public static string Goals => Speech.Say(WordId.StartGoals);
+        public static string ChooseBoosters => Speech.Say(WordId.StartChooseBoosters);
+        public static string Moves => Speech.Say(WordId.StartMoves);
 
         /// <summary>The green button that leads into the level.</summary>
-        public const string Play = "Oyna";
+        public static string Play => Speech.Say(WordId.Play);
 
         /// <summary>The green button that buys one booster, and what it says when the coins do not cover the price.</summary>
-        public const string Buy = "Satın al";
-        public const string CoinsShort = "Altın yetmiyor";
+        public static string Buy => Speech.Say(WordId.Buy);
+        public static string CoinsShort => Speech.Say(WordId.ButtonCoinsShort);
 
         /// <summary>The smaller line of the card that offers a booster: a booster is chosen only once it is held.</summary>
-        public const string BuyToChoose = "Seçmek için bir tane al";
+        public static string BuyToChoose => Speech.Say(WordId.GetMoreBuyToChoose);
 
         /// <summary>The nameplate: the level, as the hall's play button names it.</summary>
         public static string Title(int levelNumber) => MuseumWords.Play(levelNumber);
@@ -39,7 +41,7 @@ namespace Puzzle.Client.Flow
             int first = reward.Pieces[0] + 1;
             int last = reward.Pieces[reward.Pieces.Count - 1] + 1;
             string pieces = first == last ? Number(first) : $"{Number(first)}–{Number(last)}";
-            return $"ÖDÜL · PARÇA {pieces} / {Number(reward.PieceCount)}";
+            return Speech.Say(WordId.StartReward, ("pieces", pieces), ("all", Number(reward.PieceCount)));
         }
 
         /// <summary>A start booster's name on one line, as the card that offers it names it.</summary>
@@ -50,9 +52,9 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentException">The booster is used during play: the card before a level offers none of them.</exception>
         public static string OnTheShelf(BoosterKind booster, int extraMoves) => booster switch
         {
-            BoosterKind.StartRocketAndBomb => "Fırça +\nsıçrama",
-            BoosterKind.StartColorBomb => "Gökkuşağı\npaleti",
-            BoosterKind.StartExtraMoves => $"+{Number(extraMoves)} hamle",
+            BoosterKind.StartRocketAndBomb => Speech.Say(WordId.StartRocketAndBomb),
+            BoosterKind.StartColorBomb => Speech.Say(WordId.StartColorBomb),
+            BoosterKind.StartExtraMoves => PlusMoves(extraMoves),
             _ => throw NotAStartBooster(booster),
         };
 
@@ -60,11 +62,14 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentException">The booster is used during play.</exception>
         public static string WhatItDoes(BoosterKind booster, int extraMoves) => booster switch
         {
-            BoosterKind.StartRocketAndBomb => "Bölüm bir fırça ve bir sıçramayla başlar",
-            BoosterKind.StartColorBomb => "Bölüm bir gökkuşağı paletiyle başlar",
-            BoosterKind.StartExtraMoves => $"Bölüm {Number(extraMoves)} hamle fazlasıyla başlar",
+            BoosterKind.StartRocketAndBomb => Speech.Say(WordId.StartRocketAndBombDoes),
+            BoosterKind.StartColorBomb => Speech.Say(WordId.StartColorBombDoes),
+            BoosterKind.StartExtraMoves => Speech.SayCounted(WordId.StartExtraMovesDoes, extraMoves, ("moves", Number(extraMoves))),
             _ => throw NotAStartBooster(booster),
         };
+
+        /// <summary>Extra moves as the start booster's disc and the offer's green button name them: "+5 hamle".</summary>
+        public static string PlusMoves(int moves) => Speech.SayCounted(WordId.PlusMoves, moves, ("moves", Number(moves)));
 
         private static string Number(int number) => number.ToString(CultureInfo.InvariantCulture);
 

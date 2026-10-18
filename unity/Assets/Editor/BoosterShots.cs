@@ -32,7 +32,8 @@ namespace Puzzle.Client.EditorTools
     /// </summary>
     public static class BoosterShots
     {
-        private const string Subfolder = "booster";
+        /// <summary>The pictures' folder under the shots: booster, or booster-en and booster-ko in another language than Turkish.</summary>
+        private static string Subfolder => "booster" + ToolLanguage.FileNameEnding;
         private const int OpenLevel = 47;
         private static readonly int[] ShelfLevels = { 1, 7, 12, 16, 20, 47 };
 

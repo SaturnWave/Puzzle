@@ -13,6 +13,7 @@ using Puzzle.Client.Maps;
 using Puzzle.Client.Play;
 using Puzzle.Client.Shops;
 using Puzzle.Client.Stage;
+using Puzzle.Client.Words;
 using Puzzle.Meta;
 using Puzzle.Museum;
 using UnityEngine;
@@ -94,10 +95,12 @@ namespace Puzzle.Client.Screens
     /// (<see cref="Hear"/>): a card then says what came of it, a refusal and why included. The shop's ad for coins is
     /// the test build's stand-in card, shown here; its coins are asked for once it is over.
     /// <para>
-    /// The gear of the wallet row brings the settings card down, whose rows open the privacy card and the support card
-    /// in front of it. What those ask of the phone (a setting turned, the attempt records deleted after a question)
-    /// the stage passes on to its owner too (<see cref="TakeWhatWasAskedOfThePhone"/>), who keeps it and tells the
-    /// stage the phone as it is after it (<see cref="Tell(DeviceView)"/>). In a test build the support card's version
+    /// The gear of the wallet row brings the settings card down, whose rows open the language card, the privacy card
+    /// and the support card in front of it. What those ask of the phone (a setting turned, a language chosen, the
+    /// attempt records deleted after a question) the stage passes on to its owner too
+    /// (<see cref="TakeWhatWasAskedOfThePhone"/>), who keeps it and tells the stage the phone as it is after it
+    /// (<see cref="Tell(DeviceView)"/>); after a language it has the stage speak anew (<see cref="SpeakAnew"/>), and
+    /// every page and card is built again in it where it stands. In a test build the support card's version
     /// row asks, after seven taps in a row, whether the tester mode is to be turned on; its "Aç" asks the owner to turn
     /// it on and takes every card up, so the row shows at once the wallet the owner tells after it, without an end.
     /// </para>
@@ -136,8 +139,8 @@ namespace Puzzle.Client.Screens
         private readonly PaintingGallery _paintings;
         private readonly MuseumVisit _visit;
         private readonly LevelBrief _level;
-        private readonly NavigationBar _bar;
-        private readonly WalletRow _wallet;
+        private NavigationBar _bar;
+        private WalletRow _wallet;
         private readonly Veil _veil;
 
         /// <summary>The dark that falls over the first card when a second hangs in front of it.</summary>
@@ -151,6 +154,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The stand-in ad for coins while it hangs over the shop; nothing otherwise.</summary>
         private AdInTheMuseum? _ad;
+
+        /// <summary>The room the hall shows restored while it is the one shown so; nothing once the player went on from it.</summary>
+        private RoomNumber? _restored;
 
         /// <summary>Where the player goes once the cards that hang have gone up (a card's way to the shop); nothing otherwise.</summary>
         private Destination? _turnsToOnceTheCardsAreUp;
@@ -203,6 +209,7 @@ namespace Puzzle.Client.Screens
             _shop = shop;
             _device = device;
             Showing = door.Page;
+            _restored = door.Restored;
             _root = new GameObject("Museum");
             Camera = StageCamera.Add(_root.transform);
             _page = door.Restored is RoomNumber restored
@@ -347,8 +354,24 @@ namespace Puzzle.Client.Screens
             SettingsCard _ => SettingsCardKind.Settings,
             PrivacyCard _ => SettingsCardKind.Privacy,
             SupportCard _ => SettingsCardKind.Support,
+            LanguageCard _ => SettingsCardKind.Language,
             _ => null,
         };
+
+        /// <summary>The pixel in the middle of the settings card's row that opens the language card; nothing while that card is not down in front.</summary>
+        public Vector2? LanguageRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.LanguageRowMiddle) : null;
+
+        /// <summary>The pixel in the middle of a language's row on the language card; nothing while that card is not down in front, or does not offer the language.</summary>
+        public Vector2? LanguagePixel(Language language) => TopCard is LanguageCard languages ? PixelOnTheCard(languages.RowMiddle(language)) : null;
+
+        /// <summary>The pixel in the middle of the language card's "Tamam"; nothing while that card is not down in front.</summary>
+        public Vector2? LanguageDonePixel => TopCard is LanguageCard languages ? PixelOnTheCard(languages.DoneButtonMiddle) : null;
+
+        /// <summary>The language the language card ticks; nothing while that card does not hang.</summary>
+        public Language? LanguageTicked => (_cards.Find(card => card is LanguageCard) as LanguageCard)?.Ticked;
+
+        /// <summary>What the bar names the page that is shown, as it is drawn now: what a language just chosen shows at once.</summary>
+        public string BarSays => _bar.Says;
 
         /// <summary>The pixels in the middle of the settings card's rows that open the privacy card and the support card, and of a setting's switch; nothing while that card is not down in front.</summary>
         public Vector2? PrivacyRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.PrivacyRowMiddle) : null;
@@ -555,6 +578,64 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>
+        /// The game speaks another language: every page and card is built anew in it, where it stands, at once and
+        /// without moving. The page that is shown (the collection at its room, the hall of a room just restored), the
+        /// wallet row and the bar, and the cards that hang, each down in its place; the darks behind them stay as they
+        /// are. Only the settings card and the cards it opens can hang while a language is chosen.
+        /// </summary>
+        /// <param name="device">The phone as it is in the new language.</param>
+        /// <exception cref="InvalidOperationException">A card hangs that no language is chosen on.</exception>
+        public void SpeakAnew(DeviceView device)
+        {
+            _device = device ?? throw new ArgumentNullException(nameof(device));
+            ForgetTheSwipe();
+            IMuseumPage page = _page is HomePage { ShowsARestoredRoom: true } && _restored is RoomNumber restored
+                ? HomePage.Create(_root.transform, _art, _paintings, _visit, restored)
+                : BuildPage(Showing, (_page as CollectionPage)?.Room);
+            _page.Dispose();
+            _page = page;
+            _secondsOnThePage = 0f;
+            (_page as IShopPage)?.Tell(_shop);
+
+            WalletView wallet = _wallet.Wallet;
+            _wallet.Dispose();
+            _wallet = WalletRow.Create(_root.transform, _art, wallet);
+            _bar.Dispose();
+            _bar = NavigationBar.Create(_root.transform, _art, Showing);
+
+            IMuseumCard[] hanging = _cards.ToArray();
+            _cards.Clear();
+            foreach (IMuseumCard card in hanging)
+            {
+                IMuseumCard again = card switch
+                {
+                    SettingsCard _ => SettingsCard.Create(_root.transform, _art, device),
+                    LanguageCard _ => LanguageCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
+                    PrivacyCard _ => PrivacyCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
+                    SupportCard _ => SupportCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
+                    _ => throw new InvalidOperationException($"A {card.GetType().Name} hangs, and no language is chosen on it."),
+                };
+                card.Dispose();
+                _cards.Add(again);
+            }
+
+            if (_screen is ScreenShape screen)
+            {
+                Fit(screen);
+            }
+
+            foreach (IMuseumCard card in _cards)
+            {
+                card.Card.ComeDown(1f);
+            }
+
+            if (_cards.Count == 0)
+            {
+                ListenToThePage();
+            }
+        }
+
+        /// <summary>
         /// The device's way back: the card in front goes up (a question on it with it); a painting that hangs forward
         /// goes back to the wall; from the map and the collection it leads to the hall; in the hall it leads nowhere;
         /// while a finger drags a page, nothing: the page is the finger's until it lets go.
@@ -726,6 +807,17 @@ namespace Puzzle.Client.Screens
                 case MuseumPress.OpenTheSupport _ when TopCard is SettingsCard:
                     Hang(SupportCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
                     break;
+                case MuseumPress.OpenTheLanguages _ when TopCard is SettingsCard:
+                    Hang(LanguageCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
+                    break;
+                case MuseumPress.ChooseALanguage choose when TopCard is LanguageCard:
+                    // The game speaks it once the owner has kept it: the owner has the stage speak anew (SpeakAnew).
+                    if (choose.Language != _device.Speaking)
+                    {
+                        _askedOfThePhone.Add(new DeviceRequest.ChooseALanguage(choose.Language));
+                    }
+
+                    break;
                 case MuseumPress.FlipASwitch flip when TopCard is SettingsCard settings:
                     // The switch slides at once; the setting is kept by the stage's owner, who tells the phone after it.
                     bool isOn = settings.Flip(flip.Setting);
@@ -767,6 +859,7 @@ namespace Puzzle.Client.Screens
                     TurnTo(visit.To);
                     break;
                 case MuseumPress.GoOnFromTheRestoredRoom _:
+                    _restored = null;
                     Turn(BuildPage(Destination.Home, collectionRoom: null), Destination.Home, comesFromTheRight: true);
                     break;
                 case MuseumPress.OnThePage onThePage:

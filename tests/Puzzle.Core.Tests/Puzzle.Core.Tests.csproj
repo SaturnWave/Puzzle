@@ -19,6 +19,14 @@
     <Using Include="System.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Nor have the languages the game speaks, its tables of words and the one way its screens say anything. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Words\Language.cs" Link="Unity\Words\Language.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\WordId.cs" Link="Unity\Words\WordId.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\WordTable.cs" Link="Unity\Words\WordTable.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\CaptionTable.cs" Link="Unity\Words\CaptionTable.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\Template.cs" Link="Unity\Words\Template.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\Speech.cs" Link="Unity\Words\Speech.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\LanguageOffer.cs" Link="Unity\Words\LanguageOffer.cs" />
     <!-- The Unity project's engine trace has no Unity dependency; the tests pin what it prints on this runtime. -->
     <Compile Include="..\..\unity\Assets\Scripts\Engine\EngineTrace.cs" Link="Unity\EngineTrace.cs" />
     <!-- Nor have the game's screen layout and its stage clock: where a board lies, and how animations take their time. -->
@@ -76,6 +84,8 @@
     <Compile Include="..\..\unity\Assets\Scripts\Art\GalleryArt.cs" Link="Unity\Art\GalleryArt.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\Typeface.cs" Link="Unity\Art\Typeface.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\LetterSet.cs" Link="Unity\Art\LetterSet.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\FallbackTypeface.cs" Link="Unity\Art\FallbackTypeface.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\BalancedLines.cs" Link="Unity\Art\BalancedLines.cs" />
     <!-- Nor have the rules of the controls several screens share: what a booster's disc shows, how a row of pips is set out, how amounts and waits are written. -->
     <Compile Include="..\..\unity\Assets\Scripts\Screens\BoosterFace.cs" Link="Unity\Screens\BoosterFace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\PipRowPlan.cs" Link="Unity\Screens\PipRowPlan.cs" />
@@ -111,6 +121,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SettingsWords.cs" Link="Unity\Flow\SettingsWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\LanguageCardLayout.cs" Link="Unity\Layout\LanguageCardLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\ToggleLook.cs" Link="Unity\Screens\ToggleLook.cs" />
     <!-- Nor have the sounds: the cues there are, which falls at which moment of play, and what of them the settings let through; nor the build's step that asks the phone for what they need. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SoundCue.cs" Link="Unity\Flow\SoundCue.cs" />

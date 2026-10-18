@@ -163,6 +163,7 @@ namespace Puzzle.Client.EditorTools
             WalkABuy(standing, screen, studio);
             RunTheShopWalks(screen, studio);
             RunTheSettingsWalk(screen, studio);
+            RunTheLanguageWalk(screen, studio);
             RunTheTesterModeWalk(screen, studio);
             RunTheSwipeWalk(screen, studio);
         }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Engine;
+using Puzzle.Client.Words;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +19,13 @@ namespace Puzzle.Client.EditorTools
     /// one material per lettering style. The letters are stored as distances to their outline, not as pixels, so
     /// one picture of them is sharp at every size, and a style can draw a line around the strokes and a shade
     /// under them. An asset holds a fixed set of letters and no font file: a build carries the pictures alone.
+    /// <para>
+    /// Behind each typeface stand its fallbacks (<see cref="FallbackTypefaces"/>): typefaces of the other scripts,
+    /// each made with exactly the letters of its script that the tables of words use, every language's, so the
+    /// language card can name each language in its own letters whatever the game speaks. A letter a fallback draws
+    /// is drawn in the material of the style that asks for it, as TextMesh Pro makes one for the fallback's picture:
+    /// each fallback's picture reaches as far from a letter as its typeface's does, so an outline is as wide.
+    /// </para>
     /// </summary>
     /// <remarks>
     /// A typeface is made anew by itself when its picture is not the one the table below asks for, when it lacks
@@ -54,6 +63,17 @@ namespace Puzzle.Client.EditorTools
             [Typeface.GabaritoExtraBold] = new FontPicture("Gabarito-ExtraBold", samplingSize: 64, roomAroundALetter: 8, width: 1024, height: 1024),
             [Typeface.PaytoneOne] = new FontPicture("PaytoneOne-Regular", samplingSize: 64, roomAroundALetter: 8, width: 1024, height: 1024),
             [Typeface.YoungSerif] = new FontPicture("YoungSerif-Regular", samplingSize: 64, roomAroundALetter: 8, width: 1024, height: 1024),
+        };
+
+        /// <summary>
+        /// The picture of each fallback: an eighth of the type size around a letter, as every typeface has it. A
+        /// Hangul syllable fills its square, so the 417 the Korean tables use need a picture of 2048 by 1024 at a
+        /// sampling of 48; a new word's syllables find room in it until it is full, and the builder says so then.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<FallbackTypeface, FontPicture> FallbackPictures = new Dictionary<FallbackTypeface, FontPicture>
+        {
+            [FallbackTypeface.NotoSansKR] = new FontPicture("NotoSansKR-ExtraBold", samplingSize: 48, roomAroundALetter: 6, width: 2048, height: 1024),
+            [FallbackTypeface.NotoSerifKR] = new FontPicture("NotoSerifKR-Bold", samplingSize: 48, roomAroundALetter: 6, width: 2048, height: 1024),
         };
 
         /// <summary>The dark edge under lettering on wood: the web page's "0 1px 0" text shadow at a 13 px type size.</summary>
@@ -99,15 +119,29 @@ namespace Puzzle.Client.EditorTools
         /// <summary>Makes what is missing and returns each style's typeface and material, for the art catalogue.</summary>
         /// <exception cref="InvalidOperationException">
         /// A font file is missing or lacks a letter the game writes, a typeface's picture is too small for the
-        /// letters, a style asks for more than its typeface's picture can draw, or a style's outline has a width
-        /// and no colour or a colour and no width.
+        /// letters, a word of a table has a letter no typeface draws, a style asks for more than its typeface's
+        /// picture can draw, or a style's outline has a width and no colour or a colour and no width.
         /// </exception>
+        /// <exception cref="WordTableException">A table of words the game carries is not a table.</exception>
         public static (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> Typefaces, IReadOnlyDictionary<LetteringStyle, Material> Materials) Ensure()
         {
             var made = new Dictionary<Typeface, TMP_FontAsset>();
             foreach (Typeface typeface in (Typeface[])Enum.GetValues(typeof(Typeface)))
             {
-                made[typeface] = EnsureTypeface(PictureOf(typeface));
+                made[typeface] = EnsureTypeface(PictureOf(typeface), LetterSet.All, holdsExactlyThese: false);
+            }
+
+            IReadOnlyList<string> words = EveryTablesWords();
+            RefuseWordsNoTypefaceDraws(words);
+            var fallbacks = new Dictionary<FallbackTypeface, TMP_FontAsset>();
+            foreach (FallbackTypeface fallback in FallbackTypefaces.All)
+            {
+                fallbacks[fallback] = EnsureTypeface(FallbackPictureOf(fallback), FallbackTypefaces.LettersFor(fallback, words), holdsExactlyThese: true);
+            }
+
+            foreach (KeyValuePair<Typeface, TMP_FontAsset> typeface in made)
+            {
+                StandBehind(typeface.Value, FallbackTypefaces.Behind(typeface.Key).Select(fallback => fallbacks[fallback]).ToList());
             }
 
             var typefaces = new Dictionary<LetteringStyle, TMP_FontAsset>();
@@ -140,11 +174,59 @@ namespace Puzzle.Client.EditorTools
                 ? picture
                 : throw new InvalidOperationException($"The lettering builder names no font file for {typeface}.");
 
+        private static FontPicture FallbackPictureOf(FallbackTypeface fallback) =>
+            FallbackPictures.TryGetValue(fallback, out FontPicture picture)
+                ? picture
+                : throw new InvalidOperationException($"The lettering builder names no font file for the fallback {fallback}.");
+
+        /// <summary>Every piece of words of every table the game carries, complete or not: what the typefaces and their fallbacks must be able to write.</summary>
+        private static IReadOnlyList<string> EveryTablesWords()
+        {
+            var words = new List<string>();
+            foreach (Language language in Languages.All)
+            {
+                if (WordsPack.Load(language) is Wording wording)
+                {
+                    words.AddRange(wording.Words.AllWords.Select(entry => entry.Words));
+                    words.AddRange(wording.Captions.AllWords);
+                }
+            }
+
+            return words;
+        }
+
+        /// <summary>Stops with the letters of the tables that neither the game's own set nor any fallback draws: they would be drawn as gaps.</summary>
+        private static void RefuseWordsNoTypefaceDraws(IReadOnlyList<string> words)
+        {
+            string none = FallbackTypefaces.LettersNoneDraws(string.Concat(words));
+            if (none.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    $"The tables of words write {string.Join(" ", none.Select(letter => $"U+{(int)letter:X4} {letter}"))}, which no typeface of the game draws: add a fallback that covers them, or the letters to the game's set.");
+            }
+        }
+
+        /// <summary>Sets the fallbacks a typeface asks for a letter it lacks, in their order; a typeface that has them already is left as it is.</summary>
+        private static void StandBehind(TMP_FontAsset typeface, List<TMP_FontAsset> fallbacks)
+        {
+            List<TMP_FontAsset> before = typeface.fallbackFontAssetTable ?? new List<TMP_FontAsset>();
+            if (before.SequenceEqual(fallbacks))
+            {
+                return;
+            }
+
+            typeface.fallbackFontAssetTable = fallbacks;
+            EditorUtility.SetDirty(typeface);
+            Debug.Log($"Lettering: {typeface.name} asks {string.Join(", ", fallbacks.Select(fallback => fallback.name))} for the letters it lacks.");
+        }
+
         /// <summary>
         /// The typeface of a font file as the table asks for it: the one that is there, or a new one where that
-        /// is another picture, lacks a letter, or holds other drawings than the font file names now.
+        /// is another picture, lacks a letter, or holds other drawings than the font file names now. A fallback's
+        /// letters follow the tables, so they change with a word: a fallback that is the picture asked for and
+        /// differs only in its letters is filled anew where it is, which keeps the asset the design typefaces name.
         /// </summary>
-        private static TMP_FontAsset EnsureTypeface(FontPicture picture)
+        private static TMP_FontAsset EnsureTypeface(FontPicture picture, string letters, bool holdsExactlyThese)
         {
             Font fontFile = AssetDatabase.LoadAssetAtPath<Font>(picture.FontFilePath);
             if (fontFile == null)
@@ -153,26 +235,29 @@ namespace Puzzle.Client.EditorTools
             }
 
             TMP_FontAsset typeface = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(picture.TypefacePath);
-            if (typeface != null && IsMadeAs(picture, typeface) && HoldsTheDrawingsOf(fontFile, picture, typeface))
+            if (typeface != null && IsMadeAs(picture, typeface, letters, holdsExactlyThese) && HoldsTheDrawingsOf(fontFile, picture, typeface, letters))
             {
                 return typeface;
             }
 
+            if (typeface != null && holdsExactlyThese && IsThePictureAskedFor(picture, typeface))
+            {
+                return FillAnew(typeface, fontFile, picture, letters);
+            }
+
             if (typeface != null)
             {
-                Debug.Log($"Lettering: {picture.TypefacePath} is not the picture the builder asks for now, or its font file has changed; it is made anew.");
+                Debug.Log($"Lettering: {picture.TypefacePath} is not the picture the builder asks for now, lacks or has letters it should not, or its font file has changed; it is made anew.");
                 AssetDatabase.DeleteAsset(picture.TypefacePath);
             }
 
-            return CreateTypeface(fontFile, picture);
+            return CreateTypeface(fontFile, picture, letters);
         }
 
-        private static bool IsMadeAs(FontPicture picture, TMP_FontAsset typeface) =>
-            typeface.faceInfo.pointSize == picture.SamplingSize
-            && typeface.atlasPadding == picture.RoomAroundALetter
-            && typeface.atlasWidth == picture.Width
-            && typeface.atlasHeight == picture.Height
-            && typeface.HasCharacters(LetterSet.All)
+        private static bool IsMadeAs(FontPicture picture, TMP_FontAsset typeface, string letters, bool holdsExactlyThese) =>
+            IsThePictureAskedFor(picture, typeface)
+            && typeface.HasCharacters(letters)
+            && (!holdsExactlyThese || typeface.characterTable.Count == letters.Length)
             && typeface.fontFeatureTable.glyphPairAdjustmentRecords.All(pair => Shows(pair, picture))
             && typeface.fontFeatureTable.MarkToBaseAdjustmentRecords.Count == 0;
 
@@ -181,10 +266,10 @@ namespace Puzzle.Client.EditorTools
         /// file numbers its drawings, and a typeface keeps for each letter the number it was made from. A file
         /// that was changed since (other figures, a newer version of the font) names other numbers.
         /// </summary>
-        private static bool HoldsTheDrawingsOf(Font fontFile, FontPicture picture, TMP_FontAsset typeface)
+        private static bool HoldsTheDrawingsOf(Font fontFile, FontPicture picture, TMP_FontAsset typeface, string letters)
         {
             LoadTheFace(fontFile, picture);
-            return LetterSet.All.All(letter =>
+            return letters.All(letter =>
                 FontEngine.TryGetGlyphIndex(letter, out uint drawing)
                 && typeface.characterLookupTable.TryGetValue(letter, out TMP_Character kept)
                 && kept.glyphIndex == drawing);
@@ -199,9 +284,37 @@ namespace Puzzle.Client.EditorTools
             }
         }
 
-        private static TMP_FontAsset CreateTypeface(Font fontFile, FontPicture picture)
+        private static bool IsThePictureAskedFor(FontPicture picture, TMP_FontAsset typeface) =>
+            typeface.faceInfo.pointSize == picture.SamplingSize
+            && typeface.atlasPadding == picture.RoomAroundALetter
+            && typeface.atlasWidth == picture.Width
+            && typeface.atlasHeight == picture.Height;
+
+        /// <summary>
+        /// Empties a typeface and makes it anew with these letters, in the asset it is: for that while, its font file
+        /// is its source again, and the letters are drawn into its picture as a new typeface's are.
+        /// </summary>
+        private static TMP_FontAsset FillAnew(TMP_FontAsset typeface, Font fontFile, FontPicture picture, string letters)
         {
-            RefuseAFontThatLacksLetters(fontFile, picture);
+            RefuseAFontThatLacksLetters(fontFile, picture, letters);
+            typeface.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+            typeface.ClearFontAssetData(setAtlasSizeToZero: false);
+            if (!typeface.TryAddCharacters(letters, out string unplaced, includeFontFeatures: true))
+            {
+                throw new InvalidOperationException(
+                    $"A picture of {picture.Width} by {picture.Height} is too small for the letters of {picture.FontFilePath}: no place was left for \"{unplaced}\".");
+            }
+
+            KeepTheSpacingsThatShow(typeface, picture);
+            typeface.atlasPopulationMode = AtlasPopulationMode.Static;
+            EditorUtility.SetDirty(typeface);
+            Debug.Log($"Lettering: {picture.TypefacePath} was filled anew with the {typeface.characterTable.Count} letters the tables use now.");
+            return typeface;
+        }
+
+        private static TMP_FontAsset CreateTypeface(Font fontFile, FontPicture picture, string letters)
+        {
+            RefuseAFontThatLacksLetters(fontFile, picture, letters);
             TMP_FontAsset typeface = TMP_FontAsset.CreateFontAsset(
                 fontFile, picture.SamplingSize, picture.RoomAroundALetter, GlyphRenderMode.SDFAA, picture.Width, picture.Height,
                 AtlasPopulationMode.Dynamic, enableMultiAtlasSupport: false);
@@ -211,7 +324,7 @@ namespace Puzzle.Client.EditorTools
             }
 
             // With the letters comes what the font says about pairs of them: how much closer "T" and "a" stand than their widths say.
-            if (!typeface.TryAddCharacters(LetterSet.All, out string unplaced, includeFontFeatures: true))
+            if (!typeface.TryAddCharacters(letters, out string unplaced, includeFontFeatures: true))
             {
                 throw new InvalidOperationException(
                     $"A picture of {picture.Width} by {picture.Height} is too small for the letters of {picture.FontFilePath}: no place was left for \"{unplaced}\".");
@@ -259,11 +372,11 @@ namespace Puzzle.Client.EditorTools
             return moved >= SmallestPairSpacing * picture.SamplingSize;
         }
 
-        /// <summary>Stops with the names of the letters of the game's set that a font file has no drawing for.</summary>
-        private static void RefuseAFontThatLacksLetters(Font fontFile, FontPicture picture)
+        /// <summary>Stops with the names of the letters a typeface is made with that its font file has no drawing for.</summary>
+        private static void RefuseAFontThatLacksLetters(Font fontFile, FontPicture picture, string letters)
         {
             LoadTheFace(fontFile, picture);
-            char[] lacking = LetterSet.All.Where(letter => !FontEngine.TryGetGlyphIndex(letter, out uint _)).ToArray();
+            char[] lacking = letters.Where(letter => !FontEngine.TryGetGlyphIndex(letter, out uint _)).ToArray();
             if (lacking.Length > 0)
             {
                 throw new InvalidOperationException($"{picture.FontFilePath} has no letter for {string.Join(" ", lacking)}: the game could not write them in this typeface.");

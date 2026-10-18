@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -7,53 +8,62 @@ using Puzzle.Meta;
 namespace Puzzle.Client.Flow
 {
     /// <summary>
-    /// What the settings card and the support card say, in the player's language. The settings card's words are the
-    /// design canvas' (SettingsTR) where they are true of this build; the line under "Gizlilik ve veri" is not the
-    /// canvas' ("Yalnızca anonim oyun verisi toplanır"), because this build gathers nothing. The support card has no
-    /// drawing, and its words are written in the canvas' manner. No Unity dependency.
+    /// What the settings card, the language card and the support card say, in the language the game speaks
+    /// (<see cref="Speech"/>). The settings card's Turkish words are the design canvas' (SettingsTR) where they are
+    /// true of this build; the line under "Gizlilik ve veri" is not the canvas' ("Yalnızca anonim oyun verisi
+    /// toplanır"), because this build gathers nothing. The language card and the support card have no drawing, and
+    /// their words are written in the canvas' manner. No Unity dependency.
     /// </summary>
     public static class SettingsWords
     {
         /// <summary>The settings card's nameplate.</summary>
-        public const string Title = "Ayarlar";
+        public static string Title => Speech.Say(WordId.SettingsTitle);
 
-        /// <summary>The language row, which only says the one language there is.</summary>
-        public const string Language = "Dil";
-        public const string Turkish = "Türkçe";
+        /// <summary>The language row, which opens the language card, and that card's nameplate.</summary>
+        public static string Language => Speech.Say(WordId.SettingsLanguage);
 
         /// <summary>
         /// The row that opens the privacy card, and its smaller line: what the game does with the data, which holds
         /// beside Android's own backup that the privacy card tells of.
         /// </summary>
-        public const string Privacy = PrivacyWords.Title;
-        public const string PrivacyLine = "Oyun hiçbir şey göndermez";
+        public static string Privacy => PrivacyWords.Title;
+        public static string PrivacyLine => Speech.Say(WordId.SettingsPrivacyLine);
 
         /// <summary>The row that opens the support card, and that card's nameplate.</summary>
-        public const string Support = "Destek";
+        public static string Support => Speech.Say(WordId.SettingsSupport);
 
         /// <summary>The support card's rows: what to tell when a problem is reported.</summary>
-        public const string PlayerIdLabel = "Oyuncu kimliği";
-        public const string GameVersionLabel = "Sürüm";
-        public const string ContentVersionLabel = "Bölüm içeriği";
-        public const string RecordsFileLabel = "Kayıt dosyası";
-        public const string RecordsKeptInMemory = "bu oturumda bellekte";
-        public const string WhatToTell = "Bir sorun bildirirken oyuncu kimliğini ve sürümü söyle.";
+        public static string PlayerIdLabel => Speech.Say(WordId.SupportPlayerId);
+        public static string GameVersionLabel => Speech.Say(WordId.SupportGameVersion);
+        public static string ContentVersionLabel => Speech.Say(WordId.SupportContentVersion);
+        public static string RecordsFileLabel => Speech.Say(WordId.SupportRecordsFile);
+        public static string RecordsKeptInMemory => Speech.Say(WordId.SupportRecordsInMemory);
+        public static string WhatToTell => Speech.Say(WordId.SupportWhatToTell);
 
         /// <summary>
         /// The question the support card asks after seven taps in a row on its version row, in a test build, the line
         /// under it, and its two answers.
         /// </summary>
-        public const string TesterModeQuestion = "Test modu açılsın mı?";
-        public const string TesterModeTells = "Altın ve can sınırsız olur; Ayarlar'dan kapatılır.";
-        public const string TurnTesterModeOn = "Aç";
-        public const string LeaveTesterModeOff = "Vazgeç";
+        public static string TesterModeQuestion => Speech.Say(WordId.TesterQuestion);
+        public static string TesterModeTells => Speech.Say(WordId.TesterTells);
+        public static string TurnTesterModeOn => Speech.Say(WordId.TesterTurnOn);
+        public static string LeaveTesterModeOff => Speech.Say(WordId.TesterLeaveOff);
+
+        /// <summary>
+        /// The name of the language the game speaks, in that language: the settings row's value. The language card
+        /// names each language it offers in that language's own words (<see cref="OwnNameOf"/>).
+        /// </summary>
+        public static string LanguageSpoken => Speech.Say(WordId.LanguageOwnName);
+
+        /// <summary>A language's name in its own words, from its own table: "Türkçe", "English", "한국어".</summary>
+        public static string OwnNameOf(Wording wording) => wording.Words.WordsOf(WordId.LanguageOwnName, PluralForm.Other);
 
         /// <summary>The name of a setting's row.</summary>
         public static string NameOf(DeviceSetting setting) => setting switch
         {
-            DeviceSetting.Sound => "Ses",
-            DeviceSetting.Vibration => "Titreşim",
-            DeviceSetting.TesterMode => "Test modu",
+            DeviceSetting.Sound => Speech.Say(WordId.SettingSound),
+            DeviceSetting.Vibration => Speech.Say(WordId.SettingVibration),
+            DeviceSetting.TesterMode => Speech.Say(WordId.SettingTesterMode),
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a name."),
         };
 
@@ -68,10 +78,12 @@ namespace Puzzle.Client.Flow
         }
 
         /// <summary>The settings card's foot: "Oyuncu kimliği: 6F1C-0E9A · Sürüm 1.0".</summary>
-        public static string Foot(DeviceId device, string gameVersion) => $"{PlayerIdLabel}: {PlayerId(device)} · {GameVersionLabel} {gameVersion}";
+        public static string Foot(DeviceId device, string gameVersion) =>
+            Speech.Say(WordId.SettingsFoot, ("playerId", PlayerId(device)), ("version", gameVersion));
 
         /// <summary>The support card's content version: "sürüm 1".</summary>
-        public static string ContentVersionOf(ContentVersion content) => $"sürüm {content.Value}";
+        public static string ContentVersionOf(ContentVersion content) =>
+            Speech.Say(WordId.SupportContentVersionValue, ("version", content.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
         /// <summary>
         /// The line under the foot that says what kind of build this is, from the build's marks in the economy's
@@ -82,15 +94,15 @@ namespace Puzzle.Client.Flow
         {
             string adsAre = ads switch
             {
-                AdSource.Simulated => "reklamlar canlandırma",
+                AdSource.Simulated => Speech.Say(WordId.BuildAdsSimulated),
                 _ => throw new ArgumentOutOfRangeException(nameof(ads), ads, "A source of ads the settings card cannot name."),
             };
             string buying = realMoney switch
             {
-                RealMoneySales.NotAvailable => "satın alma kapalı",
+                RealMoneySales.NotAvailable => Speech.Say(WordId.BuildNoBuying),
                 _ => throw new ArgumentOutOfRangeException(nameof(realMoney), realMoney, "A way of selling the settings card cannot name."),
             };
-            return $"Test sürümü · {adsAre}, {buying}";
+            return Speech.Say(WordId.SettingsBuildLine, ("ads", adsAre), ("buying", buying));
         }
     }
 }

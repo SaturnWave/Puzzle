@@ -11,6 +11,7 @@ using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
+using Puzzle.Client.Words;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
@@ -412,7 +413,7 @@ namespace Puzzle.Client.Flow
         /// <summary>The phone as the settings card shows it now: the settings kept, the records there are, this build's versions and marks.</summary>
         private DeviceView DeviceNow => new DeviceView(
             _settings.Settings, _abilities.Settings, _attempts.Device, Application.version, _content,
-            RecordsKeptNow(), _attempts.FilePath, _rules.Ads, _rules.Shop.RealMoney);
+            RecordsKeptNow(), _attempts.FilePath, _rules.Ads, _rules.Shop.RealMoney, Speech.Language, WordsPack.Offered);
 
         /// <summary>Tells the museum or the board, whichever is the stage that is seen, of the wallet as it is at this step.</summary>
         private void TellTheStageTheWallet()
@@ -650,10 +651,12 @@ namespace Puzzle.Client.Flow
         }
 
         /// <summary>
-        /// What the museum's settings card asked of the phone since it was last asked: a setting turned is kept in the
-        /// device file at once, the attempt records are deleted. A file that cannot be written does not stop the game:
-        /// the setting holds for this run, and the records that could not be deleted are still counted. The museum is
-        /// told the phone after it.
+        /// What the museum's settings card asked of the phone since it was last asked: a setting turned, or a language
+        /// chosen, is kept in the device file at once, the attempt records are deleted. A file that cannot be written
+        /// does not stop the game: the setting or the language holds for this run, and the records that could not be
+        /// deleted are still counted. The museum is told the phone after it; after a language, it speaks anew, every
+        /// page and card at once. A board is never open meanwhile (the settings card hangs in the museum only), and
+        /// the next board is built in the language spoken by then.
         /// </summary>
         private void DoWhatWasAskedOfThePhone()
         {
@@ -668,6 +671,7 @@ namespace Puzzle.Client.Flow
                 return;
             }
 
+            Language spokenBefore = Speech.Language;
             foreach (DeviceRequest request in asked)
             {
                 try
@@ -681,7 +685,14 @@ namespace Puzzle.Client.Flow
                 }
             }
 
-            museum.Tell(DeviceNow);
+            if (Speech.Language != spokenBefore)
+            {
+                museum.SpeakAnew(DeviceNow);
+            }
+            else
+            {
+                museum.Tell(DeviceNow);
+            }
         }
 
         /// <exception cref="IOException">The device file or the attempt log could not be written.</exception>
@@ -696,6 +707,11 @@ namespace Puzzle.Client.Flow
                 case DeviceRequest.DeleteTheRecords _:
                     _attempts.DeleteAll();
                     Debug.Log("The attempt records on this phone were deleted at the player's wish.");
+                    break;
+                case DeviceRequest.ChooseALanguage choose:
+                    // Spoken first: a device file that cannot be written leaves the language chosen for this run.
+                    WordsPack.Speak(choose.Language);
+                    _settings.Keep(_settings.Settings.WithLanguage(choose.Language));
                     break;
                 default:
                     throw new InvalidOperationException($"The session does not know the request \"{request}\".");

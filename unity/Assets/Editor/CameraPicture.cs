@@ -29,6 +29,7 @@ namespace Puzzle.Client.EditorTools
             {
                 camera.targetTexture = target;
                 camera.Render();
+                LetteringFit.Check(camera); // after the render, with the camera's view as it was drawn
                 return Read(target);
             }
             finally

@@ -8,6 +8,7 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Sound;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -142,6 +143,12 @@ namespace Puzzle.Client
         {
             var clock = new SystemWallClock();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
+
+            // The game speaks before anything is built: the player's choice, or the phone's language where the game offers it.
+            Language phoneLanguage = PhoneLanguage.OfThisDevice();
+            Language speaking = WordsPack.InEffect(settings.Settings, phoneLanguage);
+            WordsPack.Speak(speaking);
+            Debug.Log($"The game speaks {Languages.CodeOf(speaking)} (the phone's language: {PhoneLanguage.Tag()}; chosen: {(settings.Settings.Language is Language chosen ? Languages.CodeOf(chosen) : "none")}).");
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
             GameSession SessionOn(IProgressStore store) =>
                 new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, DeviceAbilities.OfThisBuild, cues, screen, SessionOpening.InTheMuseum);

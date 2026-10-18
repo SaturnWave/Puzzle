@@ -138,9 +138,22 @@ namespace Puzzle.Client.Gallery
         public static void SayWithin(TextMeshPro line, string words, float size, float room)
         {
             line.fontSize = size;
-            line.fontSize = size * Mathf.Min(1f, room / WidthOf(line, words));
+            float fits = Mathf.Min(1f, room / WidthOf(line, words));
+            line.fontSize = size * fits;
             Say(line, words);
+#if UNITY_EDITOR
+            // The Editor's pictures say where a language's words are set much smaller than the design's: where to look first.
+            if (fits < MuchSmaller)
+            {
+                Debug.Log($"Lettering: \"{words.Replace("\n", " / ")}\" ({line.name}) is set at {fits:P0} of its {size:0.#} points to fit {room:0.#} points.");
+            }
+#endif
         }
+
+#if UNITY_EDITOR
+        /// <summary>A line set smaller than this part of its size is told of in the Editor's log.</summary>
+        private const float MuchSmaller = 0.8f;
+#endif
 
         /// <summary>
         /// Says something so that it begins at a place instead of being centred on it: the line is moved to where

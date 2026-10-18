@@ -1,56 +1,58 @@
 #nullable enable
 using System;
 using System.Globalization;
+using Puzzle.Client.Words;
 using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
 {
-    /// <summary>What the plaques over the board say, in the player's language, in the capitals the design sets them in (BoardTR). No Unity dependency.</summary>
+    /// <summary>What the plaques over the board say, in the language the game speaks, in the capitals the design sets them in (BoardTR). No Unity dependency.</summary>
     public static class BoardWords
     {
         /// <summary>The label over the level's number, where the level gives no jigsaw piece.</summary>
-        public const string Level = "BÖLÜM";
+        public static string Level => Speech.Say(WordId.BoardLevel);
 
         /// <summary>The label on the moves' medallion.</summary>
-        public const string Moves = "HAMLE";
+        public static string Moves => Speech.Say(WordId.BoardMoves);
 
         /// <summary>The label over the goals, where the level gives no jigsaw piece.</summary>
-        public const string Goals = "HEDEF";
+        public static string Goals => Speech.Say(WordId.BoardGoals);
 
         /// <summary>The label over the goals where the level's number has no plaque of its own: "BÖLÜM 47".</summary>
-        public static string LevelNumbered(int levelNumber) => $"{Level} {Number(levelNumber)}";
+        public static string LevelNumbered(int levelNumber) => Speech.Say(WordId.BoardLevelNumbered, ("level", Number(levelNumber)));
 
         /// <summary>The label over the painting whose piece the level gives: how many of its pieces the player has once it is won, "PARÇA 7 / 10".</summary>
-        public static string PieceOf(PieceReward reward) => $"PARÇA {Number(reward.WonWithThem)} / {Number(reward.PieceCount)}";
+        public static string PieceOf(PieceReward reward) =>
+            Speech.Say(WordId.BoardPieceOf, ("won", Number(reward.WonWithThem)), ("all", Number(reward.PieceCount)));
 
         /// <summary>On the disc of a booster used during play that is not open yet: the level it opens on.</summary>
-        public static string OpensOn(int levelNumber) => $"Bölüm {Number(levelNumber)}";
+        public static string OpensOn(int levelNumber) => Speech.Say(WordId.BoosterOpensOn, ("level", Number(levelNumber)));
 
         public static string Number(int number) => number.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>
-    /// What the board says of the boosters used during play, on the pill over the shelf and on the card that offers
-    /// one: their names, what each does and what to pick for it, why a use was refused, the word on a booster's first
+    /// What the board says of the boosters used during play, in the language the game speaks, on the pill over the
+    /// shelf and on the card that offers one: their names, what each does and what to pick for it, why a use was refused, the word on a booster's first
     /// use and the honest line beside the first of them. The design canvas draws none of it (BoardTR shows the discs
     /// alone); the words follow docs/research/in-level-boosters.md, section 5. No Unity dependency.
     /// </summary>
     public static class BoosterWords
     {
         /// <summary>The line beside the first booster's word on its first use (the genre's honest sentence, the owner's of 2026-10-15): the levels are calibrated without boosters.</summary>
-        public const string EveryLevelWithout = "Her bölüm booster'sız geçilebilir";
+        public static string EveryLevelWithout => Speech.Say(WordId.BoosterEveryLevelWithout);
 
         /// <summary>The smaller line of the card that offers a booster used during play: using it costs no move.</summary>
-        public const string CostsNoMove = "Kullanmak hamle harcamaz";
+        public static string CostsNoMove => Speech.Say(WordId.BoosterCostsNoMove);
 
         /// <summary>The booster's name, on its pill and on the card that offers it.</summary>
         /// <exception cref="ArgumentException">The booster is taken before a level; the board's shelf has none of it.</exception>
         public static string NameOf(BoosterKind booster) => booster switch
         {
-            BoosterKind.HitCell => "Spatula",
-            BoosterKind.HitRow => "Yatay fırça",
-            BoosterKind.HitColumn => "Dikey fırça",
-            BoosterKind.Shuffle => "Paleti karıştır",
+            BoosterKind.HitCell => Speech.Say(WordId.BoosterHitCell),
+            BoosterKind.HitRow => Speech.Say(WordId.BoosterHitRow),
+            BoosterKind.HitColumn => Speech.Say(WordId.BoosterHitColumn),
+            BoosterKind.Shuffle => Speech.Say(WordId.BoosterShuffle),
             _ => throw NotUsedDuringPlay(booster),
         };
 
@@ -58,10 +60,10 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentException">The booster is taken before a level.</exception>
         public static string WhatItDoes(BoosterKind booster) => booster switch
         {
-            BoosterKind.HitCell => "bir taşı ya da bir katı kaldırır",
-            BoosterKind.HitRow => "bir satırı boyar",
-            BoosterKind.HitColumn => "bir sütunu boyar",
-            BoosterKind.Shuffle => "taşları yeniden dizer",
+            BoosterKind.HitCell => Speech.Say(WordId.BoosterHitCellDoes),
+            BoosterKind.HitRow => Speech.Say(WordId.BoosterHitRowDoes),
+            BoosterKind.HitColumn => Speech.Say(WordId.BoosterHitColumnDoes),
+            BoosterKind.Shuffle => Speech.Say(WordId.BoosterShuffleDoes),
             _ => throw NotUsedDuringPlay(booster),
         };
 
@@ -72,9 +74,9 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentException">The booster is the shuffle, or is taken before a level.</exception>
         public static string WhatToPick(BoosterKind booster) => booster switch
         {
-            BoosterKind.HitCell => "Bir taş seç",
-            BoosterKind.HitRow => "Bir satır seç",
-            BoosterKind.HitColumn => "Bir sütun seç",
+            BoosterKind.HitCell => Speech.Say(WordId.BoosterPickACell),
+            BoosterKind.HitRow => Speech.Say(WordId.BoosterPickARow),
+            BoosterKind.HitColumn => Speech.Say(WordId.BoosterPickAColumn),
             BoosterKind.Shuffle => throw new ArgumentException("The shuffle is used at once; nothing is picked for it.", nameof(booster)),
             _ => throw NotUsedDuringPlay(booster),
         };
@@ -83,8 +85,8 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentException">The booster is taken before a level.</exception>
         public static string Refused(BoosterKind booster) => booster switch
         {
-            BoosterKind.HitCell or BoosterKind.HitRow or BoosterKind.HitColumn => "Burada vurulacak bir şey yok",
-            BoosterKind.Shuffle => "Tahta karıştırılamıyor",
+            BoosterKind.HitCell or BoosterKind.HitRow or BoosterKind.HitColumn => Speech.Say(WordId.BoosterNothingToHit),
+            BoosterKind.Shuffle => Speech.Say(WordId.BoosterCannotShuffle),
             _ => throw NotUsedDuringPlay(booster),
         };
 
@@ -92,19 +94,23 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentException">The booster is taken before a level.</exception>
         public static string FirstUse(BoosterKind booster) => booster switch
         {
-            BoosterKind.HitCell => "Yeni: Spatula! Diske dokun, sonra bir taşa.",
-            BoosterKind.HitRow => "Yeni: Yatay fırça! Diske dokun, sonra bir satıra.",
-            BoosterKind.HitColumn => "Yeni: Dikey fırça! Diske dokun, sonra bir sütuna.",
-            BoosterKind.Shuffle => "Yeni: Paleti karıştır! Diske dokun, taşlar yeniden dizilsin.",
+            BoosterKind.HitCell => Speech.Say(WordId.BoosterFirstUseHitCell),
+            BoosterKind.HitRow => Speech.Say(WordId.BoosterFirstUseHitRow),
+            BoosterKind.HitColumn => Speech.Say(WordId.BoosterFirstUseHitColumn),
+            BoosterKind.Shuffle => Speech.Say(WordId.BoosterFirstUseShuffle),
             _ => throw NotUsedDuringPlay(booster),
         };
 
-        /// <summary>What the booster does, as the card that offers it says it: a sentence of its own.</summary>
-        public static string OnTheCard(BoosterKind booster)
+        /// <summary>What the booster does, as the card that offers it says it: a sentence of its own, with the capital a language gives a sentence's first word.</summary>
+        /// <exception cref="ArgumentException">The booster is taken before a level.</exception>
+        public static string OnTheCard(BoosterKind booster) => booster switch
         {
-            string does = WhatItDoes(booster);
-            return char.ToUpperInvariant(does[0]) + does.Substring(1); // every one begins with a letter that has no Turkish capital of its own
-        }
+            BoosterKind.HitCell => Speech.Say(WordId.BoosterHitCellOnTheCard),
+            BoosterKind.HitRow => Speech.Say(WordId.BoosterHitRowOnTheCard),
+            BoosterKind.HitColumn => Speech.Say(WordId.BoosterHitColumnOnTheCard),
+            BoosterKind.Shuffle => Speech.Say(WordId.BoosterShuffleOnTheCard),
+            _ => throw NotUsedDuringPlay(booster),
+        };
 
         private static ArgumentException NotUsedDuringPlay(BoosterKind booster) =>
             new ArgumentException($"{booster.Name()} is taken before a level; the board's shelf has none of it.", nameof(booster));

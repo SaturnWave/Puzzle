@@ -61,6 +61,38 @@
       "changed": "The figures 0 to 9 are the font's own lining forms (its 'lnum' feature) by default: tools/unity/lining-figures.js",
       "bytesAsKept": 104304,
       "sha256AsKept": "e1fbbf8d69c7618b64333c921f8942b940f4bd201dfc7f10b60e447b8d9fcf79"
+    },
+    {
+      "file": "NotoSansKR-ExtraBold.ttf",
+      "family": "Noto Sans KR",
+      "weight": 800,
+      "fallback": "Korean, behind Gabarito and Paytone One",
+      "copyright": "Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'",
+      "reservedFontNames": [
+        "Source"
+      ],
+      "licence": "SIL Open Font License, Version 1.1",
+      "licenceText": "NotoSansKR-OFL.txt",
+      "licenceTextFrom": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr/OFL.txt",
+      "askedOf": "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@800",
+      "fetchedFrom": "https://fonts.gstatic.com/s/notosanskr/v40/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzmo1eLQ.ttf",
+      "bytes": 6167860,
+      "sha256": "761a11bf938bb244de84a1411627f26ea5b7d9b8eea6b9cbd30ad37888dfd2e9"
+    },
+    {
+      "file": "NotoSerifKR-Bold.ttf",
+      "family": "Noto Serif KR",
+      "weight": 700,
+      "fallback": "Korean, behind Young Serif",
+      "copyright": "Copyright 2012 Google Inc. All Rights Reserved.",
+      "reservedFontNames": [],
+      "licence": "SIL Open Font License, Version 1.1",
+      "licenceText": "NotoSerifKR-OFL.txt",
+      "licenceTextFrom": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifkr/OFL.txt",
+      "askedOf": "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700",
+      "fetchedFrom": "https://fonts.gstatic.com/s/notoserifkr/v32/3JnoSDn90Gmq2mr3blnHaTZXbOtLJDvui3JOncgBf852.ttf",
+      "bytes": 14062572,
+      "sha256": "86cf53e1f809e8e8c3f15bc169fdb3ee984c870671ccac7ce477dc6cda7d7c10"
     }
   ]
 }

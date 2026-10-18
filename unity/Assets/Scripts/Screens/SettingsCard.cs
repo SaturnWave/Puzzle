@@ -11,22 +11,24 @@ using UnityEngine;
 
 namespace Puzzle.Client.Screens
 {
-    /// <summary>The settings card and the two cards it opens in front of it, as the tools ask which of them is in front. A closed set.</summary>
+    /// <summary>The settings card and the three cards it opens in front of it, as the tools ask which of them is in front. A closed set.</summary>
     public enum SettingsCardKind
     {
         Settings,
         Privacy,
         Support,
+        Language,
     }
 
     /// <summary>
     /// The settings card, as the design canvas draws it (SettingsTR), over a museum page: the brass nameplate
     /// "Ayarlar", a row with a switch for every setting the build honours (and the tester mode's while it holds, with
-    /// the coin for its mark: the canvas draws no such row), a gilt rule under them, then the language,
-    /// which only says "Türkçe", and the rows that open the privacy card and the support card, each with its teal disc
-    /// and mark; at its foot the player's id and the game's version, and under them what kind of build this is. It is
-    /// opened by the gear of the wallet row and closed by its round button and by the way back; the two cards it opens
-    /// hang in front of it. Where everything stands is <see cref="SettingsLayout"/>'s, in the canvas' points.
+    /// the coin for its mark: the canvas draws no such row), a gilt rule under them, then the rows that open the
+    /// language card (with the name of the language the game speaks, in its own words, before its chevron), the
+    /// privacy card and the support card, each with its teal disc and mark; at its foot the player's id and the game's
+    /// version, and under them what kind of build this is. It is opened by the gear of the wallet row and closed by its
+    /// round button and by the way back; the three cards it opens hang in front of it. Where everything stands is
+    /// <see cref="SettingsLayout"/>'s, in the canvas' points.
     /// </summary>
     /// <remarks>
     /// A switch slides when its row is pressed, and its owner keeps the setting at once; the card shows the settings
@@ -65,7 +67,7 @@ namespace Puzzle.Client.Screens
 
             foreach (SettingsRowPlace row in _layout.Rows)
             {
-                AddRow(row, switches, device.Settings, art);
+                AddRow(row, switches, device, art);
             }
 
             _rules = PaintedShape.Create("Rules", _card.Content, art.PaintMaterial, DrawOrder.CardArt);
@@ -82,7 +84,9 @@ namespace Puzzle.Client.Screens
 
         public HangingCard<MuseumPress> Card => _card;
 
-        /// <summary>The middles of the rows that open the privacy card and the support card, in the layout's points: where a finger presses them.</summary>
+        /// <summary>The middles of the rows that open the language card, the privacy card and the support card, in the layout's points: where a finger presses them.</summary>
+        public Vector2 LanguageRowMiddle => _card.InTheLayout(RowMiddle(_layout.RowOf(SettingsRowKind.Language)));
+
         public Vector2 PrivacyRowMiddle => _card.InTheLayout(RowMiddle(_layout.RowOf(SettingsRowKind.Privacy)));
 
         public Vector2 SupportRowMiddle => _card.InTheLayout(RowMiddle(_layout.RowOf(SettingsRowKind.Support)));
@@ -143,7 +147,7 @@ namespace Puzzle.Client.Screens
 
         private Vector3 RowMiddle(SettingsRowPlace row) => _card.At(row.Middle) + new Vector3((SettingsLayout.RowsLeft + SettingsLayout.RowsRight) / 2f, 0f, 0f);
 
-        private void AddRow(SettingsRowPlace row, IReadOnlyList<DeviceSetting> switches, DeviceSettings settings, ArtCatalogue art)
+        private void AddRow(SettingsRowPlace row, IReadOnlyList<DeviceSetting> switches, DeviceView device, ArtCatalogue art)
         {
             Vector3 middle = _card.At(row.Middle);
             switch (row.Kind)
@@ -151,7 +155,7 @@ namespace Puzzle.Client.Screens
                 case SettingsRowKind.Switch:
                     DeviceSetting setting = switches[row.SwitchIndex];
                     AddDiscAndName(row, MarkOf(setting), SettingsWords.NameOf(setting), art);
-                    var toggle = new Toggle($"{setting} switch", _card.Content, art, settings.IsOn(setting), DrawOrder.CardDisc);
+                    var toggle = new Toggle($"{setting} switch", _card.Content, art, device.Settings.IsOn(setting), DrawOrder.CardDisc);
                     toggle.Place(new Vector2(SettingsLayout.SwitchMiddle, middle.y));
                     _switches.Add(setting, toggle);
                     _card.Listen(new RowButton(row, toggle), new MuseumPress.FlipASwitch(setting));
@@ -159,7 +163,8 @@ namespace Puzzle.Client.Screens
                 case SettingsRowKind.Language:
                     AddDiscAndName(row, GalleryArt.IconGlobe, SettingsWords.Language, art);
                     TextMeshPro value = Lettering.Write("Value", _card.Content, art, LetteringStyle.Soft, SettingsLayout.ValueSize, Lettering.SoftInk, DrawOrder.CardLettering);
-                    Lettering.SayUpToRight(value, SettingsWords.Turkish, SettingsLayout.ValueRight(hasAChevron: false), middle.y);
+                    Lettering.SayUpToRight(value, device.SpeakingName, SettingsLayout.ValueRight(hasAChevron: true), middle.y);
+                    _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenTheLanguages());
                     break;
                 case SettingsRowKind.Privacy:
                     AddPrivacyRow(row, art);

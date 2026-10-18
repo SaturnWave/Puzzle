@@ -28,7 +28,8 @@ namespace Puzzle.Client.EditorTools
     /// and whose ads are used up; on the level of one goal also the card that stands in for an ad as it begins and as
     /// it ends, the five moves counted up and the board going on, and the card of the loss for good after "Vazgeç";
     /// and the card of a board no shuffle brings back, whose moves were refused. Pictures go to
-    /// out/unity/shots/offer-...-SIZE.png, with one sheet of a size's pictures.
+    /// out/unity/shots/offer-...-SIZE.png, with one sheet of a size's pictures; in another language than Turkish
+    /// (<c>-language en</c>) their names end in its code.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.OfferShots.Run
     ///            [-offerSizes 1080x2340,1080x1920,2076x2152] [-offerLevels 47,11,280]
     /// </summary>
@@ -72,7 +73,7 @@ namespace Puzzle.Client.EditorTools
 
                     pictures += studio.ShootTheWayOn(rehearsed[0]);
                     pictures += studio.ShootTheRefusal();
-                    StoryStudio.WriteSheet(sheet, $"offer-sheet-{screen}.png");
+                    StoryStudio.WriteSheet(sheet, $"offer-sheet-{screen}{ToolLanguage.FileNameEnding}.png");
                 }
 
                 Debug.Log($"Offer shots: {pictures} pictures of the offer of extra moves are in {StoryStudio.ShotsFolder}.");
@@ -229,7 +230,7 @@ namespace Puzzle.Client.EditorTools
 
             private void Shoot(GameStage stage, string name)
             {
-                StoryStudio.Shoot(stage, _screen, _sheet, $"{name}-{_screen}.png");
+                StoryStudio.Shoot(stage, _screen, _sheet, $"{name}-{_screen}{ToolLanguage.FileNameEnding}.png");
             }
 
             /// <summary>The most moves the rehearsed game can have and still run out of them with every goal open: the latest loss the offer can be made at with all its goals.</summary>

@@ -75,7 +75,7 @@ namespace Puzzle.Client.EditorTools
         private const ulong BotStream = 3;
 
         /// <summary>A later game's device file, with an id and settings this game reads and something it does not know.</summary>
-        private const string LaterDeviceDocument = "{\"version\":4,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"music\":false}}";
+        private const string LaterDeviceDocument = "{\"version\":5,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"en\",\"music\":false}}";
 
         /// <summary>Records the game wrote before the shuffle booster's rule changed, which name no rule.</summary>
         private const string FirstRuleRecords = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
@@ -139,7 +139,7 @@ namespace Puzzle.Client.EditorTools
         {
             DeviceId made = DeviceFile.LoadOrMake(Folder).Device;
             string written = File.ReadAllText(Path.Combine(Folder, DeviceFile.FileName));
-            Require(written == "{\"version\":3,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false}}", $"the first start wrote the device file as {written}");
+            Require(written == "{\"version\":4,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"\"}}", $"the first start wrote the device file as {written}");
             DeviceFile afterARestart = DeviceFile.LoadOrMake(Folder);
             Require(afterARestart.Device.Equals(made), $"a restart read the id {afterARestart.Device}, not {made}");
             Require(afterARestart.Settings.Equals(DeviceSettings.Default), $"a restart read the settings {afterARestart.Settings}, not a first start's");
@@ -171,7 +171,7 @@ namespace Puzzle.Client.EditorTools
             Require(read.Device.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a" && read.Settings.Equals(DeviceSettings.Default), $"a file of the first layout read as {read.Settings} of {read.Device}");
             Require(File.ReadAllText(olderFile) == firstLayout, "a file of the first layout was written before anything was changed");
             read.Keep(quiet);
-            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":3,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
+            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":4,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
         }
 
         /// <summary>
@@ -237,9 +237,9 @@ namespace Puzzle.Client.EditorTools
             Require(!kept.Settings.Sound, $"a later game's settings read as {kept.Settings}");
             kept.Keep(DeviceSettings.Default);
             Require(File.ReadAllText(laterFile) == LaterDeviceDocument, "a setting changed on a later game's device file was written over it");
-            File.WriteAllText(laterFile, "{\"version\":4,\"id\":\"a later spelling\"}");
+            File.WriteAllText(laterFile, "{\"version\":5,\"id\":\"a later spelling\"}");
             DeviceFile.LoadOrMake(later);
-            Require(File.ReadAllText(laterFile) == "{\"version\":4,\"id\":\"a later spelling\"}", "a later game's device file was written over");
+            Require(File.ReadAllText(laterFile) == "{\"version\":5,\"id\":\"a later spelling\"}", "a later game's device file was written over");
         }
 
         /// <summary>

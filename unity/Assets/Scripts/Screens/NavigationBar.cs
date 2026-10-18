@@ -95,6 +95,9 @@ namespace Puzzle.Client.Screens
         /// <summary>Builds the bar with one destination shown as the one the player is at. Call <see cref="Place"/> before the first picture.</summary>
         public static NavigationBar Create(Transform parent, ArtCatalogue art, Destination chosen) => new NavigationBar(parent, art, chosen);
 
+        /// <summary>What the chosen destination's plate says: its name, in the language the game speaks.</summary>
+        public string Says => _name.text;
+
         /// <summary>Lays the bar along the foot of a page; call again whenever the screen changes.</summary>
         public void Place(PageLayout page)
         {

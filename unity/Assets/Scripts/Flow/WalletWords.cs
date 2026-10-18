@@ -1,36 +1,37 @@
 #nullable enable
 using System;
 using System.Globalization;
+using Puzzle.Client.Words;
 using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
 {
     /// <summary>
-    /// What the wallet row and the lives card say, in the player's language. The row's words are the design
-    /// canvas' (HomeTR: "1.250", "Dolu", the count on the heart); the lives card has no drawing, and its words are
-    /// written in the canvas' manner. In the tester mode the amount and the count on the heart are "∞", the lives
-    /// pill says "Test", why, and the lives card "Sınırsız". No Unity dependency.
+    /// What the wallet row and the lives card say, in the language the game speaks (<see cref="Speech"/>). The row's
+    /// Turkish words are the design canvas' (HomeTR: "1.250", "Dolu", the count on the heart); the lives card has no
+    /// drawing, and its words are written in the canvas' manner. In the tester mode the amount and the count on the
+    /// heart are "∞", the lives pill says "Test", why, and the lives card "Sınırsız". No Unity dependency.
     /// </summary>
     public static class WalletWords
     {
         /// <summary>The lives pill while every life is there.</summary>
-        public const string Full = "Dolu";
+        public static string Full => Speech.Say(WordId.LivesFull);
 
         /// <summary>The lives card's nameplate, and its line while every life is there.</summary>
-        public const string LivesTitle = "Canlar";
-        public const string AllLivesThere = "Canların dolu";
+        public static string LivesTitle => Speech.Say(WordId.LivesTitle);
+        public static string AllLivesThere => Speech.Say(WordId.LivesAllThere);
 
         /// <summary>The lives card's line for a player without a life, who may have pressed the play button.</summary>
-        public const string PlayWhenALifeComes = "Bir can gelince oynayabilirsin";
+        public static string PlayWhenALifeComes => Speech.Say(WordId.LivesPlayWhenALifeComes);
 
-        /// <summary>What the row and the lives card show of coins and lives that have no end, in the tester mode.</summary>
+        /// <summary>What the row and the lives card show of coins and lives that have no end, in the tester mode: a sign, the same in every language.</summary>
         public const string Unlimited = "∞";
 
         /// <summary>The lives pill in the tester mode, the lives card's figures under its heart there, and its lines.</summary>
-        public const string TesterModePill = "Test";
-        public const string UnlimitedLives = "Sınırsız";
-        public const string TesterModeOn = "Test modu açık";
-        public const string NoLifeIsLost = "Kaybedince can gitmez";
+        public static string TesterModePill => Speech.Say(WordId.TesterPill);
+        public static string UnlimitedLives => Speech.Say(WordId.TesterUnlimitedLives);
+        public static string TesterModeOn => Speech.Say(WordId.TesterModeIsOn);
+        public static string NoLifeIsLost => Speech.Say(WordId.TesterNoLifeIsLost);
 
         /// <summary>The amount of coins, with its thousands set apart: "1.250".</summary>
         public static string Amount(Coins coins) => NumberWords.Amount(coins.Amount);
@@ -49,10 +50,10 @@ namespace Puzzle.Client.Flow
         public static string LivesOfMost(WalletView wallet) => wallet.IsUnlimited ? UnlimitedLives : $"{Number(wallet.Lives)} / {Number(wallet.MostLives)}";
 
         /// <summary>When the next life is back: "Sonraki can 12:34".</summary>
-        public static string NextLife(TimeSpan wait) => $"Sonraki can {NumberWords.Countdown(wait)}";
+        public static string NextLife(TimeSpan wait) => Speech.Say(WordId.LivesNextLife, ("wait", NumberWords.Countdown(wait)));
 
         /// <summary>When every life is back: "Canların 1 sa 42 dk sonra dolar".</summary>
-        public static string FullAfter(TimeSpan wait) => $"Canların {NumberWords.HoursAndMinutes(wait)} sonra dolar";
+        public static string FullAfter(TimeSpan wait) => Speech.Say(WordId.LivesFullAfter, ("wait", NumberWords.HoursAndMinutes(wait)));
 
         private static string Number(int number) => number.ToString(CultureInfo.InvariantCulture);
     }

@@ -10,6 +10,7 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Stage;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -106,12 +107,13 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// The phone as a tool's pictures show it without a session: a first start's settings, a row for each setting
-        /// the abilities name, the tools' id, this build's version and its newest levels, and the records of a log.
+        /// the abilities name, the tools' id, this build's version and its newest levels, the records of a log, and the
+        /// language the tools speak among those the game offers.
         /// </summary>
         public static DeviceView PhoneWith(IAttemptLog log, IReadOnlyList<LevelDefinition> levels, DeviceAbilities abilities) =>
             new DeviceView(
                 DeviceSettings.Default, abilities.Settings, log.Device, Application.version, levels.Select(level => level.ContentVersion).Max(),
-                log.CountRecords(), log.FilePath, Economy.Ads, Economy.Shop.RealMoney);
+                log.CountRecords(), log.FilePath, Economy.Ads, Economy.Shop.RealMoney, Speech.Language, WordsPack.Offered);
 
         /// <summary>
         /// The progress of a new player who stands on a level, never having tried it: the welcome gift and the gift of

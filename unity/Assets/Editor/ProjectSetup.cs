@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,8 +9,8 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// Brings everything the Editor derives up to date, in the order the parts need each other: the render pipeline,
     /// the atlas of the sprites, the art catalogue from the drawings, the typeface and the sounds (it lists every sound
-    /// cue with its file, length and peak level), the scene that refers to the catalogue; and it keeps Unity's own
-    /// player statistics off. Safe to run again at any time; run it after the drawings, the lists of drawings, the
+    /// cue with its file, length and peak level), the scene that refers to the catalogue; it keeps Unity's own
+    /// player statistics off, and TextMesh Pro breaking Korean lines between words. Safe to run again at any time; run it after the drawings, the lists of drawings, the
     /// lettering styles or the sounds change (after node tools/unity/export-sprites.js, export-gallery-art.js or
     /// fetch-sounds.js, for instance).
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ProjectSetup.Run
@@ -18,6 +19,9 @@ namespace Puzzle.Client.EditorTools
     {
         /// <summary>The player settings' field of Unity's own statistics.</summary>
         private const string StatisticsField = "submitAnalytics";
+
+        /// <summary>TextMesh Pro's settings' field that breaks Korean lines between words, as Korean is written, rather than between any two syllables.</summary>
+        private const string HangulLineBreakingField = "m_UseModernHangulLineBreakingRules";
 
         public static void Run()
         {
@@ -47,7 +51,31 @@ namespace Puzzle.Client.EditorTools
             PaintingSizesBuilder.Build();
             MainSceneBuilder.Build();
             SwitchOffUnitysStatistics();
+            BreakKoreanLinesBetweenWords();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Korean is written with spaces between its words and breaks its lines there; TextMesh Pro breaks it by
+        /// default between any two syllables, as it breaks Chinese and Japanese, which splits a word over two lines
+        /// (the privacy card's "무\n작위"). Its settings asset has a flag for the modern rule; the Editor sets it by
+        /// the asset's field, as the settings window does.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">TextMesh Pro's settings are missing or have no such field: check how this version breaks Korean lines.</exception>
+        private static void BreakKoreanLinesBetweenWords()
+        {
+            TMP_Settings settings = Resources.Load<TMP_Settings>("TMP Settings")
+                ?? throw new InvalidOperationException("TextMesh Pro's settings asset is missing; its own resources come with node tools/unity/import-text-resources.js.");
+            var serialized = new SerializedObject(settings);
+            SerializedProperty modernHangul = serialized.FindProperty(HangulLineBreakingField)
+                ?? throw new InvalidOperationException($"TextMesh Pro's settings have no field {HangulLineBreakingField}; check how this version breaks Korean lines.");
+            if (!modernHangul.boolValue)
+            {
+                modernHangul.boolValue = true;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(settings);
+                Debug.Log("Project setup: TextMesh Pro breaks Korean lines between words.");
+            }
         }
 
         /// <summary>

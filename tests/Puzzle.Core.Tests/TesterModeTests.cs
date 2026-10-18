@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Words;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Screens;
 using Puzzle.Core.Levels;
@@ -202,7 +203,7 @@ public class TesterModeTests
     }
 
     [Fact]
-    public void The_device_file_keeps_the_tester_mode_in_layout_3_and_an_older_file_reads_with_it_off_whatever_it_holds()
+    public void The_device_file_keeps_the_tester_mode_since_layout_3_and_an_older_file_reads_with_it_off_whatever_it_holds()
     {
         var options = new JsonSerializerOptions { IncludeFields = true };
         const string Id = "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a";
@@ -212,7 +213,7 @@ public class TesterModeTests
         string older = "{\"version\":2,\"id\":\"" + Id + "\",\"settings\":{\"sound\":true,\"vibration\":false,\"testerMode\":true}}";
         DeviceSettings readOlder = Assert.IsType<DeviceReading.Sound>(DeviceDocument.Read(JsonSerializer.Deserialize<DeviceDocument>(older, options))).Settings;
 
-        Assert.Equal("{\"version\":3,\"id\":\"" + Id + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":true}}", written);
+        Assert.Equal("{\"version\":4,\"id\":\"" + Id + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":true,\"language\":\"\"}}", written);
         Assert.Equal(TurnedOn, readBack);
         Assert.Equal(new DeviceSettings(sound: true, vibration: false, testerMode: false), readOlder);
     }
@@ -288,5 +289,5 @@ public class TesterModeTests
 
     private static DeviceView PhoneWith(DeviceSettings settings, AdSource ads) => new(
         settings, DeviceAbilities.OfThisBuild.Settings, new DeviceId("6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a"), "1.0", ContentVersion.First,
-        recordsKept: 0, recordsFile: null, ads, RealMoneySales.NotAvailable);
+        recordsKept: 0, recordsFile: null, ads, RealMoneySales.NotAvailable, Language.Turkish, new[] { new LanguageOffer(Language.Turkish, "Türkçe") });
 }

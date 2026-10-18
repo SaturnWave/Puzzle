@@ -10,9 +10,9 @@ using UnityEngine;
 namespace Puzzle.Client.EditorTools
 {
     /// <summary>
-    /// The pictures of the settings card and the two cards it opens, on the game's own session and by touches alone:
+    /// The pictures of the settings card and the three cards it opens, on the game's own session and by touches alone:
     /// the hall with the settings card come down from the gear; the privacy card in front of it with the tools' stand-in
-    /// records, its question, and the card once "Sil" has deleted them; the support card. The records lie in a folder
+    /// records, its question, and the card once "Sil" has deleted them; the support card; the language card. The records lie in a folder
     /// of the tools laid out as a phone's (<see cref="StoryStudio.RecordsOnAPhone"/>), so the support card shows a
     /// path as long as a phone's. And the settings card with its switch of vibration turned off, drawn on the museum's
     /// stage alone (the page "settingspreview", named when the build did not honour the switches yet).
@@ -61,6 +61,17 @@ namespace Puzzle.Client.EditorTools
             Press(session, museum.SupportRowPixel, "the settings card's support row");
             Require(museum.SettingsCardInFront == SettingsCardKind.Support, "the support row did not bring the support card");
             ScreenShots.WritePicture(museum, screen, studio.FileName("support", state, screen));
+            return 1;
+        }
+
+        /// <returns>How many pictures were taken.</returns>
+        public static int ShootTheLanguages(PlayerState state, ScreenShape screen, Studio studio)
+        {
+            using GameSession session = SessionInTheHall(state, screen, studio, StoryStudio.AttemptsKeptInMemory());
+            MuseumStage museum = OpenTheSettings(session);
+            Press(session, museum.LanguageRowPixel, "the settings card's language row");
+            Require(museum.SettingsCardInFront == SettingsCardKind.Language, "the language row did not bring the language card");
+            ScreenShots.WritePicture(museum, screen, studio.FileName("languages", state, screen));
             return 1;
         }
 

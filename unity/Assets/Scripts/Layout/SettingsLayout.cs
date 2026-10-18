@@ -10,7 +10,7 @@ namespace Puzzle.Client.Layout
         /// <summary>A setting with its switch; as many as the build honours.</summary>
         Switch,
 
-        /// <summary>"Dil", with the one language as a value; it leads nowhere.</summary>
+        /// <summary>"Dil", with the language the game speaks as a value and a chevron: it opens the language card.</summary>
         Language,
 
         /// <summary>"Gizlilik ve veri" with its smaller line and a chevron: it opens the privacy card.</summary>

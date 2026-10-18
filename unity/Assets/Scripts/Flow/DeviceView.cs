@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -11,9 +12,9 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// What the settings card and the cards it opens show of the phone and of this build: the player's settings and
     /// which of them the build honours, the phone's id, the game's version and its levels', the attempt records kept
-    /// and where, and the build's marks, which also say whether the build has the tester mode. Whoever owns the
-    /// museum makes it, and makes it anew when the player has changed something of it (a setting, the records
-    /// deleted). No Unity dependency.
+    /// and where, the build's marks, which also say whether the build has the tester mode, and the language the game
+    /// speaks among those it offers. Whoever owns the museum makes it, and makes it anew when the player has changed
+    /// something of it (a setting, the records deleted, the language). No Unity dependency.
     /// </summary>
     public sealed class DeviceView
     {
@@ -24,10 +25,20 @@ namespace Puzzle.Client.Flow
         /// <param name="recordsFile">Where the records lie: the file's full path; nothing for records kept in memory (the tools').</param>
         /// <param name="ads">How this build shows an ad, from its marks.</param>
         /// <param name="realMoney">What this build sells for money, from its marks.</param>
+        /// <param name="speaking">The language the game speaks: the player's choice or the phone's, among those offered.</param>
+        /// <param name="offered">The languages the language card offers, those whose tables are complete, in the card's order.</param>
+        /// <exception cref="ArgumentException">The game speaks a language it does not offer.</exception>
         public DeviceView(
             DeviceSettings settings, IReadOnlyList<DeviceSetting> honoured, DeviceId device, string gameVersion, ContentVersion content,
-            int? recordsKept, string? recordsFile, AdSource ads, RealMoneySales realMoney)
+            int? recordsKept, string? recordsFile, AdSource ads, RealMoneySales realMoney, Language speaking, IReadOnlyList<LanguageOffer> offered)
         {
+            Offered = offered ?? throw new ArgumentNullException(nameof(offered));
+            if (!offered.Any(offer => offer.Language == speaking))
+            {
+                throw new ArgumentException($"The game speaks {Languages.CodeOf(speaking)}, which the language card does not offer.", nameof(speaking));
+            }
+
+            Speaking = speaking;
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Honoured = honoured ?? throw new ArgumentNullException(nameof(honoured));
             Device = device ?? throw new ArgumentNullException(nameof(device));
@@ -40,6 +51,15 @@ namespace Puzzle.Client.Flow
         }
 
         public DeviceSettings Settings { get; }
+
+        /// <summary>The language the game speaks, which the settings row names and the language card marks.</summary>
+        public Language Speaking { get; }
+
+        /// <summary>The languages the language card offers, each named in its own words.</summary>
+        public IReadOnlyList<LanguageOffer> Offered { get; }
+
+        /// <summary>The name the settings row gives the language the game speaks: its own.</summary>
+        public string SpeakingName => Offered.First(offer => offer.Language == Speaking).OwnName;
 
         /// <summary>The settings the build honours, in the card's order.</summary>
         public IReadOnlyList<DeviceSetting> Honoured { get; }

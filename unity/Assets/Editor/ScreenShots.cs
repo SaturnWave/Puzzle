@@ -13,6 +13,7 @@ using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Meta;
 using Puzzle.Museum;
@@ -76,6 +77,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The support card in front of the settings card.</summary>
         Support,
+
+        /// <summary>The language card in front of the settings card, ticking the language the tools speak.</summary>
+        Languages,
 
         /// <summary>The settings card as it will be with the switches of sound and vibration, which this build does not honour yet: a look ahead, not the game.</summary>
         SettingsPreview,
@@ -362,16 +366,18 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,settingspreview,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
-    /// [-paintingsFrom ../art/paintings] [-screenWalk]</c>.
+    /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
     /// A state is the levels won, or the levels won and the pieces in place, with the wallet after it where it is
     /// not a new player's (<c>46+42;coins=1250;lives=3;next=12:34</c>, see <see cref="PlayerState.Parse"/>). Each page, state and screen gives
     /// one picture in out/unity/shots, named <c>screen-&lt;page&gt;-&lt;state&gt;-&lt;size&gt;.png</c>; the jigsaw
     /// gives one per moment. <c>-paintingsFrom</c> shows the paintings from picture files of a folder (laid out as
     /// the catalogue names them) instead of the ones the game carries: it is how the screens are looked at with
     /// full-size pictures before those are in the game; such pictures end in <c>-full</c>.
+    /// <c>-language</c> pictures the screens in another language than Turkish (<see cref="ToolLanguage"/>); the
+    /// pictures' names end in its code then.
     /// <c>controls</c> is no page of a player: it gives, for each screen, the sheets of the controls several
     /// screens share (<see cref="ControlsSpecimen"/>), every control in every face on the wall, on a card's cream
     /// and on the shelf's wood, named <c>screen-controls-&lt;sheet&gt;-&lt;ground&gt;-&lt;size&gt;.png</c>.
@@ -425,7 +431,9 @@ namespace Puzzle.Client.EditorTools
                     }
                 }
 
-                Debug.Log($"Screen shots: {pictures} pictures of the museum's screens{(plan.Walks ? " and a walk through the game from each state on each screen" : string.Empty)} are in {StoryStudio.ShotsFolder}.");
+                Debug.Log(
+                    $"Screen shots: {pictures} pictures of the museum's screens{(plan.Walks ? " and a walk through the game from each state on each screen" : string.Empty)} "
+                    + $"in {Languages.CodeOf(Speech.Language)} are in {StoryStudio.ShotsFolder}; {LetteringFit.CutLines} lines of lettering run past a screen's edge.");
             }
             catch (Exception failure) when (failure is ArgumentException || failure is InvalidOperationException
                 || failure is IOException || failure is LevelFormatException || failure is CatalogueFormatException)
@@ -455,6 +463,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Settings => SettingsShots.ShootTheSettings(state, screen, studio),
             ShotPage.Privacy => SettingsShots.ShootThePrivacy(state, screen, studio),
             ShotPage.Support => SettingsShots.ShootTheSupport(state, screen, studio),
+            ShotPage.Languages => SettingsShots.ShootTheLanguages(state, screen, studio),
             ShotPage.SettingsPreview => SettingsShots.ShootThePreview(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
@@ -696,13 +705,13 @@ namespace Puzzle.Client.EditorTools
     /// <summary>What every picture of a run is taken with: the game's drawings, its levels, and the paintings as the run shows them.</summary>
     internal sealed class Studio
     {
-        /// <param name="fileNameEnding">What the names of the run's pictures end in, before their extension: it tells the pictures of a run with other paintings apart.</param>
+        /// <param name="fileNameEnding">What the names of the run's pictures end in, before their extension: it tells the pictures of a run with other paintings apart. The code of the language the tools speak follows it, where that is not Turkish.</param>
         public Studio(ArtCatalogue art, IReadOnlyList<LevelDefinition> levels, PaintingGallery paintings, string fileNameEnding)
         {
             Art = art;
             Levels = levels;
             Paintings = paintings;
-            FileNameEnding = fileNameEnding;
+            FileNameEnding = fileNameEnding + ToolLanguage.FileNameEnding;
         }
 
         public ArtCatalogue Art { get; }

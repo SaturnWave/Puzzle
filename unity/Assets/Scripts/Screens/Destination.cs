@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Words;
 using Puzzle.Meta;
 using Puzzle.Museum;
 
@@ -77,8 +78,8 @@ namespace Puzzle.Client.Screens
     /// What a press on a page of the museum, or on a card that hangs over it, asks for. A closed set (private
     /// constructor): the player goes to another page, asks for the level they stand on, chooses its start boosters
     /// and goes into it, buys a booster or a set of them, asks for coins (a pack, an ad) or for the day's gift, opens
-    /// a painting's jigsaw, opens or closes a card that hangs over the page, flips a setting or deletes the attempt
-    /// records after a question, or does something that stays on the page that is shown.
+    /// a painting's jigsaw, opens or closes a card that hangs over the page, flips a setting, chooses the language or
+    /// deletes the attempt records after a question, or does something that stays on the page that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -203,6 +204,22 @@ namespace Puzzle.Client.Screens
         /// <summary>The settings card's row "Destek": the support card, in front of it.</summary>
         public sealed class OpenTheSupport : MuseumPress
         {
+        }
+
+        /// <summary>The settings card's row "Dil": the language card, in front of it.</summary>
+        public sealed class OpenTheLanguages : MuseumPress
+        {
+        }
+
+        /// <summary>A language's row on the language card: the game speaks it from now on, on every page and card.</summary>
+        public sealed class ChooseALanguage : MuseumPress
+        {
+            public ChooseALanguage(Language language)
+            {
+                Language = language;
+            }
+
+            public Language Language { get; }
         }
 
         /// <summary>A setting's switch on the settings card: it slides to the other state, which is kept at once.</summary>
@@ -355,6 +372,19 @@ namespace Puzzle.Client.Screens
         public sealed class DeleteTheRecords : DeviceRequest
         {
             public override string ToString() => "delete the attempt records";
+        }
+
+        /// <summary>The language the game speaks, chosen on the language card: kept in the device file and spoken at once.</summary>
+        public sealed class ChooseALanguage : DeviceRequest
+        {
+            public ChooseALanguage(Language language)
+            {
+                Language = language;
+            }
+
+            public Language Language { get; }
+
+            public override string ToString() => $"speak {Languages.CodeOf(Language)}";
         }
     }
 

@@ -111,6 +111,15 @@ namespace Puzzle.Client.Hall
         /// <summary>The row of pictures ends this far from the plaque's right edge: past the padding, clear of the last frame's seal.</summary>
         private const float PicturesEndIn = 18f;
 
+        /// <summary>
+        /// A room's name set smaller than this on one line is set on two, as the collection's plaque sets it: each at
+        /// most 10 points, apart by 1.25 of their size, centred this far under the plaque's middle.
+        /// </summary>
+        private const float SmallestOneLineNameSize = 11f;
+        private const float LargestTwoLineNameSize = 10f;
+        private const float TwoLinesApart = 1.25f;
+        private const float TwoLinesDown = 8f;
+
         private readonly PagePlaque _plaque;
         private readonly PaintingThumbs _pictures;
 
@@ -135,13 +144,36 @@ namespace Puzzle.Client.Hall
             TextMeshPro name = Lettering.Write("Room name", content, art, LetteringStyle.Title, PagePlaque.TitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
             float roomForTheName = picturesLeft - PagePlaque.SidePadding - (left + LinesBeginIn);
             name.fontSize = PagePlaque.TitleSize * Mathf.Min(1f, roomForTheName / Lettering.WidthOf(name, room.Name));
-            Lettering.SayFromLeft(name, room.Name, left + LinesBeginIn, -RoomNameDown);
+            if (name.fontSize >= SmallestOneLineNameSize)
+            {
+                Lettering.SayFromLeft(name, room.Name, left + LinesBeginIn, -RoomNameDown);
+            }
+            else
+            {
+                SayTheNameOnTwoLines(name, Lettering.Write("Room name goes on", content, art, LetteringStyle.Title, LargestTwoLineNameSize, Lettering.Ink, DrawOrder.PlaqueLettering), room.Name, left + LinesBeginIn, roomForTheName);
+            }
 
             TextMeshPro restored = PagePlaque.WriteLabel("Restored", content, art, DrawOrder.PlaqueLettering);
             Lettering.SayUpToRight(restored, MuseumWords.Restored(room.PaintingsWhole), right - PagePlaque.SidePadding, RestoredLabelUp);
 
             _pictures = PaintingThumbs.Create(content, art, paintings, room, beingRestored, ThumbOrders.OnAPlaque);
             _pictures.Transform.localPosition = new Vector3(picturesRight - PaintingThumbs.RowWidth / 2f, -PicturesDown, 0f);
+        }
+
+        /// <summary>
+        /// A name too long for one line at <see cref="SmallestOneLineNameSize"/> on two balanced lines under the room's
+        /// label, as the collection's plaque sets one ("The Age of Revolutions: America and Europe").
+        /// </summary>
+        private static void SayTheNameOnTwoLines(TextMeshPro first, TextMeshPro second, string name, float left, float room)
+        {
+            second.fontSize = LargestTwoLineNameSize;
+            (string firstLine, string secondLine) = BalancedLines.SplitInTwo(name, words => Lettering.WidthOf(second, words));
+            float size = LargestTwoLineNameSize * Mathf.Min(1f, room / Mathf.Max(Lettering.WidthOf(second, firstLine), Lettering.WidthOf(second, secondLine)));
+            float apart = TwoLinesApart * size;
+            first.fontSize = size;
+            second.fontSize = size;
+            Lettering.SayFromLeft(first, firstLine, left, -TwoLinesDown + apart / 2f);
+            Lettering.SayFromLeft(second, secondLine, left, -TwoLinesDown - apart / 2f);
         }
 
         /// <param name="beingRestored">The painting the player is restoring: its picture is ringed. Nothing when the player is restoring none.</param>

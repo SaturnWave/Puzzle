@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Screens;
+using Puzzle.Client.Words;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Meta;
@@ -295,33 +296,33 @@ namespace Puzzle.Client.Flow
     }
 
     /// <summary>
-    /// What the result panel says, in the player's language. The titles and the button's labels are the web test
-    /// page's (result-panel.js) and the design canvas' (WinTR, LoseTR).
+    /// What the result panel says, in the language the game speaks. The Turkish titles and the button's labels are
+    /// the web test page's (result-panel.js) and the design canvas' (WinTR, LoseTR).
     /// </summary>
     public static class ResultWords
     {
-        /// <summary>The offer's card: "Vazgeç", underlined, beside what giving up costs (LoseTR).</summary>
-        public const string GiveUp = "Vazgeç";
+        /// <summary>The offer's card: the way to give up ("Vazgeç"), underlined, beside what giving up costs (LoseTR).</summary>
+        public static string GiveUp => Speech.Say(WordId.ResultGiveUp);
 
         /// <summary>What the offer's blue button says while the day has a free ad left for the extra moves, and once it has none (the button is dimmed then).</summary>
-        public const string WatchAnAd = "Reklam izle";
-        public const string NoAdLeftToday = "Bugünlük bitti";
+        public static string WatchAnAd => Speech.Say(WordId.ResultWatchAnAd);
+        public static string NoAdLeftToday => Speech.Say(WordId.ResultNoAdLeftToday);
 
-        /// <summary>On the pill of a card whose heart says what a life is: one life fewer.</summary>
+        /// <summary>On the pill of a card whose heart says what a life is: one life fewer, a sign the same in every language.</summary>
         public const string OneLifeFewer = "–1";
 
         /// <summary>Where a card would say a life goes, in the tester mode, which takes none (<see cref="WalletHandling.Unlimited"/>).</summary>
-        public const string NoLifeInTheTesterMode = "Test modu · can gitmez";
+        public static string NoLifeInTheTesterMode => Speech.Say(WordId.ResultNoLifeInTesterMode);
 
         /// <summary>The nameplate: what happened.</summary>
         public static string Title(LevelResult result) => result switch
         {
-            LevelResult.Won _ => "Bölüm tamamlandı!",
+            LevelResult.Won _ => Speech.Say(WordId.ResultWonTitle),
             LevelResult.OutOfMoves _ => OutOfMovesTitle,
             LevelResult.Lost { Reason: LossReason.NoMovePossible } => NoMoveLeftTitle,
             LevelResult.Lost { Reason: LossReason.ExtraMovesRefused } => NoMoveLeftTitle,
             LevelResult.Lost _ => OutOfMovesTitle,
-            LevelResult.Leaving _ => "Bölümden çık?",
+            LevelResult.Leaving _ => Speech.Say(WordId.ResultLeavingTitle),
             _ => throw Unknown(result),
         };
 
@@ -334,8 +335,8 @@ namespace Puzzle.Client.Flow
         {
             LevelResult.Won { Reward: PieceReward reward } => MuseumWords.Earned(reward),
             LevelResult.Won won => LevelAndMoves(won),
-            LevelResult.OutOfMoves { IsClose: true } => "Az kaldı!",
-            LevelResult.OutOfMoves _ => "Kalan hedefler",
+            LevelResult.OutOfMoves { IsClose: true } => Speech.Say(WordId.ResultSoClose),
+            LevelResult.OutOfMoves _ => Speech.Say(WordId.ResultGoalsLeft),
             LevelResult.Lost lost => LevelAndAttempt(lost.LevelNumber, lost.AttemptNumber),
             LevelResult.Leaving leaving => LevelAndAttempt(leaving.LevelNumber, leaving.AttemptNumber),
             _ => throw Unknown(result),
@@ -352,8 +353,9 @@ namespace Puzzle.Client.Flow
         public static string Footnote(LevelResult result) => result switch
         {
             LevelResult.Won _ => throw new InvalidOperationException("A won level's card has no footnote: beside its coins it says what the moves left over became."),
-            LevelResult.OutOfMoves _ => throw new InvalidOperationException("The offer's card has no footnote: its goals stand under the headline, and what giving up costs beside \"Vazgeç\"."),
-            LevelResult.Lost { Reason: LossReason.ExtraMovesRefused } => "+5 hamle verilemedi, bir şey harcanmadı",
+            LevelResult.OutOfMoves _ => throw new InvalidOperationException("The offer's card has no footnote: its goals stand under the headline, and what giving up costs beside the way to give up."),
+            LevelResult.Lost { Reason: LossReason.ExtraMovesRefused } =>
+                Speech.Say(WordId.ResultExtraMovesRefused, ("moves", Number(ExtraMovesOffer.Moves))),
             LevelResult.Lost _ => WhatIsLeftOfTheGoals,
             LevelResult.Leaving _ => WhatIsLeftOfTheGoals,
             _ => throw Unknown(result),
@@ -368,10 +370,10 @@ namespace Puzzle.Client.Flow
         public static string Lives(LevelResult result) => result switch
         {
             LevelResult.Won _ => throw new InvalidOperationException("A won level's card says nothing of lives: a win costs none."),
-            LevelResult.OutOfMoves _ => "1 can gider",
-            LevelResult.Lost _ => "1 can gitti",
-            LevelResult.Leaving { HasPlayed: true } => "Çıkarsan 1 can gider",
-            LevelResult.Leaving _ => "Henüz hamle yapmadın, can gitmez",
+            LevelResult.OutOfMoves _ => Speech.Say(WordId.ResultCostsALife),
+            LevelResult.Lost _ => Speech.Say(WordId.ResultCostALife),
+            LevelResult.Leaving { HasPlayed: true } => Speech.Say(WordId.ResultLeavingCostsALife),
+            LevelResult.Leaving _ => Speech.Say(WordId.ResultLeavingCostsNothing),
             _ => throw Unknown(result),
         };
 
@@ -398,7 +400,8 @@ namespace Puzzle.Client.Flow
         public static string? GiveUpCosts(LevelResult.OutOfMoves offer, WalletHandling handling) => CostsALife(offer, handling) ? Lives(offer) : null;
 
         /// <summary>The offer's green button: the moves it gives while the coins cover their price; that they do not, where they do not (the button is dimmed then).</summary>
-        public static string TakeTheMovesForCoins(ExtraMovesTerms terms) => terms.CoinsCoverIt ? $"+{ExtraMovesOffer.Moves} hamle" : LevelStartWords.CoinsShort;
+        public static string TakeTheMovesForCoins(ExtraMovesTerms terms) =>
+            terms.CoinsCoverIt ? LevelStartWords.PlusMoves(ExtraMovesOffer.Moves) : LevelStartWords.CoinsShort;
 
         /// <summary>The offer's blue button: an ad pays for the moves while the day has one left for them.</summary>
         public static string TakeTheMovesForAnAd(ExtraMovesTerms terms) => terms.AnAdPaysToday ? WatchAnAd : NoAdLeftToday;
@@ -414,17 +417,17 @@ namespace Puzzle.Client.Flow
         /// the canvas' brushes (WinTR), on two lines beside the brush; with no move left over, one line and no brush.
         /// </summary>
         public static string MovesLeftOver(LevelResult.Won won) => won.MovesLeft == 0
-            ? "Son hamlede tamamlandı"
-            : $"Kalan {Number(won.MovesLeft)} hamle\nfırçaya dönüştü";
+            ? Speech.Say(WordId.ResultWonOnTheLastMove)
+            : Speech.SayCounted(WordId.ResultMovesLeftOver, won.MovesLeft, ("moves", Number(won.MovesLeft)));
 
         /// <summary>The green button: on with the levels, or, for a player who asked to leave, on with the game.</summary>
         /// <exception cref="InvalidOperationException">The card offers extra moves: its green button pays for them (<see cref="TakeTheMovesForCoins"/>).</exception>
         public static string GoOn(LevelResult result) => result switch
         {
-            LevelResult.Leaving _ => "Oyna",
-            LevelResult.Won { IsLastLevel: true } => "Tekrar oyna",
-            LevelResult.Won _ => "Devam",
-            LevelResult.Lost _ => "Tekrar dene",
+            LevelResult.Leaving _ => Speech.Say(WordId.Play),
+            LevelResult.Won { IsLastLevel: true } => Speech.Say(WordId.PlayAgain),
+            LevelResult.Won _ => Speech.Say(WordId.GoOn),
+            LevelResult.Lost _ => Speech.Say(WordId.TryAgain),
             LevelResult.OutOfMoves _ => throw new InvalidOperationException("The offer's green button pays for the extra moves; it does not go on."),
             _ => throw Unknown(result),
         };
@@ -436,13 +439,17 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public static string GoOnOnANarrowButton(LevelResult result) => GoOn(result).Replace(' ', '\n');
 
-        private const string OutOfMovesTitle = "Hamle bitti!";
-        private const string NoMoveLeftTitle = "Oynanacak hamle kalmadı!";
-        private const string WhatIsLeftOfTheGoals = "Hedefe bu kadar kaldı";
+        private static string OutOfMovesTitle => Speech.Say(WordId.ResultOutOfMovesTitle);
 
-        private static string LevelAndMoves(LevelResult.Won won) => $"Bölüm {Number(won.LevelNumber)} · {Number(won.MovesUsed)} hamlede";
+        private static string NoMoveLeftTitle => Speech.Say(WordId.ResultNoMoveLeftTitle);
 
-        private static string LevelAndAttempt(int levelNumber, int attemptNumber) => $"Bölüm {Number(levelNumber)} · {Number(attemptNumber)}. deneme";
+        private static string WhatIsLeftOfTheGoals => Speech.Say(WordId.ResultWhatIsLeft);
+
+        private static string LevelAndMoves(LevelResult.Won won) => Speech.SayCounted(
+            WordId.ResultLevelAndMoves, won.MovesUsed, ("level", Number(won.LevelNumber)), ("moves", Number(won.MovesUsed)));
+
+        private static string LevelAndAttempt(int levelNumber, int attemptNumber) =>
+            Speech.Say(WordId.ResultLevelAndAttempt, ("level", Number(levelNumber)), ("attempt", Number(attemptNumber)));
 
         private static string Number(int number) => number.ToString(CultureInfo.InvariantCulture);
 
