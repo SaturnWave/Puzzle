@@ -4,6 +4,25 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-18 · Oturum 26 — Kaydırarak geçiş, dil desteği
+
+**Kullanıcı kararları**
+- Telefon testleri bir süre bekleyecek; önce GitHub kayıtlarından bazıları yapılacak: kaydırarak geçiş (#3) ve dil desteği (#8).
+- Kaydırma sayfa değiştirir; koleksiyonda odalar oklarla ve oda plaketinin üstünde kaydırarak değişir.
+- Dil: geniş bir yelpaze, İngilizce, Türkçe ve Korece mutlaka. İlk sürümde 13 dil: İngilizce, Türkçe, Korece, Japonca, Almanca, Fransızca, İspanyolca, Portekizce (Brezilya), İtalyanca, Rusça, Çince (basitleştirilmiş ve geleneksel), Endonezce. Arapça ve Tayca sonra (harf birleştirme, sağdan sola düzen).
+- İlk dil telefonun dilinden gelir, desteklenmiyorsa İngilizce; ayarlardan değiştirilir. Tablo adları seçilen dilde, ressam adları değişmez.
+- Pazar verisi az ama tutarlı: match-3 gelirinde ABD açık ara önde, Japonya ve Almanya izliyor (Royal Match, AppMagic 2025: ABD %54,5, Japonya %9, Almanya %5,35).
+
+**Kaydırarak geçiş (#3)**
+- Dört müze sayfası arasında parmağı izleyen kaydırma; uçlarda esneme; koleksiyonda plaketle oda değişimi; tahtada, yapbozda ve kart açıkken kayma yok. Dokunuşla kaydırma ayrımı ve Android geri hareketinin kenar bölgesi düşünüldü.
+- 3.721 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: ortası doğru; uçta esnerken düz bir şerit görünüyor (A34).
+- Telefon testleri T230–T241.
+
+**Dil desteği (#8)**
+- İki adım: önce altyapı ile Türkçe, İngilizce ve Korece (Korece yeni yazı tipi düzenini kanıtlar); sonra kalan 10 dil.
+
+---
+
 ## 2026-10-16 · Oturum 25 — Ses ve titreşim, ilk prototip APK'sı
 
 **Kullanıcı kararları**

@@ -56,6 +56,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A31 | Titreşim Android'in eski "vibrator" servisini kullanıyor (Android 12'den beri yerini VibratorManager aldı, hâlâ çalışıyor); telefonda denenmedi. | Aşama 14 | Düşük | T194, T201 |
 | A32 | APK 283 MB (16 Ekim; 8 Ekim'de 61 MB'tı). Fark 100 tablonun tam boy görüntüleri. Play Store'da tek paketin temel modülü en çok 200 MB olabilir. | APK, 2026-10-16 | Yayını engeller | Yayından önce: tabloları küçültmek ya da ayrı indirmek (Play Asset Delivery); telefonda bellek ve yükleme süresi A14 ile birlikte ölçülür |
 | A33 | Test modunda cüzdan satırında kalbin üstündeki "∞" biraz gözlüğe benziyor (can kartında iyi okunuyor). Ayarlardaki test modu satırının işareti yer tutucu. | Test modu | Düşük | Çizilmiş bir ∞ işareti, proje sahibi isterse |
+| A34 | Kaydırmada son sayfanın ötesine çekince sayfa esnerken kenarda duvar deseni olmayan düz bir şerit görünüyor (en çok genişliğin %15'i, bırakınca kaybolur). Katlanırın iç ekranında daha belirgin. | #3 | Düşük, görünüm | Sayfaların arkasında duran sabit bir duvar |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -288,6 +289,23 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T221 | Test modunda kaybetme kartı | Mod açık. Bir bölümü hamle bitene kadar oyna, teklifte Vazgeç | Kartta yalnızca "Test modu · can gitmez"; kalp hapı ve "1 can gitti" yok. Mod kapalıyken aynı kart "–1" ve "1 can gitti" gösterir | Test modu | Bekliyor |
 | T222 | Test modunda çıkma kartı | Mod açık. Bölüme başla, bir hamle yap, duraklat | Kart "Test modu · can gitmez" der, hap yok; Müze salona götürür, canlar aynı. Hamleden önce yine "Henüz hamle yapmadın, can gitmez" | Test modu | Bekliyor |
 | T223 | Teklifte Vazgeç | Mod açık. Hamleleri bitir | "Vazgeç" kalp ve "1 can gider" olmadan, altı çizili, yalnız durur; mod kapalıyken yine gösterir | Test modu | Bekliyor |
+
+### F11. Sayfalar arasında kaydırma (#3)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T230 | Dört sayfada kaydırma | Salondan yavaşça sola kaydırarak haritaya, sonra sağa salona, koleksiyona ve mağazaya; sonra öbür yöne | Sayfa parmağı izler, komşusu yanında görünür; bırakınca komşuya oturur; çubuğun vurgusu bırakınca kayar; başlanan sayfadaki hiçbir düğmeye basılmamıştır | Kaydırma | Bekliyor |
+| T231 | Uçlarda esneme | Mağazada sağa, haritada sola, ikisinde de uzun kaydır | Sayfa yalnızca biraz ve parmaktan yavaş kayar, bırakınca geri oturur; başka bir şey olmaz. Kenardaki düz şeridin görünüşünü not et (A34) | Kaydırma | Bekliyor |
+| T232 | Kısa sürükleme, hızlı fiske | Bir sayfayı yavaşça ekranın dörtte biri kadar sürükleyip bırak; sonra kısa ve hızlı bir fiske at | Yavaş kısa sürükleme geri oturur; hızlı fiske komşu sayfaya geçer | Kaydırma | Bekliyor |
+| T233 | Dokunuşlar dokunuş kalır | Hafif kıpırdayan bir parmakla bütün çubuk düğmelerine, oyna düğmesine, hediye çerçevesine, çarka, altına, kalbe, koleksiyonda bir tabloya, parçası bekleyen bir tabloya, oda oklarına ve haritadaki düğmelere dokun | Her biri eskisi gibi çalışır; kazara sayfa geçmez | Kaydırma | Bekliyor |
+| T234 | Dikey sürüklemeler | Her sayfada yukarı-aşağı ve yaklaşık 25 dereceden dik çapraz sürükle | Hiçbir sayfa kaymaz | Kaydırma | Bekliyor |
+| T235 | Android geri hareketi | Hareketli gezinmede koleksiyon ve haritada sol ve sağ kenardan geri hareketini yap; sonra tam kenardan başlayan bir yan kaydırma dene | Geri hareketi salona döner (ya da öne alınmış tabloyu yerine koyar, kartı kapatır), hiç sayfa çevirmez; kenar şeridinde başlayan kaydırma bir şey yapmaz, bir başparmak içeriden başlayan sayfa çevirir | Kaydırma | Bekliyor |
+| T236 | Koleksiyonda plaketle oda | Koleksiyonda oklu üst plaketin üstünde sola-sağa kaydır; sonra duvarda ya da bir tabloda kaydır; okları kullan; ilk odadan önceye ve son odadan sonraya dene | Plakette önceki/sonraki odanın tabloları kayarak gelir, plaket yeni odayı söyler; başka yerde sayfa mağazaya ya da salona geçer; oklar çalışır; uçlarda tablolar yalnızca esneyip geri oturur | Kaydırma | Bekliyor |
+| T237 | Kart açıkken | Her kartı aç (ayarlar, gizlilik, destek, hediye, can, bölüm, booster teklifi, mağazanın reklamı) ve kartın ve çevresindeki karanlığın üstünde kaydır | Hiçbir sayfa kaymaz, kart yerinde kalır; karttaki düğmeler eskisi gibi çalışır | Kaydırma | Bekliyor |
+| T238 | Öne alınmış tablo | Koleksiyonda onarılmış bir tabloya dokun (öne gelir), sonra kaydır | Bir şey kaymaz; dokunuş tabloyu yerine koyar; sonra kaydırma yine çalışır | Kaydırma | Bekliyor |
+| T239 | Katlanır iç ekran | T230–T236'yı açık iç ekranda tekrarla; sürüklemenin ortasında telefonu aç ya da kapat | Aynı davranış; geniş ekranın üçte biri sayfayı çevirir; sürükleme ortasında katlama sayfayı hemen yerine koyar, bir şey bozulmaz | Kaydırma | Bekliyor |
+| T240 | İlk sürüklemede akıcılık | Müze yeni açılmışken salondan koleksiyona ve mağazadan koleksiyona doğru yavaş bir kaydırma başlat; ilk anlara bak | Komşu sayfa belirirken gözle görülür bir takılma yok (sayfa o anda kuruluyor) | Kaydırma | Bekliyor |
+| T241 | Tahta ve yapboz | Bir bölümde ekran kenarlarına yakın taşları kaydır; yapbozda parçaları yana sürükle | Değiş tokuşlar ve parça sürüklemeleri eskisi gibi; sayfa çevrilmez | Kaydırma | Bekliyor |
 
 ### G. Görünüm
 

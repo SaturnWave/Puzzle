@@ -1283,6 +1283,17 @@ Bu kararlarla 10. aşama başladı.
 - **Doğrulama:** 3.685 test. Unity'de bütün denetimler ve test modu yürüyüşü hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T210–T223.
 - **Prototip APK'sı (2026-10-17):** Test modlu APK 17 Ekim'de derlendi (9,7 dakika, 283 MB; `aapt`: yalnızca VIBRATE izni) ve indirme sayfasında 16 Ekim APK'sının yerini aldı. İndirme sayfasındaki eski APK'nın yerini aldı.
 
+**Sayfalar arasında kaydırma (2026-10-18, #3).**
+
+- **Sayfalar:** müzenin dört sayfasında (Mağaza, Koleksiyon, Müze, Harita) sola ya da sağa kaydırmak, alt çubuğun sırasıyla komşu sayfaya geçer. Sayfa parmağı izler, komşusu yanında belirir. Bırakınca genişliğin üçte birini geçtiyse ya da hızlı bir fiske (en az 24 pt, saniyede 500 pt) varsa geçer, yoksa geri yerine oturur. Çubuktaki vurgu bırakınca kayar; düğmeler eskisi gibi çalışır.
+- **Uçlar:** mağazadan sağa, haritadan sola çekince sayfa en çok genişliğin %15'i kadar esner ve geri oturur.
+- **Koleksiyon:** oda plaketinin üstünde başlayan kaydırma odayı değiştirir (sonraki odanın tabloları kayarak gelir); başka her yerde sayfayı değiştirir. Oklar aynen duruyor.
+- **Kaymayan yerler:** tahta, yapboz, öne alınmış tablo ve açık bir kart varken hiçbir şey kaymaz.
+- **Dokunuş ve kaydırma ayrımı:** dokunuş 10 pt'ye kadar dokunuş kalır. Kaydırma sayılmak için yanlara, yukarı-aşağıya gittiğinin en az iki katı gitmelidir. Ekranın sol ya da sağ kenarına 32 pt'den yakın başlayan dokunuş hiç kaydırmaz; Android'in geri hareketi kendi bölgesini korur.
+- **Yapı:** karar düz bir türde (`PageSwipe`, adlı eşikler, 36 test); sürükleme sahnenin saatinde çizilir (`Tempo`, sayfa genişliği başına 0,28 sn).
+- **Bilinen:** uçta esnerken sayfanın ötesinde duvar deseni olmayan düz bir şerit görünüyor (A34). Komşu sayfa ilk sürüklemede kuruluyor, telefonda takılabilir (T240).
+- **Doğrulama:** 3.721 test. Unity'de bütün denetimler ve kaydırma yürüyüşü hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T230–T241.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
