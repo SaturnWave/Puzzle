@@ -2,6 +2,13 @@
 // Google Fonts into the game (unity/Assets/Art/Fonts/) with their licence texts, and writes where each file came
 // from to art/fonts/licences.json. All three are under the SIL Open Font License 1.1.
 //
+// The three draw Latin letters only. The game's other scripts are drawn by fallback typefaces, one font file a
+// script and a kind of type, whose letters stand in where a design typeface has none: Korean in Noto Sans KR
+// (behind the sans faces) and Noto Serif KR (behind the serif), both under the same licence. A fallback font is
+// whole, with every letter of its script, so a new word never needs a new file; the Editor's LetteringBuilder makes
+// its typeface with only the letters the tables of words use. The next scripts (Japanese, Chinese, Cyrillic) are
+// added here the same way, each with the letters it must have.
+//
 // Gabarito is published as one variable font, of which TextMesh Pro reads the default weight alone. Google's font
 // service hands a client that names no browser one static TrueType file per weight, and those are what is fetched:
 // the design sets Gabarito in two weights, 700 and 800. The licence texts come from Google's own font repository.
@@ -29,22 +36,34 @@ const LICENCE = "SIL Open Font License, Version 1.1";
 /** What the record says of a file whose figures were made the font's lining ones. */
 const LINING_FIGURES = "The figures 0 to 9 are the font's own lining forms (its 'lnum' feature) by default: tools/unity/lining-figures.js";
 
-/**
- * A file per weight the design uses; `asks` is what the font service is asked for, `repository` the family's folder
- * in Google's font repository, `change` what is done to the file before it is kept (nothing for most).
- */
-const FONTS = [
-  { file: "Gabarito-Bold.ttf", family: "Gabarito", weight: 700, asks: "Gabarito:wght@700", repository: "gabarito" },
-  { file: "Gabarito-ExtraBold.ttf", family: "Gabarito", weight: 800, asks: "Gabarito:wght@800", repository: "gabarito" },
-  { file: "PaytoneOne-Regular.ttf", family: "Paytone One", weight: 400, asks: "Paytone+One", repository: "paytoneone" },
-  {
-    file: "YoungSerif-Regular.ttf", family: "Young Serif", weight: 400, asks: "Young+Serif", repository: "youngserif",
-    change: { says: LINING_FIGURES, make: withLiningFigures },
-  },
-];
-
 /** A font that lacks one of these was cut down to another alphabet; the whole set of the game's letters is the Editor's to check. */
 const TURKISH_LETTERS = "ÇĞİÖŞÜçğıöşü";
+
+/** Every Hangul syllable, U+AC00 to U+D7A3: a Korean fallback font that lacks one could not write a word some day. */
+const HANGUL_SYLLABLES = Array.from({ length: 0xd7a3 - 0xac00 + 1 }, (_, index) => String.fromCodePoint(0xac00 + index)).join("");
+
+/**
+ * A file per weight the design uses; `asks` is what the font service is asked for, `repository` the family's folder
+ * in Google's font repository, `change` what is done to the file before it is kept (nothing for most), `letters`
+ * what it must have to be kept, and `fallback` the script a fallback typeface draws (none for the design's own).
+ */
+const FONTS = [
+  { file: "Gabarito-Bold.ttf", family: "Gabarito", weight: 700, asks: "Gabarito:wght@700", repository: "gabarito", letters: TURKISH_LETTERS },
+  { file: "Gabarito-ExtraBold.ttf", family: "Gabarito", weight: 800, asks: "Gabarito:wght@800", repository: "gabarito", letters: TURKISH_LETTERS },
+  { file: "PaytoneOne-Regular.ttf", family: "Paytone One", weight: 400, asks: "Paytone+One", repository: "paytoneone", letters: TURKISH_LETTERS },
+  {
+    file: "YoungSerif-Regular.ttf", family: "Young Serif", weight: 400, asks: "Young+Serif", repository: "youngserif", letters: TURKISH_LETTERS,
+    change: { says: LINING_FIGURES, make: withLiningFigures },
+  },
+  {
+    file: "NotoSansKR-ExtraBold.ttf", family: "Noto Sans KR", weight: 800, asks: "Noto+Sans+KR:wght@800", repository: "notosanskr",
+    letters: HANGUL_SYLLABLES, fallback: "Korean, behind Gabarito and Paytone One",
+  },
+  {
+    file: "NotoSerifKR-Bold.ttf", family: "Noto Serif KR", weight: 700, asks: "Noto+Serif+KR:wght@700", repository: "notoserifkr",
+    letters: HANGUL_SYLLABLES, fallback: "Korean, behind Young Serif",
+  },
+];
 
 const sha256 = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 
@@ -84,14 +103,14 @@ function lettersOf(bytes, tables) {
   return letters;
 }
 
-/** Refuses what is not a whole, static TrueType font. */
-function check(file, bytes) {
+/** Refuses what is not a whole, static TrueType font with every letter it is fetched for. */
+function check(font, bytes) {
   const tables = tablesOf(bytes);
-  if (!tables) throw new Error(`${file}: what arrived is not a TrueType font`);
-  if (tables.has("fvar")) throw new Error(`${file}: a variable font arrived; TextMesh Pro would read its default weight alone`);
+  if (!tables) throw new Error(`${font.file}: what arrived is not a TrueType font`);
+  if (tables.has("fvar")) throw new Error(`${font.file}: a variable font arrived; TextMesh Pro would read its default weight alone`);
   const letters = lettersOf(bytes, tables);
-  const missing = [...TURKISH_LETTERS].filter(letter => !letters.has(letter.codePointAt(0)));
-  if (missing.length > 0) throw new Error(`${file}: the font has no ${missing.join(" ")}`);
+  const missing = [...font.letters].filter(letter => !letters.has(letter.codePointAt(0)));
+  if (missing.length > 0) throw new Error(`${font.file}: the font has no ${missing.slice(0, 20).join(" ")}${missing.length > 20 ? ` and ${missing.length - 20} more` : ""}`);
 }
 
 /**
@@ -110,7 +129,7 @@ async function asFetched(font, kept) {
   const source = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.ttf)\) format\('truetype'\)/.exec(stylesheet);
   if (!source) throw new Error(`${font.file}: ${asked} named no TrueType file`);
   const bytes = await answerOf(source[1]);
-  check(font.file, bytes);
+  check(font, bytes);
   return { bytes, askedOf: asked, fetchedFrom: source[1], isNew: true };
 }
 
@@ -126,7 +145,7 @@ async function licenceOf(font) {
   // The notice is the text's first paragraph: who holds the copyright and, on a line of its own, the names they reserve.
   const notice = text.split(/\r?\n\s*\r?\n/)[0].split(/\r?\n/).map(line => line.trim()).join(" ");
   const reserved = /Reserved Font Names? (.+?)\.?$/.exec(notice);
-  return { file, from, notice, reservedFontNames: reserved ? [...reserved[1].matchAll(/"([^"]+)"/g)].map(name => name[1]) : [] };
+  return { file, from, notice, reservedFontNames: reserved ? [...reserved[1].matchAll(/["'‘“]([^"'’”]+)["'’”]/g)].map(name => name[1]) : [] };
 }
 
 /** True when the file that is there is the one the record names as kept, changed the way the font is to be changed now. */
@@ -145,6 +164,7 @@ function isThereAsRecorded(font, kept) {
 function recordOf(font, licence, source, change) {
   const record = {
     file: font.file, family: font.family, weight: font.weight,
+    ...(font.fallback ? { fallback: font.fallback } : {}),
     copyright: licence.notice, reservedFontNames: licence.reservedFontNames,
     licence: LICENCE, licenceText: licence.file, licenceTextFrom: licence.from,
     askedOf: source.askedOf, fetchedFrom: source.fetchedFrom, bytes: source.bytes, sha256: source.sha256,
@@ -166,7 +186,7 @@ async function fetchFont(font, earlier) {
 
   const fetched = await asFetched(font, kept);
   const bytes = font.change ? font.change.make(fetched.bytes) : fetched.bytes;
-  check(font.file, bytes);
+  check(font, bytes);
   fs.writeFileSync(path.join(FONTS_FOLDER, font.file), bytes);
   console.log(`${font.file}: ${(bytes.length / 1024).toFixed(0)} KB ${fetched.isNew ? `from ${fetched.fetchedFrom}` : "from the file that was there as fetched"}${font.change ? ", changed" : ""}`);
 

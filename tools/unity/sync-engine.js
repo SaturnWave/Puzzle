@@ -4,11 +4,15 @@
 //   2. packs levels/generated/level_*.json into one document, unity/Assets/Generated/Resources/Levels.json;
 //   3. copies the museum's catalogue, museum/catalogue.json, to unity/Assets/Generated/Resources/Museum.json;
 //   4. packs the game's part of the economy settings, economy/default.json, into
-//      unity/Assets/Generated/Resources/Economy.json (tools/unity/economy-pack.js says how).
+//      unity/Assets/Generated/Resources/Economy.json (tools/unity/economy-pack.js says how);
+//   5. packs each language's table of words, words/<code>.json, into unity/Assets/Generated/Resources/Words/<code>.json
+//      without the translators' notes, and each language's museum words, museum/titles/<code>.json, into
+//      unity/Assets/Generated/Resources/Titles/<code>.json. The game offers a language whose tables are complete.
 // The engine, the museum's rules and the rules of lives, coins and boosters go in as compiled assemblies so that
 // the game runs the very code the levels were calibrated with and the tools and tests check.
 // Everything written here is derived from the repository, so unity/Assets/Generated is not committed: run this
-// script after cloning and whenever the engine, the rules, the levels, the catalogue or the economy settings change.
+// script after cloning and whenever the engine, the rules, the levels, the catalogue, the economy settings or a
+// language's tables change.
 //
 // usage (from the repository root): node tools/unity/sync-engine.js
 const fs = require("fs");
@@ -22,6 +26,10 @@ const LEVEL_PACK = "unity/Assets/Generated/Resources/Levels.json";
 const CATALOGUE = "museum/catalogue.json";
 const CATALOGUE_COPY = "unity/Assets/Generated/Resources/Museum.json";
 const ECONOMY_PACK = "unity/Assets/Generated/Resources/Economy.json";
+const WORDS = "words";
+const WORDS_PACK = "unity/Assets/Generated/Resources/Words";
+const TITLES = "museum/titles";
+const TITLES_PACK = "unity/Assets/Generated/Resources/Titles";
 // Each project with the assemblies taken from its output folder. The core lands in both; it is taken once.
 const PROJECTS = [
   { project: "src/Puzzle.Bot", assemblies: ["Puzzle.Core.dll", "Puzzle.Bot.dll"] },
@@ -56,6 +64,34 @@ function main() {
   const economy = packedEconomy(fs.readFileSync(ECONOMY, "utf8"), ECONOMY);
   fs.writeFileSync(ECONOMY_PACK, JSON.stringify(economy));
   console.log(`${ECONOMY}: ${economy.prices.boosters.length} booster prices, ${economy.shop.boosterSets.length} sets, ${economy.shop.coinPacks.length} coin packs -> ${ECONOMY_PACK}`);
+
+  // A table that is not JSON, or is named for another language than it says, stops here by name.
+  const words = packTables(WORDS, WORDS_PACK, table => ({
+    ...table,
+    words: table.words.map(({ note, ...entry }) => entry),
+  }));
+  console.log(`${words.length} tables of words (${words.join(", ")}) -> ${WORDS_PACK}`);
+  const titles = packTables(TITLES, TITLES_PACK, table => table);
+  console.log(`${titles.length} tables of the museum's words (${titles.join(", ")}) -> ${TITLES_PACK}`);
+}
+
+/**
+ * Writes each <code>.json of a folder, parsed and made by a step, into the pack's folder, which holds nothing else
+ * afterwards: a language whose file is gone from the repository is gone from the game too.
+ * @returns the codes of the languages packed.
+ */
+function packTables(folder, pack, make) {
+  fs.rmSync(pack, { recursive: true, force: true });
+  fs.mkdirSync(pack, { recursive: true });
+  const codes = [];
+  for (const name of fs.readdirSync(folder).filter(name => name.endsWith(".json")).sort()) {
+    const code = name.slice(0, -".json".length);
+    const table = JSON.parse(fs.readFileSync(path.join(folder, name), "utf8"));
+    if (table.language !== code) throw new Error(`${path.join(folder, name)} says it is of "${table.language}"`);
+    fs.writeFileSync(path.join(pack, name), JSON.stringify(make(table)));
+    codes.push(code);
+  }
+  return codes;
 }
 
 main();
