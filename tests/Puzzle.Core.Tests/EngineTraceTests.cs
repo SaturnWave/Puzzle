@@ -27,6 +27,20 @@ public sealed class EngineTraceTests
     }
 
     [Fact]
+    public void The_hints_on_the_sample_games_are_the_pinned_ones_and_leave_the_games_as_the_engine_trace_has_them()
+    {
+        Levels.LevelDefinition[] samples = RepoFiles.SampleLevelPaths.Select(LevelJson.Load).ToArray();
+        string[] hinted = EngineTrace.HintsOfSamples(samples, "casual");
+        if (Environment.GetEnvironmentVariable(PinAnewVariable) == "1")
+        {
+            File.WriteAllLines(RepoFiles.HintTracePath, hinted);
+        }
+
+        Assert.Equal(File.ReadAllLines(RepoFiles.HintTracePath), hinted);
+        Assert.Equal(File.ReadAllLines(RepoFiles.EngineTracePath), EngineTrace.OfSamples(samples)); // asked after the hints: they left nothing behind
+    }
+
+    [Fact]
     public void A_game_played_twice_with_one_seed_leaves_the_same_trace()
     {
         Levels.LevelDefinition level = LevelJson.Load(RepoFiles.SampleLevelPaths[0]);

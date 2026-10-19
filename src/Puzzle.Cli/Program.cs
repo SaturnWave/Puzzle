@@ -83,6 +83,11 @@ const string Usage = """
                             --from 1  --to <last>  --from-skill 30  --to-skill 100  --step 5  --runs 60  --cap 150  --seed 7
                             --games fresh|attempts (attempts: each level's retry pool in turn, as a player meets it)
                             --out reports/ladder.csv   A run replaces the rows of its own levels there and keeps the others.
+      hints <dir|file>      What the game's hints do to a player model's win rate at the move limits: every attempt
+                            played without hints and with each hint bot's hints followed, on the levels' own seeds.
+                            --levels 1-250,260-1000/10  --player skill-55  --hint-bots novice,casual,average
+                            --moment idle|stuck (idle: a chance before every move, --idle-percent 50; stuck: the
+                            player's own move counts nothing for the goals)  --per-attempt 3  --attempts 8  --seed 7
       validate <dir|file>   Parse every level file and build a starting board for it.
       humans [attempts.jsonl]
                             Web lab attempts of people vs. the greedy bots on the same games, as CSV.
@@ -141,6 +146,7 @@ try
         "patch" => PatchCommand.Run(cli),
         "botstats" => BotStatsCommand.Run(cli),
         "ladder" => LadderCommand.Run(cli),
+        "hints" => HintsCommand.Run(cli),
         "validate" => ValidateCommand.Run(cli),
         "humans" => HumansCommand.Run(cli),
         "players" => PlayersCommand.Run(cli),

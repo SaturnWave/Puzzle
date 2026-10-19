@@ -62,6 +62,7 @@ namespace Puzzle.Meta.Settings
                     AtLeast(file.rewards.daily.everyDays, 1, "rewards.daily.everyDays")),
                 extraMoves: ExtraMovesOf(file.extraMovesOffer, win),
                 startBoosters: StartBoostersOf(file.startBoosters),
+                hints: HintsOf(file.hints),
                 shop: ShopOf(file, win, realMoney),
                 startingWallet: StartingWalletOf(file.start),
                 unlocks: UnlocksOf(file.boosterUnlocks),
@@ -103,6 +104,20 @@ namespace Puzzle.Meta.Settings
             }
 
             return new StartBoosterRules(file.perAttempt);
+        }
+
+        /// <summary>A hint waits a second or more, an attempt shows none or more, and the bot it shows the move of is named plainly.</summary>
+        private static HintRules HintsOf(HintsFile file)
+        {
+            if (!IsPlainName(file.bot))
+            {
+                throw Invalid($"hints.bot '{file.bot}' names no bot; a player model is named like \"casual\" or \"skill-60\"");
+            }
+
+            return new HintRules(
+                TimeSpan.FromSeconds(AtLeast(file.idleSeconds, 1, "hints.idleSeconds")),
+                AtLeast(file.perAttempt, 0, "hints.perAttempt"),
+                file.bot);
         }
 
         private static Shop ShopOf(EconomyFile file, WinReward win, RealMoneySales realMoney)

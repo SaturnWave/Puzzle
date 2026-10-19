@@ -83,6 +83,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The settings card as it will be with the switches of sound and vibration, which this build does not honour yet: a look ahead, not the game.</summary>
         SettingsPreview,
+
+        /// <summary>The board of the level the player stands on, left untouched until the game's hint shows: at its nudge, a strip of its first beat, and beside a special piece (<see cref="HintShots"/>).</summary>
+        Hint,
     }
 
     /// <summary>
@@ -366,7 +369,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
@@ -465,6 +468,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Support => SettingsShots.ShootTheSupport(state, screen, studio),
             ShotPage.Languages => SettingsShots.ShootTheLanguages(state, screen, studio),
             ShotPage.SettingsPreview => SettingsShots.ShootThePreview(state, screen, studio),
+            ShotPage.Hint => HintShots.Shoot(state, screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 

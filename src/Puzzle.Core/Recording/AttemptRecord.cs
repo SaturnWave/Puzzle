@@ -24,8 +24,13 @@ namespace Puzzle.Core.Recording
         /// an attempt is the owner's testing, not a player's, and is left out of what records are counted for. False
         /// for every other attempt, and for every record written before the mark existed.
         /// </param>
-        /// <exception cref="ArgumentException">A part is missing, or the attempt ends before it starts.</exception>
-        public AttemptRecord(AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false)
+        /// <param name="hintsShown">
+        /// Hints the released game showed by itself during the attempt (a board at rest left untouched long enough): 0
+        /// for an attempt that was shown none, for every record of the web lab, whose hints <see cref="LabDetails.HintsShown"/>
+        /// counts, and for every record written before the count existed.
+        /// </param>
+        /// <exception cref="ArgumentException">A part is missing, the attempt ends before it starts, or the hints are fewer than none.</exception>
+        public AttemptRecord(AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false, int hintsShown = 0)
         {
             Start = start ?? throw new ArgumentNullException(nameof(start));
             Outcome = outcome ?? throw new ArgumentNullException(nameof(outcome));
@@ -37,6 +42,7 @@ namespace Puzzle.Core.Recording
             Lab = lab;
             Actions = actions is null ? null : Array.AsReadOnly(CheckedActions(actions));
             TesterMode = testerMode;
+            HintsShown = hintsShown >= 0 ? hintsShown : throw new ArgumentOutOfRangeException(nameof(hintsShown), hintsShown, "An attempt shows none or more hints.");
         }
 
         public AttemptStart Start { get; }
@@ -54,6 +60,9 @@ namespace Puzzle.Core.Recording
 
         /// <summary>True when the released game played the attempt in its tester mode, with coins and lives that have no end.</summary>
         public bool TesterMode { get; }
+
+        /// <summary>Hints the released game showed by itself during the attempt; 0 for none, and in every record of the web lab.</summary>
+        public int HintsShown { get; }
 
         private static AttemptAction[] CheckedActions(IReadOnlyList<AttemptAction> actions) => actions.All(action => action is not null)
             ? actions.ToArray()

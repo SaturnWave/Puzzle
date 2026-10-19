@@ -90,6 +90,9 @@ namespace Puzzle.Client.Play
         /// <summary>The cell an armed booster is aimed at while the finger is down; nothing while no finger aims, or it is off the board's cells.</summary>
         public Position? AimedAt { get; private set; }
 
+        /// <summary>True while a finger that came down on the board's cells, to move a piece or to aim, has not lifted yet.</summary>
+        public bool IsPressing => _press != null || _isAiming;
+
         /// <summary>True from the moment a finger came down to aim until it lifted or was taken away.</summary>
         private bool _isAiming;
 

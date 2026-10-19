@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "lives": {
     "max": 5,
     "minutesPerLife": 30
@@ -146,6 +146,11 @@
   },
   "startBoosters": {
     "perAttempt": 3
+  },
+  "hints": {
+    "idleSeconds": 5,
+    "perAttempt": 3,
+    "bot": "casual"
   },
   "shop": {
     "coinPacks": [

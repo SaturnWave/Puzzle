@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +49,54 @@ namespace Puzzle.Client.Engine
                 CultureInfo.InvariantCulture,
                 "level {0} seed {1}: {2} after {3} of {4} moves, boards {5:x16}",
                 level.Id, seed, game.Status, game.MovesUsed, game.MoveLimit, boards);
+        }
+
+        /// <summary>
+        /// The pinned hints: every sample level under the three seeds, played by the random bot as <see cref="Of"/>
+        /// plays it, with the game's hint by <paramref name="hintBot"/> asked for before every move and written down.
+        /// The hint bot judges moves with fractions (a softmax), so these lines show whether a runtime thinks out the
+        /// same hints as the tools; the games themselves are those of the engine's trace, untouched by the hints.
+        /// </summary>
+        public static string[] HintsOfSamples(IEnumerable<LevelDefinition> sampleLevels, string hintBot) =>
+            sampleLevels.SelectMany(level => PinnedSeeds.Select(seed => HintsOf(level, seed, hintBot))).ToArray();
+
+        public static string HintsOf(LevelDefinition level, ulong seed, string hintBot)
+        {
+            if (!HintAdvisor.TryCreate(hintBot, out HintAdvisor? advisor))
+            {
+                throw new System.ArgumentException($"{hintBot} gives no hints.", nameof(hintBot));
+            }
+
+            Game game = Game.Start(level, seed);
+            var bot = new RandomPolicy();
+            var rng = new Rng(seed, BotStream);
+            var legalMoves = new List<Move>();
+            ulong hints = 0;
+            while (game.Status == GameStatus.Playing)
+            {
+                string hint = advisor.MoveFor(game, seed)?.ToString() ?? "none";
+                hints = unchecked((hints * HashPrime) ^ (ulong)StableHash(hint));
+                legalMoves.Clear();
+                game.CollectLegalMoves(legalMoves);
+                game.TryPlay(bot.ChooseMove(game, legalMoves, rng));
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "level {0} seed {1}: a hint by {2} before each of {3} moves, hints {4:x16}, last board {5:x16}",
+                level.Id, seed, hintBot, game.MovesUsed, hints, game.Board.ComputeHash());
+        }
+
+        /// <summary>A hash of a text that is the same on every runtime (string.GetHashCode is not).</summary>
+        private static uint StableHash(string text)
+        {
+            uint hash = 2166136261;
+            foreach (char letter in text)
+            {
+                hash = unchecked((hash ^ letter) * 16777619);
+            }
+
+            return hash;
         }
     }
 }

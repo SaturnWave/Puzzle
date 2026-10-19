@@ -44,8 +44,9 @@ namespace Puzzle.Client.EditorTools
     /// (<c>walk-retry-...</c>, <c>walk-lastlife-...</c>); and a start booster held none of is bought on the card
     /// that offers it, chosen and taken into the level, while with too few coins nothing is bought
     /// (<c>walk-buy-...</c>); and the walks of the shop, the gift and a painting's reward (GameWalk.Shop.cs), and of
-    /// the settings, the privacy card's deleted records and the support card (GameWalk.Settings.cs), and of the
-    /// swipes that turn the pages and the collection's rooms (GameWalk.Swipe.cs). The walk
+    /// the settings, the privacy card's deleted records and the support card (GameWalk.Settings.cs), of the
+    /// swipes that turn the pages and the collection's rooms (GameWalk.Swipe.cs), and of the game's hint on a board
+    /// left untouched (GameWalk.Hint.cs). The walk
     /// fails when a touch does not lead where it should, or when what was placed, spent, bought or given is not in the
     /// player's progress.
     /// </summary>
@@ -166,6 +167,7 @@ namespace Puzzle.Client.EditorTools
             RunTheLanguageWalk(screen, studio);
             RunTheTesterModeWalk(screen, studio);
             RunTheSwipeWalk(screen, studio);
+            RunTheHintWalk(screen, studio);
         }
 
         /// <summary>

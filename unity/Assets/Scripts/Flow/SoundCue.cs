@@ -56,12 +56,15 @@ namespace Puzzle.Client.Flow
 
         /// <summary>A switch of the settings card is flipped.</summary>
         Toggle,
+
+        /// <summary>A hint shows itself on a board the player has left untouched: felt as a light tick and not heard, so it does not break into their thinking.</summary>
+        Hint,
     }
 
     /// <summary>How the phone's short buzz under a cue feels. A closed set.</summary>
     public enum Tick
     {
-        /// <summary>A light click: a special piece made, a booster's strike.</summary>
+        /// <summary>A light click: a special piece made, a booster's strike, a hint shown.</summary>
         Light,
 
         /// <summary>A firm click: a level won, a painting made whole.</summary>

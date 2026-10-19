@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Play;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -234,7 +235,7 @@ namespace Puzzle.Client.EditorTools
 
             IReadOnlyDictionary<string, string> licences = SoundLicences();
             var sounds = new Dictionary<SoundCue, AudioClip>();
-            foreach (SoundCue cue in (SoundCue[])Enum.GetValues(typeof(SoundCue)))
+            foreach (SoundCue cue in ((SoundCue[])Enum.GetValues(typeof(SoundCue))).Where(SoundScore.IsHeard))
             {
                 if (!fileNames.TryGetValue(cue, out string fileName))
                 {

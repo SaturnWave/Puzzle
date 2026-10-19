@@ -24,7 +24,8 @@ internal static class MetaSupport
     /// The tests' pack: five lives and thirty minutes as decided; 10 coins a move left and 25 a level; the +5 for
     /// 900 coins or one of 3 ads a day; a new player with 100 coins, one rocket-and-bomb and two shuffles; the boosters
     /// used during play opening on levels 7, 12, 16 and 20 with three, two, one and none of their kind; two start
-    /// boosters an attempt; a starter set for 2 100 and a master set for 6 300; 50 coins for one of 2 ads a day.
+    /// boosters an attempt; two hints an attempt by the novice after 8 s untouched; a starter set for 2 100 and a
+    /// master set for 6 300; 50 coins for one of 2 ads a day.
     /// </summary>
     public static EconomyFile Pack() => new()
     {
@@ -60,6 +61,7 @@ internal static class MetaSupport
             gift = [Count("hit-cell", 3), Count("hit-row", 2), Count("hit-column", 1), Count("shuffle", 0)],
         },
         startBoosters = { perAttempt = 2 },
+        hints = { idleSeconds = 8, perAttempt = 2, bot = "novice" },
         shop =
         {
             coinPacks = [new CoinPackFile { name = "small", coins = 500 }, new CoinPackFile { name = "large", coins = 2500 }],

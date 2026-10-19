@@ -45,7 +45,9 @@ namespace Puzzle.Client.EditorTools
     /// played to its end by bot: the booster counts as the first move, every one is spent, and its line names the
     /// shuffle rule of today. An attempt with all three start boosters, every booster of play and the extra moves,
     /// is played on the engine alone and logged the same way. An attempt played in the tester mode, left after a move,
-    /// takes no life and no coin and its line alone is marked ("testerMode":true). A new player on the spatula's level
+    /// takes no life and no coin and its line alone is marked ("testerMode":true). An attempt whose board was left
+    /// untouched until the game's hint showed, twice, its first hint's move played, is left after it: its line alone
+    /// counts the hints ("hintsShown":2). A new player on the spatula's level
     /// is given its three, once, in the save file. Last, the file is read back with Unity's reader, and every record is played again on
     /// the engine (Puzzle.Core's AttemptReplay) to the end that was seen: the same board, status, moves used and goals;
     /// and the records written before the shuffle rule changed (tests/fixtures/attempt-records.first-shuffle-rule.jsonl),
@@ -110,6 +112,7 @@ namespace Puzzle.Client.EditorTools
                 PlayThroughTheOffer(bench, ended);
                 PlayWithEveryBoosterOnTheEngine(bench, ended);
                 AnAttemptInTheTesterModeIsMarkedAndCostsNothing(bench, ended);
+                AnAttemptShownHintsCountsThemInItsLine(bench, ended);
                 ANewPlayerOnTheSpatulasLevelIsGivenItsThreeOnce(bench);
 
                 int replayed = EveryLineReadsBackAndReplaysToTheEndSeen(bench, ended);
@@ -329,6 +332,49 @@ namespace Puzzle.Client.EditorTools
             Require(
                 session.Progress.Wallet.Lives.Equals(wallet.Lives) && session.Progress.Wallet.Coins == wallet.Coins,
                 $"leaving after a move in the tester mode left the wallet at {session.Progress.Wallet}, from {wallet}");
+        }
+
+        /// <summary>
+        /// The game's own session at a board left untouched until its hint shows: the hint is a move the game takes,
+        /// and it is played; left untouched again, the board shows a second hint, and the level is left after the move.
+        /// The attempt's line counts the two hints shown ("hintsShown":2), and no line before it counts any.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">No hint showed, one showed a move the game refuses, or the line does not count them as shown.</exception>
+        private static void AnAttemptShownHintsCountsThemInItsLine(Bench bench, List<Ending> ended)
+        {
+            string[] before = File.Exists(LogPath) ? File.ReadAllLines(LogPath) : Array.Empty<string>();
+            Require(before.All(line => !line.Contains("\"hintsShown\"")), "a line of an attempt shown no hint counts hints");
+
+            using GameSession session = bench.SessionAt(LeftLevel, attempt: 0);
+            StoryStudio.AdvanceUntilSettled(session);
+            Game game = session.Stage.Game;
+            Move hinted = WaitForTheHint(session);
+            Require(session.TryPlay(hinted) && game.Status == GameStatus.Playing, $"the hinted move {hinted} of level {LeftLevel} was refused or decided the level");
+            Require(session.Stage.HintShown == null, "the hint still showed after its move was played");
+            StoryStudio.AdvanceUntilSettled(session);
+            WaitForTheHint(session);
+            ended.Add(Ending.Of(game, $"level {LeftLevel} left after {game.MovesUsed} move, shown {session.Stage.HintsShown} hints").WithHints(session.Stage.HintsShown));
+            Leave(session);
+
+            string[] after = File.ReadAllLines(LogPath);
+            Require(after.Length == before.Length + 1, "no line was written when a level shown hints was left after a move");
+            Require(after[after.Length - 1].Contains(",\"hintsShown\":2"), $"the line of an attempt shown two hints does not count them: {after[after.Length - 1]}");
+        }
+
+        /// <summary>Leaves the board untouched until the game's hint shows, no longer than the settings' wait and a second.</summary>
+        /// <exception cref="InvalidOperationException">No hint showed in that time, or it shows a move the game refuses.</exception>
+        private static Move WaitForTheHint(GameSession session)
+        {
+            float longest = (float)StoryStudio.Economy.Hints.Idle.TotalSeconds + 1f;
+            for (float waited = 0f; session.Stage.HintShown == null; waited += StoryStudio.FrameSeconds)
+            {
+                Require(waited <= longest, $"level {session.Stage.Game.Level.Id} left untouched for {longest} s showed no hint");
+                session.Advance(StoryStudio.FrameSeconds);
+            }
+
+            Move hint = session.Stage.HintShown ?? throw new InvalidOperationException("The hint went before it was looked at.");
+            Require(session.Stage.Game.IsLegal(hint), $"the hint shows {hint}, which the game refuses");
+            return hint;
         }
 
         /// <summary>
@@ -626,6 +672,7 @@ namespace Puzzle.Client.EditorTools
                 Ending replayed = Ending.Of(AttemptReplay.Of(record, level), ended[index].What);
                 Require(replayed.Equals(ended[index]), $"line {index + 1} replays to {replayed}, and the attempt ended at {ended[index]}");
                 Require(record.TesterMode == ended[index].IsInTheTesterMode, $"line {index + 1} reads back {(record.TesterMode ? "in" : "out of")} the tester mode: {lines[index]}");
+                Require(record.HintsShown == ended[index].HintsShown, $"line {index + 1} reads back {record.HintsShown} hints shown, and the attempt showed {ended[index].HintsShown}: {lines[index]}");
             }
 
             return lines.Length;
@@ -719,9 +766,10 @@ namespace Puzzle.Client.EditorTools
         /// <summary>Where a game stood when its attempt ended, as far as a replay must come to the same.</summary>
         private sealed class Ending : IEquatable<Ending>
         {
-            private Ending(int level, GameStatus status, int movesUsed, string goalsDone, ulong board, int actions, string what, bool isInTheTesterMode = false)
+            private Ending(int level, GameStatus status, int movesUsed, string goalsDone, ulong board, int actions, string what, bool isInTheTesterMode = false, int hintsShown = 0)
             {
                 IsInTheTesterMode = isInTheTesterMode;
+                HintsShown = hintsShown;
                 Level = level;
                 Status = status;
                 MovesUsed = movesUsed;
@@ -749,8 +797,14 @@ namespace Puzzle.Client.EditorTools
             /// <summary>True for an attempt played in the tester mode, whose line must say so; no part of where the game stood.</summary>
             public bool IsInTheTesterMode { get; }
 
+            /// <summary>Hints the game showed in the attempt, which its line must count; no part of where the game stood.</summary>
+            public int HintsShown { get; }
+
             /// <summary>The same ending, of an attempt played in the tester mode.</summary>
-            public Ending InTheTesterMode() => new Ending(Level, Status, MovesUsed, GoalsDone, Board, Actions, What, isInTheTesterMode: true);
+            public Ending InTheTesterMode() => new Ending(Level, Status, MovesUsed, GoalsDone, Board, Actions, What, isInTheTesterMode: true, HintsShown);
+
+            /// <summary>The same ending, of an attempt in which the game showed so many hints.</summary>
+            public Ending WithHints(int hintsShown) => new Ending(Level, Status, MovesUsed, GoalsDone, Board, Actions, What, IsInTheTesterMode, hintsShown);
 
             public static Ending Of(Game game, string what) => new Ending(
                 game.Level.Id.Value,
@@ -804,6 +858,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>True for an attempt played in the tester mode; Unity's reader makes false of a line that does not say so, as every other line.</summary>
         public bool testerMode;
 
+        /// <summary>Hints the game showed in the attempt; Unity's reader makes 0 of a line that counts none, as every line of an attempt shown none.</summary>
+        public int hintsShown;
+
         /// <summary>The shuffle booster's rule by its number; Unity's reader makes 0 of a line that names none, which is the first rule.</summary>
         public int shuffleRule;
         public ActionLineDocument[] actions = Array.Empty<ActionLineDocument>();
@@ -830,7 +887,7 @@ namespace Puzzle.Client.EditorTools
                 extraMovesBought,
                 boostersUsed,
                 Instant(endedUtc));
-            return new AttemptRecord(start, outcome, lab: null, actions.Select(action => action.ToAction()).ToArray(), testerMode);
+            return new AttemptRecord(start, outcome, lab: null, actions.Select(action => action.ToAction()).ToArray(), testerMode, hintsShown);
         }
 
         private static DateTimeOffset Instant(string text) => DateTimeOffset.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.None);

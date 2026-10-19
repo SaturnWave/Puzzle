@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Puzzle.Bot;
 using Puzzle.Economy.Settings;
 using Puzzle.Meta;
 using Puzzle.Meta.Settings;
@@ -54,6 +55,8 @@ public class EconomyFileTests
         // What the game alone plays by, and the simulator only reads.
         GameOnlySettings stated = simulated.Game;
         Assert.Equal(stated.StartBoostersPerAttempt, game.StartBoosters.PerAttempt);
+        Assert.Equal(new HintRules(stated.Hints.Idle, stated.Hints.PerAttempt, stated.Hints.Bot), game.Hints);
+        Assert.True(HintAdvisor.TryCreate(game.Hints.Bot, out _), $"The shipped hints show the moves of '{game.Hints.Bot}', which gives no hints.");
         Assert.Equal(
             stated.CoinPacks.ToDictionary(pack => pack.Key, pack => pack.Value.Amount),
             game.Shop.CoinPacks.ToDictionary(pack => pack.Name, pack => pack.Coins.Amount));
@@ -110,6 +113,7 @@ public class EconomyFileTests
         Assert.Equal(new Coins(100), rules.StartingWallet.Coins);
         Assert.Equal(BoosterShelf.Empty.WithOneMore(BoosterKind.StartRocketAndBomb).With(BoosterKind.Shuffle, 2), rules.StartingWallet.Shelf);
         Assert.Equal(2, rules.StartBoosters.PerAttempt);
+        Assert.Equal(new HintRules(TimeSpan.FromSeconds(8), perAttempt: 2, bot: "novice"), rules.Hints);
     }
 
     [Fact]
@@ -119,8 +123,8 @@ public class EconomyFileTests
         var noPack = new EconomyFile();
 
         Assert.Contains("format version 0", Assert.Throws<EconomyFormatException>(() => EconomyFileMapper.ToRules(noPack)).Message);
-        Assert.Contains("format version 1", Refused(pack => pack.formatVersion = 1).Message);
-        Assert.Contains("format version 3", Refused(pack => pack.formatVersion = 3).Message);
+        Assert.Contains("format version 2", Refused(pack => pack.formatVersion = 2).Message);
+        Assert.Contains("format version 4", Refused(pack => pack.formatVersion = 4).Message);
     }
 
     [Fact]
@@ -196,6 +200,10 @@ public class EconomyFileTests
         Assert.Contains("shop.boosterSets.starter.boosters.start-color-bomb 0 must be at least 1", Refused(pack => pack.shop.boosterSets[0].boosters[1].count = 0).Message);
         Assert.Contains("startBoosters.perAttempt 0 must be 1 to 3", Refused(pack => pack.startBoosters.perAttempt = 0).Message);
         Assert.Contains("startBoosters.perAttempt 4 must be 1 to 3", Refused(pack => pack.startBoosters.perAttempt = 4).Message);
+        Assert.Contains("hints.idleSeconds 0 must be at least 1", Refused(pack => pack.hints.idleSeconds = 0).Message);
+        Assert.Contains("hints.perAttempt -1 must be at least 0", Refused(pack => pack.hints.perAttempt = -1).Message);
+        Assert.Contains("hints.bot '' names no bot", Refused(pack => pack.hints.bot = string.Empty).Message);
+        Assert.Contains("hints.bot 'skill 60' names no bot", Refused(pack => pack.hints.bot = "skill 60").Message);
 
         // None a day, none each time and no pack at all are amounts like any other.
         EconomyRules bare = MetaSupport.Rules(pack =>

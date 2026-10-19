@@ -1,0 +1,12 @@
+level 1 seed 20261007: a hint by casual before each of 15 moves, hints 7b58e30cc1a2d1d2, last board e65ff4ef3dfc1f69
+level 1 seed 7: a hint by casual before each of 25 moves, hints 71f9fafc256626e4, last board ad8bd467219620e2
+level 1 seed 123456789: a hint by casual before each of 25 moves, hints 3480ae698a216335, last board 449ce212dbaea36b
+level 2 seed 20261007: a hint by casual before each of 18 moves, hints ccba742452e0a9be, last board c0afffa00c7849c8
+level 2 seed 7: a hint by casual before each of 15 moves, hints f0af3a47ca8ae600, last board 57357dd0d0089b4b
+level 2 seed 123456789: a hint by casual before each of 18 moves, hints f6f457a8d7bbfa39, last board 28dcd96c9678622b
+level 3 seed 20261007: a hint by casual before each of 30 moves, hints e21d53a8218ac4fb, last board 2b9f5a0cb33504fb
+level 3 seed 7: a hint by casual before each of 30 moves, hints 5de395eab653a41e, last board a03d9738f252936f
+level 3 seed 123456789: a hint by casual before each of 30 moves, hints a292016750713324, last board cdf6c7299867705d
+level 4 seed 20261007: a hint by casual before each of 32 moves, hints 8518eedc7f671309, last board f700db87b785bea7
+level 4 seed 7: a hint by casual before each of 32 moves, hints e0b8e2e61266d9a1, last board 1721c5b5d98f51b6
+level 4 seed 123456789: a hint by casual before each of 32 moves, hints 8c8fde37934ef15f, last board 15fe1e0d19bda7a1

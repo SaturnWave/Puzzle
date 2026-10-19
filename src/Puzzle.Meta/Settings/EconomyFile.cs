@@ -16,7 +16,7 @@ namespace Puzzle.Meta.Settings
     [Serializable]
     public sealed class EconomyFile
     {
-        public const int CurrentFormatVersion = 2;
+        public const int CurrentFormatVersion = 3;
 
         public int formatVersion;
         public LivesFile lives = new LivesFile();
@@ -27,6 +27,7 @@ namespace Puzzle.Meta.Settings
         public StartFile start = new StartFile();
         public BoosterUnlocksFile boosterUnlocks = new BoosterUnlocksFile();
         public StartBoostersFile startBoosters = new StartBoostersFile();
+        public HintsFile hints = new HintsFile();
         public ShopFile shop = new ShopFile();
         public BuildFile build = new BuildFile();
     }
@@ -135,6 +136,17 @@ namespace Puzzle.Meta.Settings
     public sealed class StartBoostersFile
     {
         public int perAttempt;
+    }
+
+    /// <summary>When a hint shows itself, how many an attempt shows, and whose move it is; in the pack since format version 3.</summary>
+    [Serializable]
+    public sealed class HintsFile
+    {
+        public int idleSeconds;
+        public int perAttempt;
+
+        /// <summary>The name of a player model of the bot family: "casual", "skill-60".</summary>
+        public string bot = string.Empty;
     }
 
     [Serializable]

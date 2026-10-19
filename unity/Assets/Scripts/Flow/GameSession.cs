@@ -551,7 +551,8 @@ namespace Puzzle.Client.Flow
         /// <summary>
         /// Opens the stage of the attempt the progress asks for: the level the player stands on, with the seed its
         /// pool has for this try and the start boosters chosen on its card, whose specials lie on the board as it
-        /// opens. The attempt begins now, as its record will say; what it took leaves the shelf with its first move.
+        /// opens, and the game's hints by the economy's rules. The attempt begins now, as its record will say; what
+        /// it took leaves the shelf with its first move.
         /// </summary>
         /// <param name="startBoosters">The start boosters chosen on the level's card; none for a board opened without the card (the Editor's studies).</param>
         private IStage OpenTheBoard(StageOpening opening, StartChoice startBoosters)
@@ -561,18 +562,19 @@ namespace Puzzle.Client.Flow
             _rewardOfTheBoard = PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue);
             Game game = LevelStart.Attempt(level, attempt, startBoosters.ForTheEngine());
             ShelfBrief shelf = ShelfBrief.Of(level.Id.Value, attempt, _rules);
+            AttemptSeeds seeds = LevelStart.SeedsOf(level, attempt);
             _startOfTheBoard = new AttemptStart(
                 level.Id,
                 level.ContentVersion,
                 level.MoveLimit,
-                LevelStart.SeedsOf(level, attempt),
+                seeds,
                 attempt,
                 _attempts.Device,
                 ThisClient,
                 _clock.Now,
                 game.ShuffleBoosterRule);
             var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters), _rules.Ads);
-            GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, shelf, opening);
+            GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, shelf, opening, HintBrief.Of(_rules.Hints, seeds.Play));
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
             stage.Tell(WalletNow, ExtraMovesNow);
             return stage;
@@ -784,25 +786,27 @@ namespace Puzzle.Client.Flow
             SaveProgress();
             if (hasEnded)
             {
-                RecordTheAttempt(board.Game, now, handling);
+                RecordTheAttempt(board, now, handling);
             }
         }
 
         /// <summary>
         /// Writes the record of the open attempt, which has just ended for good, to the phone's log: once, with the
-        /// game as it stood when it ended, marked where it was played in the tester mode. A clock that was set back
-        /// since the attempt began (a time sync) gives an attempt that ends as it began rather than one that ends
-        /// before. A log that cannot be written does not stop the game: the record waits there and is written with the next one.
+        /// game as it stood when it ended and the hints its board showed, marked where it was played in the tester
+        /// mode. A clock that was set back since the attempt began (a time sync) gives an attempt that ends as it began
+        /// rather than one that ends before. A log that cannot be written does not stop the game: the record waits there
+        /// and is written with the next one.
         /// </summary>
         /// <param name="handling">How the wallet was held while the attempt was played; the tester mode cannot change on a board.</param>
         /// <exception cref="InvalidOperationException">The attempt's record was written before, or the attempt never began.</exception>
-        private void RecordTheAttempt(Game game, DateTimeOffset now, WalletHandling handling)
+        private void RecordTheAttempt(GameStage board, DateTimeOffset now, WalletHandling handling)
         {
+            Game game = board.Game;
             AttemptStart start = _startOfTheBoard ?? throw new InvalidOperationException("An attempt ended a second time, or without having begun.");
             _startOfTheBoard = null;
             DateTimeOffset ended = now < start.StartedUtc ? start.StartedUtc : now;
             var record = new AttemptRecord(
-                start, AttemptOutcome.Of(game, ended), lab: null, game.Actions, testerMode: handling == WalletHandling.Unlimited);
+                start, AttemptOutcome.Of(game, ended), lab: null, game.Actions, testerMode: handling == WalletHandling.Unlimited, hintsShown: board.HintsShown);
             try
             {
                 _attempts.Append(record);

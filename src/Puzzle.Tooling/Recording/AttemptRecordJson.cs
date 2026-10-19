@@ -16,6 +16,8 @@ namespace Puzzle.Tooling.Recording;
 /// left out for the first rule, so a line without it, as every line written before it existed, reads as played under
 /// that one. The optional <c>testerMode</c>, after the times, is written only as <c>true</c>, for an attempt the released game
 /// played in its tester mode; a line without it, as every line written before it existed, reads as one played outside it.
+/// The optional <c>hintsShown</c> after it counts the hints the released game showed by itself during the attempt; it is
+/// written only when there was one, so a line without it, as every line written before it existed, reads as none.
 /// The Unity game writes the same lines by hand (unity/Assets/Scripts/Flow/AttemptLine.cs).
 /// </summary>
 public static class AttemptRecordJson
@@ -88,6 +90,7 @@ public static class AttemptRecordJson
             EndedUtc = outcome.EndedUtc,
             Lab = record.Lab is { } lab ? ToLabLine(lab) : null,
             TesterMode = record.TesterMode ? true : null,
+            HintsShown = record.HintsShown > 0 ? record.HintsShown : null,
             ShuffleRule = start.ShuffleRule == ShuffleBoosterRule.RandomOrders ? null : (int)start.ShuffleRule,
             Actions = record.Actions?.Select(ToActionLine).ToArray(),
         };
@@ -113,7 +116,8 @@ public static class AttemptRecordJson
             line.BoostersUsed,
             line.EndedUtc);
         AttemptAction[]? actions = KnownRuleOf(line.ShuffleRule) is null ? null : ToActions(line.Actions);
-        return new AttemptRecord(start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions, testerMode: line.TesterMode == true);
+        return new AttemptRecord(
+            start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions, testerMode: line.TesterMode == true, hintsShown: line.HintsShown ?? 0);
     }
 
     /// <summary>
@@ -262,6 +266,9 @@ public static class AttemptRecordJson
 
         /// <summary>True for an attempt played in the released game's tester mode; absent otherwise, never false.</summary>
         public bool? TesterMode { get; init; }
+
+        /// <summary>Hints the released game showed by itself; absent for none, never 0.</summary>
+        public int? HintsShown { get; init; }
 
         /// <summary>The number of the shuffle booster's rule; absent for the first rule, which every record played under before it existed.</summary>
         public int? ShuffleRule { get; init; }

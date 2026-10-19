@@ -201,15 +201,18 @@ public sealed record BoosterUnlockSettings(IReadOnlyDictionary<BoosterKind, Leve
 }
 
 /// <summary>
-/// What the settings file states for the game alone (its startBoosters, shop and build sections). The file is the
-/// game's too, so these are read and checked here, and the reports list them apart; the simulation never reads one.
-/// A simulated player takes one start booster per attempt, never opens the shop and watches no ad for coins,
-/// whatever these say.
+/// What the settings file states for the game alone (its startBoosters, hints, shop and build sections). The file is
+/// the game's too, so these are read and checked here, and the reports list them apart; the simulation never reads
+/// one. A simulated player takes one start booster per attempt, is shown no hint, never opens the shop and watches
+/// no ad for coins, whatever these say.
 /// </summary>
 public sealed record GameOnlySettings
 {
     /// <summary>Start boosters the game lets a player take into one attempt, each kind once.</summary>
     public required int StartBoostersPerAttempt { get; init; }
+
+    /// <summary>When the game shows a hint by itself, how many an attempt, and whose move it shows.</summary>
+    public required HintSettings Hints { get; init; }
 
     /// <summary>Coins in each pack the shop shows for real money, by the pack's name.</summary>
     public required IReadOnlyDictionary<string, Coins> CoinPacks { get; init; }
@@ -224,6 +227,22 @@ public sealed record GameOnlySettings
     public required AdsInTheBuild Ads { get; init; }
 
     public required RealMoneyInTheBuild RealMoneyPurchases { get; init; }
+}
+
+/// <summary>
+/// The game's hint (Puzzle.Bot's HintAdvisor): after <see cref="Idle"/> on a board at rest with no move and no touch,
+/// the move of the player model <see cref="Bot"/> is shown, at most <see cref="PerAttempt"/> times an attempt.
+/// </summary>
+public sealed record HintSettings
+{
+    /// <summary>How long the board lies at rest, untouched, before a hint shows itself: a whole number of seconds, at least one.</summary>
+    public required TimeSpan Idle { get; init; }
+
+    /// <summary>Hints an attempt shows at most; 0 shows none.</summary>
+    public required int PerAttempt { get; init; }
+
+    /// <summary>The player model whose move a hint shows, by its name in the bot family (BotPolicies.IsPlayerModel).</summary>
+    public required string Bot { get; init; }
 }
 
 /// <summary>When a player takes the extra-moves offer.</summary>

@@ -2,6 +2,7 @@
 using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Play;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -114,7 +115,7 @@ namespace Puzzle.Client.EditorTools
                 return;
             }
 
-            var everyCue = (SoundCue[])System.Enum.GetValues(typeof(SoundCue));
+            SoundCue[] everyCue = ((SoundCue[])System.Enum.GetValues(typeof(SoundCue))).Where(SoundScore.IsHeard).ToArray();
             ArtCatalogue art = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(ArtCatalogueBuilder.CataloguePath);
             SoundCue[] withoutASound = everyCue.Where(cue => art.SoundOf(cue) == null).ToArray();
             if (withoutASound.Length > 0)
@@ -130,7 +131,7 @@ namespace Puzzle.Client.EditorTools
             cues.Buzz(Tick.Light);
             cues.Buzz(Tick.Firm);
             DeviceSettings settings = DeviceFile.LoadOrMake(Application.persistentDataPath).Settings;
-            Debug.Log($"Play mode check: the running game's player sounded all {everyCue.Length} cues and both ticks; the phone's settings are {settings}.");
+            Debug.Log($"Play mode check: the running game's player sounded all {everyCue.Length} cues that are heard and both ticks; the phone's settings are {settings}.");
         }
 
         private static void KeepTheLastFrame(ScriptableRenderContext context, Camera camera)

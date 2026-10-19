@@ -33,8 +33,9 @@ namespace Puzzle.Client.Play
     /// and a won game's finale are heard as they are seen: a trade as the pieces start to slide, a pop as a piece
     /// bursts, a special piece as it appears, a blast as a special piece's effect sets out, a booster as its tool
     /// strikes, a move of the finale as it leaves the medallion. A card is heard as it comes down: the card of a won
-    /// level as the win, of a level lost for good as the loss, every other as a card. The phone buzzes under four cues
-    /// only (<see cref="TickOf"/>). This file has no Unity dependency, so the repository's tests compile it too.
+    /// level as the win, of a level lost for good as the loss, every other as a card. The phone buzzes under five cues
+    /// only (<see cref="TickOf"/>), and one of them, a hint shown, is felt and not heard (<see cref="IsHeard"/>). This
+    /// file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     /// <remarks>
     /// A script is not heard cue by cue: a cascade pops a dozen pieces in a few hundredths of a second, a finale's
@@ -88,7 +89,7 @@ namespace Puzzle.Client.Play
         /// <summary>
         /// How the phone buzzes under a cue; nothing for most. A special piece made and a booster's strike tick
         /// lightly, a won level and a painting made whole firmly: the moments the player made happen, not the pops
-        /// that follow them.
+        /// that follow them. A hint ticks lightly too: it is the one cue that comes while nothing moves.
         /// </summary>
         public static Tick? TickOf(SoundCue cue) => cue switch
         {
@@ -96,6 +97,7 @@ namespace Puzzle.Client.Play
             SoundCue.Booster => Tick.Light,
             SoundCue.Win => Tick.Firm,
             SoundCue.PaintingWhole => Tick.Firm,
+            SoundCue.Hint => Tick.Light,
             SoundCue.Press => null,
             SoundCue.Refuse => null,
             SoundCue.Swap => null,
@@ -111,11 +113,16 @@ namespace Puzzle.Client.Play
         };
 
         /// <summary>
-        /// What of a cue reaches the player under the settings as they are at the moment it falls: its sound unless
-        /// sound is off, its tick (where it has one) unless vibration is off.
+        /// Whether a cue has a sound. A hint has none: it comes while the player thinks, and only a tick goes with it.
+        /// </summary>
+        public static bool IsHeard(SoundCue cue) => cue != SoundCue.Hint;
+
+        /// <summary>
+        /// What of a cue reaches the player under the settings as they are at the moment it falls: its sound (where it
+        /// has one) unless sound is off, its tick (where it has one) unless vibration is off.
         /// </summary>
         public static (SoundCue? Sound, Tick? Tick) Reaching(SoundCue cue, DeviceSettings settings) =>
-            (settings.Sound ? cue : (SoundCue?)null, settings.Vibration ? TickOf(cue) : null);
+            (settings.Sound && IsHeard(cue) ? cue : (SoundCue?)null, settings.Vibration ? TickOf(cue) : null);
 
         /// <summary>The cue a cue of a script sounds, at its beginning; none for what is seen and not heard.</summary>
         /// <exception cref="InvalidOperationException">A kind of cue the score does not know.</exception>

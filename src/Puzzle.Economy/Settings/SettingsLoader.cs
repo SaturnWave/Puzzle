@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Puzzle.Bank.Measuring;
+using Puzzle.Bot;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Economy.Measuring;
@@ -375,6 +376,7 @@ public static class SettingsLoader
             return new GameOnlySettings
             {
                 StartBoostersPerAttempt = file.StartBoosters.PerAttempt,
+                Hints = HintsOf(file.Hints),
                 CoinPacks = ByPlainName(file.Shop.CoinPacks, "shop.coinPacks")
                     .ToDictionary(pack => pack.Key, pack => CoinsOf(AtLeast(pack.Value.Coins, 1L, $"shop.coinPacks.{pack.Key}.coins"), $"shop.coinPacks.{pack.Key}.coins")),
                 BoosterSets = ByPlainName(file.Shop.BoosterSets, "shop.boosterSets")
@@ -387,6 +389,20 @@ public static class SettingsLoader
                 RealMoneyPurchases = file.Build.RealMoneyPurchases == NoRealMoneyWord
                     ? RealMoneyInTheBuild.NotAvailable
                     : throw Invalid($"build.realMoneyPurchases is '{file.Build.RealMoneyPurchases}'; a build sells nothing for money, which is '{NoRealMoneyWord}'"),
+            };
+        }
+
+        /// <summary>The game's hint: a delay of a second or more, none or more hints an attempt, and a player model of the bot family to show the move of.</summary>
+        private HintSettings HintsOf(HintsFile file)
+        {
+            Require(
+                BotPolicies.IsPlayerModel(file.Bot),
+                $"hints.bot '{file.Bot}' is no player model of the bot family: random, {string.Join(", ", SkillProfile.All.Select(profile => profile.Name))} or {SkillLadder.NamePattern}");
+            return new HintSettings
+            {
+                Idle = TimeSpan.FromSeconds(AtLeast(file.IdleSeconds, 1, "hints.idleSeconds")),
+                PerAttempt = AtLeast(file.PerAttempt, 0, "hints.perAttempt"),
+                Bot = file.Bot,
             };
         }
 
@@ -621,6 +637,8 @@ public static class SettingsLoader
 
         public required StartBoostersAllowedFile StartBoosters { get; init; }
 
+        public required HintsFile Hints { get; init; }
+
         public required ShopFile Shop { get; init; }
 
         public required BuildFile Build { get; init; }
@@ -733,6 +751,15 @@ public static class SettingsLoader
     private sealed class StartBoostersAllowedFile
     {
         public required int PerAttempt { get; init; }
+    }
+
+    private sealed class HintsFile
+    {
+        public required int IdleSeconds { get; init; }
+
+        public required int PerAttempt { get; init; }
+
+        public required string Bot { get; init; }
     }
 
     private sealed class ShopFile

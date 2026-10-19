@@ -128,6 +128,15 @@
     "perAttempt": 3
   },
 
+  "hints": {
+    // Seconds a board at rest lies untouched before a hint shows itself. [proposed]
+    "idleSeconds": 8,
+    // Hints an attempt shows at most; 0 shows none. [proposed]
+    "perAttempt": 2,
+    // The player model whose move a hint shows. [proposed]
+    "bot": "novice"
+  },
+
   "shop": {
     // Packs of coins for real money; no build sells one, so a pack has no price. [placeholder]
     "coinPacks": {

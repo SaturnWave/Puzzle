@@ -8,7 +8,10 @@ public enum AttemptStanding
     /// <summary>The person's own play on a retry drawn from the level's attempt policy: a bot can play the same game.</summary>
     Comparable,
 
-    /// <summary>Help shaped the attempt: the lab's tools (DDA assist, hints, the solver, bot moves) or boosters.</summary>
+    /// <summary>
+    /// Help shaped the attempt: the lab's tools (DDA assist, hints, the solver, bot moves), a hint the released game
+    /// showed by itself, or boosters. A hint is help wherever it comes from, and no bot of the comparison is shown one.
+    /// </summary>
     Assisted,
 
     /// <summary>
@@ -48,7 +51,7 @@ public static class AttemptCounting
             return AttemptStanding.TesterMode;
         }
 
-        bool helped = record.Lab?.IsAssisted == true || record.Outcome.BoostersUsed.Count > 0;
+        bool helped = record.Lab?.IsAssisted == true || record.HintsShown > 0 || record.Outcome.BoostersUsed.Count > 0;
         if (helped)
         {
             return AttemptStanding.Assisted;

@@ -16,7 +16,8 @@ namespace Puzzle.Client.Flow
     /// optional field that is absent is left out, never written as a zero. The line is built by hand: the game has no
     /// System.Text.Json, and Unity's JSON writer writes every field a document has. A record of the game has no lab
     /// part; its move limit is the level's own, without what a start booster or the extra moves added. An attempt
-    /// played in the tester mode says so (<c>"testerMode":true</c>); any other leaves the field out.
+    /// played in the tester mode says so (<c>"testerMode":true</c>); any other leaves the field out. An attempt in which
+    /// the game showed hints by itself counts them (<c>"hintsShown":2</c>); one without leaves the field out.
     /// This file has no Unity dependency, so the repository's tests compile it too and hold its lines against the
     /// tools' reader and writer.
     /// </summary>
@@ -61,6 +62,11 @@ namespace Puzzle.Client.Flow
             if (record.TesterMode)
             {
                 Field(line, "testerMode").Append("true");
+            }
+
+            if (record.HintsShown > 0)
+            {
+                Number(line, "hintsShown", record.HintsShown);
             }
 
             if (start.ShuffleRule != ShuffleBoosterRule.RandomOrders)

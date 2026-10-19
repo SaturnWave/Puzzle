@@ -188,17 +188,27 @@ public class SoundScoreTests
         foreach (SoundCue cue in Enum.GetValues<SoundCue>())
         {
             Assert.Equal(((SoundCue?)null, SoundScore.TickOf(cue)), SoundScore.Reaching(cue, quiet));
-            Assert.Equal(((SoundCue?)cue, (Tick?)null), SoundScore.Reaching(cue, still));
+            Assert.Equal((SoundScore.IsHeard(cue) ? cue : (SoundCue?)null, (Tick?)null), SoundScore.Reaching(cue, still));
             Assert.Equal(((SoundCue?)null, (Tick?)null), SoundScore.Reaching(cue, neither));
         }
     }
 
     [Fact]
-    public void The_phone_ticks_under_four_cues_only_the_moments_the_player_made_happen()
+    public void The_phone_ticks_under_five_cues_the_moments_the_player_made_happen_and_a_hint()
     {
         SoundCue[] ticking = Enum.GetValues<SoundCue>().Where(cue => SoundScore.TickOf(cue) != null).ToArray();
 
-        Assert.Equal(new[] { SoundCue.SpecialMade, SoundCue.Booster, SoundCue.Win, SoundCue.PaintingWhole }, ticking);
+        Assert.Equal(new[] { SoundCue.SpecialMade, SoundCue.Booster, SoundCue.Win, SoundCue.PaintingWhole, SoundCue.Hint }, ticking);
+    }
+
+    [Fact]
+    public void A_hint_is_felt_and_never_heard_and_the_vibration_switch_stills_it()
+    {
+        DeviceSettings still = DeviceSettings.Default.With(DeviceSetting.Vibration, isOn: false);
+
+        Assert.Equal(((SoundCue?)null, (Tick?)Tick.Light), SoundScore.Reaching(SoundCue.Hint, DeviceSettings.Default));
+        Assert.Equal(((SoundCue?)null, (Tick?)null), SoundScore.Reaching(SoundCue.Hint, still));
+        Assert.Equal(new[] { SoundCue.Hint }, Enum.GetValues<SoundCue>().Where(cue => !SoundScore.IsHeard(cue)));
     }
 
     [Fact]

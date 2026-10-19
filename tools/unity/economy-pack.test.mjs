@@ -68,7 +68,7 @@ test("pack_keepsTheGamesSectionsOnly_andListsWhatTheSettingsKeyByName", () => {
   const packed = packedEconomy(shippedText(), SETTINGS);
   const settings = parsedSettings(shippedText(), SETTINGS);
 
-  assert.deepEqual(Object.keys(packed), ["formatVersion", "lives", "coins", "rewards", "extraMovesOffer", "prices", "start", "boosterUnlocks", "startBoosters", "shop", "build"]);
+  assert.deepEqual(Object.keys(packed), ["formatVersion", "lives", "coins", "rewards", "extraMovesOffer", "prices", "start", "boosterUnlocks", "startBoosters", "hints", "shop", "build"]);
   for (const simulatorsOwn of ["name", "players", "habit", "player", "measurement", "report", "observed"]) {
     assert.ok(Object.hasOwn(settings, simulatorsOwn), `the settings have a section ${simulatorsOwn}`);
     assert.ok(!Object.hasOwn(packed, simulatorsOwn), `the pack has no section ${simulatorsOwn}`);
@@ -92,11 +92,13 @@ test("pack_ofSettingsWithAMissingPrice_stopsByTheFieldsName", () => {
   const withoutASetsPrice = shippedWith((settings) => delete settings.shop.boosterSets.starter.priceCoins);
   const withoutTheShop = shippedWith((settings) => delete settings.shop);
   const withoutTheLevels = shippedWith((settings) => delete settings.boosterUnlocks.levels);
+  const withoutTheHintsBot = shippedWith((settings) => delete settings.hints.bot);
 
   assert.throws(() => packedEconomy(withoutThePrice, "changed.json"), /changed\.json: 'extraMovesOffer\.priceCoins' is missing/);
   assert.throws(() => packedEconomy(withoutASetsPrice, "changed.json"), /changed\.json: 'shop\.boosterSets\.starter\.priceCoins' is missing/);
   assert.throws(() => packedEconomy(withoutTheShop, "changed.json"), /changed\.json: 'shop' is missing/);
   assert.throws(() => packedEconomy(withoutTheLevels, "changed.json"), /changed\.json: 'boosterUnlocks\.levels' is missing/);
+  assert.throws(() => packedEconomy(withoutTheHintsBot, "changed.json"), /changed\.json: 'hints\.bot' is missing/);
 });
 
 test("pack_ofSettingsWithAMisshapenValue_stopsByTheFieldsName", () => {

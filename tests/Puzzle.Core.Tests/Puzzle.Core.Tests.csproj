@@ -126,6 +126,8 @@
     <!-- Nor have the sounds: the cues there are, which falls at which moment of play, and what of them the settings let through; nor the build's step that asks the phone for what they need. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SoundCue.cs" Link="Unity\Flow\SoundCue.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\SoundScore.cs" Link="Unity\Play\SoundScore.cs" />
+    <!-- Nor has when the game's hint shows itself on a board left untouched, and when it goes. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Play\HintWatch.cs" Link="Unity\Play\HintWatch.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
   </ItemGroup>
   <ItemGroup>

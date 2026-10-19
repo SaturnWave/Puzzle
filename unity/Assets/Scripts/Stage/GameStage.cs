@@ -108,6 +108,15 @@ namespace Puzzle.Client.Stage
     /// the offer that loses it), and the press that leaves the level (<see cref="TakeWhatHappened"/>). The stage keeps
     /// no progress itself; whoever owns it takes the reports and keeps them.
     /// </para>
+    /// <para>
+    /// The game's hint has no button (the owner's decision of 2026-10-19). When the board has lain quiet and untouched
+    /// for the settings' wait (at rest and taking a finger, no card over it, no booster armed, no piece picked, no
+    /// finale, moves left), the two pieces of a move glow and nudge towards each other (<see cref="HintMark"/>), and
+    /// the phone ticks where vibration is on. The move is Puzzle.Bot's HintAdvisor's, thought out on a copy of the game
+    /// so that its streams are never touched. A touch anywhere, the way back and every move take the hint away at once
+    /// and start the wait again; an attempt shows no more hints than the settings allow (<see cref="HintWatch"/>), and
+    /// its record counts them (<see cref="HintsShown"/>). A stage opened without a <see cref="HintBrief"/> shows none.
+    /// </para>
     /// </remarks>
     public sealed class GameStage : IStage
     {
@@ -312,7 +321,15 @@ namespace Puzzle.Client.Stage
         /// <summary>What the stage sounded that its owner has not taken yet: the cues of what it shows and of the presses on it.</summary>
         private readonly CuesSounded _sounded = new CuesSounded();
 
-        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf)
+        /// <summary>The game's hints on this board and when one is due; nothing in a stage opened without hints.</summary>
+        private readonly HintBrief? _hintBrief;
+        private readonly HintWatch? _hintWatch;
+        private readonly HintMark _hintMark;
+
+        /// <summary>The move the hint that shows points at; nothing while none shows.</summary>
+        private Move? _hint;
+
+        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf, HintBrief? hints)
         {
             bool hasItemsToDrop = game.Level.Goals.Any(goal => goal is GoalSpec.DropItems);
             _art = art;
@@ -348,6 +365,9 @@ namespace Puzzle.Client.Stage
             _secondVeil = Veil.Create(_root.transform, art, DrawOrder.SecondVeil);
             _effectArt = effectArt;
             _pickedMark = new PickedMark(_board.Root, _effectArt, art);
+            _hintBrief = hints;
+            _hintWatch = hints == null ? null : new HintWatch(hints.Rules, clockSeconds: 0f);
+            _hintMark = new HintMark(_board.Root, _effectArt, art);
             _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
             _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal, CountAMoveThrown);
             _pointer = new BoardPointer(game);
@@ -470,6 +490,15 @@ namespace Puzzle.Client.Stage
         /// <summary>The cell an armed booster is aimed at while a finger is down on the board; nothing otherwise.</summary>
         public Position? AimedAt => _pointer.AimedAt;
 
+        /// <summary>The move the hint on the board shows now; nothing while none shows, and always in a stage without hints.</summary>
+        public Move? HintShown => _hintMark.Shown;
+
+        /// <summary>Hints shown so far in the attempt, which its record counts; 0 in a stage without hints.</summary>
+        public int HintsShown => _hintWatch?.Shown ?? 0;
+
+        /// <summary>Hints the attempt may still show; 0 in a stage without hints.</summary>
+        public int HintsLeft => _hintWatch is HintWatch watch ? watch.PerAttempt - watch.Shown : 0;
+
         /// <summary>What each booster's disc on the shelf shows now.</summary>
         public IReadOnlyDictionary<BoosterKind, BoosterFace> ShelfFaces => _discs.All.ToDictionary(disc => disc.Key, disc => disc.Value.Face);
 
@@ -544,10 +573,18 @@ namespace Puzzle.Client.Stage
         /// <param name="paintings">The museum's paintings: the result's card shows the jigsaw pieces a win gives.</param>
         /// <param name="brief">What the player's progress knows about this attempt, for the shelf and the result's card.</param>
         /// <param name="shelf">Which boosters used during play are open on the level, the one shown for the first time, and their prices. What the player holds is told after (<see cref="Tell"/>).</param>
+        /// <param name="hints">The game's hints for the attempt; nothing shows none (the Editor's studies).</param>
         public static GameStage Open(
-            Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf, StageOpening opening = StageOpening.InTheLitRoom)
+            Game game,
+            ArtCatalogue art,
+            EffectArt effectArt,
+            PaintingGallery paintings,
+            AttemptBrief brief,
+            ShelfBrief shelf,
+            StageOpening opening = StageOpening.InTheLitRoom,
+            HintBrief? hints = null)
         {
-            var stage = new GameStage(game, art, effectArt, paintings, brief, shelf);
+            var stage = new GameStage(game, art, effectArt, paintings, brief, shelf, hints);
             // The engine's last events are its start's while no move is played: the specials of the start boosters.
             IReadOnlyList<GameEvent> startEvents = game.MovesUsed == 0 ? game.LastEvents : Array.Empty<GameEvent>();
             BoardEntrance.Play(stage._board, stage._tweens, stage._effects, startEvents);
@@ -647,6 +684,7 @@ namespace Puzzle.Client.Stage
             AskWhetherToLeaveOnceAtRest();
             _discs.Advance(_clock);
             ShowTheShelf();
+            ShowTheHint();
         }
 
         /// <summary>
@@ -662,6 +700,7 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
+            TakeTheHintAway();
             if (IsShowingTheFinale)
             {
                 SkipTheFinale();
@@ -699,6 +738,7 @@ namespace Puzzle.Client.Stage
                 return false;
             }
 
+            TakeTheHintAway();
             _pointer.ClearSelection();
             ShowThePickedPiece();
             bool hadBegun = AttemptBegun.In(_game);
@@ -766,6 +806,7 @@ namespace Puzzle.Client.Stage
         /// </summary>
         public void PointerDown(Vector2 pixel)
         {
+            TakeTheHintAway();
             if (IsShowingTheFinale)
             {
                 SkipTheFinale();
@@ -822,6 +863,7 @@ namespace Puzzle.Client.Stage
         /// </summary>
         public void AnotherFingerDown()
         {
+            TakeTheHintAway();
             if (IsShowingTheFinale)
             {
                 SkipTheFinale();
@@ -1707,6 +1749,7 @@ namespace Puzzle.Client.Stage
         {
             BoosterKind booster = BoosterKinds.Of(use);
             bool hadBegun = AttemptBegun.In(_game);
+            TakeTheHintAway();
             if (!_owned.Has(booster))
             {
                 PutTheBoosterDown(); // the wallet was told it holds none since it was armed
@@ -1926,6 +1969,62 @@ namespace Puzzle.Client.Stage
             {
                 yield return fault;
             }
+        }
+
+        // ---------- the hint ----------
+
+        /// <summary>
+        /// The hint at this step: one is thought out and shown once the board has lain quiet and untouched for the
+        /// wait, one that shows goes on breathing and nudging, and the light goes out the moment the board is not
+        /// quiet any more. Quiet: the board takes a finger, no booster is armed or waits, no finger holds the board or
+        /// a disc, and no piece is picked (the picked piece's mark would fight the hint's over the same piece).
+        /// </summary>
+        private void ShowTheHint()
+        {
+            if (_hintBrief is not HintBrief brief || _hintWatch is not HintWatch watch)
+            {
+                return;
+            }
+
+            bool isQuiet = TakesInput && _arming is Arming.Nothing && !_controls.IsHolding && !_pointer.IsPressing && _pointer.Selected == null;
+            if (watch.IsDue(_clock, isQuiet))
+            {
+                ThinkOutAHint(brief, watch);
+            }
+
+            if (watch.IsShowing && _hint is Move hint)
+            {
+                _hintMark.Show(hint, _board.Piece(_ledger.PieceAt(hint.From)), hint.Kind == MoveKind.Tap ? null : _board.Piece(_ledger.PieceAt(hint.To)), _clock - watch.ShownAt);
+            }
+            else
+            {
+                _hintMark.Hide();
+            }
+        }
+
+        /// <summary>The advisor thinks out the move on a copy of the game; a move whose cells hold pieces to light is shown, and the phone ticks for it.</summary>
+        private void ThinkOutAHint(HintBrief brief, HintWatch watch)
+        {
+            if (brief.Advisor.MoveFor(_game, brief.AttemptSeed) is Move hint && HoldsAPiece(hint.From) && (hint.Kind == MoveKind.Tap || HoldsAPiece(hint.To)))
+            {
+                _hint = hint;
+                watch.Show(_clock);
+                _sounded.Add(SoundCue.Hint);
+            }
+            else
+            {
+                watch.FoundNoMove(_clock);
+            }
+        }
+
+        private bool HoldsAPiece(Position cell) => _ledger.PieceAt(cell) != PieceLedger.NoPiece;
+
+        /// <summary>A touch, the way back, a move or a booster: a hint that shows goes at once, its pieces at rest, and the wait for the next starts again.</summary>
+        private void TakeTheHintAway()
+        {
+            _hintWatch?.Touched(_clock);
+            _hintMark.Hide();
+            _hint = null;
         }
 
         private void ShowThePickedPiece()

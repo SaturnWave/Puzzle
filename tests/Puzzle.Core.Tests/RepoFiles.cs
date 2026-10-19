@@ -36,6 +36,9 @@ internal static class RepoFiles
     /// <summary>What the engine prints for the sample levels on the tools' runtime (see <c>EngineTraceTests</c>).</summary>
     public static string EngineTracePath => Find("tests", "fixtures", "engine-trace.txt");
 
+    /// <summary>The game's hints on the sample games on the tools' runtime (see <c>EngineTraceTests</c>).</summary>
+    public static string HintTracePath => Find("tests", "fixtures", "hint-trace.txt");
+
     /// <summary>The museum's rooms and paintings, as the game and the tools read them.</summary>
     public static string MuseumCataloguePath => Find("museum", "catalogue.json");
 

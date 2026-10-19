@@ -35,7 +35,7 @@ namespace Puzzle.Client.Art
         /// <summary>One material per <see cref="LetteringStyle"/> member, in the enum's order.</summary>
         [SerializeField] private Material[] _letteringMaterials = Array.Empty<Material>();
 
-        /// <summary>One sound per <see cref="SoundCue"/> member, in the enum's order.</summary>
+        /// <summary>One sound per <see cref="SoundCue"/> member, in the enum's order; none for a cue that is only felt (SoundScore.IsHeard).</summary>
         [SerializeField] private AudioClip[] _sounds = Array.Empty<AudioClip>();
 
         /// <summary>The unlit sprite material: the gallery is drawn as painted, with no light of the engine on it.</summary>
@@ -104,8 +104,17 @@ namespace Puzzle.Client.Art
             _letteringMaterials = InEnumOrder(materials);
         }
 
-        /// <summary>Editor only: replaces the sound of every cue. The list must name every cue.</summary>
-        public void FillSounds(IReadOnlyDictionary<SoundCue, AudioClip> sounds) => _sounds = InEnumOrder(sounds);
+        /// <summary>Editor only: replaces the sound of every cue that is heard; a cue the list does not name has none.</summary>
+        public void FillSounds(IReadOnlyDictionary<SoundCue, AudioClip> sounds)
+        {
+            var inOrder = new AudioClip[Enum.GetValues(typeof(SoundCue)).Length];
+            foreach (KeyValuePair<SoundCue, AudioClip> sound in sounds)
+            {
+                inOrder[(int)sound.Key] = sound.Value;
+            }
+
+            _sounds = inOrder;
+        }
 
         private static TValue[] InEnumOrder<TEnum, TValue>(IReadOnlyDictionary<TEnum, TValue> byMember)
             where TEnum : Enum

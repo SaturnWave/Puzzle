@@ -205,6 +205,10 @@ public class EconomySettingsTests
     [InlineData("""{ "start": { "boosters": { "shuffle": -1 } } }""", "start.boosters.shuffle -1 must be at least 0")]
     [InlineData("""{ "startBoosters": { "perAttempt": 0 } }""", "startBoosters.perAttempt 0 must be 1 to 3")]
     [InlineData("""{ "startBoosters": { "perAttempt": 4 } }""", "startBoosters.perAttempt 4 must be 1 to 3")]
+    [InlineData("""{ "hints": { "idleSeconds": 0 } }""", "hints.idleSeconds 0 must be at least 1")]
+    [InlineData("""{ "hints": { "perAttempt": -1 } }""", "hints.perAttempt -1 must be at least 0")]
+    [InlineData("""{ "hints": { "bot": "usta" } }""", "hints.bot 'usta' is no player model")]
+    [InlineData("""{ "hints": { "bot": "skill-52" } }""", "hints.bot 'skill-52' is no player model")]
     [InlineData("""{ "shop": { "coinPacks": { "big.one": { "coins": 100 } } } }""", "shop.coinPacks has an entry named 'big.one'")]
     [InlineData("""{ "shop": { "coinPacks": { "small": { "coins": 0 } } } }""", "shop.coinPacks.small.coins 0 must be at least 1")]
     [InlineData("""{ "shop": { "boosterSets": { "starter": { "priceCoins": 0 } } } }""", "shop.boosterSets.starter.priceCoins 0 must be at least 1")]
@@ -284,6 +288,7 @@ public class EconomySettingsTests
         Assert.Equal(BoosterKinds.All.Order(), settings.Start.Boosters.Keys.Order());
         Assert.All(settings.Start.Boosters.Values, count => Assert.Equal(0, count));
         Assert.Equal(3, game.StartBoostersPerAttempt);
+        Assert.Equal(new HintSettings { Idle = TimeSpan.FromSeconds(8), PerAttempt = 2, Bot = "novice" }, game.Hints);
         Assert.Equal(new Coins(1200), game.CoinPacks["medium"]);
         Assert.Equal(["large", "medium", "small"], game.CoinPacks.Keys.Order());
         Assert.Equal(new Coins(2100), game.BoosterSets["starter"].Price);
@@ -294,12 +299,13 @@ public class EconomySettingsTests
 
         // The catalogue says of each of these that no simulated player meets it, and of nothing else.
         string[] gameOnly = SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly).Select(field => field.Path.Split('.')[0]).Distinct().ToArray();
-        Assert.Equal(["startBoosters", "shop", "build"], gameOnly);
+        Assert.Equal(["startBoosters", "hints", "shop", "build"], gameOnly);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("lives.max").Use);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("start.coins").Use);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("start.boosters.hit-row").Use);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("player.startBoosters.perAttempt").Use);
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("startBoosters.perAttempt").Use);
+        Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("hints.bot").Use);
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("shop.boosterSets.starter.boosters.start-color-bomb").Use);
         Assert.All(
             SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly),
