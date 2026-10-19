@@ -911,6 +911,25 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Etik sınırlar** (§17'ye ek): oyuncunun para harcama eğilimi zorluğu etkilemez, zorluk gizlice ayarlanmaz, gerçek parayla rastgele kutu satılmaz.
 - **Ekip ve görseller:** kullanıcı ve Claude. Görseller en son, Claude Design ya da 3D araçlarla.
 
+**Kararlar (2026-10-18 ve 19).** Prototip denendikten sonra GitHub kayıtlarından yürünüyor; sıra **#6 ipucu → #5 öğretici → #7 booster tanıtımı → #8 dil desteğinin kalanı**. Kaydırarak geçiş (#3) 18 Ekim'de yapıldı.
+
+- **İpucu (#6):**
+  - Düğme yok. Oyuncu tahta dururken bir süre hamle yapmazsa ipucu kendiliğinden çıkar; süre bir ayar (başlangıç 5 sn).
+  - Bir denemede en çok 2–3 ipucu (ayar; başlangıç 3).
+  - Gösterilen hamleyi oyunun bot ailesinden bir bot seçer; uzman bot değil. Amaç oyuncuya yardım etmek, "ama o kadar da değil". Hangi botun seçileceği, ipucunun ortalama oyuncunun kazanma oranını ne kadar artırdığı ölçülerek belirlenir; ölçüm gelene kadar "casual" profili.
+  - Görünüş: hamlenin iki taşı parlak bir halkayla çevrilir ve birbirine doğru kıpırdar; titreşim anahtarı açıksa kısa bir titreşim olabilir. Görünüş proje sahibinin gözüyle telefonda denenecek.
+  - Kart açıkken, booster seçiliyken, şölende, zincirleme sürerken ve hamleler bittikten sonra ipucu çıkmaz; tahtaya dokununca kaybolur.
+  - Hesap motor tarafında, tahtanın bir kopyasında yapılır; oyunun rastgele akışına dokunmaz. Deneme kaydı gösterilen ipucu sayısını tutar.
+- **Öğretici (#5):** dört bölümün hepsi kabul edildi; denemede gerekirse bazıları çıkarılabilir.
+  - İlk 3 bölüm: 1. bölümde taş değiştirme ve eşleşme, 2. bölümde dörtlü eşleşme ve fırça, 3. bölümde beşli eşleşme ve palet. Her biri elle gösterilen tek bir hamle, öteki taşlar soluk.
+  - Hedef ve hamle sayısı: 1. bölümde plaketlerin kısa tanıtımı.
+  - Engeller: her engel ilk görüldüğü bölümde kısaca gösterilir.
+  - Müze ve yapboz: ilk parçanın yapboza yerleştirilmesi ve ilk tablonun tamamlanması rehberli.
+  - Öğreticinin gösterdiği hamleyi ipucu seçer.
+- **Booster tanıtımı (#7):** öğreticiyle aynı dili kullanır; öğreticiden sonra.
+- **Dil desteği (#8):** ilk sürümde 13 dil: İngilizce, Türkçe, Korece, Japonca, Almanca, Fransızca, İspanyolca, Portekizce (Brezilya), İtalyanca, Rusça, Çince (basitleştirilmiş ve geleneksel), Endonezce. İlk dil telefonun dili, desteklenmiyorsa İngilizce; ayarlardan değiştirilir. Tablo adları seçilen dilde, ressam adları değişmez. Çeviriler yayından önce ana dili olan biri tarafından okunur. Arapça ve Tayca sonra.
+- **Müzik (#9):** proje sahibinin Suno Premier hesabıyla sözsüz müzik üretilecek: müze teması, tahta müziği, kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül. İstekler ve Suno'ya yazılacaklar: `docs/music/MUSIC_BRIEF.md` ("Müzik İstekleri" PDF'i).
+
 ## 20. Kalibrasyon, veri ve yayın
 
 **Karar (2026-10-02).**

@@ -4,6 +4,22 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-19 · Oturum 27 — İpucu, kararlar, müzik istekleri
+
+**Kullanıcı kararları**
+- Yeni hafta GitHub kayıtlarından sürüyor; sıra #6 ipucu → #5 öğretici → #7 booster tanıtımı → #8 dillerin kalanı. Kararların hepsi tasarım belgesine (§19) yazıldı.
+- İpucu: düğme yok; hareketsizlikte kendiliğinden; denemede 2–3 ipucu; hamleyi uzman olmayan bir bot seçer ("yardım etsin ama o kadar da değil"); görünüş telefonda denenecek.
+- Öğretici: ilk 3 bölüm, hedef ve hamle sayısı, engeller ilk görüldüğünde, müze ve yapboz. Denemede gerekirse kısaltılır.
+- Müzik: proje sahibinin Suno Premier hesabıyla sözsüz müzik üretilecek; istekler `docs/music/MUSIC_BRIEF.md`.
+
+**Git kimliği**
+- Commit'ler iş hesabının adıyla atılıyordu (ArcanCaglayan, otekyazilim adresi). Proje sahibinin isteğiyle bilgisayarın ortak git ayarı (`C:\Users\arcan\.gitconfig`) SaturnWave kimliğine geçirildi; e-posta GitHub'ın gizli adresi. Eski dosyanın kopyası yanında duruyor. Geçmiş commit'ler eski adla kalıyor.
+
+**İpucu (#6)**
+- Bir ajan çalışıyor: motor tarafında, tahtanın kopyasında hesaplanan ipucu; bot profili ölçülerek seçilecek (novice, casual, average karşılaştırması); deneme kaydında ipucu sayısı.
+
+---
+
 ## 2026-10-18 · Oturum 26 — Kaydırarak geçiş, dil desteği
 
 **Kullanıcı kararları**

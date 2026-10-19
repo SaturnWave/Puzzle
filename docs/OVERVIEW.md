@@ -469,6 +469,7 @@ Proje sahibinin 2026-10-15'te belirlediği sıra (akşam güncellendi):
 
 Planlanan öteki adımlar:
 
+- **GitHub kayıtları (2026-10-19'dan):** #6 ipucu → #5 öğretici → #7 booster tanıtımı → #8 dillerin kalanı; kararlar Tasarım §19'da. Müzik (#9) proje sahibinin Suno hesabıyla üretilecek (`docs/music/MUSIC_BRIEF.md`).
 - **Herkese açık test sunucusu:** arayüz işleri bitince yeniden açılacak (karar 2026-10-14).
 - **Yayın:** APK testi, ardından doğrudan dünya geneli (Tasarım §20). Yayın öncesi yapılacaklar arasında: bölüm klasörünün "yayın klasörü" olarak dondurulması, düzeltme paketinin istemcide indirilip uygulanması, analiz servisi, rıza ekranı ve gizlilik politikası, iOS derlemesi, oyunun adı.
 
