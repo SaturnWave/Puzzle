@@ -91,6 +91,9 @@ internal static class RepoFiles
     /// <summary>The typeface the Editor's project setup made from a font file, named as the font file is without its ending.</summary>
     public static string TypefacePath(string fontFileName) => Path.Combine(ClientProjectFolder, "Assets", "Art", "Fonts", $"{fontFileName} Lettering.asset");
 
+    /// <summary>A file of TextMesh Pro's own resources in the Unity project (its settings, its line-breaking lists).</summary>
+    public static string TextMeshProResourcePath(string file) => Path.Combine(ClientProjectFolder, "Assets", "TextMesh Pro", "Resources", file);
+
     /// <summary>The hand-made sample levels (levels/samples), in file-name order.</summary>
     public static string[] SampleLevelPaths => Directory
         .GetFiles(Path.GetDirectoryName(Find("levels", "samples", "s01_basic.json"))!, "*.json")

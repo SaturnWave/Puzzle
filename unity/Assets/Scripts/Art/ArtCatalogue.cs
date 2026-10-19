@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Words;
 using TMPro;
 using UnityEngine;
 
@@ -35,6 +36,12 @@ namespace Puzzle.Client.Art
         /// <summary>One material per <see cref="LetteringStyle"/> member, in the enum's order.</summary>
         [SerializeField] private Material[] _letteringMaterials = Array.Empty<Material>();
 
+        /// <summary>The typeface of each <see cref="FallbackTypeface"/> member, in the enum's order: the letters of the other scripts, behind every typeface.</summary>
+        [SerializeField] private TMP_FontAsset[] _fallbacks = Array.Empty<TMP_FontAsset>();
+
+        /// <summary>The language whose own fallbacks the typefaces ask first now; nothing before a line was first written.</summary>
+        private Language? _fallbacksOrderedFor;
+
         /// <summary>One sound per <see cref="SoundCue"/> member, in the enum's order; none for a cue that is only felt (SoundScore.IsHeard).</summary>
         [SerializeField] private AudioClip[] _sounds = Array.Empty<AudioClip>();
 
@@ -56,9 +63,18 @@ namespace Puzzle.Client.Art
         /// <exception cref="InvalidOperationException">The catalogue is older than the list of drawings.</exception>
         public Sprite Of(GalleryArt art) => Listed(_gallerySprites, (int)art, art);
 
-        /// <summary>The typeface a style is set in, ready to draw: every letter of the game as a picture.</summary>
-        /// <exception cref="InvalidOperationException">The catalogue is older than the list of styles.</exception>
-        public TMP_FontAsset TypefaceOf(LetteringStyle style) => Listed(_typefaces, (int)style, style);
+        /// <summary>
+        /// The typeface a style is set in, ready to draw: every letter of the game as a picture, and behind it the
+        /// fallbacks of the other scripts, the spoken language's own asked first (<see cref="FallbackTypefaces.Behind(Typeface, Language)"/>):
+        /// a Chinese character takes the Japanese form in Japanese and the Chinese one in Chinese. The typefaces are
+        /// shared by every line, so a language chosen anew puts its own first for every line laid out after that.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The catalogue is older than the list of styles, or than the list of fallbacks.</exception>
+        public TMP_FontAsset TypefaceOf(LetteringStyle style)
+        {
+            OrderTheFallbacksFor(Speech.Language);
+            return Listed(_typefaces, (int)style, style);
+        }
 
         /// <summary>The material that draws a style's typeface as the style has it: what is drawn around its strokes and under them.</summary>
         /// <exception cref="InvalidOperationException">The catalogue is older than the list of styles.</exception>
@@ -69,6 +85,31 @@ namespace Puzzle.Client.Art
         {
             int index = (int)cue;
             return index < _sounds.Length && _sounds[index] != null ? _sounds[index] : null;
+        }
+
+        /// <summary>
+        /// Puts each typeface's fallbacks in the order a language asks them: its own first. Only the order changes,
+        /// in memory; the typefaces' files keep the order the Editor made them with.
+        /// </summary>
+        private void OrderTheFallbacksFor(Language language)
+        {
+            if (_fallbacksOrderedFor == language)
+            {
+                return;
+            }
+
+            foreach (LetteringStyle style in (LetteringStyle[])Enum.GetValues(typeof(LetteringStyle)))
+            {
+                var behind = new List<TMP_FontAsset>();
+                foreach (FallbackTypeface fallback in FallbackTypefaces.Behind(Typefaces.Of(style), language))
+                {
+                    behind.Add(Listed(_fallbacks, (int)fallback, fallback));
+                }
+
+                Listed(_typefaces, (int)style, style).fallbackFontAssetTable = behind;
+            }
+
+            _fallbacksOrderedFor = language;
         }
 
         private static T Built<T>(T? held, string what)
@@ -97,11 +138,16 @@ namespace Puzzle.Client.Art
             _paintMaterial = paintMaterial;
         }
 
-        /// <summary>Editor only: replaces the typeface and the material of each lettering style. Both lists must name every style.</summary>
-        public void FillLettering(IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> materials)
+        /// <summary>Editor only: replaces the typeface and the material of each lettering style, and the typeface of each fallback. Every list must name every member of its enum.</summary>
+        public void FillLettering(
+            IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces,
+            IReadOnlyDictionary<LetteringStyle, Material> materials,
+            IReadOnlyDictionary<FallbackTypeface, TMP_FontAsset> fallbacks)
         {
             _typefaces = InEnumOrder(typefaces);
             _letteringMaterials = InEnumOrder(materials);
+            _fallbacks = InEnumOrder(fallbacks);
+            _fallbacksOrderedFor = null;
         }
 
         /// <summary>Editor only: replaces the sound of every cue that is heard; a cue the list does not name has none.</summary>

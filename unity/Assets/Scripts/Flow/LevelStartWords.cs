@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Globalization;
+using System.Text;
 using Puzzle.Client.Words;
 using Puzzle.Meta;
 
@@ -44,9 +45,12 @@ namespace Puzzle.Client.Flow
             return Speech.Say(WordId.StartReward, ("pieces", pieces), ("all", Number(reward.PieceCount)));
         }
 
-        /// <summary>A start booster's name on one line, as the card that offers it names it.</summary>
+        /// <summary>
+        /// A start booster's name on one line, as the card that offers it names it: the lines under its disc joined by a
+        /// space, and a word they break after a hyphen (German "Regenbogen-" over "palette") whole again.
+        /// </summary>
         /// <param name="extraMoves">How many moves the booster of extra moves adds: its name says so.</param>
-        public static string NameOf(BoosterKind booster, int extraMoves) => OnTheShelf(booster, extraMoves).Replace('\n', ' ');
+        public static string NameOf(BoosterKind booster, int extraMoves) => OnOneLine(OnTheShelf(booster, extraMoves));
 
         /// <summary>A start booster's name under its disc, on the lines the canvas breaks it into.</summary>
         /// <exception cref="ArgumentException">The booster is used during play: the card before a level offers none of them.</exception>
@@ -72,6 +76,35 @@ namespace Puzzle.Client.Flow
         public static string PlusMoves(int moves) => Speech.SayCounted(WordId.PlusMoves, moves, ("moves", Number(moves)));
 
         private static string Number(int number) => number.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Lines joined into one: by a space, or, where a line ends in a hyphen and the next goes on with a small letter,
+        /// into the word the break cut, without the break's hyphen. A hyphen before a capital is the word's own and stays.
+        /// </summary>
+        private static string OnOneLine(string lines)
+        {
+            var joined = new StringBuilder(lines.Length);
+            for (int at = 0; at < lines.Length; at++)
+            {
+                if (lines[at] != '\n')
+                {
+                    joined.Append(lines[at]);
+                    continue;
+                }
+
+                bool cutsAWord = joined.Length > 0 && joined[joined.Length - 1] == '-' && at + 1 < lines.Length && char.IsLower(lines[at + 1]);
+                if (cutsAWord)
+                {
+                    joined.Length--;
+                }
+                else
+                {
+                    joined.Append(' ');
+                }
+            }
+
+            return joined.ToString();
+        }
 
         private static ArgumentException NotAStartBooster(BoosterKind booster) =>
             new ArgumentException($"{booster.Name()} is used during play; the card before a level offers none of it.", nameof(booster));

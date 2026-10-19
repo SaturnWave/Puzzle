@@ -72,11 +72,7 @@
     {"id":"BoosterPickAColumn","text":"Elige una columna"},
     {"id":"BoosterNothingToHit","text":"Aquí no hay nada que golpear"},
     {"id":"BoosterCannotShuffle","text":"No se puede mezclar el tablero"},
-    {"id":"BoosterFirstUseHitCell","text":"¡Nuevo: Espátula! Toca el disco y luego una ficha."},
-    {"id":"BoosterFirstUseHitRow","text":"¡Nuevo: Pincel de fila! Toca el disco y luego una fila."},
-    {"id":"BoosterFirstUseHitColumn","text":"¡Nuevo: Pincel de columna! Toca el disco y luego una columna."},
-    {"id":"BoosterFirstUseShuffle","text":"¡Nuevo: Mezclar paleta! Toca el disco para barajar las fichas."},
-    {"id":"BoosterEveryLevelWithout","text":"Todos los niveles se pueden superar sin potenciadores"},
+    {"id":"BoosterEveryLevelWithout","text":"Cada nivel se supera sin potenciadores"},
     {"id":"BoosterCostsNoMove","text":"Usarlo no gasta movimientos"},
     {"id":"BoosterOpensOn","text":"Nivel {level}"},
     {"id":"StartGoals","text":"OBJETIVOS"},
@@ -224,6 +220,19 @@
     {"id":"TutorialFirstPieceMore","text":"Cada nivel que superas te da una pieza"},
     {"id":"TutorialFirstPainting","text":"¡Tu primer cuadro ha vuelto al museo!"},
     {"id":"TutorialFirstPaintingMore","text":"Cinco cuadros completos restauran su sala"},
-    {"id":"TutorialTouchToGoOn","text":"Toca para seguir"}
+    {"id":"TutorialTouchToGoOn","text":"Toca para seguir"},
+    {"id":"TutorialBoosterHitCell","text":"¡Nuevo: Espátula! Toca el disco"},
+    {"id":"TutorialBoosterHitRow","text":"¡Nuevo: Pincel de fila! Toca el disco"},
+    {"id":"TutorialBoosterHitColumn","text":"¡Nuevo: Pincel de columna! Toca el disco"},
+    {"id":"TutorialBoosterShuffle","text":"¡Nuevo: Mezclar paleta! Toca el disco"},
+    {"id":"TutorialBoosterPickTheCell","text":"Ahora toca la ficha iluminada"},
+    {"id":"TutorialBoosterPickTheRow","text":"Ahora toca la fila iluminada"},
+    {"id":"TutorialBoosterPickTheColumn","text":"Ahora toca la columna iluminada"},
+    {"id":"TutorialBoosterFree","text":"Esta vez es gratis"},
+    {"id":"TutorialStartRocketAndBomb","text":"Elígelo para empezar con un pincel y una mancha"},
+    {"id":"TutorialStartColorBomb","text":"Elígelo para empezar con una paleta arcoíris"},
+    {"id":"TutorialStartExtraMoves","one":"Elígelo para empezar con {moves} movimiento extra","other":"Elígelo para empezar con {moves} movimientos extra"},
+    {"id":"BoosterCardTouchToClose","text":"Toca para cerrar"},
+    {"id":"TutorialLongPress","text":"Mantén pulsado un potenciador para volver a ver qué hace"}
   ]
 }

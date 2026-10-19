@@ -198,7 +198,8 @@ namespace Puzzle.Client.EditorTools
             Dictionary<PieceArt, Sprite> pieces = SpritesOf(FileNames, PieceSpriteImport.PiecesFolder, PiecesExporter);
             Dictionary<GalleryArt, Sprite> gallery = SpritesOf(GalleryFileNames, GalleryArtImport.GalleryFolder, GalleryExporter);
             Dictionary<SoundCue, AudioClip> sounds = SoundsOf(SoundFileNames);
-            (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> letteringMaterials) = LetteringBuilder.Ensure();
+            (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> letteringMaterials,
+                IReadOnlyDictionary<FallbackTypeface, TMP_FontAsset> fallbacks) = LetteringBuilder.Ensure();
 
             ArtCatalogue catalogue = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(CataloguePath);
             if (catalogue == null)
@@ -209,7 +210,7 @@ namespace Puzzle.Client.EditorTools
 
             Debug.Log($"Art catalogue: {pieces.Count + gallery.Count} drawings, packed into {PieceAtlasBuilder.TexturesOf(pieces.Values.Concat(gallery.Values))} atlas texture(s).");
             catalogue.FillDrawings(pieces, gallery, Damask(), SpriteMaterial(), PaintMaterial());
-            catalogue.FillLettering(typefaces, letteringMaterials);
+            catalogue.FillLettering(typefaces, letteringMaterials, fallbacks);
             catalogue.FillSounds(sounds);
             EditorUtility.SetDirty(catalogue);
         }

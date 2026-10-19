@@ -86,6 +86,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Art\LetterSet.cs" Link="Unity\Art\LetterSet.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\FallbackTypeface.cs" Link="Unity\Art\FallbackTypeface.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\BalancedLines.cs" Link="Unity\Art\BalancedLines.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\LineBreaks.cs" Link="Unity\Art\LineBreaks.cs" />
     <!-- Nor have the rules of the controls several screens share: what a booster's disc shows, how a row of pips is set out, how amounts and waits are written. -->
     <Compile Include="..\..\unity\Assets\Scripts\Screens\BoosterFace.cs" Link="Unity\Screens\BoosterFace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\PipRowPlan.cs" Link="Unity\Screens\PipRowPlan.cs" />

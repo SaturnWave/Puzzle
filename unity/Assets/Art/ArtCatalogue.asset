@@ -167,6 +167,17 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 6fe3b8c8ffd96cd4dad99b397b5a95e3, type: 2}
   - {fileID: 2100000, guid: 8012697c2bf5a2e418cde99e40e90cb9, type: 2}
   - {fileID: 2100000, guid: 09c6b0e824e037b44a6e28a7575e8527, type: 2}
+  _fallbacks:
+  - {fileID: 11400000, guid: 2fe7a00020e1ee749814ad8b13409866, type: 2}
+  - {fileID: 11400000, guid: ce11be0e7a97c7f4d92a7adcc8177e54, type: 2}
+  - {fileID: 11400000, guid: e562f09310cf2f24ca09404f2974111d, type: 2}
+  - {fileID: 11400000, guid: 692f4ceee7083db4096d00b524d01ceb, type: 2}
+  - {fileID: 11400000, guid: c97fbef3e018bd643aa72f8eaa462bb0, type: 2}
+  - {fileID: 11400000, guid: 6be2b37e9e64e19418f7fa70ad40f51b, type: 2}
+  - {fileID: 11400000, guid: fea3c2003acef5f45ae6c2244f92ddb1, type: 2}
+  - {fileID: 11400000, guid: ce4b65a933b3e5c46901ee86a619262c, type: 2}
+  - {fileID: 11400000, guid: 445ae11c773e58545b2411c918c078ef, type: 2}
+  - {fileID: 11400000, guid: 4eee774e83d43f747b2208fb33cb29d5, type: 2}
   _sounds:
   - {fileID: 8300000, guid: 1fb5a88331ff6974895a128b89346aeb, type: 3}
   - {fileID: 8300000, guid: cdcf3a93be3b31740bfd8e40e327e5c9, type: 3}

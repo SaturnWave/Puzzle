@@ -17,8 +17,29 @@ public class WordTablesTests
 {
     private static readonly JsonSerializerOptions AsUnityMapsIt = new() { IncludeFields = true };
 
-    /// <summary>The languages the first step of the work completes; the others follow in the next.</summary>
-    private static readonly Language[] Complete = { Language.Turkish, Language.English, Language.Korean };
+    /// <summary>The translations: every language of the first release but Turkish, the source.</summary>
+    public static TheoryData<Language> Translations()
+    {
+        var translations = new TheoryData<Language>();
+        foreach (Language language in Languages.All.Where(language => language != Language.Turkish))
+        {
+            translations.Add(language);
+        }
+
+        return translations;
+    }
+
+    /// <summary>Every language of the first release.</summary>
+    public static TheoryData<Language> EveryLanguage()
+    {
+        var every = new TheoryData<Language>();
+        foreach (Language language in Languages.All)
+        {
+            every.Add(language);
+        }
+
+        return every;
+    }
 
     private static readonly Lazy<MuseumCatalogue> Shipped = new(() => CatalogueFileMapper.ToCatalogue(
         JsonSerializer.Deserialize<CatalogueFile>(File.ReadAllText(RepoFiles.MuseumCataloguePath), AsUnityMapsIt)!));
@@ -28,12 +49,10 @@ public class WordTablesTests
     /// suffix its sound asks for ({levelIn}), which no other language does; the Korean line about extra moves that
     /// were refused does not repeat their number.
     /// </summary>
-    private static readonly HashSet<(WordId Id, string Place, Language Language)> PlacesLeftOut = new()
-    {
-        (WordId.RoomOpensAt, "levelIn", Language.English),
-        (WordId.RoomOpensAt, "levelIn", Language.Korean),
-        (WordId.ResultExtraMovesRefused, "moves", Language.Korean),
-    };
+    private static readonly HashSet<(WordId Id, string Place, Language Language)> PlacesLeftOut =
+        Languages.All.Where(language => language != Language.Turkish).Select(language => (WordId.RoomOpensAt, "levelIn", language))
+            .Append((WordId.ResultExtraMovesRefused, "moves", Language.Korean))
+            .ToHashSet();
 
     /// <summary>The places a translation has that its source has not: the plain level's number, which Turkish fills as {levelIn}.</summary>
     private static readonly HashSet<(WordId Id, string Place)> PlacesAdded = new()
@@ -63,20 +82,17 @@ public class WordTablesTests
         Assert.All(source.words, entry => Assert.False(string.IsNullOrWhiteSpace(entry.note), $"{entry.id} has no note"));
     }
 
-    [Fact]
-    public void The_English_and_Korean_tables_are_marked_machine_made_until_a_native_speaker_has_read_them()
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void Every_translation_is_marked_machine_made_until_a_native_speaker_has_read_it(Language language)
     {
-        Assert.Equal(TableReview.MachineMade, TestWords.WordsOf(Language.English).Review);
-        Assert.Equal(TableReview.MachineMade, TestWords.WordsOf(Language.Korean).Review);
-        Assert.Equal(TableReview.MachineMade, TestWords.CaptionsOf(Language.English).Review);
-        Assert.Equal(TableReview.MachineMade, TestWords.CaptionsOf(Language.Korean).Review);
+        Assert.Equal(TableReview.MachineMade, TestWords.WordsOf(language).Review);
+        Assert.Equal(TableReview.MachineMade, TestWords.CaptionsOf(language).Review);
     }
 
     [Theory]
-    [InlineData(Language.Turkish)]
-    [InlineData(Language.English)]
-    [InlineData(Language.Korean)]
-    public void The_words_of_Turkish_English_and_Korean_are_complete_for_every_id_and_for_the_shipped_museum(Language language)
+    [MemberData(nameof(EveryLanguage))]
+    public void The_words_of_every_language_are_complete_for_every_id_and_for_the_shipped_museum(Language language)
     {
         Wording wording = TestWords.Of(language);
 
@@ -86,8 +102,7 @@ public class WordTablesTests
     }
 
     [Theory]
-    [InlineData(Language.English)]
-    [InlineData(Language.Korean)]
+    [MemberData(nameof(Translations))]
     public void A_translation_keeps_every_place_of_its_source_and_adds_none_but_the_ones_its_language_needs(Language language)
     {
         WordTable source = TestWords.WordsOf(Language.Turkish);
@@ -111,8 +126,51 @@ public class WordTablesTests
     public void Every_language_names_itself_in_its_own_words()
     {
         Assert.Equal(
-            new[] { "Türkçe", "English", "한국어" },
-            Complete.Select(language => SettingsWords.OwnNameOf(TestWords.Of(language))));
+            new[]
+            {
+                "Türkçe", "English", "한국어", "日本語", "Deutsch", "Français", "Español", "Português (Brasil)", "Italiano", "Русский", "简体中文", "繁體中文",
+                "Bahasa Indonesia",
+            },
+            Languages.All.Select(language => SettingsWords.OwnNameOf(TestWords.Of(language))));
+    }
+
+    /// <summary>
+    /// A counted word gives a form for every count its language tells apart (<see cref="Languages.FormOf"/>): Russian
+    /// "1 ход", "2 хода", "5 ходов"; German, French, Spanish, Brazilian Portuguese and Italian one form for one and
+    /// another for more. A language that counts every number alike (Japanese, both Chinese, Korean, Indonesian) gives
+    /// one text, as its source's single text does. A form the language never uses is no form of the table; "other"
+    /// is every table's, the form a count without one of its own takes.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void A_counted_word_has_a_form_for_every_count_its_language_tells_apart_and_none_it_never_uses(Language language)
+    {
+        WordFile file = JsonSerializer.Deserialize<WordFile>(File.ReadAllText(RepoFiles.WordTablePath(Languages.CodeOf(language))), AsUnityMapsIt)!;
+        HashSet<PluralForm> used = Enumerable.Range(0, 200).Select(count => Languages.FormOf(language, count)).ToHashSet();
+        bool countsAlike = used.Count == 1;
+
+        Assert.All(file.words.Where(entry => string.IsNullOrEmpty(entry.text)), entry =>
+        {
+            Assert.False(countsAlike, $"{Languages.CodeOf(language)} counts every number alike, and {entry.id} gives forms");
+            Assert.All(used, form => Assert.False(string.IsNullOrEmpty(FormIn(entry, form)), $"{Languages.CodeOf(language)} {entry.id} has no {form} form"));
+            Assert.All(Enum.GetValues<PluralForm>().Except(used).Except(new[] { PluralForm.Other }), form =>
+                Assert.True(string.IsNullOrEmpty(FormIn(entry, form)), $"{Languages.CodeOf(language)} {entry.id} gives a {form} form, which the language never uses"));
+        });
+        Assert.Equal(countsAlike, file.words.All(entry => !string.IsNullOrEmpty(entry.text)));
+    }
+
+    [Theory]
+    [InlineData(1, "+1 ход")]
+    [InlineData(2, "+2 хода")]
+    [InlineData(5, "+5 ходов")]
+    [InlineData(11, "+11 ходов")]
+    [InlineData(21, "+21 ход")]
+    [InlineData(24, "+24 хода")]
+    public void Russian_says_a_count_in_the_form_its_last_figures_ask_for(int moves, string said)
+    {
+        using IDisposable speaking = TestWords.Speak(Language.Russian);
+
+        Assert.Equal(said, LevelStartWords.PlusMoves(moves));
     }
 
     [Fact]
@@ -205,25 +263,30 @@ public class WordTablesTests
         Assert.True(works.Count(work => english.SourceOf(work) == TitleSource.Original) >= 90);
     }
 
-    [Fact]
-    public void A_painter_keeps_their_name_in_every_language_and_only_the_words_around_it_change()
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void A_painter_keeps_their_name_in_every_language_and_only_the_words_around_it_change(Language language)
     {
-        CaptionTable english = TestWords.CaptionsOf(Language.English);
-        CaptionTable korean = TestWords.CaptionsOf(Language.Korean);
+        CaptionTable captions = TestWords.CaptionsOf(language);
         Artwork[] works = Shipped.Value.Rooms.SelectMany(room => room.Artworks).ToArray();
         Artwork monet = works.First(work => work.Id.Value == "monet-water-lilies-1906");
         Artwork holbein = works.First(work => work.Id.Value == "holbein-edward-vi-as-a-child");
 
-        Assert.Equal("Claude Monet", english.ArtistOf(monet));
-        Assert.Equal("Claude Monet", korean.ArtistOf(monet));
-        Assert.Equal("Hans Holbein the Younger", english.ArtistOf(holbein));
-        Assert.StartsWith("Hans Holbein", korean.ArtistOf(holbein));
-        Assert.All(works, work => Assert.DoesNotContain("atfen", english.ArtistOf(work) + korean.ArtistOf(work)));
+        Assert.Equal("Claude Monet", captions.ArtistOf(monet));
+        Assert.Contains("Hans Holbein", captions.ArtistOf(holbein));
+        Assert.All(works, work => Assert.DoesNotContain("atfen", captions.ArtistOf(work)));
+    }
+
+    [Fact]
+    public void English_names_the_younger_Holbein_in_its_own_words()
+    {
+        Artwork holbein = Shipped.Value.Rooms.SelectMany(room => room.Artworks).First(work => work.Id.Value == "holbein-edward-vi-as-a-child");
+
+        Assert.Equal("Hans Holbein the Younger", TestWords.CaptionsOf(Language.English).ArtistOf(holbein));
     }
 
     [Theory]
-    [InlineData(Language.English)]
-    [InlineData(Language.Korean)]
+    [MemberData(nameof(Translations))]
     public void A_year_with_words_is_said_in_the_language_and_one_without_stays_as_it_is(Language language)
     {
         CaptionTable captions = TestWords.CaptionsOf(language);
@@ -241,6 +304,18 @@ public class WordTablesTests
                 Assert.Equal(work.Caption.Year, year);
             }
         });
+    }
+
+    /// <summary>A title is the one the painting is known by in the language, with where it was found, or a translation; only English keeps the catalogue's original ones.</summary>
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void A_title_is_established_with_where_it_was_found_or_marked_as_a_translation(Language language)
+    {
+        CaptionTable captions = TestWords.CaptionsOf(language);
+        Artwork[] works = Shipped.Value.Rooms.SelectMany(room => room.Artworks).ToArray();
+
+        Assert.All(works, work => Assert.NotNull(captions.SourceOf(work)));
+        Assert.True(language == Language.English || works.All(work => captions.SourceOf(work) != TitleSource.Original), $"{Languages.CodeOf(language)} keeps an original title");
     }
 
     [Fact]
@@ -271,6 +346,16 @@ public class WordTablesTests
         using (TestWords.Speak(Language.Korean))
         {
             Assert.Equal(("인상주의", "수련", "CLAUDE MONET · 1906"), SaidOf(first, waterLilies));
+        }
+
+        using (TestWords.Speak(Language.Japanese))
+        {
+            Assert.Equal(("印象派", "睡蓮", "CLAUDE MONET · 1906"), SaidOf(first, waterLilies));
+        }
+
+        using (TestWords.Speak(Language.German))
+        {
+            Assert.Equal(("Impressionismus", "Seerosen", "CLAUDE MONET · 1906"), SaidOf(first, waterLilies));
         }
 
         Assert.Equal("Empresyonizm", MuseumWords.NameOf(first));
@@ -310,4 +395,13 @@ public class WordTablesTests
         (MuseumWords.NameOf(room), MuseumWords.TitleOf(PaintingNumber.All.First(), artwork), MuseumWords.ByLineOf(artwork));
 
     private static WordTable TableOf(params WordEntry[] entries) => WordTable.Of(new WordFile { language = "fr", review = "machine", words = entries });
+
+    private static string? FormIn(WordEntry entry, PluralForm form) => form switch
+    {
+        PluralForm.One => entry.one,
+        PluralForm.Few => entry.few,
+        PluralForm.Many => entry.many,
+        PluralForm.Other => entry.other,
+        _ => throw new ArgumentOutOfRangeException(nameof(form), form, "A form of a counted word the test does not know."),
+    };
 }

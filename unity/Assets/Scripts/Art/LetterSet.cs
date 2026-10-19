@@ -26,6 +26,20 @@ namespace Puzzle.Client.Art
         /// <summary>What Turkish needs beyond those.</summary>
         private const string TurkishLetters = "ĞİŞğış";
 
+        /// <summary>
+        /// What the other Latin languages of the tables need beyond those: Spanish opens a question and an
+        /// exclamation upside down ("¡Nivel superado!"), French ties two letters in "Sœurs" (its capital for a line
+        /// set in capitals), and Russian quotes a name between guillemets («Мулен Руж»), which its fallback leaves to
+        /// the design's typefaces like every mark of plain Latin.
+        /// </summary>
+        private const string OtherLatinLetters = "¡¿œŒ«»";
+
+        /// <summary>
+        /// A space at which no line breaks: French sets it before "!", "?", ":" and ";", and French and Russian between
+        /// the thousands of an amount ("1 250").
+        /// </summary>
+        public const char NoBreakSpace = ' ';
+
         /// <summary>The marks the game's sentences use, and "∞", which the tester mode shows for its coins and lives.</summary>
         private const string Marks = "·…’“”–×∞";
 
@@ -65,6 +79,8 @@ namespace Puzzle.Client.Art
             }
 
             letters.AddRange(TurkishLetters);
+            letters.AddRange(OtherLatinLetters);
+            letters.Add(NoBreakSpace);
             letters.AddRange(Marks);
             return new string(letters.ToArray());
         }

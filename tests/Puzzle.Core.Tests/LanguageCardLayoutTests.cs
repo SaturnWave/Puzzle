@@ -93,6 +93,8 @@ public class LanguageCardLayoutTests
         LanguageCardLayout card = LanguageCardLayout.For(13);
         CardPlace place = card.PlaceOn(page);
 
+        Assert.False(card.StandsInFront);
+        Assert.True(LanguageCardLayout.For(LanguageCardLayout.MostRowsInFront).StandsInFront);
         Assert.True(place.Middle + place.Scale * card.Height / 2f <= page.View.UsableTop - PageLayout.CardMarginAboveAndBelow + 0.01f, "the nameplate runs under the cutout");
         Assert.True(place.Middle - place.Scale * card.Height / 2f >= page.View.UsableBottom + PageLayout.CardMarginAboveAndBelow - 0.01f, "the foot runs under the system bar");
         Assert.All(card.Rows, row => Assert.True(row.Height * place.Scale >= 44f, $"a row is {row.Height * place.Scale} points high"));

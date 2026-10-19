@@ -95,6 +95,9 @@ namespace Puzzle.Client.Layout
         /// <summary>The room the card takes on a screen: its body with its nameplate.</summary>
         public float Height => BodyHeight + SettingsLayout.RidesAbove;
 
+        /// <summary>True for a card short enough to stand in front of the settings card on every screen; a taller one hangs by itself (<see cref="PlaceOn"/>).</summary>
+        public bool StandsInFront => Rows.Count <= MostRowsInFront;
+
         /// <summary>The card for so many languages.</summary>
         /// <exception cref="ArgumentOutOfRangeException">No language at all: the game always speaks one.</exception>
         public static LanguageCardLayout For(int languages)

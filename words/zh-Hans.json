@@ -72,10 +72,6 @@
     {"id":"BoosterPickAColumn","text":"选择一列"},
     {"id":"BoosterNothingToHit","text":"这里没有可消除的东西"},
     {"id":"BoosterCannotShuffle","text":"棋盘无法洗牌"},
-    {"id":"BoosterFirstUseHitCell","text":"新道具：刮刀！先点按钮，再点一个方块。"},
-    {"id":"BoosterFirstUseHitRow","text":"新道具：横排画笔！先点按钮，再点一行。"},
-    {"id":"BoosterFirstUseHitColumn","text":"新道具：竖排画笔！先点按钮，再点一列。"},
-    {"id":"BoosterFirstUseShuffle","text":"新道具：调色盘洗牌！点按钮即可重新摆放方块。"},
     {"id":"BoosterEveryLevelWithout","text":"每一关不用道具也能通过"},
     {"id":"BoosterCostsNoMove","text":"使用不消耗步数"},
     {"id":"BoosterOpensOn","text":"第{level}关"},
@@ -224,6 +220,19 @@
     {"id":"TutorialFirstPieceMore","text":"每过一关都会得到一块碎片"},
     {"id":"TutorialFirstPainting","text":"你的第一幅画回到美术馆了！"},
     {"id":"TutorialFirstPaintingMore","text":"完成五幅画就能修复展厅"},
-    {"id":"TutorialTouchToGoOn","text":"轻触继续"}
+    {"id":"TutorialTouchToGoOn","text":"轻触继续"},
+    {"id":"TutorialBoosterHitCell","text":"新道具：刮刀！点一下按钮"},
+    {"id":"TutorialBoosterHitRow","text":"新道具：横排画笔！点一下按钮"},
+    {"id":"TutorialBoosterHitColumn","text":"新道具：竖排画笔！点一下按钮"},
+    {"id":"TutorialBoosterShuffle","text":"新道具：调色盘洗牌！点一下按钮"},
+    {"id":"TutorialBoosterPickTheCell","text":"现在点发光的方块"},
+    {"id":"TutorialBoosterPickTheRow","text":"现在点发光的那一行"},
+    {"id":"TutorialBoosterPickTheColumn","text":"现在点发光的那一列"},
+    {"id":"TutorialBoosterFree","text":"这次免费"},
+    {"id":"TutorialStartRocketAndBomb","text":"选中后开局自带画笔和泼彩"},
+    {"id":"TutorialStartColorBomb","text":"选中后开局自带彩虹调色盘"},
+    {"id":"TutorialStartExtraMoves","text":"选中后开局多{moves}步"},
+    {"id":"BoosterCardTouchToClose","text":"轻触关闭"},
+    {"id":"TutorialLongPress","text":"长按道具，可再次查看它的效果"}
   ]
 }

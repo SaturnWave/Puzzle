@@ -13,7 +13,8 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// The walk of the language, once on each screen, on the game's own session and by touches alone: in the hall the
     /// gear brings the settings card down, its row "Dil" the language card in front of it, which ticks the language
-    /// the tools speak. A press on another language (English, or Korean where the tools speak English) speaks it at
+    /// the tools speak. A press on another language (Japanese, whose Chinese characters the fallbacks draw in their
+    /// own forms; Korean or English where the tools speak a language that names the hall as Japanese does) speaks it at
     /// once: the card ticks it and names itself in it, the settings card behind it and the hall behind both are built
     /// anew in it, and the device keeps the choice. With the cards up, the hall, the map, the collection and the card
     /// before the level all speak it; the board the level opens is built in it too, the next time one is built. Last,
@@ -24,7 +25,7 @@ namespace Puzzle.Client.EditorTools
         public static void RunTheLanguageWalk(ScreenShape screen, Studio studio)
         {
             Language spokenByTheTools = Speech.Language;
-            Language other = spokenByTheTools == Language.English ? Language.Korean : Language.English;
+            Language other = AnotherLanguageToChoose(spokenByTheTools);
             PlayerProgress standing = StoryStudio.StandingOn(LevelPack.Numbered(studio.Levels, RetriedLevel), studio.Levels);
             var settings = new SettingsInMemory(DeviceSettings.Default);
 
@@ -83,6 +84,24 @@ namespace Puzzle.Client.EditorTools
                 // A walk that stopped half way leaves the tools speaking their own language for the walks after it.
                 WordsPack.Speak(spokenByTheTools);
             }
+        }
+
+        /// <summary>
+        /// The language the walk chooses: the first of Japanese, Korean and English that names the hall otherwise than
+        /// the tools' language does, so the bar shows that the hall was built anew in it (German and Indonesian say
+        /// "Museum" as English does, Traditional Chinese "美術館" as Japanese does).
+        /// </summary>
+        private static Language AnotherLanguageToChoose(Language spoken)
+        {
+            foreach (Language candidate in new[] { Language.Japanese, Language.Korean, Language.English })
+            {
+                if (candidate != spoken && WordsPack.Load(candidate) is Wording wording && wording.Words.WordsOf(WordId.NavMuseum, PluralForm.Other) != MuseumWords.HomeTab)
+                {
+                    return candidate;
+                }
+            }
+
+            throw new InvalidOperationException($"No language the game carries names the hall otherwise than {Languages.CodeOf(spoken)} does.");
         }
 
         /// <summary>The gear brings the settings card down, and its language row the language card, which ticks the language spoken.</summary>

@@ -1180,12 +1180,14 @@ namespace Puzzle.Client.Screens
         /// <summary>
         /// Hangs a card where it belongs: the card at the back in the page's place for a card; one in front of it, a
         /// shorter card, at the same size and standing a little over the foot of the one behind, so that the nameplate
-        /// of the card behind stays in sight above it and its rim under it.
+        /// of the card behind stays in sight above it and its rim under it. A language card of more languages than fit
+        /// there hangs in the page's place for a card too, in front of the dark over the card behind it.
         /// </summary>
         private void Place(IMuseumCard card, PageLayout layout)
         {
             HangingCard<MuseumPress> behind = _cards[0].Card;
-            CardPlace place = ReferenceEquals(card, _cards[0])
+            bool hangsByItself = ReferenceEquals(card, _cards[0]) || card is LanguageCard { HangsByItself: true };
+            CardPlace place = hangsByItself
                 ? layout.PlaceOfACard(card.Card.Width, card.Card.Height)
                 : card.Card.PlaceOnAFoot(behind.Foot + behind.Scale * InFrontOverTheFoot, behind.Scale);
             card.Card.Place(place, layout.View);

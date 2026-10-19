@@ -12,8 +12,10 @@ using UnityEngine;
 namespace Puzzle.Client.Screens
 {
     /// <summary>
-    /// The card the settings card's row "Dil" opens, in front of it: the languages the game offers, each named in its
-    /// own words ("English", "Türkçe", "한국어") whatever the game speaks, with a green tick at the right of the one it
+    /// The card the settings card's row "Dil" opens, in front of it (or, for more languages than stand there, the
+    /// thirteen of the first release, by itself in the page's place for a card, over the settings card's dark): the
+    /// languages the game offers, each named in its own words ("English", "Türkçe", "한국어", "日本語") whatever the
+    /// game speaks, in two columns where they are more than seven, with a green tick at the right of the one it
     /// speaks; a press on a row chooses that language, and the game speaks it at once on every page and card, this one
     /// included. Under the rows the green "Tamam" closes the card, as its round button and the way back do. Where
     /// everything stands is <see cref="LanguageCardLayout"/>'s.
@@ -32,6 +34,7 @@ namespace Puzzle.Client.Screens
         private LanguageCard(Transform parent, ArtCatalogue art, DeviceView device, int raisedBy)
         {
             LanguageCardLayout layout = LanguageCardLayout.For(device.Offered.Count);
+            HangsByItself = !layout.StandsInFront;
             _card = new HangingCard<MuseumPress>(
                 "Language card", parent, art, new Vector2(LanguageCardLayout.BodyWidth, layout.BodyHeight),
                 new CardNameplate(SettingsWords.Language, SettingsLayout.NameplateWidth, SettingsLayout.TitleSize), CardHanging.FromPinsInTheWall, raisedBy: raisedBy);
@@ -63,6 +66,9 @@ namespace Puzzle.Client.Screens
         }
 
         public HangingCard<MuseumPress> Card => _card;
+
+        /// <summary>True for a card of more languages than stand in front of the settings card: it hangs by itself in the page's place for a card, in front of the settings card's dark.</summary>
+        public bool HangsByItself { get; }
 
         /// <summary>The language the card's tick marks: the one the game speaks.</summary>
         public Language Ticked { get; private set; }

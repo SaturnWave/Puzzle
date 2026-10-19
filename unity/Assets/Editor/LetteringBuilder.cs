@@ -21,8 +21,9 @@ namespace Puzzle.Client.EditorTools
     /// under them. An asset holds a fixed set of letters and no font file: a build carries the pictures alone.
     /// <para>
     /// Behind each typeface stand its fallbacks (<see cref="FallbackTypefaces"/>): typefaces of the other scripts,
-    /// each made with exactly the letters of its script that the tables of words use, every language's, so the
-    /// language card can name each language in its own letters whatever the game speaks. A letter a fallback draws
+    /// each made with exactly the letters of its script that its own language's tables use; all of them stand
+    /// behind every typeface, so the language card can name each language in its own letters whatever the game
+    /// speaks, and the art catalogue asks the spoken language's own first. A letter a fallback draws
     /// is drawn in the material of the style that asks for it, as TextMesh Pro makes one for the fallback's picture:
     /// each fallback's picture reaches as far from a letter as its typeface's does, so an outline is as wide.
     /// </para>
@@ -67,14 +68,29 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// The picture of each fallback: an eighth of the type size around a letter, as every typeface has it. A
-        /// Hangul syllable fills its square, so the 417 the Korean tables use need a picture of 2048 by 1024 at a
+        /// Hangul syllable fills its square, so the 440 the Korean tables use need a picture of 2048 by 1024 at a
         /// sampling of 48; a new word's syllables find room in it until it is full, and the builder says so then.
+        /// The 60-odd Cyrillic letters of Russian fit a picture of 512 by 512. A Chinese character fills its square
+        /// too, and Japanese and each Chinese write 550 to 720 of them with their kana and marks: at a sampling of 40
+        /// they fit the Korean picture's size, half the memory and the package of a sampling of 48, which would take
+        /// a picture of 2048 by 2048 each; a stroke of a dense character stays sharp at the sizes the game sets it.
         /// </summary>
         private static readonly IReadOnlyDictionary<FallbackTypeface, FontPicture> FallbackPictures = new Dictionary<FallbackTypeface, FontPicture>
         {
             [FallbackTypeface.NotoSansKR] = new FontPicture("NotoSansKR-ExtraBold", samplingSize: 48, roomAroundALetter: 6, width: 2048, height: 1024),
             [FallbackTypeface.NotoSerifKR] = new FontPicture("NotoSerifKR-Bold", samplingSize: 48, roomAroundALetter: 6, width: 2048, height: 1024),
+            [FallbackTypeface.NotoSans] = new FontPicture("NotoSans-ExtraBold", samplingSize: 48, roomAroundALetter: 6, width: 512, height: 512),
+            [FallbackTypeface.NotoSerif] = new FontPicture("NotoSerif-Bold", samplingSize: 48, roomAroundALetter: 6, width: 512, height: 512),
+            [FallbackTypeface.NotoSansJP] = new FontPicture("NotoSansJP-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSerifJP] = new FontPicture("NotoSerifJP-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSansSC] = new FontPicture("NotoSansSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSerifSC] = new FontPicture("NotoSerifSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSansTC] = new FontPicture("NotoSansTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSerifTC] = new FontPicture("NotoSerifTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
         };
+
+        /// <summary>The ending of a font file of the Noto CJK releases, whose letters are drawn as PostScript outlines; the others end in ".ttf".</summary>
+        private const string OpenTypeWithPostScriptOutlines = ".otf";
 
         /// <summary>The dark edge under lettering on wood: the web page's "0 1px 0" text shadow at a 13 px type size.</summary>
         private static readonly Shade EdgeOnWood = new Shade(new Color32(40, 18, 6, 166), drop: 0.075f, softness: 0.08f);
@@ -116,14 +132,15 @@ namespace Puzzle.Client.EditorTools
             [LetteringStyle.OnDarkTeal] = new Look("Lettering On Dark Teal"),
         };
 
-        /// <summary>Makes what is missing and returns each style's typeface and material, for the art catalogue.</summary>
+        /// <summary>Makes what is missing and returns each style's typeface and material, and each fallback's typeface, for the art catalogue.</summary>
         /// <exception cref="InvalidOperationException">
         /// A font file is missing or lacks a letter the game writes, a typeface's picture is too small for the
         /// letters, a word of a table has a letter no typeface draws, a style asks for more than its typeface's
         /// picture can draw, or a style's outline has a width and no colour or a colour and no width.
         /// </exception>
         /// <exception cref="WordTableException">A table of words the game carries is not a table.</exception>
-        public static (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> Typefaces, IReadOnlyDictionary<LetteringStyle, Material> Materials) Ensure()
+        public static (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> Typefaces, IReadOnlyDictionary<LetteringStyle, Material> Materials,
+            IReadOnlyDictionary<FallbackTypeface, TMP_FontAsset> Fallbacks) Ensure()
         {
             var made = new Dictionary<Typeface, TMP_FontAsset>();
             foreach (Typeface typeface in (Typeface[])Enum.GetValues(typeof(Typeface)))
@@ -131,12 +148,13 @@ namespace Puzzle.Client.EditorTools
                 made[typeface] = EnsureTypeface(PictureOf(typeface), LetterSet.All, holdsExactlyThese: false);
             }
 
-            IReadOnlyList<string> words = EveryTablesWords();
+            IReadOnlyDictionary<Language, IReadOnlyList<string>> words = EveryTablesWords();
             RefuseWordsNoTypefaceDraws(words);
             var fallbacks = new Dictionary<FallbackTypeface, TMP_FontAsset>();
             foreach (FallbackTypeface fallback in FallbackTypefaces.All)
             {
-                fallbacks[fallback] = EnsureTypeface(FallbackPictureOf(fallback), FallbackTypefaces.LettersFor(fallback, words), holdsExactlyThese: true);
+                IReadOnlyList<string> wordsOfItsLanguage = words.TryGetValue(FallbackTypefaces.LanguageOf(fallback), out IReadOnlyList<string> its) ? its : Array.Empty<string>();
+                fallbacks[fallback] = EnsureTypeface(FallbackPictureOf(fallback), FallbackTypefaces.LettersFor(fallback, wordsOfItsLanguage), holdsExactlyThese: true);
             }
 
             foreach (KeyValuePair<Typeface, TMP_FontAsset> typeface in made)
@@ -166,7 +184,7 @@ namespace Puzzle.Client.EditorTools
                 materials[style] = EnsureMaterial(made[typeface], PictureOf(typeface), look, outlineWidth);
             }
 
-            return (typefaces, materials);
+            return (typefaces, materials, fallbacks);
         }
 
         private static FontPicture PictureOf(Typeface typeface) =>
@@ -179,30 +197,33 @@ namespace Puzzle.Client.EditorTools
                 ? picture
                 : throw new InvalidOperationException($"The lettering builder names no font file for the fallback {fallback}.");
 
-        /// <summary>Every piece of words of every table the game carries, complete or not: what the typefaces and their fallbacks must be able to write.</summary>
-        private static IReadOnlyList<string> EveryTablesWords()
+        /// <summary>Every piece of words of every table the game carries, complete or not, by language: what the typefaces and their fallbacks must be able to write.</summary>
+        private static IReadOnlyDictionary<Language, IReadOnlyList<string>> EveryTablesWords()
         {
-            var words = new List<string>();
+            var words = new Dictionary<Language, IReadOnlyList<string>>();
             foreach (Language language in Languages.All)
             {
                 if (WordsPack.Load(language) is Wording wording)
                 {
-                    words.AddRange(wording.Words.AllWords.Select(entry => entry.Words));
-                    words.AddRange(wording.Captions.AllWords);
+                    words[language] = wording.Words.AllWords.Select(entry => entry.Words).Concat(wording.Captions.AllWords).ToList();
                 }
             }
 
             return words;
         }
 
-        /// <summary>Stops with the letters of the tables that neither the game's own set nor any fallback draws: they would be drawn as gaps.</summary>
-        private static void RefuseWordsNoTypefaceDraws(IReadOnlyList<string> words)
+        /// <summary>Stops with the letters of a language's tables that neither the game's own set nor a fallback made for the language draws: they would be drawn as gaps.</summary>
+        private static void RefuseWordsNoTypefaceDraws(IReadOnlyDictionary<Language, IReadOnlyList<string>> words)
         {
-            string none = FallbackTypefaces.LettersNoneDraws(string.Concat(words));
-            if (none.Length > 0)
+            foreach (KeyValuePair<Language, IReadOnlyList<string>> language in words)
             {
-                throw new InvalidOperationException(
-                    $"The tables of words write {string.Join(" ", none.Select(letter => $"U+{(int)letter:X4} {letter}"))}, which no typeface of the game draws: add a fallback that covers them, or the letters to the game's set.");
+                string none = FallbackTypefaces.LettersNoneDraws(language.Key, string.Concat(language.Value));
+                if (none.Length > 0)
+                {
+                    throw new InvalidOperationException(
+                        $"The {Languages.CodeOf(language.Key)} tables of words write {string.Join(" ", none.Select(letter => $"U+{(int)letter:X4} {letter}"))}, which no typeface of the game draws: "
+                        + "add a fallback for the language that covers them, or the letters to the game's set.");
+                }
             }
         }
 
@@ -463,17 +484,21 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A font file and the picture its letters are made into.</summary>
         private readonly struct FontPicture
         {
-            public FontPicture(string fontFileName, int samplingSize, int roomAroundALetter, int width, int height)
+            public FontPicture(string fontFileName, int samplingSize, int roomAroundALetter, int width, int height, string ending = ".ttf")
             {
                 FontFileName = fontFileName;
                 SamplingSize = samplingSize;
                 RoomAroundALetter = roomAroundALetter;
                 Width = width;
                 Height = height;
+                Ending = ending;
             }
 
             /// <summary>The font file's name without its ending.</summary>
             public string FontFileName { get; }
+
+            /// <summary>The font file's ending: ".ttf", or ".otf" for a file of PostScript outlines.</summary>
+            public string Ending { get; }
 
             /// <summary>How many pixels high a letter's line is in the picture.</summary>
             public int SamplingSize { get; }
@@ -485,7 +510,7 @@ namespace Puzzle.Client.EditorTools
 
             public int Height { get; }
 
-            public string FontFilePath => $"{FontsFolder}/{FontFileName}.ttf";
+            public string FontFilePath => $"{FontsFolder}/{FontFileName}{Ending}";
 
             public string TypefacePath => $"{FontsFolder}/{FontFileName} Lettering.asset";
 

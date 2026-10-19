@@ -72,10 +72,6 @@
     {"id":"BoosterPickAColumn","text":"Pilih satu kolom"},
     {"id":"BoosterNothingToHit","text":"Tak ada sasaran di sini"},
     {"id":"BoosterCannotShuffle","text":"Papan tidak bisa diacak"},
-    {"id":"BoosterFirstUseHitCell","text":"Baru: Spatula! Ketuk cakramnya, lalu satu blok."},
-    {"id":"BoosterFirstUseHitRow","text":"Baru: Kuas baris! Ketuk cakramnya, lalu satu baris."},
-    {"id":"BoosterFirstUseHitColumn","text":"Baru: Kuas kolom! Ketuk cakramnya, lalu satu kolom."},
-    {"id":"BoosterFirstUseShuffle","text":"Baru: Kocok palet! Ketuk cakramnya untuk mengacak ulang blok."},
     {"id":"BoosterEveryLevelWithout","text":"Setiap level bisa dimenangi tanpa booster"},
     {"id":"BoosterCostsNoMove","text":"Tidak memakan langkah"},
     {"id":"BoosterOpensOn","text":"Level {level}"},
@@ -224,6 +220,19 @@
     {"id":"TutorialFirstPieceMore","text":"Setiap level yang kamu menangi memberi satu keping"},
     {"id":"TutorialFirstPainting","text":"Lukisan pertamamu kembali ke museum!"},
     {"id":"TutorialFirstPaintingMore","text":"Lima lukisan selesai memulihkan ruangnya"},
-    {"id":"TutorialTouchToGoOn","text":"Ketuk untuk lanjut"}
+    {"id":"TutorialTouchToGoOn","text":"Ketuk untuk lanjut"},
+    {"id":"TutorialBoosterHitCell","text":"Baru: Spatula! Ketuk cakramnya"},
+    {"id":"TutorialBoosterHitRow","text":"Baru: Kuas baris! Ketuk cakramnya"},
+    {"id":"TutorialBoosterHitColumn","text":"Baru: Kuas kolom! Ketuk cakramnya"},
+    {"id":"TutorialBoosterShuffle","text":"Baru: Kocok palet! Ketuk cakramnya"},
+    {"id":"TutorialBoosterPickTheCell","text":"Sekarang ketuk blok yang menyala"},
+    {"id":"TutorialBoosterPickTheRow","text":"Sekarang ketuk baris yang menyala"},
+    {"id":"TutorialBoosterPickTheColumn","text":"Sekarang ketuk kolom yang menyala"},
+    {"id":"TutorialBoosterFree","text":"Kali ini gratis"},
+    {"id":"TutorialStartRocketAndBomb","text":"Pilih ini untuk mulai dengan kuas dan percikan"},
+    {"id":"TutorialStartColorBomb","text":"Pilih ini untuk mulai dengan palet pelangi"},
+    {"id":"TutorialStartExtraMoves","text":"Pilih ini untuk mulai dengan {moves} langkah tambahan"},
+    {"id":"BoosterCardTouchToClose","text":"Ketuk untuk menutup"},
+    {"id":"TutorialLongPress","text":"Tahan sebuah booster untuk melihat lagi fungsinya"}
   ]
 }

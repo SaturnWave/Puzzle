@@ -72,10 +72,6 @@
     {"id":"BoosterPickAColumn","text":"Scegli una colonna"},
     {"id":"BoosterNothingToHit","text":"Qui non c'è niente da colpire"},
     {"id":"BoosterCannotShuffle","text":"Il tabellone non si può mescolare"},
-    {"id":"BoosterFirstUseHitCell","text":"Novità: Spatola! Tocca il disco, poi una tessera."},
-    {"id":"BoosterFirstUseHitRow","text":"Novità: Pennello riga! Tocca il disco, poi una riga."},
-    {"id":"BoosterFirstUseHitColumn","text":"Novità: Pennello colonna! Tocca il disco, poi una colonna."},
-    {"id":"BoosterFirstUseShuffle","text":"Novità: Mescola tavolozza! Tocca il disco per rimescolare le tessere."},
     {"id":"BoosterEveryLevelWithout","text":"Ogni livello si può vincere senza booster"},
     {"id":"BoosterCostsNoMove","text":"Usarlo non costa mosse"},
     {"id":"BoosterOpensOn","text":"Livello {level}"},
@@ -224,6 +220,19 @@
     {"id":"TutorialFirstPieceMore","text":"Ogni livello vinto ti dà un pezzo"},
     {"id":"TutorialFirstPainting","text":"Il tuo primo quadro è tornato nel museo!"},
     {"id":"TutorialFirstPaintingMore","text":"Cinque quadri completati restaurano la loro sala"},
-    {"id":"TutorialTouchToGoOn","text":"Tocca per continuare"}
+    {"id":"TutorialTouchToGoOn","text":"Tocca per continuare"},
+    {"id":"TutorialBoosterHitCell","text":"Novità: Spatola! Tocca il disco"},
+    {"id":"TutorialBoosterHitRow","text":"Novità: Pennello riga! Tocca il disco"},
+    {"id":"TutorialBoosterHitColumn","text":"Novità: Pennello colonna! Tocca il disco"},
+    {"id":"TutorialBoosterShuffle","text":"Novità: Mescola tavolozza! Tocca il disco"},
+    {"id":"TutorialBoosterPickTheCell","text":"Ora tocca la tessera illuminata"},
+    {"id":"TutorialBoosterPickTheRow","text":"Ora tocca la riga illuminata"},
+    {"id":"TutorialBoosterPickTheColumn","text":"Ora tocca la colonna illuminata"},
+    {"id":"TutorialBoosterFree","text":"Questa volta è gratis"},
+    {"id":"TutorialStartRocketAndBomb","text":"Sceglilo per iniziare con un pennello e uno schizzo"},
+    {"id":"TutorialStartColorBomb","text":"Sceglilo per iniziare con una tavolozza arcobaleno"},
+    {"id":"TutorialStartExtraMoves","one":"Sceglilo per iniziare con {moves} mossa in più","other":"Sceglilo per iniziare con {moves} mosse in più"},
+    {"id":"BoosterCardTouchToClose","text":"Tocca per chiudere"},
+    {"id":"TutorialLongPress","text":"Tieni premuto un booster per rivedere cosa fa"}
   ]
 }

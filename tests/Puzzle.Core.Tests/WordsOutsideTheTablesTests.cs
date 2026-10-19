@@ -13,12 +13,16 @@ namespace Puzzle.Core.Tests;
 /// (unity/Assets/Scripts, comments left out) is taken for a player's word, and fails here, when it has a letter
 /// outside plain Latin (a Turkish, Korean or any other language's letter), or when one of its words is a word of
 /// the Turkish table that the English table does not use as well ("Oyna", "Tamam", "Devam": Turkish written in
-/// plain letters). The one file whose texts are letters and not words is the game's alphabet, LetterSet.cs.
+/// plain letters). The two files whose texts are letters and not words are the game's alphabet, LetterSet.cs, and
+/// its line breaks, LineBreaks.cs.
 /// </summary>
 public partial class WordsOutsideTheTablesTests
 {
-    /// <summary>The game's alphabet: the letters its typefaces are made with, written as letters, which is what it is for.</summary>
-    private static readonly string[] Alphabet = { Path.Combine("Art", "LetterSet.cs") };
+    /// <summary>
+    /// The game's alphabet: the letters its typefaces are made with, and the marks and small kana a line never ends on
+    /// or begins with (TextMesh Pro's lists), written as letters, which is what they are for.
+    /// </summary>
+    private static readonly string[] Alphabet = { Path.Combine("Art", "LetterSet.cs"), Path.Combine("Art", "LineBreaks.cs") };
 
     /// <summary>A word shorter than this is no telling word: "de", "da" (a number's Turkish suffix) are in plain letters in any language's code.</summary>
     private const int ShortestTellingWord = 3;

@@ -15,7 +15,8 @@ namespace Puzzle.Core.Tests;
 /// <summary>
 /// Everything the game's screens say, in every language it offers: each word class is asked for each of its words,
 /// with what a player meets, and nothing comes back with a place left unfilled. The formats a language writes its
-/// numbers, waits, counts and ordinals in are pinned for Turkish, English and Korean.
+/// numbers, waits, counts and ordinals in are pinned for Turkish, English and Korean, and for a language of each
+/// script and way of writing a number the first release adds: German, French, Russian, Japanese and both Chinese.
 /// </summary>
 public class GameWordsTests
 {
@@ -29,7 +30,7 @@ public class GameWordsTests
 
     private static readonly DateTimeOffset Now = new(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3));
 
-    public static TheoryData<Language> OfferedLanguages => new() { Language.Turkish, Language.English, Language.Korean };
+    public static TheoryData<Language> OfferedLanguages => WordTablesTests.EveryLanguage();
 
     [Theory]
     [MemberData(nameof(OfferedLanguages))]
@@ -53,21 +54,19 @@ public class GameWordsTests
     /// too. Of the interface, only the spatula's name (on its pill, its card and in the shop) and the tester mode's
     /// "Test" (its pill and the lives pill in it) are the same words in English.
     /// </summary>
-    [Fact]
-    public void English_and_Korean_say_nothing_in_Turkish()
+    [Theory]
+    [MemberData(nameof(WordTablesTests.Translations), MemberType = typeof(WordTablesTests))]
+    public void A_translation_says_nothing_in_Turkish(Language language)
     {
         (string What, string Said)[] turkish = Interface(Language.Turkish);
 
-        foreach (Language language in new[] { Language.English, Language.Korean })
-        {
-            (string What, string Said)[] translated = Interface(language);
-            Assert.All(translated, words => Assert.DoesNotMatch("[ğĞıİşŞ]", words.Said));
-            string[] sameAsTurkish = translated.Zip(turkish)
-                .Where(pair => pair.First.Said == pair.Second.Said && pair.First.Said.Any(char.IsLetter))
-                .Select(pair => pair.First.What)
-                .ToArray();
-            Assert.True(sameAsTurkish.Length <= 5, $"{Languages.CodeOf(language)} says word for word as Turkish does: {string.Join(", ", sameAsTurkish)}");
-        }
+        (string What, string Said)[] translated = Interface(language);
+        Assert.All(translated, words => Assert.DoesNotMatch("[ğĞıİşŞ]", words.Said));
+        string[] sameAsTurkish = translated.Zip(turkish)
+            .Where(pair => pair.First.Said == pair.Second.Said && pair.First.Said.Any(char.IsLetter))
+            .Select(pair => pair.First.What)
+            .ToArray();
+        Assert.True(sameAsTurkish.Length <= 5, $"{Languages.CodeOf(language)} says word for word as Turkish does: {string.Join(", ", sameAsTurkish)}");
     }
 
     private static (string What, string Said)[] Interface(Language language)
@@ -81,6 +80,11 @@ public class GameWordsTests
     [InlineData(Language.Turkish, "1.250", "950", "1.000.000")]
     [InlineData(Language.English, "1,250", "950", "1,000,000")]
     [InlineData(Language.Korean, "1,250", "950", "1,000,000")]
+    [InlineData(Language.German, "1.250", "950", "1.000.000")]
+    [InlineData(Language.French, "1 250", "950", "1 000 000")]
+    [InlineData(Language.Russian, "1 250", "950", "1 000 000")]
+    [InlineData(Language.Japanese, "1,250", "950", "1,000,000")]
+    [InlineData(Language.ChineseSimplified, "1,250", "950", "1,000,000")]
     public void An_amount_is_written_with_the_thousands_mark_of_the_language(Language language, string thousands, string hundreds, string million)
     {
         using IDisposable speaking = TestWords.Speak(language);
@@ -93,6 +97,12 @@ public class GameWordsTests
     [InlineData(Language.Turkish, "2 sa 59 dk", "42 dk", "2 sa", "7 sn")]
     [InlineData(Language.English, "2h 59m", "42m", "2h", "7s")]
     [InlineData(Language.Korean, "2시간 59분", "42분", "2시간", "7초")]
+    [InlineData(Language.German, "2 Std. 59 Min.", "42 Min.", "2 Std.", "7 Sek.")]
+    [InlineData(Language.French, "2 h 59 min", "42 min", "2 h", "7 s")]
+    [InlineData(Language.Russian, "2 ч 59 мин", "42 мин", "2 ч", "7 с")]
+    [InlineData(Language.Japanese, "2時間59分", "42分", "2時間", "7秒")]
+    [InlineData(Language.ChineseSimplified, "2小时59分", "42分钟", "2小时", "7秒")]
+    [InlineData(Language.ChineseTraditional, "2小時59分", "42分鐘", "2小時", "7秒")]
     public void A_wait_is_written_in_the_short_hours_minutes_and_seconds_of_the_language(Language language, string hoursAndMinutes, string minutes, string hours, string seconds)
     {
         using IDisposable speaking = TestWords.Speak(language);
@@ -108,12 +118,30 @@ public class GameWordsTests
     [InlineData(Language.Turkish, "Bölüm 47 · 2. deneme", "2. deneme · taşlar yeniden dizildi")]
     [InlineData(Language.English, "Level 47 · attempt 2", "Attempt 2 · fresh tiles")]
     [InlineData(Language.Korean, "레벨 47 · 2번째 시도", "2번째 시도 · 블록을 새로 놓았어요")]
+    [InlineData(Language.German, "Level 47 · Versuch 2", "Versuch 2 · neu gemischt")]
+    [InlineData(Language.Russian, "Уровень 47 · попытка 2", "Попытка 2 · фишки заново")]
+    [InlineData(Language.Japanese, "レベル47 · 2回目の挑戦", "2回目の挑戦 · ブロックを配り直しました")]
+    [InlineData(Language.ChineseSimplified, "第47关 · 第2次尝试", "第2次尝试 · 方块已重新摆放")]
     public void Which_try_a_game_is_is_said_as_the_language_counts_tries(Language language, string onTheCard, string onTheShelf)
     {
         using IDisposable speaking = TestWords.Speak(language);
 
         Assert.Equal(onTheCard, ResultWords.Headline(new LevelResult.Lost(47, LossReason.OutOfMoves, 2, Array.Empty<GoalFigure>())));
         Assert.Equal(onTheShelf, AttemptWords.OnTheShelf(new AttemptBrief(attemptNumber: 2, isOnLastLevel: false, Rules.Value.Win)));
+    }
+
+    /// <summary>A start booster's name breaks over two lines under its disc and stands on one on its card: German's word broken after a hyphen is whole there again.</summary>
+    [Theory]
+    [InlineData(Language.German, BoosterKind.StartColorBomb, "Regenbogen-\npalette", "Regenbogenpalette")]
+    [InlineData(Language.German, BoosterKind.StartRocketAndBomb, "Pinsel +\nKlecks", "Pinsel + Klecks")]
+    [InlineData(Language.French, BoosterKind.StartColorBomb, "Palette\narc-en-ciel", "Palette arc-en-ciel")]
+    [InlineData(Language.English, BoosterKind.StartColorBomb, "Rainbow\npalette", "Rainbow palette")]
+    public void A_start_boosters_name_on_one_line_joins_its_lines_and_a_word_broken_after_a_hyphen(Language language, BoosterKind booster, string onTheShelf, string onOneLine)
+    {
+        using IDisposable speaking = TestWords.Speak(language);
+
+        Assert.Equal(onTheShelf, LevelStartWords.OnTheShelf(booster, 3));
+        Assert.Equal(onOneLine, LevelStartWords.NameOf(booster, 3));
     }
 
     [Theory]
@@ -145,6 +173,12 @@ public class GameWordsTests
     [InlineData(Language.Turkish, "Bölüm 51'de açılır")]
     [InlineData(Language.English, "Opens at level 51")]
     [InlineData(Language.Korean, "레벨 51에서 열려요")]
+    [InlineData(Language.German, "Öffnet bei Level 51")]
+    [InlineData(Language.French, "Ouvre au niveau 51")]
+    [InlineData(Language.Russian, "Откроется на уровне 51")]
+    [InlineData(Language.Japanese, "レベル51で開放")]
+    [InlineData(Language.ChineseSimplified, "第51关开放")]
+    [InlineData(Language.ChineseTraditional, "第51關開放")]
     public void A_locked_room_says_the_level_it_opens_at_as_the_language_writes_a_number_in_a_sentence(Language language, string said)
     {
         using IDisposable speaking = TestWords.Speak(language);
