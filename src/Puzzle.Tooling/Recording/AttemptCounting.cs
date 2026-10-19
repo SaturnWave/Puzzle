@@ -9,9 +9,16 @@ public enum AttemptStanding
     Comparable,
 
     /// <summary>
-    /// Help shaped the attempt: the lab's tools (DDA assist, hints, the solver, bot moves), a hint the released game
-    /// showed by itself, a move its tutorial showed by hand, or boosters. A hint is help wherever it comes from, and no
-    /// bot of the comparison is shown one; a move shown by hand is a hint the player had to follow.
+    /// Like <see cref="Comparable"/>, but the released game showed hints by itself during the attempt: it is compared
+    /// apart, beside bots that are shown the same game's hints and follow them. Nearly every attempt of the game is
+    /// shown one, so leaving these out would leave the game's records out.
+    /// </summary>
+    Hinted,
+
+    /// <summary>
+    /// Help shaped the attempt: the lab's tools (DDA assist, hints, the solver, bot moves), a move the released game's
+    /// tutorial showed by hand, or boosters. No bot of the comparison has any of them; a move shown by hand is a hint
+    /// the player had to follow, on the first levels only.
     /// </summary>
     Assisted,
 
@@ -44,7 +51,10 @@ public enum LimitVerdict
 /// </summary>
 public static class AttemptCounting
 {
-    /// <summary>The standing of <paramref name="record"/>; the tester mode outranks help, and help outranks hand-chosen seeds.</summary>
+    /// <summary>
+    /// The standing of <paramref name="record"/>; the tester mode outranks help, help outranks hand-chosen seeds, and
+    /// each of them outranks the game's own hints, which only set a comparable attempt in a group of its own.
+    /// </summary>
     public static AttemptStanding Standing(AttemptRecord record)
     {
         if (record.TesterMode)
@@ -52,13 +62,18 @@ public static class AttemptCounting
             return AttemptStanding.TesterMode;
         }
 
-        bool helped = record.Lab?.IsAssisted == true || record.HintsShown > 0 || record.GuidedMoves > 0 || record.Outcome.BoostersUsed.Count > 0;
+        bool helped = record.Lab?.IsAssisted == true || record.GuidedMoves > 0 || record.Outcome.BoostersUsed.Count > 0;
         if (helped)
         {
             return AttemptStanding.Assisted;
         }
 
-        return record.Start.Attempt is null ? AttemptStanding.ChosenSeeds : AttemptStanding.Comparable;
+        if (record.Start.Attempt is null)
+        {
+            return AttemptStanding.ChosenSeeds;
+        }
+
+        return record.HintsShown > 0 ? AttemptStanding.Hinted : AttemptStanding.Comparable;
     }
 
     /// <summary>

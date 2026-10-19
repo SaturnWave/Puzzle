@@ -7,7 +7,8 @@ namespace Puzzle.Core.Tests;
 
 /// <summary>
 /// How the hints the released game shows by itself reach an attempt's record and what they make of it: the count is
-/// written only when there was a hint, both writers write it alike, and a hinted attempt is help like the lab's hints.
+/// written only when there was a hint, both writers write it alike, and a hinted attempt is compared apart from the
+/// others (HintedComparisonTests).
 /// </summary>
 public class HintRecordTests
 {
@@ -40,8 +41,9 @@ public class HintRecordTests
     }
 
     [Fact]
-    public void An_attempt_the_game_showed_a_hint_in_is_help_and_is_left_out_of_the_comparison_with_the_bots()
+    public void An_attempt_the_game_showed_a_hint_in_is_compared_apart_and_the_tester_mode_still_outranks_it()
     {
+        // The owner's decision of 2026-10-19: hinted attempts were help and left out; now they are a group of their own.
         LevelDefinition level = GameTests.OpenLevel();
         AttemptRecord comparable = TestRecords.Of(level, AttemptResult.Won, 20);
         AttemptRecord hinted = new(comparable.Start, comparable.Outcome, lab: null, actions: null, hintsShown: 1);
@@ -50,8 +52,9 @@ public class HintRecordTests
         HumanBotReport report = HumanBotComparison.Compare(new[] { comparable, hinted, hinted }, new[] { level }, botRuns: 1);
 
         Assert.Equal(AttemptStanding.Comparable, AttemptCounting.Standing(comparable));
-        Assert.Equal(AttemptStanding.Assisted, AttemptCounting.Standing(hinted));
+        Assert.Equal(AttemptStanding.Hinted, AttemptCounting.Standing(hinted));
         Assert.Equal(AttemptStanding.TesterMode, AttemptCounting.Standing(hintedInTheTesterMode));
-        Assert.Equal(new RecordTally(Compared: 1, Assisted: 2, ChosenSeeds: 0, UnknownLevel: 0, TesterMode: 0), report.Records);
+        Assert.Equal(new RecordTally(Compared: 3, Assisted: 0, ChosenSeeds: 0, UnknownLevel: 0, TesterMode: 0, Hinted: 2), report.Records);
+        Assert.Equal((1, 2), (report.Overall.Wins, report.Hinted.Overall.Wins));
     }
 }

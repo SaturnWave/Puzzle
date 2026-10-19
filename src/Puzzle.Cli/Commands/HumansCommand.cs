@@ -1,15 +1,21 @@
 using System.Globalization;
 using Puzzle.Core.Levels;
+using Puzzle.Economy.Settings;
 using Puzzle.Tooling;
+using Puzzle.Tooling.Hints;
 using Puzzle.Tooling.Recording;
 
 namespace Puzzle.Cli.Commands;
 
 /// <summary>
-/// <c>humans [attempts.jsonl] [--levels &lt;folder&gt;] [--runs 30] [--out reports/humans.csv]</c>: compares the
-/// attempts people played in the web lab with the greedy bots on the same games (docs/GAME_DESIGN.md §20). Without a
-/// file it reads the log the lab writes by default, <see cref="AttemptLog.DefaultLocation"/> in the repository root, and
-/// without a level folder it loads every level the lab offers, <c>levels</c> in the repository root, samples included.
+/// <c>humans [attempts.jsonl] [--levels &lt;folder&gt;] [--economy economy/default.json] [--runs 30] [--out reports/humans.csv]</c>:
+/// compares the attempts people played, in the web lab or the released game, with the greedy bots on the same games
+/// (docs/GAME_DESIGN.md §20). The attempts the game showed hints in are compared apart, beside the same bots following
+/// the hints of the settings file (<see cref="GameHints"/>): its hint bot and its cap, shown before a share of the
+/// moves worked out from its wait and the recorded time a move. Without a file it reads the log the lab writes by
+/// default, <see cref="AttemptLog.DefaultLocation"/> in the repository root; without a level folder it loads every level
+/// the lab offers, <c>levels</c> in the repository root, samples included; without a settings file it reads
+/// <c>economy/default.json</c> in the repository root.
 /// </summary>
 internal static class HumansCommand
 {
@@ -22,6 +28,7 @@ internal static class HumansCommand
     {
         string recordsPath = args.Positionals.Count > 0 ? args.Positionals[0] : DefaultRecordsPath();
         string levelsPath = args.OptionalText("levels") ?? DefaultLevelsPath();
+        string economyPath = args.OptionalText("economy") ?? DefaultEconomyPath();
         int runs = args.Int("runs", 30);
         string outPath = args.Text("out", "reports/humans.csv");
         if (runs < 1)
@@ -37,6 +44,22 @@ internal static class HumansCommand
         if (!Directory.Exists(levelsPath))
         {
             throw new UsageException($"No level folder at '{levelsPath}'.");
+        }
+
+        if (!File.Exists(economyPath))
+        {
+            throw new UsageException($"No economy settings at '{economyPath}'.");
+        }
+
+        EconomySettings economy;
+        try
+        {
+            economy = SettingsLoader.Load(economyPath);
+        }
+        catch (EconomySettingsFormatException ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            return 1;
         }
 
         AttemptLogContents log;
@@ -62,10 +85,14 @@ internal static class HumansCommand
         }
 
         LevelDefinition[] levels = library.Levels.Select(entry => entry.Level).ToArray();
-        HumanBotReport report = HumanBotComparison.Compare(log.Records, levels, runs);
+        GameHints? gameHints = GameHintsOf(economy.Game.Hints, economy.Habit.PerMove);
+        HumanBotReport report = gameHints is null
+            ? HumanBotComparison.Compare(log.Records, levels, runs)
+            : HumanBotComparison.Compare(log.Records, levels, runs, gameHints);
         WriteCsv(report, outPath);
         Console.WriteLine($"read {Path.GetFullPath(recordsPath)}");
         Console.WriteLine($"levels {Path.GetFullPath(levelsPath)}");
+        Console.WriteLine($"hints {Path.GetFullPath(economyPath)}: {HintsTold(economy.Game.Hints, economy.Habit.PerMove, gameHints)}");
         PrintSummary(report, log.Problems.Count, runs);
         Console.WriteLine($"wrote {outPath}");
         return 0;
@@ -82,29 +109,57 @@ internal static class HumansCommand
         LevelLibrary.FindLevelsDirectory(Directory.GetCurrentDirectory())
             ?? throw new UsageException("Not inside the repository (no 'levels' folder above here); give the level folder with --levels.");
 
+    /// <exception cref="UsageException">The current folder is not inside a repository.</exception>
+    private static string DefaultEconomyPath() =>
+        LevelLibrary.FindRepositoryRoot(Directory.GetCurrentDirectory()) is { } root
+            ? Path.Combine(root, "economy", "default.json")
+            : throw new UsageException("Not inside the repository (no 'levels' folder above here); give the settings file with --economy.");
+
+    /// <summary>
+    /// The hints the bots beside the hinted attempts follow: the settings' bot and cap, shown when the player is idle
+    /// for longer than the wait (<see cref="HintMoment.WhenIdle.ForWait"/>). Absent when the settings show no hint.
+    /// </summary>
+    private static GameHints? GameHintsOf(HintSettings hints, TimeSpan perMove) => hints.PerAttempt == 0
+        ? null
+        : new GameHints(hints.Bot, hints.PerAttempt, HintMoment.WhenIdle.ForWait(hints.Idle, perMove));
+
+    private static string HintsTold(HintSettings hints, TimeSpan perMove, GameHints? gameHints) => gameHints is null
+        ? "the game shows none (hints.perAttempt 0), so no bot stands beside the hinted attempts"
+        : string.Create(Invariant, $"the bots beside the hinted attempts are shown {gameHints} (the game waits {hints.Idle.TotalSeconds:0.#} s; people take {perMove.TotalSeconds:0.0} s a move), and follow each");
+
     private static void WriteCsv(HumanBotReport report, string outPath)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
         using var writer = new StreamWriter(outPath);
         // A bot's plain column is its rate on the finished attempts' games, beside humanWinRate; its "OnAll" column is on
-        // every attempt's game, beside humanWinRateLowerBound.
+        // every attempt's game, beside humanWinRateLowerBound. In the hinted group's rows the same bots follow the game's hints.
         writer.WriteLine(
-            "level,moveLimit,finished,abandoned,wins,devices,humanWinRate,humanWinRateLowerBound,medianWinMoves,"
+            "group,level,moveLimit,finished,abandoned,wins,devices,humanWinRate,humanWinRateLowerBound,medianWinMoves,"
             + $"{string.Join(',', report.Bots)},{string.Join(',', report.Bots.Select(bot => $"{bot}OnAll"))},"
             + "closest,closestAtLowerBound,abandonsDecideClosest");
-        foreach (LevelComparison row in report.Levels)
+        WriteGroup(writer, "unhinted", report.Levels, report.Overall, report.Bots);
+        if (report.Records.Hinted > 0)
         {
-            writer.WriteLine(CsvRow(row.Level.ToString(), row.MoveLimit.ToString(Invariant), row.MedianWinMoves, row.Figures, report.Bots));
+            WriteGroup(writer, "hinted", report.Hinted.Levels, report.Hinted.Overall, report.Bots);
+        }
+    }
+
+    private static void WriteGroup(StreamWriter writer, string group, IReadOnlyList<LevelComparison> levels, ComparisonFigures overall, IReadOnlyList<string> bots)
+    {
+        foreach (LevelComparison row in levels)
+        {
+            writer.WriteLine(CsvRow(group, row.Level.ToString(), row.MoveLimit.ToString(Invariant), row.MedianWinMoves, row.Figures, bots));
         }
 
-        writer.WriteLine(CsvRow("all", string.Empty, medianWinMoves: null, report.Overall, report.Bots));
+        writer.WriteLine(CsvRow(group, "all", string.Empty, medianWinMoves: null, overall, bots));
     }
 
     /// <summary>Empty cells for what is absent: no finished attempt, no win, or no bot figure.</summary>
-    private static string CsvRow(string level, string moveLimit, double? medianWinMoves, ComparisonFigures figures, IReadOnlyList<string> bots)
+    private static string CsvRow(string group, string level, string moveLimit, double? medianWinMoves, ComparisonFigures figures, IReadOnlyList<string> bots)
     {
         string[] humans =
         [
+            group,
             level,
             moveLimit,
             figures.Finished.ToString(Invariant),
@@ -134,27 +189,41 @@ internal static class HumansCommand
     {
         RecordTally tally = report.Records;
         Console.WriteLine(
-            $"records: {tally.Total} read, {tally.Compared} compared; left out: {tally.Assisted} assisted, {tally.TesterMode} in the game's tester mode, "
-            + $"{tally.ChosenSeeds} hand-picked seeds, {tally.UnknownLevel} not in the level folder (or changed since), {unreadableLines} unreadable lines");
+            $"records: {tally.Total} read, {tally.Compared} compared ({tally.Hinted} of them hinted, compared apart); left out: {tally.Assisted} assisted, "
+            + $"{tally.TesterMode} in the game's tester mode, {tally.ChosenSeeds} hand-picked seeds, {tally.UnknownLevel} not in the level folder (or changed since), "
+            + $"{unreadableLines} unreadable lines");
         Console.WriteLine($"bots: {runs} games per profile on each attempt's own seeds, at its move limit");
-        string header = $"{"level",6} {"limit",5} {"finished",8} {"abandoned",9} {"humans",7} {"low",7} "
-            + string.Join(' ', report.Bots.Select(bot => $"{bot,7}")) + "  closest";
-        Console.WriteLine(header);
-        if (report.Levels.Count <= MaxPrintedLevels)
+        PrintGroup("without hints", report.Levels, report.Overall, report.Bots);
+        if (tally.Hinted > 0)
         {
-            foreach (LevelComparison row in report.Levels)
+            PrintGroup("hinted (the bots follow the game's hints)", report.Hinted.Levels, report.Hinted.Overall, report.Bots);
+        }
+        else
+        {
+            Console.WriteLine("hinted: no compared attempt was shown a hint by the game");
+        }
+
+        Console.WriteLine("humans: finished attempts only, bots on their games; low: every abandoned attempt counted as a loss,");
+        Console.WriteLine("matched with the bots on every attempt's game (in the CSV). Two closest bots: the abandons decide.");
+    }
+
+    private static void PrintGroup(string group, IReadOnlyList<LevelComparison> levels, ComparisonFigures overall, IReadOnlyList<string> bots)
+    {
+        Console.WriteLine($"{group}:");
+        Console.WriteLine($"{"level",6} {"limit",5} {"finished",8} {"abandoned",9} {"humans",7} {"low",7} " + string.Join(' ', bots.Select(bot => $"{bot,7}")) + "  closest");
+        if (levels.Count <= MaxPrintedLevels)
+        {
+            foreach (LevelComparison row in levels)
             {
-                Console.WriteLine(Line(row.Level.ToString(), row.MoveLimit.ToString(Invariant), row.Figures, report.Bots));
+                Console.WriteLine(Line(row.Level.ToString(), row.MoveLimit.ToString(Invariant), row.Figures, bots));
             }
         }
         else
         {
-            Console.WriteLine($"  ({report.Levels.Count} level rows: see the CSV)");
+            Console.WriteLine($"  ({levels.Count} level rows: see the CSV)");
         }
 
-        Console.WriteLine(Line("all", string.Empty, report.Overall, report.Bots));
-        Console.WriteLine("humans: finished attempts only, bots on their games; low: every abandoned attempt counted as a loss,");
-        Console.WriteLine("matched with the bots on every attempt's game (in the CSV). Two closest bots: the abandons decide.");
+        Console.WriteLine(Line("all", string.Empty, overall, bots));
     }
 
     private static string Line(string level, string moveLimit, ComparisonFigures figures, IReadOnlyList<string> bots) =>

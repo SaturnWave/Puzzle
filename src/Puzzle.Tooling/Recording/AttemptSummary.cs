@@ -5,11 +5,13 @@ namespace Puzzle.Tooling.Recording;
 
 /// <summary>
 /// One version of a level at one move limit, as people played it; no bot is involved. <see cref="Play"/> covers the
-/// comparable attempts and counts them exactly as the bot comparison does; the attempts it leaves out are only counted.
+/// comparable attempts and <see cref="Hinted"/> those the released game showed hints in, apart, exactly as the bot
+/// comparison counts them; the attempts it leaves out are only counted.
 /// </summary>
 /// <param name="ContentVersion">Which revision of the level's content the attempts were played on.</param>
 /// <param name="LevelKey">The lab's name for the level file, from the latest lab record; absent for the released game's records.</param>
 /// <param name="Play">The comparable attempts' figures, without bot rates (<see cref="ComparisonFigures.Bots"/> is empty).</param>
+/// <param name="Hinted">The figures of the attempts the released game showed hints in, apart from <paramref name="Play"/>; without bot rates.</param>
 /// <param name="MedianWinMoves">The median moves of the comparable attempts won within the limit; absent without such a win.</param>
 /// <param name="Assisted">Attempts left out because help shaped them.</param>
 /// <param name="ChosenSeeds">Attempts left out because their seeds were chosen by hand.</param>
@@ -21,6 +23,7 @@ public sealed record LevelAttempts(
     string? LevelKey,
     int MoveLimit,
     ComparisonFigures Play,
+    ComparisonFigures Hinted,
     double? MedianWinMoves,
     int Assisted,
     int ChosenSeeds,
@@ -29,10 +32,11 @@ public sealed record LevelAttempts(
 
 /// <param name="Levels">Each level version and move limit played, the most recently played first.</param>
 /// <param name="Overall">Every comparable attempt, of every level, without bot rates.</param>
+/// <param name="Hinted">Every attempt the released game showed hints in, of every level, apart from <paramref name="Overall"/>; without bot rates.</param>
 /// <param name="Assisted">Attempts left out of the comparison because help shaped them.</param>
 /// <param name="ChosenSeeds">Attempts left out of the comparison because their seeds were chosen by hand.</param>
 /// <param name="TesterMode">Attempts left out of the comparison because the released game played them in its tester mode.</param>
-public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, ComparisonFigures Overall, int Assisted, int ChosenSeeds, int TesterMode)
+public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, ComparisonFigures Overall, ComparisonFigures Hinted, int Assisted, int ChosenSeeds, int TesterMode)
 {
     /// <summary>
     /// Sums <paramref name="records"/> up by level version and move limit: what the players did, before any bot plays.
@@ -51,6 +55,7 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
         return new AttemptSummary(
             levels,
             ComparisonFigures.Of(byStanding[AttemptStanding.Comparable].ToArray(), []),
+            ComparisonFigures.Of(byStanding[AttemptStanding.Hinted].ToArray(), []),
             byStanding[AttemptStanding.Assisted].Count(),
             byStanding[AttemptStanding.ChosenSeeds].Count(),
             byStanding[AttemptStanding.TesterMode].Count());
@@ -69,6 +74,7 @@ public sealed record AttemptSummary(IReadOnlyList<LevelAttempts> Levels, Compari
             key,
             moveLimit,
             ComparisonFigures.Of(comparable, []),
+            ComparisonFigures.Of(byStanding[AttemptStanding.Hinted].ToArray(), []),
             AttemptCounting.MedianWinMoves(comparable),
             byStanding[AttemptStanding.Assisted].Count(),
             byStanding[AttemptStanding.ChosenSeeds].Count(),

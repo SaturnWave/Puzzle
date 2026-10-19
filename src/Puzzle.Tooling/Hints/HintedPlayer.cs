@@ -12,8 +12,9 @@ public abstract record HintMoment
     }
 
     /// <summary>
-    /// The player thinks longer than the hint's delay before a move with this chance, whatever the board. The game
-    /// shows a hint after 5 s without a move, and the recordings have 5.3 s a move: about half the moves.
+    /// The player thinks longer than the hint's delay before a move with this chance, whatever the board. The
+    /// measurement of 2026-10-19 took half the moves for the game's first wait of 5 s, against the recordings' 5.3 s a
+    /// move; <see cref="ForWait"/> works the chance out for any wait.
     /// </summary>
     public sealed record WhenIdle : HintMoment
     {
@@ -25,6 +26,21 @@ public abstract record HintMoment
         }
 
         public int ChancePercent { get; }
+
+        /// <summary>
+        /// The idle moment of a game that shows a hint after <paramref name="wait"/> without a move, for players who take
+        /// <paramref name="perMove"/> a move on average: the share of moves thought over for longer than the wait if
+        /// thinking times spread as memoryless waits do, e^(-wait/perMove), in whole percent and at least 1. The
+        /// game's 8 s against the recordings' 5.3 s a move give 22 %; its first 5 s would give 39 %.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The wait is negative, or a move takes no time.</exception>
+        public static WhenIdle ForWait(TimeSpan wait, TimeSpan perMove)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(wait, TimeSpan.Zero);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(perMove, TimeSpan.Zero);
+            double share = Math.Exp(-(wait / perMove));
+            return new WhenIdle(Math.Max(1, (int)Math.Round(share * 100, MidpointRounding.AwayFromZero)));
+        }
 
         public override string ToString() => $"idle before {ChancePercent} % of the moves";
     }

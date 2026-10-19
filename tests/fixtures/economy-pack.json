@@ -148,7 +148,7 @@
     "perAttempt": 3
   },
   "hints": {
-    "idleSeconds": 5,
+    "idleSeconds": 8,
     "perAttempt": 3,
     "bot": "casual"
   },

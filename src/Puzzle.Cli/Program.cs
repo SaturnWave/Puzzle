@@ -90,9 +90,12 @@ const string Usage = """
                             player's own move counts nothing for the goals)  --per-attempt 3  --attempts 8  --seed 7
       validate <dir|file>   Parse every level file and build a starting board for it.
       humans [attempts.jsonl]
-                            Web lab attempts of people vs. the greedy bots on the same games, as CSV.
-                            Default file: recordings/attempts.jsonl in the repository root, where the lab records.
-                            --levels <folder> (default: levels in the repository root, as the lab)  --runs 30  --out reports/humans.csv
+                            Attempts of people (web lab or game) vs. the greedy bots on the same games, as CSV.
+                            Attempts the game showed hints in are a group of their own, beside the same bots
+                            following the settings' hints. Default file: recordings/attempts.jsonl in the
+                            repository root, where the lab records.
+                            --levels <folder> (default: levels in the repository root, as the lab)
+                            --economy economy/default.json (the hints)  --runs 30  --out reports/humans.csv
       players add <username>
                             Make a public-mode account (the server registers nobody). The password is asked for here,
                             hidden and twice; never give it as an argument. Stop the public server first.

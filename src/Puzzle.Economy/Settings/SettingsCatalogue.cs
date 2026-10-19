@@ -108,9 +108,9 @@ public static class SettingsCatalogue
         // What the game reads and no simulated player meets: a simulated player takes one start booster per attempt
         // (player.startBoosters.perAttempt), is shown no hint, never opens the shop and watches no ad for coins.
         new("startBoosters.perAttempt", Boosters, Provenance.Proposed, SettingUse.GameOnly),
-        new("hints.idleSeconds", "seconds", Provenance.Proposed, SettingUse.GameOnly),
-        new("hints.perAttempt", "hints", Provenance.Proposed, SettingUse.GameOnly),
-        new("hints.bot", "player model", Provenance.Proposed, SettingUse.GameOnly),
+        new("hints.idleSeconds", "seconds", Provenance.Decided, SettingUse.GameOnly),
+        new("hints.perAttempt", "hints", Provenance.Decided, SettingUse.GameOnly),
+        new("hints.bot", "player model", Provenance.Decided, SettingUse.GameOnly),
         new("shop.coinPacks.*.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.priceCoins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.boosters.*", Boosters, Provenance.Placeholder, SettingUse.GameOnly),
