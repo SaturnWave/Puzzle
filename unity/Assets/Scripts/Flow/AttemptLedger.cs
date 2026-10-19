@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Core.Engine;
 using Puzzle.Meta;
@@ -18,8 +19,9 @@ namespace Puzzle.Client.Flow
     /// the moment the engine says so. A closed set (private constructor): the first move, a booster the engine
     /// accepted, a booster the tutorial had used by hand (free), extra moves the engine gave, a win, a loss for good,
     /// and leaving the level. A booster used during play that the engine accepts counts as a move (the owner's
-    /// decision of 2026-10-15), the free one too: when it comes first it is the attempt's first move, and leaving
-    /// after it is leaving after a move.
+    /// decision of 2026-10-15): when it comes first it is the attempt's first move, and leaving after it is leaving
+    /// after a move. The free one the tutorial has used by hand does not (the owner's decision of 2026-10-19): the
+    /// attempt begins with the player's own move or booster (<see cref="AttemptBegun"/>).
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public abstract class AttemptEvent
@@ -65,7 +67,8 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// The engine used a booster that the tutorial had the player use by hand on the level it opens on (#7): the
-        /// owner's decision of 2026-10-19 makes it free, so the player's stock is not touched.
+        /// owner's decisions of 2026-10-19 make it free, so the player's stock is not touched, and it does not begin
+        /// the attempt by itself: leaving after it costs nothing, and no record is written of an attempt nothing else began.
         /// </summary>
         public sealed class GuidedBoosterUsed : AttemptEvent
         {
@@ -141,12 +144,22 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// Whether an attempt has begun: a move was played in it, or a booster used during play that the engine accepted,
-    /// which counts as a move. The start boosters a board opens with do not begin it: a board nobody touched is left
-    /// at no cost. This file has no Unity dependency, so the repository's tests compile it too.
+    /// which counts as a move, or the game is decided. The start boosters a board opens with do not begin it: a board
+    /// nobody touched is left at no cost; nor do the boosters the tutorial had used by hand, free (#7): a board on
+    /// which only those were used is left at no cost too. This file has no Unity dependency, so the repository's tests
+    /// compile it too.
     /// </summary>
     public static class AttemptBegun
     {
-        public static bool In(Game game) => game.MovesUsed > 0 || game.BoostersUsed.Any(name => BoosterNames.StartBoosterNamed(name) == null);
+        /// <summary>Whether the attempt has begun, on a board where the tutorial had no booster used by hand.</summary>
+        public static bool In(Game game) => In(game, Array.Empty<string>());
+
+        /// <summary>Whether the attempt has begun, leaving out the boosters the tutorial had used by hand.</summary>
+        /// <param name="usedByHand">The record names of the boosters the tutorial had used by hand, free; each is among the game's boosters used.</param>
+        public static bool In(Game game, IReadOnlyList<string> usedByHand) =>
+            game.MovesUsed > 0 || BoostersOfPlayUsed(game) > usedByHand.Count || game.Status != GameStatus.Playing;
+
+        private static int BoostersOfPlayUsed(Game game) => game.BoostersUsed.Count(name => BoosterNames.StartBoosterNamed(name) == null);
     }
 
     /// <summary>

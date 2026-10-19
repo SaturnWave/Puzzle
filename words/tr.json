@@ -232,6 +232,7 @@
     {"id":"TutorialStartRocketAndBomb","text":"Seçersen bölüme fırça ve sıçramayla başlarsın","note":"Start boosters intro on the level card after a lost level, under the lit brush-and-splash disc: what choosing it does."},
     {"id":"TutorialStartColorBomb","text":"Seçersen bölüme gökkuşağı paletiyle başlarsın","note":"Start boosters intro, under the lit rainbow palette disc: what choosing it does."},
     {"id":"TutorialStartExtraMoves","text":"Seçersen bölüme {moves} hamle fazlayla başlarsın","note":"Start boosters intro, under the lit extra moves disc: what choosing it does. {moves} is the number of extra moves."},
-    {"id":"BoosterCardTouchToClose","text":"Kapatmak için dokun","note":"Small last line of the card a long press on a booster opens (it shows what the booster does): a touch anywhere closes it."}
+    {"id":"BoosterCardTouchToClose","text":"Kapatmak için dokun","note":"Small last line of the card a long press on a booster opens (it shows what the booster does): a touch anywhere closes it."},
+    {"id":"TutorialLongPress","text":"Bir booster'ı basılı tutarsan ne yaptığını yeniden izlersin","note":"Booster intro, once, right after the first booster used by hand: its disc is lit and this one sentence says that holding (a long press on) any booster's round button shows again what it does. \"basılı tutmak\" = to press and hold."}
   ]
 }

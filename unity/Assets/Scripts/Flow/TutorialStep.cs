@@ -11,7 +11,8 @@ namespace Puzzle.Client.Flow
     /// player meets them: the first level's goal plaque, its match shown by hand and its moves medallion; the four and
     /// the five shown by hand; each obstacle where it is first seen; the first piece placed on a jigsaw and the first
     /// painting made whole; and the booster intro (#7): each booster used during play used once by hand on the level it
-    /// opens on, and the start boosters on the card before a level after its first loss. Each is shown once to a
+    /// opens on, the start boosters on the card before a level after its first loss, and after the first booster used
+    /// by hand that a long press shows what a booster does. Each is shown once to a
     /// player. A closed set: a step is never renamed once a progress file names it (<see cref="TutorialSteps.NameOf"/>),
     /// and a new one is added at the end. No Unity dependency.
     /// </summary>
@@ -67,6 +68,12 @@ namespace Puzzle.Client.Flow
         /// start boosters lit one after another, each with one sentence.
         /// </summary>
         StartBoosters,
+
+        /// <summary>
+        /// Right after the first booster used by hand (the owner's decision of 2026-10-19): its disc is lit once more and
+        /// the pill says that holding a booster shows what it does again. A touch goes on.
+        /// </summary>
+        LongPress,
     }
 
     /// <summary>What the steps are called in a progress file, and which of them are shown on a board.</summary>
@@ -93,6 +100,7 @@ namespace Puzzle.Client.Flow
             [TutorialStep.BoosterHitColumn] = "booster-hit-column",
             [TutorialStep.BoosterShuffle] = "booster-shuffle",
             [TutorialStep.StartBoosters] = "start-boosters",
+            [TutorialStep.LongPress] = "long-press",
         };
 
         /// <summary>The booster each step of a booster used during play teaches.</summary>

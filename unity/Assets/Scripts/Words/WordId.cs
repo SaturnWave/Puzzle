@@ -699,5 +699,8 @@ namespace Puzzle.Client.Words
 
         /// <summary>Small last line of the card a long press on a booster opens (it shows what the booster does): a touch anywhere closes it.</summary>
         BoosterCardTouchToClose,
+
+        /// <summary>Booster intro, once, right after the first booster used by hand: its disc is lit and this one sentence says that holding (a long press on) any booster's round button shows again what it does. "basılı tutmak" = to press and hold.</summary>
+        TutorialLongPress,
     }
 }

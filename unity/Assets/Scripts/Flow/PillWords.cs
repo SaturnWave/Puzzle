@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 
 namespace Puzzle.Client.Flow
 {
@@ -68,24 +69,25 @@ namespace Puzzle.Client.Flow
         }
 
         /// <summary>
-        /// A step of the tutorial: what to look at or do, why, and under them a small line: for a step that a touch
-        /// ends, that a touch goes on; for a booster used by hand, that it is free, or beside the spatula that every
-        /// level can be won without boosters; nothing there for a move shown by hand, which only the move ends.
+        /// A step of the tutorial: what to look at or do, why (nothing for a step whose one sentence says it all, the
+        /// long press's), and under them a small line: for a step that a touch ends, that a touch goes on; for a booster
+        /// used by hand, that it is free, or beside the spatula that every level can be won without boosters; nothing
+        /// there for a move shown by hand, which only the move ends.
         /// </summary>
         public sealed class Lesson : PillWords
         {
-            public Lesson(string says, string why, string? aside)
+            public Lesson(string says, string? why, string? aside)
             {
                 Says = says ?? throw new ArgumentNullException(nameof(says));
-                Why = why ?? throw new ArgumentNullException(nameof(why));
+                Why = why;
                 Aside = aside;
             }
 
             /// <summary>"Bu iki taşın yerini değiştir".</summary>
             public string Says { get; }
 
-            /// <summary>"Aynı üç taş yan yana gelince toplanır".</summary>
-            public string Why { get; }
+            /// <summary>"Aynı üç taş yan yana gelince toplanır"; nothing for a step of one sentence.</summary>
+            public string? Why { get; }
 
             /// <summary>"Devam etmek için dokun", "Bu seferlik bedava"; nothing for a move shown by hand.</summary>
             public string? Aside { get; }
@@ -93,7 +95,7 @@ namespace Puzzle.Client.Flow
             public override bool Equals(PillWords? other) =>
                 other is Lesson lesson && lesson.Says == Says && lesson.Why == Why && lesson.Aside == Aside;
 
-            public override string ToString() => Aside is string aside ? $"{Says} / {Why} / {aside}" : $"{Says} / {Why}";
+            public override string ToString() => string.Join(" / ", new[] { Says, Why, Aside }.Where(line => line != null));
         }
     }
 }

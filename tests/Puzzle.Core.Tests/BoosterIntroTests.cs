@@ -74,6 +74,7 @@ public class BoosterIntroTests
 
         Assert.All(Openings, opening => Assert.False(older.Has(opening.Step)));
         Assert.False(older.Has(TutorialStep.StartBoosters));
+        Assert.False(older.Has(TutorialStep.LongPress));
         Assert.True(older.Has(TutorialStep.Item));
     }
 
@@ -81,7 +82,7 @@ public class BoosterIntroTests
     public void The_steps_of_the_booster_intro_come_after_the_older_steps_with_names_of_their_own_and_teach_their_booster()
     {
         Assert.Equal(
-            new[] { "booster-hit-cell", "booster-hit-row", "booster-hit-column", "booster-shuffle", "start-boosters" },
+            new[] { "booster-hit-cell", "booster-hit-row", "booster-hit-column", "booster-shuffle", "start-boosters", "long-press" },
             TutorialSteps.All.Skip(11).Select(TutorialSteps.NameOf));
         Assert.Equal(TutorialStep.FirstPainting, TutorialSteps.All[10]);
         Assert.All(Openings, opening =>
@@ -91,8 +92,22 @@ public class BoosterIntroTests
             Assert.Equal(opening.Step, TutorialSteps.Find(opening.Step.NameOf()));
         });
         Assert.Null(TutorialStep.Match.BoosterOf());
+        Assert.Null(TutorialStep.LongPress.BoosterOf());
+        Assert.True(TutorialStep.LongPress.IsOnTheBoard());
         Assert.Throws<ArgumentException>(() => TutorialSteps.Teaching(BoosterKind.StartColorBomb));
         Assert.True(TutorialSeen.All.Has(TutorialStep.StartBoosters));
+    }
+
+    [Fact]
+    public void The_long_press_may_come_on_the_levels_a_booster_opens_on_until_it_is_seen()
+    {
+        Assert.Equal(
+            new[] { 7, 12, 16, 20 },
+            Enumerable.Range(1, 60).Where(level => TutorialPlan.MayComeOn(level, TutorialSeen.None, TheRules.Unlocks).Contains(TutorialStep.LongPress)));
+        Assert.DoesNotContain(TutorialStep.LongPress, TutorialPlan.MayComeOn(7, TutorialSeen.None.With(TutorialStep.LongPress), TheRules.Unlocks));
+        Assert.Equal(
+            new[] { TutorialStep.BoosterHitCell, TutorialStep.LongPress },
+            TutorialPlan.MayComeOn(7, TutorialSeen.Of(TutorialSteps.All.Where(step => step != TutorialStep.BoosterHitCell && step != TutorialStep.LongPress)), TheRules.Unlocks));
     }
 
     // ---------- where a booster used by hand is aimed ----------
@@ -211,6 +226,81 @@ public class BoosterIntroTests
         Assert.True(nothing.TakesThePress(BoosterKind.Shuffle));
         Assert.True(nothing.TakesTheUse(new BoosterUse.HitCell(P(4, 2))));
         Assert.False(nothing.IsFree(new BoosterUse.HitCell(P(4, 2))));
+    }
+
+    [Fact]
+    public void Right_after_a_booster_used_by_hand_its_disc_is_lit_once_more_for_the_long_press_and_a_touch_ends_it()
+    {
+        Game game = Start(Level(Playable().With(4, 1, 'p'), goals: new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 10) }, colors: 6));
+        TutorialWatch watch = WatchOf(TutorialStep.BoosterHitCell, TutorialStep.LongPress);
+        TutorialWatch alone = WatchOf(TutorialStep.LongPress);
+
+        var used = Assert.IsType<Lesson.Booster>(watch.BeginWhatIsDue(game));
+        Assert.True(game.TryUseBooster(used.Use));
+        Assert.Equal(TutorialStep.BoosterHitCell, watch.Used(used.Use));
+
+        var look = Assert.IsType<Lesson.Look>(watch.BeginWhatIsDue(game));
+        Assert.Equal(TutorialStep.LongPress, look.Step);
+        Assert.Equal(BoosterKind.HitCell, Assert.IsType<LessonSpot.Disc>(look.Spot).Booster);
+        Assert.False(watch.TakesThePress(BoosterKind.HitCell));
+        Assert.Equal(TutorialStep.LongPress, watch.Touched());
+        Assert.Equal(new[] { TutorialStep.BoosterHitCell, TutorialStep.LongPress }, watch.TakeWhatWasDone());
+
+        // On a board where no booster was used by hand, the long press waits and says nothing.
+        Assert.Null(alone.BeginWhatIsDue(game));
+        Assert.Throws<ArgumentException>(() => new LessonSpot.Disc(BoosterKind.StartColorBomb));
+    }
+
+    [Fact]
+    public void The_long_press_says_its_one_sentence_and_that_a_touch_goes_on()
+    {
+        PillWords.Lesson said = TutorialWords.Of(TutorialStep.LongPress, asksForATouch: true);
+
+        Assert.Equal(new PillWords.Lesson("Bir booster'ı basılı tutarsan ne yaptığını yeniden izlersin", null, "Devam etmek için dokun"), said);
+        Assert.Equal("Bir booster'ı basılı tutarsan ne yaptığını yeniden izlersin / Devam etmek için dokun", said.ToString());
+    }
+
+    [Fact]
+    public void A_booster_used_by_hand_alone_begins_no_attempt_and_the_players_own_move_or_booster_does()
+    {
+        LevelDefinition level = Level(Playable().With(4, 1, 'p'), goals: new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 10) }, colors: 6);
+        string[] byHand = { "hit-cell" };
+        Game guidedOnly = Start(level);
+        Game thenAMove = Start(level);
+        Game thenItsOwn = Start(level);
+
+        foreach (Game game in new[] { guidedOnly, thenAMove, thenItsOwn })
+        {
+            Assert.True(game.TryUseBooster(new BoosterUse.HitCell(P(4, 1))));
+        }
+
+        Assert.True(thenAMove.TryPlay(thenAMove.FindLegalMoves()[0]));
+        Assert.True(thenItsOwn.TryUseBooster(new BoosterUse.HitCell(P(0, 5))));
+
+        Assert.False(AttemptBegun.In(guidedOnly, byHand));
+        Assert.True(AttemptBegun.In(guidedOnly)); // a booster of the player's own would have begun it
+        Assert.True(AttemptBegun.In(thenAMove, byHand));
+        Assert.True(AttemptBegun.In(thenItsOwn, byHand));
+        Assert.False(AttemptBegun.In(Start(level), byHand.Take(0).ToArray()));
+    }
+
+    [Fact]
+    public void Leaving_after_a_booster_used_by_hand_alone_is_leaving_before_any_move_costs_no_life_and_writes_no_record()
+    {
+        LevelDefinition level = Level(Playable().With(4, 1, 'p'), goals: new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Purple, 10) }, colors: 6);
+        Game game = Start(level);
+        Assert.True(game.TryUseBooster(new BoosterUse.HitCell(P(4, 1))));
+        var ledger = new AttemptLedger(TheRules, 1000);
+        PlayerProgress onSeven = ledger.WithTheOpeningGiftsDue(new PlayerProgress(levelsWon: 6, attemptsOnLevel: 0).WithWallet(TheRules.StartingWallet));
+
+        var leaving = Assert.IsType<LevelResult.Leaving>(LevelResult.ForLeaving(game, AttemptBrief.FirstTry(TheRules.Win), new[] { "hit-cell" }));
+        var left = new AttemptEvent.Left(afterAMove: AttemptBegun.In(game, new[] { "hit-cell" }));
+        PlayerProgress after = ledger.Apply(ledger.Apply(onSeven, new AttemptEvent.GuidedBoosterUsed(BoosterKind.HitCell), Evening), left, Evening);
+
+        Assert.False(leaving.HasPlayed);
+        Assert.True(Assert.IsType<LevelResult.Leaving>(LevelResult.ForLeaving(game, AttemptBrief.FirstTry(TheRules.Win))).HasPlayed);
+        Assert.False(left.EndsTheAttempt);
+        Assert.Equal(onSeven, after);
     }
 
     [Fact]

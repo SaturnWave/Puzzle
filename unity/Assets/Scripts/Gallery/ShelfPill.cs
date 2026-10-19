@@ -56,7 +56,13 @@ namespace Puzzle.Client.Gallery
         private readonly TextMeshPro _first;
         private readonly TextMeshPro _second;
         private readonly TextMeshPro _aside;
+
+        /// <summary>The second half of a step's one sentence where it is too wide for one line of the large type.</summary>
+        private readonly TextMeshPro _secondHalf;
         private PillWords _words = PillWords.None;
+
+        /// <summary>How many lines the pill says now: its body is as high as they need.</summary>
+        private int _lines = 1;
         private bool _isFaint;
         private float _scale = 1f;
         private float _room = ScreenLayout.WidestShelf;
@@ -75,6 +81,7 @@ namespace Puzzle.Client.Gallery
             _first = Lettering.Write("Line", _root, art, LetteringStyle.Label, LineSize, Lettering.Ink, lettering);
             _second = Lettering.Write("What to pick", _root, art, LetteringStyle.Figure, PickSize, Lettering.Ink, lettering);
             _aside = Lettering.Write("Aside", _root, art, LetteringStyle.Soft, AsideSize, Lettering.SoftInk, lettering);
+            _secondHalf = Lettering.Write("Second half", _root, art, LetteringStyle.Figure, PickSize, Lettering.Ink, lettering);
             Show(PillWords.None);
         }
 
@@ -139,16 +146,27 @@ namespace Puzzle.Client.Gallery
                 return;
             }
 
+            bool isSplit = words is PillWords.Lesson { Why: null } alone && !FitsOnOneLine(alone.Says);
+            _lines = words switch
+            {
+                PillWords.Line _ => 1,
+                PillWords.Armed _ => 2,
+                PillWords.Lesson lesson => 1 + (lesson.Why != null || isSplit ? 1 : 0) + (lesson.Aside != null ? 1 : 0),
+                _ => throw new InvalidOperationException($"The pill does not know how to say {words.GetType().Name}."),
+            };
             float widest = words switch
             {
                 PillWords.Line line => Write(_first, line.Words, LineSize, 0f),
                 PillWords.Armed armed => Mathf.Max(Write(_first, armed.About, LineSize, LinesApart / 2f), Write(_second, armed.WhatToPick, PickSize, -LinesApart / 2f)),
-                PillWords.Lesson { Aside: string aside } lesson => Mathf.Max(
-                    Write(_second, lesson.Says, PickSize, LinesApart), Mathf.Max(Write(_first, lesson.Why, LineSize, 0f), Write(_aside, aside, AsideSize, -LinesApart))),
-                PillWords.Lesson lesson => Mathf.Max(Write(_second, lesson.Says, PickSize, LinesApart / 2f), Write(_first, lesson.Why, LineSize, -LinesApart / 2f)),
+                PillWords.Lesson { Why: string why } lesson => Mathf.Max(
+                    Write(_second, lesson.Says, PickSize, LineAbove(0)), Mathf.Max(Write(_first, why, LineSize, LineAbove(1)), WriteTheAside(lesson.Aside))),
+                PillWords.Lesson lesson when isSplit => SaySplit(lesson),
+                PillWords.Lesson lesson => Mathf.Max(Write(_second, lesson.Says, PickSize, LineAbove(0)), WriteTheAside(lesson.Aside)),
                 _ => throw new InvalidOperationException($"The pill does not know how to say {words.GetType().Name}."),
             };
+            _first.gameObject.SetActive(!(words is PillWords.Lesson { Why: null }));
             _second.gameObject.SetActive(words is PillWords.Armed || words is PillWords.Lesson);
+            _secondHalf.gameObject.SetActive(isSplit);
             _aside.gameObject.SetActive(words is PillWords.Lesson { Aside: string _ });
 
             var body = new Vector2(Mathf.Max(NarrowestBody, widest + 2f * WordsInFromSides), BodyHeight);
@@ -188,12 +206,34 @@ namespace Puzzle.Client.Gallery
 
         private static Color WithStrength(Color colour, float strength) => new Color(colour.r, colour.g, colour.b, colour.a * strength);
 
-        private float BodyHeight => _words switch
+        private float BodyHeight => _lines switch
         {
-            PillWords.Lesson { Aside: string _ } => ThreeLinesHigh,
-            PillWords.Armed _ or PillWords.Lesson _ => TwoLinesHigh,
-            _ => OneLineHigh,
+            1 => OneLineHigh,
+            2 => TwoLinesHigh,
+            _ => ThreeLinesHigh,
         };
+
+        /// <summary>How far over the pill's middle its line of this place (0 the first) stands, its lines <see cref="LinesApart"/> apart.</summary>
+        private float LineAbove(int place) => (_lines - 1) * LinesApart / 2f - place * LinesApart;
+
+        /// <summary>The small last line of a step, where it has one; how wide it is.</summary>
+        private float WriteTheAside(string? aside) => aside is string words ? Write(_aside, words, AsideSize, LineAbove(_lines - 1)) : 0f;
+
+        /// <summary>True when a step's one sentence fits on one line of the large type, at its size.</summary>
+        private bool FitsOnOneLine(string says)
+        {
+            _second.fontSize = Mathf.Max(PickSize, SmallestOnScreen / _scale);
+            return Lettering.WidthOf(_second, says) <= _room;
+        }
+
+        /// <summary>A step's one sentence on two lines of the large type, broken where the longer is the shortest, and its small last line.</summary>
+        private float SaySplit(PillWords.Lesson lesson)
+        {
+            (string first, string second) = BalancedLines.SplitInTwo(lesson.Says, part => Lettering.WidthOf(_second, part));
+            return Mathf.Max(
+                Mathf.Max(Write(_second, first, PickSize, LineAbove(0)), Write(_secondHalf, second, PickSize, LineAbove(1))),
+                WriteTheAside(lesson.Aside));
+        }
 
         /// <summary>Sets a line at its size, or smaller where it would not fit the shelf, never under the smallest size on the screen; returns how wide it is.</summary>
         private float Write(TextMeshPro line, string words, float size, float aboveMiddle)

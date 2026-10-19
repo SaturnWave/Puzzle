@@ -142,7 +142,7 @@ public class TutorialWatchTests
     [Fact]
     public void Every_step_says_what_to_do_and_why_and_a_step_that_is_looked_at_says_that_a_touch_goes_on()
     {
-        TutorialStep[] steps = TutorialSteps.All.Where(step => step.BoosterOf() == null && step != TutorialStep.StartBoosters).ToArray();
+        TutorialStep[] steps = TutorialSteps.All.Where(step => step.BoosterOf() == null && step != TutorialStep.StartBoosters && step != TutorialStep.LongPress).ToArray();
         Assert.All(steps, step =>
         {
             PillWords.Lesson looked = TutorialWords.Of(step, asksForATouch: true);

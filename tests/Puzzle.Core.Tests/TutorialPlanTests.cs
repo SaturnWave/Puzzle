@@ -82,7 +82,7 @@ public class TutorialPlanTests
         Assert.False(TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 10, PlacedPieces.None)).Has(TutorialStep.Box));
         Assert.True(TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 11, PlacedPieces.None)).Has(TutorialStep.Box));
         Assert.Equal(
-            TutorialSeen.Of(TutorialSteps.All.Where(step => step.IsOnTheBoard() && step.BoosterOf() == null)),
+            TutorialSeen.Of(TutorialSteps.All.Where(step => step.IsOnTheBoard() && step.BoosterOf() == null && step != TutorialStep.LongPress)),
             TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 51, PlacedPieces.None)));
     }
 

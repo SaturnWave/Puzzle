@@ -12,7 +12,8 @@ namespace Puzzle.Client.Flow
     /// when none does it waits on the next levels too, at most <see cref="LevelsAfterItsOwn"/> of them; after that it
     /// is let go unseen. An obstacle's step comes on the first board the player meets with that obstacle, whatever
     /// its level. A booster used during play is used once by hand on the level it opens on (the economy's
-    /// <see cref="BoosterUnlocks"/>) and on no other: a later level never asks for it again. The jigsaw's steps come on
+    /// <see cref="BoosterUnlocks"/>) and on no other: a later level never asks for it again. The long press's step may
+    /// come on such a level too, and comes once a booster was used by hand there (TutorialWatch). The jigsaw's steps come on
     /// the first jigsaw a piece waits on and with the first painting made whole; the start boosters' step on the card
     /// before a level the player tried and did not win (<see cref="IntroducesTheStartBoosters"/>). No Unity dependency.
     /// </summary>
@@ -73,6 +74,7 @@ namespace Puzzle.Client.Flow
                 TutorialStep.FirstPiece => museum.PiecesPlaced > 0,
                 TutorialStep.FirstPainting => museum.PaintingsCompleted > 0,
                 TutorialStep.StartBoosters => false,
+                TutorialStep.LongPress => false,
                 _ when step.BoosterOf() != null => false,
                 _ => museum.LevelsWon >= (OwnLevels.TryGetValue(step, out int own) ? own : FirstLevelWith[step]),
             }));
@@ -82,6 +84,11 @@ namespace Puzzle.Client.Flow
             if (step.BoosterOf() is BoosterKind booster)
             {
                 return level == unlocks.LevelOf(booster);
+            }
+
+            if (step == TutorialStep.LongPress)
+            {
+                return unlocks.OpeningOn(level).Count > 0;
             }
 
             return !OwnLevels.TryGetValue(step, out int own) || (level >= own && level <= own + LevelsAfterItsOwn);

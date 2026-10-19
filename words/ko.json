@@ -232,6 +232,7 @@
     {"id":"TutorialStartRocketAndBomb","text":"고르면 붓과 스플래시를 들고 시작해요"},
     {"id":"TutorialStartColorBomb","text":"고르면 무지개 팔레트를 들고 시작해요"},
     {"id":"TutorialStartExtraMoves","text":"고르면 이동 {moves}회를 더 받고 시작해요"},
-    {"id":"BoosterCardTouchToClose","text":"닫으려면 터치하세요"}
+    {"id":"BoosterCardTouchToClose","text":"닫으려면 터치하세요"},
+    {"id":"TutorialLongPress","text":"부스터를 길게 누르면 하는 일을 다시 볼 수 있어요"}
   ]
 }

@@ -179,8 +179,13 @@ namespace Puzzle.Client.Flow
 
         /// <summary>What a player is shown who asks to leave the game they are playing.</summary>
         /// <exception cref="InvalidOperationException">The game is decided: it has a result, and nothing is left to leave.</exception>
-        public static LevelResult ForLeaving(Game game, AttemptBrief brief) => game.Status == GameStatus.Playing
-            ? new Leaving(game.Level.Id.Value, brief.AttemptNumber, hasPlayed: AttemptBegun.In(game), OpenGoalsOf(game))
+        public static LevelResult ForLeaving(Game game, AttemptBrief brief) => ForLeaving(game, brief, Array.Empty<string>());
+
+        /// <summary>What a player is shown who asks to leave the game they are playing, on which the tutorial had these boosters used by hand, free: they cost nothing to leave after.</summary>
+        /// <param name="usedByHand">The record names of the boosters the tutorial had used by hand.</param>
+        /// <exception cref="InvalidOperationException">The game is decided: it has a result, and nothing is left to leave.</exception>
+        public static LevelResult ForLeaving(Game game, AttemptBrief brief, IReadOnlyList<string> usedByHand) => game.Status == GameStatus.Playing
+            ? new Leaving(game.Level.Id.Value, brief.AttemptNumber, hasPlayed: AttemptBegun.In(game, usedByHand), OpenGoalsOf(game))
             : throw new InvalidOperationException($"Level {game.Level.Id.Value} is decided ({game.Status}); it is not left, it has a result.");
 
         /// <summary>The goals a lost game did not reach, each with what was left of it, in the order of the goals plaque.</summary>

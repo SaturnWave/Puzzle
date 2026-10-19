@@ -23,7 +23,9 @@ namespace Puzzle.Client.EditorTools
     /// another disc or a swipe on the board does nothing, and no hint shows however long the board is left; the disc
     /// arms it (the shuffle is used at once), the target is lit with its aim, an aim elsewhere is refused, and the aim
     /// on the target (a brush's anywhere on its row or column) uses it, free: the player's stock is as it was, the step
-    /// is kept, and the attempt's record, written when the player leaves, names it as guided. Then a long press on each
+    /// is kept. After the first of them (the spatula) its disc is lit once more with the long press's sentence, which a
+    /// touch ends. The free use begins no attempt: leaving right after it costs nothing and writes no record; after a
+    /// move of the player's own (on the row brush's level) the record names it as guided. Then a long press on each
     /// of the four discs on level 40 brings the card that plays the booster on its tiny board, arms nothing and is taken
     /// up by a touch (no hint shows under it); a level given up there brings the card before the level, on which the
     /// start boosters are lit one after another with a touch between them (a touch on its "Oyna" plays nothing), kept
@@ -74,7 +76,9 @@ namespace Puzzle.Client.EditorTools
             int level = StoryStudio.Economy.Unlocks.LevelOf(booster);
             PlayerProgress standing = StoryStudio.StandingOn(LevelPack.Numbered(reel.Studio.Levels, level), reel.Studio.Levels);
             var records = new AttemptsInMemory(StoryStudio.Device);
-            using GameSession session = reel.Open(Seeing(standing, TutorialSeen.Of(TutorialSteps.All.Where(each => each != step))), records, SessionOpening.InTheMuseum);
+            bool teachesTheLongPress = booster == BoosterKind.HitCell; // the first booster used by hand
+            TutorialSeen seen = TutorialSeen.Of(TutorialSteps.All.Where(each => each != step && (each != TutorialStep.LongPress || !teachesTheLongPress)));
+            using GameSession session = reel.Open(Seeing(standing, seen), records, SessionOpening.InTheMuseum);
             ThroughTheCard.IntoTheLevel(session, Array.Empty<BoosterKind>());
             reel.Settle(session);
             GameStage stage = session.Stage;
@@ -128,13 +132,55 @@ namespace Puzzle.Client.EditorTools
             }
 
             reel.Settle(session);
-            ThroughTheCard.Require(stage.Game.BoostersUsed.SequenceEqual(new[] { name }) && stage.LessonShown == null, $"the target did not use {name}: \"{string.Join(", ", stage.Game.BoostersUsed)}\"");
+            ThroughTheCard.Require(stage.Game.BoostersUsed.SequenceEqual(new[] { name }) && !(stage.LessonShown is Lesson.Booster), $"the target did not use {name}: \"{string.Join(", ", stage.Game.BoostersUsed)}\"");
             ThroughTheCard.Require(session.Progress.Tutorial.Has(step) && !session.HasUnsavedProgress, $"the step of {name} is not kept: {session.Progress.Tutorial}");
             ThroughTheCard.Require(session.Progress.Wallet.Shelf.Count(booster) == held, $"{name} used by hand took one from the stock: {session.Progress.Wallet.Shelf.Count(booster)} of {held} left");
+            if (teachesTheLongPress)
+            {
+                TeachTheLongPress(reel, session, booster);
+            }
+
+            ThroughTheCard.Require(stage.LessonShown == null, $"after {name} by hand \"{stage.LessonShown}\" showed");
             reel.Shoot(session, $"{name}-done");
 
+            // The free use began no attempt: leaving after it alone costs nothing and writes nothing; after a move of the player's own, the record names it.
+            bool playsAMoveFirst = booster == BoosterKind.HitRow;
+            if (playsAMoveFirst)
+            {
+                ThroughTheCard.Require(session.TryPlay(stage.Game.FindLegalMoves().First()), $"the board refused a move after {name} by hand");
+                reel.Settle(session);
+            }
+
+            PlayerProgress beforeLeaving = session.Progress;
             LeaveTheLevel(session, reel);
-            AttemptLineNamesTheGuidedBooster(records, name);
+            if (playsAMoveFirst)
+            {
+                AttemptLineNamesTheGuidedBooster(records, name);
+            }
+            else
+            {
+                ThroughTheCard.Require(
+                    records.Records.Count == 0 && session.Progress.Equals(beforeLeaving),
+                    $"leaving after {name} by hand alone wrote {records.Records.Count} records, or changed the progress to \"{session.Progress}\"");
+            }
+        }
+
+        /// <summary>Right after the first booster used by hand its disc is lit once more, the pill says a long press shows what a booster does, and a touch ends it.</summary>
+        private static void TeachTheLongPress(BoosterReel reel, GameSession session, BoosterKind booster)
+        {
+            GameStage stage = session.Stage;
+            ThroughTheCard.Require(
+                stage.LessonShown is Lesson.Look { Step: TutorialStep.LongPress, Spot: LessonSpot.Disc lit } && lit.Booster == booster && stage.RingedDisc == booster,
+                $"after the first booster by hand \"{stage.LessonShown}\" showed, ringing {stage.RingedDisc}");
+            ThroughTheCard.Require(stage.WhatTheLessonSays.Equals(TutorialWords.Of(TutorialStep.LongPress, asksForATouch: true)), $"the long press's pill says \"{stage.WhatTheLessonSays}\"");
+            ThroughTheCard.Require(stage.HintShown == null, "a hint showed beside the long press's pill");
+            reel.Advance(session, IntroMoment);
+            reel.Shoot(session, "long-press");
+            TouchTheWall(session);
+            reel.Advance(session, StoryStudio.FrameSeconds);
+            ThroughTheCard.Require(
+                stage.LessonShown == null && stage.ArmedBooster == null && session.Progress.Tutorial.Has(TutorialStep.LongPress) && !session.HasUnsavedProgress,
+                $"a touch did not end the long press's step, or it is not kept: {session.Progress.Tutorial}");
         }
 
         /// <summary>The record the leaving wrote names the booster among those used and as guided.</summary>

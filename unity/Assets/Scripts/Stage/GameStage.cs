@@ -145,7 +145,10 @@ namespace Puzzle.Client.Stage
     /// says to touch it; put down again (a lift off the board, the way back), it asks for the disc again. The shelf
     /// takes that disc and no other, and the board that use and no other move or aim (another is refused with the
     /// disc's shake). The use is free: nothing leaves the player's stock (<see cref="AttemptEvent.GuidedBoosterUsed"/>),
-    /// and the record names it (<see cref="GuidedBoosters"/>).
+    /// and it begins no attempt by itself: leaving after it alone costs nothing and writes no record; once the player's
+    /// own move or booster begins the attempt, its record names the free use too (<see cref="GuidedBoosters"/>). After the
+    /// first booster used by hand, its disc is lit once more and the pill says that holding a booster shows what it does
+    /// (the long press's step, a touch goes on).
     /// </para>
     /// </remarks>
     public sealed class GameStage : IStage
@@ -870,7 +873,7 @@ namespace Puzzle.Client.Stage
             TakeTheHintAway();
             _pointer.ClearSelection();
             ShowThePickedPiece();
-            bool hadBegun = AttemptBegun.In(_game);
+            bool hadBegun = HasTheAttemptBegun;
             if (_tutorial?.Takes(move) == false || !_game.TryPlay(move))
             {
                 ShowRefused(move);
@@ -1180,16 +1183,23 @@ namespace Puzzle.Client.Stage
         }
 
         /// <summary>
-        /// The engine has just played a move or used a booster: if nothing had begun the attempt before it, it is the
-        /// attempt's first move, which is reported now, before any of it is shown (a booster counts as a move).
+        /// The engine has just played a move or used a booster: if nothing had begun the attempt before it and it does,
+        /// it is the attempt's first move, which is reported now, before any of it is shown (a booster counts as a move;
+        /// the free one the tutorial has used by hand does not, <see cref="HasTheAttemptBegun"/>).
         /// </summary>
         private void ReportTheBeginning(bool hadBegun)
         {
-            if (!hadBegun)
+            if (!hadBegun && HasTheAttemptBegun)
             {
                 _happened.Add(new AttemptEvent.FirstMove(_brief.StartBoosters));
             }
         }
+
+        /// <summary>
+        /// True once the player's own move or booster has begun the attempt, or the game is decided: the boosters the
+        /// tutorial had used by hand, free, begin nothing (#7), so leaving after them alone costs nothing.
+        /// </summary>
+        private bool HasTheAttemptBegun => AttemptBegun.In(_game, GuidedBoosters);
 
         /// <summary>
         /// The engine has just played a move or used a booster: if that decided the game, it is reported now, before
@@ -1531,7 +1541,7 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.ForLeaving(_game, _brief), piecesWaiting: 0, _wallet.Handling), comesIn: 0f, roomIsDark: false);
+            HangACard(ResultPanel.Create(_root.transform, _art, _effectArt, _paintings, LevelResult.ForLeaving(_game, _brief, GuidedBoosters), piecesWaiting: 0, _wallet.Handling), comesIn: 0f, roomIsDark: false);
         }
 
         /// <summary>
@@ -1604,7 +1614,7 @@ namespace Puzzle.Client.Stage
 
             if (IsAskingWhetherToLeave)
             {
-                _happened.Add(new AttemptEvent.Left(afterAMove: AttemptBegun.In(_game)));
+                _happened.Add(new AttemptEvent.Left(afterAMove: HasTheAttemptBegun));
             }
 
             _timeline.Add(0f, Tempo.CardGoesUp, card.GoUp, () => PlayerChose = choice);
@@ -1939,7 +1949,7 @@ namespace Puzzle.Client.Stage
         private void TryUse(BoosterUse use)
         {
             BoosterKind booster = BoosterKinds.Of(use);
-            bool hadBegun = AttemptBegun.In(_game);
+            bool hadBegun = HasTheAttemptBegun;
             bool isFree = _tutorial?.IsFree(use) == true;
             TakeTheHintAway();
             if (_tutorial?.TakesTheUse(use) == false)
@@ -1968,9 +1978,10 @@ namespace Puzzle.Client.Stage
 
             _refused = null;
             _arming = Arming.None;
+            bool endsAStep = _tutorial?.Used(use) is TutorialStep; // named as used by hand first: then it begins nothing
             ReportTheBeginning(hadBegun);
             _happened.Add(isFree ? new AttemptEvent.GuidedBoosterUsed(booster) : (AttemptEvent)new AttemptEvent.BoosterAccepted(booster));
-            if (_tutorial?.Used(use) is TutorialStep)
+            if (endsAStep)
             {
                 PutTheLessonAway();
             }
@@ -2091,7 +2102,7 @@ namespace Puzzle.Client.Stage
         private void ShowTheShelf()
         {
             bool isPlayed = _game.Status == GameStatus.Playing && !PlayerWentOn && !IsShowingTheFinale;
-            bool isAStepThatTakesNoDisc = IsTheLessonSeen && !(_tutorial?.Showing is Lesson.Booster);
+            bool isAStepThatTakesNoDisc = IsTheLessonSeen && !(_tutorial?.Showing is Lesson.Booster || _tutorial?.Showing is Lesson.Look { Spot: LessonSpot.Disc _ });
             _discs.Show(_owned, ArmedBooster, isListening: isPlayed && ListensForTheShelf && !isAStepThatTakesNoDisc);
             BoosterUse? aimed = _arming switch
             {
@@ -2133,7 +2144,7 @@ namespace Puzzle.Client.Stage
                     : new PillWords.Armed(BoosterWords.Armed(armed), BoosterWords.WhatToPick(armed));
             }
 
-            if (AttemptBegun.In(_game))
+            if (HasTheAttemptBegun)
             {
                 return PillWords.None;
             }
@@ -2371,7 +2382,7 @@ namespace Puzzle.Client.Stage
                 LayTheLesson(lesson, layout);
             }
 
-            _discs.Guide(lesson is Lesson.Booster asked && !isArmed ? asked.Kind : (BoosterKind?)null);
+            _discs.Guide(DiscRingedFor(lesson, isArmed));
             float seenFor = _clock - _lessonSeenSince;
             _spotlight.Show(Easing.Out(Mathf.Clamp01(seenFor / LessonComesIn)));
             bool isTheBoardUntouched = IsSettled && !_pointer.IsPressing && _pointer.Selected == null;
@@ -2406,6 +2417,9 @@ namespace Puzzle.Client.Stage
                 case Lesson.Guided guided:
                     StandThePillClearOf(LightUpTheTrade(guided.Move, layout), layout, scale);
                     break;
+                case Lesson.Look { Spot: LessonSpot.Disc disc }:
+                    LightUpTheDisc(disc.Booster, Array.Empty<Box>(), layout, scale);
+                    break;
                 case Lesson.Look { Spot: LessonSpot.Cell cell }:
                     Box[] windows = { WindowAround(cell.At, cell.At, layout) };
                     _spotlight.LightUp(windows);
@@ -2423,17 +2437,31 @@ namespace Puzzle.Client.Stage
             }
         }
 
+        /// <summary>The disc a step rings with light: the booster used by hand until it is armed, the long press's disc; nothing for another step.</summary>
+        private static BoosterKind? DiscRingedFor(Lesson lesson, bool isArmed) => lesson switch
+        {
+            Lesson.Booster asked when !isArmed => asked.Kind,
+            Lesson.Look { Spot: LessonSpot.Disc disc } => disc.Booster,
+            _ => null,
+        };
+
         /// <summary>
         /// A booster used by hand: a round window over its disc, wide enough for the ring of light around it, and a
-        /// window over its target (the cell, or the whole row or column; none for the shuffle). The pill stands over
-        /// the disc's window, unless the target lies where it would stand: then it hangs under the plaques.
+        /// window over its target (the cell, or the whole row or column; none for the shuffle).
         /// </summary>
-        private void LightUpTheDiscAndItsTarget(Lesson.Booster lesson, ScreenLayout layout, float scale)
+        private void LightUpTheDiscAndItsTarget(Lesson.Booster lesson, ScreenLayout layout, float scale) =>
+            LightUpTheDisc(lesson.Kind, TargetWindowsOf(lesson.Use, layout), layout, scale);
+
+        /// <summary>
+        /// A round window over a booster's disc, wide enough for the ring of light around it, and windows over what it
+        /// strikes, if any. The pill stands over the disc's window, unless something lit lies where it would stand:
+        /// then it hangs under the plaques.
+        /// </summary>
+        private void LightUpTheDisc(BoosterKind booster, IReadOnlyList<Box> targets, ScreenLayout layout, float scale)
         {
-            Box place = layout.ShelfDiscs[1 + IndexOnTheShelf(lesson.Kind)];
+            Box place = layout.ShelfDiscs[1 + IndexOnTheShelf(booster)];
             float across = place.Width * LessonDiscWindowAcross;
             Box disc = Box.Around(place.MiddleX, place.MiddleY, across, across);
-            Box[] targets = TargetWindowsOf(lesson.Use, layout);
             _spotlight.LightUp(targets.Select(target => (target, Spotlight.Rounding)).Append((disc, across / 2f)).ToArray());
 
             float foot = Mathf.Max(layout.ShelfTop + LessonPillOverTheDisc, disc.Top + LessonPillOverTheDisc);

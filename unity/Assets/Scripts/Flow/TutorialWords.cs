@@ -19,8 +19,9 @@ namespace Puzzle.Client.Flow
         /// <exception cref="ArgumentOutOfRangeException">The step is a booster's, said by <see cref="OfTheBooster"/> and <see cref="OfTheStartBooster"/>.</exception>
         public static PillWords.Lesson Of(TutorialStep step, bool asksForATouch)
         {
-            (WordId says, WordId why) = IdsOf(step);
-            return new PillWords.Lesson(Speech.Say(says), Speech.Say(why), asksForATouch ? Speech.Say(WordId.TutorialTouchToGoOn) : null);
+            (WordId says, WordId? why) = IdsOf(step);
+            return new PillWords.Lesson(
+                Speech.Say(says), why is WordId more ? Speech.Say(more) : null, asksForATouch ? Speech.Say(WordId.TutorialTouchToGoOn) : null);
         }
 
         /// <summary>
@@ -70,7 +71,8 @@ namespace Puzzle.Client.Flow
             _ => throw new ArgumentException($"{booster.Name()} is not aimed: it is used the moment its disc is pressed.", nameof(booster)),
         };
 
-        private static (WordId Says, WordId Why) IdsOf(TutorialStep step) => step switch
+        /// <summary>What a step says and why; nothing for the why of a step whose one sentence says it all (the long press's).</summary>
+        private static (WordId Says, WordId? Why) IdsOf(TutorialStep step) => step switch
         {
             TutorialStep.Goal => (WordId.TutorialGoal, WordId.TutorialGoalMore),
             TutorialStep.Match => (WordId.TutorialMatch, WordId.TutorialMatchMore),
@@ -83,6 +85,7 @@ namespace Puzzle.Client.Flow
             TutorialStep.Item => (WordId.TutorialItem, WordId.TutorialItemMore),
             TutorialStep.FirstPiece => (WordId.TutorialFirstPiece, WordId.TutorialFirstPieceMore),
             TutorialStep.FirstPainting => (WordId.TutorialFirstPainting, WordId.TutorialFirstPaintingMore),
+            TutorialStep.LongPress => (WordId.TutorialLongPress, null),
             _ => throw new ArgumentOutOfRangeException(nameof(step), step, "A step of the booster intro: OfTheBooster or OfTheStartBooster says it."),
         };
     }

@@ -105,6 +105,19 @@ namespace Puzzle.Client.Play
             public override string ToString() => _name;
         }
 
+        /// <summary>The disc of a booster on the board's shelf.</summary>
+        public sealed class Disc : LessonSpot
+        {
+            public Disc(BoosterKind booster)
+            {
+                Booster = booster.IsInLevel() ? booster : throw new ArgumentException($"{booster.Name()} is taken before a level; the board's shelf has no disc for it.", nameof(booster));
+            }
+
+            public BoosterKind Booster { get; }
+
+            public override string ToString() => $"the disc of {Booster.Name()}";
+        }
+
         /// <summary>A cell of the board, and what lies in it.</summary>
         public sealed class Cell : LessonSpot
         {
@@ -146,6 +159,9 @@ namespace Puzzle.Client.Play
         private readonly ulong _attemptSeed;
         private readonly List<TutorialStep> _done = new List<TutorialStep>();
         private readonly List<string> _guidedBoosters = new List<string>();
+
+        /// <summary>The booster used by hand last on this board, whose disc the long press's step lights; nothing before one is.</summary>
+        private BoosterKind? _lastUsedByHand;
 
         /// <param name="mayCome">The steps that may come on this board, in the order they are shown (<see cref="TutorialPlan.MayComeOn"/>).</param>
         /// <param name="advisor">Finds the move a step shows by hand.</param>
@@ -266,6 +282,7 @@ namespace Puzzle.Client.Play
             }
 
             _guidedBoosters.Add(BoosterNames.Of(use));
+            _lastUsedByHand = lesson.Kind;
             return Finish(lesson);
         }
 
@@ -329,6 +346,7 @@ namespace Puzzle.Client.Play
             TutorialStep.Chain => Point(step, CellsOf(game.Board, cell => game.Board.ChainAt(cell) > 0), game.Board),
             TutorialStep.Item => Point(step, CellsOf(game.Board, cell => game.Board.TileAt(cell).Kind == TileKind.Item), game.Board),
             TutorialStep.BoosterHitCell or TutorialStep.BoosterHitRow or TutorialStep.BoosterHitColumn or TutorialStep.BoosterShuffle => Aim(game, step),
+            TutorialStep.LongPress => _lastUsedByHand is BoosterKind used ? new Lesson.Look(step, new LessonSpot.Disc(used)) : null,
             _ => throw new ArgumentOutOfRangeException(nameof(step), step, "A step that does not come on a board."),
         };
 
