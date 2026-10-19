@@ -60,6 +60,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A35 | İngilizce ve Korece çeviriler makine çevirisi; Korece tablo adlarının 78'i çeviri (22'si Wikidata'daki yerleşik ad). Kayıtta en emin olunmayan ifadeler: 하트 (can), 이동 (hamle), booster adları, ressam adlarının yanındaki "atfedilen", "Yaşlı/Genç". | #8 | Orta: yayın öncesi | Her dilin ana dili olan birinin gözden geçirmesi |
 | A36 | İpucunun aynı çıkması .NET ve Mono'da gösterildi, telefonun IL2CPP derlemesinde değil (botun seçimi kesirli sayı kullanıyor). İpucunun telefonda düşünme süresi ölçülmedi. | #6 | Düşük | T298; telefonda kayıtlarla karşılaştırma |
 | A37 | Öğretici: 3.–6. bölümlerin hiçbiri beşli sunmazsa beşli adımı bırakılır (taramada nadir). Öteki özel taşlar için adım yok. Köşe parçasının yerini gösteren pencere çerçevenin üstüne taşıyor. 1.–3. bölümlerin telefon kayıtları rehberli hamle yüzünden çoğunlukla yardımlı sayılır. | #5 | Düşük | T315, T321 |
+| A38 | Booster tanıtımı: küçük ekranda (2076×2152) uzun basma ve dikey fırça hapları tahtanın kenar hücrelerinin üstüne biniyor. Kartın küçük tahtasında düşen taşlar bazen özel taş yapıyor; +3 hamle kartında yalnızca madalyon sayıyor. Uzun basma yazısını kaçıran ve 20. bölümü geçmiş oyuncu onu hiç görmez. Kartın küçük tahtası çizim sırası kaydırılarak çiziliyor; tahta maskesi yalnızca tahtanın çizim aralığını kesiyor. | #7 | Düşük | T336, T339, T344 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -362,6 +363,27 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T319 | Adım ortasında kapatma | Bir adımın ortasında uygulamayı kapatıp aç | Biten adımlar tekrar gelmez; yarıda kalan yine gelir | Öğretici | Bekliyor |
 | T320 | İngilizce ve Korece | Ayarlardan dili değiştir, adımları gez | Her adımın yazısı hapına sığar ve doğal okunur | Öğretici | Bekliyor |
 | T321 | Akıcılık | 2.–6. bölümde dörtlü ya da beşli beklenirken tahta durduğu anlara bak | Gözle görülür takılma yok | Öğretici | Bekliyor |
+
+### F15. Booster tanıtımı (#7)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T330 | Spatula elle kullanımı | 7. bölüme ilk kez gir | Tahta kararır; spatula diski ışık halkasıyla, bir hedef taş aydınlık; hapta "Yeni: Spatula! Diske dokun". Diske dokununca hedefte nişan çıkar, hapta "Şimdi parlayan taşa dokun". Hedefe dokununca spatula vurur, adım biter. Karartma ve pencere iki ekranda da açık mı? | Booster tanıtımı | Bekliyor |
+| T331 | Bedava | Rehberli kullanımdan önce ve sonra spatula diskindeki sayıya, bölümden sonra stoğa bak | Sayı 3 kalır, stok azalmaz | Booster tanıtımı | Bekliyor |
+| T332 | Uzun basma öğretimi | 7. bölümde rehberli spatulayı kullan, tahtanın durmasını bekle | Spatula diski yeniden aydınlanır; hapta "Bir booster'ı basılı tutarsan ne yaptığını yeniden izlersin". Dokunuş kapatır, hiçbir şeye basmaz; bir daha gelmez | Booster tanıtımı | Bekliyor |
+| T333 | Bedava kullanımdan sonra çıkış | 7. bölümde rehberli spatuladan sonra başka hamle yapmadan bölümden çık | Çıkış kartı can gideceğini söylemez; can ve deneme sayısı değişmez; kayıt yazılmaz; yeniden girince spatula adımı gelmez | Booster tanıtımı | Bekliyor |
+| T334 | Rehberliden sonra kendi hamlen | 12. bölümde rehberli yatay fırçadan sonra bir hamle yap, sonra çık; deneme kaydına bak (adb) | Çıkış bir can götürür; kayıtta "boostersUsed":["hit-row"] ve "guidedBoosters":["hit-row"] var | Booster tanıtımı | Bekliyor |
+| T335 | Başka hamle reddi | Spatula adımı sürerken taşları kaydır, kilitli diske dokun, spatulayı alıp başka bir taşa dokun | Hiçbiri oynanmaz; yanlış hedefte disk sallanır, spatula elde kalır, adım sürer | Booster tanıtımı | Bekliyor |
+| T336 | Yatay ve dikey fırça | 12. ve 16. bölüme gir; fırçayı aydınlık satırın ya da sütunun başka bir hücresine dokunarak kullan | Aydınlık satır ya da sütunun her hücresi kabul edilir; fırça boyar, adım biter. Küçük ekranda dikey fırçanın hapı bir sütunun üst hücrelerini örtüyor mu? | Booster tanıtımı | Bekliyor |
+| T337 | Karıştırma | 20. bölüme gir, aydınlık diske dokun | Tahta hemen karışır, adım biter, stok azalmaz | Booster tanıtımı | Bekliyor |
+| T338 | İpucu yok | Bir booster adımında ve uzun basma kartı açıkken 15 sn bekle | İpucu çıkmaz; adım ya da kart kapanınca ipucu beklemesi yeniden başlar | Booster tanıtımı | Bekliyor |
+| T339 | Tahtada uzun basma | Açılmış her booster diskine yarım saniye bas, bırak | Kart iner; küçük tahtada booster'ın etkisi tekrar tekrar oynar; booster seçilmez, kullanılmaz. 0,45 sn doğal mı, kısa basmayla karışıyor mu? | Booster tanıtımı | Bekliyor |
+| T340 | Kartı kapatma | Kart açıkken ekrana dokun; bir kez de geri hareketini kullan | İkisi de kartı kaldırır; bölüm, stok ve hamleler değişmez | Booster tanıtımı | Bekliyor |
+| T341 | Bölüm kartında uzun basma | Bölüm kartında üç başlangıç booster'ına ayrı ayrı uzun bas | Kart öne iner; fırça + sıçrama patlar, palet bir rengi toplar, +3 madalyonda sayılır; hiçbiri seçilmez | Booster tanıtımı | Bekliyor |
+| T342 | Kayıptan sonra tanıtım | Bir bölümü kaybet ya da bir hamleden sonra çık; bölüm kartını yeniden aç | Üç başlangıç booster'ı sırayla aydınlanır, her birinde tek cümle; "Oyna"ya dokunmak oynatmaz, yalnızca ilerletir | Booster tanıtımı | Bekliyor |
+| T343 | Tanıtım bir kez | Tanıtımı bitir, kartı kapatıp yeniden aç; uygulamayı kapatıp aç, başka bir bölümü kaybet | Tanıtım bir daha gelmez | Booster tanıtımı | Bekliyor |
+| T344 | Kartın canlandırması | Yedi kartın her birini birkaç tur izle | Etki anlaşılıyor; düşen taşlar bazen özel taş yapsa da kafa karıştırmıyor; hız rahat | Booster tanıtımı | Bekliyor |
+| T345 | Dillerde | Ayarlardan İngilizce ve Koreceye geçip adımları ve kartları gez | Her yazı hapına ve kartına sığar, doğal okunur | Booster tanıtımı | Bekliyor |
 
 ### G. Görünüm
 

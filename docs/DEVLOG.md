@@ -21,6 +21,12 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Ölçüm (500 bölüm, bot başına 10.000 deneme, her ipucuna uyulursa): casual ipucu ortalama oyuncuya +3,3–4,4, zorlanana +4,8–7,1 puan. Proje sahibi casual'ı, 8 saniye beklemeyi ve ipucu görülen denemelerin ayrı grup olmasını seçti; bu ikisi öğreticiden sonra işlenecek.
 - 3.920 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: hale görünüyor, asıl karar telefonda. Telefon testleri T290–T299.
 
+**Booster tanıtımı (#7)**
+- Bitti (c390a84, aa8d2b7): bölüm içi booster açıldığı bölümde (7, 12, 16, 20) bir kez elle ve bedava kullandırılıyor; hedefi tahtanın kopyasında hedeflere en çok ilerleten kullanım. Herhangi bir booster'a basılı tutunca kart iner, etkisini küçük gerçek bir tahtada tekrar tekrar oynar. Başlangıç booster'ları bir bölüm ilk kez kazanılamadan bırakılınca kartta sırayla tanıtılıyor.
+- Proje sahibinin üç cevabı: uzun basma ilk rehberli kullanımdan sonra bir kez öğretiliyor; bedava kullanım tek başına denemeyi başlatmıyor (hemen çıkmak can götürmez); başlangıç tanıtımı hem kayıpta hem hamleden sonra çıkışta.
+- Kayıtta isteğe bağlı `guidedBoosters`; deneme yardımlı sayılıyor. Eski "Yeni: …" yazısının dört kimliği kalktı; bekleme klasöründeki on dilde 13 yeni kimlik eksik, 4 eski kimlik atılacak.
+- 3.994 test geçti; ekonomi denetimi temiz; Unity'deki denetimler ve üç dilde öğretici ve booster yürüyüşleri hatasız. Görüntülere baktım: karartma öğreticiyle aynı, kartlar okunuyor. Telefon testleri T330–T345.
+
 **Çeviriler ve öğretici**
 - On dilin çevirileri hazır (9fd70d0): sözcük tabloları `words/staging`, tablo adları `museum/titles/staging`. Yerleşik tablo adları Wikidata'dan, yalnızca katalogdaki tablo ve müzeyle eşleşince alındı (100 adın Almancada 40'ı, Fransızcada 52'si, Endonezcede 2'si); kalanı çeviri. Denetim temiz; öğreticinin 23 yazısı da çevrildi.
 - Oyuna girmeden önce: harf setine ¡ ¿ œ; Rusça, Japonca ve Çince için yedek yazı tipleri; İspanyolca "MOVIMIENTOS" hamle madalyonu için uzun. İspanyolca sorgu 86. adda kesildi (18–20. odalar çeviri).

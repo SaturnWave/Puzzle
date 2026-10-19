@@ -1361,6 +1361,22 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** öteki özel taşlar (sıçrama, kelebek, büyük sıçrama) için adım yok. Bir köşe parçasının yerini gösteren pencere çerçevenin üstüne taşıyor. Telefonda bakılmadı.
 - **Doğrulama:** 3.953 test. Unity'de bütün denetimler ve öğretici yürüyüşleri (Türkçe, İngilizce, Korece) hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T310–T321.
 
+**Booster tanıtımı (2026-10-19, #7).** Kararlar §19'da.
+
+| Ne | Ne zaman | Nasıl |
+|---|---|---|
+| Rehberli kullanım | Spatula 7., satır fırçası 12., sütun fırçası 16., karıştırma 20. bölümde, bir kez | Gerisi kararır; disk ışık halkasıyla, hedef aydınlık. Diske dokununca hedefte booster'ın kendi nişanı çıkar; yalnızca o kullanım kabul edilir. Karıştırma dokununca çalışır. Bedavadır, stok azalmaz. |
+| Uzun basma öğretimi | İlk rehberli kullanımdan hemen sonra, bir kez | Disk yeniden aydınlanır: "Bir booster'ı basılı tutarsan ne yaptığını yeniden izlersin". |
+| Canlandırma kartı | Herhangi bir booster'a 0,45 sn basılı tutunca (raftaki dört, bölüm kartındaki üç) | Kart iner, 5×5'lik küçük bir tahtada booster'ın etkisi oyunun kendi tahta çizimiyle ve motoruyla tekrar tekrar oynar. Hiçbir şey seçilmez ya da harcanmaz; dokunuş ya da geri hareketi kapatır. |
+| Başlangıç booster'ları | Bir bölüm ilk kez kazanılamadan bırakıldıktan sonra (kayıp ya da hamleden sonra çıkış), o bölümün kartı inince, bir kez | Fırça + sıçrama, gökkuşağı paleti ve +3 hamle sırayla aydınlanır, her biri tek cümleyle; dokunuş ilerletir. |
+
+- **Hedef seçimi:** her aday kullanım tahtanın bir kopyasında denenir (gerçek oyuna dokunulmaz); hedeflere en çok ilerleten kazanır. Spatulada adaylar engeller ve hedef rengindeki taşlar (eşitlikte önce engel, sonra ortaya en yakın); fırçada her satır ya da sütun (eşitlikte ortaya en yakın). Fırça aydınlık satırın her hücresinde kabul edilir. Gönderilen bölümlerde 7. bölüm mor bir taşı, 12. bölüm iki sandıklı alt satırı gösteriyor.
+- **Bedava ve deneme:** rehberli kullanım cüzdandan bir şey düşmez. Tek başına denemeyi başlatmaz: hemen ardından çıkmak can götürmez, kayıt yazılmaz, adım görülmüş kalır. Deneme oyuncunun kendi ilk hamlesi ya da booster'ıyla başlar.
+- **Kayıt:** rehberli kullanım `boostersUsed` içinde durur, deneme "yardımlı" sayılır. İsteğe bağlı yeni `guidedBoosters` alanı stoğun ödemediği kullanımları adlandırır (şema 1).
+- **Eskiden olan:** açılıştaki ışık halkası ve "Yeni: …" yazısı bu adıma dönüştü. Rehberli adım ve kart açıkken ipucu çıkmaz.
+- **Bilinen:** küçük ekranda (2076×2152) bazı haplar tahtanın kenar hücrelerinin üstüne biniyor. Kartın küçük tahtasında düşen taşlar bazen yeni özel taş yapıyor. +3 hamle kartında yalnızca madalyon sayıyor. Uzun basma yazısını kaçıran oyuncu sonraki açılış bölümünde görür, 20. bölümü geçmişse hiç görmez. Telefonda bakılmadı.
+- **Doğrulama:** 3.994 test. Ekonomi denetimi temiz. Unity'de bütün denetimler, öğretici ve booster yürüyüşleri (Türkçe, İngilizce, Korece) hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T330–T345.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
