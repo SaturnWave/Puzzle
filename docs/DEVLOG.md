@@ -16,7 +16,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Commit'ler iş hesabının adıyla atılıyordu (ArcanCaglayan, otekyazilim adresi). Proje sahibinin isteğiyle bilgisayarın ortak git ayarı (`C:\Users\arcan\.gitconfig`) SaturnWave kimliğine geçirildi; e-posta GitHub'ın gizli adresi. Eski dosyanın kopyası yanında duruyor. Geçmiş commit'ler eski adla kalıyor.
 
 **İpucu (#6)**
-- Bir ajan çalışıyor: motor tarafında, tahtanın kopyasında hesaplanan ipucu; bot profili ölçülerek seçilecek (novice, casual, average karşılaştırması); deneme kaydında ipucu sayısı.
+- Bitti (133107c): hareketsizlikte iki taşın etrafında sıcak hale ve kıpırdama; titreşim açıksa tık; denemede en çok 3; hamleyi tahtanın kopyasında merdivendeki bir bot seçiyor; motor izi aynı.
+- Ölçüm (500 bölüm, bot başına 10.000 deneme, her ipucuna uyulursa): casual ipucu ortalama oyuncuya +3,3–4,4, zorlanana +4,8–7,1 puan. Proje sahibi casual'ı, 8 saniye beklemeyi ve ipucu görülen denemelerin ayrı grup olmasını seçti; bu ikisi öğreticiden sonra işlenecek.
+- 3.920 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: hale görünüyor, asıl karar telefonda. Telefon testleri T290–T299.
+
+**Çeviriler ve öğretici**
+- On dilin çevirileri bir bekleme klasöründe hazırlanıyor (Unity'siz); dil desteğinin 2. adımında oyuna girecekler.
+- Öğretici (#5) başladı.
 
 ---
 

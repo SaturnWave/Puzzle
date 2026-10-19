@@ -920,6 +920,8 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
   - Görünüş: hamlenin iki taşı parlak bir halkayla çevrilir ve birbirine doğru kıpırdar; titreşim anahtarı açıksa kısa bir titreşim olabilir. Görünüş proje sahibinin gözüyle telefonda denenecek.
   - Kart açıkken, booster seçiliyken, şölende, zincirleme sürerken ve hamleler bittikten sonra ipucu çıkmaz; tahtaya dokununca kaybolur.
   - Hesap motor tarafında, tahtanın bir kopyasında yapılır; oyunun rastgele akışına dokunmaz. Deneme kaydı gösterilen ipucu sayısını tutar.
+  - **Ölçüm ve karar (2026-10-19):** 500 bölümde bot başına 10.000 denemeyle ölçüldü. Oyuncu her ipucuna uyarsa (en iyimser durum) kazanma oranı şöyle artıyor: casual ipucuyla ortalama oyuncu +3,3–4,4 puan, zorlanan oyuncu +4,8–7,1 puan. Skill-60 ile +1,2–3,3 ve +2,2–3,7; novice ile −0,6…+1,0 ve +0,6–3,3; average ile +6,3–7,5 ve +8,6–10,7 puan. Proje sahibi **casual** botu seçti. Bekleme **8 saniye**: kayıtlı oyuncular hamle başına ortalama 5,3 saniye düşünüyor; 5 saniyede üç ipucu ilk birkaç hamlede harcanıyordu. Ölçüm `puzzle hints` komutuyla tekrarlanır.
+  - **Kayıtlar (karar 2026-10-19):** ipucu görülen denemeler bot–insan karşılaştırmasında **ayrı bir grup** olur ve ipucuna uyan botlarla karşılaştırılır. Neredeyse her denemede ipucu çıktığı için telefon verisi böylece kalibrasyonda kullanılabilir kalır.
 - **Öğretici (#5):** dört bölümün hepsi kabul edildi; denemede gerekirse bazıları çıkarılabilir.
   - İlk 3 bölüm: 1. bölümde taş değiştirme ve eşleşme, 2. bölümde dörtlü eşleşme ve fırça, 3. bölümde beşli eşleşme ve palet. Her biri elle gösterilen tek bir hamle, öteki taşlar soluk.
   - Hedef ve hamle sayısı: 1. bölümde plaketlerin kısa tanıtımı.
@@ -1323,6 +1325,17 @@ Bu kararlarla 10. aşama başladı.
 - **Sığdırma:** uzun tablo adları plaketlerde iki dengeli satıra bölünür (Türkçede de); harita etiketleri oda duvarının içine sığacak kadar küçülür; Korece sözcük aralarından kırılır.
 - **Bilinen:** çeviriler makine çevirisidir, yayından önce ana dili olan birinin gözden geçirmesi gerekir. Dar dikey tabloların ressam satırı eskisi gibi küçülüyor (yaklaşık %46).
 - **Doğrulama:** 3.882 test; ekonomi denetimi aynı. Unity'de bütün denetimler; Türkçe, İngilizce ve Korece yürüyüşler; dil kartında dil değiştiren yürüyüş hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T250–T265.
+
+**İpucu (2026-10-19, #6).** Kararlar §19'da.
+
+- **Görünüş:** tahta dururken oyuncu bir süre dokunmazsa hamlenin iki taşı sıcak bir hale ve parlak bir halkayla çevrilir, hafifçe büyür ve 1,5 saniyede bir birbirine doğru kıpırdar. Yerinde patlatılan bir özel taşa verilen ipucu parlayıp şişer. Titreşim açıksa hafif bir tık gelir; ses yoktur.
+- **Kurallar:** herhangi bir dokunuş, geri hareketi, hamle ya da booster ipucunu hemen kaldırır. Kart açıkken, booster seçiliyken, şölende, zincirleme sürerken, bir taş seçiliyken ve hamle kalmamışken çıkmaz. Bir denemede en çok 3.
+- **Hesap:** `HintAdvisor.MoveFor` (`Puzzle.Bot`) hamleyi, tahtanın deneme tohumundan kurulmuş bir kopyasında merdivendeki bir bota sordurur; oyunun rastgele akışına dokunmaz. Motor izi değişmedi; sabitlenmiş bir ipucu izi Unity'de .NET'teki ipuçlarını verir.
+- **Ayarlar:** ekonomi ayarlarında `hints` bölümü (bot, bekleme, deneme başına sayı; paket biçimi 3). Seçilen bot casual, bekleme 8 sn (karar 2026-10-19; kod şimdilik 5 sn, öğreticiden sonra 8'e çekilecek).
+- **Ölçüm:** `puzzle hints` komutu, botların ipucuna uyarak oynadığı denemelerle kazanma oranındaki artışı ölçer (§19'daki tablo).
+- **Kayıt:** deneme kaydında isteğe bağlı `hintsShown` (şema 1). Şimdilik ipucu görülen deneme "yardımlı" sayılıp karşılaştırmadan çıkarılıyor; karar gereği ayrı bir gruba alınacak.
+- **Bilinen:** halenin tahtanın kenarında yaldız çerçeveye taşması kabul edildi (T297). Ölçüm, oyuncunun her ipucuna uyduğunu varsayar (üst sınır). İpucunun aynı çıkması .NET ve Mono'da gösterildi, telefonun IL2CPP derlemesinde değil.
+- **Doğrulama:** 3.920 test. Unity'de bütün denetimler ve ipucu yürüyüşü hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T290–T299.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 

@@ -58,6 +58,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A33 | Test modunda cüzdan satırında kalbin üstündeki "∞" biraz gözlüğe benziyor (can kartında iyi okunuyor). Ayarlardaki test modu satırının işareti yer tutucu. | Test modu | Düşük | Çizilmiş bir ∞ işareti, proje sahibi isterse |
 | A34 | Kaydırmada son sayfanın ötesine çekince sayfa esnerken kenarda duvar deseni olmayan düz bir şerit görünüyor (en çok genişliğin %15'i, bırakınca kaybolur). Katlanırın iç ekranında daha belirgin. | #3 | Düşük, görünüm | Sayfaların arkasında duran sabit bir duvar |
 | A35 | İngilizce ve Korece çeviriler makine çevirisi; Korece tablo adlarının 78'i çeviri (22'si Wikidata'daki yerleşik ad). Kayıtta en emin olunmayan ifadeler: 하트 (can), 이동 (hamle), booster adları, ressam adlarının yanındaki "atfedilen", "Yaşlı/Genç". | #8 | Orta: yayın öncesi | Her dilin ana dili olan birinin gözden geçirmesi |
+| A36 | İpucunun aynı çıkması .NET ve Mono'da gösterildi, telefonun IL2CPP derlemesinde değil (botun seçimi kesirli sayı kullanıyor). İpucunun telefonda düşünme süresi ölçülmedi. | #6 | Düşük | T298; telefonda kayıtlarla karşılaştırma |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -328,6 +329,21 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T263 | Türkçeye dönüş | Türkçeyi seç | Bütün sayfalar ve kartlar yine Türkçe; sonraki bölümün tahtası Türkçe | Diller | Bekliyor |
 | T264 | Hızlı geçişler | Dilleri art arda birkaç kez değiştir | Takılma yok, kartlar ikilenmiyor, bellek sabit | Diller | Bekliyor |
 | T265 | Android'in uygulama dili | Telefon Korece, oyun İngilizce seçiliyken (telefon sunuyorsa) Android'in uygulama başına dil ayarına bak | Oyunun kendi seçimi karışmaz | Diller | Bekliyor |
+
+### F13. İpucu (#6)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T290 | İpucu çıkıyor | Tahtaya hiç dokunmadan bekle | Bekleme süresinden sonra iki taş sıcak bir hale ve halkayla parlar, birbirine doğru kıpırdar; titreşim açıksa bir kez tık. İki ekranda da kol mesafesinden ipucu olduğu anlaşılıyor mu? Süre erken mi? | İpucu | Bekliyor |
+| T291 | Dokununca gider | İpucu görünürken tahtaya, tahtanın üstündeki duvara ve bir raf diskine dokun | İpucu her seferinde hemen gider, taşlar yerlerine döner; duvara dokunmak bir şey çalmaz | İpucu | Bekliyor |
+| T292 | İpucunu oyna | İpucu verilen iki taşı kaydır | Hamle her hamle gibi oynanır; sonraki ipucu ancak yine dokunulmadan bekleme süresi geçince gelir | İpucu | Bekliyor |
+| T293 | En çok üç | Tahtaya üç kez dokunmadan bekle | Üçüncüden sonra dördüncü ipucu gelmez; bölümü tekrar deneyince yine üç hak | İpucu | Bekliyor |
+| T294 | Ses ve titreşim | Titreşim kapalıyken ipucunu bekle; ses açık ve kapalıyken bekle | Titreşim kapalıyken tık yok; ipucu hiçbir zaman ses çıkarmaz | İpucu | Bekliyor |
+| T295 | İpucu çıkmayan anlar | Spatula seçiliyken, duraklatma kartı ya da +5 teklifi açıkken, şölende, zincirleme düşerken, bir taş tek dokunuşla seçiliyken bekle | Hiçbirinde ipucu çıkmaz | İpucu | Bekliyor |
+| T296 | Koyu taşlar ve özel taşlar | Mavi ve mor taşlara, roketlerin, bombaların ve sıçramanın yanına düşen ipuçlarına bak | Parlama her renkte görünür; özel taşa verilen dokunma ipucu "buna dokun" diye okunur | İpucu | Bekliyor |
+| T297 | Kenarda ipucu | Tahtanın kenarına ya da köşesine düşen bir ipucuna bak | Hale yaldız çerçeveye taşar; kabul edilebilir mi, yoksa içeride mi kalmalı? | İpucu | Bekliyor |
+| T298 | Akıcılık | İpucunun belirdiği ana dikkatle bak | Gözle görülür takılma yok (bot bir karede düşünüyor) | İpucu | Bekliyor |
+| T299 | Kayıt | İpucu görülen bir bölümü oyna, sonra deneme kaydına bak (adb) | Deneme kaydı ipucu sayısını tutar (hintsShown) | İpucu | Bekliyor |
 
 ### G. Görünüm
 
