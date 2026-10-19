@@ -128,6 +128,12 @@
     <Compile Include="..\..\unity\Assets\Scripts\Play\SoundScore.cs" Link="Unity\Play\SoundScore.cs" />
     <!-- Nor has when the game's hint shows itself on a board left untouched, and when it goes. -->
     <Compile Include="..\..\unity\Assets\Scripts\Play\HintWatch.cs" Link="Unity\Play\HintWatch.cs" />
+    <!-- Nor has the tutorial: its steps, where they may come, what one board shows of them and when it ends, and their words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialStep.cs" Link="Unity\Flow\TutorialStep.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialPlan.cs" Link="Unity\Flow\TutorialPlan.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialWords.cs" Link="Unity\Flow\TutorialWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\TutorialWatch.cs" Link="Unity\Play\TutorialWatch.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\TradeLine.cs" Link="Unity\Play\TradeLine.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
   </ItemGroup>
   <ItemGroup>

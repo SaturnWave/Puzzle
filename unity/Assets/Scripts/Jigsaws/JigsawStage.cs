@@ -26,6 +26,13 @@ namespace Puzzle.Client.Jigsaws
     /// player. When the last piece is in, a light runs over the painting and sparkles burst around its frame, and the
     /// tray's well shows what completing the painting gave: its coins and the booster the rotation gives, each with
     /// the pill that counts it. A painting that was whole when the screen opened gave its reward then, and shows none.
+    /// <para>
+    /// Two steps of the tutorial come here (docs/GAME_DESIGN.md §19), each once to a player: on the first jigsaw a piece
+    /// waits on, the screen dims but for a piece in the tray and its place in the painting, and the pill in the blue
+    /// button's place says to carry it there; the button is out of sight meanwhile, and the step ends when a piece drops
+    /// into its place. When the first painting is made whole here, its celebration is followed by the painting lit in
+    /// the dimmed room and a word about the museum, which a touch anywhere ends.
+    /// </para>
     /// </summary>
     /// <remarks>
     /// Like the other stages it has a clock that only <see cref="Advance"/> moves and one camera that draws all of
@@ -59,6 +66,12 @@ namespace Puzzle.Client.Jigsaws
 
         /// <summary>The frame of a painting that is whole again swells once by this share of its size.</summary>
         private const float RestoredSwell = 0.035f;
+
+        /// <summary>A step of the tutorial dims the screen over this long; its windows reach this share of a piece's cell past it (for its knobs), and its pill is at most this wide.</summary>
+        private const float LessonComesIn = 0.35f;
+        private const float LessonPieceReach = 1.4f;
+        private const float WidestLessonPill = 400f;
+        private const float LessonPillSideRoom = 12f;
 
         /// <summary>
         /// The buttons' labels. The design sets "Otomatik tamamla" at 18 points on a button of 260 (JigsawTR); on
@@ -143,7 +156,26 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>True when the blue button was pressed while a piece was still moving: the others leave once it is at rest.</summary>
         private bool _waitsToPlaceThemAll;
 
-        private JigsawStage(PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art, Reward? reward)
+        /// <summary>The steps of the tutorial that may still come on this screen, and the ones done here that nobody has taken yet.</summary>
+        private readonly List<TutorialStep> _lessonsToCome;
+        private readonly List<TutorialStep> _lessonsDone = new List<TutorialStep>();
+
+        /// <summary>What a step of the tutorial shows: the dark with its windows, and its pill over the button.</summary>
+        private readonly Spotlight _spotlight;
+        private readonly ShelfPill _lessonPill;
+
+        /// <summary>The step that shows, since when on the stage's clock, and the piece it points at; nothing while none shows.</summary>
+        private TutorialStep? _lesson;
+        private float _lessonSince;
+        private int? _guidedPiece;
+
+        /// <summary>Whether the piece pointed at was in the hand when the spotlight's windows were last cut; nothing before they were.</summary>
+        private bool? _windowsCutWhileCarried;
+
+        /// <summary>True once the painting has become whole on this screen (not when it opened whole).</summary>
+        private bool _becameWholeHere;
+
+        private JigsawStage(PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art, Reward? reward, TutorialSeen tutorial)
         {
             Table = new JigsawTable(painting, progress);
             _art = art;
@@ -167,6 +199,9 @@ namespace Puzzle.Client.Jigsaws
                 "Done", _root.transform, art, ButtonLook.Green, MuseumWords.Done, JigsawLayout.ButtonWidth, DoneLabelSize,
                 DrawOrder.PageButton, DrawOrder.PageButtonLettering);
             _veil = Veil.Create(_root.transform, art);
+            _spotlight = Spotlight.Create(_root.transform, art);
+            _lessonPill = ShelfPill.CreateForLessons(_root.transform, art);
+            _lessonsToCome = new[] { TutorialStep.FirstPiece, TutorialStep.FirstPainting }.Where(step => !tutorial.Has(step)).ToList();
             _presses.Add(_back, JigsawPress.Leave);
             _presses.Add(_placeAll, JigsawPress.PlaceThemAll);
             _presses.Add(_done, JigsawPress.Leave);
@@ -201,6 +236,15 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>The pieces the tray shows, from left to right: the ones a finger can pick up.</summary>
         public IReadOnlyList<int> PiecesInTheTray => _row.Shown.ToArray();
 
+        /// <summary>The step of the tutorial that shows now; nothing while none does.</summary>
+        public TutorialStep? LessonShown => _lesson;
+
+        /// <summary>The piece the tutorial's first step here points at; nothing while that step does not show.</summary>
+        public int? GuidedPiece => _guidedPiece;
+
+        /// <summary>What the tutorial's pill says now; <see cref="PillWords.None"/> while no step shows.</summary>
+        public PillWords WhatTheLessonSays => _lessonPill.Words;
+
         /// <summary>The pixel of the screen in the middle of the round button that leads back; nothing while the stage does not listen.</summary>
         public Vector2? BackButtonPixel => ListensToThePlayer ? PixelOf(_back.Middle) : null;
 
@@ -217,11 +261,12 @@ namespace Puzzle.Client.Jigsaws
         /// <summary>Builds the jigsaw of a painting as a player's progress has it. Call <see cref="Fit"/> before the first picture.</summary>
         /// <param name="opening">In the lit room, as a picture command shows it; or out of the dark the stage before left behind.</param>
         /// <param name="reward">What completing the painting gives, which its finished face shows (the rules give it, whoever keeps the progress); nothing to show none.</param>
+        /// <param name="tutorial">The steps of the tutorial the player has seen; nothing shows none here (the Editor's studies).</param>
         public static JigsawStage Open(
             PaintingNumber painting, MuseumProgress progress, PaintingGallery paintings, ArtCatalogue art, StageOpening opening = StageOpening.InTheLitRoom,
-            Reward? reward = null)
+            Reward? reward = null, TutorialSeen? tutorial = null)
         {
-            var stage = new JigsawStage(painting, progress, paintings, art, reward);
+            var stage = new JigsawStage(painting, progress, paintings, art, reward, tutorial ?? TutorialSeen.All);
             if (opening == StageOpening.OutOfTheDark)
             {
                 stage._veil.Darken(1f);
@@ -263,6 +308,9 @@ namespace Puzzle.Client.Jigsaws
             _placeAll.Place(new Vector2(layout.Button.MiddleX, layout.Button.MiddleY), layout.ButtonScale);
             _done.Place(new Vector2(layout.Button.MiddleX, layout.Button.MiddleY), layout.ButtonScale);
             _veil.Fit(view);
+            _spotlight.Fit(view);
+            _windowsCutWhileCarried = null;
+            _lessonPill.Stand(layout.Button.MiddleY, ShelfPill.PillEdge.Middle, scale: 1f, Mathf.Min(WidestLessonPill, view.Width - 2f * LessonPillSideRoom));
 
             _row = new TrayRow(Table.Waiting, layout.TrayPlaces);
             _tray.Lay(_row);
@@ -293,6 +341,15 @@ namespace Puzzle.Client.Jigsaws
             }
 
             ShowTheSparkles();
+            ShowTheTutorial();
+        }
+
+        /// <summary>The steps of the tutorial done on this screen since this was asked last, in the order they ended, each once.</summary>
+        public IReadOnlyList<TutorialStep> TakeTheTutorialStepsDone()
+        {
+            TutorialStep[] done = _lessonsDone.ToArray();
+            _lessonsDone.Clear();
+            return done;
         }
 
         /// <summary>The pixel of the screen at which a piece lies in the tray: where a finger picks it up. Nothing for a piece the tray does not show.</summary>
@@ -308,6 +365,12 @@ namespace Puzzle.Client.Jigsaws
 
         public void PointerDown(Vector2 pixel)
         {
+            if (_lesson == TutorialStep.FirstPainting)
+            {
+                FinishTheLesson(); // the word about the museum ends with a touch, which does nothing else
+                return;
+            }
+
             if (!ListensToThePlayer || _carried != null || PointAt(pixel) is not Vector2 point)
             {
                 return;
@@ -395,6 +458,8 @@ namespace Puzzle.Client.Jigsaws
 
             _sparkles.Dispose();
             _veil.Dispose();
+            _spotlight.Dispose();
+            _lessonPill.Dispose();
             SceneObjects.Destroy(_root);
         }
 
@@ -405,6 +470,8 @@ namespace Puzzle.Client.Jigsaws
                 case JigsawPress.Leave:
                     Leave();
                     break;
+                case JigsawPress.PlaceThemAll when _lesson == TutorialStep.FirstPiece:
+                    break; // the first piece is carried by the player's own finger
                 case JigsawPress.PlaceThemAll:
                     PlaceThemAll();
                     break;
@@ -681,6 +748,11 @@ namespace Puzzle.Client.Jigsaws
             {
                 Celebrate();
             }
+
+            if (_lesson == TutorialStep.FirstPiece)
+            {
+                FinishTheLesson();
+            }
         }
 
         /// <summary>A piece has left its place in the tray: the next one that waited behind, if one did, pops up there.</summary>
@@ -713,6 +785,7 @@ namespace Puzzle.Client.Jigsaws
         private void Celebrate()
         {
             _wholeFor = 0f;
+            _becameWholeHere = true;
             _timeline.At(Tempo.PauseBeforeRestored, () => _sounded.Add(SoundCue.PaintingWhole));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredLight, progress => _painting.Canvas.ShowLight(Easing.InOut(progress)));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredSwell, progress => Swell(1f + RestoredSwell * Easing.Arch(progress)));
@@ -822,14 +895,114 @@ namespace Puzzle.Client.Jigsaws
                 : Table.Waiting.Count > 0 ? MuseumWords.DragHint(Table.Waiting.Count)
                 : MuseumWords.NoPieceWaits);
 
+            // The tutorial's pill stands where the button is while it speaks: the button is out of sight and under no finger then.
             bool canPlaceAll = Table.Waiting.Count > _flying.Count;
-            _placeAll.Show(canPlaceAll && !_isPlacingThemAll);
-            _done.Show(!canPlaceAll && !_isPlacingThemAll);
+            _placeAll.Show(canPlaceAll && !_isPlacingThemAll && _lesson == null);
+            _done.Show(!canPlaceAll && !_isPlacingThemAll && _lesson == null);
         }
 
         /// <summary>The places the canvas marks: the place of the piece in the player's hand, or else the places of the pieces the tray shows.</summary>
         private IReadOnlyCollection<int> PlacesAskedFor() =>
             _carried is Carry carried ? new[] { carried.Piece } : _row.Shown.Where(piece => !_flying.Contains(piece)).ToArray();
+
+        // ---------- the tutorial ----------
+
+        /// <summary>
+        /// The tutorial at this step: a step that is due begins (the first piece while one waits in the tray and the
+        /// screen listens; the first painting once its celebration is over), and the one that shows dims in, its
+        /// windows cut around what it points at. While the room goes dark it shows nothing.
+        /// </summary>
+        private void ShowTheTutorial()
+        {
+            if (_lesson == TutorialStep.FirstPiece && _guidedPiece is int guided && Table.InPlace.Contains(guided))
+            {
+                FinishTheLesson(); // put in place while a new screen ended what was moving, with no drop to tell of it
+            }
+
+            if (_lesson == null)
+            {
+                BeginALessonThatIsDue();
+            }
+
+            if (!(_lesson is TutorialStep step) || _isLeaving || _layout is not JigsawLayout layout)
+            {
+                _spotlight.Show(0f);
+                return;
+            }
+
+            bool isCarried = _guidedPiece is int piece && _carried?.Piece == piece;
+            if (_windowsCutWhileCarried != isCarried)
+            {
+                _windowsCutWhileCarried = isCarried;
+                _spotlight.LightUp(WindowsOf(step, isCarried, layout));
+            }
+
+            _spotlight.Show(Easing.Out(Mathf.Clamp01((_clock - _lessonSince) / LessonComesIn)));
+        }
+
+        private void BeginALessonThatIsDue()
+        {
+            int? waiting = _row.Shown.Where(piece => !_moving.Contains(piece)).Select(piece => (int?)piece).FirstOrDefault();
+            if (_lessonsToCome.Contains(TutorialStep.FirstPiece) && ListensToThePlayer && _carried == null && waiting is int piece)
+            {
+                _guidedPiece = piece;
+                Begin(TutorialStep.FirstPiece);
+            }
+            else if (_lessonsToCome.Contains(TutorialStep.FirstPainting) && _becameWholeHere && ListensToThePlayer)
+            {
+                Begin(TutorialStep.FirstPainting);
+            }
+        }
+
+        private void Begin(TutorialStep step)
+        {
+            _lesson = step;
+            _lessonSince = _clock;
+            _windowsCutWhileCarried = null;
+            _lessonPill.Show(TutorialWords.Of(step, asksForATouch: step == TutorialStep.FirstPainting));
+            ShowTheTable();
+        }
+
+        /// <summary>The step that shows is done: its light and its pill go, and whoever keeps the progress is told.</summary>
+        private void FinishTheLesson()
+        {
+            if (!(_lesson is TutorialStep step))
+            {
+                return;
+            }
+
+            _lessonsToCome.Remove(step);
+            _lessonsDone.Add(step);
+            _lesson = null;
+            _guidedPiece = null;
+            _spotlight.Show(0f);
+            _lessonPill.Show(PillWords.None);
+            ShowTheTable();
+        }
+
+        /// <summary>
+        /// What a step lights, in the layout's points: the painting for the first painting; for the first piece its
+        /// place in the painting and, while it lies in the tray, the piece there, each a little larger than its cell.
+        /// </summary>
+        private IReadOnlyList<Box> WindowsOf(TutorialStep step, bool isCarried, JigsawLayout layout)
+        {
+            if (step == TutorialStep.FirstPainting || !(_guidedPiece is int piece))
+            {
+                Box frame = layout.Hanging.Frame;
+                return new[] { frame };
+            }
+
+            PictureRect cell = CutOnThisScreen().Pieces[piece].Cell;
+            var windows = new List<Box> { Box.Around(HomeOf(piece).x, HomeOf(piece).y, LessonPieceReach * (float)cell.Width, LessonPieceReach * (float)cell.Height) };
+            if (!isCarried)
+            {
+                Vector2 rest = _tray.RestOf(piece);
+                float scale = _tray.RestScale;
+                windows.Add(Box.Around(rest.x, rest.y, LessonPieceReach * scale * (float)cell.Width, LessonPieceReach * scale * (float)cell.Height));
+            }
+
+            return windows;
+        }
 
         /// <summary>The middle of a piece's own place in the painting, in the layout's points.</summary>
         private Vector2 HomeOf(int piece)

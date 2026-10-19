@@ -10,8 +10,9 @@ namespace Puzzle.Core.Tests;
 /// <summary>
 /// The saved progress across versions of the game: the layout written before the museum existed still reads, and
 /// gives its player the pieces of the levels they had won; the layouts written before the wallet existed give their
-/// player the rules' starting wallet with every life; the current layout keeps the placed pieces and the wallet, its
-/// instants to the second; a later layout and a damaged document are told apart. <c>ProgressDocument</c> is the Unity
+/// player the rules' starting wallet with every life; the layouts written before the tutorial existed give their
+/// player the steps of the levels they had won; the current layout keeps the placed pieces, the wallet, its instants
+/// to the second, and the steps of the tutorial seen; a later layout and a damaged document are told apart. <c>ProgressDocument</c> is the Unity
 /// project's source file, compiled into these tests; here System.Text.Json fills it, in the game Unity's reader does
 /// (unity/Assets/Editor/ProgressFileCheck.cs checks that one against a real file).
 /// </summary>
@@ -45,6 +46,14 @@ public class ProgressDocumentTests
         + "\"day\":739902,\"adsForMovesToday\":1,\"adsForCoinsToday\":2,\"paintingRewards\":3,\"dailyRewards\":4,\"lastDailyDay\":739901,"
         + "\"unlockGifts\":[\"hit-cell\",\"hit-row\"]}}";
 
+    /// <summary>The same player with the steps of the tutorial they have seen (<see cref="SeenOnLevelForty"/>), as this game writes it (layout 5).</summary>
+    private static readonly string DocumentWithTheTutorial =
+        DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal)[..^1]
+        + ""","tutorial":["goal","match","moves","four-in-a-line","five-in-a-line","box","jelly","first-piece","first-painting"]}""";
+
+    /// <summary>What a player on level 40 with the first painting whole has seen of the tutorial: all but the steps of the tape and the frame corners, whose levels come later.</summary>
+    private static readonly TutorialSeen SeenOnLevelForty = TutorialSeen.Of(TutorialSteps.All.Where(step => step != TutorialStep.Chain && step != TutorialStep.Item));
+
     /// <summary>Noon on 14 October 2026 in Istanbul: 09:00 at Greenwich, day 739 902 of the calendar.</summary>
     private static readonly DateTimeOffset Noon = new(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3));
 
@@ -56,6 +65,17 @@ public class ProgressDocumentTests
     private static PlayerProgress SoundProgressOf(string json) => Assert.IsType<ProgressReading.Sound>(Read(json)).Progress;
 
     private static string Written(PlayerProgress progress) => JsonSerializer.Serialize(ProgressDocument.Of(progress), AsUnityMapsIt);
+
+    /// <summary>A progress as a save of a layout before the tutorial reads it: with the steps of the levels it has won and of what it has done in the museum.</summary>
+    private static PlayerProgress AsAnOlderSaveReads(PlayerProgress progress) =>
+        new(progress.LevelsWon, progress.AttemptsOnLevel, progress.Museum.Placed, progress.Wallet, TutorialPlan.OfAnOlderSave(progress.Museum));
+
+    /// <summary><see cref="PlacedPlayer"/> with <see cref="WalletInUse"/> and the tutorial seen so far (<see cref="SeenOnLevelForty"/>).</summary>
+    private static PlayerProgress TutoredPlayer()
+    {
+        PlayerProgress placed = PlacedPlayer();
+        return new PlayerProgress(placed.LevelsWon, placed.AttemptsOnLevel, placed.Museum.Placed, WalletInUse(), SeenOnLevelForty);
+    }
 
     private static PlayerProgress PlacedPlayer() =>
         new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2).WithTrayPlaced(new PaintingNumber(1)).WithPiecePlaced(FourthPainting, 2).WithPiecePlaced(FourthPainting, 0);
@@ -74,7 +94,7 @@ public class ProgressDocumentTests
         // Exactly what the first Android build wrote.
         PlayerProgress read = SoundProgressOf("""{"version":1,"levelsWon":39,"attemptsOnLevel":2}""");
 
-        Assert.Equal(new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2).WithWallet(StartingWallet), read);
+        Assert.Equal(AsAnOlderSaveReads(new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2).WithWallet(StartingWallet)), read);
         Assert.Equal((39, 0, 39), (read.Museum.PiecesWon, read.Museum.PiecesPlaced, read.Museum.PiecesWaiting));
         Assert.Equal(Enumerable.Range(0, 10), read.Museum.WaitingIn(new PaintingNumber(1)));
         Assert.Equal(Enumerable.Range(0, 9), read.Museum.WaitingIn(FourthPainting));
@@ -86,7 +106,7 @@ public class ProgressDocumentTests
     {
         PlayerProgress read = SoundProgressOf(DocumentBeforeTheWallet);
 
-        Assert.Equal(PlacedPlayer().WithWallet(StartingWallet), read);
+        Assert.Equal(AsAnOlderSaveReads(PlacedPlayer().WithWallet(StartingWallet)), read);
         Assert.True(read.Wallet.Lives.IsFull);
         Assert.Equal((new Coins(100), 1, 2), (read.Wallet.Coins, read.Wallet.Shelf.Count(BoosterKind.StartRocketAndBomb), read.Wallet.Shelf.Count(BoosterKind.Shuffle)));
     }
@@ -106,18 +126,18 @@ public class ProgressDocumentTests
 
         // Saved again, it is in the current layout and reads back the same.
         string written = Written(read);
-        Assert.StartsWith("""{"version":4,""", written, StringComparison.Ordinal);
+        Assert.StartsWith("""{"version":5,""", written, StringComparison.Ordinal);
         Assert.Equal(read, Assert.IsType<ProgressReading.Sound>(Read(written, shipped.StartingWallet)).Progress);
     }
 
     [Fact]
-    public void Progress_is_written_in_the_current_layout_with_the_placed_pieces_painting_by_painting_and_the_wallet_field_by_field()
+    public void Progress_is_written_in_the_current_layout_with_the_placed_pieces_painting_by_painting_the_wallet_field_by_field_and_the_tutorial_step_by_step()
     {
-        PlayerProgress progress = PlacedPlayer().WithWallet(WalletInUse());
+        PlayerProgress progress = TutoredPlayer();
 
         string written = Written(progress);
 
-        Assert.Equal(DocumentWithAWallet, written);
+        Assert.Equal(DocumentWithTheTutorial, written);
         Assert.Equal(progress, SoundProgressOf(written));
     }
 
@@ -224,27 +244,29 @@ public class ProgressDocumentTests
     [Fact]
     public void A_later_games_document_is_told_apart_and_what_this_game_knows_of_it_is_read()
     {
-        string laterGames = DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal).Replace("}}", """},"device":"phone"}""", StringComparison.Ordinal);
+        string laterGames = DocumentWithTheTutorial.Replace("""{"version":5,""", """{"version":6,""", StringComparison.Ordinal)
+            .Replace("\"goal\",", "\"goal\",\"booster-intro\",", StringComparison.Ordinal)[..^1]
+            + ""","device":"phone"}""";
 
         var later = Assert.IsType<ProgressReading.OfALaterGame>(Read(laterGames));
 
-        Assert.Equal(5, later.Version);
-        Assert.Equal(PlacedPlayer().WithWallet(WalletInUse()), later.Understood);
+        Assert.Equal(6, later.Version);
+        Assert.Equal(TutoredPlayer(), later.Understood); // a step of the later game's is passed over
     }
 
     [Fact]
     public void Of_a_later_games_document_whose_pieces_or_wallet_this_game_cannot_read_the_players_place_is_still_known()
     {
         var later = Assert.IsType<ProgressReading.OfALaterGame>(
-            Read("""{"version":5,"levelsWon":12,"attemptsOnLevel":1,"placed":[{"painting":140,"pieces":[5]}]}"""));
-        Assert.Equal(new PlayerProgress(levelsWon: 12, attemptsOnLevel: 1).WithWallet(StartingWallet), later.Understood);
+            Read("""{"version":6,"levelsWon":12,"attemptsOnLevel":1,"placed":[{"painting":140,"pieces":[5]}]}"""));
+        Assert.Equal(new PlayerProgress(levelsWon: 12, attemptsOnLevel: 1, PlacedPieces.None, StartingWallet, TutorialSeen.None), later.Understood);
 
         // A booster this game does not know: the wallet is the later game's, and this game plays on the starting one.
         var unknownBooster = Assert.IsType<ProgressReading.OfALaterGame>(
-            Read(DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal).Replace("hit-cell", "hit-diagonal", StringComparison.Ordinal)));
-        Assert.Equal(PlacedPlayer().WithWallet(StartingWallet), unknownBooster.Understood);
+            Read(DocumentWithTheTutorial.Replace("""{"version":5,""", """{"version":6,""", StringComparison.Ordinal).Replace("hit-cell", "hit-diagonal", StringComparison.Ordinal)));
+        Assert.Equal(TutoredPlayer().WithWallet(StartingWallet), unknownBooster.Understood);
 
-        var unreadable = Assert.IsType<ProgressReading.OfALaterGame>(Read("""{"version":5,"levelsWon":-12,"attemptsOnLevel":1}"""));
+        var unreadable = Assert.IsType<ProgressReading.OfALaterGame>(Read("""{"version":6,"levelsWon":-12,"attemptsOnLevel":1}"""));
         Assert.Null(unreadable.Understood);
     }
 
@@ -287,16 +309,46 @@ public class ProgressDocumentTests
         Assert.IsType<ProgressReading.Damaged>(Read(json));
     }
 
+    [Theory]
+    [InlineData("""["goal","goal"]""")] // a step twice
+    [InlineData("""["booster-intro"]""")] // no step of this game
+    [InlineData("""["Goal"]""")] // names are written in small letters
+    [InlineData("[null]")]
+    public void Steps_of_the_tutorial_no_game_could_have_written_make_the_document_damaged(string steps)
+    {
+        Assert.IsType<ProgressReading.Damaged>(Read(WithTheTutorial(steps)));
+    }
+
+    [Fact]
+    public void Whether_a_tutorial_is_there_is_decided_by_the_layout_never_by_an_empty_list()
+    {
+        // Layout 4 with a list where a later layout keeps the tutorial: the layout says there is none, and it is not read.
+        PlayerProgress older = SoundProgressOf(DocumentWithAWallet[..^1] + ""","tutorial":["goal"]}""");
+
+        Assert.Equal(TutorialPlan.OfAnOlderSave(older.Museum), older.Tutorial);
+        Assert.Equal(TutorialSeen.None, SoundProgressOf(WithTheTutorial("[]")).Tutorial);
+    }
+
+    /// <summary><see cref="DocumentWithTheTutorial"/> with another list of the steps seen.</summary>
+    private static string WithTheTutorial(string steps) =>
+        DocumentWithTheTutorial[..DocumentWithTheTutorial.IndexOf(""","tutorial":""", StringComparison.Ordinal)] + ",\"tutorial\":" + steps + "}";
+
     [Fact]
     public void No_document_and_a_document_without_its_lists_are_handled()
     {
         Assert.IsType<ProgressReading.Damaged>(ProgressDocument.Read(null, StartingWallet));
         Assert.Equal(
-            new PlayerProgress(levelsWon: 5, attemptsOnLevel: 0).WithWallet(StartingWallet),
+            AsAnOlderSaveReads(new PlayerProgress(levelsWon: 5, attemptsOnLevel: 0).WithWallet(StartingWallet)),
             SoundProgressOf("""{"version":2,"levelsWon":5,"attemptsOnLevel":0,"placed":null}"""));
         Assert.Equal(
-            new PlayerProgress(levelsWon: 5, attemptsOnLevel: 0).WithWallet(StartingWallet),
+            AsAnOlderSaveReads(new PlayerProgress(levelsWon: 5, attemptsOnLevel: 0).WithWallet(StartingWallet)),
             SoundProgressOf("""{"version":2,"levelsWon":5,"attemptsOnLevel":0,"placed":[{"painting":1,"pieces":null}]}"""));
+        Assert.Equal(
+            TutoredPlayer().WithTutorialStepSeen(TutorialStep.Chain),
+            SoundProgressOf(DocumentWithTheTutorial.Replace("\"jelly\"", "\"jelly\",\"chain\"", StringComparison.Ordinal)));
+        Assert.Equal(
+            new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2, PlacedPlayer().Museum.Placed, WalletInUse(), TutorialSeen.None),
+            SoundProgressOf(DocumentWithTheTutorial.Replace(""","tutorial":[""", ""","was":[""", StringComparison.Ordinal)));
         Assert.IsType<ProgressReading.Damaged>(Read(DocumentWithAWallet.Replace("\"boosters\":[", "\"boosters\":null,\"was\":[", StringComparison.Ordinal)));
     }
 }

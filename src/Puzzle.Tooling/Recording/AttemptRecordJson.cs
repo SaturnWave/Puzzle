@@ -18,6 +18,8 @@ namespace Puzzle.Tooling.Recording;
 /// played in its tester mode; a line without it, as every line written before it existed, reads as one played outside it.
 /// The optional <c>hintsShown</c> after it counts the hints the released game showed by itself during the attempt; it is
 /// written only when there was one, so a line without it, as every line written before it existed, reads as none.
+/// The optional <c>guidedMoves</c> after it counts the moves the released game's tutorial showed by hand before the
+/// player played them, written the same way.
 /// The Unity game writes the same lines by hand (unity/Assets/Scripts/Flow/AttemptLine.cs).
 /// </summary>
 public static class AttemptRecordJson
@@ -91,6 +93,7 @@ public static class AttemptRecordJson
             Lab = record.Lab is { } lab ? ToLabLine(lab) : null,
             TesterMode = record.TesterMode ? true : null,
             HintsShown = record.HintsShown > 0 ? record.HintsShown : null,
+            GuidedMoves = record.GuidedMoves > 0 ? record.GuidedMoves : null,
             ShuffleRule = start.ShuffleRule == ShuffleBoosterRule.RandomOrders ? null : (int)start.ShuffleRule,
             Actions = record.Actions?.Select(ToActionLine).ToArray(),
         };
@@ -117,7 +120,8 @@ public static class AttemptRecordJson
             line.EndedUtc);
         AttemptAction[]? actions = KnownRuleOf(line.ShuffleRule) is null ? null : ToActions(line.Actions);
         return new AttemptRecord(
-            start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions, testerMode: line.TesterMode == true, hintsShown: line.HintsShown ?? 0);
+            start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions, testerMode: line.TesterMode == true, hintsShown: line.HintsShown ?? 0,
+            guidedMoves: line.GuidedMoves ?? 0);
     }
 
     /// <summary>
@@ -269,6 +273,9 @@ public static class AttemptRecordJson
 
         /// <summary>Hints the released game showed by itself; absent for none, never 0.</summary>
         public int? HintsShown { get; init; }
+
+        /// <summary>Moves the released game's tutorial showed by hand and the player played; absent for none, never 0.</summary>
+        public int? GuidedMoves { get; init; }
 
         /// <summary>The number of the shuffle booster's rule; absent for the first rule, which every record played under before it existed.</summary>
         public int? ShuffleRule { get; init; }

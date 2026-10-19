@@ -81,6 +81,9 @@ namespace Puzzle.Client.Gallery
         /// <summary>The labels with their sizes. They keep their size on the screen when a phone draws the row smaller, as the web page keeps them.</summary>
         private readonly List<(TextMeshPro Label, float Size)> _labels = new List<(TextMeshPro, float)>();
 
+        /// <summary>True when the goals stand on the left plaque (under "BÖLÜM 47"), false when on the right one (under "HEDEF").</summary>
+        private readonly bool _areTheGoalsOnTheLeft;
+
         private Hud(Transform parent, ArtCatalogue art, BoardPlaques plaques, PaintingGallery paintings)
         {
             _root = new GameObject("Hud").transform;
@@ -102,11 +105,13 @@ namespace Puzzle.Client.Gallery
                     _goalsLabel = WriteLabel(beside.GoalsLabel, _right.Group, art, LabelSize, LabelSpacing, 0f);
                     _goals = new GoalRow(_right.Group, art);
                     _gapUnderGoalsLabel = GapUnderGoalsLabel;
+                    _areTheGoalsOnTheLeft = false;
                     break;
                 case BoardPlaques.LevelOverGoalsBesideThePiece withThePiece:
                     _goalsLabel = WriteLabel(withThePiece.GoalsLabel, _left.Group, art, LabelSize, LabelSpacing, 0f);
                     _goals = new GoalRow(_left.Group, art);
                     _gapUnderGoalsLabel = GapUnderLevelOverGoals;
+                    _areTheGoalsOnTheLeft = true;
                     _thumb = RewardThumb.Create(_right.Group, art, paintings, withThePiece.Reward);
                     (float pieceLabelAt, float thumbAt) = Stacked(FaceMiddle, PieceLabelSize, GapUnderPieceLabel, _thumb.Size.y);
                     WriteLabel(withThePiece.PieceLabel, _right.Group, art, PieceLabelSize, PieceLabelSpacing, pieceLabelAt);
@@ -143,6 +148,12 @@ namespace Puzzle.Client.Gallery
             _movesNumber.transform.localScale = new Vector3(size, size, 1f);
         }
 
+        /// <summary>Where the plaque with the goals hangs, in the layout's points; nothing before the row was hung.</summary>
+        public Box? GoalsPlaque { get; private set; }
+
+        /// <summary>Where the moves medallion hangs, in the layout's points; nothing before the row was hung.</summary>
+        public Box? MovesMedallion { get; private set; }
+
         /// <summary>Hangs the row where the layout has it: centred on the screen, as wide and as large as the screen allows.</summary>
         public void Place(ScreenLayout layout)
         {
@@ -156,6 +167,9 @@ namespace Puzzle.Client.Gallery
             float plaqueMiddle = MedallionSize / 2f + GapBetween + plaqueWidth / 2f;
             _left.Hang(-plaqueMiddle, plaqueWidth);
             _right.Hang(plaqueMiddle, plaqueWidth);
+            float goalsMiddle = (_areTheGoalsOnTheLeft ? -plaqueMiddle : plaqueMiddle) * scale;
+            GoalsPlaque = Box.Around(goalsMiddle, layout.HudMiddle, plaqueWidth * scale, PlaqueHeight * scale);
+            MovesMedallion = Box.Around(0f, layout.HudMiddle, MedallionSize * scale, MedallionSize * scale);
 
             // Down to the tight phone's row the labels keep their size on the screen. A compact screen draws the
             // row smaller than that; there they shrink with it from that size on, or they would crowd the numbers.

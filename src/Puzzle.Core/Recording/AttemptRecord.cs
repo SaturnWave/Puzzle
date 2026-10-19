@@ -29,8 +29,13 @@ namespace Puzzle.Core.Recording
         /// for an attempt that was shown none, for every record of the web lab, whose hints <see cref="LabDetails.HintsShown"/>
         /// counts, and for every record written before the count existed.
         /// </param>
-        /// <exception cref="ArgumentException">A part is missing, the attempt ends before it starts, or the hints are fewer than none.</exception>
-        public AttemptRecord(AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false, int hintsShown = 0)
+        /// <param name="guidedMoves">
+        /// Moves of the attempt that the released game's tutorial showed by hand before the player played them: 0 for an
+        /// attempt with none, for every record of the web lab, and for every record written before the count existed.
+        /// </param>
+        /// <exception cref="ArgumentException">A part is missing, the attempt ends before it starts, or the hints or the guided moves are fewer than none.</exception>
+        public AttemptRecord(
+            AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false, int hintsShown = 0, int guidedMoves = 0)
         {
             Start = start ?? throw new ArgumentNullException(nameof(start));
             Outcome = outcome ?? throw new ArgumentNullException(nameof(outcome));
@@ -43,6 +48,7 @@ namespace Puzzle.Core.Recording
             Actions = actions is null ? null : Array.AsReadOnly(CheckedActions(actions));
             TesterMode = testerMode;
             HintsShown = hintsShown >= 0 ? hintsShown : throw new ArgumentOutOfRangeException(nameof(hintsShown), hintsShown, "An attempt shows none or more hints.");
+            GuidedMoves = guidedMoves >= 0 ? guidedMoves : throw new ArgumentOutOfRangeException(nameof(guidedMoves), guidedMoves, "An attempt has none or more guided moves.");
         }
 
         public AttemptStart Start { get; }
@@ -63,6 +69,9 @@ namespace Puzzle.Core.Recording
 
         /// <summary>Hints the released game showed by itself during the attempt; 0 for none, and in every record of the web lab.</summary>
         public int HintsShown { get; }
+
+        /// <summary>Moves the released game's tutorial showed by hand and the player then played; 0 for none, and in every record of the web lab.</summary>
+        public int GuidedMoves { get; }
 
         private static AttemptAction[] CheckedActions(IReadOnlyList<AttemptAction> actions) => actions.All(action => action is not null)
             ? actions.ToArray()

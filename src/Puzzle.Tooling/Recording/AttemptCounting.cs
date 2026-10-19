@@ -10,7 +10,8 @@ public enum AttemptStanding
 
     /// <summary>
     /// Help shaped the attempt: the lab's tools (DDA assist, hints, the solver, bot moves), a hint the released game
-    /// showed by itself, or boosters. A hint is help wherever it comes from, and no bot of the comparison is shown one.
+    /// showed by itself, a move its tutorial showed by hand, or boosters. A hint is help wherever it comes from, and no
+    /// bot of the comparison is shown one; a move shown by hand is a hint the player had to follow.
     /// </summary>
     Assisted,
 
@@ -51,7 +52,7 @@ public static class AttemptCounting
             return AttemptStanding.TesterMode;
         }
 
-        bool helped = record.Lab?.IsAssisted == true || record.HintsShown > 0 || record.Outcome.BoostersUsed.Count > 0;
+        bool helped = record.Lab?.IsAssisted == true || record.HintsShown > 0 || record.GuidedMoves > 0 || record.Outcome.BoostersUsed.Count > 0;
         if (helped)
         {
             return AttemptStanding.Assisted;

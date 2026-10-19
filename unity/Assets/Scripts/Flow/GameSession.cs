@@ -120,6 +120,13 @@ namespace Puzzle.Client.Flow
     /// is the phone's speaker and vibrator; the Editor's tools give a silent one.
     /// </para>
     /// <para>
+    /// The tutorial (docs/GAME_DESIGN.md §19) is shown by the stages, each step once to a player: a board is opened with
+    /// the steps that may come on its level for what the player has seen (TutorialWatch.ForTheBoard), a jigsaw with what
+    /// the player has seen of its two steps. A step that a stage reports done is the player's for good and is saved at
+    /// once; a step cut short (a board left, the game closed) comes again. The moves a board showed by hand are counted
+    /// in its attempt's record beside its hints.
+    /// </para>
+    /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
     /// next one is built, in the dark both of them share, so the change is not seen. The one exception is a board
     /// whose card led to the jigsaw: it steps aside, out of sight, and comes back with its card when the player
@@ -301,6 +308,7 @@ namespace Puzzle.Client.Flow
             DoWhatTheStageAskedFor();
             DoWhatWasAskedOfThePhone();
             KeepWhatWasPlaced();
+            KeepTheTutorialStepsDone();
             PlayWhatSounded();
             FollowThePlayer();
         }
@@ -542,7 +550,7 @@ namespace Puzzle.Client.Flow
         private IStage OpenTheJigsaw(PaintingNumber painting)
         {
             JigsawStage jigsaw = JigsawStage.Open(
-                painting, _progress.Museum, _paintings, _art, StageOpening.OutOfTheDark, _walletLedger.RewardForCompleting(_progress, painting));
+                painting, _progress.Museum, _paintings, _art, StageOpening.OutOfTheDark, _walletLedger.RewardForCompleting(_progress, painting), _progress.Tutorial);
             jigsaw.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _piecesKept = jigsaw.Table.InPlace.Count;
             return jigsaw;
@@ -551,8 +559,8 @@ namespace Puzzle.Client.Flow
         /// <summary>
         /// Opens the stage of the attempt the progress asks for: the level the player stands on, with the seed its
         /// pool has for this try and the start boosters chosen on its card, whose specials lie on the board as it
-        /// opens, and the game's hints by the economy's rules. The attempt begins now, as its record will say; what
-        /// it took leaves the shelf with its first move.
+        /// opens, the game's hints by the economy's rules, and the steps of the tutorial that may come on the level. The
+        /// attempt begins now, as its record will say; what it took leaves the shelf with its first move.
         /// </summary>
         /// <param name="startBoosters">The start boosters chosen on the level's card; none for a board opened without the card (the Editor's studies).</param>
         private IStage OpenTheBoard(StageOpening opening, StartChoice startBoosters)
@@ -574,7 +582,8 @@ namespace Puzzle.Client.Flow
                 _clock.Now,
                 game.ShuffleBoosterRule);
             var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters), _rules.Ads);
-            GameStage stage = GameStage.Open(game, _art, _effectArt, _paintings, brief, shelf, opening, HintBrief.Of(_rules.Hints, seeds.Play));
+            GameStage stage = GameStage.Open(
+                game, _art, _effectArt, _paintings, brief, shelf, opening, HintBrief.Of(_rules.Hints, seeds.Play), TutorialWatch.ForTheBoard(level.Id.Value, _progress.Tutorial, seeds.Play));
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
             stage.Tell(WalletNow, ExtraMovesNow);
             return stage;
@@ -792,7 +801,7 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// Writes the record of the open attempt, which has just ended for good, to the phone's log: once, with the
-        /// game as it stood when it ended and the hints its board showed, marked where it was played in the tester
+        /// game as it stood when it ended, the hints its board showed and the moves its tutorial showed by hand, marked where it was played in the tester
         /// mode. A clock that was set back since the attempt began (a time sync) gives an attempt that ends as it began
         /// rather than one that ends before. A log that cannot be written does not stop the game: the record waits there
         /// and is written with the next one.
@@ -806,7 +815,8 @@ namespace Puzzle.Client.Flow
             _startOfTheBoard = null;
             DateTimeOffset ended = now < start.StartedUtc ? start.StartedUtc : now;
             var record = new AttemptRecord(
-                start, AttemptOutcome.Of(game, ended), lab: null, game.Actions, testerMode: handling == WalletHandling.Unlimited, hintsShown: board.HintsShown);
+                start, AttemptOutcome.Of(game, ended), lab: null, game.Actions, testerMode: handling == WalletHandling.Unlimited, hintsShown: board.HintsShown,
+                guidedMoves: board.GuidedMoves);
             try
             {
                 _attempts.Append(record);
@@ -829,6 +839,31 @@ namespace Puzzle.Client.Flow
             {
                 SaveProgress();
             }
+        }
+
+        /// <summary>
+        /// The steps of the tutorial that the stage that is seen has shown to their end since the progress last looked:
+        /// each is the player's for good, saved at once, so that it is never shown again.
+        /// </summary>
+        private void KeepTheTutorialStepsDone()
+        {
+            IReadOnlyList<TutorialStep> done = _front switch
+            {
+                GameStage board => board.TakeTheTutorialStepsDone(),
+                JigsawStage jigsaw => jigsaw.TakeTheTutorialStepsDone(),
+                _ => Array.Empty<TutorialStep>(),
+            };
+            if (done.Count == 0)
+            {
+                return;
+            }
+
+            foreach (TutorialStep step in done)
+            {
+                _progress = _progress.WithTutorialStepSeen(step);
+            }
+
+            SaveProgress();
         }
 
         /// <summary>

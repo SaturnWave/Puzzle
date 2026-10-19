@@ -209,6 +209,16 @@ namespace Puzzle.Client
         PageButtonLettering = 1201,
 
         /// <summary>
+        /// A step of the tutorial: the dark over everything but the places it lights (a board's pieces, a plaque, a
+        /// jigsaw piece and its place), and its pill over the dark with the pill's words. It lies over the board, the
+        /// plaques, the shelf and a page's buttons, and under a jigsaw piece in the hand, so a piece carried out of a
+        /// lit tray is seen all the way to its lit place; a card and the room's dark lie over it.
+        /// </summary>
+        LessonDim = 1250,
+        LessonPill = 1260,
+        LessonPillLettering = 1261,
+
+        /// <summary>
         /// A jigsaw piece in the player's hand or on its way to its place, over everything of the page: its shadow
         /// takes the place below, the piece three places from here up. Over it, the sparkles of a painting just restored.
         /// </summary>

@@ -86,6 +86,13 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The board of the level the player stands on, left untouched until the game's hint shows: at its nudge, a strip of its first beat, and beside a special piece (<see cref="HintShots"/>).</summary>
         Hint,
+
+        /// <summary>
+        /// Every step of the tutorial as it shows, walked by a new player from the hall (GameWalk.Tutorial.cs), whatever
+        /// the state: the goal, the match, the moves, the first piece, the four, the five, the five that waits, the
+        /// first crates and the first painting made whole, each on a sheet of its walk.
+        /// </summary>
+        Tutorial,
     }
 
     /// <summary>
@@ -369,7 +376,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
@@ -469,6 +476,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Languages => SettingsShots.ShootTheLanguages(state, screen, studio),
             ShotPage.SettingsPreview => SettingsShots.ShootThePreview(state, screen, studio),
             ShotPage.Hint => HintShots.Shoot(state, screen, studio),
+            ShotPage.Tutorial => GameWalk.RunTheTutorialWalk(screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 

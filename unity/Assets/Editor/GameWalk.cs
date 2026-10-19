@@ -45,8 +45,8 @@ namespace Puzzle.Client.EditorTools
     /// that offers it, chosen and taken into the level, while with too few coins nothing is bought
     /// (<c>walk-buy-...</c>); and the walks of the shop, the gift and a painting's reward (GameWalk.Shop.cs), and of
     /// the settings, the privacy card's deleted records and the support card (GameWalk.Settings.cs), of the
-    /// swipes that turn the pages and the collection's rooms (GameWalk.Swipe.cs), and of the game's hint on a board
-    /// left untouched (GameWalk.Hint.cs). The walk
+    /// swipes that turn the pages and the collection's rooms (GameWalk.Swipe.cs), of the game's hint on a board
+    /// left untouched (GameWalk.Hint.cs), and of the tutorial from a new player's first level on (GameWalk.Tutorial.cs). The walk
     /// fails when a touch does not lead where it should, or when what was placed, spent, bought or given is not in the
     /// player's progress.
     /// </summary>
@@ -168,6 +168,7 @@ namespace Puzzle.Client.EditorTools
             RunTheTesterModeWalk(screen, studio);
             RunTheSwipeWalk(screen, studio);
             RunTheHintWalk(screen, studio);
+            RunTheTutorialWalk(screen, studio);
         }
 
         /// <summary>
@@ -886,6 +887,9 @@ namespace Puzzle.Client.EditorTools
             public MuseumCatalogue Catalogue { get; }
 
             public string Name { get; }
+
+            /// <summary>How many pictures the walk has taken so far.</summary>
+            public int Taken => _shots;
 
             /// <summary>
             /// The pictures of an earlier walk of the same name are this walk's to replace: a walk that has other

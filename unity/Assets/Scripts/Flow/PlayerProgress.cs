@@ -12,16 +12,18 @@ namespace Puzzle.Client.Flow
     /// <see cref="AttemptsOnLevel"/> counts their attempts on that level only. An attempt counts once a move is
     /// played in it; a board that was only looked at uses up no retry number. The levels won also give the player the
     /// jigsaw pieces of the museum's paintings (<see cref="Museum"/>); which of them the player has put in place is
-    /// kept here with the rest, and so is what the player owns around the levels (<see cref="Wallet"/>): it is saved
-    /// in the same file, so a win and its coins are one save. This file has no Unity dependency, so the repository's
+    /// kept here with the rest, and so is what the player owns around the levels (<see cref="Wallet"/>) and which steps
+    /// of the tutorial they have seen (<see cref="Tutorial"/>): it is saved in the same file, so a win and its coins
+    /// are one save. This file has no Unity dependency, so the repository's
     /// tests compile it too.
     /// </summary>
     public sealed class PlayerProgress : IEquatable<PlayerProgress>
     {
         /// <summary>
-        /// Progress with no jigsaw piece in place yet and an empty wallet (<see cref="Wallet.Empty"/>: no coin, no
-        /// booster, every life): where the questions of the levels and the museum start, which the wallet plays no
-        /// part in. A player's own progress gets its wallet from the rules (<see cref="NewPlayer"/>) or from their file.
+        /// Progress with no jigsaw piece in place yet, an empty wallet (<see cref="Wallet.Empty"/>: no coin, no
+        /// booster, every life) and the tutorial behind it (<see cref="TutorialSeen.All"/>): where the questions of
+        /// the levels and the museum start, which the wallet and the tutorial play no part in. A player's own progress
+        /// gets its wallet from the rules and sees the tutorial (<see cref="NewPlayer"/>), or has both from their file.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
         public PlayerProgress(int levelsWon, int attemptsOnLevel)
@@ -29,7 +31,7 @@ namespace Puzzle.Client.Flow
         {
         }
 
-        /// <summary>Progress with an empty wallet, as above.</summary>
+        /// <summary>Progress with an empty wallet and the tutorial behind it, as above.</summary>
         /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
         /// <exception cref="ArgumentException">A piece is said to be in place that the levels won have not given yet.</exception>
         public PlayerProgress(int levelsWon, int attemptsOnLevel, PlacedPieces placed)
@@ -37,9 +39,17 @@ namespace Puzzle.Client.Flow
         {
         }
 
+        /// <summary>Progress with the tutorial behind it, as above.</summary>
         /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
         /// <exception cref="ArgumentException">A piece is said to be in place that the levels won have not given yet.</exception>
         public PlayerProgress(int levelsWon, int attemptsOnLevel, PlacedPieces placed, Wallet wallet)
+            : this(levelsWon, attemptsOnLevel, placed, wallet, TutorialSeen.All)
+        {
+        }
+
+        /// <exception cref="ArgumentOutOfRangeException">A count is negative.</exception>
+        /// <exception cref="ArgumentException">A piece is said to be in place that the levels won have not given yet.</exception>
+        public PlayerProgress(int levelsWon, int attemptsOnLevel, PlacedPieces placed, Wallet wallet, TutorialSeen tutorial)
         {
             if (levelsWon < 0)
             {
@@ -55,12 +65,13 @@ namespace Puzzle.Client.Flow
             AttemptsOnLevel = attemptsOnLevel;
             Museum = new MuseumProgress(levelsWon, placed);
             Wallet = wallet ?? throw new ArgumentNullException(nameof(wallet));
+            Tutorial = tutorial ?? throw new ArgumentNullException(nameof(tutorial));
         }
 
-        /// <summary>Where every player starts: the first level, never tried, holding what the rules give a new player.</summary>
+        /// <summary>Where every player starts: the first level, never tried, holding what the rules give a new player, with every step of the tutorial to see.</summary>
         /// <param name="startingWallet">The economy rules' starting wallet (Puzzle.Meta.EconomyRules.StartingWallet).</param>
         public static PlayerProgress NewPlayer(Wallet startingWallet) =>
-            new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0, PlacedPieces.None, startingWallet);
+            new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0, PlacedPieces.None, startingWallet, TutorialSeen.None);
 
         /// <summary>How many levels of the pack, from its first on, the player has won.</summary>
         public int LevelsWon { get; }
@@ -76,6 +87,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>What the player owns and has used up around the levels: coins, lives, boosters, the day's ads and the rewards counted.</summary>
         public Wallet Wallet { get; }
+
+        /// <summary>The steps of the tutorial the player has been shown to their end: each is shown once (docs/GAME_DESIGN.md §19).</summary>
+        public TutorialSeen Tutorial { get; }
 
         /// <summary>
         /// Which level of a pack the player stands on, counted from 0 in the pack's order: the one after the levels
@@ -96,7 +110,7 @@ namespace Puzzle.Client.Flow
         public bool IsOnLastLevelOf(int levelCount) => LevelIndexIn(levelCount) == levelCount - 1;
 
         /// <summary>The first move of an attempt on the level was played: the attempt now counts.</summary>
-        public PlayerProgress WithAttemptStarted() => new PlayerProgress(LevelsWon, AttemptsOnLevel + 1, Museum.Placed, Wallet);
+        public PlayerProgress WithAttemptStarted() => new PlayerProgress(LevelsWon, AttemptsOnLevel + 1, Museum.Placed, Wallet, Tutorial);
 
         /// <summary>
         /// The level the player stands on is won: they stand on the next one, never tried, and the won level's jigsaw
@@ -104,20 +118,23 @@ namespace Puzzle.Client.Flow
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">The pack has no level.</exception>
         public PlayerProgress WithLevelWon(int levelCount) =>
-            new PlayerProgress(Math.Min(LevelIndexIn(levelCount) + 1, levelCount), attemptsOnLevel: 0, Museum.Placed, Wallet);
+            new PlayerProgress(Math.Min(LevelIndexIn(levelCount) + 1, levelCount), attemptsOnLevel: 0, Museum.Placed, Wallet, Tutorial);
 
         /// <summary>The player put a jigsaw piece from a painting's tray in its place.</summary>
         /// <exception cref="ArgumentOutOfRangeException">The painting has no piece of that number.</exception>
         /// <exception cref="InvalidOperationException">The piece is not on the tray: not won yet, or in place already.</exception>
         public PlayerProgress WithPiecePlaced(PaintingNumber painting, int piece) =>
-            new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.WithPiecePlaced(painting, piece).Placed, Wallet);
+            new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.WithPiecePlaced(painting, piece).Placed, Wallet, Tutorial);
 
         /// <summary>Every piece on a painting's tray went to its place at once.</summary>
         public PlayerProgress WithTrayPlaced(PaintingNumber painting) =>
-            new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.WithTrayPlaced(painting).Placed, Wallet);
+            new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.WithTrayPlaced(painting).Placed, Wallet, Tutorial);
 
         /// <summary>The player's wallet changed: something was paid, earned, used or counted.</summary>
-        public PlayerProgress WithWallet(Wallet wallet) => new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.Placed, wallet);
+        public PlayerProgress WithWallet(Wallet wallet) => new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.Placed, wallet, Tutorial);
+
+        /// <summary>A step of the tutorial was shown to its end; one seen before stays seen.</summary>
+        public PlayerProgress WithTutorialStepSeen(TutorialStep step) => new PlayerProgress(LevelsWon, AttemptsOnLevel, Museum.Placed, Wallet, Tutorial.With(step));
 
         /// <summary>
         /// This progress with a number of the waiting pieces put in place, in the museum's order: painting by
@@ -153,19 +170,19 @@ namespace Puzzle.Client.Flow
                 }
             }
 
-            return new PlayerProgress(LevelsWon, AttemptsOnLevel, museum.Placed, Wallet);
+            return new PlayerProgress(LevelsWon, AttemptsOnLevel, museum.Placed, Wallet, Tutorial);
         }
 
         public bool Equals(PlayerProgress? other) =>
             other is not null && LevelsWon == other.LevelsWon && AttemptsOnLevel == other.AttemptsOnLevel && Museum.Placed.Equals(other.Museum.Placed)
-            && Wallet.Equals(other.Wallet);
+            && Wallet.Equals(other.Wallet) && Tutorial.Equals(other.Tutorial);
 
         public override bool Equals(object? obj) => Equals(obj as PlayerProgress);
 
-        public override int GetHashCode() => HashCode.Combine(LevelsWon, AttemptsOnLevel, Museum.Placed, Wallet);
+        public override int GetHashCode() => HashCode.Combine(LevelsWon, AttemptsOnLevel, Museum.Placed, Wallet, Tutorial);
 
         public override string ToString() =>
-            $"{LevelsWon} levels won, {AttemptsOnLevel} attempts on the next, {Museum.PiecesPlaced} of {Museum.PiecesWon} jigsaw pieces placed; {Wallet}";
+            $"{LevelsWon} levels won, {AttemptsOnLevel} attempts on the next, {Museum.PiecesPlaced} of {Museum.PiecesWon} jigsaw pieces placed; {Wallet}; tutorial: {Tutorial}";
     }
 
     /// <summary>Where a player's progress is kept between two runs of the game.</summary>

@@ -23,8 +23,12 @@ namespace Puzzle.Bot
         /// <summary>The salt that sets the hints' own stream of seeds apart from the attempt's other streams.</summary>
         private const ulong HintStream = 0x48_49_4E_54; // "HINT"
 
+        /// <summary>The salt that sets the tutorial's moves apart from the hints at the same point of the same attempt.</summary>
+        private const ulong LessonStream = 0x4C_45_53_53_4F_4E; // "LESSON"
+
         private readonly IBotPolicy _bot;
         private readonly List<Move> _legalMoves = new List<Move>();
+        private readonly List<Move> _lessonMoves = new List<Move>();
 
         private HintAdvisor(IBotPolicy bot, string botName)
         {
@@ -66,12 +70,45 @@ namespace Puzzle.Bot
                 return null;
             }
 
-            ulong seed = Rng.Derive(Rng.Derive(attemptSeed, HintStream), (ulong)game.Actions.Count);
-            var rng = new Rng(seed);
+            var rng = new Rng(SeedAt(game, attemptSeed));
             Game copy = game.CreateLookahead(rng.NextULong());
             _legalMoves.Clear();
             copy.CollectLegalMoves(_legalMoves);
             return _legalMoves.Count == 0 ? (Move?)null : _bot.ChooseMove(copy, _legalMoves, rng);
         }
+
+        /// <summary>
+        /// The move the tutorial shows by hand to teach a lesson on <paramref name="game"/> as it stands: of the moves
+        /// that teach it (<see cref="MoveLessons.Teaches"/>), the one the advisor's bot plays when those are all it is
+        /// offered, thought out on a copy as a hint is. Nothing while the board offers no move that teaches it, and for
+        /// a game that is no longer being played. The same game, seed and lesson give the same move every time.
+        /// </summary>
+        /// <param name="attemptSeed">The attempt's play seed (AttemptSeeds.Play), as for <see cref="MoveFor(Game, ulong)"/>.</param>
+        public Move? MoveFor(Game game, ulong attemptSeed, MoveLesson lesson)
+        {
+            if (game.Status != GameStatus.Playing)
+            {
+                return null;
+            }
+
+            var rng = new Rng(Rng.Derive(SeedAt(game, attemptSeed), LessonStream));
+            Game copy = game.CreateLookahead(rng.NextULong());
+            ulong lessonSeed = rng.NextULong();
+            _legalMoves.Clear();
+            copy.CollectLegalMoves(_legalMoves);
+            _lessonMoves.Clear();
+            foreach (Move move in _legalMoves)
+            {
+                if (MoveLessons.Teaches(copy, move, lesson, lessonSeed))
+                {
+                    _lessonMoves.Add(move);
+                }
+            }
+
+            return _lessonMoves.Count == 0 ? (Move?)null : _bot.ChooseMove(copy, _lessonMoves, rng);
+        }
+
+        /// <summary>The hints' own seed for the game at this point of the attempt: its play seed and the number of the player's actions so far.</summary>
+        private static ulong SeedAt(Game game, ulong attemptSeed) => Rng.Derive(Rng.Derive(attemptSeed, HintStream), (ulong)game.Actions.Count);
     }
 }

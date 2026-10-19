@@ -11,24 +11,29 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// The saved progress as the file writes it:
-    /// <c>{"version":4,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...}}</c>
-    /// (the wallet's block is <see cref="WalletDocument"/>). The fields are public and named as the document names
-    /// them, because that is how Unity's JSON reader maps a document. Three earlier layouts are still read. Layout 1,
+    /// <c>{"version":5,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...},"tutorial":["goal","match"]}</c>
+    /// (the wallet's block is <see cref="WalletDocument"/>; the tutorial's steps seen are named as
+    /// <see cref="TutorialSteps.NameOf"/> names them, in the order of the enumeration). The fields are public and named
+    /// as the document names them, because that is how Unity's JSON reader maps a document. Four earlier layouts are
+    /// still read. Layout 1,
     /// written before the game had a museum, has no <c>placed</c>: it reads as progress with no jigsaw piece in place
     /// yet, so the pieces of every level won before then wait on their trays. Layouts 1 and 2 have no wallet: their
     /// player holds what the rules give a new player, with every life; the gifts of the boosters used during play
     /// that are open where the player stands are given to them the first time the game opens (Puzzle.Meta's
     /// BoosterUnlocks). Layout 3 keeps a wallet but not which of those gifts were given: its player was given all of
     /// them in the welcome gift before the first level, as the game did then, so all count as given and none comes a
-    /// second time. Unity's reader makes 0 of a number a document does not have, so whether the wallet and the gifts
-    /// are there is decided by the layout's number, never by a zero.
+    /// second time. Layouts 1 to 4 keep no tutorial: their player has seen every step of a level they have won (an
+    /// obstacle's level being the first that has it), the jigsaw's first piece once a piece is in place and the first
+    /// painting once one is whole, and nothing else (<see cref="TutorialPlan.OfAnOlderSave"/>). Unity's reader makes 0
+    /// of a number a document does not have, and an empty list of a list it does not have, so whether the wallet, the
+    /// gifts and the tutorial are there is decided by the layout's number, never by a zero or an empty list.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     [Serializable]
     public sealed class ProgressDocument
     {
         /// <summary>The layout this code writes. A file of a later layout is not guessed at.</summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         /// <summary>The oldest layout a player can have on a device; this code reads it as it reads its own.</summary>
         private const int FirstVersion = 1;
@@ -39,6 +44,9 @@ namespace Puzzle.Client.Flow
         /// <summary>The first layout that keeps which boosters used during play have had their opening gift.</summary>
         private const int FirstVersionWithUnlockGifts = 4;
 
+        /// <summary>The first layout that keeps which steps of the tutorial the player has seen.</summary>
+        private const int FirstVersionWithTheTutorial = 5;
+
         public int version;
         public int levelsWon;
         public int attemptsOnLevel;
@@ -48,6 +56,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>What the player owns around the levels; in the file since layout 3.</summary>
         public WalletDocument wallet = new WalletDocument();
+
+        /// <summary>The steps of the tutorial the player has seen, by their names; in the file since layout 5.</summary>
+        public string[] tutorial = Array.Empty<string>();
 
         /// <summary>The document that keeps a progress, in the current layout.</summary>
         public static ProgressDocument Of(PlayerProgress progress)
@@ -69,6 +80,7 @@ namespace Puzzle.Client.Flow
                 attemptsOnLevel = progress.AttemptsOnLevel,
                 placed = placed.ToArray(),
                 wallet = WalletDocument.Of(progress.Wallet),
+                tutorial = progress.Tutorial.Steps.Select(TutorialSteps.NameOf).ToArray(),
             };
         }
 
@@ -93,16 +105,42 @@ namespace Puzzle.Client.Flow
             if (document.version > CurrentVersion)
             {
                 // Later layouts are expected to add to this one, so what this game knows is looked for in them too:
-                // the pieces and the wallet if they still read as such, else at least where the player stands.
+                // the pieces, the wallet and the tutorial if they still read as such, else at least where the player
+                // stands. A step this game does not have is passed over: a later game may have more.
                 PlayerProgress? understood = !hasCounts ? null
-                    : new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed ?? PlacedPieces.None, wallet ?? startingWallet);
+                    : new PlayerProgress(
+                        document.levelsWon, document.attemptsOnLevel, placed ?? PlacedPieces.None, wallet ?? startingWallet, TutorialOfALaterGame(document));
                 return new ProgressReading.OfALaterGame(document.version, understood);
             }
 
-            return placed != null && wallet != null
-                ? new ProgressReading.Sound(new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed, wallet))
+            TutorialSeen? tutorial = placed == null ? null
+                : document.version < FirstVersionWithTheTutorial ? TutorialPlan.OfAnOlderSave(new MuseumProgress(document.levelsWon, placed))
+                : PossibleTutorialOf(document);
+            return placed != null && wallet != null && tutorial != null
+                ? new ProgressReading.Sound(new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed, wallet, tutorial))
                 : (ProgressReading)new ProgressReading.Damaged();
         }
+
+        /// <summary>The steps the document names as seen, each a step of the tutorial and named once; nothing otherwise.</summary>
+        private static TutorialSeen? PossibleTutorialOf(ProgressDocument document)
+        {
+            TutorialSeen seen = TutorialSeen.None;
+            foreach (string name in ListOrNone(document.tutorial))
+            {
+                if (!(TutorialSteps.Find(name ?? string.Empty) is TutorialStep step) || seen.Has(step))
+                {
+                    return null;
+                }
+
+                seen = seen.With(step);
+            }
+
+            return seen;
+        }
+
+        /// <summary>The steps of this game that a document of a later game names as seen.</summary>
+        private static TutorialSeen TutorialOfALaterGame(ProgressDocument document) =>
+            TutorialSeen.Of(ListOrNone(document.tutorial).Select(name => TutorialSteps.Find(name ?? string.Empty)).OfType<TutorialStep>());
 
         /// <summary>The pieces the document says are in place; nothing when it names a painting or a piece the museum does not have, a piece twice, or one the levels won have not given.</summary>
         private static PlacedPieces? PossiblePlacedPiecesOf(ProgressDocument document)

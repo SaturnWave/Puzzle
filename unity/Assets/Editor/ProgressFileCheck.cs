@@ -18,7 +18,8 @@ namespace Puzzle.Client.EditorTools
     /// back (also when a file is already there to be replaced, with the jigsaw pieces the player has put in place,
     /// and with a wallet whose next life is due at an exact second), the file of the game before the museum and the
     /// file of the game before the wallet still read (their player gets the pieces of the levels they had won and the
-    /// rules' starting wallet with every life), such a file is written in the current layout at the next save and
+    /// rules' starting wallet with every life, and has seen the steps of the tutorial of the levels they had won), the
+    /// steps of the tutorial a player has seen are written and read back, such a file is written in the current layout at the next save and
     /// reads back after a restart, a file that is not a progress document is moved aside and never written over,
     /// and a file that a later version of the game wrote is left exactly as it is while the game is told where the
     /// player stands. It works in a folder of its own (out/unity/progress-check), not in a player's.
@@ -38,7 +39,8 @@ namespace Puzzle.Client.EditorTools
             "{\"version\":1,\"levelsWon\":-4,\"attemptsOnLevel\":0}",
             "{\"version\":2,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[{\"painting\":1,\"pieces\":[3]}]}", // three levels give the pieces 0 to 2
             "{\"version\":3,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // a layout with a wallet, without it, is not a wallet of zeros
-            "{\"version\":4,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // the current layout without its wallet neither
+            "{\"version\":4,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // nor the layout of the gifts without it
+            "{\"version\":5,\"levelsWon\":3,\"attemptsOnLevel\":0,\"placed\":[]}", // nor the current layout
         };
 
         /// <summary>What the first Android build wrote: the layout before the museum.</summary>
@@ -60,8 +62,19 @@ namespace Puzzle.Client.EditorTools
             + "\"day\":739902,\"adsForMovesToday\":1,\"adsForCoinsToday\":2,\"paintingRewards\":3,\"dailyRewards\":4,\"lastDailyDay\":739901,"
             + "\"unlockGifts\":[\"hit-cell\",\"hit-row\"]}}";
 
+        /// <summary>
+        /// The same player with the steps of the tutorial seen so far (<see cref="SeenOnLevelForty"/>), as this game writes
+        /// it (layout 5). The pinned text lives twice, here and in ProgressDocumentTests: change both together.
+        /// </summary>
+        private static readonly string DocumentWithTheTutorial = DocumentWithAWallet.Replace("{\"version\":4,", "{\"version\":5,").Substring(0, DocumentWithAWallet.Length - 1)
+            + ",\"tutorial\":[\"goal\",\"match\",\"moves\",\"four-in-a-line\",\"five-in-a-line\",\"box\",\"jelly\",\"first-piece\",\"first-painting\"]}";
+
+        /// <summary>What a player on level 40 with the first painting whole has seen of the tutorial: all but the steps of the tape and the frame corners.</summary>
+        private static readonly TutorialSeen SeenOnLevelForty = TutorialSeen.Of(TutorialSteps.All.Where(step => step != TutorialStep.Chain && step != TutorialStep.Item));
+
         /// <summary>The document of a later game: what this game writes, and something it does not know.</summary>
-        private static readonly string LaterDocument = DocumentWithAWallet.Replace("{\"version\":4,", "{\"version\":5,").Replace("}}", "},\"device\":\"phone\"}");
+        private static readonly string LaterDocument =
+            DocumentWithTheTutorial.Replace("{\"version\":5,", "{\"version\":6,").Substring(0, DocumentWithTheTutorial.Length - 1) + ",\"device\":\"phone\"}";
 
         /// <summary>Noon on 14 October 2026 in Istanbul, a whole second as every clock of the game tells: when the check loses a life.</summary>
         private static readonly IWallClock Clock = new FixedWallClock(new DateTimeOffset(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3)));
@@ -89,7 +102,10 @@ namespace Puzzle.Client.EditorTools
                 ExpectALifeLostReadBackToTheSecond(file, turned, rules);
                 ExpectAWalletInUseWrittenAsPinned(file, path, rules);
 
-                string[] damagedDocuments = DamagedDocuments.Concat(DamagedWallets()).ToArray();
+                string[] damagedDocuments = DamagedDocuments.Concat(DamagedWallets())
+                    .Append(DocumentWithTheTutorial.Replace("\"goal\",", "\"booster-intro\",")) // a step this game does not have
+                    .Append(DocumentWithTheTutorial.Replace("\"match\",", "\"goal\",")) // a step twice
+                    .ToArray();
                 foreach (string damaged in damagedDocuments)
                 {
                     File.WriteAllText(path, damaged);
@@ -98,9 +114,9 @@ namespace Puzzle.Client.EditorTools
                 }
 
                 File.WriteAllText(path, LaterDocument);
-                ExpectLeftAlone(file, path, PlacedPlayer().WithWallet(WalletInUse()));
+                ExpectLeftAlone(file, path, TutoredPlayer());
 
-                Debug.Log($"Progress file check passed: saved progress is read back with its placed pieces and its wallet, the files of the game before the museum "
+                Debug.Log($"Progress file check passed: saved progress is read back with its placed pieces, its wallet and the tutorial's steps seen, the files of the game before the museum "
                     + $"and before the wallet give their player their pieces and the rules' starting wallet ({rules.StartingWallet}), such a file is written in layout "
                     + $"{ProgressDocument.CurrentVersion} at the next save and reads back after a restart, a life lost reads back to the second, "
                     + $"{damagedDocuments.Length} damaged files were moved aside, and a later game's file was left as it was.");
@@ -121,7 +137,7 @@ namespace Puzzle.Client.EditorTools
         {
             File.WriteAllText(path, DocumentBeforeTheMuseum);
             PlayerProgress read = file.Load();
-            Expect(new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2).WithWallet(startingWallet), read, "with the file of the game before the museum");
+            Expect(AsAnOlderSaveReads(new PlayerProgress(levelsWon: 39, attemptsOnLevel: 2).WithWallet(startingWallet)), read, "with the file of the game before the museum");
             if (read.Museum.PiecesWaiting != 39 || File.ReadAllText(path) != DocumentBeforeTheMuseum)
             {
                 throw new InvalidOperationException($"The file of the game before the museum gave {read.Museum.PiecesWaiting} waiting pieces instead of 39, or was changed by reading it.");
@@ -139,7 +155,7 @@ namespace Puzzle.Client.EditorTools
         {
             File.WriteAllText(path, DocumentBeforeTheWallet);
             PlayerProgress read = file.Load();
-            Expect(PlacedPlayer().WithWallet(rules.StartingWallet), read, "with the file of the game before the wallet");
+            Expect(AsAnOlderSaveReads(PlacedPlayer().WithWallet(rules.StartingWallet)), read, "with the file of the game before the wallet");
             if (!read.Wallet.Lives.IsFull || File.ReadAllText(path) != DocumentBeforeTheWallet)
             {
                 throw new InvalidOperationException($"The file of the game before the wallet gave lives \"{read.Wallet.Lives}\", or was changed by reading it.");
@@ -175,15 +191,15 @@ namespace Puzzle.Client.EditorTools
             Expect(lost, Restarted(rules).Load(), "after a life was lost and the game was restarted");
         }
 
-        /// <summary>A wallet with something in every field is written exactly as pinned, and reads back after a restart.</summary>
-        /// <exception cref="InvalidOperationException">The wallet was not written or read back so.</exception>
+        /// <summary>A wallet with something in every field and the tutorial seen so far are written exactly as pinned, and read back after a restart.</summary>
+        /// <exception cref="InvalidOperationException">The wallet or the tutorial was not written or read back so.</exception>
         private static void ExpectAWalletInUseWrittenAsPinned(ProgressFile file, string path, EconomyRules rules)
         {
-            PlayerProgress inUse = PlacedPlayer().WithWallet(WalletInUse());
+            PlayerProgress inUse = TutoredPlayer();
             file.Save(inUse);
-            if (File.ReadAllText(path) != DocumentWithAWallet)
+            if (File.ReadAllText(path) != DocumentWithTheTutorial)
             {
-                throw new InvalidOperationException($"The progress with a wallet in use was written as {File.ReadAllText(path)}; {DocumentWithAWallet} was expected.");
+                throw new InvalidOperationException($"The progress with a wallet in use was written as {File.ReadAllText(path)}; {DocumentWithTheTutorial} was expected.");
             }
 
             Expect(inUse, Restarted(rules).Load(), "after a wallet in use was saved and the game was restarted");
@@ -204,6 +220,17 @@ namespace Puzzle.Client.EditorTools
             DocumentWithAWallet.Replace("[\"hit-cell\",\"hit-row\"]", "[\"start-color-bomb\"]"), // a start booster has no opening gift
             DocumentWithAWallet.Replace("[\"hit-cell\",\"hit-row\"]", "[\"hit-cell\",\"hit-cell\"]"), // a gift twice
         };
+
+        /// <summary><see cref="PlacedPlayer"/> with <see cref="WalletInUse"/> and the tutorial seen so far.</summary>
+        private static PlayerProgress TutoredPlayer()
+        {
+            PlayerProgress placed = PlacedPlayer();
+            return new PlayerProgress(placed.LevelsWon, placed.AttemptsOnLevel, placed.Museum.Placed, WalletInUse(), SeenOnLevelForty);
+        }
+
+        /// <summary>A progress as a file of a layout before the tutorial reads: with the steps of the levels won and of what was done in the museum.</summary>
+        private static PlayerProgress AsAnOlderSaveReads(PlayerProgress progress) =>
+            new PlayerProgress(progress.LevelsWon, progress.AttemptsOnLevel, progress.Museum.Placed, progress.Wallet, TutorialPlan.OfAnOlderSave(progress.Museum));
 
         /// <summary>A player who has won 39 levels and placed the first painting's pieces and two of the fourth's; an empty wallet.</summary>
         private static PlayerProgress PlacedPlayer() =>
@@ -256,7 +283,7 @@ namespace Puzzle.Client.EditorTools
             catch (ProgressOfALaterGameException later)
             {
                 bool isLeft = File.Exists(path) && File.ReadAllText(path) == LaterDocument;
-                if (!isLeft || later.Version != 5 || !understood.Equals(later.Understood))
+                if (!isLeft || later.Version != 6 || !understood.Equals(later.Understood))
                 {
                     throw new InvalidOperationException(
                         $"A later game's file was not left as it was (still there unchanged: {isLeft}), or the game was told layout {later.Version} and \"{later.Understood}\".");

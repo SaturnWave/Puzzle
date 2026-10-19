@@ -17,7 +17,8 @@ namespace Puzzle.Client.Flow
     /// System.Text.Json, and Unity's JSON writer writes every field a document has. A record of the game has no lab
     /// part; its move limit is the level's own, without what a start booster or the extra moves added. An attempt
     /// played in the tester mode says so (<c>"testerMode":true</c>); any other leaves the field out. An attempt in which
-    /// the game showed hints by itself counts them (<c>"hintsShown":2</c>); one without leaves the field out.
+    /// the game showed hints by itself counts them (<c>"hintsShown":2</c>), and one in which its tutorial showed moves
+    /// by hand counts those (<c>"guidedMoves":1</c>); one without leaves the field out.
     /// This file has no Unity dependency, so the repository's tests compile it too and hold its lines against the
     /// tools' reader and writer.
     /// </summary>
@@ -67,6 +68,11 @@ namespace Puzzle.Client.Flow
             if (record.HintsShown > 0)
             {
                 Number(line, "hintsShown", record.HintsShown);
+            }
+
+            if (record.GuidedMoves > 0)
+            {
+                Number(line, "guidedMoves", record.GuidedMoves);
             }
 
             if (start.ShuffleRule != ShuffleBoosterRule.RandomOrders)

@@ -117,6 +117,18 @@ namespace Puzzle.Client.Stage
     /// and start the wait again; an attempt shows no more hints than the settings allow (<see cref="HintWatch"/>), and
     /// its record counts them (<see cref="HintsShown"/>). A stage opened without a <see cref="HintBrief"/> shows none.
     /// </para>
+    /// <para>
+    /// The tutorial's steps that may come on the board (the owner's decision of 2026-10-19; <see cref="TutorialWatch"/>)
+    /// begin at a quiet moment, never while a card hangs, and only when the board offers what they teach: a step that
+    /// waits says nothing. The board is asked once each time it comes to rest changed, and again when a step ends. A
+    /// step dims the stage but for what it points at (<see cref="Spotlight"/>) and says what to look at or do on its own
+    /// pill over the dark. A move shown by hand lights its two pieces as a hint does, and the board takes that trade and
+    /// no other (another is refused as a trade that cannot be made is) until it is played; the shelf's boosters take no
+    /// finger meanwhile, the pause disc and the way back do. A step that is only looked at (a plaque, an obstacle) ends
+    /// with a touch anywhere, which does nothing else. No hint shows while a step does. The steps done are reported
+    /// (<see cref="TakeTheTutorialStepsDone"/>), and the moves shown by hand are counted for the record (<see cref="GuidedMoves"/>).
+    /// A stage opened without a <see cref="TutorialWatch"/> shows no step.
+    /// </para>
     /// </remarks>
     public sealed class GameStage : IStage
     {
@@ -129,6 +141,19 @@ namespace Puzzle.Client.Stage
 
         /// <summary>The extra moves are counted up on the medallion one after another, each with a swell of its number, this far apart.</summary>
         private const float ExtraMovesCountedApart = Tempo.MovesSwell;
+
+        /// <summary>A step of the tutorial dims the stage over this long as it comes, and again when it comes back after a card.</summary>
+        private const float LessonComesIn = 0.35f;
+
+        /// <summary>A window of the tutorial's spotlight reaches this share of a cell past the cells it lights, and this many points past a plaque.</summary>
+        private const float LessonCellMargin = 0.16f;
+        private const float LessonPlaqueMargin = 6f;
+
+        /// <summary>The tutorial's pill hangs this many points under the plaques when it speaks of them, or when what it lights lies under it over the shelf.</summary>
+        private const float LessonPillUnderThePlaques = 10f;
+
+        /// <summary>The tutorial's pill is drawn at the shelf's size, but never smaller than this: on a compact screen the shelf is drawn small, and the pill is what the step says.</summary>
+        private const float LessonPillLeastScale = 1f;
 
         /// <summary>What a finger can press on the stage beside the board and a card's buttons. A closed set (private constructor).</summary>
         private abstract class StageControl
@@ -329,7 +354,26 @@ namespace Puzzle.Client.Stage
         /// <summary>The move the hint that shows points at; nothing while none shows.</summary>
         private Move? _hint;
 
-        private GameStage(Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf, HintBrief? hints)
+        /// <summary>The tutorial's steps on this board; nothing on a board that shows none.</summary>
+        private readonly TutorialWatch? _tutorial;
+
+        /// <summary>What a step of the tutorial shows: the dark with its windows, its pill, and the light on the two pieces of a move shown by hand.</summary>
+        private readonly Spotlight _spotlight;
+        private readonly ShelfPill _lessonPill;
+        private readonly HintMark _guideMark;
+
+        /// <summary>The step the spotlight and the pill are laid out for; nothing while none is.</summary>
+        private Lesson? _lessonLaid;
+
+        /// <summary>When on the stage's clock the step that shows was last seen to come: as it began, or as a card over it went.</summary>
+        private float _lessonSeenSince;
+        private bool _wasLessonSeen;
+
+        /// <summary>The board as it stood when the tutorial was last asked for a step (moves, boosters, extra moves); nothing to ask again at the next quiet moment.</summary>
+        private (int Moves, int Boosters, bool ExtraMoves)? _tutorialAskedOf;
+
+        private GameStage(
+            Game game, ArtCatalogue art, EffectArt effectArt, PaintingGallery paintings, AttemptBrief brief, ShelfBrief shelf, HintBrief? hints, TutorialWatch? tutorial)
         {
             bool hasItemsToDrop = game.Level.Goals.Any(goal => goal is GoalSpec.DropItems);
             _art = art;
@@ -368,6 +412,10 @@ namespace Puzzle.Client.Stage
             _hintBrief = hints;
             _hintWatch = hints == null ? null : new HintWatch(hints.Rules, clockSeconds: 0f);
             _hintMark = new HintMark(_board.Root, _effectArt, art);
+            _tutorial = tutorial;
+            _spotlight = Spotlight.Create(_root.transform, art);
+            _lessonPill = ShelfPill.CreateForLessons(_root.transform, art);
+            _guideMark = new HintMark(_board.Root, _effectArt, art);
             _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
             _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal, CountAMoveThrown);
             _pointer = new BoardPointer(game);
@@ -499,6 +547,18 @@ namespace Puzzle.Client.Stage
         /// <summary>Hints the attempt may still show; 0 in a stage without hints.</summary>
         public int HintsLeft => _hintWatch is HintWatch watch ? watch.PerAttempt - watch.Shown : 0;
 
+        /// <summary>The step of the tutorial the stage shows now; nothing while none is seen (also while a card hangs over one that waits).</summary>
+        public Lesson? LessonShown => IsTheLessonSeen ? _tutorial?.Showing : null;
+
+        /// <summary>What the tutorial's pill says now; <see cref="PillWords.None"/> while no step is seen.</summary>
+        public PillWords WhatTheLessonSays => _lessonPill.Words;
+
+        /// <summary>The steps of the tutorial that may still come on this board, in their order; none on a board without them.</summary>
+        public IReadOnlyList<TutorialStep> LessonsToCome => _tutorial?.MayStillCome ?? (IReadOnlyList<TutorialStep>)Array.Empty<TutorialStep>();
+
+        /// <summary>The moves of the attempt that the tutorial showed by hand and the player played, which its record counts; 0 on a board without the tutorial.</summary>
+        public int GuidedMoves => _tutorial?.GuidedMoves ?? 0;
+
         /// <summary>What each booster's disc on the shelf shows now.</summary>
         public IReadOnlyDictionary<BoosterKind, BoosterFace> ShelfFaces => _discs.All.ToDictionary(disc => disc.Key, disc => disc.Value.Face);
 
@@ -574,6 +634,7 @@ namespace Puzzle.Client.Stage
         /// <param name="brief">What the player's progress knows about this attempt, for the shelf and the result's card.</param>
         /// <param name="shelf">Which boosters used during play are open on the level, the one shown for the first time, and their prices. What the player holds is told after (<see cref="Tell"/>).</param>
         /// <param name="hints">The game's hints for the attempt; nothing shows none (the Editor's studies).</param>
+        /// <param name="tutorial">The tutorial's steps that may come on this board; nothing shows none (the Editor's studies, and a player who has seen them).</param>
         public static GameStage Open(
             Game game,
             ArtCatalogue art,
@@ -582,9 +643,10 @@ namespace Puzzle.Client.Stage
             AttemptBrief brief,
             ShelfBrief shelf,
             StageOpening opening = StageOpening.InTheLitRoom,
-            HintBrief? hints = null)
+            HintBrief? hints = null,
+            TutorialWatch? tutorial = null)
         {
-            var stage = new GameStage(game, art, effectArt, paintings, brief, shelf, hints);
+            var stage = new GameStage(game, art, effectArt, paintings, brief, shelf, hints, tutorial);
             // The engine's last events are its start's while no move is played: the specials of the start boosters.
             IReadOnlyList<GameEvent> startEvents = game.MovesUsed == 0 ? game.LastEvents : Array.Empty<GameEvent>();
             BoardEntrance.Play(stage._board, stage._tweens, stage._effects, startEvents);
@@ -617,6 +679,11 @@ namespace Puzzle.Client.Stage
             _result?.Place(layout);
             _offer?.Card.Place(layout.PlaceOfACard(_offer.Card.Width, _offer.Card.Height), layout.View);
             _ad?.Card.Place(layout.PlaceOfACard(_ad.Card.Width, _ad.Card.Height), layout.View);
+            _spotlight.Fit(layout.View);
+            if (_lessonLaid is Lesson laid)
+            {
+                LayTheLesson(laid, layout);
+            }
         }
 
         /// <summary>
@@ -679,6 +746,8 @@ namespace Puzzle.Client.Stage
                 FinishWhatWasShown();
             }
 
+            // Before the gesture that waited: a step that begins at this rest decides whether the board takes it.
+            ShowTheTutorial();
             ActOnTheWaitingGesture();
             ActOnTheWaitingUse();
             AskWhetherToLeaveOnceAtRest();
@@ -742,10 +811,15 @@ namespace Puzzle.Client.Stage
             _pointer.ClearSelection();
             ShowThePickedPiece();
             bool hadBegun = AttemptBegun.In(_game);
-            if (!_game.TryPlay(move))
+            if (_tutorial?.Takes(move) == false || !_game.TryPlay(move))
             {
                 ShowRefused(move);
                 return false;
+            }
+
+            if (_tutorial?.Played(move) is TutorialStep)
+            {
+                PutTheLessonAway();
             }
 
             ReportTheBeginning(hadBegun);
@@ -785,6 +859,9 @@ namespace Puzzle.Client.Stage
         /// <summary>The cues the stage sounded since this was asked last, in the order they fell, each once.</summary>
         public IReadOnlyList<SoundCue> TakeWhatSounded() => _sounded.TakeAll();
 
+        /// <summary>The steps of the tutorial done on this board since this was asked last, in the order they ended, each once.</summary>
+        public IReadOnlyList<TutorialStep> TakeTheTutorialStepsDone() => _tutorial?.TakeWhatWasDone() ?? Array.Empty<TutorialStep>();
+
         /// <summary>The pixel of the screen in the middle of a cell, counted from the screen's lower left corner: where a finger touches that cell.</summary>
         /// <exception cref="InvalidOperationException">The stage was not fitted to a screen yet.</exception>
         public Vector2 PixelOf(Position cell)
@@ -807,6 +884,12 @@ namespace Puzzle.Client.Stage
         public void PointerDown(Vector2 pixel)
         {
             TakeTheHintAway();
+            if (IsTheLessonSeen && _tutorial?.Touched() is TutorialStep)
+            {
+                PutTheLessonAway(); // a step that is only looked at ends with the touch, which does nothing else
+                return;
+            }
+
             if (IsShowingTheFinale)
             {
                 SkipTheFinale();
@@ -981,6 +1064,8 @@ namespace Puzzle.Client.Stage
             _pill.Dispose();
             _veil.Dispose();
             _secondVeil.Dispose();
+            _spotlight.Dispose();
+            _lessonPill.Dispose();
             _result?.Dispose();
             _offer?.Dispose();
             _ad?.Card.Dispose();
@@ -1656,6 +1741,11 @@ namespace Puzzle.Client.Stage
         /// </summary>
         private void PressTheDisc(BoosterKind booster)
         {
+            if (IsTheLessonSeen)
+            {
+                return; // the shelf's boosters wait while a step of the tutorial shows
+            }
+
             if (_discs.Guided == booster)
             {
                 _discs.Guide(null);
@@ -1878,7 +1968,7 @@ namespace Puzzle.Client.Stage
         private void ShowTheShelf()
         {
             bool isPlayed = _game.Status == GameStatus.Playing && !PlayerWentOn && !IsShowingTheFinale;
-            _discs.Show(_owned, ArmedBooster, isListening: isPlayed && ListensForTheShelf);
+            _discs.Show(_owned, ArmedBooster, isListening: isPlayed && ListensForTheShelf && !IsTheLessonSeen);
             BoosterUse? aimed = _arming switch
             {
                 Arming.Armed armed when _pointer.AimedAt is Position cell => UseOf(armed.Booster, cell),
@@ -1902,9 +1992,9 @@ namespace Puzzle.Client.Stage
         /// </summary>
         private PillWords PillNow(bool isPlayed)
         {
-            if (!isPlayed || _result != null || _offer != null)
+            if (!isPlayed || _result != null || _offer != null || IsTheLessonSeen)
             {
-                return PillWords.None;
+                return PillWords.None; // a step of the tutorial speaks on its own pill
             }
 
             if (_refused.HasValue && _clock < _refused.Value.Until)
@@ -1986,7 +2076,7 @@ namespace Puzzle.Client.Stage
                 return;
             }
 
-            bool isQuiet = TakesInput && _arming is Arming.Nothing && !_controls.IsHolding && !_pointer.IsPressing && _pointer.Selected == null;
+            bool isQuiet = IsQuietForTheTutorial && _pointer.Selected == null && _tutorial?.Showing == null;
             if (watch.IsDue(_clock, isQuiet))
             {
                 ThinkOutAHint(brief, watch);
@@ -2025,6 +2115,157 @@ namespace Puzzle.Client.Stage
             _hintWatch?.Touched(_clock);
             _hintMark.Hide();
             _hint = null;
+        }
+
+        // ---------- the tutorial ----------
+
+        /// <summary>The board lies at rest and takes a finger, nothing is armed and no finger holds the board or a disc: a step of the tutorial may begin.</summary>
+        private bool IsQuietForTheTutorial => TakesInput && _arming is Arming.Nothing && !_controls.IsHolding && !_pointer.IsPressing;
+
+        /// <summary>A step of the tutorial shows and is seen: no card hangs over it, nothing asks whether to leave, and the game is played.</summary>
+        private bool IsTheLessonSeen =>
+            _tutorial?.Showing != null && _result == null && _offer == null && !_isAskedToLeave && _game.Status == GameStatus.Playing && !PlayerWentOn;
+
+        /// <summary>The board as the tutorial is asked of it: a step is due on it only when it changed or a step ended.</summary>
+        private (int Moves, int Boosters, bool ExtraMoves) BoardForTheTutorial => (_game.MovesUsed, _game.BoostersUsed.Count, _game.ExtraMovesTaken);
+
+        /// <summary>
+        /// The tutorial at this step: at a quiet moment on a board it has not been asked of, a step that is due begins (a
+        /// hint that shows goes, a picked piece is put down); the step that shows is seen dimming in, or hidden while a
+        /// card hangs over it, and a move shown by hand has its two pieces lit while no finger is on the board.
+        /// </summary>
+        private void ShowTheTutorial()
+        {
+            if (_tutorial is not TutorialWatch watch)
+            {
+                return;
+            }
+
+            if (watch.Showing == null && watch.MayStillCome.Count > 0 && IsQuietForTheTutorial && _tutorialAskedOf != BoardForTheTutorial)
+            {
+                _tutorialAskedOf = BoardForTheTutorial;
+                if (watch.BeginWhatIsDue(_game) != null)
+                {
+                    TakeTheHintAway();
+                    _pointer.ClearSelection();
+                    _waiting = null;
+                }
+            }
+
+            bool isSeen = IsTheLessonSeen;
+            if (isSeen && !_wasLessonSeen)
+            {
+                _lessonSeenSince = _clock;
+            }
+
+            _wasLessonSeen = isSeen;
+            if (!isSeen || !(watch.Showing is Lesson lesson))
+            {
+                HideTheLesson();
+                return;
+            }
+
+            if (!ReferenceEquals(_lessonLaid, lesson) && _layout is ScreenLayout layout)
+            {
+                LayTheLesson(lesson, layout);
+            }
+
+            float seenFor = _clock - _lessonSeenSince;
+            _spotlight.Show(Easing.Out(Mathf.Clamp01(seenFor / LessonComesIn)));
+            bool isTheBoardUntouched = IsSettled && !_pointer.IsPressing && _pointer.Selected == null;
+            if (lesson is Lesson.Guided guided && isTheBoardUntouched && HoldsAPiece(guided.Move.From) && HoldsAPiece(guided.Move.To))
+            {
+                _guideMark.Show(guided.Move, _board.Piece(_ledger.PieceAt(guided.Move.From)), _board.Piece(_ledger.PieceAt(guided.Move.To)), seenFor);
+            }
+            else
+            {
+                _guideMark.Hide();
+            }
+        }
+
+        /// <summary>
+        /// Lays out what a step shows: the windows of its spotlight around the two pieces of a move and the line they
+        /// make, around an obstacle's cell or around a plaque, and its pill over the shelf, or under the plaques when it
+        /// speaks of one or when what it lights lies where the pill would stand over the shelf.
+        /// </summary>
+        private void LayTheLesson(Lesson lesson, ScreenLayout layout)
+        {
+            _lessonLaid = lesson;
+            _lessonPill.Show(TutorialWords.Of(lesson.Step, asksForATouch: lesson is Lesson.Look));
+            float scale = Mathf.Max(layout.ShelfScale, LessonPillLeastScale);
+            switch (lesson)
+            {
+                case Lesson.Guided guided:
+                    StandThePillClearOf(LightUpTheTrade(guided.Move, layout), layout, scale);
+                    break;
+                case Lesson.Look { Spot: LessonSpot.Cell cell }:
+                    Box[] windows = { WindowAround(cell.At, cell.At, layout) };
+                    _spotlight.LightUp(windows);
+                    StandThePillClearOf(windows, layout, scale);
+                    break;
+                case Lesson.Look look:
+                    bool isTheMedallion = ReferenceEquals(look.Spot, LessonSpot.MovesMedallion);
+                    Box plaque = (isTheMedallion ? _hud.MovesMedallion : _hud.GoalsPlaque) ?? throw new InvalidOperationException("The plaques were not hung before the tutorial pointed at one.");
+                    Box window = Box.Around(plaque.MiddleX, plaque.MiddleY, plaque.Width + 2f * LessonPlaqueMargin, plaque.Height + 2f * LessonPlaqueMargin);
+                    _spotlight.LightUp(new[] { window }, isTheMedallion ? window.Width / 2f : Spotlight.Rounding);
+                    _lessonPill.Stand(window.Bottom - LessonPillUnderThePlaques, ShelfPill.PillEdge.Head, scale, layout.ShelfWidth);
+                    break;
+                default:
+                    throw new InvalidOperationException($"The stage does not know how to show the step {lesson}.");
+            }
+        }
+
+        /// <summary>A trade's windows: each of its two pieces, and each line of three or more it makes (<see cref="TradeLine"/>), so a four or a five is seen whole.</summary>
+        private Box[] LightUpTheTrade(Move move, ScreenLayout layout)
+        {
+            Box[] windows = TradeLine.RunsOf(_game.Board, move)
+                .Select(run => WindowAround(run.First, run.Last, layout))
+                .Append(WindowAround(move.From, move.From, layout))
+                .Append(WindowAround(move.To, move.To, layout))
+                .ToArray();
+            _spotlight.LightUp(windows);
+            return windows;
+        }
+
+        /// <summary>The pill stands over the shelf, unless something lit lies under it there: then it hangs under the plaques.</summary>
+        private void StandThePillClearOf(IReadOnlyList<Box> windows, ScreenLayout layout, float scale)
+        {
+            _lessonPill.StandOverTheShelf(layout, scale);
+            if (windows.Any(window => window.Bottom < _lessonPill.Top))
+            {
+                _lessonPill.Stand(layout.HudBottom - LessonPillUnderThePlaques, ShelfPill.PillEdge.Head, scale, layout.ShelfWidth);
+            }
+        }
+
+        /// <summary>The window around the cells from one to the other (one cell, or the two of a trade), a little wider than they are, in the layout's points.</summary>
+        private static Box WindowAround(Position one, Position other, ScreenLayout layout)
+        {
+            float margin = LessonCellMargin * layout.CellSize;
+            float left = layout.BoardLeft + Mathf.Min(one.X, other.X) * layout.CellSize - margin;
+            float top = layout.BoardTop - Mathf.Min(one.Y, other.Y) * layout.CellSize + margin;
+            float width = (Mathf.Abs(one.X - other.X) + 1) * layout.CellSize + 2f * margin;
+            float height = (Mathf.Abs(one.Y - other.Y) + 1) * layout.CellSize + 2f * margin;
+            return new Box(left, top - height, width, height);
+        }
+
+        /// <summary>A step ended: its light and its pill go at once, and the board may be asked for the next step at the next quiet moment.</summary>
+        private void PutTheLessonAway()
+        {
+            HideTheLesson();
+            _lessonLaid = null;
+            _wasLessonSeen = false;
+            _tutorialAskedOf = null;
+        }
+
+        private void HideTheLesson()
+        {
+            _spotlight.Show(0f);
+            _guideMark.Hide();
+            if (!(_lessonPill.Words is PillWords.Silent))
+            {
+                _lessonPill.Show(PillWords.None);
+                _lessonLaid = null;
+            }
         }
 
         private void ShowThePickedPiece()

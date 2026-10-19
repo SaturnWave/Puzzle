@@ -606,5 +606,74 @@ namespace Puzzle.Client.Words
 
         /// <summary>Privacy card: the file's name and what a line of it is.</summary>
         PrivacyFileLine,
+
+        /// <summary>Tutorial, level 1, before the first move, first line of the pill: the lit plaque shows the level's goal.</summary>
+        TutorialGoal,
+
+        /// <summary>Tutorial, the goal plaque, second line: what to do. "taş" is a piece on the board (a tile).</summary>
+        TutorialGoalMore,
+
+        /// <summary>Tutorial, level 1, first line while two lit tiles are shown by hand: the move to make.</summary>
+        TutorialMatch,
+
+        /// <summary>Tutorial, the shown match, second line: why the move works.</summary>
+        TutorialMatchMore,
+
+        /// <summary>Tutorial, level 1, after the first move, first line: the lit moves medallion counts down.</summary>
+        TutorialMoves,
+
+        /// <summary>Tutorial, the moves medallion, second line: the level is lost when the moves run out.</summary>
+        TutorialMovesMore,
+
+        /// <summary>Tutorial, level 2, first line while a four-in-a-line move is shown by hand.</summary>
+        TutorialFour,
+
+        /// <summary>Tutorial, the shown four, second line: four make a brush (the game's rocket), which paints a row or a column.</summary>
+        TutorialFourMore,
+
+        /// <summary>Tutorial, level 3, first line while a five-in-a-line move is shown by hand.</summary>
+        TutorialFive,
+
+        /// <summary>Tutorial, the shown five, second line: five make a palette (the game's colour bomb), which collects every tile of the colour it is swapped with.</summary>
+        TutorialFiveMore,
+
+        /// <summary>Tutorial, the first board with crates (the engine's boxes), first line under the lit crate.</summary>
+        TutorialBox,
+
+        /// <summary>Tutorial, the crate, second line: some crates take more than one hit.</summary>
+        TutorialBoxMore,
+
+        /// <summary>Tutorial, the first board with varnish on the floor (the engine's jelly), first line under the lit cell.</summary>
+        TutorialJelly,
+
+        /// <summary>Tutorial, the varnish, second line: a match on the cell wipes a layer away.</summary>
+        TutorialJellyMore,
+
+        /// <summary>Tutorial, the first board with taped tiles (the engine's chains), first line under the lit tile.</summary>
+        TutorialChain,
+
+        /// <summary>Tutorial, the tape, second line: a match or a hit tears the tape.</summary>
+        TutorialChainMore,
+
+        /// <summary>Tutorial, the first board with lost frame corners (the engine's items), first line under the lit corner.</summary>
+        TutorialItem,
+
+        /// <summary>Tutorial, the frame corner, second line: it falls as the tiles under it go.</summary>
+        TutorialItemMore,
+
+        /// <summary>Tutorial, the first jigsaw a piece waits on, first line: the lit piece and its lit place.</summary>
+        TutorialFirstPiece,
+
+        /// <summary>Tutorial, the first piece, second line: where the pieces come from.</summary>
+        TutorialFirstPieceMore,
+
+        /// <summary>Tutorial, the first painting made whole on its jigsaw, first line under the lit painting.</summary>
+        TutorialFirstPainting,
+
+        /// <summary>Tutorial, the first painting, second line: a room's five paintings restore it.</summary>
+        TutorialFirstPaintingMore,
+
+        /// <summary>Tutorial, the small last line of a step that is only looked at: a touch anywhere goes on.</summary>
+        TutorialTouchToGoOn,
     }
 }
