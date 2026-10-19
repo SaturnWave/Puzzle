@@ -928,7 +928,11 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
   - Engeller: her engel ilk görüldüğü bölümde kısaca gösterilir.
   - Müze ve yapboz: ilk parçanın yapboza yerleştirilmesi ve ilk tablonun tamamlanması rehberli.
   - Öğreticinin gösterdiği hamleyi ipucu seçer.
-- **Booster tanıtımı (#7):** öğreticiyle aynı dili kullanır; öğreticiden sonra.
+- **Booster tanıtımı (#7):** öğreticiyle aynı dili kullanır; öğreticiden sonra. Kararlar (2026-10-19):
+  - Bölüm içi booster'lar (spatula 7, satır fırçası 12, sütun fırçası 16, karıştırma 20) açıldıkları bölümde bir kez elle kullandırılır: gerisi kararır, disk ve hedef aydınlık. Bugünkü ışık halkası ve "Yeni: …" yazısı bu adıma dönüşür.
+  - Rehberli kullanım bedavadır: hiçbir şey harcanmaz, hoş geldin hediyesindeki 3 adet olduğu gibi kalır.
+  - Sonradan bir booster'a uzun basınca kısa, döngülü bir canlandırma kartı açılır: booster'ın etkisi gerçek tahta çizimiyle gösterilir, video dosyası yok. Kart kapatılabilir.
+  - Bölüm öncesi booster'lar (fırça + sıçrama, gökkuşağı paleti, +3 hamle) oyuncu bir bölümü ilk kez kaybedip yeniden denerken başlangıç kartında tek tek aydınlanır, her biri tek cümleyle.
 - **Dil desteği (#8):** ilk sürümde 13 dil: İngilizce, Türkçe, Korece, Japonca, Almanca, Fransızca, İspanyolca, Portekizce (Brezilya), İtalyanca, Rusça, Çince (basitleştirilmiş ve geleneksel), Endonezce. İlk dil telefonun dili, desteklenmiyorsa İngilizce; ayarlardan değiştirilir. Tablo adları seçilen dilde, ressam adları değişmez. Çeviriler yayından önce ana dili olan biri tarafından okunur. Arapça ve Tayca sonra.
 - **Müzik (#9):** proje sahibinin Suno Premier hesabıyla sözsüz müzik üretilecek: müze teması, tahta müziği, kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül. İstekler ve Suno'ya yazılacaklar: `docs/music/MUSIC_BRIEF.md` ("Müzik İstekleri" PDF'i).
 

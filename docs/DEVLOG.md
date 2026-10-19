@@ -11,6 +11,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - İpucu: düğme yok; hareketsizlikte kendiliğinden; denemede 2–3 ipucu; hamleyi uzman olmayan bir bot seçer ("yardım etsin ama o kadar da değil"); görünüş telefonda denenecek.
 - Öğretici: ilk 3 bölüm, hedef ve hamle sayısı, engeller ilk görüldüğünde, müze ve yapboz. Denemede gerekirse kısaltılır.
 - Müzik: proje sahibinin Suno Premier hesabıyla sözsüz müzik üretilecek; istekler `docs/music/MUSIC_BRIEF.md`.
+- Booster tanıtımı (#7): bölüm içi booster açıldığı bölümde bir kez elle ve bedava kullandırılır; uzun basınca döngülü canlandırma kartı; bölüm öncesi booster'lar ilk kayıptan sonraki başlangıç kartında tanıtılır.
 
 **Git kimliği**
 - Commit'ler iş hesabının adıyla atılıyordu (ArcanCaglayan, otekyazilim adresi). Proje sahibinin isteğiyle bilgisayarın ortak git ayarı (`C:\Users\arcan\.gitconfig`) SaturnWave kimliğine geçirildi; e-posta GitHub'ın gizli adresi. Eski dosyanın kopyası yanında duruyor. Geçmiş commit'ler eski adla kalıyor.
