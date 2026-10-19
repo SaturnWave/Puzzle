@@ -21,6 +21,12 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Ölçüm (500 bölüm, bot başına 10.000 deneme, her ipucuna uyulursa): casual ipucu ortalama oyuncuya +3,3–4,4, zorlanana +4,8–7,1 puan. Proje sahibi casual'ı, 8 saniye beklemeyi ve ipucu görülen denemelerin ayrı grup olmasını seçti; bu ikisi öğreticiden sonra işlenecek.
 - 3.920 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: hale görünüyor, asıl karar telefonda. Telefon testleri T290–T299.
 
+**On üç dil (#8, 2. adım)**
+- Bitti (a675d0d): on dil bekleme klasöründen oyuna geçti; booster tanıtımının 13 yazısı çevrildi, eski 4 kimlik atıldı. Dil kartı 13 dili iki sütunda gösteriyor.
+- Rusça, Japonca ve Çince için Noto yedek yazı tipleri (OFL, notofonts sürümlerinden, toplam yaklaşık 45 MB indirildi; yalnızca gereken dosya zip arşivinin içinden çekildi). Atlaslar yalnızca tablolarda geçen harflerden; APK'ya tahminen 4,5 MB. Yazı tipi dosyaları Korecedeki gibi depoda (44,6 MiB kaynak, 27,5 MiB atlas).
+- Her dil kendi Han biçimini önce soruyor; Japonca ve Çince satırlar TextMesh Pro'nun kurallarıyla kırılıyor. Yedi satır 9 puntonun altına düştüğü için kısaltıldı.
+- 4.175 test geçti; ekonomi denetimi temiz; Unity'de denetimler ve on bir dilde, iki ekranda yürüyüşler hatasız; durgun sayfalarda taşma yok. Japonca, Rusça, İspanyolca görüntülere ve dil kartına baktım. Telefon testleri T350–T363; telefon dilini değiştirmek gerekenler proje sahibinin.
+
 **Booster tanıtımı (#7)**
 - Bitti (c390a84, aa8d2b7): bölüm içi booster açıldığı bölümde (7, 12, 16, 20) bir kez elle ve bedava kullandırılıyor; hedefi tahtanın kopyasında hedeflere en çok ilerleten kullanım. Herhangi bir booster'a basılı tutunca kart iner, etkisini küçük gerçek bir tahtada tekrar tekrar oynar. Başlangıç booster'ları bir bölüm ilk kez kazanılamadan bırakılınca kartta sırayla tanıtılıyor.
 - Proje sahibinin üç cevabı: uzun basma ilk rehberli kullanımdan sonra bir kez öğretiliyor; bedava kullanım tek başına denemeyi başlatmıyor (hemen çıkmak can götürmez); başlangıç tanıtımı hem kayıpta hem hamleden sonra çıkışta.

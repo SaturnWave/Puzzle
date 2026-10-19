@@ -61,6 +61,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A36 | İpucunun aynı çıkması .NET ve Mono'da gösterildi, telefonun IL2CPP derlemesinde değil (botun seçimi kesirli sayı kullanıyor). İpucunun telefonda düşünme süresi ölçülmedi. | #6 | Düşük | T298; telefonda kayıtlarla karşılaştırma |
 | A37 | Öğretici: 3.–6. bölümlerin hiçbiri beşli sunmazsa beşli adımı bırakılır (taramada nadir). Öteki özel taşlar için adım yok. Köşe parçasının yerini gösteren pencere çerçevenin üstüne taşıyor. 1.–3. bölümlerin telefon kayıtları rehberli hamle yüzünden çoğunlukla yardımlı sayılır. | #5 | Düşük | T315, T321 |
 | A38 | Booster tanıtımı: küçük ekranda (2076×2152) uzun basma ve dikey fırça hapları tahtanın kenar hücrelerinin üstüne biniyor. Kartın küçük tahtasında düşen taşlar bazen özel taş yapıyor; +3 hamle kartında yalnızca madalyon sayıyor. Uzun basma yazısını kaçıran ve 20. bölümü geçmiş oyuncu onu hiç görmez. Kartın küçük tahtası çizim sırası kaydırılarak çiziliyor; tahta maskesi yalnızca tahtanın çizim aralığını kesiyor. | #7 | Düşük | T336, T339, T344 |
+| A39 | On üç dil: çevirilerin hepsi makine çevirisi, yayından önce ana dili olan biri okumalı. Bütün yedek atlaslar her dilde yüklenir (16,5 MiB doku). CJK atlasları 40 örnekleme boyutunda; büyük başlıklarda keskinlik telefonda bakılmalı. İspanyolca "MOVIMIENTOS" madalyon halkasına yakın. Dil kartında başka dillerin adlarındaki ortak Han karakterleri seçili dilin biçiminde çıkabilir. İspanyolca 18–20. odaların adları çeviri. | #8 | Orta | T355, T356, T359, T362 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -384,6 +385,25 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T343 | Tanıtım bir kez | Tanıtımı bitir, kartı kapatıp yeniden aç; uygulamayı kapatıp aç, başka bir bölümü kaybet | Tanıtım bir daha gelmez | Booster tanıtımı | Bekliyor |
 | T344 | Kartın canlandırması | Yedi kartın her birini birkaç tur izle | Etki anlaşılıyor; düşen taşlar bazen özel taş yapsa da kafa karıştırmıyor; hız rahat | Booster tanıtımı | Bekliyor |
 | T345 | Dillerde | Ayarlardan İngilizce ve Koreceye geçip adımları ve kartları gez | Her yazı hapına ve kartına sığar, doğal okunur | Booster tanıtımı | Bekliyor |
+
+### F16. On üç dil (#8)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T350 | Telefon diliyle ilk açılış | Oyunun verisini sil; telefonu sırayla Deutsch, Français, Español, Italiano, Bahasa Indonesia yap, her birinde oyunu aç (telefon dili: proje sahibi) | Oyun telefonun dilinde açılır; ayarlardaki dil satırı o dilin kendi adını gösterir | Diller | Bekliyor |
+| T351 | Portekizce bölgeleri | Telefonu Português (Portugal), sonra Português (Brasil) yap; her seferinde verisi silinmiş oyunla aç | İkisinde de oyun Brezilya Portekizcesi; dil satırı "Português (Brasil)" | Diller | Bekliyor |
+| T352 | Çince bölgeleri | Telefonu 中文 (简体, 中国), sonra 中文 (繁體, 台灣) ve 中文 (香港) yap; verisi silinmiş oyunla aç | Çin: 简体中文; Tayvan ve Hong Kong: 繁體中文; hiçbir yerde boş kutu yok | Diller | Bekliyor |
+| T353 | Desteklenmeyen dil | Telefonu العربية, ไทย, Nederlands yap; verisi silinmiş oyunla aç | Oyun İngilizce açılır | Diller | Bekliyor |
+| T354 | On üç dillik kart | Ayarlar > Dil | Kart tek başına asılı; iki sütunda 13 dil, her biri kendi yazısıyla; seçili dilde yeşil tik; Tamam, kapatma düğmesi ve geri hareketi kartı kapatır; bütün satırlara parmakla rahat basılır | Diller | Bekliyor |
+| T355 | Japonca tam tur | 日本語 seç; salon, harita, koleksiyon, bölüm kartı, bir bölüm, kazanma kartı, +5 teklifi, mağaza | Boş kutu yok; kana ve kanji temiz; satır başında küçük kana, ー, 。、！ yok; plaka başlıkları doğal yerden kırılıyor | Diller | Bekliyor |
+| T356 | Han karakterlerinin biçimi | Aynı ekranı 日本語, 简体中文, 繁體中文 ile sırayla aç; 次, 今, 海, 道 ve ：！ işaretlerine yakından bak | Her dil kendi biçimini çizer: basitleştirilmiş Çincede ： ve ！ hücrenin solunda, gelenekselde ortada; Japonca biçimler Japon yazısı gibi | Diller | Bekliyor |
+| T357 | Rusça | Русский seç; mağaza (ücretsiz şerit), altın paketi kartı, öğretici, bölüm kartı | Kiril harfler tasarım yazısıyla uyumlu; "+1 ход / +2 хода / +5 ходов" doğru; «» tırnakları ve "1 250" ayırıcısı görünür | Diller | Bekliyor |
+| T358 | Fransızca noktalama | Français seç; kazanma kartı, ayarların alt satırı, koleksiyonda "Les Deux Sœurs" | ! ? : ; satır başına düşmez; œ doğru çizilir | Diller | Bekliyor |
+| T359 | İspanyolca ve Almanca uzun sözcükler | Español: bölüm tahtası ve bölüm kartı; Deutsch: başlangıç booster'ları ve booster kartları | ¡ ¿ çizilir; "MOVIMIENTOS" madalyonda rahat okunuyor mu, yoksa "JUGADAS" mı olmalı? Hiçbir şey kenardan taşmaz | Diller | Bekliyor |
+| T360 | Öğretici ve booster tanıtımı yeni dillerde | Yeni oyuncu olarak ja, zh-Hant, ru, de ile ilk üç bölümü ve booster tanıtımını oyna (uzun basma dahil) | Haplar ve kartlar sığar, yazılar okunur | Diller | Bekliyor |
+| T361 | İki ekran | İç ve kapak ekranında ja, ru, de ile salon, dil kartı, koleksiyon; oyun açıkken telefonu açıp kapat | Dil kartı ve plakalar iki ekranda da sığar; açıp kapatınca boş kutu ya da taşma yok | Diller | Bekliyor |
+| T362 | Hızlı dil değiştirme | Dil kartında ja → zh-Hans → zh-Hant → ru → ko → tr arasında hızlıca 10 kez geç | Takılma yok; kart ve sayfa hemen yeni dilde; uygulama kapanmaz | Diller | Bekliyor |
+| T363 | Seçim telefon dilini geçer | Telefon Türkçeyken oyunda Русский seç, oyunu tamamen kapatıp aç; sonra telefonu 日本語 yap, yeniden aç | İki açılışta da oyun Rusça kalır | Diller | Bekliyor |
 
 ### G. Görünüm
 

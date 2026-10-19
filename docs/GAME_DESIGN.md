@@ -1377,6 +1377,23 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** küçük ekranda (2076×2152) bazı haplar tahtanın kenar hücrelerinin üstüne biniyor. Kartın küçük tahtasında düşen taşlar bazen yeni özel taş yapıyor. +3 hamle kartında yalnızca madalyon sayıyor. Uzun basma yazısını kaçıran oyuncu sonraki açılış bölümünde görür, 20. bölümü geçmişse hiç görmez. Telefonda bakılmadı.
 - **Doğrulama:** 3.994 test. Ekonomi denetimi temiz. Unity'de bütün denetimler, öğretici ve booster yürüyüşleri (Türkçe, İngilizce, Korece) hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T330–T345.
 
+**Dil desteği, 2. adım (2026-10-19, #8).** Kararlar §19'da. Oyun artık 13 dil konuşuyor: İngilizce, Türkçe, Korece, Almanca, Fransızca, İspanyolca, Portekizce (Brezilya), İtalyanca, Endonezce, Rusça, Japonca, Çince (basitleştirilmiş ve geleneksel).
+
+- **Tablolar:** on dilin sözcük tabloları ve tablo adları bekleme klasöründen oyuna geçti (232 kimlik). Booster tanıtımının 13 yazısı da çevrildi. Yerleşik tablo adları Wikidata'dan, katalogdaki tablo ve müzeyle eşleşince alındı; kalanı çeviri.
+- **İlk dil:** telefonun dili. Portekizcenin her bölgesi Brezilya Portekizcesine, Çin Çincesi basitleştirilmişe, Tayvan ve Hong Kong gelenekseline gider. Desteklenmeyen dilde İngilizce.
+- **Dil kartı:** ayarlardan açılır, sayfada tek başına asılı durur; 13 dil iki sütunda, her biri kendi yazısıyla.
+- **Yazı tipleri:** Kiril, Japonca ve Çince için Noto yedekleri (OFL; kaynak notofonts GitHub sürümleri; `art/fonts/licences.json`). Her dil kendi Han biçimini önce sorar: Japonca JP, basitleştirilmiş SC, geleneksel TC, Korece KR. Atlaslar yalnızca tablolarda geçen harflerden kurulur; APK'ya tahminen 4,5 MB ekler (tam yazı tipleri 45 MB olurdu). Yazı tipi dosyaları, Korecedeki gibi depoda tutulur.
+- **Satır kırma:** Japonca ve Çince boşluksuz satırlar TextMesh Pro'nun baş ve son karakter kurallarıyla kırılır. Fransızcada ! ? : ; önünde bölünmez boşluk var. Harf setine ¡ ¿ œ Œ « » eklendi.
+- **Sığma:** bütün dillerde iki ekranda da durgun sayfalarda kenardan taşan satır yok. 9 puntonun altına düşen yedi satır kısaltıldı (2 Fransızca, 1 Almanca, 1 Japonca, 3 Rusça).
+- **Bilinen:**
+  - Çevirilerin hepsi makine çevirisi; yayından önce her dili ana dili olan biri okumalı.
+  - Bütün yedek atlaslar her dilde belleğe yüklenir (16,5 MiB doku).
+  - İspanyolca "MOVIMIENTOS" madalyon halkasına çok yakın (kısa seçenek "JUGADAS").
+  - "Português (Brasil)" ve "Bahasa Indonesia" dil kartında yaklaşık %80'e küçülüyor.
+  - Japonca ve Çince yedeklerin kalınlığı (700) Koreceninkinden (800) biraz ince.
+  - Telefonda bakılmadı.
+- **Doğrulama:** 4.175 test. Ekonomi denetimi temiz. Unity'de bütün denetimler; ekran, öğretici ve booster yürüyüşleri on bir dilde iki ekranda hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T350–T363.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici
