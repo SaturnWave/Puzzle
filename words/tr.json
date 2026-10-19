@@ -72,11 +72,7 @@
     {"id":"BoosterPickAColumn","text":"Bir sütun seç","note":"Second line of the armed column brush's pill."},
     {"id":"BoosterNothingToHit","text":"Burada vurulacak bir şey yok","note":"Why a spatula or brush did nothing (nothing was spent)."},
     {"id":"BoosterCannotShuffle","text":"Tahta karıştırılamıyor","note":"Why the shuffle did nothing (nothing was spent)."},
-    {"id":"BoosterFirstUseHitCell","text":"Yeni: Spatula! Diske dokun, sonra bir taşa.","note":"The one sentence on the level the spatula opens on, until it is first touched."},
-    {"id":"BoosterFirstUseHitRow","text":"Yeni: Yatay fırça! Diske dokun, sonra bir satıra.","note":"The sentence on the level the row brush opens on."},
-    {"id":"BoosterFirstUseHitColumn","text":"Yeni: Dikey fırça! Diske dokun, sonra bir sütuna.","note":"The sentence on the level the column brush opens on."},
-    {"id":"BoosterFirstUseShuffle","text":"Yeni: Paleti karıştır! Diske dokun, taşlar yeniden dizilsin.","note":"The sentence on the level the shuffle opens on."},
-    {"id":"BoosterEveryLevelWithout","text":"Her bölüm booster'sız geçilebilir","note":"Smaller line beside the first booster's first use: the levels are made to be won without boosters."},
+    {"id":"BoosterEveryLevelWithout","text":"Her bölüm booster'sız geçilebilir","note":"Small last line beside the spatula when the booster intro asks for its target: the levels are made to be won without boosters."},
     {"id":"BoosterCostsNoMove","text":"Kullanmak hamle harcamaz","note":"Smaller line of the card that offers a booster used during play."},
     {"id":"BoosterOpensOn","text":"Bölüm {level}","note":"On the disc of a booster that is not open yet: the level it opens on."},
     {"id":"StartGoals","text":"HEDEFLER","note":"Level card: header over the goals (small capitals)."},
@@ -224,6 +220,18 @@
     {"id":"TutorialFirstPieceMore","text":"Kazandığın her bölüm bir parça verir","note":"Tutorial, the first piece, second line: where the pieces come from."},
     {"id":"TutorialFirstPainting","text":"İlk tablon müzedeki yerini aldı!","note":"Tutorial, the first painting made whole on its jigsaw, first line under the lit painting."},
     {"id":"TutorialFirstPaintingMore","text":"Beş tablo tamamlanınca oda onarılır","note":"Tutorial, the first painting, second line: a room's five paintings restore it."},
-    {"id":"TutorialTouchToGoOn","text":"Devam etmek için dokun","note":"Tutorial, the small last line of a step that is only looked at: a touch anywhere goes on."}
+    {"id":"TutorialTouchToGoOn","text":"Devam etmek için dokun","note":"Tutorial, the small last line of a step that is only looked at: a touch anywhere goes on."},
+    {"id":"TutorialBoosterHitCell","text":"Yeni: Spatula! Diske dokun","note":"Booster intro, the level the spatula opens on, first line while its lit disc waits to be touched (\"disk\" is the round button on the shelf)."},
+    {"id":"TutorialBoosterHitRow","text":"Yeni: Yatay fırça! Diske dokun","note":"Booster intro, the level the row brush opens on, first line while its lit disc waits to be touched."},
+    {"id":"TutorialBoosterHitColumn","text":"Yeni: Dikey fırça! Diske dokun","note":"Booster intro, the level the column brush opens on, first line while its lit disc waits to be touched."},
+    {"id":"TutorialBoosterShuffle","text":"Yeni: Paleti karıştır! Diske dokun","note":"Booster intro, the level the shuffle opens on, first line while its lit disc waits to be touched (touching it deals the tiles anew)."},
+    {"id":"TutorialBoosterPickTheCell","text":"Şimdi parlayan taşa dokun","note":"Booster intro, first line once the spatula is picked up: touch the one lit tile on the board."},
+    {"id":"TutorialBoosterPickTheRow","text":"Şimdi parlayan satıra dokun","note":"Booster intro, first line once the row brush is picked up: touch the lit row anywhere."},
+    {"id":"TutorialBoosterPickTheColumn","text":"Şimdi parlayan sütuna dokun","note":"Booster intro, first line once the column brush is picked up: touch the lit column anywhere."},
+    {"id":"TutorialBoosterFree","text":"Bu seferlik bedava","note":"Booster intro, small last line: this first use of the new booster costs nothing (the player's own stock is not touched)."},
+    {"id":"TutorialStartRocketAndBomb","text":"Seçersen bölüme fırça ve sıçramayla başlarsın","note":"Start boosters intro on the level card after a lost level, under the lit brush-and-splash disc: what choosing it does."},
+    {"id":"TutorialStartColorBomb","text":"Seçersen bölüme gökkuşağı paletiyle başlarsın","note":"Start boosters intro, under the lit rainbow palette disc: what choosing it does."},
+    {"id":"TutorialStartExtraMoves","text":"Seçersen bölüme {moves} hamle fazlayla başlarsın","note":"Start boosters intro, under the lit extra moves disc: what choosing it does. {moves} is the number of extra moves."},
+    {"id":"BoosterCardTouchToClose","text":"Kapatmak için dokun","note":"Small last line of the card a long press on a booster opens (it shows what the booster does): a touch anywhere closes it."}
   ]
 }

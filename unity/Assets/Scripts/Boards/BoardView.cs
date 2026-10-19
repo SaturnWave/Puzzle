@@ -141,17 +141,20 @@ namespace Puzzle.Client.Boards
         }
 
         /// <summary>Puts the board where the layout says, at the layout's cell size.</summary>
-        public void Place(ScreenLayout layout)
+        public void Place(ScreenLayout layout) => Place(new Vector2(layout.BoardLeft, layout.BoardTop), layout.CellSize);
+
+        /// <summary>Puts the board's top left corner at a place of what it hangs under, with cells of a size (a tiny board on a card: BoosterCard).</summary>
+        public void Place(Vector2 topLeft, float cellSize)
         {
-            _root.localPosition = new Vector3(layout.BoardLeft, layout.BoardTop, 0f);
-            _root.localScale = new Vector3(layout.CellSize, layout.CellSize, 1f);
+            _root.localPosition = new Vector3(topLeft.x, topLeft.y, 0f);
+            _root.localScale = new Vector3(cellSize, cellSize, 1f);
 
             // The weave keeps its size in points, so a larger cell shows more of its repeats.
-            float repeatsPerCell = layout.CellSize / BoardFloor.WeavePitch;
+            float repeatsPerCell = cellSize / BoardFloor.WeavePitch;
             _weave.RepeatTexture(new Vector2(repeatsPerCell, repeatsPerCell));
 
             // The gap between the board and its exit marks is the frame's, in points; here it is told in cells.
-            float markMiddleBelowCell = ScreenLayout.ExitGap / layout.CellSize + ScreenLayout.ExitSizeInCells / 2f;
+            float markMiddleBelowCell = ScreenLayout.ExitGap / cellSize + ScreenLayout.ExitSizeInCells / 2f;
             foreach (KeyValuePair<Position, Transform> exit in _exits)
             {
                 exit.Value.localPosition = new Vector3(exit.Key.X + 0.5f, -(exit.Key.Y + 1f + markMiddleBelowCell), 0f);

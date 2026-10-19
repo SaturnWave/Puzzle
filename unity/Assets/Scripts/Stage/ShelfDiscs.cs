@@ -28,16 +28,16 @@ namespace Puzzle.Client.Stage
     /// <summary>
     /// The four discs of the boosters used during play on the board's shelf, after the pause disc (BoardTR), and what
     /// they show: how many are held, or the plus where none is; the armed one in its green ring with the others set
-    /// aside; one that is not open yet dimmed with the level it opens on (<see cref="ShelfBrief"/>); the one shown
-    /// for the first time in a ring of light that breathes; a shake for the one whose use the engine refused. The
-    /// stage decides what each shows; this only draws it.
+    /// aside; one that is not open yet dimmed with the level it opens on (<see cref="ShelfBrief"/>); the one the
+    /// tutorial asks to be pressed in a ring of light that breathes (#7); a shake for the one whose use was refused.
+    /// The stage decides what each shows; this only draws it.
     /// </summary>
     internal sealed class ShelfDiscs
     {
         /// <summary>A disc is drawn 60 points across; the shelf's places say how large it is on a screen.</summary>
         private const float DrawnSize = 60f;
 
-        /// <summary>The ring of light around a disc shown for the first time: so many times the disc across, breathing between these strengths.</summary>
+        /// <summary>The ring of light around the disc the tutorial asks to be pressed: so many times the disc across, breathing between these strengths.</summary>
         private const float GuideAcross = 1.42f;
         private const float GuideBreathSeconds = 1.2f;
         private const float GuideFaintest = 0.45f;
@@ -72,7 +72,7 @@ namespace Puzzle.Client.Stage
             _guide.enabled = false;
         }
 
-        /// <summary>The booster that is shown for the first time, ringed with light; nothing for none.</summary>
+        /// <summary>The booster the tutorial asks to be pressed, ringed with light; nothing for none.</summary>
         public BoosterKind? Guided { get; private set; }
 
         /// <summary>Every disc with its booster, from the shelf's left end: what a finger may press.</summary>
@@ -112,7 +112,7 @@ namespace Puzzle.Client.Stage
             }
         }
 
-        /// <summary>Rings a booster's disc with breathing light, the one shown for the first time; nothing takes the ring away.</summary>
+        /// <summary>Rings a booster's disc with breathing light, the one the tutorial asks to be pressed; nothing takes the ring away.</summary>
         public void Guide(BoosterKind? booster) => Guided = booster;
 
         /// <summary>The disc of a booster whose use the engine refused shakes, from this moment of the stage's clock.</summary>

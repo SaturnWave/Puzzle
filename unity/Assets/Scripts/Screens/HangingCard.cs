@@ -229,6 +229,9 @@ namespace Puzzle.Client.Screens
         /// <returns>True when that pressed a control: the finger came down on it and lifted on it. <paramref name="asks"/> is then what that press asks for.</returns>
         public bool FingerUp(out TPress asks) => _presses.FingerUp(out asks);
 
+        /// <summary>What the control a finger holds on the card asks for, while the finger is still on it (<see cref="PressSet{TAction}.TryGetHeld"/>).</summary>
+        public bool TryGetHeld(out TPress asks) => _presses.TryGetHeld(out asks);
+
         /// <summary>The touch ended without a lift the game saw: nothing is pressed.</summary>
         public void FingerGone() => _presses.FingerGone();
 

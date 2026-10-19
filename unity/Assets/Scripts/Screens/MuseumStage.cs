@@ -112,6 +112,16 @@ namespace Puzzle.Client.Screens
     /// painting's jigsaw), and whoever owns the stage opens it, out of the same dark.
     /// </para>
     /// <para>
+    /// The first time the card before a level comes down for a level the player tried and did not win (lost, or left
+    /// after a move), the tutorial shows the start boosters on it (#7): the card is dimmed but for one booster's disc
+    /// and name, and a pill under the card says what it is and what choosing it does; a touch anywhere lights the next,
+    /// and after the third the card is the player's. Nothing on the card is pressed meanwhile; the way back takes the
+    /// card up and the step comes again on the next card. The step done is reported (<see cref="TakeTheTutorialStepsDone"/>).
+    /// A finger held on a start booster's disc for <see cref="Tempo.LongPress"/> chooses nothing: a card comes down in
+    /// front that shows what the booster does on a tiny board of its own (<see cref="BoosterCard{TPress}"/>), which a
+    /// touch anywhere or the way back takes up.
+    /// </para>
+    /// <para>
     /// A page is also turned by a swipe (<see cref="PageSwipe"/>): a finger that goes clearly sideways drags the page
     /// that is shown, and its neighbour on the bar comes in beside it; let go, the row settles on the neighbour or
     /// springs back, and the bar marks the page it settled on. Beyond the bar's first and last page the page only
@@ -130,6 +140,13 @@ namespace Puzzle.Client.Screens
     {
         /// <summary>A card in front of another stands this far over the foot of the one behind, in that card's points.</summary>
         private const float InFrontOverTheFoot = 16f;
+
+        /// <summary>The tutorial's dark over the card before a level comes in over this long.</summary>
+        private const float LessonComesIn = 0.35f;
+
+        /// <summary>The tutorial's pill hangs this many of the card's points under what rides under the card (its green button), and keeps this far from the screen's sides.</summary>
+        private const float LessonPillUnderTheCard = 14f;
+        private const float LessonPillFromTheSides = 16f;
 
         /// <summary>How large the mark of a card that tells what a request came to is drawn.</summary>
         private const float NoticeMarkSize = 100f;
@@ -199,9 +216,40 @@ namespace Puzzle.Client.Screens
         /// <summary>How long the page that is shown has been the one shown.</summary>
         private float _secondsOnThePage;
 
+        /// <summary>The museum's own clock, which only <see cref="Advance"/> moves: how long a finger has held a start booster's disc.</summary>
+        private float _clock;
+
+        /// <summary>When on the clock the finger came down on a control of the card before a level that it still holds; nothing while it holds none.</summary>
+        private float? _heldSince;
+
+        /// <summary>True once a finger came down on the card a long press brought: its lift takes that card up. The lift of the finger whose long press brought it does not.</summary>
+        private bool _isATouchOnTheBoosterCard;
+
+        /// <summary>Paints the effects of the card a long press brings, once: the game's own when the session lends them, painted here otherwise.</summary>
+        private EffectArt? _effectArt;
+        private readonly bool _ownsTheEffectArt;
+
+        /// <summary>True while the start boosters are still to be shown on the card before the level (the tutorial's step); false once shown, or for a player who has seen them.</summary>
+        private bool _startBoostersToShow;
+
+        /// <summary>Which of the start boosters the tutorial lights on the card now, by its place on the card's shelf; nothing while none is lit.</summary>
+        private int? _startBoosterLit;
+
+        /// <summary>When on the clock the start boosters' step began to show, for its dark to come in.</summary>
+        private float _startBoostersSince;
+
+        /// <summary>The steps of the tutorial shown to their end here that the stage's owner has not taken yet.</summary>
+        private readonly List<TutorialStep> _stepsDone = new List<TutorialStep>();
+        private readonly Spotlight _spotlight;
+        private readonly ShelfPill _lessonPill;
+
         private MuseumStage(
-            MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, DeviceView device, LevelBrief level)
+            MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, DeviceView device, LevelBrief level,
+            bool showsTheStartBoosters, EffectArt? effectArt)
         {
+            _startBoostersToShow = showsTheStartBoosters;
+            _effectArt = effectArt;
+            _ownsTheEffectArt = effectArt == null;
             _visit = visit;
             _paintings = paintings;
             _art = art;
@@ -219,6 +267,8 @@ namespace Puzzle.Client.Screens
             _wallet = WalletRow.Create(_root.transform, art, wallet);
             _veil = Veil.Create(_root.transform, art);
             _secondVeil = Veil.Create(_root.transform, art, DrawOrder.SecondVeil);
+            _spotlight = Spotlight.CreateOverACard(_root.transform, art);
+            _lessonPill = ShelfPill.CreateForLessonsOnACard(_root.transform, art);
             (_page as IShopPage)?.Tell(shop);
             ListenToThePage();
         }
@@ -257,6 +307,18 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The start boosters chosen on the card before a level; none while no such card hangs.</summary>
         public StartChoice StartChoice => StartCard?.Choice ?? StartChoice.None;
+
+        /// <summary>The start booster the tutorial lights on the card before the level now; nothing while none is lit.</summary>
+        public BoosterKind? StartBoosterLit => _startBoosterLit is int lit ? LevelBrief.StartBoosters[lit] : (BoosterKind?)null;
+
+        /// <summary>What the tutorial's pill on the card before the level says now; <see cref="PillWords.None"/> while it says nothing.</summary>
+        public PillWords WhatTheLessonSays => _lessonPill.Words;
+
+        /// <summary>The booster the card in front shows after a long press; nothing while no such card is in front.</summary>
+        public BoosterKind? BoosterCardShown => (TopCard as BoosterCardOverTheCard)?.Shown.Booster;
+
+        /// <summary>How many times the card in front has shown its booster's effect through; 0 while no such card is in front.</summary>
+        public int BoosterCardTimesShown => (TopCard as BoosterCardOverTheCard)?.Shown.TimesShown ?? 0;
 
         /// <summary>The wallet as the stage was last told of it.</summary>
         public WalletView Wallet => _wallet.Wallet;
@@ -435,11 +497,13 @@ namespace Puzzle.Client.Screens
         /// <param name="device">The phone as the settings card shows it; told anew when the player changes something of it.</param>
         /// <param name="level">What the card before the level the player stands on tells of it and offers for it.</param>
         /// <param name="opening">In the lit room, as the game starts; or out of the dark a result's card or a jigsaw left behind.</param>
+        /// <param name="showsTheStartBoosters">True when the card before the level shows the start boosters one after another the first time it comes down (TutorialPlan.IntroducesTheStartBoosters).</param>
+        /// <param name="effectArt">The pictures of what is thrown over a board, which the card a long press brings plays with; nothing paints them when that card first comes.</param>
         public static MuseumStage Open(
             MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, DeviceView device, LevelBrief level,
-            StageOpening opening = StageOpening.InTheLitRoom)
+            StageOpening opening = StageOpening.InTheLitRoom, bool showsTheStartBoosters = false, EffectArt? effectArt = null)
         {
-            var stage = new MuseumStage(visit, paintings, art, door, wallet, shop, device, level);
+            var stage = new MuseumStage(visit, paintings, art, door, wallet, shop, device, level, showsTheStartBoosters, effectArt);
             bool isDark = opening == StageOpening.OutOfTheDark;
             if (isDark)
             {
@@ -471,9 +535,15 @@ namespace Puzzle.Client.Screens
             _wallet.Place(layout);
             _veil.Fit(layout.View);
             _secondVeil.Fit(layout.View);
+            _spotlight.Fit(layout.View);
             foreach (IMuseumCard card in _cards)
             {
                 Place(card, layout); // the card at the back first: one in front stands on its foot
+            }
+
+            if (_startBoosterLit is int lit && StartCard is LevelStartCard start)
+            {
+                LightUpTheStartBooster(start, lit, layout);
             }
 
             _ad?.Card.Place(layout.PlaceOfACard(_ad.Card.Width, _ad.Card.Height), layout.View);
@@ -481,11 +551,15 @@ namespace Puzzle.Client.Screens
 
         public void Advance(float deltaSeconds)
         {
+            _clock += deltaSeconds;
             _timeline.Advance(deltaSeconds);
             _secondsOnThePage += deltaSeconds;
             (_page as IMovingPage)?.Move(_secondsOnThePage);
             _wallet.Advance(deltaSeconds);
             ShowTheAd(deltaSeconds);
+            (TopCard as BoosterCardOverTheCard)?.Shown.Advance(deltaSeconds);
+            TakeALongPress();
+            ShowTheStartBoosters();
             if (_turnsToOnceTheCardsAreUp is Destination to && _timeline.IsDone)
             {
                 // Done here, after the step: turning a page adds to the timeline, which an act of it may not.
@@ -649,6 +723,7 @@ namespace Puzzle.Client.Screens
 
             if (_cards.Count > 0)
             {
+                StopShowingTheStartBoosters(); // cut short: the step comes again on the next card
                 TakeTheCardInFrontUp();
             }
             else if (_page.TryGoBack())
@@ -675,9 +750,16 @@ namespace Puzzle.Client.Screens
             }
 
             Vector2 point = PointAt(pixel, screen);
+            if (_startBoosterLit != null || TopCard is BoosterCardOverTheCard)
+            {
+                _isATouchOnTheBoosterCard = TopCard is BoosterCardOverTheCard;
+                return; // a touch goes on with the step, or takes the card of a long press up, as it lifts
+            }
+
             if (TopCard is IMuseumCard card)
             {
                 card.Card.FingerDown(point);
+                _heldSince = card is LevelStartCard && card.Card.TryGetHeld(out _) ? _clock : (float?)null;
             }
             else
             {
@@ -717,8 +799,26 @@ namespace Puzzle.Client.Screens
                 return;
             }
 
+            _heldSince = null;
             if (!ListensToThePlayer)
             {
+                return;
+            }
+
+            if (_startBoosterLit is int lit)
+            {
+                LightTheNextStartBooster(lit);
+                return;
+            }
+
+            if (TopCard is BoosterCardOverTheCard)
+            {
+                if (_isATouchOnTheBoosterCard)
+                {
+                    TakeTheCardInFrontUp();
+                }
+
+                _isATouchOnTheBoosterCard = false;
                 return;
             }
 
@@ -733,6 +833,8 @@ namespace Puzzle.Client.Screens
 
         public void PointerCancelled()
         {
+            _heldSince = null;
+            _isATouchOnTheBoosterCard = false;
             _presses.FingerGone();
             TopCard?.Card.FingerGone();
             if (_swipe.Cancel() is SwipeReading.Settle settle)
@@ -756,7 +858,22 @@ namespace Puzzle.Client.Screens
             _ad?.Card.Dispose();
             _veil.Dispose();
             _secondVeil.Dispose();
+            _spotlight.Dispose();
+            _lessonPill.Dispose();
+            if (_ownsTheEffectArt)
+            {
+                _effectArt?.Dispose();
+            }
+
             SceneObjects.Destroy(_root);
+        }
+
+        /// <summary>The steps of the tutorial shown here to their end since this was asked last, each once: the start boosters.</summary>
+        public IReadOnlyList<TutorialStep> TakeTheTutorialStepsDone()
+        {
+            TutorialStep[] done = _stepsDone.ToArray();
+            _stepsDone.Clear();
+            return done;
         }
 
         private void Follow(MuseumPress press)
@@ -869,6 +986,104 @@ namespace Puzzle.Client.Screens
                 default:
                     throw new InvalidOperationException($"A press of the kind {press.GetType().Name} leads nowhere here.");
             }
+        }
+
+        // ---------- the booster intro ----------
+
+        /// <summary>
+        /// The start boosters' step begins once the card before the level hangs in its place and nothing is held on it;
+        /// the step that shows is seen dimming in.
+        /// </summary>
+        private void ShowTheStartBoosters()
+        {
+            if (_startBoosterLit == null && _startBoostersToShow && TopCard is LevelStartCard start && ListensToThePlayer && !start.Card.TryGetHeld(out _))
+            {
+                start.Card.FingerGone();
+                _heldSince = null;
+                _startBoostersSince = _clock;
+                _startBoosterLit = 0;
+                if (_screen is ScreenShape screen)
+                {
+                    LightUpTheStartBooster(start, 0, PageLayout.Of(screen));
+                }
+            }
+
+            _spotlight.Show(_startBoosterLit == null ? 0f : Easing.Out(Mathf.Clamp01((_clock - _startBoostersSince) / LessonComesIn)));
+        }
+
+        /// <summary>A touch went on: the next start booster is lit, or after the last the step is done and the card is the player's.</summary>
+        private void LightTheNextStartBooster(int lit)
+        {
+            _sounded.Add(SoundCue.Press);
+            if (lit + 1 < LevelBrief.StartBoosters.Count && StartCard is LevelStartCard start && _screen is ScreenShape screen)
+            {
+                _startBoosterLit = lit + 1;
+                LightUpTheStartBooster(start, lit + 1, PageLayout.Of(screen));
+                return;
+            }
+
+            StopShowingTheStartBoosters();
+            _startBoostersToShow = false;
+            _stepsDone.Add(TutorialStep.StartBoosters);
+        }
+
+        /// <summary>The dark over the card is cut open around one start booster's disc and name, and the pill under the card says it.</summary>
+        private void LightUpTheStartBooster(LevelStartCard start, int lit, PageLayout layout)
+        {
+            BoosterKind booster = LevelBrief.StartBoosters[lit];
+            _spotlight.LightUp(new[] { start.PlaceOf(booster) });
+            _lessonPill.Show(TutorialWords.OfTheStartBooster(booster, _level.ExtraMoves));
+            float widest = Mathf.Min(ScreenLayout.WidestShelf, layout.View.Width - 2f * LessonPillFromTheSides);
+            float under = start.Card.Foot - start.Card.Scale * (LevelStartLayout.RidesBelow + LessonPillUnderTheCard);
+            _lessonPill.Stand(under, ShelfPill.PillEdge.Head, 1f, widest);
+        }
+
+        private void StopShowingTheStartBoosters()
+        {
+            _startBoosterLit = null;
+            _spotlight.Show(0f);
+            _lessonPill.Show(PillWords.None);
+        }
+
+        /// <summary>
+        /// A finger held on a start booster's disc for <see cref="Tempo.LongPress"/>: it chooses nothing (the lift
+        /// presses nothing), and the card that shows the booster comes down in front.
+        /// </summary>
+        private void TakeALongPress()
+        {
+            if (!(_heldSince is float since) || _clock - since < Tempo.LongPress)
+            {
+                return;
+            }
+
+            _heldSince = null;
+            if (TopCard is LevelStartCard start && start.Card.TryGetHeld(out MuseumPress held) && held is MuseumPress.ChooseStartBooster choose)
+            {
+                start.Card.FingerGone();
+                _effectArt ??= EffectArt.Paint();
+                _isATouchOnTheBoosterCard = false;
+                Hang(new BoosterCardOverTheCard(new BoosterCard<MuseumPress>(_root.transform, _art, _effectArt, choose.Booster, _level.ExtraMoves, (int)DrawOrder.OverACard)), roomIsDark: false);
+            }
+        }
+
+        /// <summary>The card of a long press, hung in front of the card before a level as the museum hangs its cards.</summary>
+        private sealed class BoosterCardOverTheCard : IMuseumCard
+        {
+            public BoosterCardOverTheCard(BoosterCard<MuseumPress> shown)
+            {
+                Shown = shown;
+            }
+
+            public BoosterCard<MuseumPress> Shown { get; }
+
+            public HangingCard<MuseumPress> Card => Shown.Card;
+
+            public void Tell(WalletView wallet)
+            {
+                // The card shows no wallet.
+            }
+
+            public void Dispose() => Shown.Dispose();
         }
 
         /// <summary>The card before the level the player stands on; for a player without a life, the lives card that says why not.</summary>

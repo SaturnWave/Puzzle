@@ -6,9 +6,8 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// What the pill over the board's shelf says, and so how its lines are set. A closed set (private constructor):
     /// nothing at all; one line (how to play, which try this is, why a booster's use was refused); a booster that is
-    /// armed (what it is and does over what to pick, the second line the larger); a booster's first use (the word on
-    /// it, with the honest line under it beside the first booster); a step of the tutorial, which its own pill says
-    /// over the dimmed stage. No Unity dependency.
+    /// armed (what it is and does over what to pick, the second line the larger); a step of the tutorial, which its
+    /// own pill says over the dimmed stage (a booster's first use is one of them since #7). No Unity dependency.
     /// </summary>
     public abstract class PillWords : IEquatable<PillWords>
     {
@@ -68,36 +67,18 @@ namespace Puzzle.Client.Flow
             public override string ToString() => $"{About} / {WhatToPick}";
         }
 
-        /// <summary>The word on a booster's first use, and under it, beside the first booster's, the honest line; nothing under it otherwise.</summary>
-        public sealed class Guide : PillWords
-        {
-            public Guide(string sentence, string? aside)
-            {
-                Sentence = sentence ?? throw new ArgumentNullException(nameof(sentence));
-                Aside = aside;
-            }
-
-            public string Sentence { get; }
-
-            /// <summary>The smaller line under the sentence; nothing for none.</summary>
-            public string? Aside { get; }
-
-            public override bool Equals(PillWords? other) => other is Guide guide && guide.Sentence == Sentence && guide.Aside == Aside;
-
-            public override string ToString() => Aside is string aside ? $"{Sentence} / {aside}" : Sentence;
-        }
-
         /// <summary>
-        /// A step of the tutorial: what to look at or do, why, and under them, for a step that a touch ends, the small
-        /// line that says so; nothing there for a move shown by hand, which only the move ends.
+        /// A step of the tutorial: what to look at or do, why, and under them a small line: for a step that a touch
+        /// ends, that a touch goes on; for a booster used by hand, that it is free, or beside the spatula that every
+        /// level can be won without boosters; nothing there for a move shown by hand, which only the move ends.
         /// </summary>
         public sealed class Lesson : PillWords
         {
-            public Lesson(string says, string why, string? touchToGoOn)
+            public Lesson(string says, string why, string? aside)
             {
                 Says = says ?? throw new ArgumentNullException(nameof(says));
                 Why = why ?? throw new ArgumentNullException(nameof(why));
-                TouchToGoOn = touchToGoOn;
+                Aside = aside;
             }
 
             /// <summary>"Bu iki taşın yerini değiştir".</summary>
@@ -106,13 +87,13 @@ namespace Puzzle.Client.Flow
             /// <summary>"Aynı üç taş yan yana gelince toplanır".</summary>
             public string Why { get; }
 
-            /// <summary>"Devam etmek için dokun"; nothing for a move shown by hand.</summary>
-            public string? TouchToGoOn { get; }
+            /// <summary>"Devam etmek için dokun", "Bu seferlik bedava"; nothing for a move shown by hand.</summary>
+            public string? Aside { get; }
 
             public override bool Equals(PillWords? other) =>
-                other is Lesson lesson && lesson.Says == Says && lesson.Why == Why && lesson.TouchToGoOn == TouchToGoOn;
+                other is Lesson lesson && lesson.Says == Says && lesson.Why == Why && lesson.Aside == Aside;
 
-            public override string ToString() => TouchToGoOn is string touch ? $"{Says} / {Why} / {touch}" : $"{Says} / {Why}";
+            public override string ToString() => Aside is string aside ? $"{Says} / {Why} / {aside}" : $"{Says} / {Why}";
         }
     }
 }

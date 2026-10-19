@@ -26,8 +26,8 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// Checks from the command line, by the touches a player makes on the game's own session, that the boosters used
     /// during play do what stage 10 promises. They open one at a time (levels 6/7, 11/12, 15/16, 19/20): before its
-    /// level a disc is locked and a press on it does nothing, on its level it is guided once and its gift is in the
-    /// wallet, once. Each kind is armed by its disc, aimed with a finger that slides, used on the lift, spent and saved
+    /// level a disc is locked and a press on it does nothing, on its level its gift is in the wallet, once, and the
+    /// tutorial has it used by hand (#7; GameWalk.BoosterIntro walks the use) until a player has done so once. Each kind is armed by its disc, aimed with a finger that slides, used on the lift, spent and saved
     /// in the save file at once; the first of them counts as the attempt's first move, and leaving after it costs a
     /// life and writes the attempt's record, which replays to the end seen. A use that changes nothing is refused,
     /// shakes its disc, says why and spends nothing. A disc pressed while pieces move arms its booster, and a use made
@@ -90,7 +90,7 @@ namespace Puzzle.Client.EditorTools
             }
         }
 
-        /// <summary>Before its level a disc is locked and does nothing; on it the booster is guided on the first try and its gift is held, once.</summary>
+        /// <summary>Before its level a disc is locked and does nothing; on it the tutorial asks for the booster by hand until that is done, and its gift is held, once.</summary>
         private static string TheBoostersOpenOneAtATimeWithTheirGiftOnce(Bench bench)
         {
             foreach ((BoosterKind booster, int level) in Openings)
@@ -107,29 +107,32 @@ namespace Puzzle.Client.EditorTools
                     Require(stage.ArmedBooster == null && stage.OfferedBooster == null && before.Progress.Equals(was), $"a press on the locked disc of {booster.Name()} did something");
                 }
 
-                var store = new ProgressInMemory(bench.StandingOn(level, bench.NewPlayersWallet()));
+                TutorialStep step = TutorialSteps.Teaching(booster);
+                TutorialSeen notYet = TutorialSeen.Of(TutorialSteps.All.Where(each => each != step));
+                var store = new ProgressInMemory(bench.StandingOn(level, bench.NewPlayersWallet(), seen: notYet));
                 using (GameSession onIt = bench.SessionOver(store))
                 {
                     GameStage stage = onIt.Stage;
                     Require(onIt.Progress.Wallet.Shelf.Count(booster) == 3, $"on level {level} the player holds {onIt.Progress.Wallet.Shelf.Count(booster)} {booster.Name()}, not the gift of 3");
                     Require(onIt.Progress.Wallet.Rewards.UnlockGifts.Contains(booster), $"the gift of {booster.Name()} is not kept as given");
-                    Require(stage.GuidedBooster == booster, $"on level {level} the guided booster is {stage.GuidedBooster}");
-                    string? aside = booster == BoosterKind.HitCell ? BoosterWords.EveryLevelWithout : null;
-                    Require(stage.WhatThePillSays.Equals(new PillWords.Guide(BoosterWords.FirstUse(booster), aside)), $"on level {level} the pill says \"{stage.WhatThePillSays}\"");
+                    Require(stage.LessonShown is Lesson.Booster asked && asked.Kind == booster && stage.RingedDisc == booster, $"on level {level} the tutorial shows \"{stage.LessonShown}\", ringing {stage.RingedDisc}");
+                    Require(stage.WhatTheLessonSays.Equals(TutorialWords.OfTheBooster(booster, isArmed: false)), $"on level {level} the tutorial's pill says \"{stage.WhatTheLessonSays}\"");
+                    Require(stage.WhatThePillSays.Equals(PillWords.None), $"on level {level} the shelf's pill says \"{stage.WhatThePillSays}\" beside the tutorial's");
                 }
 
                 using (GameSession again = bench.SessionOver(store))
                 {
                     Require(again.Progress.Wallet.Shelf.Count(booster) == 3, $"a second session on level {level} gave the gift of {booster.Name()} again");
+                    Require(again.Stage.LessonShown is Lesson.Booster, $"a step cut short on level {level} did not come again: \"{again.Stage.LessonShown}\"");
                 }
 
-                using (GameSession retry = bench.SessionAt(level, bench.NewPlayersWallet(), attemptsOnLevel: 1))
+                using (GameSession done = bench.SessionAt(level, bench.NewPlayersWallet(), attemptsOnLevel: 1))
                 {
-                    Require(retry.Stage.GuidedBooster == null, $"a retry of level {level} guides {retry.Stage.GuidedBooster} again");
+                    Require(done.Stage.LessonShown == null && done.Stage.RingedDisc == null, $"level {level} asks for {booster.Name()} by hand of a player who did it: \"{done.Stage.LessonShown}\"");
                 }
             }
 
-            return "locked before 7, 12, 16, 20 and open on them, each guided once with its gift once";
+            return "locked before 7, 12, 16, 20 and open on them, each with its gift once and used by hand until that is done";
         }
 
         /// <summary>Each kind by touches on level 40: armed by its disc, aimed with a finger that slides, used on the lift, spent and saved at once.</summary>
@@ -493,10 +496,11 @@ namespace Puzzle.Client.EditorTools
             /// <summary>A wallet that was given every opening gift: three of each booster used during play.</summary>
             public Wallet GiftedWallet() => StoryStudio.Economy.Unlocks.GivenTo(StoryStudio.Economy.StartingWallet, level: OpenLevel);
 
-            public PlayerProgress StandingOn(int levelNumber, Wallet wallet, int attemptsOnLevel = 0)
+            /// <param name="seen">The steps of the tutorial the player has seen; every one when left out.</param>
+            public PlayerProgress StandingOn(int levelNumber, Wallet wallet, int attemptsOnLevel = 0, TutorialSeen? seen = null)
             {
                 PlayerProgress standing = StoryStudio.StandingOn(Level(levelNumber), _levels);
-                return new PlayerProgress(standing.LevelsWon, attemptsOnLevel, standing.Museum.Placed, wallet);
+                return new PlayerProgress(standing.LevelsWon, attemptsOnLevel, standing.Museum.Placed, wallet, seen ?? TutorialSeen.All);
             }
 
             public GameSession SessionAt(int levelNumber, Wallet wallet, int attemptsOnLevel = 0, IAttemptLog? log = null) =>
@@ -531,7 +535,7 @@ namespace Puzzle.Client.EditorTools
                 GoalSpec[] goals = asked ?? (hasItems ? new GoalSpec[] { new GoalSpec.DropItems(1) } : new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Red, 99) });
                 var level = new LevelDefinition(new LevelId(OpenLevel), DifficultyTier.Normal, layout, goals, 30, new SpawnRules { Palette = GemColors.First(6), Items = ItemSpawnRules.None });
                 Game game = Game.Start(level, 1, new GameOptions { RecordEvents = true, RecordActions = true });
-                GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry(StoryStudio.Economy.Win), ShelfBrief.Of(OpenLevel, attemptsBefore: 1, StoryStudio.Economy));
+                GameStage stage = GameStage.Open(game, _art, effectArt, _paintings, AttemptBrief.FirstTry(StoryStudio.Economy.Win), ShelfBrief.Of(OpenLevel, StoryStudio.Economy));
                 stage.Fit(Screen);
                 stage.Tell(WalletView.Of(GiftedWallet(), StoryStudio.Economy.Lives, StoryStudio.Clock.Now), StoryStudio.ExtraMovesFor(GiftedWallet()));
                 StageSteps.Settle(stage);

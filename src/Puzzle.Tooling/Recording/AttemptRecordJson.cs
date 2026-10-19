@@ -19,7 +19,9 @@ namespace Puzzle.Tooling.Recording;
 /// The optional <c>hintsShown</c> after it counts the hints the released game showed by itself during the attempt; it is
 /// written only when there was one, so a line without it, as every line written before it existed, reads as none.
 /// The optional <c>guidedMoves</c> after it counts the moves the released game's tutorial showed by hand before the
-/// player played them, written the same way.
+/// player played them, written the same way. The optional <c>guidedBoosters</c> after it names, as
+/// <c>boostersUsed</c> does, the boosters the tutorial had the player use by hand, free (each one is also in
+/// <c>boostersUsed</c>); it is written only when there was one, so a line without it reads as none.
 /// The Unity game writes the same lines by hand (unity/Assets/Scripts/Flow/AttemptLine.cs).
 /// </summary>
 public static class AttemptRecordJson
@@ -94,6 +96,7 @@ public static class AttemptRecordJson
             TesterMode = record.TesterMode ? true : null,
             HintsShown = record.HintsShown > 0 ? record.HintsShown : null,
             GuidedMoves = record.GuidedMoves > 0 ? record.GuidedMoves : null,
+            GuidedBoosters = record.GuidedBoosters.Count > 0 ? record.GuidedBoosters.ToArray() : null,
             ShuffleRule = start.ShuffleRule == ShuffleBoosterRule.RandomOrders ? null : (int)start.ShuffleRule,
             Actions = record.Actions?.Select(ToActionLine).ToArray(),
         };
@@ -121,7 +124,7 @@ public static class AttemptRecordJson
         AttemptAction[]? actions = KnownRuleOf(line.ShuffleRule) is null ? null : ToActions(line.Actions);
         return new AttemptRecord(
             start, outcome, line.Lab is { } lab ? ToLabDetails(lab) : null, actions, testerMode: line.TesterMode == true, hintsShown: line.HintsShown ?? 0,
-            guidedMoves: line.GuidedMoves ?? 0);
+            guidedMoves: line.GuidedMoves ?? 0, guidedBoosters: line.GuidedBoosters);
     }
 
     /// <summary>
@@ -276,6 +279,9 @@ public static class AttemptRecordJson
 
         /// <summary>Moves the released game's tutorial showed by hand and the player played; absent for none, never 0.</summary>
         public int? GuidedMoves { get; init; }
+
+        /// <summary>The boosters the released game's tutorial had the player use by hand, free, each also in <see cref="BoostersUsed"/>; absent for none, never empty.</summary>
+        public string[]? GuidedBoosters { get; init; }
 
         /// <summary>The number of the shuffle booster's rule; absent for the first rule, which every record played under before it existed.</summary>
         public int? ShuffleRule { get; init; }

@@ -276,6 +276,14 @@ namespace Puzzle.Client
         CardCloseGlyph = 2146,
 
         /// <summary>
+        /// The tutorial's dark over a card that hangs in front of the room's dark (the card before a level, whose start
+        /// boosters are lit one after another), over everything of the card, and the pill that says the step over it.
+        /// </summary>
+        CardLessonDim = 2150,
+        CardLessonPill = 2160,
+        CardLessonPillLettering = 2161,
+
+        /// <summary>
         /// The dark that falls over a card when a second card is hung in front of it, and what is added to the
         /// order of everything of that second card (<see cref="CardWire"/> to <see cref="CardCloseGlyph"/>): it
         /// keeps its order within itself and all of it comes over the second dark.

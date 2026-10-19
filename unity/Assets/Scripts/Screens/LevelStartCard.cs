@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
@@ -35,6 +36,10 @@ namespace Puzzle.Client.Screens
         private const float GapUnderMovesLabel = 2f;
         private const float MovesSize = 40f;
         private const float RoomUnderMoves = 3f;
+
+        /// <summary>The place a start booster stands in (<see cref="PlaceOf"/>) keeps this far from its neighbour's, and reaches this far past its disc and its name.</summary>
+        private const float PlaceGap = 6f;
+        private const float PlaceRoom = 8f;
 
         /// <summary>The plank's picture is its body and the room around it for its rim and shadow: 28 points wider, 68 higher.</summary>
         private static readonly Vector2 PlankPictureMargin = new Vector2(28f, 68f);
@@ -91,6 +96,25 @@ namespace Puzzle.Client.Screens
         public Vector2 DiscMiddle(BoosterKind booster) => _discs.TryGetValue(booster, out BoosterDisc disc)
             ? _card.InTheLayout(disc.Middle)
             : throw new ArgumentException($"The card before a level has no disc for {booster.Name()}.", nameof(booster));
+
+        /// <summary>
+        /// Where a start booster stands on the card, in the layout's points: its disc and its name under it, with a
+        /// little room around them, the place the tutorial lights when it shows the start boosters (#7).
+        /// </summary>
+        /// <exception cref="ArgumentException">The booster is used during play: the card has no disc for it.</exception>
+        public Box PlaceOf(BoosterKind booster)
+        {
+            if (!_discs.ContainsKey(booster))
+            {
+                throw new ArgumentException($"The card before a level has no disc for {booster.Name()}.", nameof(booster));
+            }
+
+            float right = LevelStartLayout.DiscRight(LevelBrief.StartBoosters.ToList().IndexOf(booster));
+            float halfWidth = (LevelStartLayout.DiscsApart - PlaceGap) / 2f;
+            Vector2 topLeft = _card.InTheLayout(At(right - halfWidth, LevelStartLayout.DiscDown - LevelStartLayout.DiscSize / 2f - PlaceRoom));
+            Vector2 bottomRight = _card.InTheLayout(At(right + halfWidth, LevelStartLayout.NameDown + LevelStartLayout.NameLinesApart + LevelStartLayout.NameSize / 2f + PlaceRoom));
+            return new Box(topLeft.x, bottomRight.y, bottomRight.x - topLeft.x, topLeft.y - bottomRight.y);
+        }
 
         /// <summary>
         /// A press on a start booster's disc, as the rules answer it: a held one is chosen or put back, and the card

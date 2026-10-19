@@ -120,19 +120,24 @@ namespace Puzzle.Client.Boards
         public static BoardFrame Create(Transform parent, ArtCatalogue art, BoardShape shape) => new BoardFrame(parent, art, shape);
 
         /// <summary>Puts the frame around the board where the layout has it, and draws it for the layout's cells and pixels.</summary>
-        public void Place(ScreenLayout layout)
+        public void Place(ScreenLayout layout) => Place(new Vector2(layout.BoardLeft, layout.BoardTop), layout.CellSize, layout.PixelsPerPoint);
+
+        /// <summary>
+        /// Puts the frame around a board whose top left corner lies at a place of what it hangs under, with cells of a
+        /// size, drawn for so many pixels a point (a tiny board on a card: BoosterCard).
+        /// </summary>
+        public void Place(Vector2 boardTopLeft, float cellSize, float pixelsPerPoint)
         {
-            _root.localPosition = new Vector3(layout.BoardLeft, layout.BoardTop, 0f);
-            if (_builtFor == (layout.CellSize, layout.PixelsPerPoint))
+            _root.localPosition = new Vector3(boardTopLeft.x, boardTopLeft.y, 0f);
+            if (_builtFor == (cellSize, pixelsPerPoint))
             {
                 return;
             }
 
-            _builtFor = (layout.CellSize, layout.PixelsPerPoint);
-            float cellSize = layout.CellSize;
+            _builtFor = (cellSize, pixelsPerPoint);
             _shadow.Show(BuildShadow(cellSize));
             _trayShade.Show(BuildTrayShade(cellSize));
-            _rails.Show(BuildRails(cellSize, softEdge: 1f / layout.PixelsPerPoint));
+            _rails.Show(BuildRails(cellSize, softEdge: 1f / pixelsPerPoint));
             _beads.Show(BuildBeads(cellSize));
         }
 

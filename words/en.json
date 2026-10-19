@@ -72,10 +72,6 @@
     {"id":"BoosterPickAColumn","text":"Pick a column"},
     {"id":"BoosterNothingToHit","text":"Nothing to hit here"},
     {"id":"BoosterCannotShuffle","text":"The board can't be shuffled"},
-    {"id":"BoosterFirstUseHitCell","text":"New: Spatula! Tap the disc, then a tile."},
-    {"id":"BoosterFirstUseHitRow","text":"New: Row brush! Tap the disc, then a row."},
-    {"id":"BoosterFirstUseHitColumn","text":"New: Column brush! Tap the disc, then a column."},
-    {"id":"BoosterFirstUseShuffle","text":"New: Shuffle! Tap the disc to deal the tiles anew."},
     {"id":"BoosterEveryLevelWithout","text":"Every level can be won without boosters"},
     {"id":"BoosterCostsNoMove","text":"Using it costs no move"},
     {"id":"BoosterOpensOn","text":"Level {level}"},
@@ -224,6 +220,18 @@
     {"id":"TutorialFirstPieceMore","text":"Every level you win gives a piece"},
     {"id":"TutorialFirstPainting","text":"Your first painting is back in the museum!"},
     {"id":"TutorialFirstPaintingMore","text":"Five paintings done restore their room"},
-    {"id":"TutorialTouchToGoOn","text":"Tap to go on"}
+    {"id":"TutorialTouchToGoOn","text":"Tap to go on"},
+    {"id":"TutorialBoosterHitCell","text":"New: Spatula! Tap the disc"},
+    {"id":"TutorialBoosterHitRow","text":"New: Row brush! Tap the disc"},
+    {"id":"TutorialBoosterHitColumn","text":"New: Column brush! Tap the disc"},
+    {"id":"TutorialBoosterShuffle","text":"New: Shuffle! Tap the disc"},
+    {"id":"TutorialBoosterPickTheCell","text":"Now tap the lit tile"},
+    {"id":"TutorialBoosterPickTheRow","text":"Now tap the lit row"},
+    {"id":"TutorialBoosterPickTheColumn","text":"Now tap the lit column"},
+    {"id":"TutorialBoosterFree","text":"This one is free"},
+    {"id":"TutorialStartRocketAndBomb","text":"Pick it to start with a brush and a splash"},
+    {"id":"TutorialStartColorBomb","text":"Pick it to start with a rainbow palette"},
+    {"id":"TutorialStartExtraMoves","one":"Pick it to start with {moves} extra move","other":"Pick it to start with {moves} extra moves"},
+    {"id":"BoosterCardTouchToClose","text":"Tap to close"}
   ]
 }

@@ -4,6 +4,7 @@ using Puzzle.Client.Flow;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Model;
+using Puzzle.Meta;
 using Puzzle.Museum;
 using Puzzle.Tooling;
 
@@ -18,10 +19,13 @@ public class TutorialPlanTests
 {
     private static readonly TutorialStep[] Obstacles = { TutorialStep.Box, TutorialStep.Jelly, TutorialStep.Chain, TutorialStep.Item };
 
+    /// <summary>The tests' pack: the spatula opens on level 7, the brushes on 12 and 16, the shuffle on 20.</summary>
+    private static readonly BoosterUnlocks Unlocks = MetaSupport.Rules().Unlocks;
+
     [Fact]
     public void A_new_player_meets_the_goal_the_match_and_the_moves_on_the_first_level_in_that_order_before_any_obstacle()
     {
-        IReadOnlyList<TutorialStep> onTheFirstLevel = TutorialPlan.MayComeOn(1, TutorialSeen.None);
+        IReadOnlyList<TutorialStep> onTheFirstLevel = TutorialPlan.MayComeOn(1, TutorialSeen.None, Unlocks);
 
         Assert.Equal(
             new[] { TutorialStep.Goal, TutorialStep.Match, TutorialStep.Moves, TutorialStep.Box, TutorialStep.Jelly, TutorialStep.Chain, TutorialStep.Item },
@@ -31,7 +35,7 @@ public class TutorialPlanTests
     [Fact]
     public void The_four_and_the_five_wait_for_their_move_on_their_own_level_and_three_levels_after_it_and_are_let_go_after_that()
     {
-        bool MayComeOn(int level, TutorialStep step) => TutorialPlan.MayComeOn(level, TutorialSeen.None).Contains(step);
+        bool MayComeOn(int level, TutorialStep step) => TutorialPlan.MayComeOn(level, TutorialSeen.None, Unlocks).Contains(step);
 
         Assert.Equal(new[] { 2, 3, 4, 5 }, Enumerable.Range(1, 12).Where(level => MayComeOn(level, TutorialStep.FourInALine)));
         Assert.Equal(new[] { 3, 4, 5, 6 }, Enumerable.Range(1, 12).Where(level => MayComeOn(level, TutorialStep.FiveInALine)));
@@ -44,13 +48,13 @@ public class TutorialPlanTests
     {
         TutorialSeen seen = TutorialSeen.None.With(TutorialStep.Box).With(TutorialStep.FourInALine);
 
-        Assert.All(new[] { 1, 11, 21, 400 }, level => Assert.Contains(TutorialStep.Item, TutorialPlan.MayComeOn(level, TutorialSeen.None)));
+        Assert.All(new[] { 1, 11, 21, 400 }, level => Assert.Contains(TutorialStep.Item, TutorialPlan.MayComeOn(level, TutorialSeen.None, Unlocks)));
         Assert.All(Enumerable.Range(1, 60), level =>
         {
-            Assert.DoesNotContain(TutorialStep.Box, TutorialPlan.MayComeOn(level, seen));
-            Assert.DoesNotContain(TutorialStep.FourInALine, TutorialPlan.MayComeOn(level, seen));
+            Assert.DoesNotContain(TutorialStep.Box, TutorialPlan.MayComeOn(level, seen, Unlocks));
+            Assert.DoesNotContain(TutorialStep.FourInALine, TutorialPlan.MayComeOn(level, seen, Unlocks));
         });
-        Assert.Empty(TutorialPlan.MayComeOn(1, TutorialSeen.All));
+        Assert.Empty(TutorialPlan.MayComeOn(1, TutorialSeen.All, Unlocks));
     }
 
     [Fact]
@@ -58,8 +62,8 @@ public class TutorialPlanTests
     {
         Assert.All(Enumerable.Range(1, 60), level =>
         {
-            Assert.DoesNotContain(TutorialStep.FirstPiece, TutorialPlan.MayComeOn(level, TutorialSeen.None));
-            Assert.DoesNotContain(TutorialStep.FirstPainting, TutorialPlan.MayComeOn(level, TutorialSeen.None));
+            Assert.DoesNotContain(TutorialStep.FirstPiece, TutorialPlan.MayComeOn(level, TutorialSeen.None, Unlocks));
+            Assert.DoesNotContain(TutorialStep.FirstPainting, TutorialPlan.MayComeOn(level, TutorialSeen.None, Unlocks));
         });
     }
 
@@ -77,7 +81,9 @@ public class TutorialPlanTests
         // Standing on level 11 the crates are still ahead; won, they are behind.
         Assert.False(TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 10, PlacedPieces.None)).Has(TutorialStep.Box));
         Assert.True(TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 11, PlacedPieces.None)).Has(TutorialStep.Box));
-        Assert.Equal(TutorialSeen.Of(TutorialSteps.All.Where(step => step.IsOnTheBoard())), TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 51, PlacedPieces.None)));
+        Assert.Equal(
+            TutorialSeen.Of(TutorialSteps.All.Where(step => step.IsOnTheBoard() && step.BoosterOf() == null)),
+            TutorialPlan.OfAnOlderSave(new MuseumProgress(levelsWon: 51, PlacedPieces.None)));
     }
 
     [Fact]

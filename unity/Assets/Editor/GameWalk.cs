@@ -46,7 +46,8 @@ namespace Puzzle.Client.EditorTools
     /// (<c>walk-buy-...</c>); and the walks of the shop, the gift and a painting's reward (GameWalk.Shop.cs), and of
     /// the settings, the privacy card's deleted records and the support card (GameWalk.Settings.cs), of the
     /// swipes that turn the pages and the collection's rooms (GameWalk.Swipe.cs), of the game's hint on a board
-    /// left untouched (GameWalk.Hint.cs), and of the tutorial from a new player's first level on (GameWalk.Tutorial.cs). The walk
+    /// left untouched (GameWalk.Hint.cs), of the tutorial from a new player's first level on (GameWalk.Tutorial.cs), and of
+    /// the booster intro (GameWalk.BoosterIntro.cs). The walk
     /// fails when a touch does not lead where it should, or when what was placed, spent, bought or given is not in the
     /// player's progress.
     /// </summary>
@@ -169,6 +170,7 @@ namespace Puzzle.Client.EditorTools
             RunTheSwipeWalk(screen, studio);
             RunTheHintWalk(screen, studio);
             RunTheTutorialWalk(screen, studio);
+            RunTheBoosterIntroWalk(screen, studio);
         }
 
         /// <summary>

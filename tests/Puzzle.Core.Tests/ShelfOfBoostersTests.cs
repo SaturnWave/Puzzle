@@ -30,31 +30,14 @@ public class ShelfOfBoostersTests
     {
         BoosterShelf held = BoosterShelf.Empty.With(booster, 2);
 
-        BoosterFace before = ShelfBrief.Of(level - 1, attemptsBefore: 0, TheRules).FaceOf(booster, held, BoosterChoice.Waiting);
-        BoosterFace on = ShelfBrief.Of(level, attemptsBefore: 0, TheRules).FaceOf(booster, held, BoosterChoice.Waiting);
+        BoosterFace before = ShelfBrief.Of(level - 1, TheRules).FaceOf(booster, held, BoosterChoice.Waiting);
+        BoosterFace on = ShelfBrief.Of(level, TheRules).FaceOf(booster, held, BoosterChoice.Waiting);
 
         Assert.Equal(BoosterFace.LockedUntil(level), before);
         Assert.Equal((BoosterBadge.OpensOn, true, level), (before.Badge, before.IsFaint, before.OpensOn!.Value));
         Assert.Equal(BoosterFace.Of(2, BoosterChoice.Waiting), on);
         Assert.Equal(BoosterBadge.Count, on.Badge);
         Assert.Equal("Bölüm " + level, BoardWords.OpensOn(level));
-    }
-
-    [Fact]
-    public void A_booster_is_shown_for_the_first_time_on_its_levels_first_try_only_and_the_first_of_them_with_the_honest_line()
-    {
-        ShelfBrief spatulaFirstTry = ShelfBrief.Of(7, attemptsBefore: 0, TheRules);
-        ShelfBrief spatulaRetry = ShelfBrief.Of(7, attemptsBefore: 1, TheRules);
-        ShelfBrief rowBrushFirstTry = ShelfBrief.Of(12, attemptsBefore: 0, TheRules);
-        ShelfBrief nothingOpens = ShelfBrief.Of(8, attemptsBefore: 0, TheRules);
-
-        Assert.Equal(BoosterKind.HitCell, spatulaFirstTry.Introduced);
-        Assert.True(spatulaFirstTry.SaysEveryLevelWithout);
-        Assert.Null(spatulaRetry.Introduced);
-        Assert.Equal(BoosterKind.HitRow, rowBrushFirstTry.Introduced);
-        Assert.False(rowBrushFirstTry.SaysEveryLevelWithout);
-        Assert.Null(nothingOpens.Introduced);
-        Assert.False(nothingOpens.SaysEveryLevelWithout);
     }
 
     [Fact]
@@ -89,7 +72,7 @@ public class ShelfOfBoostersTests
     public void The_pills_words_are_equal_when_they_say_the_same()
     {
         Assert.Equal(new PillWords.Line("a"), new PillWords.Line("a"));
-        Assert.NotEqual<PillWords>(new PillWords.Line("a"), new PillWords.Guide("a", null));
+        Assert.NotEqual<PillWords>(new PillWords.Line("a"), new PillWords.Lesson("a", "b", null));
         Assert.Equal(new PillWords.Armed("a", "b"), new PillWords.Armed("a", "b"));
         Assert.Equal(PillWords.None, new PillWords.Silent());
         Assert.Equal("a / b", new PillWords.Armed("a", "b").ToString());

@@ -39,7 +39,11 @@ namespace Puzzle.Client.EditorTools
             StoryStudio.AdvanceUntilSettled(session);
         }
 
-        /// <summary>The hall's play button, unless the level's card hangs already; the session is left with the card at rest in its place.</summary>
+        /// <summary>
+        /// The hall's play button, unless the level's card hangs already; the session is left with the card at rest in
+        /// its place. Where the tutorial shows the start boosters on it (a level tried before), a touch goes on through
+        /// the three, as a player's would (GameWalk.BoosterIntro walks the step itself).
+        /// </summary>
         /// <exception cref="InvalidOperationException">The play button is not there, or brought no card down.</exception>
         public static void BringDownTheCard(GameSession session)
         {
@@ -51,7 +55,21 @@ namespace Puzzle.Client.EditorTools
                 StoryStudio.AdvanceUntilSettled(session);
             }
 
+            GoThroughTheStartBoosters(session);
             Require(MuseumOf(session).StartCardPlayPixel != null, "the play button brought no card before the level down, or it is not at rest in front");
+        }
+
+        /// <summary>A touch on the card for each start booster the tutorial lights, until the card is the player's.</summary>
+        /// <exception cref="InvalidOperationException">The step did not end after a touch for each start booster.</exception>
+        private static void GoThroughTheStartBoosters(GameSession session)
+        {
+            for (int touches = 0; MuseumOf(session).StartBoosterLit != null; touches++)
+            {
+                Require(touches < LevelBrief.StartBoosters.Count, "the start boosters' step did not end after a touch for each of them");
+                Press(session, MuseumOf(session).StartCardPlayPixel, "the card the start boosters are lit on");
+                StoryStudio.AdvanceBy(StoryStudio.FrameSeconds, session);
+                StoryStudio.AdvanceUntilSettled(session);
+            }
         }
 
         /// <summary>A press on a start booster's disc on the card, which must choose it.</summary>

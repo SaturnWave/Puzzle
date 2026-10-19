@@ -35,17 +35,22 @@ namespace Puzzle.Client.Gallery
         private static readonly Color Gilt = new Color(1f, 0.82f, 0.38f, 0.5f);
 
         private readonly PaintedShape _shape;
-        private readonly List<Box> _windows = new List<Box>();
-        private float _rounding = Rounding;
+
+        /// <summary>The places cut out of the dark, each with how much its corners are rounded.</summary>
+        private readonly List<(Box Window, float Rounding)> _windows = new List<(Box Window, float Rounding)>();
         private Rect _screen;
 
-        private Spotlight(Transform parent, ArtCatalogue art)
+        private Spotlight(Transform parent, ArtCatalogue art, DrawOrder order)
         {
-            _shape = PaintedShape.Create("Spotlight", parent, art.PaintMaterial, DrawOrder.LessonDim);
+            _shape = PaintedShape.Create("Spotlight", parent, art.PaintMaterial, order);
             Show(0f);
         }
 
-        public static Spotlight Create(Transform parent, ArtCatalogue art) => new Spotlight(parent, art);
+        /// <summary>The spotlight over a stage: under its cards, over everything else.</summary>
+        public static Spotlight Create(Transform parent, ArtCatalogue art) => new Spotlight(parent, art, DrawOrder.LessonDim);
+
+        /// <summary>The spotlight over a card that hangs in front of the room's dark (the card before a level): over everything of the card.</summary>
+        public static Spotlight CreateOverACard(Transform parent, ArtCatalogue art) => new Spotlight(parent, art, DrawOrder.CardLessonDim);
 
         /// <summary>Spreads the dark over a screen, with the windows it has.</summary>
         public void Fit(ScreenView view)
@@ -59,8 +64,19 @@ namespace Puzzle.Client.Gallery
         public void LightUp(IReadOnlyList<Box> windows, float rounding = Rounding)
         {
             _windows.Clear();
+            foreach (Box window in windows)
+            {
+                _windows.Add((window, rounding));
+            }
+
+            Paint();
+        }
+
+        /// <summary>Cuts these places out of the dark, each rounded by its own amount (a round window over a disc beside a rounded one over the board).</summary>
+        public void LightUp(IReadOnlyList<(Box Window, float Rounding)> windows)
+        {
+            _windows.Clear();
             _windows.AddRange(windows);
-            _rounding = rounding;
             Paint();
         }
 
@@ -90,9 +106,9 @@ namespace Puzzle.Client.Gallery
         private Color ColourAt(Vector2 point)
         {
             float outside = float.MaxValue;
-            foreach (Box window in _windows)
+            foreach ((Box window, float rounding) in _windows)
             {
-                outside = Mathf.Min(outside, DistanceOutside(window, point, _rounding));
+                outside = Mathf.Min(outside, DistanceOutside(window, point, rounding));
             }
 
             if (outside <= -GlowInside)

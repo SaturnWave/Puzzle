@@ -69,8 +69,16 @@ namespace Puzzle.Client.EditorTools
         private static readonly string DocumentWithTheTutorial = DocumentWithAWallet.Replace("{\"version\":4,", "{\"version\":5,").Substring(0, DocumentWithAWallet.Length - 1)
             + ",\"tutorial\":[\"goal\",\"match\",\"moves\",\"four-in-a-line\",\"five-in-a-line\",\"box\",\"jelly\",\"first-piece\",\"first-painting\"]}";
 
-        /// <summary>What a player on level 40 with the first painting whole has seen of the tutorial: all but the steps of the tape and the frame corners.</summary>
-        private static readonly TutorialSeen SeenOnLevelForty = TutorialSeen.Of(TutorialSteps.All.Where(step => step != TutorialStep.Chain && step != TutorialStep.Item));
+        /// <summary>
+        /// What a player on level 40 with the first painting whole had seen of the tutorial before the booster intro
+        /// (#7): all but the steps of the tape and the frame corners. Named one by one, so that the pinned file stays
+        /// what it is as steps are added.
+        /// </summary>
+        private static readonly TutorialSeen SeenOnLevelForty = TutorialSeen.Of(new[]
+        {
+            TutorialStep.Goal, TutorialStep.Match, TutorialStep.Moves, TutorialStep.FourInALine, TutorialStep.FiveInALine, TutorialStep.Box, TutorialStep.Jelly,
+            TutorialStep.FirstPiece, TutorialStep.FirstPainting,
+        });
 
         /// <summary>The document of a later game: what this game writes, and something it does not know.</summary>
         private static readonly string LaterDocument =

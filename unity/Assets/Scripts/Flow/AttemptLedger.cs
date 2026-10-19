@@ -16,9 +16,10 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// Something that happened in an attempt and changes the player's progress, as the board's stage reports it at
     /// the moment the engine says so. A closed set (private constructor): the first move, a booster the engine
-    /// accepted, extra moves the engine gave, a win, a loss for good, and leaving the level. A booster used during
-    /// play that the engine accepts counts as a move (the owner's decision of 2026-10-15): when it comes first it is
-    /// the attempt's first move, and leaving after it is leaving after a move.
+    /// accepted, a booster the tutorial had used by hand (free), extra moves the engine gave, a win, a loss for good,
+    /// and leaving the level. A booster used during play that the engine accepts counts as a move (the owner's
+    /// decision of 2026-10-15), the free one too: when it comes first it is the attempt's first move, and leaving
+    /// after it is leaving after a move.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public abstract class AttemptEvent
@@ -60,6 +61,22 @@ namespace Puzzle.Client.Flow
             public BoosterKind Booster { get; }
 
             public override string ToString() => $"{Booster.Name()} used";
+        }
+
+        /// <summary>
+        /// The engine used a booster that the tutorial had the player use by hand on the level it opens on (#7): the
+        /// owner's decision of 2026-10-19 makes it free, so the player's stock is not touched.
+        /// </summary>
+        public sealed class GuidedBoosterUsed : AttemptEvent
+        {
+            public GuidedBoosterUsed(BoosterKind booster)
+            {
+                Booster = booster.IsInLevel() ? booster : throw new ArgumentException($"{booster.Name()} is taken before a level; no step uses it by hand.", nameof(booster));
+            }
+
+            public BoosterKind Booster { get; }
+
+            public override string ToString() => $"{Booster.Name()} used by hand, free";
         }
 
         /// <summary>The engine gave the game that ran out of moves its extra moves, paid for this way.</summary>
@@ -135,7 +152,8 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// What each event of an attempt does to the player's progress, by the rules of the economy: the first move (or
     /// a booster that counts as one) makes the attempt count and spends the start boosters taken into it; a booster
-    /// the engine accepted leaves the shelf; extra moves are paid for; a win moves the player on and pays its coins in
+    /// the engine accepted leaves the shelf, but for the one the tutorial had used by hand, which is free; extra moves
+    /// are paid for; a win moves the player on and pays its coins in
     /// the same change, so one save holds both, with the gift of every booster used during play that opens on the
     /// level it leads to; a loss for good, and leaving a level after a move, cost a life. Leaving before the first
     /// move costs nothing. Closing the game in the middle of a level is no event and costs nothing either. In the
@@ -182,6 +200,8 @@ namespace Puzzle.Client.Flow
                     return progress.WithAttemptStarted().WithWallet(wallet.WithShelf(first.StartBoosters.TakenFrom(wallet.Shelf)));
                 case AttemptEvent.BoosterAccepted used:
                     return progress.WithWallet(wallet.WithShelf(wallet.Shelf.WithOneFewer(used.Booster)));
+                case AttemptEvent.GuidedBoosterUsed _:
+                    return progress;
                 case AttemptEvent.ExtraMovesTaken taken:
                     return progress.WithWallet(PaidForTheExtraMoves(wallet, taken.PaidBy, now, handling));
                 case AttemptEvent.Won won:

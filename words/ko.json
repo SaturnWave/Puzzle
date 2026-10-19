@@ -72,10 +72,6 @@
     {"id":"BoosterPickAColumn","text":"세로줄 선택"},
     {"id":"BoosterNothingToHit","text":"여기는 칠 것이 없어요"},
     {"id":"BoosterCannotShuffle","text":"판을 섞을 수 없어요"},
-    {"id":"BoosterFirstUseHitCell","text":"새 부스터: 스패출러! 버튼을 누르고 블록을 누르세요."},
-    {"id":"BoosterFirstUseHitRow","text":"새 부스터: 가로 붓! 버튼을 누르고 가로줄을 누르세요."},
-    {"id":"BoosterFirstUseHitColumn","text":"새 부스터: 세로 붓! 버튼을 누르고 세로줄을 누르세요."},
-    {"id":"BoosterFirstUseShuffle","text":"새 부스터: 팔레트 섞기! 버튼을 누르면 블록을 다시 섞어요."},
     {"id":"BoosterEveryLevelWithout","text":"모든 레벨은 부스터 없이도 깰 수 있어요"},
     {"id":"BoosterCostsNoMove","text":"써도 이동 횟수는 그대로예요"},
     {"id":"BoosterOpensOn","text":"레벨 {level}"},
@@ -224,6 +220,18 @@
     {"id":"TutorialFirstPieceMore","text":"레벨을 깰 때마다 조각을 하나 받아요"},
     {"id":"TutorialFirstPainting","text":"첫 그림이 미술관에 다시 걸렸어요!"},
     {"id":"TutorialFirstPaintingMore","text":"그림 다섯 점을 완성하면 전시실이 복원돼요"},
-    {"id":"TutorialTouchToGoOn","text":"계속하려면 터치하세요"}
+    {"id":"TutorialTouchToGoOn","text":"계속하려면 터치하세요"},
+    {"id":"TutorialBoosterHitCell","text":"새 부스터: 스패출러! 버튼을 누르세요"},
+    {"id":"TutorialBoosterHitRow","text":"새 부스터: 가로 붓! 버튼을 누르세요"},
+    {"id":"TutorialBoosterHitColumn","text":"새 부스터: 세로 붓! 버튼을 누르세요"},
+    {"id":"TutorialBoosterShuffle","text":"새 부스터: 팔레트 섞기! 버튼을 누르세요"},
+    {"id":"TutorialBoosterPickTheCell","text":"이제 빛나는 블록을 누르세요"},
+    {"id":"TutorialBoosterPickTheRow","text":"이제 빛나는 가로줄을 누르세요"},
+    {"id":"TutorialBoosterPickTheColumn","text":"이제 빛나는 세로줄을 누르세요"},
+    {"id":"TutorialBoosterFree","text":"이번 한 번은 무료예요"},
+    {"id":"TutorialStartRocketAndBomb","text":"고르면 붓과 스플래시를 들고 시작해요"},
+    {"id":"TutorialStartColorBomb","text":"고르면 무지개 팔레트를 들고 시작해요"},
+    {"id":"TutorialStartExtraMoves","text":"고르면 이동 {moves}회를 더 받고 시작해요"},
+    {"id":"BoosterCardTouchToClose","text":"닫으려면 터치하세요"}
   ]
 }

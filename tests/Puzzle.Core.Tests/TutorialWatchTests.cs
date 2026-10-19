@@ -142,17 +142,19 @@ public class TutorialWatchTests
     [Fact]
     public void Every_step_says_what_to_do_and_why_and_a_step_that_is_looked_at_says_that_a_touch_goes_on()
     {
-        Assert.All(TutorialSteps.All, step =>
+        TutorialStep[] steps = TutorialSteps.All.Where(step => step.BoosterOf() == null && step != TutorialStep.StartBoosters).ToArray();
+        Assert.All(steps, step =>
         {
             PillWords.Lesson looked = TutorialWords.Of(step, asksForATouch: true);
             PillWords.Lesson guided = TutorialWords.Of(step, asksForATouch: false);
 
             Assert.False(string.IsNullOrWhiteSpace(looked.Says) || string.IsNullOrWhiteSpace(looked.Why), $"{step} says nothing");
             Assert.NotEqual(looked.Says, looked.Why);
-            Assert.False(string.IsNullOrWhiteSpace(looked.TouchToGoOn));
-            Assert.Null(guided.TouchToGoOn);
+            Assert.False(string.IsNullOrWhiteSpace(looked.Aside));
+            Assert.Null(guided.Aside);
         });
-        Assert.Equal(TutorialSteps.All.Count, TutorialSteps.All.Select(step => TutorialWords.Of(step, asksForATouch: false).Says).Distinct().Count());
+        Assert.Equal(steps.Length, steps.Select(step => TutorialWords.Of(step, asksForATouch: false).Says).Distinct().Count());
+        Assert.Throws<ArgumentOutOfRangeException>(() => TutorialWords.Of(TutorialStep.BoosterHitCell, asksForATouch: false));
     }
 
     [Fact]

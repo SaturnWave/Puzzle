@@ -134,6 +134,9 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialWords.cs" Link="Unity\Flow\TutorialWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\TutorialWatch.cs" Link="Unity\Play\TutorialWatch.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\TradeLine.cs" Link="Unity\Play\TradeLine.cs" />
+    <!-- Nor has the booster intro (#7): where a booster used by hand is aimed, and what the card of a long press plays on its tiny board. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterLessonAim.cs" Link="Unity\Play\BoosterLessonAim.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterShowcase.cs" Link="Unity\Play\BoosterShowcase.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
   </ItemGroup>
   <ItemGroup>

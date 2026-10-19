@@ -217,19 +217,7 @@ namespace Puzzle.Client.Words
         /// <summary>Why the shuffle did nothing (nothing was spent).</summary>
         BoosterCannotShuffle,
 
-        /// <summary>The one sentence on the level the spatula opens on, until it is first touched.</summary>
-        BoosterFirstUseHitCell,
-
-        /// <summary>The sentence on the level the row brush opens on.</summary>
-        BoosterFirstUseHitRow,
-
-        /// <summary>The sentence on the level the column brush opens on.</summary>
-        BoosterFirstUseHitColumn,
-
-        /// <summary>The sentence on the level the shuffle opens on.</summary>
-        BoosterFirstUseShuffle,
-
-        /// <summary>Smaller line beside the first booster's first use: the levels are made to be won without boosters.</summary>
+        /// <summary>Small last line beside the spatula when the booster intro asks for its target: the levels are made to be won without boosters.</summary>
         BoosterEveryLevelWithout,
 
         /// <summary>Smaller line of the card that offers a booster used during play.</summary>
@@ -675,5 +663,41 @@ namespace Puzzle.Client.Words
 
         /// <summary>Tutorial, the small last line of a step that is only looked at: a touch anywhere goes on.</summary>
         TutorialTouchToGoOn,
+
+        /// <summary>Booster intro, the level the spatula opens on, first line while its lit disc waits to be touched ("disk" is the round button on the shelf).</summary>
+        TutorialBoosterHitCell,
+
+        /// <summary>Booster intro, the level the row brush opens on, first line while its lit disc waits to be touched.</summary>
+        TutorialBoosterHitRow,
+
+        /// <summary>Booster intro, the level the column brush opens on, first line while its lit disc waits to be touched.</summary>
+        TutorialBoosterHitColumn,
+
+        /// <summary>Booster intro, the level the shuffle opens on, first line while its lit disc waits to be touched (touching it deals the tiles anew).</summary>
+        TutorialBoosterShuffle,
+
+        /// <summary>Booster intro, first line once the spatula is picked up: touch the one lit tile on the board.</summary>
+        TutorialBoosterPickTheCell,
+
+        /// <summary>Booster intro, first line once the row brush is picked up: touch the lit row anywhere.</summary>
+        TutorialBoosterPickTheRow,
+
+        /// <summary>Booster intro, first line once the column brush is picked up: touch the lit column anywhere.</summary>
+        TutorialBoosterPickTheColumn,
+
+        /// <summary>Booster intro, small last line: this first use of the new booster costs nothing (the player's own stock is not touched).</summary>
+        TutorialBoosterFree,
+
+        /// <summary>Start boosters intro on the level card after a lost level, under the lit brush-and-splash disc: what choosing it does.</summary>
+        TutorialStartRocketAndBomb,
+
+        /// <summary>Start boosters intro, under the lit rainbow palette disc: what choosing it does.</summary>
+        TutorialStartColorBomb,
+
+        /// <summary>Start boosters intro, under the lit extra moves disc: what choosing it does. {moves} is the number of extra moves.</summary>
+        TutorialStartExtraMoves,
+
+        /// <summary>Small last line of the card a long press on a booster opens (it shows what the booster does): a touch anywhere closes it.</summary>
+        BoosterCardTouchToClose,
     }
 }

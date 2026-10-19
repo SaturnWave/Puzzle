@@ -9,7 +9,10 @@ namespace Puzzle.Client.Boards
     /// What cuts pieces off at the edge of the tray: a mask in the shape of the board's cells, a little wider than
     /// they are. A new piece falls in from above its column and an item drops out below it; without the mask both
     /// would be drawn over the frame, the wall and the plaques. Sprites that ask for it (pieces, strokes, splashes)
-    /// are only drawn inside the mask; everything else on the stage is drawn as before.
+    /// are only drawn inside the mask; everything else on the stage is drawn as before. The mask cuts only the
+    /// sprites drawn among the board's own places in the drawing order (<see cref="DrawOrder.WallPaint"/> up to the
+    /// shelf): a second board drawn above them, the tiny board on the card of a long press (BoosterCard), is cut by
+    /// its own mask alone, and not seen through this one.
     /// </summary>
     /// <remarks>
     /// Into a gap that pieces fall through (a hole in the board with cells above and below it in its column) the
@@ -47,6 +50,9 @@ namespace Puzzle.Client.Boards
             _mask.transform.localPosition = new Vector3(-margin, margin, 0f);
             _mask.sprite = _shape;
             _mask.alphaCutoff = 0.5f;
+            _mask.isCustomRangeActive = true;
+            _mask.backSortingOrder = (int)DrawOrder.WallPaint - 1;
+            _mask.frontSortingOrder = (int)DrawOrder.Shelf - 1;
         }
 
         /// <param name="board">The object whose unit is a cell and whose origin is the board's top left corner.</param>

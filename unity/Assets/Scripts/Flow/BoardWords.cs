@@ -33,17 +33,20 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// What the board says of the boosters used during play, in the language the game speaks, on the pill over the
-    /// shelf and on the card that offers one: their names, what each does and what to pick for it, why a use was refused, the word on a booster's first
-    /// use and the honest line beside the first of them. The design canvas draws none of it (BoardTR shows the discs
+    /// shelf and on the card that offers one: their names, what each does and what to pick for it, why a use was refused, and the honest line
+    /// beside the first of them (the tutorial says it beside the spatula used by hand, TutorialWords). The design canvas draws none of it (BoardTR shows the discs
     /// alone); the words follow docs/research/in-level-boosters.md, section 5. No Unity dependency.
     /// </summary>
     public static class BoosterWords
     {
-        /// <summary>The line beside the first booster's word on its first use (the genre's honest sentence, the owner's of 2026-10-15): the levels are calibrated without boosters.</summary>
+        /// <summary>The line beside the spatula used by hand on its level (the genre's honest sentence, the owner's of 2026-10-15): the levels are calibrated without boosters.</summary>
         public static string EveryLevelWithout => Speech.Say(WordId.BoosterEveryLevelWithout);
 
         /// <summary>The smaller line of the card that offers a booster used during play: using it costs no move.</summary>
         public static string CostsNoMove => Speech.Say(WordId.BoosterCostsNoMove);
+
+        /// <summary>The small last line of the card a long press on a booster opens: a touch anywhere closes it.</summary>
+        public static string TouchToClose => Speech.Say(WordId.BoosterCardTouchToClose);
 
         /// <summary>The booster's name, on its pill and on the card that offers it.</summary>
         /// <exception cref="ArgumentException">The booster is taken before a level; the board's shelf has none of it.</exception>
@@ -87,17 +90,6 @@ namespace Puzzle.Client.Flow
         {
             BoosterKind.HitCell or BoosterKind.HitRow or BoosterKind.HitColumn => Speech.Say(WordId.BoosterNothingToHit),
             BoosterKind.Shuffle => Speech.Say(WordId.BoosterCannotShuffle),
-            _ => throw NotUsedDuringPlay(booster),
-        };
-
-        /// <summary>The one sentence on the level a booster opens on, until it is first touched: what it is and how it is used.</summary>
-        /// <exception cref="ArgumentException">The booster is taken before a level.</exception>
-        public static string FirstUse(BoosterKind booster) => booster switch
-        {
-            BoosterKind.HitCell => Speech.Say(WordId.BoosterFirstUseHitCell),
-            BoosterKind.HitRow => Speech.Say(WordId.BoosterFirstUseHitRow),
-            BoosterKind.HitColumn => Speech.Say(WordId.BoosterFirstUseHitColumn),
-            BoosterKind.Shuffle => Speech.Say(WordId.BoosterFirstUseShuffle),
             _ => throw NotUsedDuringPlay(booster),
         };
 

@@ -57,7 +57,7 @@ namespace Puzzle.Client.EditorTools
         public static DeviceId Device { get; } = new DeviceId("00000000000000000000000000000000");
 
         /// <summary>The board's shelf of a first try at the game's level, by the economy the tools play by.</summary>
-        public static ShelfBrief ShelfOf(Puzzle.Core.Engine.Game game) => ShelfBrief.Of(game.Level.Id.Value, attemptsBefore: 0, Economy);
+        public static ShelfBrief ShelfOf(Puzzle.Core.Engine.Game game) => ShelfBrief.Of(game.Level.Id.Value, Economy);
 
         /// <summary>
         /// What the design canvas' player holds on the board's shelf (BoardTR): three spatulas, two of each brush, no

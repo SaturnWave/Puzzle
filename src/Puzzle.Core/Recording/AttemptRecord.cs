@@ -33,9 +33,19 @@ namespace Puzzle.Core.Recording
         /// Moves of the attempt that the released game's tutorial showed by hand before the player played them: 0 for an
         /// attempt with none, for every record of the web lab, and for every record written before the count existed.
         /// </param>
-        /// <exception cref="ArgumentException">A part is missing, the attempt ends before it starts, or the hints or the guided moves are fewer than none.</exception>
+        /// <param name="guidedBoosters">
+        /// The boosters of the attempt that the released game's tutorial had the player use by hand, free (the booster
+        /// intro), by their record names: each is also among <see cref="AttemptOutcome.BoostersUsed"/>, which counts every
+        /// use; these are the ones the player's stock did not pay for. None for an attempt without, for every record of the
+        /// web lab, and for every record written before the list existed.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// A part is missing, the attempt ends before it starts, the hints or the guided moves are fewer than none, or a
+        /// guided booster is not among the boosters used.
+        /// </exception>
         public AttemptRecord(
-            AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false, int hintsShown = 0, int guidedMoves = 0)
+            AttemptStart start, AttemptOutcome outcome, LabDetails? lab, IReadOnlyList<AttemptAction>? actions = null, bool testerMode = false, int hintsShown = 0, int guidedMoves = 0,
+            IReadOnlyList<string>? guidedBoosters = null)
         {
             Start = start ?? throw new ArgumentNullException(nameof(start));
             Outcome = outcome ?? throw new ArgumentNullException(nameof(outcome));
@@ -49,6 +59,7 @@ namespace Puzzle.Core.Recording
             TesterMode = testerMode;
             HintsShown = hintsShown >= 0 ? hintsShown : throw new ArgumentOutOfRangeException(nameof(hintsShown), hintsShown, "An attempt shows none or more hints.");
             GuidedMoves = guidedMoves >= 0 ? guidedMoves : throw new ArgumentOutOfRangeException(nameof(guidedMoves), guidedMoves, "An attempt has none or more guided moves.");
+            GuidedBoosters = Array.AsReadOnly(CheckedGuidedBoosters(guidedBoosters ?? Array.Empty<string>(), outcome.BoostersUsed));
         }
 
         public AttemptStart Start { get; }
@@ -72,6 +83,26 @@ namespace Puzzle.Core.Recording
 
         /// <summary>Moves the released game's tutorial showed by hand and the player then played; 0 for none, and in every record of the web lab.</summary>
         public int GuidedMoves { get; }
+
+        /// <summary>
+        /// The boosters the released game's tutorial had the player use by hand, free, by their record names; each is
+        /// also among the outcome's boosters used. None for none, and in every record of the web lab.
+        /// </summary>
+        public IReadOnlyList<string> GuidedBoosters { get; }
+
+        /// <exception cref="ArgumentException">A guided booster is null, or is used more often as guided than the attempt used it at all.</exception>
+        private static string[] CheckedGuidedBoosters(IReadOnlyList<string> guided, IReadOnlyList<string> used)
+        {
+            foreach (IGrouping<string?, string> name in guided.GroupBy(each => each))
+            {
+                if (name.Key is null || name.Count() > used.Count(each => each == name.Key))
+                {
+                    throw new ArgumentException($"A guided booster ({name.Key ?? "null"}) is not among the boosters used ({string.Join(", ", used)}).", nameof(guided));
+                }
+            }
+
+            return guided.ToArray();
+        }
 
         private static AttemptAction[] CheckedActions(IReadOnlyList<AttemptAction> actions) => actions.All(action => action is not null)
             ? actions.ToArray()

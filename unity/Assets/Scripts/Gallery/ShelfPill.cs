@@ -10,14 +10,14 @@ namespace Puzzle.Client.Gallery
 {
     /// <summary>
     /// The small cream card that stands over the board's shelf and says what the shelf has to say (<see cref="PillWords"/>):
-    /// how to play on a first try, which try this is, the booster that is armed and what to pick for it, the word on a
-    /// booster's first use, why a use was refused. The design canvas draws none of it; it is made of the canvas'
+    /// how to play on a first try, which try this is, the booster that is armed and what to pick for it, why a use
+    /// was refused. The design canvas draws none of it; it is made of the canvas'
     /// card (its cream, its gilt rim, its soft shadow) drawn small, with the lettering of its labels. It is centred
     /// on the screen just over the plank, as wide as its words, and drawn with the shelf's size, but its words are
     /// never smaller on the screen than can be read. The tutorial's steps are said by a pill of the same make over the
     /// dimmed stage (<see cref="CreateForLessons"/>): in three lines, what to look at or do in the larger type, why
-    /// under it, and a small line for a step that a touch ends; it stands over the shelf, under the plaques, or over a
-    /// jigsaw's tray (<see cref="Stand"/>).
+    /// under it, and a small line (a touch goes on, a booster used by hand is free); it stands over the shelf, under
+    /// the plaques, over a jigsaw's tray, or under the card before a level (<see cref="Stand"/>).
     /// </summary>
     public sealed class ShelfPill : IDisposable
     {
@@ -99,6 +99,10 @@ namespace Puzzle.Client.Gallery
         /// <summary>The pill that says the tutorial's steps, over the dark of its spotlight.</summary>
         public static ShelfPill CreateForLessons(Transform parent, ArtCatalogue art) => new ShelfPill(parent, art, "Lesson pill", DrawOrder.LessonPill, DrawOrder.LessonPillLettering);
 
+        /// <summary>The pill that says a step of the tutorial over a card that hangs in front of the dark (the card before a level), over the card's own spotlight.</summary>
+        public static ShelfPill CreateForLessonsOnACard(Transform parent, ArtCatalogue art) =>
+            new ShelfPill(parent, art, "Lesson pill on a card", DrawOrder.CardLessonPill, DrawOrder.CardLessonPillLettering);
+
         /// <summary>Where the pill's top edge lies now, in the layout's points.</summary>
         public float Top => _root.localPosition.y + BodyHeight / 2f * _scale;
 
@@ -139,15 +143,13 @@ namespace Puzzle.Client.Gallery
             {
                 PillWords.Line line => Write(_first, line.Words, LineSize, 0f),
                 PillWords.Armed armed => Mathf.Max(Write(_first, armed.About, LineSize, LinesApart / 2f), Write(_second, armed.WhatToPick, PickSize, -LinesApart / 2f)),
-                PillWords.Guide { Aside: string aside } guide => Mathf.Max(Write(_first, guide.Sentence, LineSize, LinesApart / 2f), Write(_aside, aside, AsideSize, -LinesApart / 2f)),
-                PillWords.Guide guide => Write(_first, guide.Sentence, LineSize, 0f),
-                PillWords.Lesson { TouchToGoOn: string touch } lesson => Mathf.Max(
-                    Write(_second, lesson.Says, PickSize, LinesApart), Mathf.Max(Write(_first, lesson.Why, LineSize, 0f), Write(_aside, touch, AsideSize, -LinesApart))),
+                PillWords.Lesson { Aside: string aside } lesson => Mathf.Max(
+                    Write(_second, lesson.Says, PickSize, LinesApart), Mathf.Max(Write(_first, lesson.Why, LineSize, 0f), Write(_aside, aside, AsideSize, -LinesApart))),
                 PillWords.Lesson lesson => Mathf.Max(Write(_second, lesson.Says, PickSize, LinesApart / 2f), Write(_first, lesson.Why, LineSize, -LinesApart / 2f)),
                 _ => throw new InvalidOperationException($"The pill does not know how to say {words.GetType().Name}."),
             };
             _second.gameObject.SetActive(words is PillWords.Armed || words is PillWords.Lesson);
-            _aside.gameObject.SetActive(words is PillWords.Guide { Aside: string _ } || words is PillWords.Lesson { TouchToGoOn: string _ });
+            _aside.gameObject.SetActive(words is PillWords.Lesson { Aside: string _ });
 
             var body = new Vector2(Mathf.Max(NarrowestBody, widest + 2f * WordsInFromSides), BodyHeight);
             _card.size = body / CardScale + new Vector2(CardPictureMargin, CardPictureMargin);
@@ -188,8 +190,8 @@ namespace Puzzle.Client.Gallery
 
         private float BodyHeight => _words switch
         {
-            PillWords.Lesson { TouchToGoOn: string _ } => ThreeLinesHigh,
-            PillWords.Armed _ or PillWords.Guide { Aside: string _ } or PillWords.Lesson _ => TwoLinesHigh,
+            PillWords.Lesson { Aside: string _ } => ThreeLinesHigh,
+            PillWords.Armed _ or PillWords.Lesson _ => TwoLinesHigh,
             _ => OneLineHigh,
         };
 

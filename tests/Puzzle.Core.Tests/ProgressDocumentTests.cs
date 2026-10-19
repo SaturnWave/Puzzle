@@ -51,8 +51,16 @@ public class ProgressDocumentTests
         DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal)[..^1]
         + ""","tutorial":["goal","match","moves","four-in-a-line","five-in-a-line","box","jelly","first-piece","first-painting"]}""";
 
-    /// <summary>What a player on level 40 with the first painting whole has seen of the tutorial: all but the steps of the tape and the frame corners, whose levels come later.</summary>
-    private static readonly TutorialSeen SeenOnLevelForty = TutorialSeen.Of(TutorialSteps.All.Where(step => step != TutorialStep.Chain && step != TutorialStep.Item));
+    /// <summary>
+    /// What a player on level 40 with the first painting whole had seen of the tutorial before the booster intro (#7):
+    /// all but the steps of the tape and the frame corners, whose levels come later. Named one by one, so that the
+    /// documents pinned here stay what they are as steps are added.
+    /// </summary>
+    private static readonly TutorialSeen SeenOnLevelForty = TutorialSeen.Of(new[]
+    {
+        TutorialStep.Goal, TutorialStep.Match, TutorialStep.Moves, TutorialStep.FourInALine, TutorialStep.FiveInALine, TutorialStep.Box, TutorialStep.Jelly,
+        TutorialStep.FirstPiece, TutorialStep.FirstPainting,
+    });
 
     /// <summary>Noon on 14 October 2026 in Istanbul: 09:00 at Greenwich, day 739 902 of the calendar.</summary>
     private static readonly DateTimeOffset Noon = new(2026, 10, 14, 12, 0, 0, TimeSpan.FromHours(3));

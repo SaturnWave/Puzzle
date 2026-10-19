@@ -2,15 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
 {
     /// <summary>
-    /// A step of the game's tutorial (docs/GAME_DESIGN.md §19, the owner's decision of 2026-10-19), in the order a
+    /// A step of the game's tutorial (docs/GAME_DESIGN.md §19, the owner's decisions of 2026-10-19), in the order a
     /// player meets them: the first level's goal plaque, its match shown by hand and its moves medallion; the four and
     /// the five shown by hand; each obstacle where it is first seen; the first piece placed on a jigsaw and the first
-    /// painting made whole. Each is shown once to a player. A closed set: a step is never renamed once a progress
-    /// file names it (<see cref="TutorialSteps.NameOf"/>). No Unity dependency.
+    /// painting made whole; and the booster intro (#7): each booster used during play used once by hand on the level it
+    /// opens on, and the start boosters on the card before a level after its first loss. Each is shown once to a
+    /// player. A closed set: a step is never renamed once a progress file names it (<see cref="TutorialSteps.NameOf"/>),
+    /// and a new one is added at the end. No Unity dependency.
     /// </summary>
     public enum TutorialStep
     {
@@ -46,6 +49,24 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The first painting made whole: celebrated with a word about the museum.</summary>
         FirstPainting,
+
+        /// <summary>The level the spatula opens on: the spatula used once by hand, free (docs/GAME_DESIGN.md §19, #7).</summary>
+        BoosterHitCell,
+
+        /// <summary>The level the row brush opens on: the row brush used once by hand, free.</summary>
+        BoosterHitRow,
+
+        /// <summary>The level the column brush opens on: the column brush used once by hand, free.</summary>
+        BoosterHitColumn,
+
+        /// <summary>The level the shuffle opens on: the shuffle used once by hand, free.</summary>
+        BoosterShuffle,
+
+        /// <summary>
+        /// The card before a level, the first time the player comes back to it after the level was lost: the three
+        /// start boosters lit one after another, each with one sentence.
+        /// </summary>
+        StartBoosters,
     }
 
     /// <summary>What the steps are called in a progress file, and which of them are shown on a board.</summary>
@@ -67,6 +88,20 @@ namespace Puzzle.Client.Flow
             [TutorialStep.Item] = "item",
             [TutorialStep.FirstPiece] = "first-piece",
             [TutorialStep.FirstPainting] = "first-painting",
+            [TutorialStep.BoosterHitCell] = "booster-hit-cell",
+            [TutorialStep.BoosterHitRow] = "booster-hit-row",
+            [TutorialStep.BoosterHitColumn] = "booster-hit-column",
+            [TutorialStep.BoosterShuffle] = "booster-shuffle",
+            [TutorialStep.StartBoosters] = "start-boosters",
+        };
+
+        /// <summary>The booster each step of a booster used during play teaches.</summary>
+        private static readonly IReadOnlyDictionary<TutorialStep, BoosterKind> Boosters = new Dictionary<TutorialStep, BoosterKind>
+        {
+            [TutorialStep.BoosterHitCell] = BoosterKind.HitCell,
+            [TutorialStep.BoosterHitRow] = BoosterKind.HitRow,
+            [TutorialStep.BoosterHitColumn] = BoosterKind.HitColumn,
+            [TutorialStep.BoosterShuffle] = BoosterKind.Shuffle,
         };
 
         /// <summary>The step's name in a progress file: lower case, words joined by hyphens, never changed once given.</summary>
@@ -76,8 +111,18 @@ namespace Puzzle.Client.Flow
         /// <summary>The step a progress file names; nothing for a name of no step.</summary>
         public static TutorialStep? Find(string name) => All.Where(step => step.NameOf() == name).Select(step => (TutorialStep?)step).FirstOrDefault();
 
-        /// <summary>True for the steps a board shows; the others are shown on a jigsaw.</summary>
-        public static bool IsOnTheBoard(this TutorialStep step) => step != TutorialStep.FirstPiece && step != TutorialStep.FirstPainting;
+        /// <summary>True for the steps a board shows; the others are shown on a jigsaw, or on the card before a level.</summary>
+        public static bool IsOnTheBoard(this TutorialStep step) =>
+            step != TutorialStep.FirstPiece && step != TutorialStep.FirstPainting && step != TutorialStep.StartBoosters;
+
+        /// <summary>The booster used during play a step teaches by hand; nothing for every other step.</summary>
+        public static BoosterKind? BoosterOf(this TutorialStep step) => Boosters.TryGetValue(step, out BoosterKind booster) ? booster : (BoosterKind?)null;
+
+        /// <summary>The step that teaches a booster used during play by hand.</summary>
+        /// <exception cref="ArgumentException">The booster is taken before a level: no step teaches it on a board.</exception>
+        public static TutorialStep Teaching(BoosterKind booster) =>
+            Boosters.Where(each => each.Value == booster).Select(each => (TutorialStep?)each.Key).FirstOrDefault()
+            ?? throw new ArgumentException($"{booster.Name()} is taken before a level; no step teaches it on a board.", nameof(booster));
     }
 
     /// <summary>The steps of the tutorial a player has been shown, each to its end. Immutable.</summary>

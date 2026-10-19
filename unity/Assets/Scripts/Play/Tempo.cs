@@ -104,6 +104,12 @@ namespace Puzzle.Client.Play
         public const float RefusalSaid = 1.8f;
 
         /// <summary>
+        /// A finger held this long on a booster's disc is a long press (#7): the card that shows what the booster does
+        /// comes down, and the lift presses nothing. About as long as a phone's own long press.
+        /// </summary>
+        public const float LongPress = 0.45f;
+
+        /// <summary>
         /// The finale of a won game with moves left over. Light opens at the moves medallion
         /// (<see cref="MedallionLights"/>) for <see cref="FinaleLead"/> before the first move leaves it.
         /// </summary>

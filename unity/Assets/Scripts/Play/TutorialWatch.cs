@@ -6,12 +6,14 @@ using Puzzle.Bot;
 using Puzzle.Client.Flow;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Model;
+using Puzzle.Meta;
 
 namespace Puzzle.Client.Play
 {
     /// <summary>
     /// What one step of the tutorial shows on a board. A closed set (private constructor): a step that asks only to
-    /// be looked at, which a touch anywhere ends; and a move shown by hand, which only playing that move ends.
+    /// be looked at, which a touch anywhere ends; a move shown by hand, which only playing that move ends; and a
+    /// booster of the shelf used by hand, which only that use ends.
     /// </summary>
     public abstract class Lesson
     {
@@ -48,6 +50,32 @@ namespace Puzzle.Client.Play
             public Move Move { get; }
 
             public override string ToString() => $"{Step.NameOf()}: play {Move}";
+        }
+
+        /// <summary>
+        /// A booster of the shelf is used once by hand, free (#7): its disc and its target are lit, and the board takes
+        /// that booster's press and that use and nothing else until the use is made. A brush is taken anywhere on the
+        /// row or the column shown; the spatula only on the cell shown; the shuffle needs no aim.
+        /// </summary>
+        public sealed class Booster : Lesson
+        {
+            public Booster(TutorialStep step, BoosterUse use)
+                : base(step)
+            {
+                Use = use ?? throw new ArgumentNullException(nameof(use));
+                if (step.BoosterOf() != BoosterKinds.Of(use))
+                {
+                    throw new ArgumentException($"The step {step.NameOf()} does not teach {BoosterKinds.Of(use).Name()}.", nameof(use));
+                }
+            }
+
+            /// <summary>The use shown: the cell, the row or the column aimed at, or the shuffle.</summary>
+            public BoosterUse Use { get; }
+
+            /// <summary>The booster whose disc is pressed.</summary>
+            public BoosterKind Kind => BoosterKinds.Of(Use);
+
+            public override string ToString() => $"{Step.NameOf()}: use {Use}";
         }
     }
 
@@ -97,9 +125,11 @@ namespace Puzzle.Client.Play
     /// card, nothing armed), and only when the board offers what it teaches: the goal before the attempt has begun,
     /// the match shown by hand, the moves medallion once a move was played, the four and the five once the board
     /// offers such a move (the hint's advisor finds it, Puzzle.Bot's MoveLessons says what a move teaches), an
-    /// obstacle where one lies on the board. Steps come in the plan's order: of those that may come, the first whose
-    /// subject the board offers begins, and the others wait, saying nothing. While a move is shown by hand the board
-    /// takes that move and no other; a step that is looked at takes no move, and a touch anywhere ends it. A step that
+    /// obstacle where one lies on the board, a booster used during play once the engine would take it somewhere
+    /// (<see cref="BoosterLessonAim"/> says where it is worth the most). Steps come in the plan's order: of those that
+    /// may come, the first whose subject the board offers begins, and the others wait, saying nothing. While a move is
+    /// shown by hand the board takes that move and no other; while a booster is used by hand it takes that booster's
+    /// press and the use shown, free, and no move; a step that is looked at takes no move, and a touch anywhere ends it. A step that
     /// ends is done for good and is reported to whoever keeps the player's progress; a step cut short by leaving the
     /// board is not, and comes again. No Unity dependency: the repository's tests compile it too.
     /// </summary>
@@ -115,6 +145,7 @@ namespace Puzzle.Client.Play
         private readonly HintAdvisor _advisor;
         private readonly ulong _attemptSeed;
         private readonly List<TutorialStep> _done = new List<TutorialStep>();
+        private readonly List<string> _guidedBoosters = new List<string>();
 
         /// <param name="mayCome">The steps that may come on this board, in the order they are shown (<see cref="TutorialPlan.MayComeOn"/>).</param>
         /// <param name="advisor">Finds the move a step shows by hand.</param>
@@ -137,9 +168,10 @@ namespace Puzzle.Client.Play
         /// </summary>
         /// <param name="level">The level's number, from 1.</param>
         /// <param name="attemptSeed">The attempt's play seed (AttemptSeeds.Play).</param>
-        public static TutorialWatch? ForTheBoard(int level, TutorialSeen seen, ulong attemptSeed)
+        /// <param name="unlocks">Where the boosters used during play open: each is used by hand on its level.</param>
+        public static TutorialWatch? ForTheBoard(int level, TutorialSeen seen, ulong attemptSeed, BoosterUnlocks unlocks)
         {
-            IReadOnlyList<TutorialStep> mayCome = TutorialPlan.MayComeOn(level, seen);
+            IReadOnlyList<TutorialStep> mayCome = TutorialPlan.MayComeOn(level, seen, unlocks);
             if (mayCome.Count == 0)
             {
                 return null;
@@ -155,6 +187,12 @@ namespace Puzzle.Client.Play
 
         /// <summary>The moves of the attempt that were shown by hand and played: what its record counts.</summary>
         public int GuidedMoves { get; private set; }
+
+        /// <summary>
+        /// The boosters of the attempt that were used by hand, free, by their record names (Puzzle.Core's BoosterNames),
+        /// in the order they were used: what its record names, each one also among the boosters it used.
+        /// </summary>
+        public IReadOnlyList<string> GuidedBoosters => _guidedBoosters;
 
         /// <summary>The steps that may still come on this board, in their order.</summary>
         public IReadOnlyList<TutorialStep> MayStillCome => _mayCome;
@@ -185,7 +223,8 @@ namespace Puzzle.Client.Play
 
         /// <summary>
         /// True when the board may play this move now: any while nothing shows, only the one shown by hand while a move
-        /// is (the trade of the same two pieces, from either of them), none while a step is looked at.
+        /// is (the trade of the same two pieces, from either of them), none while a step is looked at or a booster is
+        /// used by hand.
         /// </summary>
         public bool Takes(Move move) => Showing switch
         {
@@ -193,6 +232,42 @@ namespace Puzzle.Client.Play
             Lesson.Guided guided => IsTheMoveShown(guided, move),
             _ => false,
         };
+
+        /// <summary>True when a booster's disc on the shelf may be pressed now: any while nothing shows, only the booster used by hand while one is, none while another step shows.</summary>
+        public bool TakesThePress(BoosterKind booster) => Showing switch
+        {
+            null => true,
+            Lesson.Booster lesson => lesson.Kind == booster,
+            _ => false,
+        };
+
+        /// <summary>
+        /// True when the board may use this booster now: any use while nothing shows; while a booster is used by hand,
+        /// only the use shown (the spatula on its cell, a brush anywhere on its row or column, the shuffle); none while
+        /// another step shows.
+        /// </summary>
+        public bool TakesTheUse(BoosterUse use) => Showing switch
+        {
+            null => true,
+            Lesson.Booster lesson => IsTheUseShown(lesson.Use, use),
+            _ => false,
+        };
+
+        /// <summary>True when this use is the one a step shows by hand, which is free: the wallet pays nothing for it.</summary>
+        public bool IsFree(BoosterUse use) => Showing is Lesson.Booster lesson && IsTheUseShown(lesson.Use, use);
+
+        /// <summary>The engine used a booster: the use shown by hand ends its step, and the attempt's record names it as guided.</summary>
+        /// <returns>The step that is done now; nothing when none is.</returns>
+        public TutorialStep? Used(BoosterUse use)
+        {
+            if (!(Showing is Lesson.Booster lesson) || !IsTheUseShown(lesson.Use, use))
+            {
+                return null;
+            }
+
+            _guidedBoosters.Add(BoosterNames.Of(use));
+            return Finish(lesson);
+        }
 
         /// <summary>A move was played: the move shown by hand ends its step.</summary>
         /// <returns>The step that is done now; nothing when none is.</returns>
@@ -223,6 +298,16 @@ namespace Puzzle.Client.Play
         private static bool IsTheMoveShown(Lesson.Guided guided, Move move) =>
             guided.Move == move || (move.Kind == MoveKind.Swap && guided.Move.Kind == MoveKind.Swap && guided.Move.From == move.To && guided.Move.To == move.From);
 
+        /// <summary>The use shown, or another of the same booster that strikes what it strikes: the spatula's cell, a brush's row or column, any shuffle.</summary>
+        private static bool IsTheUseShown(BoosterUse shown, BoosterUse use) => (shown, use) switch
+        {
+            (BoosterUse.HitCell cell, BoosterUse.HitCell other) => cell.At == other.At,
+            (BoosterUse.HitRow row, BoosterUse.HitRow other) => row.At.Y == other.At.Y,
+            (BoosterUse.HitColumn column, BoosterUse.HitColumn other) => column.At.X == other.At.X,
+            (BoosterUse.Shuffle _, BoosterUse.Shuffle _) => true,
+            _ => false,
+        };
+
         private TutorialStep Finish(Lesson lesson)
         {
             Showing = null;
@@ -243,8 +328,16 @@ namespace Puzzle.Client.Play
             TutorialStep.Jelly => Point(step, CellsOf(game.Board, cell => game.Board.JellyAt(cell) > 0), game.Board),
             TutorialStep.Chain => Point(step, CellsOf(game.Board, cell => game.Board.ChainAt(cell) > 0), game.Board),
             TutorialStep.Item => Point(step, CellsOf(game.Board, cell => game.Board.TileAt(cell).Kind == TileKind.Item), game.Board),
+            TutorialStep.BoosterHitCell or TutorialStep.BoosterHitRow or TutorialStep.BoosterHitColumn or TutorialStep.BoosterShuffle => Aim(game, step),
             _ => throw new ArgumentOutOfRangeException(nameof(step), step, "A step that does not come on a board."),
         };
+
+        /// <summary>The booster's use where it is worth the most to the goals (<see cref="BoosterLessonAim"/>); nothing while the engine would take none.</summary>
+        private Lesson? Aim(Game game, TutorialStep step)
+        {
+            BoosterKind booster = step.BoosterOf() ?? throw new ArgumentOutOfRangeException(nameof(step), step, "A step that teaches no booster.");
+            return BoosterLessonAim.For(game, booster, _attemptSeed) is BoosterUse use ? new Lesson.Booster(step, use) : null;
+        }
 
         private Lesson? Guide(Game game, TutorialStep step, MoveLesson lesson) =>
             _advisor.MoveFor(game, _attemptSeed, lesson) is Move move ? new Lesson.Guided(step, move) : null;

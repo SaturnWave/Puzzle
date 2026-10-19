@@ -240,6 +240,7 @@ public class GameWordsTests
             ("BoardWords.Level", BoardWords.Level), ("BoardWords.Moves", BoardWords.Moves), ("BoardWords.Goals", BoardWords.Goals),
             ("BoardWords.LevelNumbered", BoardWords.LevelNumbered(47)), ("BoardWords.PieceOf", BoardWords.PieceOf(reward)), ("BoardWords.OpensOn", BoardWords.OpensOn(12)),
             ("BoosterWords.EveryLevelWithout", BoosterWords.EveryLevelWithout), ("BoosterWords.CostsNoMove", BoosterWords.CostsNoMove),
+            ("BoosterWords.TouchToClose", BoosterWords.TouchToClose),
             ("LevelStartWords.Goals", LevelStartWords.Goals), ("LevelStartWords.ChooseBoosters", LevelStartWords.ChooseBoosters), ("LevelStartWords.Moves", LevelStartWords.Moves),
             ("LevelStartWords.Play", LevelStartWords.Play), ("LevelStartWords.Buy", LevelStartWords.Buy), ("LevelStartWords.CoinsShort", LevelStartWords.CoinsShort),
             ("LevelStartWords.BuyToChoose", LevelStartWords.BuyToChoose), ("LevelStartWords.Title", LevelStartWords.Title(47)),
@@ -266,7 +267,12 @@ public class GameWordsTests
             said.Add(($"BoosterWords.NameOf {booster}", BoosterWords.NameOf(booster)));
             said.Add(($"BoosterWords.Armed {booster}", BoosterWords.Armed(booster)));
             said.Add(($"BoosterWords.Refused {booster}", BoosterWords.Refused(booster)));
-            said.Add(($"BoosterWords.FirstUse {booster}", BoosterWords.FirstUse(booster)));
+            said.Add(($"TutorialWords.OfTheBooster {booster}", TutorialWords.OfTheBooster(booster, isArmed: false).ToString()));
+            if (booster != BoosterKind.Shuffle)
+            {
+                said.Add(($"TutorialWords.OfTheBooster armed {booster}", TutorialWords.OfTheBooster(booster, isArmed: true).ToString()));
+            }
+
             said.Add(($"BoosterWords.OnTheCard {booster}", BoosterWords.OnTheCard(booster)));
             said.Add(($"ShopWords.NameOf {booster}", ShopWords.NameOf(booster)));
             if (booster != BoosterKind.Shuffle)
@@ -280,6 +286,8 @@ public class GameWordsTests
             said.Add(($"LevelStartWords.OnTheShelf {booster}", LevelStartWords.OnTheShelf(booster, 3)));
             said.Add(($"LevelStartWords.WhatItDoes {booster}", LevelStartWords.WhatItDoes(booster, 3)));
             said.Add(($"ShopWords.NameOf {booster}", ShopWords.NameOf(booster)));
+            said.Add(($"TutorialWords.OfTheStartBooster {booster}", TutorialWords.OfTheStartBooster(booster, 3).ToString()));
+            said.Add(($"TutorialWords.OfTheStartBooster one {booster}", TutorialWords.OfTheStartBooster(booster, 1).ToString()));
         }
 
         foreach (BoosterSet set in rules.Shop.BoosterSets)

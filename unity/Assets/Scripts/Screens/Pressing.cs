@@ -70,6 +70,24 @@ namespace Puzzle.Client.Screens
             }
         }
 
+        /// <summary>
+        /// What the control the finger holds asks for, while the finger is still on it: a press that has lasted long
+        /// enough is a long press, which its owner may take instead of the press (<see cref="FingerGone"/> then, so
+        /// the lift presses nothing).
+        /// </summary>
+        /// <returns>False while no control is held, or the finger has slid off the one it holds.</returns>
+        public bool TryGetHeld(out TAction action)
+        {
+            if (_held.HasValue && _held.Value.Control.IsUnder(_fingerAt))
+            {
+                action = _held.Value.Action;
+                return true;
+            }
+
+            action = default!;
+            return false;
+        }
+
         /// <summary>The finger lifted.</summary>
         /// <returns>True when that pressed a control; <paramref name="action"/> is then what the press asks for.</returns>
         public bool FingerUp(out TAction action)

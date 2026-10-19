@@ -124,7 +124,10 @@ namespace Puzzle.Client.Flow
     /// the steps that may come on its level for what the player has seen (TutorialWatch.ForTheBoard), a jigsaw with what
     /// the player has seen of its two steps. A step that a stage reports done is the player's for good and is saved at
     /// once; a step cut short (a board left, the game closed) comes again. The moves a board showed by hand are counted
-    /// in its attempt's record beside its hints.
+    /// in its attempt's record beside its hints. The booster intro (#7) is part of it: a board has the booster that
+    /// opens on its level used by hand, free (its record names it among the guided boosters, and the ledger spends
+    /// nothing for it), and the museum's card before a level shows the start boosters after the level's first loss
+    /// (TutorialPlan.IntroducesTheStartBoosters).
     /// </para>
     /// <para>
     /// One stage is seen at a time, and each has its own camera: the stage that is left is taken down before the
@@ -536,7 +539,8 @@ namespace Puzzle.Client.Flow
             LevelBrief brief = LevelBrief.Of(level, PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue), _rules, LevelStart.Rules);
             WalletView wallet = WalletNow;
             MuseumStage museum = MuseumStage.Open(
-                visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, DeviceNow, brief, opening);
+                visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, DeviceNow, brief, opening,
+                TutorialPlan.IntroducesTheStartBoosters(_progress.Tutorial, _progress.AttemptsOnLevel), _effectArt);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;
@@ -569,7 +573,7 @@ namespace Puzzle.Client.Flow
             int attempt = _progress.AttemptsOnLevel;
             _rewardOfTheBoard = PieceReward.ForWinning(_progress, _levels.Count, _paintings.Catalogue);
             Game game = LevelStart.Attempt(level, attempt, startBoosters.ForTheEngine());
-            ShelfBrief shelf = ShelfBrief.Of(level.Id.Value, attempt, _rules);
+            ShelfBrief shelf = ShelfBrief.Of(level.Id.Value, _rules);
             AttemptSeeds seeds = LevelStart.SeedsOf(level, attempt);
             _startOfTheBoard = new AttemptStart(
                 level.Id,
@@ -583,7 +587,7 @@ namespace Puzzle.Client.Flow
                 game.ShuffleBoosterRule);
             var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters), _rules.Ads);
             GameStage stage = GameStage.Open(
-                game, _art, _effectArt, _paintings, brief, shelf, opening, HintBrief.Of(_rules.Hints, seeds.Play), TutorialWatch.ForTheBoard(level.Id.Value, _progress.Tutorial, seeds.Play));
+                game, _art, _effectArt, _paintings, brief, shelf, opening, HintBrief.Of(_rules.Hints, seeds.Play), TutorialWatch.ForTheBoard(level.Id.Value, _progress.Tutorial, seeds.Play, _rules.Unlocks));
             stage.Fit(_screen); // at once: the first frame of a level is drawn before the next step of the clock
             stage.Tell(WalletNow, ExtraMovesNow);
             return stage;
@@ -801,7 +805,7 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// Writes the record of the open attempt, which has just ended for good, to the phone's log: once, with the
-        /// game as it stood when it ended, the hints its board showed and the moves its tutorial showed by hand, marked where it was played in the tester
+        /// game as it stood when it ended, the hints its board showed, the moves its tutorial showed by hand and the boosters it had used by hand, free, marked where it was played in the tester
         /// mode. A clock that was set back since the attempt began (a time sync) gives an attempt that ends as it began
         /// rather than one that ends before. A log that cannot be written does not stop the game: the record waits there
         /// and is written with the next one.
@@ -816,7 +820,7 @@ namespace Puzzle.Client.Flow
             DateTimeOffset ended = now < start.StartedUtc ? start.StartedUtc : now;
             var record = new AttemptRecord(
                 start, AttemptOutcome.Of(game, ended), lab: null, game.Actions, testerMode: handling == WalletHandling.Unlimited, hintsShown: board.HintsShown,
-                guidedMoves: board.GuidedMoves);
+                guidedMoves: board.GuidedMoves, guidedBoosters: board.GuidedBoosters);
             try
             {
                 _attempts.Append(record);
@@ -851,6 +855,7 @@ namespace Puzzle.Client.Flow
             {
                 GameStage board => board.TakeTheTutorialStepsDone(),
                 JigsawStage jigsaw => jigsaw.TakeTheTutorialStepsDone(),
+                MuseumStage museum => museum.TakeTheTutorialStepsDone(),
                 _ => Array.Empty<TutorialStep>(),
             };
             if (done.Count == 0)
