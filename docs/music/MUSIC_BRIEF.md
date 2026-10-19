@@ -56,7 +56,8 @@ Suno kısa parçalar yerine çoğu zaman uzun bir parça üretir. Bu sorun deği
 
 - **Biçim:** Suno'dan **WAV** indirilir (MP3 de olur, ama kesip döngü yapmak için WAV daha temiz).
 - **Bilgisayarda yeri:** `art/music/source/` klasörü. Dosya adı parçanın kodu ve sürümüyle: `M1-muze-temasi-v1.wav`.
-- **Kayıt:** her parça için `art/music/licences.json` dosyasına hangi hesapla, hangi tarihte, hangi istemle üretildiği ve Suno'daki bağlantısı yazılır. Suno'nun ücretli üyeliklerinde üretilen parçaların ticari kullanım koşulları, üretim tarihindeki üyelikle birlikte kayda geçirilmeli. Bu belge hukuki görüş değildir; yayından önce Suno'nun o tarihteki koşulları okunmalı.
+- **Kayıt:** her parça için `art/music/licences.json` dosyasına hangi hesapla, hangi tarihte, hangi istemle üretildiği ve Suno'daki bağlantısı yazılır.
+- **Ticari kullanım:** proje sahibinin Suno Premier üyeliği ticari kullanıma izin veriyor; ürettiği müzikleri zaten YouTube kanalında yayımlıyor (2026-10-19). Parçaların ücretli üyelik sürerken üretildiği kayıtta görünür.
 
 ## 5. Oyuna girişi (#9)
 
