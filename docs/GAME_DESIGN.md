@@ -1337,6 +1337,26 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** halenin tahtanın kenarında yaldız çerçeveye taşması kabul edildi (T297). Ölçüm, oyuncunun her ipucuna uyduğunu varsayar (üst sınır). İpucunun aynı çıkması .NET ve Mono'da gösterildi, telefonun IL2CPP derlemesinde değil.
 - **Doğrulama:** 3.920 test. Unity'de bütün denetimler ve ipucu yürüyüşü hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T290–T299.
 
+**Öğretici (2026-10-19, #5).** Kararlar §19'da. Her adım oyuncuya bir kez gösterilir.
+
+| Adım | Ne zaman | Ne gösterir | Ne der |
+|---|---|---|---|
+| Hedef | 1. bölüm, ilk sakin an | Hedef plaketi aydınlık | "Hedefin bu plakette / Bu taşları topla, bölümü kazan" |
+| Eşleşme | 1. bölüm | İki taş ve oluşacak üçlü aydınlık; yalnızca o hamle kabul edilir | "Bu iki taşın yerini değiştir / Aynı üç taş yan yana gelince toplanır" |
+| Hamleler | 1. bölüm, ilk hamleden sonra | Hamle madalyonu | "Her hamle bu sayıyı bir azaltır / Hamlelerin bitmeden hedefi tamamla" |
+| Dörtlü | 2.–5. bölüm, tahta bir dörtlü sunduğu ilk an | Hamle ve dörtlü sıra | "Dört aynı taşı yan yana getir / Fırça olur: dokununca bir sırayı boyar" |
+| Beşli | 3.–6. bölüm, tahta bir beşli sunduğu ilk an | Hamle ve beşli sıra | Beşlinin paleti yaptığını söyler |
+| Engeller | Sandık 11, vernik 21, bant 41, çerçeve köşesi 51 | Tahtanın ortasına en yakın engel | Engelin ne olduğunu ve nasıl temizlendiğini söyler |
+| İlk parça | İlk yapboz | Tepsideki parça ve tablodaki yeri | "Parçayı tablodaki yerine sürükle" |
+| İlk tablo | İlk tablo tamamlanınca, kutlamadan sonra | Tablo çerçevesinde | Müze hakkında bir satır |
+
+- **Gösterim:** gerisi kararır, aydınlık yerlerin kenarı yumuşak bir yaldızla çizilir, yazı raftaki yazı gibi bir hapta durur. El ya da insan çizimi yok.
+- **Hamle seçimi:** gösterilecek hamle, tahtanın bir kopyasında yalnızca gereken özel taşı yapan (ve başka eşleşme doğurmayan) düz taş değiş tokuşları arasından seçilir; aralarından uzman bot seçer. Tahta böyle bir hamle sunmazsa adım bekler; kendi bölümünde ve sonraki üç bölümde sunulmazsa bırakılır. Taramada 2. bölüm 16 tahtanın 14'ünde başta bir dörtlü sunuyor; 3. bölüm 16'nın 8'inde başta bir beşli, bölüm içinde ise daha sık.
+- **Kayıt:** ilerleme dosyası 5. sürüm, görülen adımları tutar; eski dosyada bölümü kazanılmış adım görülmüş sayılır. Rehberli hamleler deneme kaydında sayılır (`guidedMoves`) ve denemeyi yardımlı yapar.
+- **İpucuyla ilişki:** adım sürerken ipucu çıkmaz; adımlar bitince ipucu olağan kuralla döner.
+- **Bilinen:** öteki özel taşlar (sıçrama, kelebek, büyük sıçrama) için adım yok. Bir köşe parçasının yerini gösteren pencere çerçevenin üstüne taşıyor. Telefonda bakılmadı.
+- **Doğrulama:** 3.953 test. Unity'de bütün denetimler ve öğretici yürüyüşleri (Türkçe, İngilizce, Korece) hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T310–T321.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici

@@ -59,6 +59,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A34 | Kaydırmada son sayfanın ötesine çekince sayfa esnerken kenarda duvar deseni olmayan düz bir şerit görünüyor (en çok genişliğin %15'i, bırakınca kaybolur). Katlanırın iç ekranında daha belirgin. | #3 | Düşük, görünüm | Sayfaların arkasında duran sabit bir duvar |
 | A35 | İngilizce ve Korece çeviriler makine çevirisi; Korece tablo adlarının 78'i çeviri (22'si Wikidata'daki yerleşik ad). Kayıtta en emin olunmayan ifadeler: 하트 (can), 이동 (hamle), booster adları, ressam adlarının yanındaki "atfedilen", "Yaşlı/Genç". | #8 | Orta: yayın öncesi | Her dilin ana dili olan birinin gözden geçirmesi |
 | A36 | İpucunun aynı çıkması .NET ve Mono'da gösterildi, telefonun IL2CPP derlemesinde değil (botun seçimi kesirli sayı kullanıyor). İpucunun telefonda düşünme süresi ölçülmedi. | #6 | Düşük | T298; telefonda kayıtlarla karşılaştırma |
+| A37 | Öğretici: 3.–6. bölümlerin hiçbiri beşli sunmazsa beşli adımı bırakılır (taramada nadir). Öteki özel taşlar için adım yok. Köşe parçasının yerini gösteren pencere çerçevenin üstüne taşıyor. 1.–3. bölümlerin telefon kayıtları rehberli hamle yüzünden çoğunlukla yardımlı sayılır. | #5 | Düşük | T315, T321 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -344,6 +345,23 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T297 | Kenarda ipucu | Tahtanın kenarına ya da köşesine düşen bir ipucuna bak | Hale yaldız çerçeveye taşar; kabul edilebilir mi, yoksa içeride mi kalmalı? | İpucu | Bekliyor |
 | T298 | Akıcılık | İpucunun belirdiği ana dikkatle bak | Gözle görülür takılma yok (bot bir karede düşünüyor) | İpucu | Bekliyor |
 | T299 | Kayıt | İpucu görülen bir bölümü oyna, sonra deneme kaydına bak (adb) | Deneme kaydı ipucu sayısını tutar (hintsShown) | İpucu | Bekliyor |
+
+### F14. Öğretici (#5)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T310 | İlk açılışta hedef | Uygulamanın verisini sil ve başlat | 1. bölüm hedef plaketi aydınlık, gerisi koyu açılır; yazı iki ekranda da kol mesafesinden okunur; bir dokunuş ilerletir, hiçbir şey oynatmaz | Öğretici | Bekliyor |
+| T311 | Elle gösterilen eşleşme | Başka bir çifti kaydır; sonra gösterilen çifti iki taştan birinden kaydır; bir kez de iki dokunuşla dene | Başka çift reddedilir (sarsılma, hamle harcanmaz); gösterilen çift her yoldan oynanır | Öğretici | Bekliyor |
+| T312 | Hamle sayacı | İlk hamleden sonra bak; sonra adımlar bitince tahtayı bekle | Hamle madalyonu yazısıyla aydınlanır, dokunuş ilerletir; adım sürerken ipucu çıkmaz; son adımdan sonra ipucu olağan bekleme süresiyle gelir | Öğretici | Bekliyor |
+| T313 | Adım ve duraklatma | Gösterilen eşleşme sırasında duraklat; "Oyna"; bölümden çıkıp geri gel | Adım çıkma kartının altında saklanır, dönünce gelir; yeniden girince hedef adımı tekrar gelmez, eşleşme adımı gelir | Öğretici | Bekliyor |
+| T314 | İlk parça | 1. bölümü kazan, yapboz düğmesine bas; yerleştirmeden geri tuşuyla çık, yapbozu yeniden aç | Parça ve yeri aydınlık, mavi düğme gizli, sürükleme çalışır; yeniden açınca adım yine gelir | Öğretici | Bekliyor |
+| T315 | Dörtlü ve beşli | 2. ve 3. bölümü oyna | 2. bölümde dörtlü bütün sırasıyla, 3. bölümde beşli gösterilir; fırça ve palet yazının dediği gibi çıkar. Bölüm böyle bir hamleyle başlamazsa, hamle çıkana kadar bir şey gösterilmez | Öğretici | Bekliyor |
+| T316 | Engeller | 11. (sandık), 21. (vernik), 41. (bant) ve 51. (çerçeve köşesi) bölüme gel | Her biri bir kez yazısıyla gösterilir; dokunuş ilerletir | Öğretici | Bekliyor |
+| T317 | İlk tablo | İlk tabloyu tamamla | Kutlamadan sonra tablo müze satırıyla aydınlanır; dokunuş ilerletir, hiçbir şeye basmaz; sonraki tabloda satır yok | Öğretici | Bekliyor |
+| T318 | Eski kurulumun üstüne | Prototip APK'nın (eski ilerleme dosyası) üstüne, 3. bölümü geçmiş bir oyuncuyla kur | İlk bölümlerin adımları gelmez; yapboz adımları yalnızca daha önce parça yerleştirilmemiş ya da tablo tamamlanmamışsa gelir | Öğretici | Bekliyor |
+| T319 | Adım ortasında kapatma | Bir adımın ortasında uygulamayı kapatıp aç | Biten adımlar tekrar gelmez; yarıda kalan yine gelir | Öğretici | Bekliyor |
+| T320 | İngilizce ve Korece | Ayarlardan dili değiştir, adımları gez | Her adımın yazısı hapına sığar ve doğal okunur | Öğretici | Bekliyor |
+| T321 | Akıcılık | 2.–6. bölümde dörtlü ya da beşli beklenirken tahta durduğu anlara bak | Gözle görülür takılma yok | Öğretici | Bekliyor |
 
 ### G. Görünüm
 

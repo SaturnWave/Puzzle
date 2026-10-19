@@ -22,7 +22,9 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 **Çeviriler ve öğretici**
 - On dilin çevirileri bir bekleme klasöründe hazırlanıyor (Unity'siz); dil desteğinin 2. adımında oyuna girecekler.
-- Öğretici (#5) başladı.
+- Öğretici (#5) bitti (d10de7a): 1. bölümde hedef plaketi, elle gösterilen eşleşme ve hamle sayacı; 2. ve 3. bölümde dörtlü (fırça) ve beşli (palet); sandık, vernik, bant ve çerçeve köşesi ilk görüldükleri bölümde; ilk parça ve ilk tablo. Gösterilecek hamle tahtanın kopyasında aranıyor; tahta sunmazsa adım bekliyor. El çizimi yok.
+- 3.953 test geçti; Unity'deki bütün denetimler ve üç dilde öğretici yürüyüşleri hatasız. Görüntüye baktım: aydınlatma ve yazılar okunuyor. Telefon testleri T310–T321.
+- İpucunun iki kararı (8 sn, ayrı grup) ayrı bir küçük işte uygulanıyor.
 
 ---
 
