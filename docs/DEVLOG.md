@@ -21,10 +21,11 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 3.920 test geçti; Unity'deki bütün denetimler hatasız. Görüntüye baktım: hale görünüyor, asıl karar telefonda. Telefon testleri T290–T299.
 
 **Çeviriler ve öğretici**
-- On dilin çevirileri bir bekleme klasöründe hazırlanıyor (Unity'siz); dil desteğinin 2. adımında oyuna girecekler.
+- On dilin çevirileri hazır (9fd70d0): sözcük tabloları `words/staging`, tablo adları `museum/titles/staging`. Yerleşik tablo adları Wikidata'dan, yalnızca katalogdaki tablo ve müzeyle eşleşince alındı (100 adın Almancada 40'ı, Fransızcada 52'si, Endonezcede 2'si); kalanı çeviri. Denetim temiz; öğreticinin 23 yazısı da çevrildi.
+- Oyuna girmeden önce: harf setine ¡ ¿ œ; Rusça, Japonca ve Çince için yedek yazı tipleri; İspanyolca "MOVIMIENTOS" hamle madalyonu için uzun. İspanyolca sorgu 86. adda kesildi (18–20. odalar çeviri).
 - Öğretici (#5) bitti (d10de7a): 1. bölümde hedef plaketi, elle gösterilen eşleşme ve hamle sayacı; 2. ve 3. bölümde dörtlü (fırça) ve beşli (palet); sandık, vernik, bant ve çerçeve köşesi ilk görüldükleri bölümde; ilk parça ve ilk tablo. Gösterilecek hamle tahtanın kopyasında aranıyor; tahta sunmazsa adım bekliyor. El çizimi yok.
 - 3.953 test geçti; Unity'deki bütün denetimler ve üç dilde öğretici yürüyüşleri hatasız. Görüntüye baktım: aydınlatma ve yazılar okunuyor. Telefon testleri T310–T321.
-- İpucunun iki kararı (8 sn, ayrı grup) ayrı bir küçük işte uygulanıyor.
+- İpucunun kararları uygulandı (9ad22f0): bekleme 8 sn; üç ayar "karar" işaretli; ipucu görülen denemeler ayrı bir grupta, casual'ın ipuçlarına uyan botlarla karşılaştırılıyor. Botların ipucu görme sıklığı varsayım (8 sn'de hamlelerin %22'si); telefon kayıtları gelince ölçülene çevrilecek. 3.963 test geçti; ekonomi denetimi temiz, 100. bölüm 8. gün.
 
 ---
 
