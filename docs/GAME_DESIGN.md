@@ -1410,6 +1410,16 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** müzik henüz kulakla dinlenmedi; seviye ölçüyle seçildi. Başka bir uygulama müzik çalarken oyun kendi müziğini üstüne çalar (karar bekliyor). Suno bağlantısı kayıtta yok.
 - **Doğrulama:** 4.223 test. Ekonomi denetimi temiz. Unity'de bütün denetimler ve yeni müzik denetimi hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T370–T379.
 
+**Dünya haritası (2026-10-22, #4).** Kararlar §19'da; tasarım tuvalindeki "Dünya haritası · dönemler" çizimi birebir oyuna geçti, müzenin kat planı kalktı.
+
+- **Yerler:** `museum/places.json`: her tablonun yapıldığı ya da gösterdiği yer; 59'u Wikidata ya da tabloyu tutan müzenin sayfasıyla doğrulandı (24 tam, 31 şehir, 4 bölge), kalanı ressamın o yıllarda çalıştığı yer. Yer, not ve müze adları 13 dilde `museum/places/<dil>.json`. Proje sahibi açık kalan beş seçimi olduğu gibi bıraktı (kediler Edo, Vertumnus Prag, Babür tabloları Agra, Stubbs Knole, Oudry Versay).
+- **Harita verisi:** `puzzle worldmap build`, Natural Earth 50m kara ve göllerini (kamu malı; `art/map/sources.json`) oyunun çizdiği `WorldMap.bytes` dosyasına çevirir (351 KB, 32 bin kıyı noktası; iki çalıştırma aynı dosyayı verir).
+- **Çizim:** kara üçgen ağlarla, kıyı çizgileri bir gölgelendiricide her yakınlıkta aynı incelikte; kayışta hiçbir şey yeniden kurulmaz. Bu bilgisayarda bir kayış karesi grafik kartında yaklaşık 8 ms (salon 21 ms).
+- **Davranış:** açılışta bütün dünya, sonra 0,85 sn'de oyuncunun dönemine kayış; 20 dönemlik şerit; aynı yerdeki tablolar bir sıra hâlinde, ince çizgiyle yerlerine bağlı; tablo kartında durum, "Oyna" (bölüm kartı) ve "Koleksiyonda gör". Şeritte yatay sürükleme şeridi kaydırır, haritanın geri kalanında sayfalar eskisi gibi kayar; kart açıkken hiçbir şey kaymaz.
+- **Sözcükler:** 26 yeni satır ve 20 kısa dönem adı 13 dilde (`museum/titles`).
+- **Bilinen:** oyunda ekran okuyucu bağlantısı yok (düğmelerin etiketleri var, okuyan yok). Uzun dönem adları plakada 10 punto kadar küçülüyor. 6. dönemin beş yeri Tokyo çevresinde, kamera en yakından açılıyor. Geleneksel Çince serif atlası büyüdü (+2 MB). Telefonda ölçülmedi.
+- **Doğrulama:** 4.068 test (kat planının yaklaşık 200 testi onunla gitti, 49 harita testi geldi). Ekonomi denetimi temiz. Unity'de bütün denetimler ve beş dilde harita yürüyüşleri hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T390–T403.
+
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
 ## 24. Bölüm bankası ve derleyici

@@ -10,6 +10,11 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Proje sahibi yedi müzik parçasını Suno Premier hesabıyla üretti ve `art/sounds/` klasörüne koydu (2026-10-20; 48 kHz stereo WAV).
 - Oyunda tek bir genel müzik olacak: M1 Müze teması, her yerde. Kısa parçalar ve ayrı tahta müziği kullanılmayacak (2026-10-22).
 
+**Dünya haritası oyunda (#4)**
+- Bitti (130e9e1, df8401f): onaylanan tasarım Unity'ye birebir geçti; kat planı kalktı. Kıyılar Natural Earth'ten bir araçla (`puzzle worldmap build`) çıkarılıyor, gölgelendiricide her yakınlıkta aynı incelikte çiziliyor.
+- Yerler iki ajanla aynı anda: biri 100 tablonun yerini Wikidata ve müze sayfalarıyla doğruladı (59'u doğrulandı) ve 13 dilde adlandırdı (a9ede9b), öteki haritayı kurdu. Proje sahibi açık kalan beş yer seçimini olduğu gibi bıraktı.
+- 4.068 test geçti (kat planının testleri gitti, 49 harita testi geldi); ekonomi denetimi temiz; Unity'de beş dilde harita yürüyüşleri hatasız. Tasarımla yan yana resim birebir. Telefon testleri T390–T403.
+
 **Müzik (#9)**
 - Bitti (6888599): M1'in girişi bir kez, sonra 36 ölçülük döngüsü boşluksuz; ekran değişince baştan başlamıyor; efektlerin 5 dB altında; ayarlarda "Müzik" anahtarı (device.json 5. düzen). Kesim aracı ve lisans kaydı `art/sounds/music.json`.
 - Asıl M1 dosyası ve kesilmiş iki parça depoda (yazı tiplerindeki gibi); kullanılmayan altı dosya yalnızca bilgisayarda.

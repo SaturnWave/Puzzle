@@ -63,6 +63,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A38 | Booster tanıtımı: küçük ekranda (2076×2152) uzun basma ve dikey fırça hapları tahtanın kenar hücrelerinin üstüne biniyor. Kartın küçük tahtasında düşen taşlar bazen özel taş yapıyor; +3 hamle kartında yalnızca madalyon sayıyor. Uzun basma yazısını kaçıran ve 20. bölümü geçmiş oyuncu onu hiç görmez. Kartın küçük tahtası çizim sırası kaydırılarak çiziliyor; tahta maskesi yalnızca tahtanın çizim aralığını kesiyor. | #7 | Düşük | T336, T339, T344 |
 | A39 | On üç dil: çevirilerin hepsi makine çevirisi, yayından önce ana dili olan biri okumalı. Bütün yedek atlaslar her dilde yüklenir (16,5 MiB doku). CJK atlasları 40 örnekleme boyutunda; büyük başlıklarda keskinlik telefonda bakılmalı. İspanyolca "MOVIMIENTOS" madalyon halkasına yakın. Dil kartında başka dillerin adlarındaki ortak Han karakterleri seçili dilin biçiminde çıkabilir. İspanyolca 18–20. odaların adları çeviri. | #8 | Orta | T355, T356, T359, T362 |
 | A40 | Müzik: henüz kulakla dinlenmedi (seviye 0,4 ve Vorbis kalitesi 0,6 ölçüyle seçildi). Android ses odağı yönetilmiyor: başka bir uygulama çalarken oyun da çalar. Ayrı bir ses düzeyi kaydırıcısı yok. Suno bağlantısı kayıtta yok. | #9 | Orta | T373, T379 |
+| A41 | Dünya haritası: ekran okuyucu bağlantısı yok (bütün oyun için ayrı iş). Uzun dönem adları plakada yaklaşık 10 punto. 6. dönem en yakın yakınlıkla açılıyor. Kare iç ekranda kart haritanın çoğunu kaplıyor. İğne resimleri döneme ilk gelişte yükleniyor; telefonda kısa takılma olabilir. 41 tablonun yeri yalnızca ressamın çalıştığı yer. | #4 | Orta | T391, T401, T403 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -420,6 +421,25 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T377 | Eski kaydın üstüne | Önceki APK'nın kaydı olan telefona yeni APK'yı kur | Müzik açık başlar; Ses, Titreşim, dil, ilerleme ve cüzdan yerinde | Müzik | Bekliyor |
 | T378 | Ayarlar kartı sığar | Türkçe, İngilizce, Korecede iki ekranda ayarlar kartı; bir kez Test modu açıkken | Ses, Müzik, Titreşim satırları hizalı; hiçbir yazı taşmaz; Test modunda dört anahtar sığar | Müzik | Bekliyor |
 | T379 | Başka uygulamanın müziği | Bir müzik uygulaması çalarken oyunu aç | Ne olduğunu not edin (bugün oyun kendi müziğini üstüne çalar); istenen davranışa proje sahibi karar verir | Müzik | Bekliyor |
+
+### F18. Dünya haritası (#4)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T390 | Haritanın açılışı | Salondan Harita'ya geç (dokunarak ve kaydırarak). | Önce bütün dünya; yarım saniye kadar sonra kamera 0,85 sn'de oyuncunun dönemine kayar, iğneler kayarken görünmez, varınca belirir; takılma yok. | Harita | Bekliyor |
+| T391 | Kamera akıcılığı | Şeritten 10 kez farklı dönemlere, sonra küre ve hedef düğmelerine bas. | Her kayış akıcı (60 fps hissi), kıyı çizgileri her yakınlıkta aynı incelikte, harita çerçevenin dışına taşmıyor. | Harita | Bekliyor |
+| T392 | Kıyılar ve ışıltı | 6. dönemde (Tokyo, en yakın) ve dünyada kıyılara yakından bak. | İnce kahverengi kıyı çizgisi ve denize doğru yumuşak açık turkuaz ışık; diken, kopukluk ya da çift parlama yok; dalga deseni ve ızgara görünüyor. | Harita | Bekliyor |
+| T393 | Şeridi kaydırma | Dönem şeridini parmakla sola ve sağa sürükle, bir kez de hızlı fiske at, uçlarda çek. | Şerit kayar, sayfa değişmez; fiske biraz devam eder; uçta hafif esneyip geri döner; çerçeve kenarındaki madalyonlar soluklaşarak kaybolur. | Harita | Bekliyor |
+| T394 | Sayfa kaydırma | Haritanın üstünde (şeridin dışında) yatay kaydır; kart açıkken de dene. | Kart kapalıyken komşu sayfaya (Koleksiyon) geçer, sağa çekince esner; kart açıkken hiçbir şey kaymaz. | Harita | Bekliyor |
+| T395 | İlerideki tablonun kartı | İleride bir döneme git, bir iğneye dokun. | Kart açılır: resim örtülü ('?', 'ÖRTÜLÜ'), oda/tablo, ad, ressam · yıl, yer, 'Bugün: müze', kilitli hap 'Bölüm a–b'te açılır'; çarpı ve geri tuşu kapatır. | Harita | Bekliyor |
+| T396 | Şu anki tablo | Hedef düğmesine bas; kartta 'Oyna'ya dokun, sonra geri. | Kamera oyuncunun dönemine gider ve şu anki tablonun kartı açılır: 'Parça p / N · Bölüm L'; 'Oyna' bölüm kartını getirir; geri tuşu haritaya ve aynı karta döndürür. | Harita | Bekliyor |
+| T397 | Onarılmış tablo | Onarılmış bir iğneye dokun, 'Koleksiyonda gör'e bas. | Kartta resim ve yeşil 'Onarıldı'; bağlantı koleksiyonu o odada açar. | Harita | Bekliyor |
+| T398 | Karttaki oklar | Bir kartta yukarı/aşağı oklarla beş tabloyu dolaş. | Sırayla dolaşır, 5'ten 1'e döner, 'k/5' doğru; seçilen iğne büyür ve turkuaz halkalıdır. | Harita | Bekliyor |
+| T399 | Dokunma hedefleri | Küçük düğmelere (kart okları, çarpı, madalyonlar, iğneler) parmakla bas. | Hepsi ilk denemede basılıyor; yanındakine yanlışlıkla basılmıyor. | Harita | Bekliyor |
+| T400 | Diller | Ayarlardan en, ko, ja, ru, zh-Hant seçip haritayı gez. | Plaket, efsane, okyanus adları, pusula harfi, şerit adları, kart yazıları ve yerler o dilde; hiçbir yazı kesilmiyor, eksik harf (kutu) yok. | Harita | Bekliyor |
+| T401 | Açık katlanabilir (iç ekran) | Telefonu açıp haritayı gez, kart aç. | Harita kare ekrana yerleşir; kart açıkken iğneler görünür kalır; şerit ve düğmeler çalışır. | Harita | Bekliyor |
+| T402 | Uzun kullanım | Haritada 2 dakika boyunca dönemler arasında gez. | Telefon belirgin ısınmıyor, akıcılık düşmüyor. | Harita | Bekliyor |
+| T403 | Sayfalar arası gidip gelme | Harita ile salon/koleksiyon arasında 10 kez gidip gel. | Çökme yok; haritaya geçişte belirgin takılma yok, gecikme artmıyor. | Harita | Bekliyor |
 
 ### G. Görünüm
 
