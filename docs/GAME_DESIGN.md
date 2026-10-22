@@ -939,7 +939,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
   - Her tablonun iğnesi tablonun **yapıldığı ya da gösterdiği yerde** durur (Monet'nin plajı Normandiya'da, Hokusai'nin Dalgası Kanagawa'da). Tablonun bugün hangi müzede olduğu kartında yazar.
   - Görünüş **eski bir müze haritası**: gerçek kıyılar, oyunun renklerinde (krem kara, camgöbeği deniz, yaldızlı çerçeve, pusula).
   - Oyuncu ileri dönemlere bakabilir: dönemin adı, tablonun yeri, adı, ressamı ve açılacağı bölümler görünür; **resim örtülü** kalır.
-  - Etkileşimli tasarım tasarım tuvalinde ("Dünya haritası · dönemler"): açılınca dünyadan oyuncunun dönemine kayar; alttaki şeritte 20 dönem; iğneye dokununca tablo kartı; şu anki tabloda "Oyna". Konum listesi bir ilk derlemedir; 10 tablonun yeri yalnızca bölge düzeyinde, oyuna girmeden doğrulanacak.
+  - Etkileşimli tasarım tasarım tuvalinde ("Dünya haritası · dönemler"): açılınca dünyadan oyuncunun dönemine kayar; alttaki şeritte 20 dönem; iğneye dokununca tablo kartı; şu anki tabloda "Oyna". Konum listesi bir ilk derlemedir; 10 tablonun yeri yalnızca bölge düzeyinde, oyuna girmeden doğrulanacak. Proje sahibi tasarımı onayladı (2026-10-22: "eskisine göre daha iyi").
   - **Karar (2026-10-22):** oyunda tek bir genel müzik var: M1 Müze teması, her yerde çalar. Kısa parçalar (kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül) ve ayrı tahta müziği yok. Ayarlar kartına "Müzik" anahtarı gelir.
 
 ## 20. Kalibrasyon, veri ve yayın

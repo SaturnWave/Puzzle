@@ -14,6 +14,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Proje sahibinin kararları: harita gerçek bir dünya haritası; iğne tablonun yapıldığı ya da gösterdiği yerde (bugün durduğu müzeler neredeyse hep ABD'de olduğu için); eski müze haritası görünüşü; ileri dönemler görünür, resimleri örtülü.
 - Etkileşimli tasarım tasarım tuvaline eklendi ("Dünya haritası · dönemler"): Natural Earth kıyıları (kamu malı) oyunun renklerinde; açılışta dünyadan oyuncunun dönemine kayan kamera; 20 dönemlik şerit; aynı yerdeki tablolar bir sıra hâlinde, ince çizgiyle yerlerine bağlı; tablo kartında yer, bugünkü müze, durum ve "Oyna". Oyuncunun bölümü tuvaldeki ayarlardan değiştirilebiliyor (varsayılan 287).
 - 100 tablonun yeri ilk kez derlendi; 10'u yalnızca bölge düzeyinde, oyuna girmeden doğrulanacak. Kaynaklar `out/design/worldmap-src`.
+- Proje sahibi tasarımı onayladı: "eskisine göre daha iyi". Sıradaki: oyuna girmesi (yeni APK'dan sonra).
 
 **Müzik adayları**
 - Her parça için 2–3 aday kesildi ve bir dinleme sayfasında sunuldu (`out/music/candidates/listen.html`). Döngüler ölçü başında başlayıp bitiyor, ek yeri çeyrek saniyelik yumuşak geçişle birleştirildi, seviyeler eşitlendi. M1 yaklaşık 84 vuruş/dk ölçüldü; üç döngü adayı 86, 92 ve 103 saniye, hepsi girişten (ilk 32 saniye) sonra başlıyor.
