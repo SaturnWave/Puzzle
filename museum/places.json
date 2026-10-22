@@ -1,0 +1,1006 @@
+{
+ "formatVersion": 1,
+ "about": "Where each painting was made or what place it shows, for the world map (#4, docs/GAME_DESIGN.md §19). lat/lon in degrees (WGS84). place, note and museum are keys into museum/places/<language>.json. precision: exact | city | region. verified: checked against Wikidata or the museum's own page.",
+ "paintings": [
+  {
+   "id": "monet-beach-at-sainte-adresse",
+   "lat": 49.509,
+   "lon": 0.084,
+   "place": "sainte-adresse-normandiya-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "renoir-two-sisters-on-the-terrace",
+   "lat": 48.889,
+   "lon": 2.16,
+   "place": "chatou-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "caillebotte-paris-street-rainy-day",
+   "lat": 48.883,
+   "lon": 2.322,
+   "place": "paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "monet-water-lilies-1906",
+   "lat": 49.075,
+   "lon": 1.534,
+   "place": "giverny-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "monet-stacks-of-wheat-end-of-summer",
+   "lat": 49.071,
+   "lon": 1.52,
+   "place": "giverny-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "van-gogh-self-portrait-1887",
+   "lat": 48.886,
+   "lon": 2.34,
+   "place": "montmartre-paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "cezanne-basket-of-apples",
+   "lat": 43.529,
+   "lon": 5.447,
+   "place": "aix-en-provence-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "toulouse-lautrec-at-the-moulin-rouge",
+   "lat": 48.884,
+   "lon": 2.332,
+   "place": "montmartre-paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "van-gogh-the-bedroom",
+   "lat": 43.677,
+   "lon": 4.63,
+   "place": "arles-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": "made-in-saint-remy-shows-arles"
+  },
+  {
+   "id": "seurat-sunday-on-la-grande-jatte",
+   "lat": 48.893,
+   "lon": 2.267,
+   "place": "grande-jatte-adasi-paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "art-institute-of-chicago",
+   "note": null
+  },
+  {
+   "id": "hill-apple-tree-in-blossom",
+   "lat": 48.4,
+   "lon": 2.7,
+   "place": "fransa",
+   "precision": "region",
+   "verified": false,
+   "museum": "nationalmuseum",
+   "note": "hill-in-france-place-unsure"
+  },
+  {
+   "id": "petersen-breton-girl-in-the-hothouse",
+   "lat": 47.87,
+   "lon": -3.92,
+   "place": "bretanya-fransa",
+   "precision": "region",
+   "verified": false,
+   "museum": "statens-museum-for-kunst",
+   "note": "place-unsure"
+  },
+  {
+   "id": "edelfelt-luxembourg-gardens",
+   "lat": 48.846,
+   "lon": 2.337,
+   "place": "luksemburg-bahcesi-paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "finnish-national-gallery",
+   "note": null
+  },
+  {
+   "id": "zorn-midsummer-dance",
+   "lat": 61.004,
+   "lon": 14.537,
+   "place": "mora-dalarna-isvec",
+   "precision": "city",
+   "verified": false,
+   "museum": "nationalmuseum",
+   "note": null
+  },
+  {
+   "id": "larsson-breakfast-under-the-big-birch",
+   "lat": 60.655,
+   "lon": 15.775,
+   "place": "sundborn-isvec",
+   "precision": "city",
+   "verified": false,
+   "museum": "nationalmuseum",
+   "note": null
+  },
+  {
+   "id": "homer-the-dinner-horn",
+   "lat": 42.57,
+   "lon": -70.77,
+   "place": "massachusetts-kiyisi-abd",
+   "precision": "region",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": "place-unsure"
+  },
+  {
+   "id": "eakins-champion-single-sculls",
+   "lat": 39.969,
+   "lon": -75.19,
+   "place": "schuylkill-nehri-philadelphia-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "sargent-setting-out-to-fish",
+   "lat": 48.676,
+   "lon": -1.851,
+   "place": "cancale-bretanya-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "chase-a-friendly-call",
+   "lat": 40.89,
+   "lon": -72.46,
+   "place": "shinnecock-hills-new-york-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "homer-snap-the-whip",
+   "lat": 41.925,
+   "lon": -74.067,
+   "place": "hurley-new-york-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "springer-zuiderhavendijk-enkhuizen",
+   "lat": 52.703,
+   "lon": 5.293,
+   "place": "enkhuizen-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "maris-girl-with-flowers-on-the-grass",
+   "lat": 52.078,
+   "lon": 4.3,
+   "place": "lahey-hollanda",
+   "precision": "region",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": "place-unsure"
+  },
+  {
+   "id": "breitner-yellow-riders",
+   "lat": 52.085,
+   "lon": 4.315,
+   "place": "lahey-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "gabriel-in-the-month-of-july",
+   "lat": 52.24,
+   "lon": 5.105,
+   "place": "kortenhoef-hollanda",
+   "precision": "region",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": "place-unsure"
+  },
+  {
+   "id": "mauve-morning-ride-along-the-beach",
+   "lat": 52.11,
+   "lon": 4.27,
+   "place": "scheveningen-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "kuniyoshi-cats-of-the-tokaido",
+   "lat": 35.009,
+   "lon": 135.772,
+   "place": "kyoto-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": "last-stations-of-the-tokaido"
+  },
+  {
+   "id": "hiroshige-plum-park-in-kameido",
+   "lat": 35.7,
+   "lon": 139.826,
+   "place": "kameido-edo-tokyo-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "kiyochika-snow-at-ochanomizu",
+   "lat": 35.7,
+   "lon": 139.765,
+   "place": "ochanomizu-tokyo-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "yoshitoshi-moon-of-musashi-plain",
+   "lat": 35.75,
+   "lon": 139.4,
+   "place": "musasi-ovasi-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "hiroshige-sudden-shower-over-shin-ohashi",
+   "lat": 35.686,
+   "lon": 139.792,
+   "place": "sin-ohasi-koprusu-edo-tokyo-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "courbet-young-ladies-of-the-village",
+   "lat": 47.104,
+   "lon": 6.144,
+   "place": "ornans-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "boudin-festival-in-the-harbor-of-honfleur",
+   "lat": 49.419,
+   "lon": 0.233,
+   "place": "honfleur-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "fantin-latour-still-life-with-flowers-and-fruit",
+   "lat": 48.857,
+   "lon": 2.352,
+   "place": "paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "bonheur-weaning-the-calves",
+   "lat": 48.405,
+   "lon": 2.787,
+   "place": "by-thomery-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "ingres-princesse-de-broglie",
+   "lat": 48.862,
+   "lon": 2.329,
+   "place": "paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "bingham-fur-traders-descending-the-missouri",
+   "lat": 38.8,
+   "lon": -91.5,
+   "place": "missouri-nehri-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "hicks-cornell-farm",
+   "lat": 40.24,
+   "lon": -74.99,
+   "place": "northampton-pensilvanya-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "bierstadt-merced-river-yosemite",
+   "lat": 37.74,
+   "lon": -119.6,
+   "place": "yosemite-vadisi-kaliforniya-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "cole-the-oxbow",
+   "lat": 42.3,
+   "lon": -72.59,
+   "place": "holyoke-dagi-massachusetts-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "leutze-washington-crossing-the-delaware",
+   "lat": 40.297,
+   "lon": -74.87,
+   "place": "delaware-nehri-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": "made-in-dusseldorf-shows-delaware"
+  },
+  {
+   "id": "rorbye-view-from-the-artists-window",
+   "lat": 55.676,
+   "lon": 12.568,
+   "place": "kopenhag-danimarka",
+   "precision": "city",
+   "verified": false,
+   "museum": "statens-museum-for-kunst",
+   "note": null
+  },
+  {
+   "id": "kobke-street-in-osterbro",
+   "lat": 55.7,
+   "lon": 12.58,
+   "place": "sterbro-kopenhag-danimarka",
+   "precision": "city",
+   "verified": false,
+   "museum": "statens-museum-for-kunst",
+   "note": null
+  },
+  {
+   "id": "hansen-danish-artists-in-rome",
+   "lat": 41.902,
+   "lon": 12.483,
+   "place": "roma-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "statens-museum-for-kunst",
+   "note": null
+  },
+  {
+   "id": "skovgaard-beech-wood-in-may",
+   "lat": 55.02,
+   "lon": 11.92,
+   "place": "iselingen-zelanda-danimarka",
+   "precision": "city",
+   "verified": false,
+   "museum": "statens-museum-for-kunst",
+   "note": null
+  },
+  {
+   "id": "eckersberg-three-arches-of-the-colosseum",
+   "lat": 41.89,
+   "lon": 12.492,
+   "place": "kolezyum-roma-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "statens-museum-for-kunst",
+   "note": null
+  },
+  {
+   "id": "constable-salisbury-cathedral",
+   "lat": 51.065,
+   "lon": -1.797,
+   "place": "salisbury-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "lawrence-lady-templetown-and-her-son",
+   "lat": 51.51,
+   "lon": -0.14,
+   "place": "londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "turner-mortlake-terrace",
+   "lat": 51.468,
+   "lon": -0.267,
+   "place": "mortlake-londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "bonington-grand-canal",
+   "lat": 45.437,
+   "lon": 12.333,
+   "place": "venedik-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "turner-burning-of-the-houses-of-parliament",
+   "lat": 51.4995,
+   "lon": -0.1248,
+   "place": "westminster-londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "cleveland-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "sharaku-otani-oniji-as-yakko-edobei",
+   "lat": 35.69,
+   "lon": 139.77,
+   "place": "edo-tokyo-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "hokusai-red-fuji",
+   "lat": 35.361,
+   "lon": 138.727,
+   "place": "fuji-dagi-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "hiroshige-hakone-lake",
+   "lat": 35.2,
+   "lon": 139.025,
+   "place": "hakone-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "cleveland-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "kuniyoshi-tsukuda-island",
+   "lat": 35.666,
+   "lon": 139.783,
+   "place": "tsukuda-adasi-edo-tokyo-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "hokusai-great-wave",
+   "lat": 35.45,
+   "lon": 139.64,
+   "place": "kanagawa-aciklari-japonya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "peale-benjamin-and-eleanor-laming",
+   "lat": 39.29,
+   "lon": -76.61,
+   "place": "baltimore-maryland-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "kemmelmeyer-washington-reviewing-the-western-army",
+   "lat": 39.653,
+   "lon": -78.763,
+   "place": "cumberland-kalesi-maryland-abd",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "david-general-gerard",
+   "lat": 50.85,
+   "lon": 4.352,
+   "place": "bruksel-belcika",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "sully-lady-with-a-harp",
+   "lat": 39.952,
+   "lon": -75.165,
+   "place": "philadelphia-abd",
+   "precision": "region",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": "place-unsure"
+  },
+  {
+   "id": "goya-manuel-osorio-the-red-boy",
+   "lat": 40.417,
+   "lon": -3.704,
+   "place": "madrid-ispanya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "devis-maynard-family-at-waltons",
+   "lat": 52.045,
+   "lon": 0.31,
+   "place": "waltons-essex-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "stubbs-duke-of-dorsets-hunter",
+   "lat": 51.271,
+   "lon": 0.203,
+   "place": "knole-kent-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "reynolds-lady-caroline-howard",
+   "lat": 51.512,
+   "lon": -0.145,
+   "place": "londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "gainsborough-mrs-richard-brinsley-sheridan",
+   "lat": 51.506,
+   "lon": -0.135,
+   "place": "londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "lawrence-elizabeth-farren",
+   "lat": 51.513,
+   "lon": -0.122,
+   "place": "londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "vanmour-view-of-istanbul-from-pera",
+   "lat": 41.033,
+   "lon": 28.977,
+   "place": "pera-istanbul",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "panini-interior-of-the-pantheon",
+   "lat": 41.899,
+   "lon": 12.477,
+   "place": "pantheon-roma-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "bellotto-campo-santi-giovanni-e-paolo",
+   "lat": 45.441,
+   "lon": 12.342,
+   "place": "venedik-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "guardi-cannaregio-canal",
+   "lat": 45.445,
+   "lon": 12.326,
+   "place": "cannaregio-venedik-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "canaletto-square-of-saint-marks",
+   "lat": 45.434,
+   "lon": 12.339,
+   "place": "san-marco-meydani-venedik-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "watteau-italian-comedians",
+   "lat": 51.515,
+   "lon": -0.13,
+   "place": "londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": "made-in-london-probably"
+  },
+  {
+   "id": "oudry-misse-and-luttine",
+   "lat": 48.805,
+   "lon": 2.12,
+   "place": "versay-fransa",
+   "precision": "region",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": "place-unsure"
+  },
+  {
+   "id": "boucher-madame-bergeret",
+   "lat": 48.86,
+   "lon": 2.34,
+   "place": "paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "robert-ponte-salario",
+   "lat": 41.94,
+   "lon": 12.505,
+   "place": "salario-koprusu-roma-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "fragonard-young-girl-reading",
+   "lat": 48.858,
+   "lon": 2.348,
+   "place": "paris-fransa",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "cuyp-maas-at-dordrecht",
+   "lat": 51.813,
+   "lon": 4.669,
+   "place": "dordrecht-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "asselijn-threatened-swan",
+   "lat": 52.372,
+   "lon": 4.893,
+   "place": "amsterdam-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "vermeer-young-woman-with-a-water-pitcher",
+   "lat": 52.011,
+   "lon": 4.357,
+   "place": "delft-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "ruisdael-wheat-fields",
+   "lat": 52.3,
+   "lon": 4.8,
+   "place": "amsterdam-yakinlari-hollanda",
+   "precision": "region",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": "place-unsure"
+  },
+  {
+   "id": "vermeer-the-little-street",
+   "lat": 52.013,
+   "lon": 4.36,
+   "place": "delft-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "rijksmuseum",
+   "note": null
+  },
+  {
+   "id": "brueghel-river-landscape-1607",
+   "lat": 51.219,
+   "lon": 4.402,
+   "place": "anvers-belcika",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "heda-banquet-piece-with-mince-pie",
+   "lat": 52.381,
+   "lon": 4.636,
+   "place": "haarlem-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "verspronck-andries-stilte",
+   "lat": 52.383,
+   "lon": 4.64,
+   "place": "haarlem-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "lorrain-trojan-women-setting-fire-to-their-fleet",
+   "lat": 41.902,
+   "lon": 12.49,
+   "place": "roma-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "leyster-self-portrait",
+   "lat": 52.379,
+   "lon": 4.633,
+   "place": "haarlem-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "sultan-muhammad-feast-of-sada",
+   "lat": 38.08,
+   "lon": 46.292,
+   "place": "tebriz-iran",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "habiballah-concourse-of-the-birds",
+   "lat": 32.654,
+   "lon": 51.668,
+   "place": "isfahan-iran",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "mansur-study-of-a-nilgai",
+   "lat": 27.176,
+   "lon": 78.008,
+   "place": "agra-hindistan",
+   "precision": "region",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": "mughal-court-place-unsure"
+  },
+  {
+   "id": "balchand-jahangir-and-akbar",
+   "lat": 27.18,
+   "lon": 78.02,
+   "place": "agra-hindistan",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "payag-shah-jahan-on-horseback",
+   "lat": 27.172,
+   "lon": 78.04,
+   "place": "agra-hindistan",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "cariani-a-concert",
+   "lat": 45.438,
+   "lon": 12.335,
+   "place": "venedik-italya",
+   "precision": "region",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": "place-unsure"
+  },
+  {
+   "id": "holbein-edward-vi-as-a-child",
+   "lat": 51.508,
+   "lon": -0.128,
+   "place": "londra-ingiltere",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "arcimboldo-the-librarian",
+   "lat": 48.208,
+   "lon": 16.373,
+   "place": "viyana-avusturya",
+   "precision": "city",
+   "verified": false,
+   "museum": "skokloster-castle",
+   "note": null
+  },
+  {
+   "id": "grimmer-marketplace-in-bergen-op-zoom",
+   "lat": 51.495,
+   "lon": 4.292,
+   "place": "bergen-op-zoom-hollanda",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "arcimboldo-vertumnus",
+   "lat": 45.464,
+   "lon": 9.19,
+   "place": "milano-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "skokloster-castle",
+   "note": "made-for-rudolf-ii-prague"
+  },
+  {
+   "id": "van-der-weyden-francesco-d-este",
+   "lat": 50.846,
+   "lon": 4.357,
+   "place": "bruksel-belcika",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "neroccio-portrait-of-a-lady",
+   "lat": 43.318,
+   "lon": 11.331,
+   "place": "siena-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  },
+  {
+   "id": "ghirlandaio-francesco-sassetti-and-his-son",
+   "lat": 43.769,
+   "lon": 11.256,
+   "place": "floransa-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "metropolitan-museum-of-art",
+   "note": null
+  },
+  {
+   "id": "carpaccio-hunting-on-the-lagoon",
+   "lat": 45.45,
+   "lon": 12.35,
+   "place": "venedik-lagunu-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "getty-museum",
+   "note": null
+  },
+  {
+   "id": "botticelli-giuliano-de-medici",
+   "lat": 43.771,
+   "lon": 11.25,
+   "place": "floransa-italya",
+   "precision": "city",
+   "verified": false,
+   "museum": "national-gallery-of-art",
+   "note": null
+  }
+ ]
+}
