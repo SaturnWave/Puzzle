@@ -14,6 +14,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Bitti (130e9e1, df8401f): onaylanan tasarım Unity'ye birebir geçti; kat planı kalktı. Kıyılar Natural Earth'ten bir araçla (`puzzle worldmap build`) çıkarılıyor, gölgelendiricide her yakınlıkta aynı incelikte çiziliyor.
 - Yerler iki ajanla aynı anda: biri 100 tablonun yerini Wikidata ve müze sayfalarıyla doğruladı (59'u doğrulandı) ve 13 dilde adlandırdı (a9ede9b), öteki haritayı kurdu. Proje sahibi açık kalan beş yer seçimini olduğu gibi bıraktı.
 - 4.068 test geçti (kat planının testleri gitti, 49 harita testi geldi); ekonomi denetimi temiz; Unity'de beş dilde harita yürüyüşleri hatasız. Tasarımla yan yana resim birebir. Telefon testleri T390–T403.
+- Proje sahibinin kararları: uzun dönem adları plakada iki satır (bir tanesi, 14. dönem, karşılaştırma için bilerek tek küçük satır); ekran okuyucu (TalkBack) desteği bütün oyun için sonra yapılacak. Site GitHub'a taşındı (SaturnWave/SaturnWave.Apps), yayını sonra.
 
 **Müzik (#9)**
 - Bitti (6888599): M1'in girişi bir kez, sonra 36 ölçülük döngüsü boşluksuz; ekran değişince baştan başlamıyor; efektlerin 5 dB altında; ayarlarda "Müzik" anahtarı (device.json 5. düzen). Kesim aracı ve lisans kaydı `art/sounds/music.json`.

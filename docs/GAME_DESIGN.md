@@ -1417,7 +1417,7 @@ Bu kararlarla 10. aşama başladı.
 - **Çizim:** kara üçgen ağlarla, kıyı çizgileri bir gölgelendiricide her yakınlıkta aynı incelikte; kayışta hiçbir şey yeniden kurulmaz. Bu bilgisayarda bir kayış karesi grafik kartında yaklaşık 8 ms (salon 21 ms).
 - **Davranış:** açılışta bütün dünya, sonra 0,85 sn'de oyuncunun dönemine kayış; 20 dönemlik şerit; aynı yerdeki tablolar bir sıra hâlinde, ince çizgiyle yerlerine bağlı; tablo kartında durum, "Oyna" (bölüm kartı) ve "Koleksiyonda gör". Şeritte yatay sürükleme şeridi kaydırır, haritanın geri kalanında sayfalar eskisi gibi kayar; kart açıkken hiçbir şey kaymaz.
 - **Sözcükler:** 26 yeni satır ve 20 kısa dönem adı 13 dilde (`museum/titles`).
-- **Bilinen:** oyunda ekran okuyucu bağlantısı yok (düğmelerin etiketleri var, okuyan yok). Uzun dönem adları plakada 10 punto kadar küçülüyor. 6. dönemin beş yeri Tokyo çevresinde, kamera en yakından açılıyor. Geleneksel Çince serif atlası büyüdü (+2 MB). Telefonda ölçülmedi.
+- **Bilinen:** oyunda ekran okuyucu bağlantısı yok (düğmelerin etiketleri var, okuyan yok). Uzun dönem adları plakada iki satıra bölünüyor (proje sahibinin seçimi, 2026-10-22); 14. dönem karşılaştırma için bilerek tek satırda, küçük kalıyor ve seçimden sonra kaldırılacak. 6. dönemin beş yeri Tokyo çevresinde, kamera en yakından açılıyor. Geleneksel Çince serif atlası büyüdü (+2 MB). Telefonda ölçülmedi.
 - **Doğrulama:** 4.068 test (kat planının yaklaşık 200 testi onunla gitti, 49 harita testi geldi). Ekonomi denetimi temiz. Unity'de bütün denetimler ve beş dilde harita yürüyüşleri hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T390–T403.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
