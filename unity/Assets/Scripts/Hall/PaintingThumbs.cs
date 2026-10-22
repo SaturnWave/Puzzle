@@ -23,9 +23,6 @@ namespace Puzzle.Client.Hall
         /// <summary>For a row on a plaque.</summary>
         public static ThumbOrders OnAPlaque => new ThumbOrders(DrawOrder.PlaqueArt, DrawOrder.PlaquePicture, DrawOrder.PlaquePictureMark);
 
-        /// <summary>For a row on the map's sheet.</summary>
-        public static ThumbOrders OnTheSheet => new ThumbOrders(DrawOrder.SheetPictureFrame, DrawOrder.SheetPicture, DrawOrder.SheetPictureMark);
-
         public DrawOrder Frames { get; }
 
         public DrawOrder Pictures { get; }

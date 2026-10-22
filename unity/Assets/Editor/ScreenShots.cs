@@ -30,7 +30,7 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The museum's hall.</summary>
         Home,
 
-        /// <summary>The museum's floor plan.</summary>
+        /// <summary>The world map, as it opens on the whole world.</summary>
         Map,
 
         /// <summary>A room's wall in the collection.</summary>
@@ -100,6 +100,13 @@ namespace Puzzle.Client.EditorTools
         /// boosters lit on the level's card after a level given up, on one sheet.
         /// </summary>
         Boosters,
+
+        /// <summary>
+        /// The world map (#4), walked from the hall whatever the state (GameWalk.WorldMap.cs) by the player of the design
+        /// on level 287: the whole world, the eras 6, 12 and 14, the card of a painting ahead, of the one being restored
+        /// and of a restored one, and the collection its link opens, on one sheet.
+        /// </summary>
+        WorldMap,
     }
 
     /// <summary>
@@ -383,7 +390,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
@@ -485,6 +492,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Hint => HintShots.Shoot(state, screen, studio),
             ShotPage.Tutorial => GameWalk.RunTheTutorialWalk(screen, studio),
             ShotPage.Boosters => GameWalk.RunTheBoosterIntroWalk(screen, studio),
+            ShotPage.WorldMap => GameWalk.RunTheWorldMapWalk(screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 

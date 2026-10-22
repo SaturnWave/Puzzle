@@ -1,0 +1,42 @@
+{
+  "about": "The world map of the game's map page (#4): Natural Earth 1:50m land and lakes, projected by Natural Earth I, thinned and triangulated by `dotnet run --project src/Puzzle.Cli -- worldmap build`.",
+  "licence": "Public domain (Natural Earth: \"All versions of Natural Earth raster + vector map data found on this website are in the public domain.\")",
+  "licenceUrl": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "sources": [
+    {
+      "file": "ne_50m_land.geojson",
+      "fetchedFrom": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_land.geojson",
+      "bytes": 1636166,
+      "sha256": "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b"
+    },
+    {
+      "file": "ne_50m_lakes.geojson",
+      "fetchedFrom": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_lakes.geojson",
+      "bytes": 876018,
+      "sha256": "d350b75978b26fe839b797c2c529b2fb8f47fb3983c03f4964e36d5df9378a52"
+    }
+  ],
+  "settings": {
+    "tolerance": 0.035,
+    "leastLandArea": 0.6,
+    "leastLakeArea": 3,
+    "antarcticLatitude": -62
+  },
+  "output": {
+    "file": "unity/Assets/Resources/WorldMap.bytes",
+    "bytes": 351160,
+    "sha256": "6da35a57ca2df5ba0d0e103b5a41a8bca2f10e18a4c15f88ef6301bfc8f17842"
+  },
+  "figures": {
+    "landRings": 366,
+    "landPoints": 32077,
+    "landTriangles": 31349,
+    "lakeRings": 30,
+    "lakePoints": 3193,
+    "lakeTriangles": 3131,
+    "polygonsDropped": 1438,
+    "holesDropped": 52,
+    "areaAsTriangles": 118321.5,
+    "areaAsRings": 118321.5
+  }
+}

@@ -29,6 +29,9 @@ namespace Puzzle.Museum.Catalogue
         /// <summary>True while the movement is only pencilled in.</summary>
         public bool provisionalName;
 
+        /// <summary>The era's short name, in Turkish, for the world map's strip of eras ("Edo ve Meiji"): two short lines at most.</summary>
+        public string shortName = string.Empty;
+
         /// <summary>The paintings chosen so far, in the order they are restored: at most five.</summary>
         public PaintingFile[] paintings = Array.Empty<PaintingFile>();
     }

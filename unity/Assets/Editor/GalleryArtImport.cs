@@ -116,10 +116,39 @@ namespace Puzzle.Client.EditorTools
             ["stud"] = new Picture(pointsWide: 8f, pivot: new Vector2(4f, 4f), largestSide: 64),
             ["wire-pin"] = new Picture(pointsWide: 8f, pivot: new Vector2(4f, 4f), largestSide: 64),
             ["wallet-pill"] = new Picture(pointsWide: 96f, pivot: new Vector2(48f, 23f), stretchesFrom: 34f, largestSide: 512),
+
+            // The world map (MapWorldTR, #4).
+            ["map-pin"] = new Picture(pointsWide: 58f, pivot: new Vector2(29f, 53f), largestSide: 256),
+            ["map-pin-here"] = new Picture(pointsWide: 58f, pivot: new Vector2(29f, 53f), largestSide: 256),
+            ["map-pin-chosen"] = new Picture(pointsWide: 58f, pivot: new Vector2(29f, 53f), largestSide: 256),
+            ["map-badge-tick"] = new Picture(pointsWide: 18f, pivot: new Vector2(9f, 9f), largestSide: 128),
+            ["map-badge-lock"] = new Picture(pointsWide: 16f, pivot: new Vector2(8f, 8f), largestSide: 128),
+            ["map-badge-count"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 8.5f), stretchesFrom: 14f, largestSide: 128),
+            ["map-dot-restored"] = new Picture(pointsWide: 11.6f, pivot: new Vector2(5.8f, 5.8f), largestSide: 64),
+            ["map-dot-here"] = new Picture(pointsWide: 21.8f, pivot: new Vector2(10.9f, 10.9f), largestSide: 128),
+            ["map-dot-ahead"] = new Picture(pointsWide: 11.4f, pivot: new Vector2(5.7f, 5.7f), largestSide: 64),
+            ["map-anchor"] = new Picture(pointsWide: 14f, pivot: new Vector2(7f, 7f), largestSide: 64),
+            ["map-legend"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 14f), stretchesFrom: 20f, largestSide: 256),
+            ["map-button"] = new Picture(pointsWide: 44f, pivot: new Vector2(22f, 22f), largestSide: 256),
+            ["map-button-lit"] = new Picture(pointsWide: 44f, pivot: new Vector2(22f, 22f), largestSide: 256),
+            ["map-glyph-globe"] = new Picture(pointsWide: 24f, pivot: new Vector2(12f, 12f), largestSide: 128),
+            ["map-glyph-target"] = new Picture(pointsWide: 24f, pivot: new Vector2(12f, 12f), largestSide: 128),
+            ["map-compass"] = new Picture(pointsWide: 60f, pivot: new Vector2(30f, 30f), largestSide: 256),
+            ["era-restored"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 24f), largestSide: 256),
+            ["era-here"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 24f), largestSide: 256),
+            ["era-ahead"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 24f), largestSide: 256),
+            ["era-chosen"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 35f), largestSide: 256),
+            ["map-card"] = new Picture(pointsWide: 220f, pivot: new Vector2(110f, 110f), stretchesFrom: 54f, stretchesFromTop: 54f, stretchesFromFoot: 94f, largestSide: 512),
+            ["map-card-frame"] = new Picture(pointsWide: 108f, pivot: new Vector2(54f, 52f), largestSide: 512),
+            ["map-pill-restored"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 12f), stretchesFrom: 14f, largestSide: 128),
+            ["map-pill-here"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 12f), stretchesFrom: 14f, largestSide: 128),
+            ["map-pill-ahead"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 12f), stretchesFrom: 14f, largestSide: 128),
+            ["map-step"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 16f), largestSide: 128),
+            ["map-glyph-chevron"] = new Picture(pointsWide: 12f, pivot: new Vector2(6f, 6f), largestSide: 64),
         };
 
         /// <summary>Raise after changing the settings below: Unity then imports the pictures again.</summary>
-        public override uint GetVersion() => 6;
+        public override uint GetVersion() => 7;
 
         private void OnPreprocessTexture()
         {

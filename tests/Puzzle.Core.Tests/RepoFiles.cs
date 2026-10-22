@@ -94,6 +94,18 @@ internal static class RepoFiles
     /// <summary>The music brief (docs/music/MUSIC_BRIEF.md), which holds the prompt each piece was made with.</summary>
     public static string MusicBriefPath => Find("docs", "music", "MUSIC_BRIEF.md");
 
+    /// <summary>Where each painting's pin stands on the world map (museum/places.json).</summary>
+    public static string PlacesPath => Find("museum", "places.json");
+
+    /// <summary>The folder of the map's labels, one museum/places/&lt;code&gt;.json per language.</summary>
+    public static string PlaceLabelsFolder => Path.GetDirectoryName(Find("museum", "places", "tr.json"))!;
+
+    /// <summary>The world map's data file the game carries, as the CLI's <c>worldmap build</c> writes it.</summary>
+    public static string WorldMapPath => Path.Combine(ClientProjectFolder, "Assets", "Resources", "WorldMap.bytes");
+
+    /// <summary>The record of the world map's sources and licence (art/map/sources.json), which <c>worldmap build</c> writes.</summary>
+    public static string WorldMapRecordPath => Find("art", "map", "sources.json");
+
     /// <summary>A file of the repository by its path from the repository's root, written with forward slashes as the music's record writes it.</summary>
     public static string RepositoryFile(string pathFromTheRoot) => Find(pathFromTheRoot.Split('/'));
 

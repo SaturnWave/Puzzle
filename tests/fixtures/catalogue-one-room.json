@@ -5,6 +5,7 @@
       "number": 1,
       "movement": "Empresyonizm",
       "provisionalName": false,
+      "shortName": "Empresyonizm",
       "paintings": [
         {
           "id": "monet-beach-at-sainte-adresse",
@@ -67,114 +68,133 @@
       "number": 2,
       "movement": "Post-empresyonizm",
       "provisionalName": false,
+      "shortName": "Post-empresyonizm",
       "paintings": []
     },
     {
       "number": 3,
       "movement": "Barok",
       "provisionalName": true,
+      "shortName": "Kuzey Işığı",
       "paintings": []
     },
     {
       "number": 4,
       "movement": "Rönesans",
       "provisionalName": true,
+      "shortName": "Yaldızlı Çağ",
       "paintings": []
     },
     {
       "number": 5,
       "movement": "Romantizm",
       "provisionalName": true,
+      "shortName": "Lahey Okulu",
       "paintings": []
     },
     {
       "number": 6,
       "movement": "Realizm",
       "provisionalName": true,
+      "shortName": "Edo ve Meiji",
       "paintings": []
     },
     {
       "number": 7,
       "movement": "Hollanda Altın Çağı",
       "provisionalName": true,
+      "shortName": "Barbizon",
       "paintings": []
     },
     {
       "number": 8,
       "movement": "Rokoko",
       "provisionalName": true,
+      "shortName": "Hudson Nehri",
       "paintings": []
     },
     {
       "number": 9,
       "movement": "Ukiyo-e",
       "provisionalName": true,
+      "shortName": "Danimarka",
       "paintings": []
     },
     {
       "number": 10,
       "movement": "Neoklasizm",
       "provisionalName": true,
+      "shortName": "Romantikler",
       "paintings": []
     },
     {
       "number": 11,
       "movement": "Sembolizm",
       "provisionalName": true,
+      "shortName": "Hokusai",
       "paintings": []
     },
     {
       "number": 12,
       "movement": "Puantilizm",
       "provisionalName": true,
+      "shortName": "Devrimler",
       "paintings": []
     },
     {
       "number": 13,
       "movement": "Barbizon Okulu",
       "provisionalName": true,
+      "shortName": "George Çağı",
       "paintings": []
     },
     {
       "number": 14,
       "movement": "Art Nouveau",
       "provisionalName": true,
+      "shortName": "Şehir Manzaraları",
       "paintings": []
     },
     {
       "number": 15,
       "movement": "Kuzey Rönesansı",
       "provisionalName": true,
+      "shortName": "Rokoko",
       "paintings": []
     },
     {
       "number": 16,
       "movement": "Venedik Okulu",
       "provisionalName": true,
+      "shortName": "Vermeer",
       "paintings": []
     },
     {
       "number": 17,
       "movement": "Maniyerizm",
       "provisionalName": true,
+      "shortName": "Barok",
       "paintings": []
     },
     {
       "number": 18,
       "movement": "Ön-Rafaelocular",
       "provisionalName": true,
+      "shortName": "Minyatür",
       "paintings": []
     },
     {
       "number": 19,
       "movement": "Oryantalizm",
       "provisionalName": true,
+      "shortName": "Rönesans",
       "paintings": []
     },
     {
       "number": 20,
       "movement": "Natürmort Ustaları",
       "provisionalName": true,
+      "shortName": "15. Yüzyıl",
       "paintings": []
     }
   ]

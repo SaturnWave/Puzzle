@@ -122,13 +122,14 @@ namespace Puzzle.Client.Screens
     /// touch anywhere or the way back takes up.
     /// </para>
     /// <para>
-    /// A page is also turned by a swipe (<see cref="PageSwipe"/>): a finger that goes clearly sideways drags the page
+        /// A page is also turned by a swipe (<see cref="PageSwipe"/>): a finger that goes clearly sideways drags the page
     /// that is shown, and its neighbour on the bar comes in beside it; let go, the row settles on the neighbour or
     /// springs back, and the bar marks the page it settled on. Beyond the bar's first and last page the page only
-    /// stretches. A swipe on the collection's plaque turns its rooms instead, the same way. A touch stays a tap
-    /// until it is a swipe, and a swipe presses nothing it began on. No swipe is taken while a card hangs, while a
-    /// painting of the collection hangs forward, nor from the screen's side edges, where the phone's own back
-    /// gesture begins.
+    /// stretches. A swipe on the collection's plaque turns its rooms instead, the same way; one on the world map's
+    /// strip of eras scrolls the strip, and runs on with a flick. A touch stays a tap until it is a swipe, and a
+    /// swipe presses nothing it began on. No swipe is taken while a card hangs, while a painting of the collection
+    /// hangs forward or a painting's card is open on the map, nor from the screen's side edges, where the phone's
+    /// own back gesture begins.
     /// </para>
     /// <para>
     /// To add a page: add its <see cref="Destination"/>, build it in <see cref="BuildPage"/>, and give it a render
@@ -355,6 +356,15 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The painting of the collection that is looked at by itself; nothing while none is.</summary>
         public PaintingNumber? PaintingViewed => (_page as CollectionPage)?.Viewed;
+
+        /// <summary>The world map's page while it is the one shown; nothing on another page.</summary>
+        public MapPage? Map => _page as MapPage;
+
+        /// <summary>The pixel of a point of the world map's page that is shown (an era's medallion, a pin, a button, a button of the card); nothing elsewhere or while the stage does not listen.</summary>
+        public Vector2? PixelOnTheMap(Func<MapPage, Vector2?> point) =>
+            _page is MapPage map && point(map) is Vector2 at && ListensToThePlayer && !_swipe.IsDragging && _cards.Count == 0 && _screen is ScreenShape screen
+                ? PixelOf(at, screen)
+                : (Vector2?)null;
 
         /// <summary>The pixel in the middle of the wallet row's heart and its pill, which open the lives card; nothing while the page's controls are not pressed.</summary>
         public Vector2? LivesPixel => PixelWhileListening(_wallet.LivesButtonMiddle);
@@ -783,7 +793,7 @@ namespace Puzzle.Client.Screens
             else if (_swipe.MovedTo(point.x, point.y, _timeline.Now) is SwipeReading.Drag drag)
             {
                 _presses.FingerGone(); // a swipe presses nothing it began on
-                Drag(drag, ScreenView.Of(screen).Width);
+                Drag(drag, point, ScreenView.Of(screen).Width);
             }
             else
             {
@@ -974,6 +984,11 @@ namespace Puzzle.Client.Screens
                     break;
                 case MuseumPress.Visit visit:
                     TurnTo(visit.To);
+                    break;
+                case MuseumPress.VisitTheCollection visit:
+                    // A restored painting's card on the map: the collection opens at the painting's room.
+                    Turn(BuildPage(Destination.Collection, visit.Room), Destination.Collection,
+                        comesFromTheRight: Destinations.PlaceOf(Destination.Collection) > Destinations.PlaceOf(Showing));
                     break;
                 case MuseumPress.GoOnFromTheRestoredRoom _:
                     _restored = null;
@@ -1391,7 +1406,8 @@ namespace Puzzle.Client.Screens
         private void FollowASwipeFrom(Vector2 point, float width)
         {
             CollectionPage? collection = _page as CollectionPage;
-            if (collection?.Viewed != null)
+            MapPage? map = _page as MapPage;
+            if (collection?.Viewed != null || map?.ShowsACard == true)
             {
                 _swipe.Cancel();
                 _swiped = null;
@@ -1399,18 +1415,28 @@ namespace Puzzle.Client.Screens
             }
 
             bool turnsTheRooms = collection != null && collection.IsOnThePlaque(point);
-            _swiped = turnsTheRooms ? SwipedRow.Rooms : SwipedRow.Pages;
+            bool scrollsTheEras = map != null && map.IsOnTheStrip(point);
+            _swiped = turnsTheRooms ? SwipedRow.Rooms : scrollsTheEras ? SwipedRow.Eras : SwipedRow.Pages;
+            if (scrollsTheEras && map != null)
+            {
+                map.HoldTheStrip(point.x);
+            }
+
             SwipeRow row = turnsTheRooms && collection != null
                 ? new SwipeRow(collection.RoomsToVisit, collection.Room.Value - 1, width)
                 : new SwipeRow(Destinations.OnTheBar.Count, Destinations.PlaceOf(Showing), width);
             _swipe.Down(point.x, point.y, _timeline.Now, row);
         }
 
-        private void Drag(SwipeReading.Drag drag, float width)
+        private void Drag(SwipeReading.Drag drag, Vector2 point, float width)
         {
             if (_swiped == SwipedRow.Rooms && _page is CollectionPage collection)
             {
                 collection.DragTheRooms(drag, width);
+            }
+            else if (_swiped == SwipedRow.Eras && _page is MapPage map)
+            {
+                map.DragTheStrip(point.x); // the strip follows the finger, not the row of pages
             }
             else
             {
@@ -1432,6 +1458,11 @@ namespace Puzzle.Client.Screens
             {
                 _presses.Clear();
                 collection.SettleTheRooms(settle, width, settled: ListenToThePage);
+            }
+            else if (swiped == SwipedRow.Eras && _page is MapPage map)
+            {
+                map.LetGoOfTheStrip();
+                ListenToThePage();
             }
             else
             {
@@ -1524,6 +1555,11 @@ namespace Puzzle.Client.Screens
                     collection.ForgetTheRoomsDrag();
                 }
 
+                if (_swiped == SwipedRow.Eras && _page is MapPage map)
+                {
+                    map.ForgetTheStripDrag();
+                }
+
                 _page.Root.localPosition = Vector3.zero;
                 TakeDownThePageBeside();
             }
@@ -1579,11 +1615,12 @@ namespace Puzzle.Client.Screens
             return new Vector2(pixelX, pixelY);
         }
 
-        /// <summary>What a swipe on the museum's pages moves: the pages of the bar, or the collection's rooms from its plaque.</summary>
+        /// <summary>What a swipe on the museum's pages moves: the pages of the bar, the collection's rooms from its plaque, or the world map's strip of eras.</summary>
         private enum SwipedRow
         {
             Pages,
             Rooms,
+            Eras,
         }
 
         /// <summary>The stand-in ad for coins over the shop: its card, and the ad as it runs.</summary>

@@ -22,7 +22,7 @@ namespace Puzzle.Client.Screens
         /// <summary>The hall: the painting being restored, and the way into the next level.</summary>
         Home,
 
-        /// <summary>The museum's floor plan.</summary>
+        /// <summary>The world map of the paintings' places (MapWorldTR).</summary>
         Map,
 
         /// <summary>The paintings the player has restored and is restoring, room by room.</summary>
@@ -163,6 +163,17 @@ namespace Puzzle.Client.Screens
             }
 
             public Destination To { get; }
+        }
+
+        /// <summary>A restored painting's card on the world map: to the collection, at the painting's room.</summary>
+        public sealed class VisitTheCollection : MuseumPress
+        {
+            public VisitTheCollection(RoomNumber room)
+            {
+                Room = room;
+            }
+
+            public RoomNumber Room { get; }
         }
 
         /// <summary>A painting whose pieces wait: to its jigsaw.</summary>

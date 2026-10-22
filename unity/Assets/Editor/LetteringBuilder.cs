@@ -74,6 +74,8 @@ namespace Puzzle.Client.EditorTools
         /// too, and Japanese and each Chinese write 550 to 720 of them with their kana and marks: at a sampling of 40
         /// they fit the Korean picture's size, half the memory and the package of a sampling of 48, which would take
         /// a picture of 2048 by 2048 each; a stroke of a dense character stays sharp at the sizes the game sets it.
+        /// Traditional Chinese in the serif writes the most of them once the world map's places are counted (#4): it
+        /// alone has a picture of 2048 by 2048.
         /// </summary>
         private static readonly IReadOnlyDictionary<FallbackTypeface, FontPicture> FallbackPictures = new Dictionary<FallbackTypeface, FontPicture>
         {
@@ -86,7 +88,7 @@ namespace Puzzle.Client.EditorTools
             [FallbackTypeface.NotoSansSC] = new FontPicture("NotoSansSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
             [FallbackTypeface.NotoSerifSC] = new FontPicture("NotoSerifSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
             [FallbackTypeface.NotoSansTC] = new FontPicture("NotoSansTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
-            [FallbackTypeface.NotoSerifTC] = new FontPicture("NotoSerifTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSerifTC] = new FontPicture("NotoSerifTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 2048, ending: OpenTypeWithPostScriptOutlines),
         };
 
         /// <summary>The ending of a font file of the Noto CJK releases, whose letters are drawn as PostScript outlines; the others end in ".ttf".</summary>
@@ -205,7 +207,7 @@ namespace Puzzle.Client.EditorTools
             {
                 if (WordsPack.Load(language) is Wording wording)
                 {
-                    words[language] = wording.Words.AllWords.Select(entry => entry.Words).Concat(wording.Captions.AllWords).ToList();
+                    words[language] = wording.Words.AllWords.Select(entry => entry.Words).Concat(wording.Captions.AllWords).Concat(PlacesPack.EveryLabelIn(language)).ToList();
                 }
             }
 

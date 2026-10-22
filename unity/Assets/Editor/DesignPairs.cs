@@ -26,7 +26,7 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The museum's hall (HomeTR).</summary>
         Home,
 
-        /// <summary>The floor plan (MapTR).</summary>
+        /// <summary>The world map at rest on the era of the canvas' player, level 287 (MapWorldTR).</summary>
         Map,
 
         /// <summary>A room's wall in the collection (CollectionTR).</summary>
@@ -84,6 +84,12 @@ namespace Puzzle.Client.EditorTools
         /// two and none of the boosters of play (BoardTR).
         /// </summary>
         private const string PlayerOfTheCanvas = "46+45;coins=1250;starts=2:1:0;inlevel=3:2:2:0";
+
+        /// <summary>The world map's own player (MapWorldTR): on level 287 with every piece won before it in place, and 1,250 coins.</summary>
+        private const string PlayerOfTheMap = "286+472;coins=1250";
+
+        /// <summary>The world map opens on the whole world and glides to the player's era; this long after it is shown its pins are in.</summary>
+        private const float MapComesToRest = 2f;
 
         /// <summary>The two pictures stand this many pixels apart, on the sheet's own dark.</summary>
         private const int Gap = 24;
@@ -152,7 +158,7 @@ namespace Puzzle.Client.EditorTools
         private static string DrawingOf(PairedScreen screen) => screen switch
         {
             PairedScreen.Home => "HomeTR",
-            PairedScreen.Map => "MapTR",
+            PairedScreen.Map => "MapWorldTR",
             PairedScreen.Collection => "CollectionTR",
             PairedScreen.Jigsaw => "JigsawTR",
             PairedScreen.Board => "BoardTR",
@@ -228,7 +234,7 @@ namespace Puzzle.Client.EditorTools
                 case PairedScreen.Home:
                     return TakeThePage(new MuseumDoor(Destination.Home), state, studio);
                 case PairedScreen.Map:
-                    return TakeThePage(new MuseumDoor(Destination.Map), state, studio);
+                    return TakeTheWorldMap(studio);
                 case PairedScreen.Collection:
                     return TakeThePage(new MuseumDoor(Destination.Collection), state, studio);
                 case PairedScreen.Jigsaw:
@@ -248,6 +254,22 @@ namespace Puzzle.Client.EditorTools
                 default:
                     throw new ArgumentOutOfRangeException(nameof(screen), screen, "A screen the pair command does not know.");
             }
+        }
+
+        /// <summary>
+        /// The world map as its canvas draws it: for the canvas' own player of the map (level 287, every piece won
+        /// before it in place, 1,250 coins), once the map has glided from the world to the player's era and its pins
+        /// have come in, whatever player the other pairs show.
+        /// </summary>
+        private static Texture2D TakeTheWorldMap(Studio studio)
+        {
+            using MuseumStage museum = ScreenShots.OpenTheMuseum(new MuseumDoor(Destination.Map), PlayerState.Parse(PlayerOfTheMap), Screen, studio);
+            for (float shown = 0f; shown < MapComesToRest; shown += StoryStudio.FrameSeconds)
+            {
+                museum.Advance(StoryStudio.FrameSeconds); // a frame at a time, as the game's clock runs: the glide begins and ends on its own frames
+            }
+
+            return StoryStudio.Take(museum, Screen);
         }
 
         private static Texture2D TakeThePage(MuseumDoor door, PlayerState state, Studio studio)

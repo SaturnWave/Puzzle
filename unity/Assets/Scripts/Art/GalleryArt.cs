@@ -294,6 +294,88 @@ namespace Puzzle.Client.Art
         /// so its frame is 330 by 202 points. Its pivot is the middle of the frame.
         /// </summary>
         WideAlcove,
+
+        // The world map (MapWorldTR, #4).
+        /// <summary>The frame of a painting's pin on the world map, in a box of 46 by 52 points with room for its rings: gilt around an open square of 32 where the painting is drawn under it, and the pointer under it. Its pivot is the pointer's tip.</summary>
+        MapPin,
+
+        /// <summary><see cref="MapPin"/> in the red ring of the painting being restored.</summary>
+        MapPinHere,
+
+        /// <summary><see cref="MapPin"/> in the teal ring of the painting whose card is open.</summary>
+        MapPinChosen,
+
+        /// <summary>The green badge with a tick on a restored pin or era, 15 points across. Its pivot is its middle.</summary>
+        MapTickBadge,
+
+        /// <summary>The ivory badge with a padlock on an era still ahead, 13 points across. Its pivot is its middle.</summary>
+        MapLockBadge,
+
+        /// <summary>The red badge that counts the pieces won on the pin being restored; its middle stretches sideways. Its pivot is the middle of the pill.</summary>
+        MapCountBadge,
+
+        /// <summary>A restored painting of another era as a gilt dot, 7 points across. Its pivot is its middle.</summary>
+        MapDotRestored,
+
+        /// <summary>The painting being restored as a red dot in its halo, 9 points across. Its pivot is its middle.</summary>
+        MapDotHere,
+
+        /// <summary>A painting still ahead as a cream dot, 7 points across. Its pivot is its middle.</summary>
+        MapDotAhead,
+
+        /// <summary>The exact place of a pin: a dark dot in a cream ring, 12 points across. Its pivot is its middle.</summary>
+        MapAnchor,
+
+        /// <summary>The cream plate of the world map's legend, 20 points high; its middle stretches sideways. Its pivot is the middle of the plate.</summary>
+        MapLegend,
+
+        /// <summary>A round button of the world map: a cream face in a gilt ring, 38 points across in a box of 44. Its pivot is its middle.</summary>
+        MapButton,
+
+        /// <summary><see cref="MapButton"/> with the light teal face of the globe while the whole world is shown.</summary>
+        MapButtonLit,
+
+        /// <summary>The globe on the world map's round button, in a box of 24 points. Its pivot is its middle.</summary>
+        MapGlyphGlobe,
+
+        /// <summary>The target on the round button that leads to where the player is, in a box of 24 points. Its pivot is its middle.</summary>
+        MapGlyphTarget,
+
+        /// <summary>The world map's compass rose without its letter, in a box of 60 points. Its pivot is its middle.</summary>
+        MapCompass,
+
+        /// <summary>The gilt medallion of a restored era on the world map's strip, 34 points across in a box of 48. Its pivot is its middle.</summary>
+        EraRestored,
+
+        /// <summary>The teal medallion in its red ring of the era the player is in. Its pivot is its middle.</summary>
+        EraHere,
+
+        /// <summary>The ivory medallion of an era still ahead. Its pivot is its middle.</summary>
+        EraAhead,
+
+        /// <summary>The teal light under the era the map shows, 58 by 64 points. Its pivot is its middle.</summary>
+        EraChosen,
+
+        /// <summary>The card of a painting on the world map, cream in a gilt rim; its middle stretches both ways. Its pivot is the middle of the card.</summary>
+        MapCard,
+
+        /// <summary>The gilt frame of a card's picture on the world map, 92 points square, open where the picture is drawn under it. Its pivot is the middle of the frame.</summary>
+        MapCardFrame,
+
+        /// <summary>The green pill of a restored painting on its card; its middle stretches sideways. Its pivot is the middle of the pill.</summary>
+        MapPillRestored,
+
+        /// <summary>The red pill of the painting being restored on its card; its middle stretches sideways. Its pivot is the middle of the pill.</summary>
+        MapPillHere,
+
+        /// <summary>The cream pill of a painting still ahead on its card; its middle stretches sideways. Its pivot is the middle of the pill.</summary>
+        MapPillAhead,
+
+        /// <summary>The small cream round button of a card that steps to the era's painting before or after, 28 points across. Its pivot is its middle.</summary>
+        MapStep,
+
+        /// <summary>The dark chevron pointing up on a card's step button, in a box of 12 points; turned over it points down. Its pivot is its middle.</summary>
+        MapGlyphChevron,
     }
 
     /// <summary>

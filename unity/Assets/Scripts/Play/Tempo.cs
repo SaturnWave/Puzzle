@@ -182,6 +182,17 @@ namespace Puzzle.Client.Play
         public const float PageSettles = 0.28f;
         public const float PageSettlesAtLeast = 0.08f;
 
+        /// <summary>
+        /// The world map (MapWorldTR): it opens on the whole world and, this long after it is shown, glides to the
+        /// player's era; a glide of the camera takes <see cref="MapGlides"/>; the pins and dots fade out as it leaves
+        /// and in once it has come to rest, each in <see cref="MapPinsFade"/>; the strip of eras scrolls to an era, or
+        /// runs on and settles after a finger lets go of it, in <see cref="MapStripScrolls"/>.
+        /// </summary>
+        public const float MapOpensAfter = 0.65f;
+        public const float MapGlides = 0.85f;
+        public const float MapPinsFade = 0.22f;
+        public const float MapStripScrolls = 0.35f;
+
         /// <summary>A switch of the settings card is pressed: its knob slides to the other end of its track.</summary>
         public const float SwitchSlides = 0.16f;
 

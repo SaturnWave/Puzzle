@@ -7,7 +7,10 @@
 //      unity/Assets/Generated/Resources/Economy.json (tools/unity/economy-pack.js says how);
 //   5. packs each language's table of words, words/<code>.json, into unity/Assets/Generated/Resources/Words/<code>.json
 //      without the translators' notes, and each language's museum words, museum/titles/<code>.json, into
-//      unity/Assets/Generated/Resources/Titles/<code>.json. The game offers a language whose tables are complete.
+//      unity/Assets/Generated/Resources/Titles/<code>.json. The game offers a language whose tables are complete;
+//   6. copies the world map's places, museum/places.json, to unity/Assets/Generated/Resources/Places.json, and packs
+//      each language's labels for them, museum/places/<code>.json, into Resources/PlaceLabels/<code>.json with each
+//      kind of label as a list of {key, text}: Unity's JSON reader has no dictionaries.
 // The engine, the museum's rules and the rules of lives, coins and boosters go in as compiled assemblies so that
 // the game runs the very code the levels were calibrated with and the tools and tests check.
 // Everything written here is derived from the repository, so unity/Assets/Generated is not committed: run this
@@ -30,6 +33,10 @@ const WORDS = "words";
 const WORDS_PACK = "unity/Assets/Generated/Resources/Words";
 const TITLES = "museum/titles";
 const TITLES_PACK = "unity/Assets/Generated/Resources/Titles";
+const PLACES = "museum/places.json";
+const PLACES_COPY = "unity/Assets/Generated/Resources/Places.json";
+const PLACE_LABELS = "museum/places";
+const PLACE_LABELS_PACK = "unity/Assets/Generated/Resources/PlaceLabels";
 // Each project with the assemblies taken from its output folder. The core lands in both; it is taken once.
 const PROJECTS = [
   { project: "src/Puzzle.Bot", assemblies: ["Puzzle.Core.dll", "Puzzle.Bot.dll"] },
@@ -73,6 +80,19 @@ function main() {
   console.log(`${words.length} tables of words (${words.join(", ")}) -> ${WORDS_PACK}`);
   const titles = packTables(TITLES, TITLES_PACK, table => table);
   console.log(`${titles.length} tables of the museum's words (${titles.join(", ")}) -> ${TITLES_PACK}`);
+
+  const places = JSON.parse(fs.readFileSync(PLACES, "utf8"));
+  fs.writeFileSync(PLACES_COPY, JSON.stringify(places));
+  console.log(`${places.paintings.length} painting places -> ${PLACES_COPY}`);
+  const asEntries = labels => Object.entries(labels ?? {}).map(([key, text]) => ({ key, text }));
+  const labels = packTables(PLACE_LABELS, PLACE_LABELS_PACK, table => ({
+    language: table.language,
+    review: table.review,
+    places: asEntries(table.places),
+    notes: asEntries(table.notes),
+    museums: asEntries(table.museums),
+  }));
+  console.log(`${labels.length} tables of the map's labels (${labels.join(", ")}) -> ${PLACE_LABELS_PACK}`);
 }
 
 /**

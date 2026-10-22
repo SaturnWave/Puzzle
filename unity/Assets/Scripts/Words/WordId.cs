@@ -13,7 +13,7 @@ namespace Puzzle.Client.Words
         /// <summary>Navigation bar: the museum's hall (the home page).</summary>
         NavMuseum,
 
-        /// <summary>Navigation bar: the museum's floor plan.</summary>
+        /// <summary>Navigation bar: the world map, where each painting was made or what place it shows.</summary>
         NavMap,
 
         /// <summary>Navigation bar: the collection of restored paintings.</summary>
@@ -70,14 +70,8 @@ namespace Puzzle.Client.Words
         /// <summary>Line under the banner: the room's name and its paintings, all five restored.</summary>
         HallRoomAndItsPaintings,
 
-        /// <summary>The map's plaque: its title.</summary>
-        MapTitle,
 
-        /// <summary>Small capitals at the museum's entrance on the floor plan.</summary>
-        MapEntrance,
 
-        /// <summary>Map's plaque, small capitals: what the museum holds in all.</summary>
-        MapSummary,
 
         /// <summary>Map: the pill of a room whose paintings are not chosen yet.</summary>
         MapRoomToCome,
@@ -85,8 +79,86 @@ namespace Puzzle.Client.Words
         /// <summary>Map: how many of a room's paintings are restored.</summary>
         MapRoomPaintingsWhole,
 
-        /// <summary>Map: the label under the pin of the player's room.</summary>
+        /// <summary>World map: the label over the pin of the painting the player restores now, with the level at hand.</summary>
         MapYouAreHere,
+
+        /// <summary>World map's plaque, in the view of the whole world: its title.</summary>
+        MapWorldTitle,
+
+        /// <summary>World map's plaque, small capitals, in the view of the whole world: how many eras and paintings the museum has.</summary>
+        MapWorldSummary,
+
+        /// <summary>World map's plaque, small capitals, in an era's view: which room of the museum's it is, and the years its paintings span ("1867–1906").</summary>
+        MapEraLabel,
+
+        /// <summary>World map's plaque, small capitals, at the right of an era still ahead: the level it opens at. Turkish fills {levelIn} with the number and its suffix ("301'DE"); other languages use {level}.</summary>
+        MapEraOpensAt,
+
+        /// <summary>World map's legend at the top left, beside a gilt dot: the paintings restored.</summary>
+        MapLegendRestored,
+
+        /// <summary>World map's legend, beside a red dot: the painting the player restores now.</summary>
+        MapLegendHere,
+
+        /// <summary>World map's legend, beside a cream dot: the paintings still to come.</summary>
+        MapLegendAhead,
+
+        /// <summary>World map, small capitals in italics on the sea in the view of the whole world.</summary>
+        MapAtlanticOcean,
+
+        /// <summary>World map, small capitals in italics on the sea in the view of the whole world.</summary>
+        MapIndianOcean,
+
+        /// <summary>World map's compass rose: the one letter at its north point (Kuzey).</summary>
+        MapCompassNorth,
+
+        /// <summary>Painting's card on the world map, small capitals over its title: its room and its place in the room.</summary>
+        MapCardEyebrow,
+
+        /// <summary>Painting's card on the world map: the museum that holds the painting today, "Bugün: Chicago Sanat Enstitüsü, Chicago".</summary>
+        MapCardToday,
+
+        /// <summary>Painting's card on the world map, small capitals under a question mark where the picture of a painting still ahead would be.</summary>
+        MapCardVeiled,
+
+        /// <summary>Painting's card on the world map: the green pill of a painting restored.</summary>
+        MapStatusRestored,
+
+        /// <summary>Painting's card on the world map: the red pill of the painting being restored, its pieces the player holds once the level is won, of all, and that level.</summary>
+        MapStatusPieces,
+
+        /// <summary>Painting's card on the world map: the cream pill of a painting still ahead, the levels that open it. Turkish fills {lastIn} with the last level and its suffix ("270'te"); other languages use {last}.</summary>
+        MapStatusOpensAt,
+
+        /// <summary>Painting's card on the world map: the link of a restored painting to the collection.</summary>
+        MapSeeInTheCollection,
+
+        /// <summary>World map: what the round button with a globe does, said for a screen reader (no visible words).</summary>
+        MapShowTheWorld,
+
+        /// <summary>World map: what the round button with a target does (to the player's era and the card of the painting being restored), said for a screen reader.</summary>
+        MapGoToYourPlace,
+
+        /// <summary>Painting's card on the world map: the round button with an arrow up, to the era's painting before, said for a screen reader.</summary>
+        MapPreviousPainting,
+
+        /// <summary>Painting's card on the world map: the round button with an arrow down, to the era's next painting, said for a screen reader.</summary>
+        MapNextPainting,
+
+        /// <summary>Painting's card on the world map: the round button with a cross, said for a screen reader.</summary>
+        MapCloseTheCard,
+
+        /// <summary>World map: what a painting's pin says to a screen reader: its title, its place and how it stands ("Onarıldı", "Onarılıyor", the levels that open it).</summary>
+        MapPinLabel,
+
+        /// <summary>World map: how the pin of the painting being restored stands, said for a screen reader.</summary>
+        MapBeingRestored,
+
+        /// <summary>World map's strip of eras: what an era's medallion says to a screen reader: its room, its name, its years and how far it is restored or when it opens.</summary>
+        MapEraButtonLabel,
+
+        /// <summary>World map: the name of the strip of the twenty eras, said for a screen reader.</summary>
+        MapErasList,
 
         /// <summary>The name of a room whose period is not decided yet.</summary>
         RoomWithoutAName,

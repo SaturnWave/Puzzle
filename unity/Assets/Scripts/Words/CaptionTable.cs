@@ -33,6 +33,9 @@ namespace Puzzle.Client.Words
     {
         public int number;
         public string name = string.Empty;
+
+        /// <summary>The era's short name under its number on the world map's strip of eras ("Edo and Meiji").</summary>
+        public string shortName = string.Empty;
     }
 
     [Serializable]
@@ -73,13 +76,15 @@ namespace Puzzle.Client.Words
     public sealed class CaptionTable
     {
         private readonly Dictionary<int, string> _rooms;
+        private readonly Dictionary<int, string> _shortNames;
         private readonly Dictionary<string, Plate> _plates;
 
-        private CaptionTable(Language language, TableReview review, Dictionary<int, string> rooms, Dictionary<string, Plate> plates)
+        private CaptionTable(Language language, TableReview review, Dictionary<int, string> rooms, Dictionary<int, string> shortNames, Dictionary<string, Plate> plates)
         {
             Language = language;
             Review = review;
             _rooms = rooms;
+            _shortNames = shortNames;
             _plates = plates;
         }
 
@@ -92,7 +97,7 @@ namespace Puzzle.Client.Words
 
         /// <summary>The catalogue's own words, which are Turkish.</summary>
         public static CaptionTable OfTheCatalogue { get; } =
-            new CaptionTable(CatalogueLanguage, TableReview.Source, new Dictionary<int, string>(), new Dictionary<string, Plate>());
+            new CaptionTable(CatalogueLanguage, TableReview.Source, new Dictionary<int, string>(), new Dictionary<int, string>(), new Dictionary<string, Plate>());
 
         /// <summary>True for the catalogue's own words: they need no file and are always complete.</summary>
         public bool IsTheCatalogues => ReferenceEquals(this, OfTheCatalogue);
@@ -103,6 +108,11 @@ namespace Puzzle.Client.Words
             get
             {
                 foreach (string name in _rooms.Values)
+                {
+                    yield return name;
+                }
+
+                foreach (string name in _shortNames.Values)
                 {
                     yield return name;
                 }
@@ -132,6 +142,7 @@ namespace Puzzle.Client.Words
 
             TableReview review = TableReviews.Of(file.review);
             var rooms = new Dictionary<int, string>();
+            var shortNames = new Dictionary<int, string>();
             foreach (RoomCaption room in file.rooms ?? Array.Empty<RoomCaption>())
             {
                 if (string.IsNullOrEmpty(room.name) || rooms.ContainsKey(room.number))
@@ -140,6 +151,10 @@ namespace Puzzle.Client.Words
                 }
 
                 rooms.Add(room.number, room.name);
+                if (!string.IsNullOrEmpty(room.shortName))
+                {
+                    shortNames.Add(room.number, room.shortName);
+                }
             }
 
             var plates = new Dictionary<string, Plate>();
@@ -153,13 +168,13 @@ namespace Puzzle.Client.Words
                 plates.Add(painting.id, Plate.Of(painting, file.language));
             }
 
-            return new CaptionTable(language, review, rooms, plates);
+            return new CaptionTable(language, review, rooms, shortNames, plates);
         }
 
         /// <summary>True when the table has a name for every room and a plate for every painting of a catalogue.</summary>
         public bool IsCompleteFor(MuseumCatalogue catalogue) => IsTheCatalogues || MissingFrom(catalogue).Count == 0;
 
-        /// <summary>What the table lacks of a catalogue: rooms as "room 3", paintings by their ids; nothing for the catalogue's own words.</summary>
+        /// <summary>What the table lacks of a catalogue: rooms as "room 3", their short names as "room 3 short name", paintings by their ids; nothing for the catalogue's own words.</summary>
         public IReadOnlyList<string> MissingFrom(MuseumCatalogue catalogue)
         {
             var missing = new List<string>();
@@ -173,6 +188,11 @@ namespace Puzzle.Client.Words
                 if (!room.IsNameProvisional && !_rooms.ContainsKey(room.Number.Value))
                 {
                     missing.Add($"room {room.Number.Value}");
+                }
+
+                if (!room.IsNameProvisional && !_shortNames.ContainsKey(room.Number.Value))
+                {
+                    missing.Add($"room {room.Number.Value} short name");
                 }
 
                 foreach (Artwork artwork in room.Artworks)
@@ -192,6 +212,9 @@ namespace Puzzle.Client.Words
 
         /// <summary>A room's name: its movement in this language.</summary>
         public string NameOf(MuseumRoom room) => _rooms.TryGetValue(room.Number.Value, out string? name) ? name : room.Movement;
+
+        /// <summary>A room's short name, the era as the world map's strip writes it under the room's number.</summary>
+        public string ShortNameOf(MuseumRoom room) => _shortNames.TryGetValue(room.Number.Value, out string? name) ? name : room.ShortName;
 
         public string TitleOf(Artwork artwork) => _plates.TryGetValue(artwork.Id.Value, out Plate plate) ? plate.Title : artwork.Caption.Title;
 

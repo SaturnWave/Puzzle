@@ -40,9 +40,6 @@ namespace Puzzle.Client.Flow
         /// <summary>The line under a painting that is looked at by itself.</summary>
         public static string TouchToClose => Speech.Say(WordId.ViewerTouchToClose);
 
-        public static string MapTitle => Speech.Say(WordId.MapTitle);
-        public static string Entrance => Speech.Say(WordId.MapEntrance);
-
         /// <summary>The button of a result's card that leads back to the museum's hall.</summary>
         public static string BackToTheMuseum => Speech.Say(WordId.ResultBackToTheMuseum);
 
@@ -64,10 +61,6 @@ namespace Puzzle.Client.Flow
         public static string RoomRestored => Speech.Say(WordId.HallRoomRestored);
         public static string OnFromTheRoom => Speech.Say(WordId.GoOn);
 
-        /// <summary>The map's plaque: what the museum holds in all, "20 ODA · 100 TABLO".</summary>
-        public static string MapSummary =>
-            Speech.Say(WordId.MapSummary, ("rooms", Number(MuseumPlan.RoomCount)), ("paintings", Number(MuseumPlan.PaintingCount)));
-
         /// <summary>A room among the museum's rooms: "ODA 1 / 20".</summary>
         public static string RoomOfRooms(RoomNumber room) =>
             Speech.Say(WordId.RoomOfRooms, ("room", Number(room.Value)), ("rooms", Number(MuseumPlan.RoomCount)));
@@ -76,7 +69,7 @@ namespace Puzzle.Client.Flow
         public static string Restored(int paintingsWhole) =>
             Speech.Say(WordId.RoomPaintingsRestored, ("whole", Number(paintingsWhole)), ("perRoom", Number(MuseumPlan.PaintingsPerRoom)));
 
-        /// <summary>The same count on the map: "4 / 5 TABLO".</summary>
+        /// <summary>The same count on the world map's plaque in an era's view: "4 / 5 TABLO".</summary>
         public static string PaintingsWhole(int paintingsWhole) =>
             Speech.Say(WordId.MapRoomPaintingsWhole, ("whole", Number(paintingsWhole)), ("perRoom", Number(MuseumPlan.PaintingsPerRoom)));
 
@@ -116,10 +109,6 @@ namespace Puzzle.Client.Flow
             int level = room.FirstLevel.Value;
             return Speech.Say(WordId.RoomOpensAt, ("level", Number(level)), ("levelIn", TurkishNumbers.In(level)));
         }
-
-        /// <summary>Several rooms as one stretch of the map: "7–20".</summary>
-        public static string Rooms(RoomNumber first, RoomNumber last) =>
-            first == last ? Number(first.Value) : $"{Number(first.Value)}–{Number(last.Value)}";
 
         /// <summary>The first line of the plate under a painting's frame: its title, or its place while no work is chosen for it.</summary>
         public static string TitleOf(PaintingNumber painting, Artwork? artwork) => artwork != null

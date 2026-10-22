@@ -93,7 +93,7 @@ public partial class LetteringTests
     public void Every_word_a_Latin_language_says_can_be_written_with_the_letter_set(Language language)
     {
         Wording wording = TestWords.Of(language);
-        IEnumerable<string> words = wording.Words.AllWords.Select(entry => entry.Words).Concat(wording.Captions.AllWords);
+        IEnumerable<string> words = wording.Words.AllWords.Select(entry => entry.Words).Concat(wording.Captions.AllWords).Concat(MapLabelsOf(language));
 
         Assert.All(words, each => Assert.Equal(string.Empty, LetterSet.LettersOutside(each)));
     }
@@ -328,7 +328,29 @@ public partial class LetteringTests
     private static string[] TextBetweenQuotationMarksIn(string path) =>
         TextBetweenQuotationMarks().Matches(File.ReadAllText(path)).Select(match => match.Groups[1].Value.Replace("\\n", "\n")).ToArray();
 
-    /// <summary>Every piece of words of every table the repository has, finished or not, and of the museum's words in every language, by language.</summary>
+    /// <summary>The world map's labels of a language (museum/places/&lt;code&gt;.json): its places, notes and museums; none where it has no file.</summary>
+    private static IEnumerable<string> MapLabelsOf(Language language)
+    {
+        string file = Path.Combine(RepoFiles.PlaceLabelsFolder, $"{Languages.CodeOf(language)}.json");
+        if (!File.Exists(file))
+        {
+            return Array.Empty<string>();
+        }
+
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(file));
+        var labels = new List<string>();
+        foreach (string kind in new[] { "places", "notes", "museums" })
+        {
+            if (document.RootElement.TryGetProperty(kind, out JsonElement entries))
+            {
+                labels.AddRange(entries.EnumerateObject().Select(entry => entry.Value.GetString()!));
+            }
+        }
+
+        return labels;
+    }
+
+    /// <summary>Every piece of words of every table the repository has, finished or not, of the museum's words and of the world map's labels in every language, by language.</summary>
     private static Dictionary<Language, List<string>> TablesWordsByLanguage()
     {
         var byLanguage = Languages.All.ToDictionary(language => language, _ => new List<string>());
@@ -342,6 +364,11 @@ public partial class LetteringTests
         {
             CaptionTable table = CaptionTable.Of(JsonSerializer.Deserialize<CaptionFile>(File.ReadAllText(file), AsUnityMapsIt)!);
             byLanguage[table.Language].AddRange(table.AllWords);
+        }
+
+        foreach (Language language in Languages.All)
+        {
+            byLanguage[language].AddRange(MapLabelsOf(language));
         }
 
         return byLanguage;

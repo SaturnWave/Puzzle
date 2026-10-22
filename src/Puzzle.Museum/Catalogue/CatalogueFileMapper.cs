@@ -59,6 +59,11 @@ namespace Puzzle.Museum.Catalogue
                 throw new CatalogueFormatException($"Room {file.number} has no art movement.");
             }
 
+            if (string.IsNullOrWhiteSpace(file.shortName))
+            {
+                throw new CatalogueFormatException($"Room {file.number} has no short name for the world map's strip of eras.");
+            }
+
             PaintingFile[] listed = ListOrNone(file.paintings);
             if (listed.Length > MuseumPlan.PaintingsPerRoom)
             {
@@ -71,7 +76,7 @@ namespace Puzzle.Museum.Catalogue
                 paintings.Add(ToArtwork(painting, file.number, known));
             }
 
-            return new MuseumRoom(new RoomNumber(file.number), file.movement, file.provisionalName, paintings);
+            return new MuseumRoom(new RoomNumber(file.number), file.movement, file.shortName, file.provisionalName, paintings);
         }
 
         private static Artwork ToArtwork(PaintingFile file, int room, KnownArtworks known)

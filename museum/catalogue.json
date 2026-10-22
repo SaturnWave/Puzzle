@@ -5,6 +5,7 @@
       "number": 1,
       "movement": "Empresyonizm",
       "provisionalName": false,
+      "shortName": "Empresyonizm",
       "paintings": [
         {
           "id": "monet-beach-at-sainte-adresse",
@@ -67,6 +68,7 @@
       "number": 2,
       "movement": "Post-empresyonizm",
       "provisionalName": false,
+      "shortName": "Post-empresyonizm",
       "paintings": [
         {
           "id": "van-gogh-self-portrait-1887",
@@ -129,6 +131,7 @@
       "number": 3,
       "movement": "Kuzey Işığı: İsveç, Finlandiya, Danimarka",
       "provisionalName": false,
+      "shortName": "Kuzey Işığı",
       "paintings": [
         {
           "id": "hill-apple-tree-in-blossom",
@@ -191,6 +194,7 @@
       "number": 4,
       "movement": "Amerika: Yaldızlı Çağ",
       "provisionalName": false,
+      "shortName": "Yaldızlı Çağ",
       "paintings": [
         {
           "id": "homer-the-dinner-horn",
@@ -253,6 +257,7 @@
       "number": 5,
       "movement": "Hollanda: Lahey Okulu ve Amsterdam",
       "provisionalName": false,
+      "shortName": "Lahey Okulu",
       "paintings": [
         {
           "id": "springer-zuiderhavendijk-enkhuizen",
@@ -315,6 +320,7 @@
       "number": 6,
       "movement": "Japonya: Edo'nun Son Yılları ve Meiji",
       "provisionalName": false,
+      "shortName": "Edo ve Meiji",
       "paintings": [
         {
           "id": "kuniyoshi-cats-of-the-tokaido",
@@ -377,6 +383,7 @@
       "number": 7,
       "movement": "Fransa: Barbizon, Gerçekçilik ve Salon",
       "provisionalName": false,
+      "shortName": "Barbizon",
       "paintings": [
         {
           "id": "courbet-young-ladies-of-the-village",
@@ -439,6 +446,7 @@
       "number": 8,
       "movement": "Amerika: Hudson Nehri ve Sınır Boyları",
       "provisionalName": false,
+      "shortName": "Hudson Nehri",
       "paintings": [
         {
           "id": "bingham-fur-traders-descending-the-missouri",
@@ -501,6 +509,7 @@
       "number": 9,
       "movement": "Danimarka Altın Çağı",
       "provisionalName": false,
+      "shortName": "Danimarka",
       "paintings": [
         {
           "id": "rorbye-view-from-the-artists-window",
@@ -563,6 +572,7 @@
       "number": 10,
       "movement": "Romantik Britanya: Constable ve Turner",
       "provisionalName": false,
+      "shortName": "Romantikler",
       "paintings": [
         {
           "id": "constable-salisbury-cathedral",
@@ -625,6 +635,7 @@
       "number": 11,
       "movement": "Edo Japonyası: Hokusai ve Hiroşige",
       "provisionalName": false,
+      "shortName": "Hokusai",
       "paintings": [
         {
           "id": "sharaku-otani-oniji-as-yakko-edobei",
@@ -687,6 +698,7 @@
       "number": 12,
       "movement": "Devrimler Çağı: Amerika ve Avrupa",
       "provisionalName": false,
+      "shortName": "Devrimler",
       "paintings": [
         {
           "id": "peale-benjamin-and-eleanor-laming",
@@ -749,6 +761,7 @@
       "number": 13,
       "movement": "Kral George Çağı Britanyası",
       "provisionalName": false,
+      "shortName": "George Çağı",
       "paintings": [
         {
           "id": "devis-maynard-family-at-waltons",
@@ -811,6 +824,7 @@
       "number": 14,
       "movement": "Şehir Manzaraları: Venedik, Roma, İstanbul",
       "provisionalName": false,
+      "shortName": "Şehir Manzaraları",
       "paintings": [
         {
           "id": "vanmour-view-of-istanbul-from-pera",
@@ -873,6 +887,7 @@
       "number": 15,
       "movement": "Rokoko Fransası",
       "provisionalName": false,
+      "shortName": "Rokoko",
       "paintings": [
         {
           "id": "watteau-italian-comedians",
@@ -935,6 +950,7 @@
       "number": 16,
       "movement": "Hollanda Altın Çağı: Vermeer Kuşağı",
       "provisionalName": false,
+      "shortName": "Vermeer",
       "paintings": [
         {
           "id": "cuyp-maas-at-dordrecht",
@@ -997,6 +1013,7 @@
       "number": 17,
       "movement": "Barok Avrupa: Hollanda, Flandre ve Fransa",
       "provisionalName": false,
+      "shortName": "Barok",
       "paintings": [
         {
           "id": "brueghel-river-landscape-1607",
@@ -1059,6 +1076,7 @@
       "number": 18,
       "movement": "İran ve Babür Sarayları: Minyatür Çağı",
       "provisionalName": false,
+      "shortName": "Minyatür",
       "paintings": [
         {
           "id": "sultan-muhammad-feast-of-sada",
@@ -1121,6 +1139,7 @@
       "number": 19,
       "movement": "Rönesans Avrupası: Holbein'den Arcimboldo'ya",
       "provisionalName": false,
+      "shortName": "Rönesans",
       "paintings": [
         {
           "id": "cariani-a-concert",
@@ -1183,6 +1202,7 @@
       "number": 20,
       "movement": "Flandre ve İtalya: 15. Yüzyıl",
       "provisionalName": false,
+      "shortName": "15. Yüzyıl",
       "paintings": [
         {
           "id": "van-der-weyden-francesco-d-este",

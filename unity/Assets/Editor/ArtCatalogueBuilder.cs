@@ -167,6 +167,33 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.Stud] = "stud",
             [GalleryArt.WirePin] = "wire-pin",
             [GalleryArt.WalletPill] = "wallet-pill",
+            [GalleryArt.MapPin] = "map-pin",
+            [GalleryArt.MapPinHere] = "map-pin-here",
+            [GalleryArt.MapPinChosen] = "map-pin-chosen",
+            [GalleryArt.MapTickBadge] = "map-badge-tick",
+            [GalleryArt.MapLockBadge] = "map-badge-lock",
+            [GalleryArt.MapCountBadge] = "map-badge-count",
+            [GalleryArt.MapDotRestored] = "map-dot-restored",
+            [GalleryArt.MapDotHere] = "map-dot-here",
+            [GalleryArt.MapDotAhead] = "map-dot-ahead",
+            [GalleryArt.MapAnchor] = "map-anchor",
+            [GalleryArt.MapLegend] = "map-legend",
+            [GalleryArt.MapButton] = "map-button",
+            [GalleryArt.MapButtonLit] = "map-button-lit",
+            [GalleryArt.MapGlyphGlobe] = "map-glyph-globe",
+            [GalleryArt.MapGlyphTarget] = "map-glyph-target",
+            [GalleryArt.MapCompass] = "map-compass",
+            [GalleryArt.EraRestored] = "era-restored",
+            [GalleryArt.EraHere] = "era-here",
+            [GalleryArt.EraAhead] = "era-ahead",
+            [GalleryArt.EraChosen] = "era-chosen",
+            [GalleryArt.MapCard] = "map-card",
+            [GalleryArt.MapCardFrame] = "map-card-frame",
+            [GalleryArt.MapPillRestored] = "map-pill-restored",
+            [GalleryArt.MapPillHere] = "map-pill-here",
+            [GalleryArt.MapPillAhead] = "map-pill-ahead",
+            [GalleryArt.MapStep] = "map-step",
+            [GalleryArt.MapGlyphChevron] = "map-glyph-chevron",
             [GalleryArt.WideAlcove] = "alcove-wide",
         };
 
@@ -217,6 +244,7 @@ namespace Puzzle.Client.EditorTools
             catalogue.FillLettering(typefaces, letteringMaterials, fallbacks);
             catalogue.FillSounds(sounds);
             catalogue.FillMusic(music);
+            catalogue.FillMap(MapMaterials());
             EditorUtility.SetDirty(catalogue);
         }
 
@@ -368,6 +396,28 @@ namespace Puzzle.Client.EditorTools
             }
 
             return material;
+        }
+
+        /// <summary>The world map's materials, one asset per ink beside its shader: made once, kept after that.</summary>
+        private static Dictionary<MapInk, Material> MapMaterials()
+        {
+            var materials = new Dictionary<MapInk, Material>();
+            foreach (MapInk ink in (MapInk[])Enum.GetValues(typeof(MapInk)))
+            {
+                string path = $"Assets/Art/Shaders/Map{ink}.mat";
+                Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (material == null)
+                {
+                    string shaderName = $"Puzzle/Map {ink}";
+                    Shader shader = Shader.Find(shaderName) ?? throw new InvalidOperationException($"The shader {shaderName} is missing or does not compile.");
+                    material = new Material(shader);
+                    AssetDatabase.CreateAsset(material, path);
+                }
+
+                materials.Add(ink, material);
+            }
+
+            return materials;
         }
 
         private static Material PaintMaterial()

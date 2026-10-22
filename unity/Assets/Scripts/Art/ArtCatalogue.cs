@@ -14,6 +14,29 @@ namespace Puzzle.Client.Art
     /// looked up by a name at run time. The asset (Assets/Art/ArtCatalogue.asset) is written by the Editor's ArtCatalogueBuilder,
     /// never by hand.
     /// </summary>
+    /// <summary>
+    /// What a part of the world map is drawn with, each its own shader (unity/Assets/Art/Shaders/Map*.shader). A closed
+    /// set: <see cref="ArtCatalogue"/> stores a material per member in this order, so after adding one, build the
+    /// catalogue again (ProjectSetup.Run).
+    /// </summary>
+    public enum MapInk
+    {
+        /// <summary>The sea and its waves on the whole sheet.</summary>
+        Sea,
+
+        /// <summary>The land's and the lakes' triangles in the colour of their corners.</summary>
+        Fill,
+
+        /// <summary>A line of a width in points at every zoom: the coasts, the shores, the graticule.</summary>
+        Line,
+
+        /// <summary>The soft light along the coasts on the sea's side.</summary>
+        Glow,
+
+        /// <summary>The dark at the sheet's edges.</summary>
+        Vignette,
+    }
+
     public sealed class ArtCatalogue : ScriptableObject
     {
         private const string HowToBuild = "run ProjectSetup.Run in the Editor's batch mode";
@@ -29,6 +52,9 @@ namespace Puzzle.Client.Art
         [SerializeField] private Material? _spriteMaterial;
 
         [SerializeField] private Material? _paintMaterial;
+
+        /// <summary>One material per <see cref="MapInk"/> member, in the enum's order: what the world map's sea, land and lines are drawn with.</summary>
+        [SerializeField] private Material[] _mapMaterials = Array.Empty<Material>();
 
         /// <summary>The typeface of each <see cref="LetteringStyle"/> member, in the enum's order; styles of one typeface name the same one.</summary>
         [SerializeField] private TMP_FontAsset[] _typefaces = Array.Empty<TMP_FontAsset>();
@@ -57,6 +83,10 @@ namespace Puzzle.Client.Art
         /// <summary>The material of shapes built in code (the wall, the board's floor and frame): a texture times the colour of each corner.</summary>
         /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
         public Material PaintMaterial => Built(_paintMaterial, "paint material");
+
+        /// <summary>The material a part of the world map is drawn with; its renderer gives it the map's camera (MapCommon.hlsl).</summary>
+        /// <exception cref="InvalidOperationException">The catalogue is older than the list of the map's inks.</exception>
+        public Material MaterialOf(MapInk ink) => Listed(_mapMaterials, (int)ink, ink);
 
         /// <summary>The wall's damask: white at low strength, see-through elsewhere, repeating in both directions.</summary>
         /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
@@ -145,6 +175,9 @@ namespace Puzzle.Client.Art
             _spriteMaterial = spriteMaterial;
             _paintMaterial = paintMaterial;
         }
+
+        /// <summary>Editor only: replaces the materials of the world map, one for every member of <see cref="MapInk"/>.</summary>
+        public void FillMap(IReadOnlyDictionary<MapInk, Material> materials) => _mapMaterials = InEnumOrder(materials);
 
         /// <summary>Editor only: replaces the typeface and the material of each lettering style, and the typeface of each fallback. Every list must name every member of its enum.</summary>
         public void FillLettering(

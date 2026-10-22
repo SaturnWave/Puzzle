@@ -46,11 +46,12 @@ public class WordTablesTests
 
     /// <summary>
     /// The places a translation leaves out of its source's, each with why: Turkish writes a level's number with the
-    /// suffix its sound asks for ({levelIn}), which no other language does; the Korean line about extra moves that
+    /// suffix its sound asks for ({levelIn}, the world map's {lastIn}), which no other language does; the Korean line about extra moves that
     /// were refused does not repeat their number.
     /// </summary>
     private static readonly HashSet<(WordId Id, string Place, Language Language)> PlacesLeftOut =
-        Languages.All.Where(language => language != Language.Turkish).Select(language => (WordId.RoomOpensAt, "levelIn", language))
+        Languages.All.Where(language => language != Language.Turkish)
+            .SelectMany(language => new[] { (WordId.RoomOpensAt, "levelIn", language), (WordId.MapEraOpensAt, "levelIn", language), (WordId.MapStatusOpensAt, "lastIn", language) })
             .Append((WordId.ResultExtraMovesRefused, "moves", Language.Korean))
             .ToHashSet();
 
@@ -58,6 +59,8 @@ public class WordTablesTests
     private static readonly HashSet<(WordId Id, string Place)> PlacesAdded = new()
     {
         (WordId.RoomOpensAt, "level"),
+        (WordId.MapEraOpensAt, "level"),
+        (WordId.MapStatusOpensAt, "last"),
     };
 
     [Fact]

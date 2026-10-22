@@ -29,11 +29,57 @@ namespace Puzzle.Client
         FrameShadow = -700,
 
         /// <summary>
-        /// What hangs in a picture frame on a page of the museum, from its ground up: a painting's canvas (the
-        /// picture as a ghost under the linen, the linen, the marks of the places that are asked for, the pieces
-        /// in place, the cut lines over them, and the light that runs over a painting just restored), or the map's
-        /// sheet with its floors, walls, marks and lettering; small framed pictures on it with their marks, labels
-        /// on it, and the pin over everything.
+        /// The world map in its frame (MapWorldTR), from the sea up: the sea, the graticule, the light along the
+        /// coasts, the land, the coastlines, the lakes and their shores, the dark at the edges; the route of the eras,
+        /// the oceans' names, the paintings of other eras as dots, the lines from a pin to its place, a pin's foot,
+        /// picture or veil, frame, the veil's mark and badges, the marker of where the player is with its label, the legend, the round
+        /// buttons, the compass; the strip of eras with its chosen place, medallions, their badges and lettering; and
+        /// the painting's card over everything, with its picture, its art, lettering and buttons. It all lies under the
+        /// picture frame, which stands over the map's edge.
+        /// </summary>
+        MapSea = -699,
+        MapGraticule = -698,
+        MapGlow = -697,
+        MapLand = -696,
+        MapCoast = -695,
+        MapLakes = -694,
+        MapLakeShore = -693,
+        MapVignette = -692,
+        MapRoute = -691,
+        MapOceanName = -690,
+        MapDot = -689,
+        MapLeader = -688,
+        MapPinFoot = -687,
+        MapPinPicture = -686,
+        MapPinFrame = -685,
+        MapPinVeil = -684,
+        MapPinBadge = -683,
+        MapPinBadgeLettering = -682,
+        MapHerePin = -681,
+        MapHereLabel = -680,
+        MapHereLettering = -679,
+        MapLegend = -678,
+        MapLegendArt = -677,
+        MapLegendLettering = -676,
+        MapButton = -675,
+        MapButtonGlyph = -674,
+        MapCompass = -673,
+        MapStrip = -672,
+        MapStripChosen = -671,
+        MapMedal = -670,
+        MapMedalBadge = -669,
+        MapMedalLettering = -668,
+        MapCard = -667,
+        MapCardPicture = -666,
+        MapCardArt = -665,
+        MapCardLettering = -664,
+        MapCardButton = -663,
+        MapCardButtonLettering = -662,
+
+        /// <summary>
+        /// What hangs in a picture frame on the hall's page, from its ground up: a painting's canvas (the picture as
+        /// a ghost under the linen, the linen, the marks of the places that are asked for, the pieces in place, the
+        /// cut lines over them, and the light that runs over a painting just restored).
         /// </summary>
         CanvasGhost = -660,
         Canvas = -658,
@@ -41,15 +87,6 @@ namespace Puzzle.Client
         CanvasPicture = -654,
         CanvasLines = -652,
         CanvasShine = -650,
-        SheetWalls = -647,
-        SheetArt = -646,
-        SheetLettering = -645,
-        SheetPictureFrame = -644,
-        SheetPicture = -643,
-        SheetPictureMark = -642,
-        SheetLabel = -641,
-        SheetLabelLettering = -640,
-        SheetPin = -639,
 
         /// <summary>
         /// The hall's gift frame on the wall beside the workbench, behind it (HomeTR): its picture, the gilt frame over

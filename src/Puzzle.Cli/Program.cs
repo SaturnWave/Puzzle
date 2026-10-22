@@ -122,6 +122,9 @@ const string Usage = """
                             --measurement out/economy/measurement.jsonl  --levels levels/generated
                             --out out/economy/<settings name>  --trust-measurement (skip the check against the engine
                             and the level files; then no game is played at all)
+      worldmap build        The world map's data file from Natural Earth 1:50m land and lakes (public domain), with the record of
+                            its sources. --source out/naturalearth  --fetch (download the two GeoJSON files first)
+                            --out unity/Assets/Resources/WorldMap.bytes  --record art/map/sources.json  --rerecord
       economy compare <a.json> <b.json>
                             Two settings files on the same measurement: the fields that differ, then the figures up to
                             each milestone side by side, as compare.csv and differences.txt.
@@ -154,6 +157,7 @@ try
         "humans" => HumansCommand.Run(cli),
         "players" => PlayersCommand.Run(cli),
         "economy" => EconomyCommand.Run(cli),
+        "worldmap" => WorldMapCommand.Run(cli),
         "help" or "--help" or "-h" => PrintUsage(),
         _ => throw new UsageException($"Unknown command '{cli.Command}'."),
     };

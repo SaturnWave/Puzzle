@@ -138,21 +138,6 @@ public class MuseumEndsTests
     }
 
     [Fact]
-    public void On_the_map_a_room_without_paintings_is_to_come_and_closed_whatever_levels_are_won()
-    {
-        MuseumProgress museum = Player(levelsWon: 120, piecesPlaced: 50).Museum;
-        MuseumCatalogue shipped = TestMuseums.EndingAfterRoomOne;
-
-        Assert.Equal(RoomAccess.Restored, FloorPlan.AccessOf(new RoomNumber(1), museum, shipped));
-        Assert.Equal(RoomAccess.ToCome, FloorPlan.AccessOf(new RoomNumber(2), museum, shipped));
-        Assert.Equal(RoomAccess.ToCome, FloorPlan.AccessOf(new RoomStretch(new RoomNumber(3), new RoomNumber(20)), museum, shipped));
-        Assert.True(FloorPlan.IsClosed(RoomAccess.ToCome));
-        Assert.True(FloorPlan.IsClosed(RoomAccess.Locked));
-        Assert.False(FloorPlan.IsClosed(RoomAccess.Open));
-        Assert.False(FloorPlan.IsClosed(RoomAccess.Restored));
-    }
-
-    [Fact]
     public void A_room_whose_name_is_only_pencilled_in_is_not_named_to_the_player()
     {
         MuseumCatalogue shipped = TestMuseums.EndingAfterRoomOne;

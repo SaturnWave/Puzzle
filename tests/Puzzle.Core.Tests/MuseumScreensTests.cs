@@ -8,7 +8,7 @@ namespace Puzzle.Core.Tests;
 
 /// <summary>
 /// What the Unity game's museum pages show and say of a player's progress: the room they stand in and its five
-/// paintings, the map's floor plan, the pieces a win gives, and the Turkish words for all of it. These are the Unity
+/// paintings, the pieces a win gives, and the Turkish words for all of it. These are the Unity
 /// project's source files, compiled into these tests: they have no Unity dependency.
 /// </summary>
 public class MuseumScreensTests
@@ -101,9 +101,6 @@ public class MuseumScreensTests
         Assert.Equal("Bölüm 47", MuseumWords.Play(47));
         Assert.Equal("Buradasın · Bölüm 47", MuseumWords.YouAreHere(47));
         Assert.Equal("Bölüm 51'de açılır", MuseumWords.OpensAt(new RoomNumber(2)));
-        Assert.Equal("20 ODA · 100 TABLO", MuseumWords.MapSummary);
-        Assert.Equal("7–20", MuseumWords.Rooms(new RoomNumber(7), new RoomNumber(20)));
-        Assert.Equal("20", MuseumWords.Rooms(new RoomNumber(20), new RoomNumber(20)));
     }
 
     [Theory]
@@ -181,76 +178,5 @@ public class MuseumScreensTests
         Assert.Equal(new PaintingNumber(6), visit.BeingRestored);
         Assert.False(visit.HasWonEveryLevel);
         Assert.Throws<ArgumentOutOfRangeException>(() => new MuseumVisit(MuseumProgress.None, TestMuseums.Full, levelToPlay: 0));
-    }
-
-    [Fact]
-    public void The_floor_plan_of_the_design_is_a_player_in_the_first_room()
-    {
-        FloorPlan plan = FloorPlan.Of(new RoomNumber(1), new PlanDepth(showsTheRoomBefore: true, rowsAhead: 2));
-
-        Assert.Null(plan.Behind);
-        Assert.Null(plan.Before);
-        Assert.Equal(new RoomNumber(2), plan.Next);
-        Assert.Equal(new[] { 3, 4, 5, 6 }, plan.Ahead.Select(room => room.Value));
-        Assert.Equal(2, plan.RowsAhead);
-        Assert.Equal((7, 20), (plan.Beyond!.Value.First.Value, plan.Beyond.Value.Last.Value));
-    }
-
-    public static TheoryData<int, bool, int> PlansOfEveryRoomAndDepth()
-    {
-        var cases = new TheoryData<int, bool, int>();
-        for (int here = 1; here <= MuseumPlan.RoomCount; here++)
-        {
-            foreach (bool showsBefore in new[] { false, true })
-            {
-                for (int rowsAhead = 0; rowsAhead <= FloorPlan.MostRowsAhead; rowsAhead++)
-                {
-                    cases.Add(here, showsBefore, rowsAhead);
-                }
-            }
-        }
-
-        return cases;
-    }
-
-    [Theory]
-    [MemberData(nameof(PlansOfEveryRoomAndDepth))]
-    public void Every_room_of_the_museum_is_on_the_plan_exactly_once_and_in_order(int here, bool showsBefore, int rowsAhead)
-    {
-        FloorPlan plan = FloorPlan.Of(new RoomNumber(here), new PlanDepth(showsBefore, rowsAhead));
-
-        var rooms = new List<int>();
-        void AddStretch(RoomStretch? stretch)
-        {
-            if (stretch is RoomStretch some)
-            {
-                rooms.AddRange(Enumerable.Range(some.First.Value, some.Last.Value - some.First.Value + 1));
-            }
-        }
-
-        AddStretch(plan.Behind);
-        rooms.AddRange(new[] { plan.Before, plan.Here, plan.Next }.Where(room => room.HasValue).Select(room => room!.Value.Value));
-        rooms.AddRange(plan.Ahead.Select(room => room.Value));
-        AddStretch(plan.Beyond);
-
-        Assert.Equal(Enumerable.Range(1, MuseumPlan.RoomCount), rooms);
-        Assert.True(plan.Ahead.Count <= rowsAhead * FloorPlan.RoomsInARow);
-    }
-
-    [Fact]
-    public void A_room_is_restored_open_or_locked_and_a_stretch_is_as_far_as_its_last_room()
-    {
-        MuseumProgress museum = Player(levelsWon: 120, piecesPlaced: 50).Museum;
-
-        MuseumCatalogue full = TestMuseums.Full;
-
-        Assert.Equal(RoomAccess.Restored, FloorPlan.AccessOf(new RoomNumber(1), museum, full));
-        Assert.Equal(RoomAccess.Open, FloorPlan.AccessOf(new RoomNumber(2), museum, full));
-        Assert.Equal(RoomAccess.Open, FloorPlan.AccessOf(new RoomNumber(3), museum, full));
-        Assert.Equal(RoomAccess.Locked, FloorPlan.AccessOf(new RoomNumber(4), museum, full));
-        Assert.Equal(RoomAccess.Restored, FloorPlan.AccessOf(new RoomStretch(new RoomNumber(1), new RoomNumber(1)), museum, full));
-        Assert.Equal(RoomAccess.Open, FloorPlan.AccessOf(new RoomStretch(new RoomNumber(1), new RoomNumber(3)), museum, full));
-        Assert.Equal(RoomAccess.Locked, FloorPlan.AccessOf(new RoomStretch(new RoomNumber(3), new RoomNumber(20)), museum, full));
-        Assert.Throws<ArgumentException>(() => new RoomStretch(new RoomNumber(3), new RoomNumber(2)));
     }
 }

@@ -65,14 +65,19 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Art\PieceArt.cs" Link="Unity\Art\PieceArt.cs" />
-    <!-- Nor have the museum's screens in what they show and say of a player's progress (the room's wall, the map's floor plan, the pieces a win gives), and where they put it on a screen. -->
+    <!-- Nor have the museum's screens in what they show and say of a player's progress (the room's wall, the map's view of a player's progress, the pieces a win gives), and where they put it on a screen. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\MuseumWords.cs" Link="Unity\Flow\MuseumWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PieceReward.cs" Link="Unity\Flow\PieceReward.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\RoomWall.cs" Link="Unity\Flow\RoomWall.cs" />
-    <Compile Include="..\..\unity\Assets\Scripts\Flow\FloorPlan.cs" Link="Unity\Flow\FloorPlan.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\PageLayout.cs" Link="Unity\Layout\PageLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\HallLayout.cs" Link="Unity\Layout\HallLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\MapLayout.cs" Link="Unity\Layout\MapLayout.cs" />
+    <!-- Nor has the world map (#4): its camera, how an era's pins stand, how far the strip of eras is scrolled, what it shows of a player's progress, and its words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\MapCamera.cs" Link="Unity\Maps\MapCamera.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\PinRows.cs" Link="Unity\Maps\PinRows.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\EraStripScroll.cs" Link="Unity\Maps\EraStripScroll.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\MapStanding.cs" Link="Unity\Maps\MapStanding.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\MapWords.cs" Link="Unity\Flow\MapWords.cs" />
     <!-- Nor have the jigsaw a painting is restored with (what lies on its table and its tray, when a piece drops in) and the collection, in what they hold and where they put it. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\JigsawTable.cs" Link="Unity\Flow\JigsawTable.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\FramePlace.cs" Link="Unity\Layout\FramePlace.cs" />

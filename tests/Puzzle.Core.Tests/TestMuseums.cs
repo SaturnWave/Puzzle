@@ -20,7 +20,7 @@ internal static class TestMuseums
         JsonSerializer.Deserialize<CatalogueFile>(File.ReadAllText(RepoFiles.OneRoomCataloguePath), AsUnityMapsIt)!));
 
     private static readonly Lazy<MuseumCatalogue> FullCatalogue = new(() => new MuseumCatalogue(
-        RoomNumber.All.Select(room => new MuseumRoom(room, $"Akım {room}", isNameProvisional: false, room.Paintings.Select(Work).ToArray())).ToArray()));
+        RoomNumber.All.Select(room => new MuseumRoom(room, $"Akım {room}", $"Akım {room}", isNameProvisional: false, room.Paintings.Select(Work).ToArray())).ToArray()));
 
     /// <summary>
     /// A museum whose paintings end after its first room (room 2 is named and empty, later rooms carry provisional
