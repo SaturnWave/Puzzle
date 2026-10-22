@@ -35,6 +35,27 @@ namespace Puzzle.Client.Maps
         /// <summary>The title keeps this much room clear of what stands at the right.</summary>
         private const float GapToTheRight = 12f;
 
+        /// <summary>
+        /// A title that would be set smaller than this on one line is set on two (the owner's choice, 2026-10-22): the
+        /// long era names ("Şehir Manzaraları: Venedik, Roma, İstanbul") came down to about 10 points on one line.
+        /// </summary>
+        private const float SmallestOneLineTitleSize = 13f;
+
+        /// <summary>
+        /// The size of a title on two lines, or smaller where its longer line needs it, and how far apart the lines
+        /// stand, as a part of the type size: as the collection's plaque sets a long room name, two lines fit between
+        /// the label and the plaque's rim.
+        /// </summary>
+        private const float LargestTwoLineTitleSize = 11.5f;
+        private const float TwoLinesApart = 1.25f;
+        private const float TwoLinesDown = 8f;
+
+        /// <summary>
+        /// This era's name stays on one smaller line, on purpose, so that the owner can set the two ways side by side
+        /// on the phone (2026-10-22). Remove it, and with it the exception, once the owner has chosen.
+        /// </summary>
+        private static readonly RoomNumber KeptOnOneLineToCompare = new RoomNumber(14);
+
         /// <summary>A bead: a small square of 6 in a dark line, over its drop; the world's twenty stand 2.6 apart, an era's five 4.</summary>
         private const float BeadSide = 6f;
         private const float WorldBeadGap = 2.6f;
@@ -55,6 +76,7 @@ namespace Puzzle.Client.Maps
         private readonly PagePlaque _plaque;
         private readonly TextMeshPro _label;
         private readonly TextMeshPro _title;
+        private readonly TextMeshPro _titleGoesOn;
         private readonly TextMeshPro _rightLabel;
         private readonly PaintedShape _beads;
         private readonly float _left = -PagePlaque.DesignWidth / 2f + LinesBeginIn;
@@ -66,6 +88,7 @@ namespace Puzzle.Client.Maps
             Transform content = _plaque.Content;
             _label = PagePlaque.WriteLabel("Label", content, art, DrawOrder.PlaqueLettering);
             _title = Lettering.Write("Title", content, art, LetteringStyle.Title, PagePlaque.TitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
+            _titleGoesOn = Lettering.Write("Title goes on", content, art, LetteringStyle.Title, LargestTwoLineTitleSize, Lettering.Ink, DrawOrder.PlaqueLettering);
             _rightLabel = PagePlaque.WriteLabel("Right label", content, art, DrawOrder.PlaqueLettering);
             _beads = PaintedShape.Create("Beads", content, art.PaintMaterial, DrawOrder.PlaqueArt);
         }
@@ -73,7 +96,9 @@ namespace Puzzle.Client.Maps
         public static MapPlaque Create(Transform parent, ArtCatalogue art) => new MapPlaque(parent, art);
 
         /// <summary>What the plaque says now, for the walk's checks.</summary>
-        public string Says => $"{_label.text} / {_title.text} / {_rightLabel.text}";
+        public string Says => _titleGoesOn.text.Length == 0
+            ? $"{_label.text} / {_title.text} / {_rightLabel.text}"
+            : $"{_label.text} / {_title.text} {_titleGoesOn.text} / {_rightLabel.text}";
 
         public void Place(PageLayout page) => _plaque.Place(page.Plaque);
 
@@ -83,7 +108,7 @@ namespace Puzzle.Client.Maps
             MapStanding standing = atlas.Standing;
             if (!(view.Era is RoomNumber era))
             {
-                Say(MapWords.WorldSummary, MapWords.WorldTitle, MuseumWords.RoomOfRooms(standing.Room), MuseumPlan.RoomCount, WorldBeadGap);
+                Say(MapWords.WorldSummary, MapWords.WorldTitle, MuseumWords.RoomOfRooms(standing.Room), MuseumPlan.RoomCount, WorldBeadGap, mayTakeTwoLines: true);
                 var beads = new List<MapMark>();
                 foreach (RoomNumber room in RoomNumber.All)
                 {
@@ -97,7 +122,7 @@ namespace Puzzle.Client.Maps
             MuseumRoom shown = atlas.Catalogue.Room(era);
             bool isAhead = standing.MarkOf(era) == MapMark.Ahead && era.Value > standing.Room.Value;
             string right = isAhead ? MapWords.EraOpensAt(era) : MuseumWords.PaintingsWhole(standing.RestoredIn(era));
-            Say(MapWords.EraLabel(shown), MapWords.EraName(shown), right, MuseumPlan.PaintingsPerRoom, EraBeadGap);
+            Say(MapWords.EraLabel(shown), MapWords.EraName(shown), right, MuseumPlan.PaintingsPerRoom, EraBeadGap, mayTakeTwoLines: !era.Equals(KeptOnOneLineToCompare));
             var marks = new List<MapMark>();
             foreach (PaintingNumber painting in era.Paintings)
             {
@@ -114,15 +139,40 @@ namespace Puzzle.Client.Maps
         }
 
         /// <param name="beads">How many beads stand under the right label, and how far apart: the title keeps clear of both.</param>
-        private void Say(string label, string title, string right, int beads, float gap)
+        /// <param name="mayTakeTwoLines">False keeps a long title on one line, set as small as it needs.</param>
+        private void Say(string label, string title, string right, int beads, float gap, bool mayTakeTwoLines)
         {
             Lettering.SayFromLeft(_label, label, _left, LabelUp);
             Lettering.SayUpToRight(_rightLabel, right, _right, RightLabelUp);
             float rightWidth = Math.Max(Lettering.WidthOf(_rightLabel, right), beads * BeadSide + (beads - 1) * gap);
             float room = _right - rightWidth - GapToTheRight - _left;
             Lettering.SayWithin(_title, title, PagePlaque.TitleSize, room);
-            _title.transform.localPosition = new Vector3(_left + Lettering.WidthOf(_title, title) / 2f, -TitleDown, 0f);
+            if (_title.fontSize >= SmallestOneLineTitleSize || !mayTakeTwoLines)
+            {
+                Lettering.Say(_titleGoesOn, string.Empty);
+                FromLeft(_title, title, -TitleDown);
+                return;
+            }
+
+            (string first, string second) = BalancedLines.SplitInTwo(title, words => Lettering.WidthOf(_titleGoesOn, words));
+            float size = Mathf.Min(SizeToFit(first, room), SizeToFit(second, room));
+            float apart = TwoLinesApart * size;
+            Lettering.SayWithin(_title, first, size, room);
+            Lettering.SayWithin(_titleGoesOn, second, size, room);
+            FromLeft(_title, first, -TwoLinesDown + apart / 2f);
+            FromLeft(_titleGoesOn, second, -TwoLinesDown - apart / 2f);
         }
+
+        /// <summary>The size at which these words fill the room, no larger than a two-line title's.</summary>
+        private float SizeToFit(string words, float room)
+        {
+            _titleGoesOn.fontSize = LargestTwoLineTitleSize;
+            return LargestTwoLineTitleSize * Mathf.Min(1f, room / Lettering.WidthOf(_titleGoesOn, words));
+        }
+
+        /// <summary>A line of the title begins at the plaque's left lettering edge, at a height.</summary>
+        private void FromLeft(TextMeshPro line, string words, float height) =>
+            line.transform.localPosition = new Vector3(_left + Lettering.WidthOf(line, words) / 2f, height, 0f);
 
         /// <summary>A bead for each mark, the row ending at the plaque's right.</summary>
         private Mesh Beads(IReadOnlyList<MapMark> marks, float gap)
