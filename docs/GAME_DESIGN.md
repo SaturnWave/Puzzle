@@ -935,6 +935,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
   - Bölüm öncesi booster'lar (fırça + sıçrama, gökkuşağı paleti, +3 hamle) oyuncu bir bölümü ilk kez kaybedip yeniden denerken başlangıç kartında tek tek aydınlanır, her biri tek cümleyle.
 - **Dil desteği (#8):** ilk sürümde 13 dil: İngilizce, Türkçe, Korece, Japonca, Almanca, Fransızca, İspanyolca, Portekizce (Brezilya), İtalyanca, Rusça, Çince (basitleştirilmiş ve geleneksel), Endonezce. İlk dil telefonun dili, desteklenmiyorsa İngilizce; ayarlardan değiştirilir. Tablo adları seçilen dilde, ressam adları değişmez. Çeviriler yayından önce ana dili olan biri tarafından okunur. Arapça ve Tayca sonra.
 - **Müzik (#9):** proje sahibinin Suno Premier hesabıyla sözsüz müzik üretilecek: müze teması, tahta müziği, kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül. İstekler ve Suno'ya yazılacaklar: `docs/music/MUSIC_BRIEF.md` ("Müzik İstekleri" PDF'i).
+  - **Karar (2026-10-22):** oyunda tek bir genel müzik var: M1 Müze teması, her yerde çalar. Kısa parçalar (kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül) ve ayrı tahta müziği yok. Ayarlar kartına "Müzik" anahtarı gelir.
 
 ## 20. Kalibrasyon, veri ve yayın
 

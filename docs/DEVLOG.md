@@ -4,6 +4,18 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-22 · Oturum 28 — Müzik
+
+**Kullanıcı kararları**
+- Proje sahibi yedi müzik parçasını Suno Premier hesabıyla üretti ve `art/sounds/` klasörüne koydu (2026-10-20; 48 kHz stereo WAV).
+- Oyunda tek bir genel müzik olacak: M1 Müze teması, her yerde. Kısa parçalar ve ayrı tahta müziği kullanılmayacak (2026-10-22).
+
+**Müzik adayları**
+- Her parça için 2–3 aday kesildi ve bir dinleme sayfasında sunuldu (`out/music/candidates/listen.html`). Döngüler ölçü başında başlayıp bitiyor, ek yeri çeyrek saniyelik yumuşak geçişle birleştirildi, seviyeler eşitlendi. M1 yaklaşık 84 vuruş/dk ölçüldü; üç döngü adayı 86, 92 ve 103 saniye, hepsi girişten (ilk 32 saniye) sonra başlıyor.
+- Sayfanın küçük sunucusu uygulama tarafından iki kez kapatıldı; sayfa artık çift tıklamayla da açılıyor.
+
+---
+
 ## 2026-10-19 · Oturum 27 — İpucu, kararlar, müzik istekleri
 
 **Kullanıcı kararları**

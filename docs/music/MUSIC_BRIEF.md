@@ -2,6 +2,8 @@
 
 Oyunun müziği proje sahibinin Suno Premier hesabıyla üretilecek (#9). Bu belge hangi parçaların gerektiğini, Suno'ya ne yazılacağını ve dosyaların oyuna nasıl gireceğini anlatır. Sözsüz müzik: Suno'da her parça için **Instrumental** açık olmalı.
 
+**Karar (2026-10-22):** proje sahibi yedi parçanın hepsini Suno'da üretti ve `art/sounds/` klasörüne koydu (2026-10-20). Oyunda **tek bir genel müzik** olacak: M1 Müze teması, oyunun her yerinde (müze, harita, koleksiyon, mağaza ve bölümler). Kısa parçalar (M3–M7) ve ayrı tahta müziği (M2) kullanılmayacak. Aşağıdaki liste ve istemler üretimin kaydı olarak duruyor.
+
 ## 1. Oyunun sesi
 
 Oyun bir müzede geçiyor: genç bir ressam tablo parçalarını toplayıp odaları onarıyor. Görsel dil sıcak, yaldızlı çerçeveli, koyu camgöbeği duvarlı bir galeri. Müzik buna eşlik etmeli:
