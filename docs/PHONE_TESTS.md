@@ -62,6 +62,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A37 | Öğretici: 3.–6. bölümlerin hiçbiri beşli sunmazsa beşli adımı bırakılır (taramada nadir). Öteki özel taşlar için adım yok. Köşe parçasının yerini gösteren pencere çerçevenin üstüne taşıyor. 1.–3. bölümlerin telefon kayıtları rehberli hamle yüzünden çoğunlukla yardımlı sayılır. | #5 | Düşük | T315, T321 |
 | A38 | Booster tanıtımı: küçük ekranda (2076×2152) uzun basma ve dikey fırça hapları tahtanın kenar hücrelerinin üstüne biniyor. Kartın küçük tahtasında düşen taşlar bazen özel taş yapıyor; +3 hamle kartında yalnızca madalyon sayıyor. Uzun basma yazısını kaçıran ve 20. bölümü geçmiş oyuncu onu hiç görmez. Kartın küçük tahtası çizim sırası kaydırılarak çiziliyor; tahta maskesi yalnızca tahtanın çizim aralığını kesiyor. | #7 | Düşük | T336, T339, T344 |
 | A39 | On üç dil: çevirilerin hepsi makine çevirisi, yayından önce ana dili olan biri okumalı. Bütün yedek atlaslar her dilde yüklenir (16,5 MiB doku). CJK atlasları 40 örnekleme boyutunda; büyük başlıklarda keskinlik telefonda bakılmalı. İspanyolca "MOVIMIENTOS" madalyon halkasına yakın. Dil kartında başka dillerin adlarındaki ortak Han karakterleri seçili dilin biçiminde çıkabilir. İspanyolca 18–20. odaların adları çeviri. | #8 | Orta | T355, T356, T359, T362 |
+| A40 | Müzik: henüz kulakla dinlenmedi (seviye 0,4 ve Vorbis kalitesi 0,6 ölçüyle seçildi). Android ses odağı yönetilmiyor: başka bir uygulama çalarken oyun da çalar. Ayrı bir ses düzeyi kaydırıcısı yok. Suno bağlantısı kayıtta yok. | #9 | Orta | T373, T379 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -404,6 +405,21 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T361 | İki ekran | İç ve kapak ekranında ja, ru, de ile salon, dil kartı, koleksiyon; oyun açıkken telefonu açıp kapat | Dil kartı ve plakalar iki ekranda da sığar; açıp kapatınca boş kutu ya da taşma yok | Diller | Bekliyor |
 | T362 | Hızlı dil değiştirme | Dil kartında ja → zh-Hans → zh-Hant → ru → ko → tr arasında hızlıca 10 kez geç | Takılma yok; kart ve sayfa hemen yeni dilde; uygulama kapanmaz | Diller | Bekliyor |
 | T363 | Seçim telefon dilini geçer | Telefon Türkçeyken oyunda Русский seç, oyunu tamamen kapatıp aç; sonra telefonu 日本語 yap, yeniden aç | İki açılışta da oyun Rusça kalır | Diller | Bekliyor |
+
+### F17. Müzik (#9)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T370 | Soğuk başlangıçta müzik | Oyunu tamamen kapatıp aç; salonda 40 saniye bekle | Müzik yumuşak girişle başlar; yaklaşık 33. saniyede girişten döngüye boşluksuz ve tıksız geçer | Müzik | Bekliyor |
+| T371 | Döngü ek yeri | Yaklaşık 2 dakika 20 saniye dinle, özellikle 2:17 civarını | Atlama, tık, ritim kayması ya da ses sıçraması yok | Müzik | Bekliyor |
+| T372 | Ekran değişince | Salon, harita, koleksiyon, mağaza; sonra bir bölüm oyna, kazan ya da kaybet, müzeye dön | Müzik hiç başa dönmez, kesilmez, düzeyi değişmez | Müzik | Bekliyor |
+| T373 | Efektlerin altında | Bir bölümde eşleşme, özel taş ve booster sesleri çıkar; medya sesi orta | Taş ve booster sesleri müziğin üstünde açıkça duyulur; değilse istenen düzeyi söyleyin | Müzik | Bekliyor |
+| T374 | Anahtar hemen etki eder | Ayarlarda Müzik'i kapat, sonra aç | Kapatınca yaklaşık 0,3 sn'de susar, efektler sürer; açınca kaldığı yerden gelir | Müzik | Bekliyor |
+| T375 | Ayar saklanır | Müzik'i kapat, oyunu tamamen kapatıp aç; sonra açıp yeniden başlat | Kapalıyken açılışta müzik yok, anahtar kapalı; açıkken müzik çalar | Müzik | Bekliyor |
+| T376 | Arka plan | Müzik çalarken ana ekrana dön, 10 sn bekle, geri gel; ekranı kilitleyip aç | Arka plandayken müzik susar; dönünce kaldığı yerden gelir | Müzik | Bekliyor |
+| T377 | Eski kaydın üstüne | Önceki APK'nın kaydı olan telefona yeni APK'yı kur | Müzik açık başlar; Ses, Titreşim, dil, ilerleme ve cüzdan yerinde | Müzik | Bekliyor |
+| T378 | Ayarlar kartı sığar | Türkçe, İngilizce, Korecede iki ekranda ayarlar kartı; bir kez Test modu açıkken | Ses, Müzik, Titreşim satırları hizalı; hiçbir yazı taşmaz; Test modunda dört anahtar sığar | Müzik | Bekliyor |
+| T379 | Başka uygulamanın müziği | Bir müzik uygulaması çalarken oyunu aç | Ne olduğunu not edin (bugün oyun kendi müziğini üstüne çalar); istenen davranışa proje sahibi karar verir | Müzik | Bekliyor |
 
 ### G. Görünüm
 

@@ -1271,7 +1271,7 @@ Bu kararlarla 10. aşama başladı.
 - **Satırlar:** yalnızca bu sürümün yapabildiği şeyler için satır çizilir (`DeviceAbilities`).
   - "Dil" "Türkçe" gösterir, basılmaz.
   - "Gizlilik ve veri" ile "Destek" kendi kartlarını açar.
-  - Ses ve titreşim anahtarları 14. aşamada gelir. Müzik satırı bir müzik seçilene kadar yok.
+  - Ses ve titreşim anahtarları 14. aşamada gelir. Müzik satırı bir müzik seçilene kadar yok (2026-10-22 düzeltmesi: müzik ve "Müzik" anahtarı geldi, aşağıda "Müzik").
 
   Kartın altında oyuncu kimliği (cihaz kimliğinin ilk sekiz karakteri, iki grup), sürüm ve kuralların sürüm işaretlerinden gelen satır durur: "Test sürümü · reklamlar canlandırma, satın alma kapalı".
 - **Gizlilik ve veri:** taslak metin (§20), deneme kayıtlarının sayısı ve "Kayıtları sil". Silme bir kez sorar. "Sil" kayıt dosyasını boşaltır; ilerleme, cüzdan ve ayarlar yerinde kalır.
@@ -1289,7 +1289,7 @@ Bu kararlarla 10. aşama başladı.
   - Sesler tahtanın kendi zaman çizelgesinde çalar; hiçbir tur ses yüzünden uzamaz.
   - Aynı ses bir hamle ya da şölen içinde en erken 0,12 saniye sonra yinelenir. 12 hamlelik şölen yaklaşık iki atışta bir duyulur.
 - **Titreşim:** dört anda kısa bir tık: özel taş ve booster hafif, kazanma ve tablo tamamlanması güçlü. Paket VIBRATE iznini ister.
-- **Ayarlar:** "Ses" ve "Titreşim" anahtarları ayarlar kartında. Ayar her sesin çaldığı anda okunur; değişiklik hemen geçerli olur ve `device.json`'da saklanır. İlk açılışta ikisi de açık. Müzik satırı yok, çünkü müzik yok.
+- **Ayarlar:** "Ses" ve "Titreşim" anahtarları ayarlar kartında. Ayar her sesin çaldığı anda okunur; değişiklik hemen geçerli olur ve `device.json`'da saklanır. İlk açılışta ikisi de açık. Müzik satırı yok, çünkü müzik yok (2026-10-22 düzeltmesi: "Müzik" anahtarı Ses ile Titreşim'in arasında).
 - **Ses dosyaları:** Kenney'nin Interface ve Impact paketlerinden 15 kısa CC0 dosyası (toplam 114 KB). `tools/unity/fetch-sounds.js` indirir; kaynaklar, lisanslar ve özetler `art/sounds/licences.json`'da. Dosyalar ad ve ölçüyle (uzunluk, tepe seviyesi) seçildi, kulakla değil.
 - **Bilinmeyen:** seslerin nasıl duyulduğu ve tıkların nasıl hissedildiği (A30). Proje sahibinin kulağı ve eli telefonda karar verecek (T191–T197).
 - **Doğrulama:** 3.666 test. Unity'de bütün denetimler, anahtarı çevirip kartı yeniden açınca ayarın korunduğunu gösteren yürüyüş ve her sesi çalan oyun denetimi hatasız.
@@ -1399,6 +1399,16 @@ Bu kararlarla 10. aşama başladı.
   - Japonca ve Çince yedeklerin kalınlığı (700) Koreceninkinden (800) biraz ince.
   - Telefonda bakılmadı.
 - **Doğrulama:** 4.175 test. Ekonomi denetimi temiz. Unity'de bütün denetimler; ekran, öğretici ve booster yürüyüşleri on bir dilde iki ekranda hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T350–T363.
+
+**Müzik (2026-10-22, #9).** Kararlar §19'da: tek bir genel müzik, M1 Müze teması, her yerde.
+
+- **Parça:** proje sahibinin Suno Premier hesabıyla üretildi (2026-10-20). Oyun açılınca girişi (33,6 sn) bir kez çalar, sonra 36 ölçülük döngüye (103,4 sn) boşluksuz geçer. Döngünün sonu, başından önceki çeyrek saniyeyle yumuşak geçişle birleşir.
+- **Kesim:** `tools/music/cut-loop.py`, `art/sounds/music.json`taki kayda göre iki parçayı asıl dosyadan keser; iki çalıştırma aynı baytları verir. Döngü M1-B; M1-A ya da M1-C'ye geçmek kayıtta tek değer. Kayıt lisansı da tutar (hesap, tarih, istem, asıl dosyanın parmak izi).
+- **Çalar:** oyunun kökünde tek bir çalar; ekran değişince müzik baştan başlamaz; efektlerin yaklaşık 5 dB altında (`SoundLevels.Music` = 0,4); uygulama arka plana geçince durur, dönünce sürer.
+- **Ayarlar:** "Müzik" anahtarı Ses ile Titreşim'in arasında; açık başlar, kapatınca 0,3 saniyede susar, `device.json` 5. düzende saklanır (eski dosya "açık" sayılır). Sözcük 13 dilde.
+- **Boyut:** Android'de Vorbis: giriş 0,70 MB, döngü 2,23 MB (akışla); APK'ya tahminen 2,9 MB.
+- **Bilinen:** müzik henüz kulakla dinlenmedi; seviye ölçüyle seçildi. Başka bir uygulama müzik çalarken oyun kendi müziğini üstüne çalar (karar bekliyor). Suno bağlantısı kayıtta yok.
+- **Doğrulama:** 4.223 test. Ekonomi denetimi temiz. Unity'de bütün denetimler ve yeni müzik denetimi hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T370–T379.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
