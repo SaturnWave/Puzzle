@@ -21,11 +21,6 @@ namespace Puzzle.Client.EditorTools
     {
         private const string PackagePath = "Build/Android/puzzle.apk";
 
-        /// <summary>Placeholders: the game's name is decided last, and the package id follows it.</summary>
-        private const string CompanyName = "SaturnWave";
-        private const string ProductName = "Puzzle";
-        private const string PackageId = "com.saturnwave.puzzle";
-
         public static void Run()
         {
             try
@@ -75,9 +70,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A 64-bit ARM package in portrait: what current phones run and what the stores ask for.</summary>
         private static void ApplyPlayerSettings()
         {
-            PlayerSettings.companyName = CompanyName;
-            PlayerSettings.productName = ProductName;
-            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, PackageId);
+            PlayerSettings.companyName = GameIdentity.CompanyName;
+            PlayerSettings.productName = GameIdentity.ProductName;
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, GameIdentity.ApplicationId);
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;

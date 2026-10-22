@@ -274,7 +274,9 @@ namespace Puzzle.Client
 
         /// <summary>
         /// Android reports its back button and its back gesture as the Escape key; on a desktop it is that key
-        /// itself. The game never closes on it: in the hall, where there is no way back, it does nothing.
+        /// itself. The game never closes on it: in the hall, where there is no way back, it does nothing. An iPhone
+        /// has neither, and needs neither: every card has its cross, a level its pause disc, a jigsaw its back button,
+        /// a painting hung forward goes back at a touch, and the bar at the foot leads to the hall.
         /// </summary>
         private static void ReadTheWayBack(GameSession session)
         {

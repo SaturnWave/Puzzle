@@ -147,6 +147,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterLessonAim.cs" Link="Unity\Play\BoosterLessonAim.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterShowcase.cs" Link="Unity\Play\BoosterShowcase.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\InfoPlist.cs" Link="Unity\Editor\InfoPlist.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
