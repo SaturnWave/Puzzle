@@ -1,0 +1,6 @@
+<!-- The green badge with a white tick on a restored painting's pin and a restored era's medallion (MapWorldTR): 15 points across in a dark green line of 1.4, around (9, 9). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 18 18">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ED07A"/><stop offset="1" stop-color="#2E9A3E"/></linearGradient></defs>
+<circle cx="9" cy="9" r="8.9" fill="#18501F"/><circle cx="9" cy="9" r="7.5" fill="url(#g)"/>
+<g transform="translate(4.5 4.5) scale(.75)"><path d="M2.5 6.3l2.3 2.3 4.7-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>
