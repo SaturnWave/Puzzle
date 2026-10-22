@@ -935,6 +935,11 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
   - Bölüm öncesi booster'lar (fırça + sıçrama, gökkuşağı paleti, +3 hamle) oyuncu bir bölümü ilk kez kaybedip yeniden denerken başlangıç kartında tek tek aydınlanır, her biri tek cümleyle.
 - **Dil desteği (#8):** ilk sürümde 13 dil: İngilizce, Türkçe, Korece, Japonca, Almanca, Fransızca, İspanyolca, Portekizce (Brezilya), İtalyanca, Rusça, Çince (basitleştirilmiş ve geleneksel), Endonezce. İlk dil telefonun dili, desteklenmiyorsa İngilizce; ayarlardan değiştirilir. Tablo adları seçilen dilde, ressam adları değişmez. Çeviriler yayından önce ana dili olan biri tarafından okunur. Arapça ve Tayca sonra.
 - **Müzik (#9):** proje sahibinin Suno Premier hesabıyla sözsüz müzik üretilecek: müze teması, tahta müziği, kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül. İstekler ve Suno'ya yazılacaklar: `docs/music/MUSIC_BRIEF.md` ("Müzik İstekleri" PDF'i).
+- **Harita (#4, kararlar 2026-10-22):** harita gerçek bir dünya haritası olur; müzenin kat planı yerine.
+  - Her tablonun iğnesi tablonun **yapıldığı ya da gösterdiği yerde** durur (Monet'nin plajı Normandiya'da, Hokusai'nin Dalgası Kanagawa'da). Tablonun bugün hangi müzede olduğu kartında yazar.
+  - Görünüş **eski bir müze haritası**: gerçek kıyılar, oyunun renklerinde (krem kara, camgöbeği deniz, yaldızlı çerçeve, pusula).
+  - Oyuncu ileri dönemlere bakabilir: dönemin adı, tablonun yeri, adı, ressamı ve açılacağı bölümler görünür; **resim örtülü** kalır.
+  - Etkileşimli tasarım tasarım tuvalinde ("Dünya haritası · dönemler"): açılınca dünyadan oyuncunun dönemine kayar; alttaki şeritte 20 dönem; iğneye dokununca tablo kartı; şu anki tabloda "Oyna". Konum listesi bir ilk derlemedir; 10 tablonun yeri yalnızca bölge düzeyinde, oyuna girmeden doğrulanacak.
   - **Karar (2026-10-22):** oyunda tek bir genel müzik var: M1 Müze teması, her yerde çalar. Kısa parçalar (kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül) ve ayrı tahta müziği yok. Ayarlar kartına "Müzik" anahtarı gelir.
 
 ## 20. Kalibrasyon, veri ve yayın
