@@ -10,6 +10,10 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Proje sahibi yedi müzik parçasını Suno Premier hesabıyla üretti ve `art/sounds/` klasörüne koydu (2026-10-20; 48 kHz stereo WAV).
 - Oyunda tek bir genel müzik olacak: M1 Müze teması, her yerde. Kısa parçalar ve ayrı tahta müziği kullanılmayacak (2026-10-22).
 
+**Yeni APK (2026-10-22)**
+- Proje sahibinin sırasıyla en sona bırakıldı. İçinde ipucu, öğretici, booster tanıtımı, 13 dil, müzik, dünya haritası ve plaketteki iki satır var. 294 MB; yalnızca titreşim izni (internet yok).
+- İndirme sayfasına kondu (`puzzle-test-2026-10-22.apk`, eski prototip de indirilebilir). Sayfanın sunucusu bir ara kapanmıştı; gizli bir pencerede yeniden açıldı. Telefon bağlı değildi, kurulmadı.
+
 **Dünya haritası oyunda (#4)**
 - Bitti (130e9e1, df8401f): onaylanan tasarım Unity'ye birebir geçti; kat planı kalktı. Kıyılar Natural Earth'ten bir araçla (`puzzle worldmap build`) çıkarılıyor, gölgelendiricide her yakınlıkta aynı incelikte çiziliyor.
 - Yerler iki ajanla aynı anda: biri 100 tablonun yerini Wikidata ve müze sayfalarıyla doğruladı (59'u doğrulandı) ve 13 dilde adlandırdı (a9ede9b), öteki haritayı kurdu. Proje sahibi açık kalan beş yer seçimini olduğu gibi bıraktı.
