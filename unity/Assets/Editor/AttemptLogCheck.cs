@@ -77,7 +77,7 @@ namespace Puzzle.Client.EditorTools
         private const ulong BotStream = 3;
 
         /// <summary>A later game's device file, with an id and settings this game reads and something it does not know.</summary>
-        private const string LaterDeviceDocument = "{\"version\":5,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"en\",\"music\":false}}";
+        private const string LaterDeviceDocument = "{\"version\":6,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"en\",\"music\":false,\"hints\":true}}";
 
         /// <summary>Records the game wrote before the shuffle booster's rule changed, which name no rule.</summary>
         private const string FirstRuleRecords = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
@@ -142,7 +142,7 @@ namespace Puzzle.Client.EditorTools
         {
             DeviceId made = DeviceFile.LoadOrMake(Folder).Device;
             string written = File.ReadAllText(Path.Combine(Folder, DeviceFile.FileName));
-            Require(written == "{\"version\":4,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"\"}}", $"the first start wrote the device file as {written}");
+            Require(written == "{\"version\":5,\"id\":\"" + made.Value + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true}}", $"the first start wrote the device file as {written}");
             DeviceFile afterARestart = DeviceFile.LoadOrMake(Folder);
             Require(afterARestart.Device.Equals(made), $"a restart read the id {afterARestart.Device}, not {made}");
             Require(afterARestart.Settings.Equals(DeviceSettings.Default), $"a restart read the settings {afterARestart.Settings}, not a first start's");
@@ -151,7 +151,8 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// A setting kept is in the file at once and a restart reads it with the same id; a file of the first layout
-        /// keeps its id and reads with a first start's settings until one is changed.
+        /// keeps its id and reads with a first start's settings until one is changed; a file from before the music
+        /// reads with the music on, and the music turned off survives a restart.
         /// </summary>
         /// <exception cref="InvalidOperationException">A setting was not written at once, did not survive a restart, or the first layout lost its id.</exception>
         private static void ASettingKeptSurvivesARestartAndAnOlderFileReadsWithTheSettingsOfAFirstStart()
@@ -174,7 +175,20 @@ namespace Puzzle.Client.EditorTools
             Require(read.Device.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a" && read.Settings.Equals(DeviceSettings.Default), $"a file of the first layout read as {read.Settings} of {read.Device}");
             Require(File.ReadAllText(olderFile) == firstLayout, "a file of the first layout was written before anything was changed");
             read.Keep(quiet);
-            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":4,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
+            Require(File.ReadAllText(olderFile).StartsWith("{\"version\":5,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\"", StringComparison.Ordinal), "a setting changed on a file of the first layout did not write this layout with its id");
+
+            // Unity's reader makes a false of the music a file of layout 4 does not have: the layout decides, and it is on.
+            const string beforeTheMusic = "{\"version\":4,\"id\":\"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a\",\"settings\":{\"sound\":true,\"vibration\":false,\"testerMode\":false,\"language\":\"\"}}";
+            string fourth = Path.Combine(Folder, "device-before-the-music");
+            Directory.CreateDirectory(fourth);
+            File.WriteAllText(Path.Combine(fourth, DeviceFile.FileName), beforeTheMusic);
+            DeviceSettings readFourth = DeviceFile.LoadOrMake(fourth).Settings;
+            Require(readFourth.Music && !readFourth.Vibration, $"a file from before the music read as {readFourth}, not with the music on and its vibration off");
+
+            DeviceFile musicOff = DeviceFile.LoadOrMake(Path.Combine(Folder, "device-music-off"));
+            musicOff.Keep(DeviceSettings.Default.With(DeviceSetting.Music, isOn: false));
+            DeviceSettings readMusicOff = DeviceFile.LoadOrMake(Path.Combine(Folder, "device-music-off")).Settings;
+            Require(!readMusicOff.Music && readMusicOff.Sound, $"the music turned off read after a restart as {readMusicOff}");
         }
 
         /// <summary>
@@ -237,12 +251,12 @@ namespace Puzzle.Client.EditorTools
             File.WriteAllText(laterFile, LaterDeviceDocument);
             DeviceFile kept = DeviceFile.LoadOrMake(later);
             Require(kept.Device.Value == "6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a", $"a later game's id read as {kept.Device}");
-            Require(!kept.Settings.Sound, $"a later game's settings read as {kept.Settings}");
+            Require(!kept.Settings.Sound && !kept.Settings.Music, $"a later game's settings read as {kept.Settings}");
             kept.Keep(DeviceSettings.Default);
             Require(File.ReadAllText(laterFile) == LaterDeviceDocument, "a setting changed on a later game's device file was written over it");
-            File.WriteAllText(laterFile, "{\"version\":5,\"id\":\"a later spelling\"}");
+            File.WriteAllText(laterFile, "{\"version\":6,\"id\":\"a later spelling\"}");
             DeviceFile.LoadOrMake(later);
-            Require(File.ReadAllText(laterFile) == "{\"version\":5,\"id\":\"a later spelling\"}", "a later game's device file was written over");
+            Require(File.ReadAllText(laterFile) == "{\"version\":6,\"id\":\"a later spelling\"}", "a later game's device file was written over");
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ namespace Puzzle.Client.Flow
 {
     /// <summary>
     /// A setting the player turns on or off on the settings card, kept on the phone (device.json), not with the
-    /// progress. A closed set: music joins it once the game has a track to play.
+    /// progress. A closed set.
     /// </summary>
     public enum DeviceSetting
     {
@@ -21,6 +21,9 @@ namespace Puzzle.Client.Flow
         /// Off on a first start; turned on from the support card, and its row shows on the settings card only while it is on.
         /// </summary>
         TesterMode,
+
+        /// <summary>The game's one piece of music, heard on every screen ("Müzik"); the sounds of play do not depend on it.</summary>
+        Music,
     }
 
     /// <summary>
@@ -30,24 +33,35 @@ namespace Puzzle.Client.Flow
     /// owner's testers turn on; and no language chosen, so the game speaks the phone's. A value: two settings with the
     /// same switches and the same choice are equal. This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
+    /// <remarks>
+    /// The public constructors leave the music on, as every phone had it before the music came; it is turned off with
+    /// <see cref="With"/>, so that no call names a row of switches long enough to be given in the wrong order.
+    /// </remarks>
     public sealed class DeviceSettings : IEquatable<DeviceSettings>
     {
-        /// <summary>Settings with the tester mode off.</summary>
+        /// <summary>Settings with the music on and the tester mode off.</summary>
         public DeviceSettings(bool sound, bool vibration)
             : this(sound, vibration, testerMode: false)
         {
         }
 
-        /// <summary>Settings with no language chosen: the game speaks the phone's.</summary>
+        /// <summary>Settings with the music on and no language chosen: the game speaks the phone's.</summary>
         public DeviceSettings(bool sound, bool vibration, bool testerMode)
             : this(sound, vibration, testerMode, language: null)
         {
         }
 
+        /// <summary>Settings with the music on.</summary>
         /// <param name="language">The language the player chose on the language card; nothing for the phone's.</param>
         public DeviceSettings(bool sound, bool vibration, bool testerMode, Language? language)
+            : this(sound: sound, music: true, vibration: vibration, testerMode: testerMode, language: language)
+        {
+        }
+
+        private DeviceSettings(bool sound, bool music, bool vibration, bool testerMode, Language? language)
         {
             Sound = sound;
+            Music = music;
             Vibration = vibration;
             TesterMode = testerMode;
             Language = language;
@@ -57,6 +71,9 @@ namespace Puzzle.Client.Flow
         public static DeviceSettings Default { get; } = new DeviceSettings(sound: true, vibration: true, testerMode: false, language: null);
 
         public bool Sound { get; }
+
+        /// <summary>Whether the game's music is heard. On for a phone whose device file is older than the music (layout 5).</summary>
+        public bool Music { get; }
 
         public bool Vibration { get; }
 
@@ -69,6 +86,7 @@ namespace Puzzle.Client.Flow
         public bool IsOn(DeviceSetting setting) => setting switch
         {
             DeviceSetting.Sound => Sound,
+            DeviceSetting.Music => Music,
             DeviceSetting.Vibration => Vibration,
             DeviceSetting.TesterMode => TesterMode,
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting the game does not know."),
@@ -77,25 +95,35 @@ namespace Puzzle.Client.Flow
         /// <summary>These settings with one of them turned on or off.</summary>
         public DeviceSettings With(DeviceSetting setting, bool isOn) => setting switch
         {
-            DeviceSetting.Sound => new DeviceSettings(isOn, Vibration, TesterMode, Language),
-            DeviceSetting.Vibration => new DeviceSettings(Sound, isOn, TesterMode, Language),
-            DeviceSetting.TesterMode => new DeviceSettings(Sound, Vibration, isOn, Language),
+            DeviceSetting.Sound => new DeviceSettings(sound: isOn, music: Music, vibration: Vibration, testerMode: TesterMode, language: Language),
+            DeviceSetting.Music => new DeviceSettings(sound: Sound, music: isOn, vibration: Vibration, testerMode: TesterMode, language: Language),
+            DeviceSetting.Vibration => new DeviceSettings(sound: Sound, music: Music, vibration: isOn, testerMode: TesterMode, language: Language),
+            DeviceSetting.TesterMode => new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: isOn, language: Language),
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting the game does not know."),
         };
 
         /// <summary>These settings with the language the player chose on the language card.</summary>
-        public DeviceSettings WithLanguage(Language chosen) => new DeviceSettings(Sound, Vibration, TesterMode, chosen);
+        public DeviceSettings WithLanguage(Language chosen) => WithLanguageOrNone(chosen);
+
+        /// <summary>These settings with no language chosen: the game speaks the phone's.</summary>
+        public DeviceSettings WithThePhonesLanguage() => WithLanguageOrNone(null);
 
         public bool Equals(DeviceSettings? other) =>
-            other != null && Sound == other.Sound && Vibration == other.Vibration && TesterMode == other.TesterMode && Language == other.Language;
+            other != null && Sound == other.Sound && Music == other.Music && Vibration == other.Vibration && TesterMode == other.TesterMode
+            && Language == other.Language;
 
         public override bool Equals(object? obj) => Equals(obj as DeviceSettings);
 
-        public override int GetHashCode() => ((Sound ? 1 : 0) | (Vibration ? 2 : 0) | (TesterMode ? 4 : 0)) + 8 * (Language is Language chosen ? 1 + (int)chosen : 0);
+        public override int GetHashCode() =>
+            ((Sound ? 1 : 0) | (Vibration ? 2 : 0) | (TesterMode ? 4 : 0) | (Music ? 8 : 0)) + 16 * (Language is Language chosen ? 1 + (int)chosen : 0);
 
         public override string ToString() =>
-            $"sound {(Sound ? "on" : "off")}, vibration {(Vibration ? "on" : "off")}{(TesterMode ? ", tester mode on" : string.Empty)}"
+            $"sound {(Sound ? "on" : "off")}, music {(Music ? "on" : "off")}, vibration {(Vibration ? "on" : "off")}"
+            + $"{(TesterMode ? ", tester mode on" : string.Empty)}"
             + $", {(Language is Language chosen ? $"language {Languages.CodeOf(chosen)}" : "the phone's language")}";
+
+        private DeviceSettings WithLanguageOrNone(Language? language) =>
+            new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: TesterMode, language: language);
     }
 
     /// <summary>Where the player's settings are kept: the phone's device file, or memory for the Editor's tools and for tests.</summary>

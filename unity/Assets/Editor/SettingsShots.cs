@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.IO;
+using System.Linq;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Screens;
@@ -75,7 +76,7 @@ namespace Puzzle.Client.EditorTools
             return 1;
         }
 
-        /// <summary>The settings card with the build's two switches, the second turned off, on the museum's stage alone.</summary>
+        /// <summary>The settings card with the build's switches, the vibration's turned off, on the museum's stage alone.</summary>
         /// <returns>How many pictures were taken.</returns>
         public static int ShootThePreview(PlayerState state, ScreenShape screen, Studio studio)
         {
@@ -84,8 +85,10 @@ namespace Puzzle.Client.EditorTools
             StageSteps.Settle(museum);
             PressOnTheStage(museum, museum.GearPixel, "the wallet row's gear");
             PressOnTheStage(museum, museum.SwitchPixel(DeviceSetting.Vibration), "the switch of vibration");
-            Require(museum.SwitchesShown.Count == 2 && museum.SwitchesShown[1] == (DeviceSetting.Vibration, false), "the vibration's switch did not turn off");
-            ScreenShots.WritePicture(museum, screen, studio.FileName("settings-preview-two-switches", state, screen));
+            Require(
+                museum.SwitchesShown.Count == DeviceAbilities.OfThisBuild.Settings.Count && museum.SwitchesShown.Contains((DeviceSetting.Vibration, false)),
+                "the vibration's switch did not turn off");
+            ScreenShots.WritePicture(museum, screen, studio.FileName("settings-preview-switches", state, screen));
             return 1;
         }
 

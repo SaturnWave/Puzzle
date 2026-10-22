@@ -127,6 +127,9 @@
     <!-- Nor have the sounds: the cues there are, which falls at which moment of play, and what of them the settings let through; nor the build's step that asks the phone for what they need. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SoundCue.cs" Link="Unity\Flow\SoundCue.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Play\SoundScore.cs" Link="Unity\Play\SoundScore.cs" />
+    <!-- Nor has the music: how loud it is played against the effects, and how it fades as the player's switch turns. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\SoundLevels.cs" Link="Unity\Sound\SoundLevels.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\MusicFade.cs" Link="Unity\Sound\MusicFade.cs" />
     <!-- Nor has when the game's hint shows itself on a board left untouched, and when it goes. -->
     <Compile Include="..\..\unity\Assets\Scripts\Play\HintWatch.cs" Link="Unity\Play\HintWatch.cs" />
     <!-- Nor has the tutorial: its steps, where they may come, what one board shows of them and when it ends, and their words. -->

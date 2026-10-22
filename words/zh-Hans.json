@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"语言"},
     {"id":"LanguageOwnName","text":"简体中文"},
     {"id":"SettingSound","text":"声音"},
+    {"id":"SettingMusic","text":"音乐"},
     {"id":"SettingVibration","text":"振动"},
     {"id":"SettingTesterMode","text":"测试模式"},
     {"id":"SettingsPrivacyLine","text":"游戏不发送任何内容"},

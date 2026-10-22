@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"언어"},
     {"id":"LanguageOwnName","text":"한국어"},
     {"id":"SettingSound","text":"소리"},
+    {"id":"SettingMusic","text":"음악"},
     {"id":"SettingVibration","text":"진동"},
     {"id":"SettingTesterMode","text":"테스트 모드"},
     {"id":"SettingsPrivacyLine","text":"게임은 아무것도 보내지 않아요"},

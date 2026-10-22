@@ -195,3 +195,5 @@ MonoBehaviour:
   - {fileID: 8300000, guid: d8356eccdf3ad374ba93f6d3c1505643, type: 3}
   - {fileID: 8300000, guid: b2b763fd9149f27479ee3820335f5bf3, type: 3}
   - {fileID: 0}
+  _musicIntro: {fileID: 8300000, guid: 1e8a6e659e7afe8479e8348163fd4f8b, type: 3}
+  _musicLoop: {fileID: 8300000, guid: 6e843d428f8c6ba46884770829d1c143, type: 3}

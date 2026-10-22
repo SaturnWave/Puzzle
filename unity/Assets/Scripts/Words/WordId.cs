@@ -505,6 +505,9 @@ namespace Puzzle.Client.Words
         /// <summary>Settings row with a switch: the sounds of play.</summary>
         SettingSound,
 
+        /// <summary>Settings row with a switch: the game's music.</summary>
+        SettingMusic,
+
         /// <summary>Settings row with a switch: the phone's short buzz.</summary>
         SettingVibration,
 

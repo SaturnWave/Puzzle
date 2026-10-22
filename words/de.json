@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"Sprache"},
     {"id":"LanguageOwnName","text":"Deutsch"},
     {"id":"SettingSound","text":"Ton"},
+    {"id":"SettingMusic","text":"Musik"},
     {"id":"SettingVibration","text":"Vibration"},
     {"id":"SettingTesterMode","text":"Testmodus"},
     {"id":"SettingsPrivacyLine","text":"Das Spiel sendet nichts"},

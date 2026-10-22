@@ -12,14 +12,15 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// What the game keeps about the phone itself, as device.json writes it:
-    /// <c>{"version":4,"id":"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a","settings":{"sound":true,"vibration":true,"testerMode":false,"language":"en"}}</c>.
+    /// <c>{"version":5,"id":"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a","settings":{"sound":true,"vibration":true,"testerMode":false,"language":"en","music":true}}</c>.
     /// The id is 128 random bits, written as 32 lowercase hexadecimal digits, made on the game's first start; it is the
     /// only identity the phone's attempt records carry (Puzzle.Core's DeviceId, docs/GAME_DESIGN.md §20), and nothing
     /// about the player or the phone goes into it. Beside it are the player's settings (<see cref="DeviceSettings"/>),
     /// since layout 2; a file of layout 1 has none and reads with the settings of a phone that never set anything.
     /// The tester mode joined the settings in layout 3; a file of an earlier layout reads with it off, whatever it holds.
     /// The language the player chose joined them in layout 4, as its code ("en"; empty for the phone's language); a
-    /// file of an earlier layout reads with no language chosen, so the game speaks the phone's.
+    /// file of an earlier layout reads with no language chosen, so the game speaks the phone's. The music's switch
+    /// joined them in layout 5; a file of an earlier layout reads with the music on, as every phone had it then.
     /// The fields are public and named as the document names them, because that is how Unity's JSON reader maps a
     /// document; it makes an empty text of an id a document does not have, so a document is read by its layout's
     /// number and its id's spelling, and whether it holds settings by its layout's number, never by a false.
@@ -29,7 +30,7 @@ namespace Puzzle.Client.Flow
     public sealed class DeviceDocument
     {
         /// <summary>The layout this code writes. A file of a later layout is not guessed at.</summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         private const int FirstVersion = 1;
 
@@ -41,6 +42,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The first layout that keeps the language the player chose.</summary>
         private const int FirstVersionWithALanguage = 4;
+
+        /// <summary>The first layout that keeps the music's switch.</summary>
+        private const int FirstVersionWithTheMusic = 5;
 
         private const int IdBytes = 16;
 
@@ -94,7 +98,13 @@ namespace Puzzle.Client.Flow
             if (document.version < FirstVersionWithALanguage)
             {
                 // Likewise an older file has chosen no language, whatever a hand wrote into it: the game speaks the phone's.
-                settings = new DeviceSettings(settings.Sound, settings.Vibration, settings.TesterMode, language: null);
+                settings = settings.WithThePhonesLanguage();
+            }
+
+            if (document.version < FirstVersionWithTheMusic)
+            {
+                // The reader makes a false of the music a file does not have: an older file reads with it on, as the phone had it.
+                settings = settings.With(DeviceSetting.Music, isOn: true);
             }
 
             if (document.version > CurrentVersion)
@@ -127,7 +137,7 @@ namespace Puzzle.Client.Flow
         }
     }
 
-    /// <summary>The player's settings as the device file writes them: <c>{"sound":true,"vibration":true,"testerMode":false,"language":"en"}</c>.</summary>
+    /// <summary>The player's settings as the device file writes them: <c>{"sound":true,"vibration":true,"testerMode":false,"language":"en","music":true}</c>.</summary>
     [Serializable]
     public sealed class SettingsDocument
     {
@@ -143,8 +153,12 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public string language = string.Empty;
 
+        /// <summary>The music's switch; in the file since layout 5, after the fields of the earlier layouts.</summary>
+        public bool music = DeviceSettings.Default.Music;
+
         /// <summary>The settings this block holds; a method, so that no JSON writer takes it for a field of the file.</summary>
-        public DeviceSettings ToSettings() => new DeviceSettings(sound, vibration, testerMode, Languages.FromCode(language));
+        public DeviceSettings ToSettings() =>
+            new DeviceSettings(sound, vibration, testerMode, Languages.FromCode(language)).With(DeviceSetting.Music, music);
 
         public static SettingsDocument Of(DeviceSettings settings) => new SettingsDocument
         {
@@ -152,6 +166,7 @@ namespace Puzzle.Client.Flow
             vibration = settings.Vibration,
             testerMode = settings.TesterMode,
             language = settings.Language is Language chosen ? Languages.CodeOf(chosen) : string.Empty,
+            music = settings.Music,
         };
     }
 

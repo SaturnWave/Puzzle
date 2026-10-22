@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"Язык"},
     {"id":"LanguageOwnName","text":"Русский"},
     {"id":"SettingSound","text":"Звук"},
+    {"id":"SettingMusic","text":"Музыка"},
     {"id":"SettingVibration","text":"Вибрация"},
     {"id":"SettingTesterMode","text":"Тестовый режим"},
     {"id":"SettingsPrivacyLine","text":"Игра ничего не отправляет"},

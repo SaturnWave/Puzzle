@@ -1,4 +1,5 @@
 using Puzzle.Client.Flow;
+using Puzzle.Client.Words;
 
 namespace Puzzle.Core.Tests;
 
@@ -18,11 +19,12 @@ public class DeviceSettingsTests
 
     [Theory]
     [InlineData(DeviceSetting.Sound)]
+    [InlineData(DeviceSetting.Music)]
     [InlineData(DeviceSetting.Vibration)]
     [InlineData(DeviceSetting.TesterMode)]
     public void Turning_one_setting_changes_that_one_and_no_other(DeviceSetting turned)
     {
-        DeviceSettings first = DeviceSettings.Default;
+        DeviceSettings first = DeviceSettings.Default.WithLanguage(Language.Korean);
         DeviceSettings changed = first.With(turned, isOn: !first.IsOn(turned));
 
         foreach (DeviceSetting setting in Enum.GetValues<DeviceSetting>())
@@ -30,21 +32,38 @@ public class DeviceSettingsTests
             Assert.Equal(setting == turned ? !first.IsOn(setting) : first.IsOn(setting), changed.IsOn(setting));
         }
 
+        Assert.Equal(Language.Korean, changed.Language);
         Assert.Equal(first, changed.With(turned, isOn: first.IsOn(turned)));
     }
 
     [Fact]
     public void Settings_with_the_same_switches_are_equal()
     {
+        DeviceSettings withoutMusic = DeviceSettings.Default.With(DeviceSetting.Music, isOn: false);
+
         Assert.Equal(new DeviceSettings(sound: false, vibration: true), new DeviceSettings(sound: false, vibration: true));
         Assert.NotEqual(new DeviceSettings(sound: false, vibration: true), new DeviceSettings(sound: true, vibration: false));
+        Assert.NotEqual(DeviceSettings.Default, withoutMusic);
+        Assert.NotEqual(DeviceSettings.Default.GetHashCode(), withoutMusic.GetHashCode());
     }
 
     [Fact]
-    public void This_build_honours_sound_and_vibration_so_the_card_offers_both_switches_in_the_drawings_order()
+    public void Settings_made_without_naming_the_music_have_it_on_and_a_language_chosen_or_forgotten_leaves_it_as_it_was()
     {
-        // The game sounds its cues and buzzes under a few of them: each switch changes something (SoundScoreTests).
-        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Vibration }, DeviceAbilities.OfThisBuild.Settings);
+        DeviceSettings withoutMusic = DeviceSettings.Default.With(DeviceSetting.Music, isOn: false);
+
+        Assert.True(new DeviceSettings(sound: false, vibration: false, testerMode: true, Language.English).Music);
+        Assert.False(withoutMusic.WithLanguage(Language.Japanese).Music);
+        Assert.Equal(withoutMusic, withoutMusic.WithLanguage(Language.Japanese).WithThePhonesLanguage());
+        Assert.Equal("sound on, music off, vibration on, the phone's language", withoutMusic.ToString());
+    }
+
+    [Fact]
+    public void This_build_honours_sound_music_and_vibration_so_the_card_offers_the_three_switches_in_the_drawings_order()
+    {
+        // The game sounds its cues, plays its music and buzzes under a few cues: each switch changes something
+        // (SoundScoreTests; MusicFadeTests and the Editor's MusicCheck for the music). SettingsTR draws Ses, Müzik, Titreşim.
+        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration }, DeviceAbilities.OfThisBuild.Settings);
     }
 
     [Fact]

@@ -23,9 +23,6 @@ namespace Puzzle.Client.Sound
         /// <summary>How many sounds ring together at most: a trade, its pops, a special piece made and one gone off, with room to spare.</summary>
         private const int Voices = 6;
 
-        /// <summary>The stand-ins are interface sounds heard over and over: they are played below their full level, all alike.</summary>
-        private const float Volume = 0.7f;
-
         private readonly ArtCatalogue _art;
         private readonly Haptics _haptics;
         private readonly AudioSource[] _sources = new AudioSource[Voices];
@@ -46,7 +43,7 @@ namespace Puzzle.Client.Sound
                 source.playOnAwake = false;
                 source.loop = false;
                 source.spatialBlend = 0f; // heard as it is, wherever the stage's camera stands
-                source.volume = Volume;
+                source.volume = SoundLevels.Effects;
                 _sources[voice] = source;
             }
         }

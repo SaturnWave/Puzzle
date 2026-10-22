@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
@@ -18,9 +19,11 @@ namespace Puzzle.Client.EditorTools
     /// is the player's again. Then in the hall the privacy card counts the records; "Kayıtları sil" asks first and
     /// "Vazgeç" changes nothing; asked again, "Sil" empties the file and the count reads 0, with the progress, the
     /// wallet and the settings as they were; the way back closes the privacy card to the settings card; the support
-    /// card comes and its "Tamam" takes it up; the way back closes the settings. Last, the sound's switch is flipped
+    /// card comes and its "Tamam" takes it up; the way back closes the settings. Then the sound's switch is flipped
     /// off on the card, the card is closed and opened again and shows it kept, and nothing is heard meanwhile; flipped
-    /// on again, its click is heard (<c>walk-settings-...</c>).
+    /// on again, its click is heard. Last, the music's switch likewise: off at once and kept, with the other switches
+    /// as they were, and its click heard, since the sounds of play do not hang on the music (<c>walk-settings-...</c>).
+    /// The music itself is heard only in a running game: <see cref="MusicCheck"/> follows it there.
     /// </summary>
     internal static partial class GameWalk
     {
@@ -57,11 +60,12 @@ namespace Puzzle.Client.EditorTools
             reel.Settle();
             ThroughTheCard.Require(!MuseumOf(session).ShowsTheSettings, "the way back left the settings card hanging");
             TurnTheSoundOffAndFindItKept(settings, heard, reel);
+            TurnTheMusicOffAndFindItKept(settings, heard, reel);
             TurnThePage(reel, Destination.Map, picturesTheTurn: false);
             reel.WriteSheet();
             Debug.Log(
                 $"Screen shots: walk {reel.Name}: the gear on {PagesWithTheWalletRow.Length} pages, {SettingsShots.RecordsOnThePhone} records deleted after a question, "
-                + $"the support card, the sound turned off and kept, heard {heard} in all.");
+                + $"the support card, the sound and the music turned off and kept, heard {heard} in all.");
         }
 
         /// <summary>
@@ -75,14 +79,15 @@ namespace Puzzle.Client.EditorTools
             GameSession session = reel.Session;
             Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
             reel.Settle();
-            RequireTheSwitches(MuseumOf(session), soundIsOn: true, "the settings card opened");
+            RequireTheSwitches(MuseumOf(session), DeviceSettings.Default, "the settings card opened");
             reel.Shoot("switches-on");
 
             int heardBefore = heard.SoundsInAll;
+            DeviceSettings quiet = DeviceSettings.Default.With(DeviceSetting.Sound, isOn: false);
             Press(session, MuseumOf(session).SwitchPixel(DeviceSetting.Sound), "the sound's switch", reel, "sound-switch-pressed");
-            ThroughTheCard.Require(!settings.Settings.Sound && settings.Settings.Vibration, $"the sound's switch left the settings at {settings.Settings}");
+            ThroughTheCard.Require(settings.Settings.Equals(quiet), $"the sound's switch left the settings at {settings.Settings}");
             reel.Settle();
-            RequireTheSwitches(MuseumOf(session), soundIsOn: false, "the sound's switch was turned off");
+            RequireTheSwitches(MuseumOf(session), quiet, "the sound's switch was turned off");
             reel.Shoot("sound-off");
             Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button", reel, pressedShot: null);
             reel.Settle();
@@ -90,7 +95,7 @@ namespace Puzzle.Client.EditorTools
 
             Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
             reel.Settle();
-            RequireTheSwitches(MuseumOf(session), soundIsOn: false, "the settings card was opened again");
+            RequireTheSwitches(MuseumOf(session), quiet, "the settings card was opened again");
             reel.Shoot("sound-off-kept");
             ThroughTheCard.Require(heard.SoundsInAll == heardBefore, $"with the sound off {heard.SoundsInAll - heardBefore} sounds were heard");
 
@@ -103,12 +108,46 @@ namespace Puzzle.Client.EditorTools
             reel.Settle();
         }
 
-        private static void RequireTheSwitches(MuseumStage museum, bool soundIsOn, string when)
+        /// <summary>
+        /// The music's switch turns the music off at once and leaves the other switches as they were; its own click is
+        /// heard, since the sounds of play are on. Closed and opened again, the card shows it kept; turned on again, the
+        /// settings are a first start's once more.
+        /// </summary>
+        private static void TurnTheMusicOffAndFindItKept(SettingsInMemory settings, CuesHeard heard, Reel reel)
+        {
+            GameSession session = reel.Session;
+            Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
+            reel.Settle();
+            RequireTheSwitches(MuseumOf(session), DeviceSettings.Default, "the settings card opened for the music");
+
+            int togglesBefore = heard.Of(SoundCue.Toggle);
+            DeviceSettings withoutMusic = DeviceSettings.Default.With(DeviceSetting.Music, isOn: false);
+            Press(session, MuseumOf(session).SwitchPixel(DeviceSetting.Music), "the music's switch", reel, "music-switch-pressed");
+            ThroughTheCard.Require(settings.Settings.Equals(withoutMusic), $"the music's switch left the settings at {settings.Settings}");
+            reel.Settle();
+            ThroughTheCard.Require(heard.Of(SoundCue.Toggle) == togglesBefore + 1, "the switch that turned the music off was not heard, though the sound is on");
+            RequireTheSwitches(MuseumOf(session), withoutMusic, "the music's switch was turned off");
+            reel.Shoot("music-off");
+            Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button", reel, pressedShot: null);
+            reel.Settle();
+
+            Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
+            reel.Settle();
+            RequireTheSwitches(MuseumOf(session), withoutMusic, "the settings card was opened again without the music");
+            reel.Shoot("music-off-kept");
+            Press(session, MuseumOf(session).SwitchPixel(DeviceSetting.Music), "the music's switch", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(settings.Settings.Equals(DeviceSettings.Default), $"the music turned on again, the settings are {settings.Settings}");
+            Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button", reel, pressedShot: null);
+            reel.Settle();
+        }
+
+        /// <summary>The card shows a switch for every setting the build honours, in its order, each as the settings have it.</summary>
+        private static void RequireTheSwitches(MuseumStage museum, DeviceSettings expected, string when)
         {
             IReadOnlyList<(DeviceSetting Setting, bool IsOn)> shown = museum.SwitchesShown;
-            ThroughTheCard.Require(
-                shown.Count == 2 && shown[0] == (DeviceSetting.Sound, soundIsOn) && shown[1] == (DeviceSetting.Vibration, true),
-                $"when {when} the card's switches showed {string.Join(", ", shown)}");
+            IEnumerable<(DeviceSetting Setting, bool IsOn)> asKept = DeviceAbilities.OfThisBuild.Settings.Select(setting => (setting, expected.IsOn(setting)));
+            ThroughTheCard.Require(shown.SequenceEqual(asKept), $"when {when} the card's switches showed {string.Join(", ", shown)}, not {expected}");
         }
 
         /// <summary>

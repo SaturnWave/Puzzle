@@ -205,8 +205,9 @@ namespace Puzzle.Client.EditorTools
             Press(session, MuseumOf(session).GearPixel, "the hall's gear", reel, pressedShot: null);
             reel.Settle();
             IReadOnlyList<(DeviceSetting Setting, bool IsOn)> shown = MuseumOf(session).SwitchesShown;
+            int honoured = DeviceAbilities.OfThisBuild.Settings.Count;
             ThroughTheCard.Require(
-                shown.Count == 3 && shown[2] == (DeviceSetting.TesterMode, true),
+                shown.Count == honoured + 1 && shown[honoured] == (DeviceSetting.TesterMode, true),
                 $"in the tester mode the settings card's switches show {string.Join(", ", shown)}");
             reel.Shoot("settings-tester-row");
 
@@ -224,7 +225,9 @@ namespace Puzzle.Client.EditorTools
 
             Press(session, museum.GearPixel, "the hall's gear", reel, pressedShot: null);
             reel.Settle();
-            ThroughTheCard.Require(MuseumOf(session).SwitchesShown.Count == 2, "the settings card opened after the tester mode was turned off still has its row");
+            ThroughTheCard.Require(
+                MuseumOf(session).SwitchesShown.Count == DeviceAbilities.OfThisBuild.Settings.Count,
+                "the settings card opened after the tester mode was turned off still has its row");
             Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button", reel, pressedShot: null);
             reel.Settle();
         }

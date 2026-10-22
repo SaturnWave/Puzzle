@@ -85,6 +85,18 @@ internal static class RepoFiles
     /// <summary>The record of the game's font files (art/fonts/licences.json): where each came from, its licence, and the bytes it is kept with.</summary>
     public static string FontRecordPath => Find("art", "fonts", "licences.json");
 
+    /// <summary>The record of the game's music (art/sounds/music.json): its source, its licence, and how tools/music/cut-loop.py cuts it.</summary>
+    public static string MusicRecordPath => Find("art", "sounds", "music.json");
+
+    /// <summary>The record of the CC0 sounds of play (art/sounds/licences.json), which tools/unity/fetch-sounds.js writes.</summary>
+    public static string SoundLicencesPath => Find("art", "sounds", "licences.json");
+
+    /// <summary>The music brief (docs/music/MUSIC_BRIEF.md), which holds the prompt each piece was made with.</summary>
+    public static string MusicBriefPath => Find("docs", "music", "MUSIC_BRIEF.md");
+
+    /// <summary>A file of the repository by its path from the repository's root, written with forward slashes as the music's record writes it.</summary>
+    public static string RepositoryFile(string pathFromTheRoot) => Find(pathFromTheRoot.Split('/'));
+
     /// <summary>A font file of the game, as tools/unity/fetch-fonts.js keeps it.</summary>
     public static string FontFilePath(string file) => Path.Combine(ClientProjectFolder, "Assets", "Art", "Fonts", file);
 

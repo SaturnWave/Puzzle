@@ -9,8 +9,8 @@ using UnityEngine;
 namespace Puzzle.Client.Art
 {
     /// <summary>
-    /// The game's drawings as sprites, its typefaces, the materials everything is drawn with, and its sounds. One asset
-    /// that the scene refers to, so a build carries exactly these sprites, fonts, shaders and sounds, and nothing is
+    /// The game's drawings as sprites, its typefaces, the materials everything is drawn with, its sounds and its music.
+    /// One asset that the scene refers to, so a build carries exactly these sprites, fonts, shaders, sounds and music, and nothing is
     /// looked up by a name at run time. The asset (Assets/Art/ArtCatalogue.asset) is written by the Editor's ArtCatalogueBuilder,
     /// never by hand.
     /// </summary>
@@ -44,6 +44,11 @@ namespace Puzzle.Client.Art
 
         /// <summary>One sound per <see cref="SoundCue"/> member, in the enum's order; none for a cue that is only felt (SoundScore.IsHeard).</summary>
         [SerializeField] private AudioClip[] _sounds = Array.Empty<AudioClip>();
+
+        /// <summary>The music's intro, played once as the game starts, and its loop, which follows and repeats (<see cref="MusicClips"/>).</summary>
+        [SerializeField] private AudioClip? _musicIntro;
+
+        [SerializeField] private AudioClip? _musicLoop;
 
         /// <summary>The unlit sprite material: the gallery is drawn as painted, with no light of the engine on it.</summary>
         /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
@@ -86,6 +91,9 @@ namespace Puzzle.Client.Art
             int index = (int)cue;
             return index < _sounds.Length && _sounds[index] != null ? _sounds[index] : null;
         }
+
+        /// <summary>The game's music; nothing in a catalogue older than the music, whose game then plays none rather than stop.</summary>
+        public MusicClips? Music => _musicIntro != null && _musicLoop != null ? new MusicClips(_musicIntro, _musicLoop) : null;
 
         /// <summary>
         /// Puts each typeface's fallbacks in the order a language asks them: its own first. Only the order changes,
@@ -160,6 +168,13 @@ namespace Puzzle.Client.Art
             }
 
             _sounds = inOrder;
+        }
+
+        /// <summary>Editor only: replaces the music's two clips.</summary>
+        public void FillMusic(MusicClips music)
+        {
+            _musicIntro = music.Intro;
+            _musicLoop = music.Loop;
         }
 
         private static TValue[] InEnumOrder<TEnum, TValue>(IReadOnlyDictionary<TEnum, TValue> byMember)

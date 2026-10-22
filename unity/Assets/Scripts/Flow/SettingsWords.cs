@@ -62,6 +62,7 @@ namespace Puzzle.Client.Flow
         public static string NameOf(DeviceSetting setting) => setting switch
         {
             DeviceSetting.Sound => Speech.Say(WordId.SettingSound),
+            DeviceSetting.Music => Speech.Say(WordId.SettingMusic),
             DeviceSetting.Vibration => Speech.Say(WordId.SettingVibration),
             DeviceSetting.TesterMode => Speech.Say(WordId.SettingTesterMode),
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a name."),

@@ -10,17 +10,24 @@ namespace Puzzle.Core.Tests;
 /// </summary>
 public class SettingsLayoutTests
 {
-    /// <summary>The settings card of this build has no switch; the sounds and the buzz of play bring two; the design draws three.</summary>
-    public static TheoryData<int> Switches() => new TheoryData<int> { 0, 2, 3 };
+    /// <summary>
+    /// A card with no switch; the sounds and the buzz of play brought two; the design draws three, as this build has
+    /// them with the music; the tester mode's row makes four while it holds.
+    /// </summary>
+    public static TheoryData<int> Switches() => new TheoryData<int> { 0, 2, 3, 4 };
 
-    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the open fold, and the two phones with a cutout and a system bar.</summary>
+    /// <summary>
+    /// The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, and the two
+    /// phones with a cutout and a system bar.
+    /// </summary>
     public static TheoryData<int, int, int, int, int> ScreensAndSwitches()
     {
         var data = new TheoryData<int, int, int, int, int>();
-        foreach (int switches in new[] { 0, 2, 3 })
+        foreach (int switches in new[] { 0, 2, 3, 4 })
         {
             data.Add(1080, 2340, 0, 0, switches);
             data.Add(1080, 1920, 0, 0, switches);
+            data.Add(1080, 2424, 0, 0, switches);
             data.Add(2076, 2152, 0, 0, switches);
             data.Add(1080, 2340, 110, 60, switches);
             data.Add(1080, 1920, 90, 48, switches);

@@ -11,7 +11,8 @@ namespace Puzzle.Core.Tests;
 /// which the attempt records carry as the only identity, and since layout 2 the player's settings, which a file of
 /// layout 1 reads with as a first start has them; since layout 3 the tester mode among them, which a file of an
 /// earlier layout reads with off; since layout 4 the language the player chose, which a file of an earlier layout
-/// reads without, so the game speaks the phone's. <c>DeviceDocument</c> is the Unity project's source file,
+/// reads without, so the game speaks the phone's; since layout 5 the music's switch, which a file of an earlier layout
+/// reads with on. <c>DeviceDocument</c> is the Unity project's source file,
 /// compiled into these tests; here System.Text.Json fills it, in the game Unity's reader does
 /// (unity/Assets/Editor/AttemptLogCheck.cs checks the real file with that one).
 /// </summary>
@@ -40,7 +41,7 @@ public class DeviceDocumentTests
 
         string written = JsonSerializer.Serialize(DeviceDocument.Of(id, settings), AsUnityMapsIt);
 
-        Assert.Equal("{\"version\":4,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"\"}}", written);
+        Assert.Equal("{\"version\":5,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true}}", written);
         var read = Assert.IsType<DeviceReading.Sound>(Read(written));
         Assert.Equal((id, settings), (read.Device, read.Settings));
     }
@@ -58,7 +59,7 @@ public class DeviceDocumentTests
     [Fact]
     public void A_document_of_this_layout_without_its_block_of_settings_reads_with_the_settings_of_a_first_start()
     {
-        var read = Assert.IsType<DeviceReading.Sound>(Read("{\"version\":4,\"id\":\"" + AnId + "\",\"settings\":null}"));
+        var read = Assert.IsType<DeviceReading.Sound>(Read("{\"version\":5,\"id\":\"" + AnId + "\",\"settings\":null}"));
 
         Assert.Equal(DeviceSettings.Default, read.Settings);
     }
@@ -100,12 +101,37 @@ public class DeviceDocumentTests
     public void A_later_layout_is_told_apart_and_its_id_and_settings_are_used_as_far_as_they_read()
     {
         var withItsId = Assert.IsType<DeviceReading.OfALaterGame>(
-            Read("{\"version\":5,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":true,\"language\":\"ko\",\"music\":false}}"));
-        var withoutOne = Assert.IsType<DeviceReading.OfALaterGame>(Read("{\"version\":5,\"id\":\"a later spelling\"}"));
+            Read("{\"version\":6,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":true,\"language\":\"ko\",\"music\":false,\"hints\":true}}"));
+        var withoutOne = Assert.IsType<DeviceReading.OfALaterGame>(Read("{\"version\":6,\"id\":\"a later spelling\"}"));
 
-        Assert.Equal((5, new DeviceId(AnId)), (withItsId.Version, withItsId.Device));
-        Assert.Equal(new DeviceSettings(sound: false, vibration: true, testerMode: true, Language.Korean), withItsId.Settings);
+        Assert.Equal((6, new DeviceId(AnId)), (withItsId.Version, withItsId.Device));
+        Assert.Equal(
+            new DeviceSettings(sound: false, vibration: true, testerMode: true, Language.Korean).With(DeviceSetting.Music, isOn: false),
+            withItsId.Settings);
         Assert.Null(withoutOne.Device);
+    }
+
+    [Fact]
+    public void The_music_turned_off_is_kept_after_the_fields_of_the_earlier_layouts_and_reads_back_off()
+    {
+        DeviceSettings withoutMusic = DeviceSettings.Default.With(DeviceSetting.Music, isOn: false);
+
+        string written = JsonSerializer.Serialize(DeviceDocument.Of(new DeviceId(AnId), withoutMusic), AsUnityMapsIt);
+
+        Assert.EndsWith("\"language\":\"\",\"music\":false}}", written);
+        Assert.Equal(withoutMusic, Assert.IsType<DeviceReading.Sound>(Read(written)).Settings);
+    }
+
+    [Theory]
+    [InlineData("{\"version\":4,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":false,\"testerMode\":false,\"language\":\"\"}}")]
+    [InlineData("{\"version\":4,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":false,\"testerMode\":false,\"language\":\"\",\"music\":false}}")]
+    [InlineData("{\"version\":3,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":false,\"testerMode\":false,\"music\":false}}")]
+    public void A_document_from_before_the_music_reads_with_the_music_on_whatever_a_hand_wrote_into_it(string json)
+    {
+        var read = Assert.IsType<DeviceReading.Sound>(Read(json));
+
+        Assert.True(read.Settings.Music);
+        Assert.Equal(new DeviceSettings(sound: true, vibration: false), read.Settings);
     }
 
     [Theory]
@@ -141,7 +167,7 @@ public class DeviceDocumentTests
     public void A_language_code_the_game_does_not_know_reads_as_none_chosen(string code)
     {
         var read = Assert.IsType<DeviceReading.Sound>(
-            Read("{\"version\":4,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"" + code + "\"}}"));
+            Read("{\"version\":5,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"" + code + "\",\"music\":true}}"));
 
         Assert.Equal(DeviceSettings.Default, read.Settings);
     }

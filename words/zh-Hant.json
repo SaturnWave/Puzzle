@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"語言"},
     {"id":"LanguageOwnName","text":"繁體中文"},
     {"id":"SettingSound","text":"音效"},
+    {"id":"SettingMusic","text":"音樂"},
     {"id":"SettingVibration","text":"震動"},
     {"id":"SettingTesterMode","text":"測試模式"},
     {"id":"SettingsPrivacyLine","text":"遊戲不傳送任何內容"},

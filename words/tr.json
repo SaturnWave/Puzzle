@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"Dil","note":"Settings row that opens the language card, and that card's nameplate."},
     {"id":"LanguageOwnName","text":"Türkçe","note":"This language's name in itself, on the language card and the settings row. Never translated: each table has its own."},
     {"id":"SettingSound","text":"Ses","note":"Settings row with a switch: the sounds of play."},
+    {"id":"SettingMusic","text":"Müzik","note":"Settings row with a switch: the game's music."},
     {"id":"SettingVibration","text":"Titreşim","note":"Settings row with a switch: the phone's short buzz."},
     {"id":"SettingTesterMode","text":"Test modu","note":"Settings row with a switch: the tester mode, while it is on."},
     {"id":"SettingsPrivacyLine","text":"Oyun hiçbir şey göndermez","note":"Smaller line under the privacy row."},

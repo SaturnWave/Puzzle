@@ -11,17 +11,17 @@ namespace Puzzle.Client.Flow
     /// </summary>
     public sealed class DeviceAbilities
     {
-        /// <param name="settings">The settings the build honours, in the order the card lists them (SettingsTR: sound, then vibration).</param>
+        /// <param name="settings">The settings the build honours, in the order the card lists them (SettingsTR: sound, music, vibration).</param>
         public DeviceAbilities(params DeviceSetting[] settings)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         /// <summary>
-        /// What this build honours: its sounds (stand-ins, SoundCue.cs) and the short buzz under a few of them, so the
-        /// card shows both switches. Music joins them once the game has a track to play.
+        /// What this build honours: its sounds (stand-ins, SoundCue.cs), its one piece of music (MusicPlayer) and the
+        /// short buzz under a few of the sounds, so the card shows the three switches the design draws, in its order.
         /// </summary>
-        public static DeviceAbilities OfThisBuild { get; } = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Vibration);
+        public static DeviceAbilities OfThisBuild { get; } = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration);
 
         /// <summary>The settings whose rows the card draws, in its order.</summary>
         public IReadOnlyList<DeviceSetting> Settings { get; }

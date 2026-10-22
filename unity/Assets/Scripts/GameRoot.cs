@@ -22,13 +22,15 @@ namespace Puzzle.Client
     /// when the game is put away. Everything that is seen is built in code by the session's stage, so the scene file
     /// stays a few lines and the Editor can build the same pictures without it. What is heard and felt goes the other
     /// way: the root holds the phone's speaker and vibrator (<see cref="SoundPlayer"/>), which the session plays its
-    /// cues on; the Editor's sessions have none, and are silent.
+    /// cues on; the Editor's sessions have none, and are silent. The root also holds the game's music
+    /// (<see cref="MusicPlayer"/>), which no screen reaches: it follows only the player's switch, every frame.
     /// </summary>
     /// <remarks>
     /// Being put away and brought back needs little: Unity stops calling <see cref="Update"/> while the game is in
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
-    /// a finger that was down, and to save progress and attempt records that could not be saved before. If the device
+    /// a finger that was down, to hold the music where it is (it fades in from there on the way back), and to save
+    /// progress and attempt records that could not be saved before. If the device
     /// closes the game while it is away, the attempt in progress is gone: the game comes back in the museum, and the
     /// level starts again with its next board.
     /// </remarks>
@@ -53,6 +55,7 @@ namespace Puzzle.Client
 
         private GameSession? _session;
         private SoundPlayer? _sounds;
+        private MusicPlayer? _music;
         private ScreenShape _fittedTo;
 
         /// <summary>
@@ -73,8 +76,11 @@ namespace Puzzle.Client
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
             _fittedTo = CurrentScreen();
+            (DeviceId phone, ISettingsStore settings) = ThisPhone();
             _sounds = new SoundPlayer(gameObject, _art, Haptics.OfThisDevice());
-            _session = OpenSession(LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), _sounds, _fittedTo);
+            _music = MusicOf(gameObject, _art, settings);
+            _session = OpenSession(
+                LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), phone, settings, _sounds, _fittedTo);
         }
 
         /// <summary>
@@ -82,6 +88,15 @@ namespace Puzzle.Client
         /// For the Editor's play-mode check, which sounds every cue once through it.
         /// </summary>
         public ICuePlayer? Cues => _sounds;
+
+        /// <summary>
+        /// The game's music; nothing before the game has started, or from a catalogue without music. For the Editor's
+        /// music check, which follows it across the screens and the switch.
+        /// </summary>
+        public MusicPlayer? Music => _music;
+
+        /// <summary>The running game's session; nothing before the game has started. For the Editor's music check, which presses the game's buttons as a finger does.</summary>
+        public GameSession? Session => _session;
 
         private void Update()
         {
@@ -100,7 +115,11 @@ namespace Puzzle.Client
             ReadTouches(_session);
             ReadMouse(_session);
             ReadTheWayBack(_session);
-            _session.Advance(Mathf.Min(Time.deltaTime, LongestStepSeconds));
+            float step = Mathf.Min(Time.deltaTime, LongestStepSeconds);
+            _session.Advance(step);
+
+            // After the session: a switch flipped this frame is kept by now, and the music follows it in the same frame.
+            _music?.Advance(step);
         }
 
         /// <summary>The game is put away (another app, the home screen, the screen off) or brought back.</summary>
@@ -109,6 +128,7 @@ namespace Puzzle.Client
             if (isPaused)
             {
                 LetGoOfTheFinger();
+                _music?.PutAway();
                 _session?.SaveProgress();
                 _session?.WriteWaitingRecords();
             }
@@ -139,10 +159,10 @@ namespace Puzzle.Client
         /// finds its progress as it left it.
         /// </summary>
         private static GameSession OpenSession(
-            IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, ICuePlayer cues, ScreenShape screen)
+            IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, DeviceId phone, ISettingsStore settings,
+            ICuePlayer cues, ScreenShape screen)
         {
             var clock = new SystemWallClock();
-            (DeviceId phone, ISettingsStore settings) = ThisPhone();
 
             // The game speaks before anything is built: the player's choice, or the phone's language where the game offers it.
             Language phoneLanguage = PhoneLanguage.OfThisDevice();
@@ -168,6 +188,18 @@ namespace Puzzle.Client
                 Debug.LogError($"The saved progress cannot be read, so this run starts at the first level and does not save: {failure.Message}");
                 return SessionOn(new ProgressInMemory(PlayerProgress.NewPlayer(rules.StartingWallet)));
             }
+        }
+
+        /// <summary>The game's music on the root, following the player's switch; none from a catalogue built before the music, which is said once.</summary>
+        private static MusicPlayer? MusicOf(GameObject root, ArtCatalogue art, ISettingsStore settings)
+        {
+            if (!(art.Music is MusicClips music))
+            {
+                Debug.LogWarning("The art catalogue has no music, so none is heard; run ProjectSetup.Run in the Editor's batch mode.");
+                return null;
+            }
+
+            return new MusicPlayer(root, music, settings);
         }
 
         /// <summary>

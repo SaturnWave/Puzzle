@@ -1,3 +1,4 @@
+using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 
 namespace Puzzle.Core.Tests;
@@ -61,11 +62,12 @@ public class LanguageCardLayoutTests
         Assert.Equal(SettingsLayout.BodyWidth, LanguageCardLayout.BodyWidth);
     }
 
-    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the open fold, and the two phones with a cutout and a system bar.</summary>
+    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, and the two phones with a cutout and a system bar.</summary>
     public static TheoryData<int, int, int, int> Screens() => new()
     {
         { 1080, 2340, 0, 0 },
         { 1080, 1920, 0, 0 },
+        { 1080, 2424, 0, 0 },
         { 2076, 2152, 0, 0 },
         { 1080, 2340, 110, 60 },
         { 1080, 1920, 90, 48 },
@@ -103,7 +105,9 @@ public class LanguageCardLayoutTests
     private static bool StandsInFront(ScreenShape screen, int languages, out string why)
     {
         PageLayout page = PageLayout.Of(screen);
-        SettingsLayout settings = SettingsLayout.For(switches: 2);
+
+        // The settings card behind at its tallest: the build's switches, and the tester mode's row while it holds.
+        SettingsLayout settings = SettingsLayout.For(DeviceAbilities.OfThisBuild.Settings.Count + 1);
         CardPlace behind = settings.PlaceOn(page);
         float footBehind = behind.Middle - behind.Scale * settings.Height / 2f;
         LanguageCardLayout card = LanguageCardLayout.For(languages);

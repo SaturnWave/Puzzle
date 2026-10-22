@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"Language"},
     {"id":"LanguageOwnName","text":"English"},
     {"id":"SettingSound","text":"Sound"},
+    {"id":"SettingMusic","text":"Music"},
     {"id":"SettingVibration","text":"Vibration"},
     {"id":"SettingTesterMode","text":"Tester mode"},
     {"id":"SettingsPrivacyLine","text":"The game sends nothing"},

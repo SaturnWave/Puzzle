@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"Bahasa"},
     {"id":"LanguageOwnName","text":"Bahasa Indonesia"},
     {"id":"SettingSound","text":"Suara"},
+    {"id":"SettingMusic","text":"Musik"},
     {"id":"SettingVibration","text":"Getaran"},
     {"id":"SettingTesterMode","text":"Mode uji"},
     {"id":"SettingsPrivacyLine","text":"Game tidak mengirim apa pun"},

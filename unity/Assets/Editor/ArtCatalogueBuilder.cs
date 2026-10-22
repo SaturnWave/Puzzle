@@ -13,7 +13,8 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Writes the art catalogue (Assets/Art/ArtCatalogue.asset) from the drawings in Assets/Art/Pieces and
-    /// Assets/Art/Gallery, from the game's typefaces, and from the sounds in Assets/Art/Sounds. Each list and its folder
+    /// Assets/Art/Gallery, from the game's typefaces, from the sounds in Assets/Art/Sounds and from the music in
+    /// Assets/Art/Music (<see cref="MusicOnRecord"/>). Each list and its folder
     /// must agree exactly: a drawing or a sound cue without a file, or a file nothing asks for, stops the build with its
     /// name, so the game cannot meet a missing sprite or sound later; a sound whose licence is not on record stops it too.
     /// </summary>
@@ -189,8 +190,10 @@ namespace Puzzle.Client.EditorTools
             [SoundCue.Toggle] = "toggle.ogg",
         };
 
-        /// <exception cref="InvalidOperationException">The drawings or the sounds and the files do not agree, a sound has no licence on record, or a material is missing.</exception>
-        /// <exception cref="IOException">The record of the sounds' licences cannot be read.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// The drawings, the sounds or the music and the files do not agree, a sound or the music has no licence on record, or a material is missing.
+        /// </exception>
+        /// <exception cref="IOException">The record of the sounds' licences or the music's record cannot be read.</exception>
         public static void Build()
         {
             RefuseUnlistedFiles(PieceSpriteImport.PiecesFolder, FileNames.Values);
@@ -198,6 +201,7 @@ namespace Puzzle.Client.EditorTools
             Dictionary<PieceArt, Sprite> pieces = SpritesOf(FileNames, PieceSpriteImport.PiecesFolder, PiecesExporter);
             Dictionary<GalleryArt, Sprite> gallery = SpritesOf(GalleryFileNames, GalleryArtImport.GalleryFolder, GalleryExporter);
             Dictionary<SoundCue, AudioClip> sounds = SoundsOf(SoundFileNames);
+            MusicClips music = MusicOnRecord.Clips();
             (IReadOnlyDictionary<LetteringStyle, TMP_FontAsset> typefaces, IReadOnlyDictionary<LetteringStyle, Material> letteringMaterials,
                 IReadOnlyDictionary<FallbackTypeface, TMP_FontAsset> fallbacks) = LetteringBuilder.Ensure();
 
@@ -212,6 +216,7 @@ namespace Puzzle.Client.EditorTools
             catalogue.FillDrawings(pieces, gallery, Damask(), SpriteMaterial(), PaintMaterial());
             catalogue.FillLettering(typefaces, letteringMaterials, fallbacks);
             catalogue.FillSounds(sounds);
+            catalogue.FillMusic(music);
             EditorUtility.SetDirty(catalogue);
         }
 

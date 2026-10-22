@@ -168,6 +168,7 @@
     {"id":"SettingsLanguage","text":"言語"},
     {"id":"LanguageOwnName","text":"日本語"},
     {"id":"SettingSound","text":"サウンド"},
+    {"id":"SettingMusic","text":"音楽"},
     {"id":"SettingVibration","text":"バイブレーション"},
     {"id":"SettingTesterMode","text":"テストモード"},
     {"id":"SettingsPrivacyLine","text":"ゲームは何も送信しません"},

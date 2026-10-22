@@ -250,6 +250,7 @@ namespace Puzzle.Client.Screens
         private static GalleryArt MarkOf(DeviceSetting setting) => setting switch
         {
             DeviceSetting.Sound => GalleryArt.IconSound,
+            DeviceSetting.Music => GalleryArt.IconMusic,
             DeviceSetting.Vibration => GalleryArt.IconBuzz,
             DeviceSetting.TesterMode => GalleryArt.IconCoin,
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a mark."),
