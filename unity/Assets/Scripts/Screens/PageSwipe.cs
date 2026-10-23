@@ -127,8 +127,8 @@ namespace Puzzle.Client.Screens
     /// </remarks>
     public sealed class PageSwipe
     {
-        /// <summary>A finger that went no further than this from where it came down has not moved: it taps. About Android's own touch slop.</summary>
-        public const float Slop = 10f;
+        /// <summary>A finger that went no further than this from where it came down has not moved: it taps, as it presses a control (<see cref="TapSlop"/>).</summary>
+        public const float Slop = TapSlop.Points;
 
         /// <summary>A swipe goes at least this many times as far sideways as up or down.</summary>
         public const float SidewaysOverUpright = 2f;
@@ -179,13 +179,9 @@ namespace Puzzle.Client.Screens
             }
 
             finger.Keep(x, seconds);
+            finger.Touch = finger.Touch.MovedTo(x, y);
             float across = x - finger.DownX;
             float upright = y - finger.DownY;
-            if (Math.Max(Math.Abs(across), Math.Abs(upright)) > Slop)
-            {
-                finger.HasMoved = true;
-            }
-
             if (!finger.Swipes && finger.MaySwipe)
             {
                 bool goesSideways = Math.Abs(across) > Slop && Math.Abs(across) > SidewaysOverUpright * Math.Abs(upright);
@@ -215,7 +211,7 @@ namespace Puzzle.Client.Screens
             _finger = null;
             if (!finger.Swipes)
             {
-                return finger.HasMoved ? SwipeReading.None.Instance : SwipeReading.Tap.Instance;
+                return finger.Touch.IsATap ? SwipeReading.Tap.Instance : SwipeReading.None.Instance;
             }
 
             SwipeReading.Drag drag = DragOf(finger);
@@ -281,6 +277,7 @@ namespace Puzzle.Client.Screens
                 DownY = y;
                 Row = row;
                 MaySwipe = maySwipe;
+                Touch = TapSlop.Down(x, y, Slop);
                 _way.Add((x, seconds));
             }
 
@@ -293,8 +290,8 @@ namespace Puzzle.Client.Screens
             /// <summary>False once the touch can no longer become a swipe: it came down at the edge, or went up or down first.</summary>
             public bool MaySwipe { get; set; }
 
-            /// <summary>True once the finger has gone further than the slop: it no longer taps.</summary>
-            public bool HasMoved { get; set; }
+            /// <summary>Whether the finger still taps: it no longer does once it has gone further than the slop.</summary>
+            public TapSlop Touch { get; set; }
 
             /// <summary>True once the touch has become a swipe; it stays one until the finger lifts.</summary>
             public bool Swipes { get; set; }

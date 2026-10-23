@@ -219,14 +219,14 @@ namespace Puzzle.Client.Screens
         /// <summary>The card on its way back up: 0 is in its place, 1 is out of sight.</summary>
         public void GoUp(float progress) => Raise(Easing.In(progress) * _wayUp);
 
-        /// <summary>A finger came down at a point of the layout.</summary>
-        public void FingerDown(Vector2 point) => _presses.FingerDown(OnTheCard(point));
+        /// <summary>A finger came down at a point of the layout. It presses what it lifts on only if it went no further than the layout's slop, told in the card's own points.</summary>
+        public void FingerDown(Vector2 point) => _presses.FingerDown(OnTheCard(point), TapSlop.Points / _scale);
 
-        /// <summary>The finger moved while it was down: a control it has slid off is not pressed, one it came back to is.</summary>
+        /// <summary>The finger moved while it was down: a control it has slid off is not pressed, one it came back to within the slop is, and none is once it dragged.</summary>
         public void FingerMovedTo(Vector2 point) => _presses.FingerMovedTo(OnTheCard(point));
 
         /// <summary>The finger lifted.</summary>
-        /// <returns>True when that pressed a control: the finger came down on it and lifted on it. <paramref name="asks"/> is then what that press asks for.</returns>
+        /// <returns>True when that pressed a control: the finger came down on it and lifted on it, and tapped. <paramref name="asks"/> is then what that press asks for.</returns>
         public bool FingerUp(out TPress asks) => _presses.FingerUp(out asks);
 
         /// <summary>What the control a finger holds on the card asks for, while the finger is still on it (<see cref="PressSet{TAction}.TryGetHeld"/>).</summary>

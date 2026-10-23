@@ -129,6 +129,10 @@ namespace Puzzle.Client
 
             // After the session: a switch flipped this frame is kept by now, and the music follows it in the same frame.
             _music?.Advance(step);
+            if (_session.TakeTheWishToQuit())
+            {
+                Quit(_session);
+            }
         }
 
         /// <summary>The game is put away (another app, the home screen, the screen off) or brought back.</summary>
@@ -296,7 +300,8 @@ namespace Puzzle.Client
 
         /// <summary>
         /// Android reports its back button and its back gesture as the Escape key; on a desktop it is that key
-        /// itself. The game never closes on it: in the hall, where there is no way back, it does nothing.
+        /// itself. The game never closes on it alone: in the hall, where there is no way further back, it asks first
+        /// whether to close the game. iOS has no way back of the kind, and never asks.
         /// </summary>
         private static void ReadTheWayBack(GameSession session)
         {
@@ -304,6 +309,24 @@ namespace Puzzle.Client
             {
                 session.GoBack();
             }
+        }
+
+        /// <summary>
+        /// The player answered the hall's question with "Çık". What could not be saved or written yet gets its last
+        /// chance, as on the way out to the background; then Android closes the game. Anywhere else (the Editor's play
+        /// mode above all) it stays open and says so: the question comes only from Android's way back.
+        /// </summary>
+        private static void Quit(GameSession session)
+        {
+            session.SaveProgress();
+            session.WriteWaitingRecords();
+            if (Application.platform != RuntimePlatform.Android)
+            {
+                Debug.Log($"The player asked to close the game; it closes on Android only, so on {Application.platform} it stays open.");
+                return;
+            }
+
+            Application.Quit();
         }
 
         /// <summary>A mouse is a finger too: in the Editor and on a desktop the game is played with it.</summary>

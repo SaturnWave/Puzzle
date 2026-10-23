@@ -79,7 +79,8 @@ namespace Puzzle.Client.Screens
     /// constructor): the player goes to another page, asks for the level they stand on, chooses its start boosters
     /// and goes into it, buys a booster or a set of them, asks for coins (a pack, an ad) or for the day's gift, opens
     /// a painting's jigsaw, opens or closes a card that hangs over the page, flips a setting, chooses the language or
-    /// deletes the attempt records after a question, or does something that stays on the page that is shown.
+    /// deletes the attempt records after a question, closes the game after a question, or does something that stays
+    /// on the page that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -271,6 +272,11 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The tester mode question's "Vazgeç": nothing changes, and the support card is as it was.</summary>
         public sealed class LeaveTheTesterModeOff : MuseumPress
+        {
+        }
+
+        /// <summary>The "Çık" of the card the way back brings in the hall: the game is to close.</summary>
+        public sealed class QuitTheGame : MuseumPress
         {
         }
 

@@ -81,7 +81,9 @@ namespace Puzzle.Client.Screens
     /// stay. A card may hang over the page, the row and the bar, in front of the room's dark (the lives card, the
     /// card before a level), and a second one in front of that card behind a dark of its own (the card that offers a
     /// booster, or the lives card for a player who asks for the level without a life); only the card in front is
-    /// pressed, and the way back closes it. Like the board's stage the museum has a clock that only
+    /// pressed, and the way back closes it. In the bare hall, from where no way leads further back, the way back
+    /// brings down the card that asks whether to close the game (<see cref="QuitCard"/>); its "Çık" the stage passes
+    /// on to its owner (<see cref="TakeTheWishToQuit"/>). Like the board's stage the museum has a clock that only
     /// <see cref="Advance"/> moves, and everything of it is drawn by its one camera, so the Editor pictures any page
     /// at any moment with no game running.
     /// </summary>
@@ -126,8 +128,9 @@ namespace Puzzle.Client.Screens
     /// that is shown, and its neighbour on the bar comes in beside it; let go, the row settles on the neighbour or
     /// springs back, and the bar marks the page it settled on. Beyond the bar's first and last page the page only
     /// stretches. A swipe on the collection's plaque turns its rooms instead, the same way; one on the world map's
-    /// strip of eras scrolls the strip, and runs on with a flick. A touch stays a tap until it is a swipe, and a
-    /// swipe presses nothing it began on. No swipe is taken while a card hangs, while a painting of the collection
+    /// strip of eras scrolls the strip, and runs on with a flick. A touch stays a tap until the finger leaves the
+    /// slop (<see cref="TapSlop"/>); after that it presses nothing, whether it swipes or not, on a page or on a card
+    /// (<see cref="PressSet{TAction}"/>). No swipe is taken while a card hangs, while a painting of the collection
     /// hangs forward or a painting's card is open on the map, nor from the screen's side edges, where the phone's
     /// own back gesture begins.
     /// </para>
@@ -213,6 +216,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>True from the press that leads out of the museum on: the room is going dark, or is dark.</summary>
         private bool _isLeaving;
+
+        /// <summary>True from the "Çık" of the hall's question until whoever runs the game has taken the wish (<see cref="TakeTheWishToQuit"/>).</summary>
+        private bool _isAskedToQuit;
 
         /// <summary>How long the page that is shown has been the one shown.</summary>
         private float _secondsOnThePage;
@@ -481,6 +487,14 @@ namespace Puzzle.Client.Screens
         /// <summary>True while the support card in front asks whether the tester mode is to be turned on.</summary>
         public bool AsksAboutTheTesterMode => TopCard is SupportCard { AsksAboutTheTesterMode: true };
 
+        /// <summary>What the card the way back brings in the hall asks on its nameplate, while it hangs or is on its way down or up; nothing otherwise.</summary>
+        public string? QuitQuestionShown => (_cards.Find(card => card is QuitCard) as QuitCard)?.Question;
+
+        /// <summary>The pixels in the middle of that card's "Vazgeç" and "Çık"; nothing while it is not down in front.</summary>
+        public Vector2? StayInTheGamePixel => TopCard is QuitCard quit ? PixelOnTheCard(quit.StayButtonMiddle) : null;
+
+        public Vector2? QuitTheGamePixel => TopCard is QuitCard quit ? PixelOnTheCard(quit.QuitButtonMiddle) : null;
+
         /// <summary>The pixels in the middle of the tester mode question's "Vazgeç" and "Aç"; nothing while the question is not asked in front.</summary>
         public Vector2? LeaveTheTesterModeOffPixel => TopCard is SupportCard support ? PixelOnTheCard(support.LeaveOffButtonMiddle) : null;
 
@@ -721,8 +735,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// The device's way back: the card in front goes up (a question on it with it); a painting that hangs forward
-        /// goes back to the wall; from the map and the collection it leads to the hall; in the hall it leads nowhere;
-        /// while a finger drags a page, nothing: the page is the finger's until it lets go.
+        /// goes back to the wall; from the shop, the map and the collection it leads to the hall; in the hall, which
+        /// has no way further back, the card comes down that asks whether to close the game; while a finger drags a
+        /// page, nothing: the page is the finger's until it lets go.
         /// </summary>
         public void GoBack()
         {
@@ -740,10 +755,26 @@ namespace Puzzle.Client.Screens
             {
                 ListenToThePage();
             }
+            else if (Showing == Destination.Home)
+            {
+                Hang(QuitCard.Create(_root.transform, _art), roomIsDark: false);
+            }
             else
             {
                 TurnTo(Destination.Home);
             }
+        }
+
+        /// <summary>
+        /// True once since this was asked last when the player answered the hall's question of the way back with "Çık":
+        /// the game is to close. The card stays as it hangs; whoever runs the game closes it, and the Editor's tools
+        /// only read that it was asked.
+        /// </summary>
+        public bool TakeTheWishToQuit()
+        {
+            bool isWished = _isAskedToQuit;
+            _isAskedToQuit = false;
+            return isWished;
         }
 
         /// <summary>The pixel of the screen in the middle of a destination's place on the bar: where a finger presses it.</summary>
@@ -973,6 +1004,10 @@ namespace Puzzle.Client.Screens
                     _askedOfThePhone.Add(new DeviceRequest.TurnASetting(DeviceSetting.TesterMode, isOn: true));
                     TakeEveryCardUp();
                     _turnsToOnceTheCardsAreUp = Showing;
+                    break;
+                case MuseumPress.QuitTheGame _ when TopCard is QuitCard:
+                    // The card stays: on Android the game is gone with the next step, and elsewhere its "Vazgeç" or the way back takes it up.
+                    _isAskedToQuit = true;
                     break;
                 case MuseumPress.Visit visit when _cards.Count > 0:
                     // A card's way to the shop: every card goes up, and then the page turns.

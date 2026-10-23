@@ -358,6 +358,13 @@ namespace Puzzle.Client.Flow
         public void GoBack() => _front.GoBack();
 
         /// <summary>
+        /// True once since this was asked last when the player answered the hall's question of the way back with "Çık"
+        /// (<see cref="MuseumStage.TakeTheWishToQuit"/>): the game is to close. The running game closes it; the
+        /// Editor's tools only read it.
+        /// </summary>
+        public bool TakeTheWishToQuit() => Museum?.TakeTheWishToQuit() == true;
+
+        /// <summary>
         /// Saves the progress if the store does not hold it yet. The game calls this when it is put away, so a save
         /// that failed while playing gets another chance before the game may be closed.
         /// </summary>
