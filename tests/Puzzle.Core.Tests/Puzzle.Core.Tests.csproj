@@ -106,8 +106,9 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelStartWords.cs" Link="Unity\Flow\LevelStartWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\LevelStartLayout.cs" Link="Unity\Layout\LevelStartLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\Destination.cs" Link="Unity\Screens\Destination.cs" />
-    <!-- Nor has what a finger on the museum's pages means: a tap, a swipe that drags the row of pages, and where the row settles. -->
+    <!-- Nor has what a finger on the museum's pages means: a tap, a swipe that drags the row of pages, and where the row settles; nor the slop within which a touch taps, and presses a control. -->
     <Compile Include="..\..\unity\Assets\Scripts\Screens\PageSwipe.cs" Link="Unity\Screens\PageSwipe.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\TapSlop.cs" Link="Unity\Screens\TapSlop.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Engine\LevelStart.cs" Link="Unity\Engine\LevelStart.cs" />
     <!-- Nor have the board's plaques and the result's card: what the plaques say by the piece a level gives, and the rows of the card. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\BoardWords.cs" Link="Unity\Flow\BoardWords.cs" />

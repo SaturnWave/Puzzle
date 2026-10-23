@@ -70,6 +70,15 @@ namespace Puzzle.Client.Words
         /// <summary>Line under the banner: the room's name and its paintings, all five restored.</summary>
         HallRoomAndItsPaintings,
 
+        /// <summary>Nameplate of the card that the phone's back button or back gesture brings in the hall: whether to close the game. A question; its two answers follow.</summary>
+        HallQuitQuestion,
+
+        /// <summary>That card's green answer: the game closes.</summary>
+        HallQuitLeave,
+
+        /// <summary>That card's blue answer: the card goes up and the game stays open.</summary>
+        HallQuitStay,
+
 
 
 

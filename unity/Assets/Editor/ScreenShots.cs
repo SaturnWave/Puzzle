@@ -107,6 +107,13 @@ namespace Puzzle.Client.EditorTools
         /// and of a restored one, and the collection its link opens, on one sheet.
         /// </summary>
         WorldMap,
+
+        /// <summary>
+        /// The way back in the hall, walked from the hall whatever the state (GameWalk.WayBack.cs): the card that asks
+        /// whether to close the game and its three ways out, the way back from the other pages, and drags over the
+        /// settings card's rows, the level card and the shop that press nothing, on one sheet.
+        /// </summary>
+        WayBack,
     }
 
     /// <summary>
@@ -390,7 +397,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,wayback,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
@@ -493,6 +500,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Tutorial => GameWalk.RunTheTutorialWalk(screen, studio),
             ShotPage.Boosters => GameWalk.RunTheBoosterIntroWalk(screen, studio),
             ShotPage.WorldMap => GameWalk.RunTheWorldMapWalk(screen, studio),
+            ShotPage.WayBack => GameWalk.RunTheWayBackWalk(screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 

@@ -57,6 +57,11 @@ namespace Puzzle.Client.Flow
         /// <summary>The play button once every level is won: the last one again.</summary>
         public static string PlayAgain => Speech.Say(WordId.PlayAgain);
 
+        /// <summary>The card the way back brings in the hall: its question on the nameplate, and its two answers, which close the game or take the card up.</summary>
+        public static string QuitQuestion => Speech.Say(WordId.HallQuitQuestion);
+        public static string QuitTheGame => Speech.Say(WordId.HallQuitLeave);
+        public static string StayInTheGame => Speech.Say(WordId.HallQuitStay);
+
         /// <summary>The banner over a room whose fifth painting has just become whole, and the button that leads on from it.</summary>
         public static string RoomRestored => Speech.Say(WordId.HallRoomRestored);
         public static string OnFromTheRoom => Speech.Say(WordId.GoOn);

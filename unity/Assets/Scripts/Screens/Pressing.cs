@@ -16,10 +16,12 @@ namespace Puzzle.Client.Screens
 
     /// <summary>
     /// What can be pressed on a screen, each control with what pressing it asks for, and the finger that presses.
-    /// A control is pressed when the finger comes down on it and lifts on it; a finger that slides off lets it go,
-    /// one that slides back holds it down again, as buttons behave everywhere. One finger, one control at a time.
-    /// A control that stops being pressable while the finger holds it (it is dimmed, set aside or taken out of
-    /// sight) is not pressed by the lift: it is asked once more as the finger lifts.
+    /// A control is pressed by a tap: the finger comes down on it and lifts on it without having gone further than
+    /// the slop on the way (<see cref="TapSlop"/>). A finger that slides off lets the control go, and one that slides
+    /// back within the slop holds it down again, as buttons behave everywhere; a finger that goes further than the
+    /// slop drags, and presses nothing however it lifts, so a sideways swipe across a card's row presses no row.
+    /// One finger, one control at a time. A control that stops being pressable while the finger holds it (it is
+    /// dimmed, set aside or taken out of sight) is not pressed by the lift: it is asked once more as the finger lifts.
     /// </summary>
     /// <typeparam name="TAction">What a press asks for.</typeparam>
     public sealed class PressSet<TAction>
@@ -32,8 +34,14 @@ namespace Puzzle.Client.Screens
         /// <summary>Where the finger last was while it held a control.</summary>
         private Vector2 _fingerAt;
 
-        /// <summary>True while the finger is down and came down on a control.</summary>
+        /// <summary>Whether the finger that holds a control still taps.</summary>
+        private TapSlop _touch;
+
+        /// <summary>True while the finger is down and came down on a control, even one it has since dragged too far to press.</summary>
         public bool IsHolding => _held.HasValue;
+
+        /// <summary>True while the finger would press the control it holds by lifting now: it still taps, and is on the control.</summary>
+        private bool IsPressing => _held.HasValue && _touch.IsATap && _held.Value.Control.IsUnder(_fingerAt);
 
         /// <summary>A control added later lies over the ones before it where they overlap: it is asked first.</summary>
         public void Add(IPressable control, TAction action) => _controls.Add((control, action));
@@ -45,7 +53,8 @@ namespace Puzzle.Client.Screens
             _controls.Clear();
         }
 
-        public void FingerDown(Vector2 point)
+        /// <param name="slop">How far the finger may go and still press, in the points its places are told in: the layout's slop unless the controls stand in points of their own.</param>
+        public void FingerDown(Vector2 point, float slop = TapSlop.Points)
         {
             FingerGone();
             for (int control = _controls.Count - 1; control >= 0; control--)
@@ -54,6 +63,7 @@ namespace Puzzle.Client.Screens
                 {
                     _held = _controls[control];
                     _fingerAt = point;
+                    _touch = TapSlop.Down(point.x, point.y, slop);
                     _controls[control].Control.ShowPressed(true);
                     return;
                 }
@@ -64,23 +74,23 @@ namespace Puzzle.Client.Screens
         {
             if (_held.HasValue)
             {
-                IPressable control = _held.Value.Control;
                 _fingerAt = point;
-                control.ShowPressed(control.IsUnder(point));
+                _touch = _touch.MovedTo(point.x, point.y);
+                _held.Value.Control.ShowPressed(IsPressing);
             }
         }
 
         /// <summary>
-        /// What the control the finger holds asks for, while the finger is still on it: a press that has lasted long
+        /// What the control the finger holds asks for, while the finger still taps on it: a press that has lasted long
         /// enough is a long press, which its owner may take instead of the press (<see cref="FingerGone"/> then, so
         /// the lift presses nothing).
         /// </summary>
-        /// <returns>False while no control is held, or the finger has slid off the one it holds.</returns>
+        /// <returns>False while no control is held, or the finger has slid off the one it holds or dragged.</returns>
         public bool TryGetHeld(out TAction action)
         {
-            if (_held.HasValue && _held.Value.Control.IsUnder(_fingerAt))
+            if (IsPressing)
             {
-                action = _held.Value.Action;
+                action = _held!.Value.Action;
                 return true;
             }
 
@@ -93,7 +103,7 @@ namespace Puzzle.Client.Screens
         public bool FingerUp(out TAction action)
         {
             // The control answers anew: what it was when the finger came down or last moved may no longer be so.
-            bool isPressed = _held.HasValue && _held.Value.Control.IsUnder(_fingerAt);
+            bool isPressed = IsPressing;
             action = _held.HasValue ? _held.Value.Action : default!;
             FingerGone();
             return isPressed;
