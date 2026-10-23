@@ -29,8 +29,10 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 **Ressam avatarı**
 - Ücretsiz yollar denendi; üç aday aynı CC0 paketten (KayKit Adventurers 1.0, Kay Lousberg): A kız ressam, B uzun saçlı ressam, C erkek ressam. Bere, palet ve fırça eklendi, renkler oyunun paletinden. Karşılaştırma sayfası `out/avatar/avatar-candidates.jpg`; karar proje sahibinde.
 
-**Araştırma başladı**
-- Rakiplerin ABD fiyatları, sezon pasosu ve XP, mini oyunlar, meta katmanı, etkinlikler ve sosyal özellikler; 6 araştırmacı, 1 doğrulayıcı, 1 tasarımcı. Sonuç `docs/research/monetization-and-retention.md` belgesine yazılacak.
+**Araştırma: gelir ve oyuncu tutma**
+- 8 ajan: 6 araştırmacı, 1 doğrulayıcı, 1 tasarımcı. Yaklaşık 2,6 milyon token, 53 dakika. 15 oyunun ABD App Store fiyatları ve pass, XP, ara oyun, meta, etkinlik kuralları toplandı. Doğrulayıcı 158 fiyatın 150'sini, 32 iddianın 28'ini tuttu; tutmayanlar belgede kullanılmadı.
+- Sonuç: `docs/research/monetization-and-retention.md` ("Araştırma Raporu" PDF'i). Ham notlar ve fiyat çizelgesinin JSON'u: `docs/research/monetization-2026-10/`.
+- Öneriler: dört altın paketi ($1.99–$19.99), bir kez satılan $1.99'luk başlangıç paketi, ayda bir $4.99'luk "Sergi Sezonu" pasosu, XP'li Restoratör rütbesi, ilk 100 bölüme ara oyunlar, yayından sonra düzenli yeni odalar. Rastgele ücretli içerik ve parayla can yok. Hepsi öneri: 16 soru proje sahibinin kararını bekliyor ve her sayı yayından önce ekonomi simülatöründen geçecek.
 
 ## 2026-10-22 · Oturum 28 — Müzik
 
