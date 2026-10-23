@@ -10,6 +10,12 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Proje sahibi yedi müzik parçasını Suno Premier hesabıyla üretti ve `art/sounds/` klasörüne koydu (2026-10-20; 48 kHz stereo WAV).
 - Oyunda tek bir genel müzik olacak: M1 Müze teması, her yerde. Kısa parçalar ve ayrı tahta müziği kullanılmayacak (2026-10-22).
 
+**Telefon testi turu (2026-10-23, 22 Ekim APK'sı)**
+- Yeni APK telefona kuruldu (önce oyunun dosyaları yedeklendi). Test sayfası 252 teste çıktı; önceki sonuçlar yerinde.
+- Bir ajan otomatik yapılabilen testleri adb ile koştu: 169 test, 121 geçti, 2 kaldı, 46'sı proje sahibine kaldı (ses ve his, iç ekran ve katlama, saat ve telefon dili, eski sürüm, göze dayalı yargılar). Sonuçlar test sayfasına işlendi; proje sahibine kalanlarda ajanın gözlemi not olarak duruyor.
+- Kalanlar: salonda geri tuşu hiçbir şey yapmıyor (T43); tam ekranda kenardan tek geri hareketi yetmiyor (T235). Ek bulgular: ayarlar kartında satır üstünde kaydırma basılmış sayılıyor; koleksiyonda bellek büyüyor (çökme yok). Hepsi A42'de. T181, T190 ve T394'ün metinleri güncellendi.
+- Proje sahibinin dosyaları geri kondu (ilerleme ve kayıtlar yedekle birebir); oyunun Ses ve Müzik anahtarları proje sahibinin isteğiyle kapalı. Telefonun ses düzeyine yalnızca bir kez, istek üzerine dokunuldu (medya sesi 0).
+
 **Oyuncunun müziği öncelikli (#9)**
 - Proje sahibinin kararı (2026-10-23): oyuncunun kendi müziği çalarken oyunun müziği susar, efektler sürer. Bitti (a05c580): Android'in çalan oynatıcı listesine 2 saniyede bir bakılıyor, oyunun kendi oynatıcısı etiketiyle ayrılıyor (`isMusicActive` oyunun kendi sesini de saydığı için kullanılmadı); öteki müzik durunca 2–4 sn içinde kaldığı yerden geri geliyor. iOS tarafı iOS dalında.
 - 4.095 test geçti; müzik denetimine 9 yeni adım eklendi. Telefonda henüz denenmedi (yeni APK'da değil). Telefon testleri T380–T383.
