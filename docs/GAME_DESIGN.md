@@ -1422,6 +1422,19 @@ Bu kararlarla 10. aşama başladı.
 
 **Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
 
+**Salonda geri tuşu ve dokunuş eşiği (2026-10-23).**
+
+- **Çıkış kartı:** 23 Ekim telefon turunda salonda Android geri tuşu hiçbir şey yapmıyordu (T43). Artık salonda, kart açık değilken geri tuşu ya da kenardan geri hareketi "Oyundan çıkılsın mı?" kartını indirir.
+  - "Vazgeç" ya da yeniden geri kartı kaldırır; kartın dışına dokunmak bir şey yapmaz.
+  - "Çık" önce ilerlemeyi kaydeder ve bekleyen deneme kayıtlarını yazar, sonra oyunu kapatır. Oyun yalnızca Android'de kapanır; Editör'de günlüğe yazar ve açık kalır.
+  - iOS'ta bu tür bir geri tuşu yoktur; kart orada hiç çıkmaz.
+  - Yapı: `QuitCard`, `MuseumStage.TakeTheWishToQuit`; yazılar `HallQuitQuestion`, `HallQuitLeave`, `HallQuitStay` (13 dil).
+- **Dokunuş eşiği:** ayarlar kartında bir satırın üstünde yatay kaydırma satıra basılmış sayılıyordu (dil kartı açılıyor, Titreşim kapanıyordu).
+  - Artık her düğme yalnızca dokunuşla basılır. Parmak indiği yerden 10 pt'den uzağa giderse sürükleme olur ve nasıl kalkarsa kalksın hiçbir şeye basmaz.
+  - Eşik sayfa kaydırmasınınkiyle aynıdır (Android'in kendi eşiği kadar); kartlarda kartın kendi ölçüsünde ölçülür.
+  - Bütün kartlar, sayfalar, tahta ve yapboz düğmeleri için geçerli. Yapı: `TapSlop` (Unity'siz, testli), `PressSet`, `PageSwipe`.
+- **Doğrulama:** 4.111 test. Unity'de bütün denetimler ve yeni "wayback" yürüyüşü (tr, en, ko) hatasız; yürüyüş eski kodda kırılıyor. Telefon testleri T410–T414; T43'ün beklenen sonucu güncellendi.
+
 ## 24. Bölüm bankası ve derleyici
 
 **Karar (2026-10-08).** Zorluk ayarının kalıcı çözümü: üretilen tahtalar atılmaz, ölçümleriyle birlikte saklanır; oyunun 1000 bölümü bu bankadan bir **politikayla** seçilir. Kullanıcının isteği: "kalıcı bir çözüm; üretilen bölümlerin çoğunu harddiske kaydedebiliriz". §8 ve §9'daki üretici (`generate`) duruyor; derleyici kendini kanıtladıkça onun yerini alır.

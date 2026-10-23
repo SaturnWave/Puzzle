@@ -64,7 +64,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A39 | On üç dil: çevirilerin hepsi makine çevirisi, yayından önce ana dili olan biri okumalı. Bütün yedek atlaslar her dilde yüklenir (16,5 MiB doku). CJK atlasları 40 örnekleme boyutunda; büyük başlıklarda keskinlik telefonda bakılmalı. İspanyolca "MOVIMIENTOS" madalyon halkasına yakın. Dil kartında başka dillerin adlarındaki ortak Han karakterleri seçili dilin biçiminde çıkabilir. İspanyolca 18–20. odaların adları çeviri. | #8 | Orta | T355, T356, T359, T362 |
 | A40 | Müzik: henüz kulakla dinlenmedi (seviye 0,4 ve Vorbis kalitesi 0,6 ölçüyle seçildi). Android ses odağı yönetilmiyor: başka bir uygulama çalarken oyun da çalar. Ayrı bir ses düzeyi kaydırıcısı yok. Suno bağlantısı kayıtta yok. | #9 | Orta | T373, T379 |
 | A41 | Dünya haritası: ekran okuyucu bağlantısı yok (bütün oyun için ayrı iş). Uzun dönem adları plakada iki satır; 14. dönem karşılaştırma için bilerek tek küçük satır (T400'de 12. ve 14. dönemin plaketine bakın). 6. dönem en yakın yakınlıkla açılıyor. Kare iç ekranda kart haritanın çoğunu kaplıyor. İğne resimleri döneme ilk gelişte yükleniyor; telefonda kısa takılma olabilir. 41 tablonun yeri yalnızca ressamın çalıştığı yer. | #4 | Orta | T391, T401, T403 |
-| A42 | 23 Ekim otomatik test turunun bulguları: (1) salonda Android geri tuşu hiçbir şey yapmıyor (T43); (2) tam ekran kipte kenardan tek geri hareketi önce sistem çubuklarını gösteriyor, ikincisi geri götürüyor (T235; Android'in tam ekran davranışı, gerçek parmakla denenecek); (3) ayarlar kartında bir satırın üstünde yatay kaydırma satıra basılmış sayılıyor (dil kartı açıldı, Titreşim kapandı); (4) koleksiyonda 20 oda gezilince bellek 401 MB'tan 649 MB'a çıkıyor, çökme yok (A14 ile ilgili); (5) her açılışta zararsız bir "AssetPackManager bulunamadı" günlük satırı (A32). | Arayüz | Orta | T43, T235, T237, T40 |
+| A42 | 23 Ekim otomatik test turunun bulguları: (1) salonda Android geri tuşu hiçbir şey yapmıyor (T43); (2) tam ekran kipte kenardan tek geri hareketi önce sistem çubuklarını gösteriyor, ikincisi geri götürüyor (T235; Android'in tam ekran davranışı, gerçek parmakla denenecek); (3) ayarlar kartında bir satırın üstünde yatay kaydırma satıra basılmış sayılıyor (dil kartı açıldı, Titreşim kapandı); (4) koleksiyonda 20 oda gezilince bellek 401 MB'tan 649 MB'a çıkıyor, çökme yok (A14 ile ilgili); (5) her açılışta zararsız bir "AssetPackManager bulunamadı" günlük satırı (A32).  **Düzeltildi (2026-10-23, cbf5202):** (1) salonda geri tuşu ve geri hareketi çıkış kartını getiriyor (T410–T412); (3) bir düğmenin üstünde 10 noktadan uzun kaydırma hiçbir şeye basmıyor (T413–T414). (2), (4) ve (5) açık. | Arayüz | Orta | T43, T235, T237, T40 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -140,7 +140,7 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T41 | Yapboz parmakla | Bir tablonun 10 parçasını elle yerleştir | Parça doğru yere oturur; yanlış yerde geri döner | — | Bekliyor |
 | T42 | Otomatik tamamla | 40 parça biriktir, otomatik tamamla | Akıcı biter; sayaçlar doğru | — | Bekliyor |
 | T44 | Uzun oda adları | Koleksiyonda 8., 12. ve 19. odaya geç; haritada aynı odalara bak | Dönem adı telefonda rahat okunuyor; okunmuyorsa ad kısaltılır ya da iki satıra bölünür | Müze odaları | Bekliyor |
-| T43 | Geri tuşu | Her ekranda Android geri tuşuna bas | Bir önceki ekrana döner; salonda uygulamadan çıkış sorulur ya da uygulama arka plana gider | — | Bekliyor |
+| T43 | Geri tuşu | Her ekranda Android geri tuşuna bas | Bir önceki ekrana döner; salonda "Oyundan çıkılsın mı?" kartı gelir (T410–T412) | — | Bekliyor |
 
 ### F. Ekonomi ekranları
 
@@ -445,6 +445,16 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T401 | Açık katlanabilir (iç ekran) | Telefonu açıp haritayı gez, kart aç. | Harita kare ekrana yerleşir; kart açıkken iğneler görünür kalır; şerit ve düğmeler çalışır. | Harita | Bekliyor |
 | T402 | Uzun kullanım | Haritada 2 dakika boyunca dönemler arasında gez. | Telefon belirgin ısınmıyor, akıcılık düşmüyor. | Harita | Bekliyor |
 | T403 | Sayfalar arası gidip gelme | Harita ile salon/koleksiyon arasında 10 kez gidip gel. | Çökme yok; haritaya geçişte belirgin takılma yok, gecikme artmıyor. | Harita | Bekliyor |
+
+### F19. Salonda geri tuşu ve dokunuş eşiği (23 Ekim)
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T410 | Çıkış kartı | Salonda, hiçbir kart açık değilken Android geri tuşuna bas. | "Oyundan çıkılsın mı?" kartı iner; kartın dışına dokunmak bir şey yapmaz; "Vazgeç" kartı kaldırır; kart açıkken yeniden geri de kaldırır. Yazılar kesik değil, Türkçe harfler doğru. | Geri tuşu | Bekliyor |
+| T411 | Çık | Kartta "Çık"a bas; oyunu yeniden aç. | Oyun kapanır. Yeniden açınca ilerleme, cüzdan ve ayarlar kapanmadan önceki gibi. | Geri tuşu | Bekliyor |
+| T412 | Kenardan geri hareketi | Hareketli gezinmede salonda ekranın sol ya da sağ kenarından geri hareketini yap. | Çıkış kartı iner (tam ekranda ilk hareketin sistem çubuklarını göstermesi ayrı bir konudur: T235). | Geri tuşu | Bekliyor |
+| T413 | Satırın üstünde kaydırma | Ayarlar kartında Dil ve Titreşim satırlarının üstünde yatay kaydır; bölüm kartında ve mağazada düğmelerin üstünde de kaydır. | Hiçbir şeye basılmaz: dil kartı açılmaz, anahtar değişmez. Aynı satırlara normal dokunuş eskisi gibi çalışır. | Dokunuş | Bekliyor |
+| T414 | Titrek dokunuş | Küçük düğmelere (çarpı, kart okları, booster diskleri, iğneler) parmağı hafifçe oynatarak bas. | Hepsi ilk denemede basılıyor; eşik bir dokunuşu sürükleme saymayacak kadar geniş. | Dokunuş | Bekliyor |
 
 ### G. Görünüm
 

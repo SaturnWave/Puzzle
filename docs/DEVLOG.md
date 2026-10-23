@@ -4,6 +4,34 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
+
+**Kullanıcı kararları**
+- Uygulama simgesi: önce G (gece mavisi palet), sonra F seçildi: krem zemin üstünde ressam paleti, üç taş ve fırça ("daha sade gözüküyor").
+- iOS işi `feature/ios` dalında; kod Windows'ta yazılır, Mac yalnızca Xcode ile derler ve cihaza kurar. Oyun ilk olarak iPad'de denenecek.
+- Oyunun tekrara düşmemesi için genişletme: Battle Pass (ücretsiz ve premium), oyuncu seviyesi ve XP, mini oyunlar, Royal Match'in kalesi gibi bir meta katmanı, etkinlikler. Önce çok ajanlı bir araştırma (onaylandı); fiyat çizelgesi yalnızca ABD (USD).
+
+**Uygulama simgesi**
+- Bitti (1ed124b, 0995820, b98e823): F simgesi `art/icon/` altında; Android'de uyarlanabilir simge (ön ve arka katman), iOS'ta 1024 px tek parça. Kaynak `art/icon/tools/final_icon.py`.
+
+**iOS hazırlığı**
+- Mac'e SSH ile ulaşılıyor (kullanıcı `arcancaglayan`; Intel, macOS 15.8, Xcode 26.3). Depo Mac'te `~/Desktop/Puzzle` klasöründe, `feature/ios` dalı; Mac kendi anahtarıyla GitHub'a SaturnWave olarak ulaşıyor.
+- Unity 6000.6.4f1'e iOS Build Support kuruldu (Hub'ın komut satırıyla).
+- iPad'de Taptic Engine yok: ayarlar kartı orada Titreşim anahtarını göstermiyor; titreşim motoru olmayan Android tabletlerde de öyle (`feature/ios`, e9288a7).
+- Xcode projesi, Android kopyasının önbelleğine dokunmamak için D: diskindeki ayrı çalışma ağacında (`D:/puzzle-ios`) üretilecek.
+
+**Salonda geri tuşu ve dokunuş eşiği**
+- Bitti (cbf5202): salonda geri tuşu "Oyundan çıkılsın mı?" kartını getiriyor; bir düğmenin üstünde 10 pt'den uzun kaydırma hiçbir şeye basmıyor (GAME_DESIGN §23). 4.111 test geçti; Unity denetimleri hatasız. Telefon testleri T410–T414.
+
+**Yeni APK (2026-10-23)**
+- Proje sahibi tablette denemek için istedi. İçinde F simgesi, oyuncunun müziğine yol veren müzik, çıkış kartı ve dokunuş eşiği var. İndirme sayfasına `puzzle-test-2026-10-23.apk` olarak kondu.
+
+**Ressam avatarı**
+- Ücretsiz yollar denendi; üç aday aynı CC0 paketten (KayKit Adventurers 1.0, Kay Lousberg): A kız ressam, B uzun saçlı ressam, C erkek ressam. Bere, palet ve fırça eklendi, renkler oyunun paletinden. Karşılaştırma sayfası `out/avatar/avatar-candidates.jpg`; karar proje sahibinde.
+
+**Araştırma başladı**
+- Rakiplerin ABD fiyatları, sezon pasosu ve XP, mini oyunlar, meta katmanı, etkinlikler ve sosyal özellikler; 6 araştırmacı, 1 doğrulayıcı, 1 tasarımcı. Sonuç `docs/research/monetization-and-retention.md` belgesine yazılacak.
+
 ## 2026-10-22 · Oturum 28 — Müzik
 
 **Kullanıcı kararları**
