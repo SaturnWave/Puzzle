@@ -421,6 +421,10 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T377 | Eski kaydın üstüne | Önceki APK'nın kaydı olan telefona yeni APK'yı kur | Müzik açık başlar; Ses, Titreşim, dil, ilerleme ve cüzdan yerinde | Müzik | Bekliyor |
 | T378 | Ayarlar kartı sığar | Türkçe, İngilizce, Korecede iki ekranda ayarlar kartı; bir kez Test modu açıkken | Ses, Müzik, Titreşim satırları hizalı; hiçbir yazı taşmaz; Test modunda dört anahtar sığar | Müzik | Bekliyor |
 | T379 | Başka uygulamanın müziği | Bir müzik uygulaması çalarken oyunu aç | Ne olduğunu not edin (bugün oyun kendi müziğini üstüne çalar); istenen davranışa proje sahibi karar verir | Müzik | Bekliyor |
+| T380 | Kendi müziğin çalarken açılış | Spotify ya da YouTube Music'te şarkı başlat, oyunu aç, bir bölüm oyna; ayarlarda Müzik anahtarına bak | Oyunun müziği hiç başlamaz; efektler şarkının üstünde duyulur; Müzik anahtarı açık görünür | Müzik | Bekliyor |
+| T381 | Oyundayken başlat ve durdur | Oyunun müziği çalarken bildirim panelinden müziği başlat; sonra duraklat; bir kez de kulaklık düğmesiyle | Başlayınca oyunun müziği en geç 2 sn'de yumuşakça susar; durunca 2–4 sn içinde kaldığı yerden döner; efektler hiç kesilmez | Müzik | Bekliyor |
+| T382 | Şarkı geçişleri | Müzik çalarken birkaç kez sonraki şarkıya geç, çalma listesinin geçişlerini bekle | Şarkı aralarında oyunun müziği bir an bile girip çıkmaz | Müzik | Bekliyor |
+| T383 | Arka plandan dönüş | Oyunu arka plana al, müziği başlat, dön; sonra müziği durdur, dön | Müzik çalarken dönünce oyunun müziği sessiz; durmuşken dönünce kaldığı yerden yumuşakça gelir | Müzik | Bekliyor |
 
 ### F18. Dünya haritası (#4)
 
