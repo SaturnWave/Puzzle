@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Sound;
@@ -20,7 +21,13 @@ namespace Puzzle.Client.EditorTools
     /// settings card's music switch turns it off at once in the device file, the music fades out in about
     /// <see cref="MusicFade.Seconds"/> and is held where it was; turned on, the file says so at once, and the music
     /// fades back in from where it was held, not from its beginning. Put away and brought back, it is held at once and
-    /// fades in from there; and at the intro's end it runs into the loop, still the music begun at the start.
+    /// fades in from there; and at the intro's end it runs into the loop, still the music begun at the start. Through
+    /// all of that the music never gives way: its own fades and holds are not taken for another app's music. Then
+    /// another app's music plays on the Editor's stand-in (<see cref="OtherAudioStandIn"/>): the music gives way at the
+    /// next question (<see cref="MusicYield"/>), fades out and is held with its switch still on, while the effects go
+    /// on; a gap between two songs does not bring it back; once that music stops, it comes back after two quiet
+    /// answers and fades in from where it was held. Brought back to the front while the other music plays, it stays
+    /// silent; given the touches back once that music has stopped, it fades in at once.
     /// usage: Unity.exe -batchmode -projectPath unity -executeMethod Puzzle.Client.EditorTools.MusicCheck.Run
     /// Without -quit: the command ends the Editor itself, with exit code 1 when a step failed.
     /// </summary>
@@ -52,6 +59,18 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A fade, timed on the game's clock between frames, may end this much before or after <see cref="MusicFade.Seconds"/>.</summary>
         private const float FadeSlackSeconds = 0.12f;
 
+        /// <summary>
+        /// A gap in the other app's music between two songs: shorter than an asking interval, so that at most one
+        /// question falls in it, and long enough that one may.
+        /// </summary>
+        private const float GapBetweenSongsSeconds = MusicYield.AskEverySeconds - 0.25f;
+
+        /// <summary>
+        /// A question asked on the game's clock, which a slow frame holds back (GameRoot's longest step), may come this
+        /// much later on the Editor's clock than its interval says.
+        /// </summary>
+        private const float QuestionSlackSeconds = 0.3f;
+
         private static readonly List<Step> Steps = new List<Step>();
         private static int _current;
         private static float _stepBegan;
@@ -66,6 +85,7 @@ namespace Puzzle.Client.EditorTools
         private static MusicPlace _lastPlace;
         private static float _switchedAt;
         private static MusicPlace _heldAt;
+        private static float _otherAudioTurnedAt;
 
         static MusicCheck()
         {
@@ -92,6 +112,12 @@ namespace Puzzle.Client.EditorTools
         }
 
         private static MusicPlayer Music => _root?.Music ?? throw new InvalidOperationException("the running game has no music player");
+
+        private static GameRoot Root => _root ?? throw new InvalidOperationException("the running game has no root");
+
+        private static OtherAudioStandIn OtherApp =>
+            _root?.OtherAudioOfTheDevice as OtherAudioStandIn
+            ?? throw new InvalidOperationException("the Editor's game does not ask a stand-in whether another app's music plays");
 
         private static GameSession Session => _root?.Session ?? throw new InvalidOperationException("the running game has no session");
 
@@ -183,6 +209,7 @@ namespace Puzzle.Client.EditorTools
                 end: () =>
                 {
                     Require(Music.Beginnings == 1, $"the music began {Music.Beginnings} times as the game started");
+                    Require(!Music.IsGivingWay && !OtherApp.IsPlaying, "as the game started the music gave way, with no other app playing");
                     _audioClockAtTheStart = AudioSettings.dspTime;
                     _lastPlace = Music.Place;
                     Findings.Add($"at the start the music is at {_lastPlace}, at {Music.Volume:0.00} of full volume");
@@ -203,6 +230,7 @@ namespace Puzzle.Client.EditorTools
             PlanTheLevel();
             PlanTheSwitch();
             PlanTheBackgroundAndTheLoop();
+            PlanTheOtherAppsMusic();
         }
 
         /// <summary>Into the level the player stands on, through the hall's play button and the level's card, and out again by the leaving card before any move.</summary>
@@ -412,11 +440,147 @@ namespace Puzzle.Client.EditorTools
                 end: () => RequireTheMusicPlaysOn("the loop had begun a moment before")));
         }
 
-        /// <summary>The music plays, was begun once in all, and has gone on from where it was last seen (where the audio clock moves).</summary>
+        /// <summary>
+        /// Another app's music, played and stopped on the Editor's stand-in as the player would on the phone: the music
+        /// gives way to it and comes back, without coming in and out between two songs, and the effects go on meanwhile.
+        /// Then the same across the game put away and given the touches back, where the answer is followed at once.
+        /// </summary>
+        private static void PlanTheOtherAppsMusic()
+        {
+            Steps.Add(new Step(
+                $"another app's music began: at the next question (every {MusicYield.AskEverySeconds} s) the music gave way, faded out and was held, its switch still on",
+                begin: () => TurnTheOtherApp(isPlaying: true),
+                hasComeAbout: waited => !Music.IsPlaying,
+                end: () =>
+                {
+                    float took = Time.time - _otherAudioTurnedAt;
+                    Findings.Add($"gave way {took:0.000} s after the other app began");
+                    Require(Music.IsGivingWay && Music.Volume == 0f, $"held at {Music.Volume} of full volume, {(Music.IsGivingWay ? "giving way" : "not giving way")}");
+                    Require(took <= MusicYield.AskEverySeconds + MusicFade.Seconds + QuestionSlackSeconds, $"the music gave way {took:0.000} s after the other app began");
+                    Require(DeviceFileText.Contains("\"music\":true"), $"giving way turned the music's switch off: {DeviceFileText}");
+                    _heldAt = Music.Place;
+                }));
+            Steps.Add(new Step(
+                "the effects went on while the music gave way",
+                begin: () => (Root.Cues ?? throw new InvalidOperationException("the running game has no cue player")).Sound(SoundCue.Press),
+                hasComeAbout: waited => true,
+                end: RequireThePressSounded));
+            Steps.Add(new Step(
+                "the music stayed held over two more questions while the other app played on",
+                begin: () => { },
+                hasComeAbout: waited =>
+                {
+                    RequireHeldWhileTheOtherAppPlays("the other app played on");
+                    return waited >= 2f * MusicYield.AskEverySeconds + SettleSeconds;
+                },
+                end: () => { }));
+            Steps.Add(new Step(
+                $"a gap of {GapBetweenSongsSeconds} s between two songs of the other app did not bring the music in and out",
+                begin: () => TurnTheOtherApp(isPlaying: false),
+                hasComeAbout: waited =>
+                {
+                    RequireHeldWhileTheOtherAppPlays("the other app was between two songs");
+                    return waited >= GapBetweenSongsSeconds;
+                },
+                end: () => TurnTheOtherApp(isPlaying: true)));
+            Steps.Add(new Step(
+                "the next song of the other app kept the music held",
+                begin: () => { },
+                hasComeAbout: waited =>
+                {
+                    RequireHeldWhileTheOtherAppPlays("the next song played");
+                    return waited >= MusicYield.AskEverySeconds + SettleSeconds;
+                },
+                end: () => { }));
+            Steps.Add(new Step(
+                "the other app's music stopped: after two quiet answers the music came back, fading in from where it was held",
+                begin: () => TurnTheOtherApp(isPlaying: false),
+                hasComeAbout: waited => Music.IsPlaying && Music.Volume >= SoundLevels.Music,
+                end: () =>
+                {
+                    float took = Time.time - _otherAudioTurnedAt;
+                    Findings.Add($"came back {took:0.000} s after the other app stopped");
+                    Require(
+                        took >= MusicYield.AskEverySeconds && took <= 2f * MusicYield.AskEverySeconds + MusicFade.Seconds + QuestionSlackSeconds,
+                        $"the music came back {took:0.000} s after the other app stopped, not after two quiet answers");
+                    Require(Music.Beginnings == 1, $"come back, the music began from its first note ({Music.Beginnings} beginnings)");
+                    RequireNotBefore(Music.Place, _heldAt, "come back");
+                    _lastPlace = Music.Place;
+                }));
+            Steps.Add(new Step(
+                "put away and brought back while another app's music played, the music stayed silent",
+                begin: () =>
+                {
+                    TurnTheOtherApp(isPlaying: true);
+                    Root.SendMessage("OnApplicationPause", true);
+                    _heldAt = Music.Place;
+                    Root.SendMessage("OnApplicationPause", false);
+                    Require(Music.IsGivingWay, "brought back, the music did not ask at once whether another app played");
+                },
+                hasComeAbout: waited =>
+                {
+                    RequireHeldWhileTheOtherAppPlays("the game was brought back");
+                    return waited >= SettleSeconds;
+                },
+                end: () => { }));
+            Steps.Add(new Step(
+                $"given the touches back once the other app had stopped, the music faded in at once, in about {MusicFade.Seconds} s",
+                begin: () =>
+                {
+                    TurnTheOtherApp(isPlaying: false);
+                    Root.SendMessage("OnApplicationFocus", true);
+                    Require(!Music.IsGivingWay, "given the touches back, the music did not ask at once whether another app played");
+                },
+                hasComeAbout: waited => Music.IsPlaying && Music.Volume >= SoundLevels.Music,
+                end: () =>
+                {
+                    RequireAFade("in", Time.time - _otherAudioTurnedAt);
+                    Require(Music.Beginnings == 1, $"given the touches back, the music began from its first note ({Music.Beginnings} beginnings)");
+                    RequireNotBefore(Music.Place, _heldAt, "given the touches back");
+                    _lastPlace = Music.Place;
+                }));
+            Steps.Add(new Step(
+                "with no other app playing the music played on",
+                begin: () => { },
+                hasComeAbout: waited => waited >= SettleSeconds,
+                end: () => RequireTheMusicPlaysOn("the other app had stopped a moment before")));
+        }
+
+        private static void TurnTheOtherApp(bool isPlaying)
+        {
+            OtherApp.IsPlaying = isPlaying;
+            _otherAudioTurnedAt = Time.time;
+        }
+
+        private static void RequireHeldWhileTheOtherAppPlays(string when) =>
+            Require(
+                Music.IsGivingWay && !Music.IsPlaying && Music.Volume == 0f && Music.Place.Equals(_heldAt),
+                $"when {when} the music is {(Music.IsPlaying ? "playing" : "held")} at {Music.Place} and {Music.Volume} of full volume, not held at {_heldAt}");
+
+        /// <summary>
+        /// A press was handed to one of the effects' voices, at their level, with the listener on, while the music stayed
+        /// held. Whether the voice is still playing is not asked: a press lasts less than the Editor may take between two
+        /// ticks, and a batch-mode Editor may have no sound device (as PlayModeCheck says of every cue).
+        /// </summary>
+        private static void RequireThePressSounded()
+        {
+            ArtCatalogue art = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(ArtCatalogueBuilder.CataloguePath);
+            AudioClip press = art.SoundOf(SoundCue.Press) ?? throw new InvalidOperationException("the catalogue has no sound for a press");
+            AudioSource? voice = Root.GetComponents<AudioSource>().FirstOrDefault(source => source.clip == press);
+            Require(voice != null && Mathf.Approximately(voice.volume, SoundLevels.Effects), $"no effect's voice was given the press at the effects' level {SoundLevels.Effects}");
+            Require(!AudioListener.pause && AudioListener.volume > 0f, $"the listener is {(AudioListener.pause ? "paused" : "on")} at volume {AudioListener.volume}");
+            RequireHeldWhileTheOtherAppPlays("the press sounded");
+        }
+
+        /// <summary>
+        /// The music plays, was begun once in all, has not given way to its own sound, and has gone on from where it was
+        /// last seen (where the audio clock moves).
+        /// </summary>
         private static void RequireTheMusicPlaysOn(string when)
         {
             MusicPlayer music = Music;
             Require(music.IsPlaying && music.Beginnings == 1, $"when {when} the music is {(music.IsPlaying ? "playing" : "held")} and began {music.Beginnings} times");
+            Require(!music.IsGivingWay, $"when {when} the music gave way with no other app playing");
             MusicPlace now = music.Place;
             if (AudioSettings.dspTime > _audioClockAtTheStart)
             {

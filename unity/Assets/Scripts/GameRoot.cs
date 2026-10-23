@@ -23,16 +23,17 @@ namespace Puzzle.Client
     /// stays a few lines and the Editor can build the same pictures without it. What is heard and felt goes the other
     /// way: the root holds the phone's speaker and vibrator (<see cref="SoundPlayer"/>), which the session plays its
     /// cues on; the Editor's sessions have none, and are silent. The root also holds the game's music
-    /// (<see cref="MusicPlayer"/>), which no screen reaches: it follows only the player's switch, every frame.
+    /// (<see cref="MusicPlayer"/>), which no screen reaches: it follows only the player's switch, every frame, and
+    /// gives way to another app's music, which the root asks the device about (<see cref="OtherAudio"/>).
     /// </summary>
     /// <remarks>
     /// Being put away and brought back needs little: Unity stops calling <see cref="Update"/> while the game is in
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
-    /// a finger that was down, to hold the music where it is (it fades in from there on the way back), and to save
-    /// progress and attempt records that could not be saved before. If the device
-    /// closes the game while it is away, the attempt in progress is gone: the game comes back in the museum, and the
-    /// level starts again with its next board.
+    /// a finger that was down, to hold the music where it is (it fades in from there on the way back, unless another
+    /// app's music plays by then), and to save progress and attempt records that could not be saved before. If the
+    /// device closes the game while it is away, the attempt in progress is gone: the game comes back in the museum, and
+    /// the level starts again with its next board.
     /// </remarks>
     public sealed class GameRoot : MonoBehaviour
     {
@@ -55,6 +56,7 @@ namespace Puzzle.Client
 
         private GameSession? _session;
         private SoundPlayer? _sounds;
+        private IOtherAudio? _otherAudio;
         private MusicPlayer? _music;
         private ScreenShape _fittedTo;
 
@@ -78,7 +80,8 @@ namespace Puzzle.Client
             _fittedTo = CurrentScreen();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
             _sounds = new SoundPlayer(gameObject, _art, Haptics.OfThisDevice());
-            _music = MusicOf(gameObject, _art, settings);
+            _otherAudio = OtherAudio.OfThisDevice();
+            _music = MusicOf(gameObject, _art, settings, _otherAudio);
             _session = OpenSession(
                 LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), phone, settings, _sounds, _fittedTo);
         }
@@ -94,6 +97,12 @@ namespace Puzzle.Client
         /// music check, which follows it across the screens and the switch.
         /// </summary>
         public MusicPlayer? Music => _music;
+
+        /// <summary>
+        /// What the music asks whether another app's music plays; nothing before the game has started. In the Editor a
+        /// stand-in (<see cref="OtherAudioStandIn"/>), which the music check sets playing to see the music give way.
+        /// </summary>
+        public IOtherAudio? OtherAudioOfTheDevice => _otherAudio;
 
         /// <summary>The running game's session; nothing before the game has started. For the Editor's music check, which presses the game's buttons as a finger does.</summary>
         public GameSession? Session => _session;
@@ -132,12 +141,24 @@ namespace Puzzle.Client
                 _session?.SaveProgress();
                 _session?.WriteWaitingRecords();
             }
+            else
+            {
+                _music?.ComeBack();
+            }
         }
 
-        /// <summary>Something else takes the touches (a system dialog, the notification shade): a finger that was down is not followed further.</summary>
+        /// <summary>
+        /// Something else takes the touches (a system dialog, the notification shade): a finger that was down is not
+        /// followed further. When the game has them back, the music asks at once whether the player started or stopped
+        /// their own music meanwhile (the shade has its controls).
+        /// </summary>
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (!hasFocus)
+            if (hasFocus)
+            {
+                _music?.ComeBack();
+            }
+            else
             {
                 LetGoOfTheFinger();
             }
@@ -147,6 +168,7 @@ namespace Puzzle.Client
         {
             _session?.Dispose();
             _sounds?.Dispose();
+            (_otherAudio as IDisposable)?.Dispose();
         }
 
         /// <summary>
@@ -190,8 +212,8 @@ namespace Puzzle.Client
             }
         }
 
-        /// <summary>The game's music on the root, following the player's switch; none from a catalogue built before the music, which is said once.</summary>
-        private static MusicPlayer? MusicOf(GameObject root, ArtCatalogue art, ISettingsStore settings)
+        /// <summary>The game's music on the root, following the player's switch and giving way to another app's music; none from a catalogue built before the music, which is said once.</summary>
+        private static MusicPlayer? MusicOf(GameObject root, ArtCatalogue art, ISettingsStore settings, IOtherAudio otherAudio)
         {
             if (!(art.Music is MusicClips music))
             {
@@ -199,7 +221,7 @@ namespace Puzzle.Client
                 return null;
             }
 
-            return new MusicPlayer(root, music, settings);
+            return new MusicPlayer(root, music, settings, otherAudio);
         }
 
         /// <summary>

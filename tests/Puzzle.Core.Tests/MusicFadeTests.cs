@@ -64,6 +64,21 @@ public class MusicFadeTests
     }
 
     [Fact]
+    public void A_fade_at_either_end_is_at_rest_and_one_halfway_is_not()
+    {
+        var fade = new MusicFade(isOn: true);
+        bool heardIsAtRest = fade.IsAtRest;
+
+        fade.Follow(isOn: false, MusicFade.Seconds / 2f);
+        bool halfwayIsAtRest = fade.IsAtRest;
+        fade.Follow(isOn: false, MusicFade.Seconds);
+
+        Assert.True(heardIsAtRest);
+        Assert.False(halfwayIsAtRest);
+        Assert.True(fade.IsAtRest);
+    }
+
+    [Fact]
     public void Time_that_runs_backwards_is_refused()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new MusicFade(isOn: true).Follow(isOn: false, -Frame));
