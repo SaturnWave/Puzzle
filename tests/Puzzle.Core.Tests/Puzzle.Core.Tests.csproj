@@ -109,6 +109,8 @@
     <!-- Nor has what a finger on the museum's pages means: a tap, a swipe that drags the row of pages, and where the row settles; nor the slop within which a touch taps, and presses a control. -->
     <Compile Include="..\..\unity\Assets\Scripts\Screens\PageSwipe.cs" Link="Unity\Screens\PageSwipe.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\TapSlop.cs" Link="Unity\Screens\TapSlop.cs" />
+    <!-- Nor has the shelf of the paintings' pictures: each loaded once, a held one never unloaded, and only the few let go of last kept. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Canvases\PictureShelf.cs" Link="Unity\Canvases\PictureShelf.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Engine\LevelStart.cs" Link="Unity\Engine\LevelStart.cs" />
     <!-- Nor have the board's plaques and the result's card: what the plaques say by the piece a level gives, and the rows of the card. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\BoardWords.cs" Link="Unity\Flow\BoardWords.cs" />

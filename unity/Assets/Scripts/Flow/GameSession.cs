@@ -462,7 +462,7 @@ namespace Puzzle.Client.Flow
                     ChangeTheStage(() => OpenTheBoard(StageOpening.OutOfTheDark, toPlay.StartBoosters));
 
                     // The hall's paintings are not seen on a board; the result's card loads the one it shows by itself.
-                    PaintingGallery.LetGoOfUnusedPictures();
+                    _paintings.LetGoOfUnusedPictures();
                     break;
                 case MuseumStage { PlayerLeftFor: MuseumExit.ToAJigsaw jigsaw } museum:
                     _wayBack = new WayBack.ToTheMuseum(museum.Door);
@@ -510,7 +510,7 @@ namespace Puzzle.Client.Flow
                 _restoredJustNow = null;
                 (back as WayBack.ToTheCard)?.Board.Dispose();
                 _front = OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.AtTheRestored(restored));
-                PaintingGallery.LetGoOfUnusedPictures();
+                _paintings.LetGoOfUnusedPictures();
                 return;
             }
 
@@ -528,7 +528,7 @@ namespace Puzzle.Client.Flow
                     throw new InvalidOperationException($"A way back of the kind {back.GetType().Name} leads nowhere.");
             }
 
-            PaintingGallery.LetGoOfUnusedPictures();
+            _paintings.LetGoOfUnusedPictures();
         }
 
         /// <summary>Takes the open stage down and then builds the next one: never two cameras at once.</summary>

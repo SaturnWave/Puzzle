@@ -71,6 +71,9 @@ namespace Puzzle.Client.Hall
         private readonly Transform _root;
         private readonly List<PaintedShape> _shapes = new List<PaintedShape>();
 
+        /// <summary>The paintings whose pictures the row shows: it holds them while it is up.</summary>
+        private readonly List<PaintingLook> _looks = new List<PaintingLook>();
+
         private PaintingThumbs(Transform parent, ArtCatalogue art, PaintingGallery paintings, RoomWall room, PaintingNumber? beingRestored, ThumbOrders orders)
         {
             _root = new GameObject("Paintings").transform;
@@ -112,6 +115,11 @@ namespace Puzzle.Client.Hall
                 shape.Dispose();
             }
 
+            foreach (PaintingLook look in _looks)
+            {
+                look.Dispose();
+            }
+
             SceneObjects.DestroyObjectOf(_root);
         }
 
@@ -144,7 +152,7 @@ namespace Puzzle.Client.Hall
         /// </summary>
         private void AddPicture(Rect picture, HungPainting painting, PaintingGallery paintings, ArtCatalogue art, DrawOrder order)
         {
-            Texture2D? texture = painting.PiecesInPlace.Count > 0 ? paintings.LookOf(painting.Number).Picture : null;
+            Texture2D? texture = painting.PiecesInPlace.Count > 0 ? Hold(paintings.LookOf(painting.Number)).Picture : null;
             var sketch = new MeshSketch();
             if (texture == null)
             {
@@ -182,6 +190,12 @@ namespace Puzzle.Client.Hall
             float fromCorner = SealPastCorner - SealSize / 2f;
             seal.localPosition = new Vector3(picture.xMax + fromCorner, picture.yMin - fromCorner, 0f);
             seal.localScale = new Vector3(SealSize / SealDrawnSize, SealSize / SealDrawnSize, 1f);
+        }
+
+        private PaintingLook Hold(PaintingLook look)
+        {
+            _looks.Add(look);
+            return look;
         }
 
         private static Rect Grown(Rect rect, float by) => new Rect(rect.x - by, rect.y - by, rect.width + 2f * by, rect.height + 2f * by);

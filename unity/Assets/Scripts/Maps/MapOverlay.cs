@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Layout;
@@ -77,6 +78,9 @@ namespace Puzzle.Client.Maps
         private readonly Transform _root;
         private readonly List<PaintedShape> _shapes = new List<PaintedShape>();
 
+        /// <summary>The paintings whose pictures the pins show: the overlay holds them while it is up.</summary>
+        private readonly List<PaintingLook> _looks = new List<PaintingLook>();
+
         private MapOverlay(Transform parent)
         {
             _root = new GameObject("Map overlay").transform;
@@ -108,6 +112,11 @@ namespace Puzzle.Client.Maps
             foreach (PaintedShape shape in _shapes)
             {
                 shape.Dispose();
+            }
+
+            foreach (PaintingLook look in _looks)
+            {
+                look.Dispose();
             }
 
             SceneObjects.DestroyObjectOf(_root);
@@ -231,13 +240,18 @@ namespace Puzzle.Client.Maps
 
             var picture = new Rect(-PinPictureSize / 2f, PictureOverTheTip - PinPictureSize / 2f, PinPictureSize, PinPictureSize);
             var anywhere = new Rect(MeshSketch.AnywhereInTheTexture, Vector2.zero);
-            if (mark != MapMark.Ahead && atlas.PictureOf(painting) is { } shown)
+            PaintingLook? look = mark == MapMark.Ahead ? null : atlas.LookOf(painting);
+            if (look != null)
+            {
+                _looks.Add(look);
+            }
+
+            if (look?.Picture is Texture2D texture)
             {
                 // The painting being restored is seen dimmed, as at 62 % over the frame's dark ground.
-                (Texture2D texture, float aspect) = shown;
                 Color light = mark == MapMark.Here ? DimmedTo(HereImageStrength) : Color.white;
                 var sketch = new MeshSketch();
-                sketch.AddRectangle(picture, light, light, SquareOf(aspect));
+                sketch.AddRectangle(picture, light, light, SquareOf(look.Aspect));
                 PaintedShape image = PaintedShape.Create("Picture", pin, art.PaintMaterial, DrawOrder.MapPinPicture, texture);
                 _shapes.Add(image);
                 Fading.Add(image);
