@@ -10,27 +10,46 @@ namespace Puzzle.Client.Sound
 {
     /// <summary>
     /// Short ticks, as the phone's own keyboard ticks: through Android's vibrator on an Android phone, through the
-    /// Taptic Engine on an iPhone (<see cref="Vibrator"/>). Anywhere else (the Editor, a desktop), and on a phone
-    /// without a vibrator, a tick is nothing. A vibrator that fails is said once and not asked again in the run.
+    /// Taptic Engine on an iPhone (<see cref="Vibrator"/>). Anywhere else (the Editor, a desktop), and on a device
+    /// without a vibrator (an iPad, a tablet), a tick is nothing. A vibrator that fails is said once and not asked
+    /// again in the run.
     /// </summary>
     public sealed class Haptics : IDisposable
     {
         private Vibrator? _vibrator;
 
-        private Haptics(Vibrator? vibrator)
+        private Haptics(Vibrator? vibrator, bool deviceHasNone)
         {
             _vibrator = vibrator;
+            DeviceHasNone = deviceHasNone;
         }
 
-        /// <summary>The vibrator of the phone the game runs on; one that ticks nothing where there is none to reach.</summary>
+        /// <summary>
+        /// The vibrator of the device the game runs on; one that ticks nothing where there is none to reach. An iPad
+        /// has no Taptic Engine, and iOS tells that only by the model's name.
+        /// </summary>
         public static Haptics OfThisDevice()
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            return new Haptics(new Vibrator.TapticEngine());
+            bool isAnIPad = SystemInfo.deviceModel.StartsWith("iPad", StringComparison.Ordinal);
+            return isAnIPad ? new Haptics(null, deviceHasNone: true) : new Haptics(new Vibrator.TapticEngine(), deviceHasNone: false);
 #else
-            return new Haptics(Application.platform == RuntimePlatform.Android ? Vibrator.OfAndroid.OfThisPhone() : null);
+            if (Application.platform != RuntimePlatform.Android)
+            {
+                return new Haptics(null, deviceHasNone: false);
+            }
+
+            Vibrator? vibrator = Vibrator.OfAndroid.OfThisPhone();
+            return new Haptics(vibrator, deviceHasNone: vibrator == null);
 #endif
         }
+
+        /// <summary>
+        /// Whether the device has nothing to tick from the start: an iPad, or an Android device without a vibrator or
+        /// whose vibrator cannot be reached. The settings card then leaves the vibration switch out. False in the
+        /// Editor and on a desktop, which are drawn as the phone, switch and all.
+        /// </summary>
+        public bool DeviceHasNone { get; }
 
         /// <summary>One short tick, lighter or firmer; nothing where there is no vibrator to reach.</summary>
         public void Buzz(Tick tick)
@@ -136,8 +155,8 @@ namespace Puzzle.Client.Sound
 #if UNITY_IOS && !UNITY_EDITOR
             /// <summary>
             /// The iPhone's Taptic Engine, through UIKit's impact feedback (Plugins/iOS/TapticEngine.mm): a light tap and
-            /// a heavy one, for Android's click and heavy click. iOS itself leaves the taps out where there is no Taptic
-            /// Engine (an iPad, an iPhone before the 7) or where the player turned the system's haptics off. A tap
+            /// a heavy one, for Android's click and heavy click. An iPad gets none (<see cref="OfThisDevice"/>); iOS itself
+            /// leaves the taps out on an iPhone before the 7 and where the player turned the system's haptics off. A tap
             /// neither fails nor says so, and UIKit's generators live as long as the game.
             /// </summary>
             public sealed class TapticEngine : Vibrator

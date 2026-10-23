@@ -79,11 +79,13 @@ namespace Puzzle.Client
             Input.simulateMouseWithTouches = false;
             _fittedTo = CurrentScreen();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
-            _sounds = new SoundPlayer(gameObject, _art, Haptics.OfThisDevice());
+            Haptics haptics = Haptics.OfThisDevice();
+            DeviceAbilities abilities = haptics.DeviceHasNone ? DeviceAbilities.OfThisBuildWithoutVibrator : DeviceAbilities.OfThisBuild;
+            _sounds = new SoundPlayer(gameObject, _art, haptics);
             _otherAudio = OtherAudio.OfThisDevice();
             _music = MusicOf(gameObject, _art, settings, _otherAudio);
             _session = OpenSession(
-                LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), phone, settings, _sounds, _fittedTo);
+                LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), phone, settings, abilities, _sounds, _fittedTo);
         }
 
         /// <summary>
@@ -174,7 +176,7 @@ namespace Puzzle.Client
         /// <summary>
         /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
         /// device's clock, with the attempt log in the same folder under the phone's id and the player's settings in
-        /// the device file beside it. If that file is there but
+        /// the device file beside it; its settings card offers a switch for each of the device's abilities. If that file is there but
         /// cannot be read from the device, the player can still play: this run starts at the first level as a new
         /// player, keeps its progress in memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes on from where that file says the
         /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
@@ -182,7 +184,7 @@ namespace Puzzle.Client
         /// </summary>
         private static GameSession OpenSession(
             IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, DeviceId phone, ISettingsStore settings,
-            ICuePlayer cues, ScreenShape screen)
+            DeviceAbilities abilities, ICuePlayer cues, ScreenShape screen)
         {
             var clock = new SystemWallClock();
 
@@ -193,7 +195,7 @@ namespace Puzzle.Client
             Debug.Log($"The game speaks {Languages.CodeOf(speaking)} (the phone's language: {PhoneLanguage.Tag()}; chosen: {(settings.Settings.Language is Language chosen ? Languages.CodeOf(chosen) : "none")}).");
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
             GameSession SessionOn(IProgressStore store) =>
-                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, DeviceAbilities.OfThisBuild, cues, screen, SessionOpening.InTheMuseum);
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, screen, SessionOpening.InTheMuseum);
 
             try
             {
