@@ -10,9 +10,10 @@ namespace Puzzle.Client.EditorTools
     /// Brings everything the Editor derives up to date, in the order the parts need each other: the render pipeline,
     /// the atlas of the sprites, the art catalogue from the drawings, the typeface and the sounds (it lists every sound
     /// cue with its file, length and peak level), the scene that refers to the catalogue; it keeps Unity's own
-    /// player statistics off, and TextMesh Pro breaking Korean lines between words. Safe to run again at any time; run it after the drawings, the lists of drawings, the
-    /// lettering styles or the sounds change (after node tools/unity/export-sprites.js, export-gallery-art.js or
-    /// fetch-sounds.js, for instance).
+    /// player statistics off, TextMesh Pro breaking Korean lines between words, and the game's icon in the player
+    /// settings (<see cref="AppIcons"/>). Safe to run again at any time; run it after the drawings, the lists of drawings, the
+    /// lettering styles, the sounds or the icon change (after node tools/unity/export-sprites.js, export-gallery-art.js
+    /// or fetch-sounds.js, for instance).
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ProjectSetup.Run
     /// </summary>
     public static class ProjectSetup
@@ -41,7 +42,7 @@ namespace Puzzle.Client.EditorTools
         /// What <see cref="Run"/> does, for a tool that must not work with derived files older than their sources:
         /// the package build, which would otherwise carry a catalogue that lacks the drawings added since.
         /// </summary>
-        /// <exception cref="InvalidOperationException">A drawing, a font file or a list of them does not fit the others; the message names it.</exception>
+        /// <exception cref="InvalidOperationException">A drawing, a font file or a list of them does not fit the others, or a picture of the icon is missing; the message names it.</exception>
         /// <exception cref="IOException">A derived file could not be written.</exception>
         public static void BringUpToDate()
         {
@@ -52,6 +53,7 @@ namespace Puzzle.Client.EditorTools
             MainSceneBuilder.Build();
             SwitchOffUnitysStatistics();
             BreakKoreanLinesBetweenWords();
+            AppIcons.Apply();
             AssetDatabase.SaveAssets();
         }
 
