@@ -59,6 +59,21 @@ ssh <kullanıcı>@arcans-macbook-pro "cd ~/puzzle-ios/iOS && find . -name '*.sh'
 
 Klasör 1–2 GB olabilir. Windows'tan gelen dosyalar çalıştırma iznini taşımaz; ikinci satır Xcode'un betiklerine izni verir (başka araçların da izin isteyip istemediği ilk denemede görülecek). Yedek yol: `scp -r unity/Build/iOS <kullanıcı>@arcans-macbook-pro:~/puzzle-ios/` (çok sayıda küçük dosyada daha yavaş).
 
+**Denendi (2026-10-24):** kullanıcı `arcancaglayan`; `tar -czf` ile sıkıştırılmış tek akış, 1,7 GB 115 saniyede geçti (Tailscale doğrudan bağlantı). `.sh` izni dışında başka izin gerekmedi.
+
+### 3.2.1 iPad'e geliştirme sürümü (TestFlight'sız; 2026-10-24'te denendi)
+
+App Store Connect kaydı olmadan, takımın geliştirme sertifikasıyla doğrudan bir cihaza kurulum.
+
+- **Derleme, SSH'den:** `cd ~/puzzle-ios/iOS && xcodebuild -project Unity-iPhone.xcodeproj -scheme Unity-iPhone -configuration Release -destination "generic/platform=iOS" -derivedDataPath ~/puzzle-ios/DerivedData DEVELOPMENT_TEAM=W4P65SPZP9 CODE_SIGN_STYLE=Automatic build`. IL2CPP'nin C++ kodu Intel Mac'te derlenir. Son adım olan imza SSH'den `errSecInternalComponent` ile durur; bu beklenen bir durumdur (oturum anahtar zinciri SSH'ye kapalı).
+- **İmza ve kurulum, Mac'in kendi Terminal'inde:** `sh ~/puzzle-ios/sign-and-install.sh` (depoda `tools/ios/sign-and-install.sh`). Aynı komutu aynı DerivedData ile yeniden çalıştırır: kodu yeniden derlemez, yalnızca imzalar. Sonra `xcrun devicectl device install app` ile iPad'e kurar. İlk çalıştırmada macOS, codesign'ın anahtarı kullanmasına izin isteyebilir: Mac şifresi, "Her Zaman İzin Ver".
+- **Gerekenler:**
+  - Takım kimliği `W4P65SPZP9`.
+  - Xcode'un yönettiği joker geliştirme profili ("iOS Team Provisioning Profile: *"); iPad'in kimliği (`00008112-0016084A0C06201E`) bu profilde kayıtlı.
+  - iPad kabloyla bağlı ve Mac'le eşleşmiş; **Geliştirici Modu** açık (Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu → Aç; iPad yeniden başlar, açılınca "Aç" ve iPad şifresi).
+- **Sonuç:** Puzzle.app (imzalı, 854 MB) 2026-10-24'te proje sahibinin iPad Pro 12.9" (6. nesil, iPadOS 26.5) cihazına kuruldu.
+- Yeni bir sürüm için: dışa aktarma (§3.1), aktarma (§3.2), SSH'den derleme, sonra Mac'te aynı betik. TestFlight yolu (§3.3, bulut imzası) hâlâ denenmedi.
+
 ### 3.3 Mac: arşiv, imza ve TestFlight'a yükleme
 
 SSH oturumunda Mac'in oturum anahtar zinciri kilitli görünür; yerel sertifikayla imza `errSecInternalComponent` hatasıyla durur. Bu yüzden plan, arşivi imzasız alıp imzayı dışa aktarmada Apple'ın bulutta tuttuğu dağıtım sertifikasıyla (cloud signing, API anahtarıyla) yaptırmaktır: Mac'te parola ya da anahtar zinciri gerekmez.
