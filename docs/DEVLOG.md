@@ -4,6 +4,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-24 · Oturum 30 — Kalan işler
+
+**Koleksiyonda bellek (A42/4)**
+- Bitti (8960aa8): 23 Ekim telefon turunda koleksiyonun 20 odası gezilince bellek 401 MB'tan 649 MB'a çıkmıştı. Neden: odaların resimleri `Resources` ile yükleniyor, oda kaldırılınca bırakılmıyordu; 20 oda gezilince müzenin 100 resmi de bellekte kalıyordu (telefonda her biri yaklaşık 2,5 MB). Ağlar, malzemeler ve sahne nesneleri zaten temizleniyordu.
+- Artık resmi gösteren her şey onu tutuyor ve kaldırılınca bırakıyor (`PictureShelf`, Unity'siz, 11 test). Hiçbir şeyin tutmadığı resimlerden son bırakılan 10'u (iki oda) kalıyor, fazlası boşaltılıyor; sahne değişince hepsi. Görünürde değişiklik yok (GAME_DESIGN §23).
+- Yeni denetim `CollectionMemoryCheck`: 20 oda beş kez gezilir (üçü düğmelerle, ikisi kaydırarak). Eski kodda aynı anda 100 resim, denetim kırılıyor; yeni kodda en çok 20, her gezinti sonunda 15; ağ, malzeme ve nesne sayıları sabit.
+- 4.122 test geçti; ekonomi denetimi temiz; Unity'de bütün denetimler hatasız. Telefon testleri T420–T425; telefonda henüz denenmedi.
+
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 
 **Kullanıcı kararları**

@@ -1083,6 +1083,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Müzenin durumu ve kesimler | `... -executeMethod Puzzle.Client.EditorTools.MuseumReport.Run` |
 | Bitiş şöleninin kareleri | `... -executeMethod Puzzle.Client.EditorTools.FinaleStory.Run -finaleLevels 40 -finaleLeft 3,12,30 -finaleSize 1080x2340` (kalan hamle sayısı, ekran boyu, atlama anı seçilir; görüntüler `out/unity/shots/finale`) |
 | Bitiş şöleninin denetimi | `... -executeMethod Puzzle.Client.EditorTools.FinaleCheck.Run` (sonuna kadar izleme, dokunuşla ve geri tuşuyla atlama, şölensiz kazanma ve kaybetme, hata durumunda kartın yine gelmesi) |
+| Koleksiyonda bellek denetimi | `... -executeMethod Puzzle.Client.EditorTools.CollectionMemoryCheck.Run` (20 oda beş kez gezilir; bellekte aynı anda 25'ten fazla resim olmaz, gezintiden gezintiye hiçbir şey artmaz; sayılar `out/unity/collection-memory.json`) |
 | Yazı örnek föyü | `... -executeMethod Puzzle.Client.EditorTools.LetteringSheet.Run` (on bir yazı stili kendi zemininde, Türkçe harflerle; `out/unity/shots/lettering-sheet-2x.png`) |
 | Çizim föyü | `... -executeMethod Puzzle.Client.EditorTools.ArtSheet.Run` (kataloğun bütün çizimleri duvar, krem ve ahşap üstünde; `art-sheet-2x.png`) |
 | Ortak parçaların föyü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run -screens controls -screenSizes 1080x2340` (düğmeler ve diskler; duvar, krem kart ve ahşap üstünde) |
@@ -1434,6 +1435,16 @@ Bu kararlarla 10. aşama başladı.
   - Eşik sayfa kaydırmasınınkiyle aynıdır (Android'in kendi eşiği kadar); kartlarda kartın kendi ölçüsünde ölçülür.
   - Bütün kartlar, sayfalar, tahta ve yapboz düğmeleri için geçerli. Yapı: `TapSlop` (Unity'siz, testli), `PressSet`, `PageSwipe`.
 - **Doğrulama:** 4.111 test. Unity'de bütün denetimler ve yeni "wayback" yürüyüşü (tr, en, ko) hatasız; yürüyüş eski kodda kırılıyor. Telefon testleri T410–T414; T43'ün beklenen sonucu güncellendi.
+
+**Koleksiyonda bellek (2026-10-24, A42/4).**
+
+- **Bulgu:** 23 Ekim telefon turunda koleksiyonun 20 odası gezilince oyunun belleği 401 MB'tan 649 MB'a çıktı. Neden: her odanın resimleri `Resources` ile yükleniyor, oda kaldırılınca bırakılmıyordu. Yalnızca sahne değişince (tahtaya ya da yapboza geçişte) boşaltılıyordu. Bir gezintide müzenin 100 resminin hepsi bellekte kalıyordu; telefonda resim başına yaklaşık 2,5 MB (ASTC 6x6, 2048 piksel, mipmap'li). Ağlar, malzemeler ve sahne nesneleri zaten temizleniyordu.
+- **Düzeltme:** `PictureShelf` (Unity'siz, testli) her resmi bir kez yükler. Resmi gösteren her şey onu tutar ve kaldırılınca bırakır (`PaintingLook` artık `IDisposable`). Hiçbir şeyin tutmadığı resimlerden yalnızca son bırakılan 10'u (iki oda) bellekte kalır; fazlası, en eskisinden başlayarak `Resources.UnloadAsset` ile boşaltılır. Tutulan bir resim hiç boşaltılmaz; sahne değişince kalan 10 da boşaltılır.
+  - Resmi tutanlar: koleksiyonun odaları ve yakından bakılan tablo, salon ve plaketteki küçük resimler, haritanın iğneleri ve kartı, yapboz, tahtanın ödül resmi ve sonuç kartı.
+- **Oyuncunun gördüğü:** değişiklik yok. Son iki odaya dönmek hiçbir şey yüklemez; daha uzaktaki bir oda, ilk açılışındaki gibi yüklenir.
+- **Denetim:** `CollectionMemoryCheck`. Son odadaki bir oyuncu için koleksiyonu 20. odadan 1.'ye ve geri gezer: üç kez düğmelerle, iki kez plakette kaydırarak. Her dönüşte ve parmak inikken bellekteki resimleri sayar. 25'ten fazla resim ya da ilk gezintiden sonra artan bir sayı (resim, doku, ağ, malzeme, sahne nesnesi) hatadır.
+  - Eski kodda: aynı anda 100 resim, denetim kırılıyor. Yeni kodda: en çok 20, her gezinti sonunda 15 resim; ağ, malzeme ve nesne sayıları gezintiden gezintiye aynı.
+- **Doğrulama:** 4.122 test (11'i yeni). Ekonomi denetimi temiz. Unity'de bütün denetimler hatasız; koleksiyonun görüntüleri değişmedi. Telefon testleri T420–T425.
 
 ## 24. Bölüm bankası ve derleyici
 

@@ -13,7 +13,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | 1 | C# testleri | `dotnet test tests/Puzzle.Core.Tests/Puzzle.Core.Tests.csproj -c Debug` |
 | 2 | Betik testleri | `node --test tools/unity/economy-pack.test.mjs` |
 | 3 | Motoru ve ayarları Unity'ye al | `node tools/unity/sync-engine.js` |
-| 4 | Unity denetimleri | `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck`, `FinaleCheck`, `PlayModeCheck`, `TouchWhileMovingCheck`, `ScreenShots -screenWalk` (komutlar: GAME_DESIGN §23) |
+| 4 | Unity denetimleri | `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck`, `FinaleCheck`, `PlayModeCheck`, `TouchWhileMovingCheck`, `CollectionMemoryCheck`, `ScreenShots -screenWalk` (komutlar: GAME_DESIGN §23) |
 | 5 | Ekonomi | `puzzle economy run economy/default.json`: ortalama oyuncu 100. bölüme 7–9. günde (§25) |
 | 6 | APK | `AndroidBuild.Run` → `unity/Build/Android/puzzle.apk` |
 | 7 | Telefona kur | USB hata ayıklama telefonda onaylı; `adb install -r unity/Build/Android/puzzle.apk` |
@@ -38,7 +38,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A11 | Bölüm geçişinde duvar, plaketler ve çerçeve yeniden kuruluyor; süresi telefonda ölçülmedi. | Oturum 16 | Düşük | T15 |
 | A12 | 40 parçalı otomatik tamamlama, geri tuşu ve uzun oynama telefonda denenmedi. | Oturum 17 | Orta | T41, T42, T13 |
 | A13 | İç (kare) ekran, ucuz telefonlar ve uygulamayı arka plana alıp dönme denenmedi. | Oturum 16 | Orta | T02, T14 |
-| A14 | 100 tablonun bellek ve yükleme süresi telefonda ölçülmedi (her biri yaklaşık 1 MB, uzun kenarı yaklaşık 1920 piksel). | Müze | Orta: bellek | T40 |
+| A14 | 100 tablonun bellek ve yükleme süresi telefonda ölçülmedi (her biri yaklaşık 1 MB, uzun kenarı yaklaşık 1920 piksel). 2026-10-24'ten beri koleksiyon gezilirken bellekte en çok 20 resim kalıyor (A42/4); telefonda ölçülecek. | Müze | Orta: bellek | T40, T420 |
 | A15 | Beyaz yazının alt çevre çizgisi tasarım çizimlerindekinden ince; bölüm başlığı ahşap üstünde soluk. | §23 | Görsel, küçük | Ekranlar aşamasında |
 | A16 | Web oyuncu sayfası gerçek telefonda, Safari'de ve ekran okuyucuyla denenmedi. | Oturum 13 | Herkese açık test için | T70 |
 | A17 | Bir sunucu testi (`PublicModeTests`, istek seli) bütün takım birlikte koşarken zamanlamaya takılabiliyor; tek başına geçiyor. | Oturum 21 | Telefonla ilgisi yok | Ayrı iş |
@@ -64,7 +64,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | A39 | On üç dil: çevirilerin hepsi makine çevirisi, yayından önce ana dili olan biri okumalı. Bütün yedek atlaslar her dilde yüklenir (16,5 MiB doku). CJK atlasları 40 örnekleme boyutunda; büyük başlıklarda keskinlik telefonda bakılmalı. İspanyolca "MOVIMIENTOS" madalyon halkasına yakın. Dil kartında başka dillerin adlarındaki ortak Han karakterleri seçili dilin biçiminde çıkabilir. İspanyolca 18–20. odaların adları çeviri. | #8 | Orta | T355, T356, T359, T362 |
 | A40 | Müzik: henüz kulakla dinlenmedi (seviye 0,4 ve Vorbis kalitesi 0,6 ölçüyle seçildi). Android ses odağı yönetilmiyor: başka bir uygulama çalarken oyun da çalar. Ayrı bir ses düzeyi kaydırıcısı yok. Suno bağlantısı kayıtta yok. | #9 | Orta | T373, T379 |
 | A41 | Dünya haritası: ekran okuyucu bağlantısı yok (bütün oyun için ayrı iş). Uzun dönem adları plakada iki satır; 14. dönem karşılaştırma için bilerek tek küçük satır (T400'de 12. ve 14. dönemin plaketine bakın). 6. dönem en yakın yakınlıkla açılıyor. Kare iç ekranda kart haritanın çoğunu kaplıyor. İğne resimleri döneme ilk gelişte yükleniyor; telefonda kısa takılma olabilir. 41 tablonun yeri yalnızca ressamın çalıştığı yer. | #4 | Orta | T391, T401, T403 |
-| A42 | 23 Ekim otomatik test turunun bulguları: (1) salonda Android geri tuşu hiçbir şey yapmıyor (T43); (2) tam ekran kipte kenardan tek geri hareketi önce sistem çubuklarını gösteriyor, ikincisi geri götürüyor (T235; Android'in tam ekran davranışı, gerçek parmakla denenecek); (3) ayarlar kartında bir satırın üstünde yatay kaydırma satıra basılmış sayılıyor (dil kartı açıldı, Titreşim kapandı); (4) koleksiyonda 20 oda gezilince bellek 401 MB'tan 649 MB'a çıkıyor, çökme yok (A14 ile ilgili); (5) her açılışta zararsız bir "AssetPackManager bulunamadı" günlük satırı (A32).  **Düzeltildi (2026-10-23, cbf5202):** (1) salonda geri tuşu ve geri hareketi çıkış kartını getiriyor (T410–T412); (3) bir düğmenin üstünde 10 noktadan uzun kaydırma hiçbir şeye basmıyor (T413–T414). (2), (4) ve (5) açık. | Arayüz | Orta | T43, T235, T237, T40 |
+| A42 | 23 Ekim otomatik test turunun bulguları: (1) salonda Android geri tuşu hiçbir şey yapmıyor (T43); (2) tam ekran kipte kenardan tek geri hareketi önce sistem çubuklarını gösteriyor, ikincisi geri götürüyor (T235; Android'in tam ekran davranışı, gerçek parmakla denenecek); (3) ayarlar kartında bir satırın üstünde yatay kaydırma satıra basılmış sayılıyor (dil kartı açıldı, Titreşim kapandı); (4) koleksiyonda 20 oda gezilince bellek 401 MB'tan 649 MB'a çıkıyor, çökme yok (A14 ile ilgili); (5) her açılışta zararsız bir "AssetPackManager bulunamadı" günlük satırı (A32).  **Düzeltildi (2026-10-23, cbf5202):** (1) salonda geri tuşu ve geri hareketi çıkış kartını getiriyor (T410–T412); (3) bir düğmenin üstünde 10 noktadan uzun kaydırma hiçbir şeye basmıyor (T413–T414). **Düzeltildi (2026-10-24, 8960aa8):** (4) oda kaldırılınca resimleri de bırakılıyor; bellekte gösterilen odalar ve son bırakılan 10 resim kalıyor, Editör'de 20 oda gezilince aynı anda en çok 20 resim (önce 100; `CollectionMemoryCheck`, T420–T425). (2) ve (5) açık. | Arayüz | Orta | T43, T235, T237, T40, T420 |
 | A22 | Uzun dönem adları koleksiyon plaketinde 6 puntoya düşmüştü. **Düzeltildi (2026-10-14):** uzun ad iki satıra bölünüyor (en çok 10 punto). Harita uzun adı tek satırda küçültüyor. | Müze, 2026-10-14 | Okunurluk | T44 |
 | A21 | Kayıt dosyası bozulursa cüzdan da kaybolur (dosya kenara alınır, oyun yeni oyuncu gibi açılır). Katman 3'ten eski bir sürüm, yeni dosyayı yalnızca bellekte oynar, üzerine yazmaz. | Aşama 2 | Düşük | T22 |
 
@@ -455,6 +455,19 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T412 | Kenardan geri hareketi | Hareketli gezinmede salonda ekranın sol ya da sağ kenarından geri hareketini yap. | Çıkış kartı iner (tam ekranda ilk hareketin sistem çubuklarını göstermesi ayrı bir konudur: T235). | Geri tuşu | Bekliyor |
 | T413 | Satırın üstünde kaydırma | Ayarlar kartında Dil ve Titreşim satırlarının üstünde yatay kaydır; bölüm kartında ve mağazada düğmelerin üstünde de kaydır. | Hiçbir şeye basılmaz: dil kartı açılmaz, anahtar değişmez. Aynı satırlara normal dokunuş eskisi gibi çalışır. | Dokunuş | Bekliyor |
 | T414 | Titrek dokunuş | Küçük düğmelere (çarpı, kart okları, booster diskleri, iğneler) parmağı hafifçe oynatarak bas. | Hepsi ilk denemede basılıyor; eşik bir dokunuşu sürükleme saymayacak kadar geniş. | Dokunuş | Bekliyor |
+
+### F20. Koleksiyonda bellek (24 Ekim)
+
+Bellek `adb shell dumpsys meminfo com.saturnwave.puzzle` ile ölçülür (TOTAL PSS). 23 Ekim'de 20 oda gezilince 401 MB'tan 649 MB'a çıkıyordu (A42/4).
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T420 | 20 oda, bellek | Koleksiyonu aç, belleği ölç. Yuvarlak düğmelerle son odadan 1. odaya ve geri gez, yeniden ölç. Aynı gezintiyi plakette kaydırarak tekrarla, yine ölç. | İlk gezintiden sonra bellek açılıştakinden en çok 40–50 MB fazla (eskiden yaklaşık 250 MB); ikinci gezinti belleği artırmıyor. Çökme ya da uyarı yok. | Müze odaları, test modu | Bekliyor |
+| T421 | Geri dönünce resimler | Bir odadan iki oda ileri git, sonra geri dön; ardından beş oda uzağa gidip dön. | Son iki odaya dönünce resimler hemen orada. Uzak odada resimler 1 saniye içinde geliyor; boş tuval, beyaz ya da pembe kare yok. | Müze odaları | Bekliyor |
+| T422 | Hızlı kaydırma | Plakette arka arkaya hızlı kaydırarak 10 oda geç, sonra yavaş sürükleyip bırak. | Kaydırma akıcı; sürüklenen komşu odanın resimleri parmak inikken görünüyor; takılma ya da yanıp sönme yok. | Müze odaları | Bekliyor |
+| T423 | Tabloya yakından bakma | Onarılmış bir tabloya dokun, büyüsün; dokunup geri gönder ve hemen yan odaya geç. Birkaç odada tekrarla. | Tablo büyürken ve geri dönerken resmi hep görünüyor; yan odaya geçişte boş ya da bozuk resim yok. | Müze odaları | Bekliyor |
+| T424 | Sayfalar ve sahneler | Koleksiyon, salon ve harita arasında 10 kez gidip gel; haritada iki dönemin kartını aç; sonra bir bölüm oyna, yapbozu aç ve salona dön. Belleği başta ve sonda ölç. | Salonun tablosu, plaketin küçük resimleri, haritanın iğneleri ve kartı, yapboz ve ödül resmi doğru; hiçbir resim boş değil. Sondaki bellek baştakinden belirgin fazla değil. | Müze odaları | Bekliyor |
+| T425 | Uzun gezinti | 5 dakika boyunca koleksiyonda ve haritada gez; mümkünse daha az bellekli bir telefonda da dene. | Çökme yok, uygulama arka plana atılmıyor; bellek dalgalansa da sürekli artmıyor. | Müze odaları | Bekliyor |
 
 ### G. Görünüm
 
