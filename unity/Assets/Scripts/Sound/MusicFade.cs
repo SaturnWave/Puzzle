@@ -4,9 +4,10 @@ using System;
 namespace Puzzle.Client.Sound
 {
     /// <summary>
-    /// How much of its level the music is heard at, from silence (0) to all of it (1), as it follows the player's
-    /// switch: turned off, it fades out over <see cref="Seconds"/>; turned on, it comes back over as long, from wherever
-    /// it was, so a switch flipped twice in a moment never jumps. The music's player multiplies this with
+    /// How much of its level the music is heard at, from silence (0) to all of it (1), as it follows whether it is
+    /// wanted (the player's switch, and no other app's music to give way to, <see cref="MusicYield"/>): unwanted, it
+    /// fades out over <see cref="Seconds"/>; wanted again, it comes back over as long, from wherever it was, so a
+    /// switch flipped twice in a moment never jumps. The music's player multiplies this with
     /// <see cref="SoundLevels.Music"/> and holds the music where it is once it is silent. No Unity dependency, so the
     /// repository's tests compile it too.
     /// </summary>
@@ -26,6 +27,9 @@ namespace Puzzle.Client.Sound
 
         /// <summary>Whether nothing of the music is heard: it may be held where it is.</summary>
         public bool IsSilent => Share <= 0f;
+
+        /// <summary>Whether no fade is in motion: the music is silent or heard at all of its level.</summary>
+        public bool IsAtRest => Share <= 0f || Share >= 1f;
 
         /// <summary>Moves the share toward the switch's state by the time that passed: a whole fade per <see cref="Seconds"/>.</summary>
         /// <exception cref="ArgumentOutOfRangeException">The time is negative.</exception>

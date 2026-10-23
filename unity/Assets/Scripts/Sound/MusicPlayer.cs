@@ -51,9 +51,12 @@ namespace Puzzle.Client.Sound
     /// <remarks>
     /// Every frame it follows the player's music switch as the settings store holds it, so a switch flipped on the
     /// settings card takes effect at once: off, the music fades out (<see cref="MusicFade"/>) and is then held where
-    /// it is; on, it goes on from there and fades in. Put away with the game, it is held at once, and it fades in from
-    /// there when the game comes back. Holding stops both clips and keeps the place; going on schedules them again
-    /// from it, rather than pausing a clip whose start is still to come on the audio clock.
+    /// it is; on, it goes on from there and fades in. It gives way to another app's music in the same way
+    /// (<see cref="MusicYield"/>): silent while the player's own music plays, whatever the switch says, and back in a
+    /// fade once that music has stopped; the effects are not touched. Put away with the game, it is held at once, and
+    /// it fades in from there when the game comes back, unless another app's music plays by then. Holding stops both
+    /// clips and keeps the place; going on schedules them again from it, rather than pausing a clip whose start is
+    /// still to come on the audio clock.
     /// </remarks>
     public sealed class MusicPlayer
     {
@@ -67,6 +70,7 @@ namespace Puzzle.Client.Sound
         private readonly AudioSource _intro;
         private readonly AudioSource _loop;
         private readonly MusicFade _fade;
+        private readonly MusicYield _yield;
 
         /// <summary>Where the music goes on from when it is played next: its beginning, before it was ever played.</summary>
         private MusicPlace _heldAt = MusicPlace.Beginning;
@@ -79,13 +83,15 @@ namespace Puzzle.Client.Sound
 
         /// <param name="host">The game object (the game's root) that keeps the music's two sources as long as it lives.</param>
         /// <param name="settings">The player's settings, as the session keeps them: the music follows its switch there.</param>
-        public MusicPlayer(GameObject host, MusicClips clips, ISettingsStore settings)
+        /// <param name="otherAudio">Whether another app's music plays on the device: the music gives way to it. Asked at once.</param>
+        public MusicPlayer(GameObject host, MusicClips clips, ISettingsStore settings, IOtherAudio otherAudio)
         {
             Clips = clips ?? throw new ArgumentNullException(nameof(clips));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _intro = AddSource(host, clips.Intro, loops: false);
             _loop = AddSource(host, clips.Loop, loops: true);
-            _fade = new MusicFade(settings.Settings.Music);
+            _yield = new MusicYield(otherAudio);
+            _fade = new MusicFade(IsWanted);
         }
 
         /// <summary>The clips the music is played from.</summary>
@@ -103,10 +109,19 @@ namespace Puzzle.Client.Sound
         /// <summary>Where the music is: the place the audio clock has reached, or the one it is held at.</summary>
         public MusicPlace Place => IsPlaying ? PlaceNow() : _heldAt;
 
-        /// <summary>One frame of the game: the music follows the player's switch by the time that passed.</summary>
+        /// <summary>Whether the music gives way to another app's music: it is then silent, whatever its switch says.</summary>
+        public bool IsGivingWay => _yield.IsGivingWay;
+
+        /// <summary>The player's switch is on and no other app's music is to be given way to.</summary>
+        private bool IsWanted => _settings.Settings.Music && !_yield.IsGivingWay;
+
+        /// <summary>One frame of the game: the music follows the player's switch, and another app's music, by the time that passed.</summary>
         public void Advance(float deltaSeconds)
         {
-            _fade.Follow(_settings.Settings.Music, deltaSeconds);
+            bool wasGivingWay = _yield.IsGivingWay;
+            _yield.Advance(deltaSeconds, isFading: !_fade.IsAtRest);
+            SayAChange(wasGivingWay);
+            _fade.Follow(IsWanted, deltaSeconds);
             SetTheVolume();
             if (_fade.IsSilent)
             {
@@ -124,6 +139,26 @@ namespace Puzzle.Client.Sound
             Hold();
             _fade.Silence();
             SetTheVolume();
+        }
+
+        /// <summary>
+        /// The game is in front again (from the background, or from behind a system card): whether another app's music
+        /// plays is asked at once, so the music held while the game was away fades in only where nothing else plays.
+        /// </summary>
+        public void ComeBack()
+        {
+            bool wasGivingWay = _yield.IsGivingWay;
+            _yield.AskNow();
+            SayAChange(wasGivingWay);
+        }
+
+        /// <summary>Says in the log when the music begins or ends giving way, for the phone tests.</summary>
+        private void SayAChange(bool wasGivingWay)
+        {
+            if (_yield.IsGivingWay != wasGivingWay)
+            {
+                Debug.Log(_yield.IsGivingWay ? "The music gives way to another app's music." : "No other app's music plays: the music comes back.");
+            }
         }
 
         private void SetTheVolume()

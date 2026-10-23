@@ -10,6 +10,10 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Proje sahibi yedi müzik parçasını Suno Premier hesabıyla üretti ve `art/sounds/` klasörüne koydu (2026-10-20; 48 kHz stereo WAV).
 - Oyunda tek bir genel müzik olacak: M1 Müze teması, her yerde. Kısa parçalar ve ayrı tahta müziği kullanılmayacak (2026-10-22).
 
+**Oyuncunun müziği öncelikli (#9)**
+- Proje sahibinin kararı (2026-10-23): oyuncunun kendi müziği çalarken oyunun müziği susar, efektler sürer. Bitti (a05c580): Android'in çalan oynatıcı listesine 2 saniyede bir bakılıyor, oyunun kendi oynatıcısı etiketiyle ayrılıyor (`isMusicActive` oyunun kendi sesini de saydığı için kullanılmadı); öteki müzik durunca 2–4 sn içinde kaldığı yerden geri geliyor. iOS tarafı iOS dalında.
+- 4.095 test geçti; müzik denetimine 9 yeni adım eklendi. Telefonda henüz denenmedi (yeni APK'da değil). Telefon testleri T380–T383.
+
 **Yeni APK (2026-10-22)**
 - Proje sahibinin sırasıyla en sona bırakıldı. İçinde ipucu, öğretici, booster tanıtımı, 13 dil, müzik, dünya haritası ve plaketteki iki satır var. 294 MB; yalnızca titreşim izni (internet yok).
 - İndirme sayfasına kondu (`puzzle-test-2026-10-22.apk`, eski prototip de indirilebilir). Sayfanın sunucusu bir ara kapanmıştı; gizli bir pencerede yeniden açıldı. Telefon bağlı değildi, kurulmadı.

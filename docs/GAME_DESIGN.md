@@ -1407,7 +1407,7 @@ Bu kararlarla 10. aşama başladı.
 - **Çalar:** oyunun kökünde tek bir çalar; ekran değişince müzik baştan başlamaz; efektlerin yaklaşık 5 dB altında (`SoundLevels.Music` = 0,4); uygulama arka plana geçince durur, dönünce sürer.
 - **Ayarlar:** "Müzik" anahtarı Ses ile Titreşim'in arasında; açık başlar, kapatınca 0,3 saniyede susar, `device.json` 5. düzende saklanır (eski dosya "açık" sayılır). Sözcük 13 dilde.
 - **Boyut:** Android'de Vorbis: giriş 0,70 MB, döngü 2,23 MB (akışla); APK'ya tahminen 2,9 MB.
-- **Bilinen:** müzik henüz kulakla dinlenmedi; seviye ölçüyle seçildi. Başka bir uygulama müzik çalarken oyun kendi müziğini üstüne çalar (karar bekliyor). Suno bağlantısı kayıtta yok.
+- **Bilinen:** müzik henüz kulakla dinlenmedi; seviye ölçüyle seçildi. Başka bir uygulama müzik çalarken oyunun müziği susar, efektler sürer (proje sahibinin kararı, 2026-10-23; a05c580): oyun açılışta, öne gelince ve 2 saniyede bir Android'in çalan medya oynatıcılarına bakar, kendi oynatıcısını etiketinden ayırır; öteki müzik durunca 2–4 saniye içinde kaldığı yerden geri gelir. iOS'ta aynı kural Apple'ın "ikincil ses susmalı" ipucuyla, iOS dalında. Suno bağlantısı kayıtta yok.
 - **Doğrulama:** 4.223 test. Ekonomi denetimi temiz. Unity'de bütün denetimler ve yeni müzik denetimi hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T370–T379.
 
 **Dünya haritası (2026-10-22, #4).** Kararlar §19'da; tasarım tuvalindeki "Dünya haritası · dönemler" çizimi birebir oyuna geçti, müzenin kat planı kalktı.
