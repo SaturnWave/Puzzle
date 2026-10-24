@@ -267,6 +267,7 @@
     {"id":"EntryLoading","text":"加载中… {percent}%"},
     {"id":"EntryTapToStart","text":"轻触开始"},
     {"id":"EntryStudio","text":"SaturnWave"},
-    {"id":"EntryVersion","text":"版本{version} · 测试版"}
+    {"id":"EntryVersion","text":"版本{version} · 测试版"},
+    {"id":"EntryCouldNotStart","text":"无法打开游戏，请重新启动"}
   ]
 }

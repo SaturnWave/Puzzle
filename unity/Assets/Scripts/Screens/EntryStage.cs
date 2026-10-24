@@ -25,8 +25,9 @@ namespace Puzzle.Client.Screens
     /// <remarks>
     /// The page does not start the game itself: whoever does tells it how much of the work is done
     /// (<see cref="Tell"/>), and the bar follows that work by <see cref="LoadingBar"/>'s rule, never faster than it is
-    /// seen to fill. The page only says when the player has left it (<see cref="HasLeft"/>), in the dark the hall
-    /// opens in. Like every stage it has a clock that only <see cref="Advance"/> moves.
+    /// seen to fill; told that the work failed (<see cref="TellTheStartUpFailed"/>), the bar's line says that the game
+    /// cannot open instead of its share. The page only says when the player has left it (<see cref="HasLeft"/>), in
+    /// the dark the hall opens in. Like every stage it has a clock that only <see cref="Advance"/> moves.
     /// <para>
     /// The device's way back brings down the hall's own card that asks whether to close the game (<see cref="QuitCard"/>),
     /// while the bar fills too: the entry page has no way further back, as the hall has none. Its "Vazgeç" or the way
@@ -179,8 +180,11 @@ namespace Puzzle.Client.Screens
         /// <summary>How much of the start-up work is done, as the page was last told.</summary>
         private float _workDone;
 
-        /// <summary>The share the bar's line says now; nothing before it first said one.</summary>
+        /// <summary>The share the bar's line says now; nothing before it first said one, and after the page was laid out anew.</summary>
         private int? _percentSaid;
+
+        /// <summary>True once the page was told that the start-up failed: the bar's line says the game cannot open, and the page is never ready.</summary>
+        private bool _hasTheStartUpFailed;
 
         /// <summary>When the bar was first shown full; nothing before.</summary>
         private float? _fullSince;
@@ -244,8 +248,11 @@ namespace Puzzle.Client.Screens
 
         public Camera Camera { get; }
 
-        /// <summary>True when nothing moves but what only floats and breathes: the bar is full, its line has given way, and no card or dark is on its way.</summary>
-        public bool IsSettled => _timeline.IsDone && ReadyShare >= 1f;
+        /// <summary>
+        /// True when nothing moves but what only floats and breathes: the bar is full and its line has given way, or the
+        /// bar has come to where a failed start-up stopped; and no card or dark is on its way.
+        /// </summary>
+        public bool IsSettled => _timeline.IsDone && (ReadyShare >= 1f || (_hasTheStartUpFailed && _bar.Shown >= Mathf.Clamp01(_workDone)));
 
         /// <summary>True once the bar is full and the line to touch shows: a touch anywhere then leaves the page.</summary>
         public bool IsReady => _fullSince is float full && _clock - full >= FullBarRests;
@@ -255,6 +262,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>How full the bar is shown, from 0 to 1.</summary>
         public float BarShown => _bar.Shown;
+
+        /// <summary>What the line under the bar says now: the share started, or that the game cannot open. For the Editor's checks.</summary>
+        public string LineUnderTheBar => _loadingLine.text;
 
         /// <summary>How strongly the line to touch is drawn now, from 0 (not yet) to 1 (at the height of its breath): for the Editor's pictures.</summary>
         public float TapLineStrength => _tapLine.alpha;
@@ -289,6 +299,20 @@ namespace Puzzle.Client.Screens
 
         /// <summary>Tells the page how much of the start-up is done, from 0 to 1; the bar follows it as the clock moves.</summary>
         public void Tell(float workDone) => _workDone = workDone;
+
+        /// <summary>
+        /// Tells the page that the start-up failed and goes no further: the bar stays where it was and its line says,
+        /// in its place, that the game cannot open and is to be started again. The page never becomes ready, so a touch
+        /// leads nowhere; the way back still brings down the card that closes the game.
+        /// </summary>
+        public void TellTheStartUpFailed()
+        {
+            _hasTheStartUpFailed = true;
+            if (_layout is EntryLayout layout)
+            {
+                SayTheFailure(layout);
+            }
+        }
 
         /// <summary>True once since this was asked last when the player answered the card's question with "Çık": the game is to close.</summary>
         public bool TakeTheWishToQuit()
@@ -325,6 +349,11 @@ namespace Puzzle.Client.Screens
             _loadingLine.fontSize = EntryLayout.LoadingLineSize * scale;
             _loadingLine.transform.localPosition = new Vector3(0f, layout.LoadingLineMiddle, 0f);
             _percentSaid = null; // said again at the new size
+            if (_hasTheStartUpFailed)
+            {
+                SayTheFailure(layout);
+            }
+
             _studio.fontSize = EntryLayout.FooterSize * scale;
             Lettering.SayFromLeft(_studio, EntryWords.Studio, layout.FooterLeft, layout.FooterMiddle);
             _version.fontSize = EntryLayout.FooterSize * scale;
@@ -541,7 +570,7 @@ namespace Puzzle.Client.Screens
             _sheen.Fade(barStrength * Mathf.Clamp01(filled / FillHeight));
 
             int percent = _bar.Percent;
-            if (_percentSaid != percent)
+            if (!_hasTheStartUpFailed && _percentSaid != percent)
             {
                 Lettering.Say(_loadingLine, EntryWords.Loading(percent));
                 _percentSaid = percent;
@@ -555,6 +584,10 @@ namespace Puzzle.Client.Screens
             float grown = 1f + BreathGrowth * breath;
             _tapLine.transform.localScale = new Vector3(grown, grown, 1f);
         }
+
+        /// <summary>The bar's line says that the game cannot open, at the line's size or smaller where a language's words are longer.</summary>
+        private void SayTheFailure(EntryLayout layout) =>
+            Lettering.SayWithin(_loadingLine, EntryWords.CouldNotStart, EntryLayout.LoadingLineSize * layout.Scale, layout.LineRoom);
 
         /// <summary>Each gem at its place, risen as far as its own beat has it, tilted as it is.</summary>
         private void FloatTheGems()

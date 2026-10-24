@@ -222,6 +222,7 @@ public class EntryPageTests
             Assert.Equal("Başlamak için dokun", EntryWords.TapToStart);
             Assert.Equal("SaturnWave", EntryWords.Studio);
             Assert.Equal("Sürüm 1.0 · test sürümü", EntryWords.Version("1.0"));
+            Assert.Equal("Oyun açılamadı; yeniden başlatın", EntryWords.CouldNotStart);
         }
 
         using (TestWords.Speak(Language.English))

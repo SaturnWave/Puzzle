@@ -267,6 +267,7 @@
     {"id":"EntryLoading","text":"Загрузка… {percent} %"},
     {"id":"EntryTapToStart","text":"Нажмите, чтобы начать"},
     {"id":"EntryStudio","text":"SaturnWave"},
-    {"id":"EntryVersion","text":"Версия {version} · тестовая версия"}
+    {"id":"EntryVersion","text":"Версия {version} · тестовая версия"},
+    {"id":"EntryCouldNotStart","text":"Не удалось открыть игру; перезапустите её"}
   ]
 }

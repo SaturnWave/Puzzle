@@ -65,12 +65,14 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// The changes: the 12.9" iPad turned from upright to sideways, both with the status bar and the home
-        /// indicator; the open foldable turned, its camera then at a side; and the foldable opened from its cover display.
+        /// indicator; the open foldable turned either way, its camera then at the left or at the right; and the
+        /// foldable opened from its cover display.
         /// </summary>
         private static readonly Turn[] Turns =
         {
             new Turn("ipad", new ScreenShape(2048, 2732, 48, 40), new ScreenShape(2732, 2048, 48, 40)),
             new Turn("fold", new ScreenShape(2076, 2152), new ScreenShape(2152, 2076, 0, 0, 90, 0)),
+            new Turn("fold-right", new ScreenShape(2076, 2152), new ScreenShape(2152, 2076, 0, 0, 0, 90)),
             new Turn("unfold", new ScreenShape(1080, 2424), new ScreenShape(2076, 2152)),
         };
 

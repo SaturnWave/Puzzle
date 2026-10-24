@@ -55,16 +55,22 @@ namespace Puzzle.Client.Layout
         /// display it is shown on, not the window it has now, so a tablet split between two apps is not taken for a phone.
         /// </summary>
         /// <param name="smallestSideDp">That side, in Android's density-independent points.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The side is no length.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The side is no length (<see cref="IsALength"/>).</exception>
         public static ScreenClass OfAnAndroidScreen(float smallestSideDp)
         {
-            if (!(smallestSideDp > 0f) || float.IsInfinity(smallestSideDp))
+            if (!IsALength(smallestSideDp))
             {
                 throw new ArgumentOutOfRangeException(nameof(smallestSideDp), smallestSideDp, "A screen's side is a length of more than nothing.");
             }
 
             return smallestSideDp >= SmallestTabletSideDp ? ScreenClass.Tablet : ScreenClass.Phone;
         }
+
+        /// <summary>
+        /// True when a side read from a device is a length a screen can have: more than nothing and finite. Nothing,
+        /// less, no number or no end is what a device that cannot tell its size reads as (no density, no window).
+        /// </summary>
+        public static bool IsALength(float sideDp) => sideDp > 0f && !float.IsInfinity(sideDp);
 
         /// <summary>What an Apple device's screen is, by the model iOS names: "iPad13,8" is a tablet, "iPhone15,2" a phone.</summary>
         public static ScreenClass OfAnAppleDevice(string model) =>

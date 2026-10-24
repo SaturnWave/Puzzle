@@ -1079,6 +1079,8 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Görüntü al | `... -executeMethod Puzzle.Client.EditorTools.RenderHarness.Run -shotLevels 40 -shotSizes 1080x2340 -shotTimes settled` |
 | Botla oynat, kareleri çıkar | `... -executeMethod Puzzle.Client.EditorTools.Storyboard.Run -storyLevels 40 -storyBot expert -storyTurns 6` |
 | Müze ekranlarının görüntüsü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run` (salon, harita, koleksiyon, yapboz; oyuncu durumu ve ekran boyu seçilir) |
+| Yan tutulan ekranların görüntüsü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run -screenSizes 2732x2048+0+40,2560x1600,2152x2076+0+0+90+0,2152x2076+0+0+0+90` (12,9" iPad, 16:10 tablet, Fold iki yana: kamera solda ve sağda) |
+| Döndürme denetimi | `... -executeMethod Puzzle.Client.EditorTools.RotationCheck.Run` (iPad dik↔yan, Fold iç ekran iki yana, Fold dıştan içe; görüntüler `out/unity/shots/rotation`) |
 | Baştan sona bir yürüyüş | `... -executeMethod Puzzle.Client.EditorTools.GameWalk.Run` (bölüm kazan, parçayı gör, yerleştir, salona dön) |
 | Müzenin durumu ve kesimler | `... -executeMethod Puzzle.Client.EditorTools.MuseumReport.Run` |
 | Bitiş şöleninin kareleri | `... -executeMethod Puzzle.Client.EditorTools.FinaleStory.Run -finaleLevels 40 -finaleLeft 3,12,30 -finaleSize 1080x2340` (kalan hamle sayısı, ekran boyu, atlama anı seçilir; görüntüler `out/unity/shots/finale`) |
@@ -1484,6 +1486,15 @@ Bu kararlarla 10. aşama başladı.
 - **Telefonlar değişmedi:** Pixel dış ve iç ekranın 262 görüntüsü (19 sayfa ve kart, üç oyuncu) önce ve sonra piksel piksel aynı.
 - **iOS** (`feature/ios`): Info.plist'te iPad dört yön, iPhone yalnız dik; "tam ekran zorunlu" kalktı, oyun Pencereli Uygulamalar'da ve Stage Manager'da da çalışır (`docs/IOS_BUILD.md`).
 - **Doğrulama:** 5.367 test. Ekonomi denetimi temiz. Unity'de `PlayModeCheck`, `MusicCheck`, `RotationCheck` ve öteki denetimler hatasız; yatay görüntüler üç ekranda (12,9" iPad, 16:10 tablet, Fold yan) bakıldı. Telefon testleri T450–T465.
+
+**İnceleme düzeltmeleri: paketin yönü, açılış hatası, yan paylar (2026-10-24).**
+
+- **Paket dik açılır ve bu denetlenir:** Android derlemesinin manifest adımı izinlerden ve oyun kategorisinden sonra Unity etkinliğinin `android:screenOrientation="portrait"` olduğunu da ister (`ManifestOrientation`, Unity'siz, testli). Başka bir değer (iOS'un `AutoRotation` varsayılanıyla gelen `fullUser` gibi) ya da yönsüz etkinlik derlemeyi durdurur: telefon oyunu ilk karede bile yan göstermez, tablet ve açık Fold oyun çalışınca kurala göre döner.
+  - Kayıtlı proje ayarları iki dalda da dik (`Portrait`) ve hedef API 36. iOS derlemesi `AutoRotation`'ı ve "tam ekran istemez"i yalnız kendi dışa aktarması için koyar, bitince geri alır. Hiçbir derleme `ProjectSettings.asset`'i değiştirmez.
+- **Açılış hatası:** açılış adımlarından biri hata verirse sayfa "Yükleniyor… %N"de kalmaz; bir sonraki karede çubuğun satırı "Oyun açılamadı; yeniden başlatın" olur (13 dilde, uzun dilde küçülerek). Çubuk kaldığı yerde durur, dokunuş bir şey yapmaz; geri tuşu çıkış kartını indirir, "Çık" oyunu kapatır. Hatanın kendisi günlükte. Açılış işi bitince ya da durunca bırakılır, adımların tuttukları da.
+- **Ekran boyu okunamazsa:** Android ekranın boyunu veremezse (etkinlik yok, yoğunluk 0, boş pencere) oyun telefon sayılır ve dik kalır; uyarı bir kez yazılır. Ekran değişince dönme kuralı, sayfa yeni ekrana yerleştikten sonra uygulanır: bir hata sayfayı dondurmaz.
+- **Yan paylar:** `RotationCheck` Fold'u iki yana da çevirir (kamera solda `2152x2076+0+0+90+0`, sağda `+0+0+0+90`). Oyun açılışta ve her ekran değişiminde ekranı ve güvenli alanı günlüğe yazar ("The screen is …"); telefon testinde yan paylar oradan okunur (T460, T465).
+- **Doğrulama:** 5.376 test. Ekonomi denetimi temiz. Unity'de `RotationCheck` (84 değişiklik), `PlayModeCheck`, `MusicCheck`, `EngineSmokeTest` hatasız; giriş sayfası (açılamayan hâli de) ve salon 1080×2424, 2732×2048 ve yan Fold'da bakıldı. APK'da etkinlik dik, kategori oyun, hedef API 36.
 
 ## 24. Bölüm bankası ve derleyici
 

@@ -80,8 +80,40 @@ namespace Puzzle.Client.EditorTools
                 Require(entry.HasLeft, "a touch on the ready page did not leave it");
             }
 
-            Debug.Log($"Screen shots: the entry page on {screen} was walked by touches and the way back.");
+            pictures += ShootTheFailedStartUp(screen, studio);
+            Debug.Log($"Screen shots: the entry page on {screen} was walked by touches and the way back, and with a start-up that failed.");
             return pictures;
+        }
+
+        /// <summary>
+        /// The page when a step of the start-up threw, as the game's root tells it: the bar stays where the work stopped
+        /// and its line says that the game cannot open, through a change of the screen too; a touch leads nowhere, and
+        /// the way back brings down the card whose "Çık" asks for the game to close.
+        /// </summary>
+        private static int ShootTheFailedStartUp(ScreenShape screen, Studio studio)
+        {
+            using EntryStage entry = Open(screen, studio);
+            entry.Tell(LoadingShare);
+            StageSteps.Advance(entry, LoadingBar.ShortestFillSeconds);
+            entry.TellTheStartUpFailed();
+            StageSteps.Advance(entry, LoadingBar.ShortestFillSeconds);
+            Require(entry.LineUnderTheBar == EntryWords.CouldNotStart, $"the failed start-up's line says \"{entry.LineUnderTheBar}\"");
+            Require(!entry.IsReady && Mathf.Approximately(entry.BarShown, LoadingShare), $"the failed start-up's bar shows {entry.BarShown:0.00}, or the page is ready");
+
+            entry.Fit(screen);
+            StageSteps.Advance(entry, StoryStudio.FrameSeconds);
+            Require(entry.LineUnderTheBar == EntryWords.CouldNotStart, "the line went back to the share once the page was laid out anew");
+            Touch(entry, entry.MiddlePixel);
+            StageSteps.Advance(entry, 1f);
+            Require(!entry.HasLeft, "a touch on the page of a failed start-up left it");
+            Write(entry, "failed", screen, studio);
+
+            entry.GoBack();
+            StageSteps.Settle(entry);
+            Require(entry.QuitQuestionShown != null, "the way back brought no card down on the page of a failed start-up");
+            Touch(entry, entry.QuitTheGamePixel ?? throw new InvalidOperationException("the card has no \"Çık\" to press"));
+            Require(entry.TakeTheWishToQuit(), "\"Çık\" did not ask for the game to close after a failed start-up");
+            return 1;
         }
 
         private static EntryStage Open(ScreenShape screen, Studio studio)

@@ -57,27 +57,66 @@ namespace Puzzle.Client.Engine
             _ => throw new System.ArgumentOutOfRangeException(nameof(turn), turn, "A way of standing Unity has no name for."),
         };
 
+        /// <summary>True once this run has said that the screen's size could not be read, which it says once however often it asks.</summary>
+        private static bool _isTheUnreadSizeSaid;
+
+        /// <summary>
+        /// What an Android screen is, by its largest window. A size that cannot be read (Android refuses the call, Unity
+        /// has no activity yet) or reads as no length (no density, an empty window) counts as a phone's, as every build
+        /// before the rule did, and is said once a run: the rule is asked again whenever the screen changes.
+        /// </summary>
         private static ScreenClass ClassOfThisAndroidDevice()
         {
+            float? smallestSideDp;
             try
             {
-                float smallestSideDp = SmallestSideOfTheLargestWindowDp();
-                ScreenClass screen = ScreenTurns.OfAnAndroidScreen(smallestSideDp);
-                Debug.Log($"The screen's largest window is {smallestSideDp:0} dp on its shorter side: a {screen}.");
-                return screen;
+                smallestSideDp = SmallestSideOfTheLargestWindowDp();
             }
             catch (AndroidJavaException failure)
             {
-                Debug.LogWarning($"The screen's size cannot be read, so the game stays upright as on a phone: {failure.Message}");
-                return ScreenClass.Phone;
+                return AsAPhoneForASizeUnread($"Android refused the call: {failure.Message}");
             }
+
+            if (!(smallestSideDp is float side))
+            {
+                return AsAPhoneForASizeUnread("Unity has no activity to ask");
+            }
+
+            if (!ScreenTurns.IsALength(side))
+            {
+                return AsAPhoneForASizeUnread($"its shorter side reads as {side} dp");
+            }
+
+            ScreenClass screen = ScreenTurns.OfAnAndroidScreen(side);
+            Debug.Log($"The screen's largest window is {side:0} dp on its shorter side: a {screen}.");
+            return screen;
         }
 
-        /// <summary>The shorter side of the largest window the device can give the game now, in density-independent points.</summary>
-        private static float SmallestSideOfTheLargestWindowDp()
+        private static ScreenClass AsAPhoneForASizeUnread(string why)
+        {
+            if (!_isTheUnreadSizeSaid)
+            {
+                Debug.LogWarning($"The screen's size cannot be read, so the game stays upright as on a phone: {why}.");
+                _isTheUnreadSizeSaid = true;
+            }
+
+            return ScreenClass.Phone;
+        }
+
+        /// <summary>
+        /// The shorter side of the largest window the device can give the game now, in density-independent points;
+        /// nothing while Unity has no activity. A device that reports no density or an empty window gives no length.
+        /// </summary>
+        /// <exception cref="AndroidJavaException">Android refused one of the calls.</exception>
+        private static float? SmallestSideOfTheLargestWindowDp()
         {
             using var player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            using var activity = player.GetStatic<AndroidJavaObject>("currentActivity");
+            using AndroidJavaObject? activity = player.GetStatic<AndroidJavaObject>("currentActivity");
+            if (activity == null)
+            {
+                return null;
+            }
+
             using var version = new AndroidJavaClass("android.os.Build$VERSION");
             using AndroidJavaObject windows = activity.Call<AndroidJavaObject>("getWindowManager");
             using AndroidJavaObject resources = activity.Call<AndroidJavaObject>("getResources");

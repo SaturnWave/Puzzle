@@ -807,5 +807,8 @@ namespace Puzzle.Client.Words
 
         /// <summary>Entry page, foot, right: the game's version and that this is a test build. {version} is the version, "1.0".</summary>
         EntryVersion,
+
+        /// <summary>Entry page: what the line under the bar says instead of the share when the game could not start (a file it needs could not be read). The player is to close the game and open it again; short, one line.</summary>
+        EntryCouldNotStart,
     }
 }
