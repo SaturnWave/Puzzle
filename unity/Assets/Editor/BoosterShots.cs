@@ -27,7 +27,7 @@ namespace Puzzle.Client.EditorTools
     /// the card it offers (bought, and dimmed for a player without the coins); and on level 47 a shuffle the first rule
     /// refused, before, while and after it is dealt. Pictures go to out/unity/shots/booster, each group also as a sheet.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.BoosterShots.Run
-    ///            [-boosterSizes 1080x2340,1080x1920,2076x2152]
+    ///            [-boosterSizes 1080x2340,1080x1920,2076x2152,2732x2048,2152x2076]
     /// Do not pass -nographics: the pictures need a graphics device.
     /// </summary>
     public static class BoosterShots
@@ -43,7 +43,10 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A refused disc is pictured in its shake and after it, while the pill says why.</summary>
         private static readonly float[] RefusalMoments = { 0.08f, 0.5f };
 
-        private static readonly ScreenShape[] DefaultScreens = { new ScreenShape(1080, 2340), new ScreenShape(1080, 1920), new ScreenShape(2076, 2152) };
+        private static readonly ScreenShape[] DefaultScreens =
+        {
+            new ScreenShape(1080, 2340), new ScreenShape(1080, 1920), new ScreenShape(2076, 2152), new ScreenShape(2732, 2048), new ScreenShape(2152, 2076),
+        };
 
         public static void Run()
         {
@@ -81,11 +84,7 @@ namespace Puzzle.Client.EditorTools
                 return DefaultScreens;
             }
 
-            return arguments[at + 1].Split(',').Select(size =>
-            {
-                string[] sides = size.Split('x');
-                return new ScreenShape(int.Parse(sides[0]), int.Parse(sides[1]));
-            }).ToArray();
+            return arguments[at + 1].Split(',').Select(ScreenArgument.Of).ToArray();
         }
 
         private static string Size(ScreenShape screen) => $"{screen.PixelWidth}x{screen.PixelHeight}";

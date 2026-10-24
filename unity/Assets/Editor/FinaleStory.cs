@@ -626,7 +626,7 @@ namespace Puzzle.Client.EditorTools
                 return new Plan(
                     After("-finaleLevels", arguments, "40").Split(',').Select(WholeNumber).ToArray(),
                     After("-finaleLeft", arguments, "3,12").Split(',').Select(WholeNumber).ToArray(),
-                    ScreenFrom(After("-finaleSize", arguments, "1080x2340")),
+                    ScreenArgument.Of(After("-finaleSize", arguments, "1080x2340")),
                     bot,
                     After("-finaleTimes", arguments, "0,0.1,0.3,0.5,0.8,1.1,1.5,2.0,2.6,3.2,end,card").Split(',').Select(Moment.Parse)
                         .OrderBy(moment => moment.Kind).ThenBy(moment => moment.Seconds).ToArray(),
@@ -658,17 +658,6 @@ namespace Puzzle.Client.EditorTools
                 }
 
                 return at >= 0 ? arguments[at + 1] : byDefault;
-            }
-
-            private static ScreenShape ScreenFrom(string text)
-            {
-                string[] sides = text.Split('x');
-                if (sides.Length != 2)
-                {
-                    throw new ArgumentException($"\"{text}\" is not a screen: write 1080x2340.");
-                }
-
-                return new ScreenShape(WholeNumber(sides[0]), WholeNumber(sides[1]));
             }
         }
     }

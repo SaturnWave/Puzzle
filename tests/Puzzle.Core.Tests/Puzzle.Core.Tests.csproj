@@ -32,6 +32,7 @@
     <!-- Nor have the game's screen layout and its stage clock: where a board lies, and how animations take their time. -->
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenView.cs" Link="Unity\ScreenView.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenLayout.cs" Link="Unity\ScreenLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenClass.cs" Link="Unity\ScreenClass.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Stage\Tween.cs" Link="Unity\Tween.cs" />
     <!-- Nor have the outline the gilt frame is drawn along and the rule that hangs the wall lamps. -->
     <Compile Include="..\..\unity\Assets\Scripts\Boards\BoardOutline.cs" Link="Unity\BoardOutline.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterShowcase.cs" Link="Unity\Play\BoosterShowcase.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
     <Compile Include="..\..\unity\Assets\Editor\InfoPlist.cs" Link="Unity\Editor\InfoPlist.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestGameCategory.cs" Link="Unity\Editor\ManifestGameCategory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

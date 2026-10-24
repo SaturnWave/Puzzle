@@ -5,13 +5,28 @@ using Puzzle.Museum;
 
 namespace Puzzle.Client.Layout
 {
+    /// <summary>How the jigsaw's screen is laid out. A closed set.</summary>
+    public enum JigsawArrangement
+    {
+        /// <summary>Upright, as the design canvas draws it (JigsawTR): the painting, its pips, the tray and the button from the top down.</summary>
+        Stacked,
+
+        /// <summary>
+        /// On a screen held sideways (<see cref="PageLayout.IsSideways"/>): the painting at the left as high as the
+        /// screen allows, and at its right the pips, the tray with its places in rows and columns, and the button.
+        /// </summary>
+        SideBySide,
+    }
+
     /// <summary>
     /// Where everything of a painting's jigsaw lies, as the design canvas draws that screen (JigsawTR), from the top
     /// down: the piece counter's plaque under the cornice with the round button that leads back beside it, the
     /// picture rail, the painting in its frame with its brass plate, the bar of progress pips, the wooden tray with
     /// the pieces that wait, and the button that places them all. The painting comes first: it is as large as its
     /// proportions and the screen allow; what the screen has in height beyond that is shared out between the gaps,
-    /// so a tall phone shows a calm wall instead of one large hole. Lengths are in points. No Unity dependency.
+    /// so a tall phone shows a calm wall instead of one large hole. On a screen held sideways the same parts stand in
+    /// two columns instead (<see cref="JigsawArrangement.SideBySide"/>), and the painting is drawn as large as the
+    /// screen's height allows. Lengths are in points. No Unity dependency.
     /// </summary>
     public sealed class JigsawLayout
     {
@@ -21,7 +36,7 @@ namespace Puzzle.Client.Layout
 
         public const float PlaqueWidth = 148f;
 
-        /// <summary>The round button that leads back, at full size, and how far it keeps from the screen's side.</summary>
+        /// <summary>The round button that leads back, at full size, and how far it keeps from the usable screen's side.</summary>
         public const float BackButtonSize = 44f;
         private const float BackButtonFromSide = 13f;
 
@@ -42,7 +57,7 @@ namespace Puzzle.Client.Layout
         public const float WellUnderTop = 24f;
         public const float WellOverFoot = 19f;
 
-        /// <summary>A tray shows no more than this many pieces side by side.</summary>
+        /// <summary>A tray shows no more than this many pieces at once.</summary>
         public const int MostTrayPlaces = 6;
 
         /// <summary>
@@ -70,65 +85,64 @@ namespace Puzzle.Client.Layout
         private const float SlackOverButton = 0.24f;
         private const float SlackUnderButton = 0.34f;
 
+        /// <summary>
+        /// Side by side: the column of the pips, the tray and the button is this wide, this far from the painting's
+        /// frame, and the two columns keep this much wall at the screen's sides. The tray is at most this high; its
+        /// places stand in two columns of three or three columns of two, whichever lays the pieces larger. The pips
+        /// hang from the picture rail on wires this long; the painting's plate keeps this much wall under it.
+        /// </summary>
+        public const float SidewaysColumnWidth = 300f;
+        private const float GapBetweenColumns = 32f;
+        private const float SidewaysWallAtTheSides = 16f;
+        private const float TallestSidewaysTray = 300f;
+        private const float SidewaysPipWires = 18f;
+        private const float GapPipsToTray = 22f;
+        private const float WallUnderThePlate = 14f;
+        private static readonly (int Columns, int Rows)[] SidewaysGrids = { (2, 3), (3, 2) };
+
         private JigsawLayout(PageLayout page, float pictureAspect, JigsawSize size, PaintingOrientation orientation)
         {
             int pieceCount = size.PieceCount;
             Page = page;
             ScreenView view = page.View;
-            Plaque = Box.Around(0f, page.Plaque.MiddleY, PlaqueWidth, page.Plaque.Height);
+            Arrangement = page.IsSideways ? JigsawArrangement.SideBySide : JigsawArrangement.Stacked;
             BackScale = page.Between(0.86f, 1f);
-            float backSize = BackButtonSize * BackScale;
-            Back = new Box(view.Left + BackButtonFromSide, Plaque.MiddleY - backSize / 2, backSize, backSize);
-
             ButtonScale = page.Between(0.78f, 0.9f);
             PipScale = page.Between(0.86f, 1f);
             PipRows = pieceCount > MostPipsInARow ? 2 : 1;
             float pipsHeight = PipRows * PipBarHeight * PipScale + (PipRows - 1) * GapBetweenPipBars;
-            float trayHeight = page.Between(106f, 130f);
-            float trayWidth = Math.Min(WidestTray, view.Width - 2 * TraySideMargin);
-            float hintRise = HintHeight / 2 - HintMiddleUnderTrayTop;
 
-            // The gaps of the tight screen, from the foot of the screen up to the rail.
-            float underButton = page.Between(8f, 14f) + ButtonLip * ButtonScale;
-            float overButton = page.Between(9f, 14f);
-            float pipsToHint = page.Between(9f, 12f);
-            float plateToPips = page.Between(6f, 9f);
-            float wires = page.Between(LightOverFrame + 2f, LightOverFrame + 6f);
-            float plateUnderFrame = HallLayout.PlateHeight - HallLayout.PlateOverFrame;
+            Parts parts = Arrangement == JigsawArrangement.SideBySide
+                ? SideBySide(page, pictureAspect, pipsHeight, PipBarWidth, ButtonScale)
+                : Stacked(page, pictureAspect, pipsHeight, PipBarWidth, ButtonScale);
+            Plaque = parts.Plaque;
+            Hanging = parts.Hanging;
+            Pips = parts.Pips;
+            PipsHangFrom = parts.PipsHangFrom;
+            Tray = parts.Tray;
+            Hint = Box.Around(Tray.MiddleX, Tray.Top - HintMiddleUnderTrayTop, 0f, HintHeight);
+            Button = parts.Button;
+            float backSize = BackButtonSize * BackScale;
+            Back = new Box(view.UsableLeft + BackButtonFromSide, Plaque.MiddleY - backSize / 2, backSize, backSize);
 
-            float taken = underButton + ButtonHeight * ButtonScale + overButton + trayHeight + hintRise + pipsToHint + pipsHeight
-                + plateToPips + plateUnderFrame + 2 * HallLayout.FrameWidth + wires;
-            float tallestPicture = Math.Max(1f, page.RailBottom - view.UsableBottom - taken);
-            float widestPicture = Math.Min(WidestPicture, view.Width - 2 * (HallLayout.FrameWidth + WallBesideFrame));
-            float pictureWidth = view.OnWholePixels(Math.Min(widestPicture, tallestPicture * pictureAspect));
-            float pictureHeight = view.OnWholePixels(pictureWidth / pictureAspect);
-            float slack = Math.Max(0f, tallestPicture - pictureHeight);
-
-            float buttonBottom = view.UsableBottom + underButton + SlackUnderButton * slack;
-            Button = new Box(-ButtonWidth * ButtonScale / 2, buttonBottom, ButtonWidth * ButtonScale, ButtonHeight * ButtonScale);
-            Tray = new Box(-trayWidth / 2, Button.Top + overButton + SlackOverButton * slack, trayWidth, trayHeight);
-            Hint = Box.Around(0f, Tray.Top - HintMiddleUnderTrayTop, 0f, HintHeight);
-
-            float pictureTop = view.OnWholePixels(page.RailBottom - wires - SlackToWires * slack - HallLayout.FrameWidth);
-            Hanging = new FramePlace(new Box(view.OnWholePixels(-pictureWidth / 2), pictureTop - pictureHeight, pictureWidth, pictureHeight), page.RailBottom);
-            Pips = new Box(-PipBarWidth / 2, Hanging.PlateBottom - plateToPips - pipsHeight, PipBarWidth, pipsHeight);
-
-            // The pieces lie in the tray as large as the well's height lets the tallest of them; the tray shows as
-            // many of them side by side as then fit its width.
-            LargestCell = LargestCellOf(size, orientation, pictureWidth, pictureHeight);
-            float fitsTheWell = Math.Min(1f, PieceInTheWell * Well.Height / (PieceOverItsCellUpright * LargestCell.Height));
-            float widthInTheTray = PieceOverItsCellAcross * LargestCell.Width * fitsTheWell;
-            TrayPlaces = Math.Clamp((int)(PieceInItsPlace * Well.Width / widthInTheTray), 1, MostTrayPlaces);
-            float fitsItsPlace = PieceInItsPlace * (Well.Width / TrayPlaces) / (PieceOverItsCellAcross * LargestCell.Width);
-            TrayPieceScale = Math.Min(fitsTheWell, fitsItsPlace);
+            // The pieces lie in the tray as large as their places let the largest of them, never larger than in the
+            // painting. Upright the tray is one row: as many places as then fit its width. Sideways it has rows and
+            // columns, as many places as the most a tray shows.
+            LargestCell = LargestCellOf(size, orientation, Hanging.Picture.Width, Hanging.Picture.Height);
+            (TrayColumns, TrayRows, TrayPieceScale) = Arrangement == JigsawArrangement.SideBySide
+                ? LargestGridIn(Well, LargestCell)
+                : OneRowIn(Well, LargestCell);
         }
 
         public PageLayout Page { get; }
 
-        /// <summary>The piece counter's plaque, hung from the cornice.</summary>
+        /// <summary>Whether the screen is laid out upright or in two columns.</summary>
+        public JigsawArrangement Arrangement { get; }
+
+        /// <summary>The piece counter's plaque, hung from the cornice: in the middle, or over the painting when it stands at the left.</summary>
         public Box Plaque { get; }
 
-        /// <summary>The round button that leads back, and how large it is drawn.</summary>
+        /// <summary>The round button that leads back, and how large it is drawn: at the usable screen's left, beside the plaque.</summary>
         public Box Back { get; }
 
         public float BackScale { get; }
@@ -136,8 +150,14 @@ namespace Puzzle.Client.Layout
         /// <summary>Where the painting hangs: its picture, and the rail its wires come down from.</summary>
         public FramePlace Hanging { get; }
 
-        /// <summary>The bars of progress pips under the painting's plate: one, or two above each other, each <see cref="PipBarWidth"/> wide.</summary>
+        /// <summary>The bars of progress pips: one, or two above each other, each <see cref="PipBarWidth"/> wide.</summary>
         public Box Pips { get; }
+
+        /// <summary>The height the pips' wires come down from: the painting's plate upright, the picture rail side by side.</summary>
+        public float PipsHangFrom { get; }
+
+        /// <summary>The pips' wires are at most this far from the bars' middle: within the plate they hang from, or within the bars.</summary>
+        public float PipWiresReach => Arrangement == JigsawArrangement.Stacked ? Hanging.WidestPlate / 2 : PipBarWidth / 2;
 
         public int PipRows { get; }
 
@@ -157,8 +177,16 @@ namespace Puzzle.Client.Layout
             Tray.Width - 2 * WellInFromSides,
             Tray.Height - WellUnderTop - WellOverFoot);
 
-        /// <summary>How many pieces the tray shows side by side.</summary>
-        public int TrayPlaces { get; }
+        /// <summary>How many places the tray has across, and how many rows of them: one row upright.</summary>
+        public int TrayColumns { get; }
+
+        public int TrayRows { get; }
+
+        /// <summary>How many pieces the tray shows at once.</summary>
+        public int TrayPlaces => TrayColumns * TrayRows;
+
+        /// <summary>How wide and how high each place of the tray is: the well shared out between the places.</summary>
+        public (float Width, float Height) TrayPlaceSize => (Well.Width / TrayColumns, Well.Height / TrayRows);
 
         /// <summary>The width of the painting's widest piece and the height of its tallest, knobs aside, at the painting's size on this screen.</summary>
         public (float Width, float Height) LargestCell { get; }
@@ -191,19 +219,135 @@ namespace Puzzle.Client.Layout
             return new JigsawLayout(PageLayout.Of(screen, PageTop.PlaqueUnderTheCornice), pictureAspect, size, orientation);
         }
 
-        /// <summary>The middle of a place in the tray, the places that are used being centred in the well as a row.</summary>
-        /// <param name="place">Which place, counted from 0 at the left.</param>
-        /// <param name="used">How many places the row has.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The row has no such place, or more places than the tray.</exception>
+        /// <summary>
+        /// The middle of a place in the tray. The places that are used are centred in the well: upright as a row,
+        /// side by side as rows of <see cref="TrayColumns"/> from the top, the last row centred if it is not full.
+        /// </summary>
+        /// <param name="place">Which place, counted from 0 at the left of the top row.</param>
+        /// <param name="used">How many places are used.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The tray has no such place, or fewer places than are used.</exception>
         public (float X, float Y) TrayPlaceMiddle(int place, int used)
         {
             if (used < 1 || used > TrayPlaces || place < 0 || place >= used)
             {
-                throw new ArgumentOutOfRangeException(nameof(place), place, $"A row of {used} places in a tray of {TrayPlaces} has no place {place}.");
+                throw new ArgumentOutOfRangeException(nameof(place), place, $"{used} places used in a tray of {TrayPlaces} have no place {place}.");
             }
 
-            float placeWidth = Well.Width / TrayPlaces;
-            return (Well.MiddleX + (place - (used - 1) / 2f) * placeWidth, Well.MiddleY);
+            (float placeWidth, float placeHeight) = TrayPlaceSize;
+            int rowsUsed = (used + TrayColumns - 1) / TrayColumns;
+            int row = place / TrayColumns;
+            int inThisRow = Math.Min(TrayColumns, used - row * TrayColumns);
+            float x = Well.MiddleX + (place % TrayColumns - (inThisRow - 1) / 2f) * placeWidth;
+            float y = Well.MiddleY + ((rowsUsed - 1) / 2f - row) * placeHeight;
+            return (x, y);
+        }
+
+        /// <summary>Upright, from the foot of the screen up to the rail: the button, the tray, the pips and the painting, in the middle.</summary>
+        private static Parts Stacked(PageLayout page, float pictureAspect, float pipsHeight, float pipBarWidth, float buttonScale)
+        {
+            ScreenView view = page.View;
+            var plaque = Box.Around(0f, page.Plaque.MiddleY, PlaqueWidth, page.Plaque.Height);
+            float trayHeight = page.Between(106f, 130f);
+            float trayWidth = Math.Min(WidestTray, view.Width - 2 * TraySideMargin);
+            float hintRise = HintHeight / 2 - HintMiddleUnderTrayTop;
+
+            // The gaps of the tight screen, from the foot of the screen up to the rail.
+            float underButton = page.Between(8f, 14f) + ButtonLip * buttonScale;
+            float overButton = page.Between(9f, 14f);
+            float pipsToHint = page.Between(9f, 12f);
+            float plateToPips = page.Between(6f, 9f);
+            float wires = page.Between(LightOverFrame + 2f, LightOverFrame + 6f);
+            float plateUnderFrame = HallLayout.PlateHeight - HallLayout.PlateOverFrame;
+
+            float taken = underButton + ButtonHeight * buttonScale + overButton + trayHeight + hintRise + pipsToHint + pipsHeight
+                + plateToPips + plateUnderFrame + 2 * HallLayout.FrameWidth + wires;
+            float tallestPicture = Math.Max(1f, page.RailBottom - view.UsableBottom - taken);
+            float widestPicture = Math.Min(WidestPicture, view.Width - 2 * (HallLayout.FrameWidth + WallBesideFrame));
+            float pictureWidth = view.OnWholePixels(Math.Min(widestPicture, tallestPicture * pictureAspect));
+            float pictureHeight = view.OnWholePixels(pictureWidth / pictureAspect);
+            float slack = Math.Max(0f, tallestPicture - pictureHeight);
+
+            float buttonBottom = view.UsableBottom + underButton + SlackUnderButton * slack;
+            var button = new Box(-ButtonWidth * buttonScale / 2, buttonBottom, ButtonWidth * buttonScale, ButtonHeight * buttonScale);
+            var tray = new Box(-trayWidth / 2, button.Top + overButton + SlackOverButton * slack, trayWidth, trayHeight);
+
+            float pictureTop = view.OnWholePixels(page.RailBottom - wires - SlackToWires * slack - HallLayout.FrameWidth);
+            var hanging = new FramePlace(new Box(view.OnWholePixels(-pictureWidth / 2), pictureTop - pictureHeight, pictureWidth, pictureHeight), page.RailBottom);
+            var pips = new Box(-pipBarWidth / 2, hanging.PlateBottom - plateToPips - pipsHeight, pipBarWidth, pipsHeight);
+            return new Parts(plaque, hanging, pips, hanging.PlateBottom, tray, button);
+        }
+
+        /// <summary>
+        /// Sideways: the painting at the left, as high as the screen allows under the rail, its plate under it; at its
+        /// right a column with the pips hung from the rail, the tray under them and the button at the foot, the column
+        /// as high as the painting's room and centred in it. The two columns stand together in the screen's middle.
+        /// </summary>
+        private static Parts SideBySide(PageLayout page, float pictureAspect, float pipsHeight, float pipBarWidth, float buttonScale)
+        {
+            ScreenView view = page.View;
+            float plateUnderFrame = HallLayout.PlateHeight - HallLayout.PlateOverFrame;
+            float wires = page.Between(LightOverFrame + 2f, LightOverFrame + 6f);
+            float roomTop = page.RailBottom;
+            float roomBottom = view.UsableBottom + WallUnderThePlate;
+
+            float usableHalf = Math.Min(-view.UsableLeft, view.UsableRight);
+            float widestFrame = 2 * (usableHalf - SidewaysWallAtTheSides) - GapBetweenColumns - SidewaysColumnWidth;
+            float tallestPicture = Math.Max(1f, roomTop - roomBottom - wires - 2 * HallLayout.FrameWidth - plateUnderFrame);
+            float widestPicture = Math.Max(1f, widestFrame - 2 * HallLayout.FrameWidth);
+            float pictureWidth = view.OnWholePixels(Math.Min(widestPicture, tallestPicture * pictureAspect));
+            float pictureHeight = view.OnWholePixels(pictureWidth / pictureAspect);
+            float slack = Math.Max(0f, tallestPicture - pictureHeight);
+
+            float frameWidth = pictureWidth + 2 * HallLayout.FrameWidth;
+            float pairWidth = frameWidth + GapBetweenColumns + SidewaysColumnWidth;
+            float paintingMiddle = view.OnWholePixels(-pairWidth / 2 + frameWidth / 2);
+            float columnMiddle = pairWidth / 2 - SidewaysColumnWidth / 2;
+
+            float pictureTop = view.OnWholePixels(roomTop - wires - SlackToWires * slack - HallLayout.FrameWidth);
+            var hanging = new FramePlace(new Box(view.OnWholePixels(paintingMiddle - pictureWidth / 2), pictureTop - pictureHeight, pictureWidth, pictureHeight), page.RailBottom);
+            var plaque = Box.Around(paintingMiddle, page.Plaque.MiddleY, PlaqueWidth, page.Plaque.Height);
+
+            // The column, from the rail down: the pips on their wires, the hint riding on the tray's top edge, the
+            // tray, and the button with its lip; what the room has beyond the tallest tray is wall above and below.
+            float hintRise = HintHeight / 2 - HintMiddleUnderTrayTop;
+            float overButton = page.Between(14f, 18f);
+            float buttonHeight = ButtonHeight * buttonScale + ButtonLip * buttonScale;
+            float fixedParts = SidewaysPipWires + pipsHeight + GapPipsToTray + hintRise + overButton + buttonHeight;
+            float trayHeight = Math.Min(TallestSidewaysTray, roomTop - roomBottom - fixedParts);
+            float columnSlack = Math.Max(0f, roomTop - roomBottom - fixedParts - trayHeight);
+            float pipsTop = roomTop - SidewaysPipWires - columnSlack / 2;
+            var pips = new Box(columnMiddle - pipBarWidth / 2, pipsTop - pipsHeight, pipBarWidth, pipsHeight);
+            var tray = new Box(columnMiddle - SidewaysColumnWidth / 2, pips.Bottom - GapPipsToTray - hintRise - trayHeight, SidewaysColumnWidth, trayHeight);
+            var button = new Box(columnMiddle - ButtonWidth * buttonScale / 2, tray.Bottom - overButton - ButtonHeight * buttonScale, ButtonWidth * buttonScale, ButtonHeight * buttonScale);
+            return new Parts(plaque, hanging, pips, page.RailBottom, tray, button);
+        }
+
+        /// <summary>Upright: one row of places, as many as fit the well's width once the pieces are as high as the well lets them be.</summary>
+        private static (int Columns, int Rows, float PieceScale) OneRowIn(Box well, (float Width, float Height) cell)
+        {
+            float fitsTheWell = Math.Min(1f, PieceInTheWell * well.Height / (PieceOverItsCellUpright * cell.Height));
+            float widthInTheTray = PieceOverItsCellAcross * cell.Width * fitsTheWell;
+            int places = Math.Clamp((int)(PieceInItsPlace * well.Width / widthInTheTray), 1, MostTrayPlaces);
+            float fitsItsPlace = PieceInItsPlace * (well.Width / places) / (PieceOverItsCellAcross * cell.Width);
+            return (places, 1, Math.Min(fitsTheWell, fitsItsPlace));
+        }
+
+        /// <summary>Sideways: the grid of places that lays the pieces largest, every grid holding as many places as a tray shows at most.</summary>
+        private static (int Columns, int Rows, float PieceScale) LargestGridIn(Box well, (float Width, float Height) cell)
+        {
+            (int Columns, int Rows, float PieceScale) best = (1, 1, 0f);
+            foreach ((int columns, int rows) in SidewaysGrids)
+            {
+                float fitsAcross = PieceInItsPlace * (well.Width / columns) / (PieceOverItsCellAcross * cell.Width);
+                float fitsUpright = PieceInTheWell * (well.Height / rows) / (PieceOverItsCellUpright * cell.Height);
+                float scale = Math.Min(1f, Math.Min(fitsAcross, fitsUpright));
+                if (scale > best.PieceScale)
+                {
+                    best = (columns, rows, scale);
+                }
+            }
+
+            return best;
         }
 
         /// <summary>
@@ -217,6 +361,32 @@ namespace Puzzle.Client.Layout
             return orientation == PaintingOrientation.Portrait
                 ? (pictureWidth / bands, pictureHeight / fewestInABand)
                 : (pictureWidth / fewestInABand, pictureHeight / bands);
+        }
+
+        /// <summary>What an arrangement places; the rest of the screen follows from these.</summary>
+        private readonly struct Parts
+        {
+            public Parts(Box plaque, FramePlace hanging, Box pips, float pipsHangFrom, Box tray, Box button)
+            {
+                Plaque = plaque;
+                Hanging = hanging;
+                Pips = pips;
+                PipsHangFrom = pipsHangFrom;
+                Tray = tray;
+                Button = button;
+            }
+
+            public Box Plaque { get; }
+
+            public FramePlace Hanging { get; }
+
+            public Box Pips { get; }
+
+            public float PipsHangFrom { get; }
+
+            public Box Tray { get; }
+
+            public Box Button { get; }
         }
     }
 }

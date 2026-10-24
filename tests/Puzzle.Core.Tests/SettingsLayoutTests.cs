@@ -32,6 +32,9 @@ public class SettingsLayoutTests
             data.Add(1080, 2340, 110, 60, switches);
             data.Add(1080, 1920, 90, 48, switches);
             data.Add(2048, 2732, 48, 40, switches);
+            data.Add(2732, 2048, 0, 40, switches);
+            data.Add(2152, 2076, 0, 0, switches);
+            data.Add(2560, 1600, 0, 0, switches);
             data.Add(1488, 2266, 48, 40, switches);
         }
 

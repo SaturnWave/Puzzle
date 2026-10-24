@@ -126,7 +126,7 @@ namespace Puzzle.Client.Layout
                 int inThisRow = Math.Min(perRow, pictureAspects.Count - row * perRow);
                 float middleX = (painting % perRow - (inThisRow - 1) / 2f) * shareWidth;
                 var share = new Box(middleX - shareWidth / 2, top - (row + 1) * shareHeight, shareWidth, shareHeight);
-                exhibits[painting] = Hung(share, pictureAspects[painting], view, hangsFromTheRail: row == 0);
+                exhibits[painting] = HungIn(share, pictureAspects[painting], view, hangsFromTheRail: row == 0);
             }
 
             Exhibits = exhibits;
@@ -166,8 +166,11 @@ namespace Puzzle.Client.Layout
             return new CollectionLayout(PageLayout.Of(screen), pictureAspects);
         }
 
-        /// <summary>A painting in its share of the wall: as large as fits, its frame and plate together in the share's middle.</summary>
-        private static ExhibitPlace Hung(Box share, float aspect, ScreenView view, bool hangsFromTheRail)
+        /// <summary>
+        /// A painting in its share of the wall: as large as fits, its frame and plate together in the share's middle.
+        /// The hall hangs the room's restored paintings beside its own the same way (<see cref="HallLayout.PaintingsBeside"/>).
+        /// </summary>
+        internal static ExhibitPlace HungIn(Box share, float aspect, ScreenView view, bool hangsFromTheRail)
         {
             float frame = HallLayout.FrameWidth * FrameScale;
             float plateUnderFrame = PlateHeight - PlateOverFrame;

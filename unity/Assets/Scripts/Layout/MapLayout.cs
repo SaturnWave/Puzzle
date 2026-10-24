@@ -21,6 +21,14 @@ namespace Puzzle.Client.Layout
         public const float WidestFrame = 384f;
         private const float WallBesideFrame = 10f;
 
+        /// <summary>
+        /// On a screen held sideways (<see cref="PageLayout.IsSideways"/>) the frame widens: its sheet is at most this
+        /// many times as wide as the map over the strip is high, about the shape of the world the camera frames from
+        /// California to Japan (the map's camera, MapCamera), and it keeps this much wall at each side of the screen.
+        /// </summary>
+        public const float WorldShape = 2.1f;
+        private const float SidewaysWallBesideFrame = 28f;
+
         /// <summary>The strip of eras across the sheet's foot (MapWorldTR: 78 of the map's 456 points).</summary>
         public const float StripHeight = 78f;
 
@@ -69,8 +77,6 @@ namespace Puzzle.Client.Layout
         public static MapLayout Of(ScreenShape screen)
         {
             PageLayout page = PageLayout.Of(screen);
-            float frameWidth = Math.Min(WidestFrame, page.View.Width - 2 * WallBesideFrame);
-            float sheetWidth = page.View.OnWholePixels(frameWidth - 2 * FrameWidth);
             float wallOver = page.Between(TightWallOverTheFrame, RoomyWallOverTheFrame);
             float wallUnder = page.Between(TightWallUnderTheFrame, RoomyWallUnderTheFrame);
             float SheetHeightBetween(float over, float under) => SheetTopUnder(page, over) - (page.BarReach + under + FrameWidth);
@@ -87,7 +93,28 @@ namespace Puzzle.Client.Layout
 
             float sheetTop = SheetTopUnder(page, wallOver);
             float sheetBottom = page.View.OnWholePixels(page.BarReach + wallUnder + FrameWidth);
+            float frameWidth = FrameWidthOn(page, mapHeight: sheetTop - sheetBottom - StripHeight);
+            float sheetWidth = page.View.OnWholePixels(frameWidth - 2 * FrameWidth);
             return new MapLayout(page, new Box(-sheetWidth / 2, sheetBottom, sheetWidth, sheetTop - sheetBottom));
+        }
+
+        /// <summary>
+        /// How wide the frame is: as wide as the widest frame where the screen allows, and on a screen held sideways as
+        /// wide as the whole world needs at the map's height, from California to Japan (<see cref="WorldShape"/>), as far
+        /// as the usable screen leaves a wider wall beside it.
+        /// </summary>
+        private static float FrameWidthOn(PageLayout page, float mapHeight)
+        {
+            ScreenView view = page.View;
+            float upright = Math.Min(WidestFrame, view.Width - 2 * WallBesideFrame);
+            if (!page.IsSideways)
+            {
+                return upright;
+            }
+
+            float usableWidth = 2 * Math.Min(-view.UsableLeft, view.UsableRight);
+            float theWorld = WorldShape * mapHeight + 2 * FrameWidth;
+            return Math.Max(upright, Math.Min(theWorld, usableWidth - 2 * SidewaysWallBesideFrame));
         }
 
         /// <summary>The top of the sheet, inside the frame that hangs this far under the picture rail.</summary>

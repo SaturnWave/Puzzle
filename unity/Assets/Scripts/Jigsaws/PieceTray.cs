@@ -13,7 +13,8 @@ namespace Puzzle.Client.Jigsaws
 {
     /// <summary>
     /// The wooden tray under a painting's jigsaw, as the design canvas draws it (JigsawTR): a block of wood with a
-    /// velvet well in which the pieces the player has won lie side by side, each a little askew, a cream pill on
+    /// velvet well in which the pieces the player has won lie side by side (in rows and columns beside the painting on
+    /// a screen held sideways, <see cref="JigsawArrangement.SideBySide"/>), each a little askew, a cream pill on
     /// its top edge that says what to do, and, when more pieces wait than the well shows, a second pill that says
     /// how many wait behind. The tray owns every loose piece of the screen: whoever carries a piece or lets it fly
     /// moves the piece's own object and tells the tray when it is gone. Places are in the layout's points.
@@ -184,10 +185,15 @@ namespace Puzzle.Client.Jigsaws
                 return null;
             }
 
-            float placeWidth = well.Width / layout.TrayPlaces;
+            // A tray of one row takes a finger anywhere over or under its places within the well's reach; a tray of
+            // rows takes it within the place's own row.
+            (float placeWidth, float placeHeight) = layout.TrayPlaceSize;
             foreach (int piece in _row.Shown)
             {
-                if (Mathf.Abs(point.x - RestOf(piece).x) <= placeWidth / 2f)
+                Vector2 rest = RestOf(piece);
+                bool isInItsColumn = Mathf.Abs(point.x - rest.x) <= placeWidth / 2f;
+                bool isInItsRow = layout.TrayRows == 1 || Mathf.Abs(point.y - rest.y) <= placeHeight / 2f;
+                if (isInItsColumn && isInItsRow)
                 {
                     return piece;
                 }

@@ -6,6 +6,17 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 30 — Kalan işler
 
+**Yan çevirme (tablet, açık Fold, iPad)**
+- Bitti (ana dal): iPad her zaman, Android'de kısa kenarı 600 dp ve üstü olan ekranlar dört yöne dönüyor, ters dik de; telefonlar ve Fold'un dış ekranı dik. Android paketi dik açılıyor, oyun ilk karede kuralı uyguluyor (`ScreenTurns`, `DeviceScreen`). Manifestte `appCategory="game"` yoksa derleme duruyor; hedef API 36'ya sabitlendi.
+- Seçenek A: dik düzen ortada, yanlarda galeri duvarı. Yatay tablette salonda odanın onarılmış tabloları (en çok dört), haritada geniş çerçeve (şeritte 9–10 dönem), yapbozda tablo solda ve tepsi sağda (altı yer, 2×3 ya da 3×2). Fold yan tutulunca bugünkü düzen.
+- Ekran değişince basılı parmak bırakılıyor: dönmeden önce başlayan sürükleme takas etmiyor, taşınan parça tepsiye dönüyor. Yan paylar: `ScreenShape` sol ve sağ payı, `ScreenView.UsableLeft/Right`; geri düğmesi, hediye ve giriş sayfasının alt satırı paylara uyuyor.
+- iPad dalından alınanlar: koleksiyonda üçlü sıra 410 noktadan (dik iPad'ler), titreşimi olmayan cihazda titreşim anahtarı yok (Android tabletler), `MusicCheck` sayfanın yerleşmesini bekliyor.
+- Yeni denetim `RotationCheck`: iPad dik↔yan, Fold iç dik↔yan (kamera yanda), Fold dış→iç; taşlar düşerken, sürüklerken, bütün kartlar açıkken, finalde, parça taşınırken, giriş sayfasında 63 değişiklik. Eski kodda sürüklemenin ortasında dönünce bir hamle oynanıyordu; denetim kırılıyor.
+- Pixel dış ve iç ekranın 262 görüntüsü önce ve sonra piksel piksel aynı. Yatay görüntüler 12,9" iPad, 16:10 tablet ve Fold yan ekranında bakıldı.
+- 5.367 test geçti; ekonomi denetimi temiz; Unity'de `PlayModeCheck`, `MusicCheck` (`-quit` olmadan), `RotationCheck` ve öteki denetimler hatasız. Telefon testleri T450–T465; cihazda henüz denenmedi.
+- iOS (`feature/ios`): Info.plist'te iPad dört yön, iPhone yalnız dik; "tam ekran zorunlu" kalktı (Pencereli Uygulamalar, Stage Manager). Ayrıntı `docs/IOS_BUILD.md`.
+- Açık: tahtanın yatay düzeni (B) iPad'de denendikten sonra; Android tablette ilk karenin dik görünüp dönmesi cihazda ölçülecek (T464); iPadOS 26 pencere düğmeleri ile geri düğmesi (T457).
+
 **Koleksiyonda bellek (A42/4)**
 - Bitti (8960aa8): 23 Ekim telefon turunda koleksiyonun 20 odası gezilince bellek 401 MB'tan 649 MB'a çıkmıştı. Neden: odaların resimleri `Resources` ile yükleniyor, oda kaldırılınca bırakılmıyordu; 20 oda gezilince müzenin 100 resmi de bellekte kalıyordu (telefonda her biri yaklaşık 2,5 MB). Ağlar, malzemeler ve sahne nesneleri zaten temizleniyordu.
 - Artık resmi gösteren her şey onu tutuyor ve kaldırılınca bırakıyor (`PictureShelf`, Unity'siz, 11 test). Hiçbir şeyin tutmadığı resimlerden son bırakılan 10'u (iki oda) kalıyor, fazlası boşaltılıyor; sahne değişince hepsi. Görünürde değişiklik yok (GAME_DESIGN §23).
@@ -38,6 +49,28 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Salon bilerek bırakıldı: 3:4'te yükseklik 9:16 telefonununki kadar, tezgâh en küçüğüne yakın, dikey bir tablo ekranın genişliğinin beşte biri. Katlının iç ekranında da böyle. Büyük tablette noktayı küçültmek salonu ferahlatır (tezgâh tam boy) ama tablonun ekrandaki payını büyütmez. Karar sahibinin iPad'deki izlenimine bağlı (T441).
 - `MusicCheck` düzeltildi: bir sayfanın çevrildiğini müze durulunca sayıyor. iOS içe aktarmasıyla Editör tabloları çözerken kareler uzuyor, oyunun saati geri kalıyor, koleksiyonun çevrilişi bir saniyeyi aşıyordu. Mağaza'ya basış çevrilme bitmeden geliyor, müze o sırada dokunuş almadığı için kayboluyordu (dört çalıştırmanın üçünde). Şimdi iki kez üst üste bütün adımları geçti. `PlayModeCheck` hatasız.
 - Xcode projesi yeniden dışa aktarıldı (`IosBuild.Run`, 4,4 dk, `unity/Build/iOS`). Telefon testleri T440–T449 (F22; T441'e salonun görünüşü eklendi); iPad'de henüz denenmedi.
+
+**Kullanıcı kararları (2026-10-24)**
+- Restoratör rütbesi (XP) sonraki sürüme önerilen kaynaklarla girer: kazanılan bölüm, zor bölüm, ilk denemede kazanma, tablo, oda, mini oyunlar. Kalan hamle ve kullanılan booster XP vermez.
+- Sıra: önce yan çevirme, sonra mini oyunlar.
+- Yan çevirme: iPad her zaman, Android'de kısa kenarı 600 dp ve üstü olan ekranlar (tabletler, açık Fold) döner; telefonlar dik kalır. Önce dik sütun ve galeri kanatları, sonra haritanın geniş çerçevesi ve yapbozda tablo solda, tepsi sağda. iPad'de pencere kipi de olur. Plan ve fikir çizimleri: `out/landscape/`.
+- Mini oyunlar: "eşya sıralama" gibi küçük, basit oyunlar, ayın belli haftalarında etkinlik olarak; altın, can ve başka ödüllerle. Önce hangi türlerin oyuna girebileceğine bakılacak.
+
+**Mini oyun kataloğu**
+- 5 ajan (3 araştırmacı, 1 doğrulayıcı, 1 tasarımcı), yaklaşık 0,9 milyon token. Doğrulayıcı 34 iddianın 22'sini olduğu gibi tuttu, 10'unda ayrıntı düzeltti; uydurma sayı bulmadı.
+- Sonuç: `docs/research/mini-games.md` ("Araştırma Raporu" PDF'i); notlar, fikir çizimi ve çizimin betiği `docs/research/mini-games-2026-10/`.
+- Bulgu: 2025'te bulmaca büyümesini yeni türler taşıdı (birleştirme, sıralama, blok, vida). Büyük üçlü eşleştirme oyunları liste hitlerini olduğu gibi gömmüyor; renk sırası, yapboz, kazı ve hafıza gibi oyunları etkinlik olarak koyuyor. Hepsi kazanılan bölümden gelen jetonla besleniyor, can harcatmıyor.
+- Öneri: önce ortak çerçeve (takvim, etkinlik kartı, mini oyun sahnesi, sonuç ve ödül), sonra Boya Tüpleri (tüp sıralama), Pigment Tarifi (renk sırası), Takas Yapbozu (kart takası), Depo Sıkışıklığı (kayan sandıklar), isteğe bağlı Çerçeve Vidaları. Ayın 1. ve 3. haftası "Atölye Haftası": hafta içi ve hafta sonu birer zincir, telefonun saatiyle, sunucusuz. 14 soru proje sahibinin kararını bekliyor.
+
+**Satın alma denemesi (IAP)**
+- Atılan bir kopyada (`D:/puzzle-iap-spike`, 6fdd691) Unity IAP 5.4.4 eklendi; satış yapmayan en küçük kod (`coins_test` ürününü soran bir deneme) yalnız `IAP_SPIKE` tanımıyla derlendi. Üç Android derlemesi: IAP'siz, IAP'li ve INTERNET silinmiş, IAP'li ve silme kapalı. Kopya sonra silindi; oyuna hiçbir şey girmedi.
+- İzinler: IAP `com.android.vending.BILLING` ve `ACCESS_NETWORK_STATE` getiriyor. INTERNET'i Google'ın `transport-backend-cct` kütüphanesi istiyor; bizim izin adımı onu siliyor (Gradle raporu: "REJECTED"). Silme kapalıyken INTERNET geri geliyor. Konum izni yok.
+- Boyut: APK 294,7 MB'tan 302,7 MB'a, +8,0 MB (%2,7); çoğu derlenmiş C# kodu. Telefonda yaklaşık +26 MB.
+- UGS ve bulut projesi gerekmiyor: editörün oyun kipinde UGS başlatılmadan bağlandı ve ürün geldi. Derleme yalnız "bulut projesi yok, Google Play lisans anahtarı yok" uyarısı yazıyor.
+- Paketin kaynak kodundan: IAP'nin teşhis verisi UGS başlatılmadıkça gitmiyor. Ama 5.4.4 her satın alma adımını (fiş, ürün, fiyat, cihaz modeli, iOS'ta IDFV) Unity'nin sunucusuna yolluyor; kapatma ayarı yok. Android'de INTERNET yokken çıkamaz, iOS'ta çıkar. 5.3.1'de bu kod yok.
+- Tuzak: silme satırı kaldırılınca Unity eski manifesti kullanıyor ve INTERNET silinmiş kalıyor; Gradle projesindeki manifest silinince düzeldi.
+- Öneri: satın alma gelirse IAP 5.3.1 (Google'a göre 2027-08-31'e kadar geçerli) ve INTERNET silinmiş kalsın; analiz gelirse Aptabase, oyuncunun izniyle. Belge: `docs/research/iap-and-analytics.md` ("Araştırma Notu" PDF'i); kaynaklı araştırma notu `docs/research/iap-and-analytics-notes.md`. Kararlar sahibinde (belgenin 7. bölümü).
+- Açık: gerçek Google Play satın alması INTERNET'siz denenmedi (Play Console'da uygulama ve lisanslı test hesabı gerekiyor); iPad'de ağ dinlenmedi; 5.3.1 derlenmedi.
 
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 

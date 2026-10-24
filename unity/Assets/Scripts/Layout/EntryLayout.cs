@@ -121,8 +121,8 @@ namespace Puzzle.Client.Layout
             LoadingLineMiddle = BarMiddle - LoadingLineUnderTheBar * scale;
             TapMiddle = (barTop + LoadingLineMiddle - UnderTheLoadingLine * scale) / 2f;
             FooterMiddle = view.UsableBottom + FooterOverTheFoot * scale;
-            FooterLeft = view.Left + FooterSideMargin * scale;
-            FooterRight = view.Right - FooterSideMargin * scale;
+            FooterLeft = view.UsableLeft + FooterSideMargin * scale;
+            FooterRight = view.UsableRight - FooterSideMargin * scale;
             LineRoom = view.Width - 2f * LineSideMargin;
 
             var gems = new List<Box>();

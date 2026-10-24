@@ -67,7 +67,13 @@ namespace Puzzle.Client.EditorTools
             PermissionLine.Withdraw("android.permission.INTERNET"), // nothing leaves the phone
         };
 
-        /// <summary>A 64-bit ARM package in portrait: what current phones run and what the stores ask for.</summary>
+        /// <summary>
+        /// A 64-bit ARM package for Android 16 (API level 36, what Google Play asks for since 31 August 2026), named so
+        /// that a later Unity cannot move the target on its own: from API level 37 on Android has no way out of its rules
+        /// for large screens but the game category (<see cref="ManifestGameCategory"/>). The package opens upright, so a
+        /// phone never shows it sideways; every way of standing is allowed for the game's own rule, which turns a tablet
+        /// or an open foldable with the device once the game runs (Scripts/Engine/DeviceScreen.cs).
+        /// </summary>
         private static void ApplyPlayerSettings()
         {
             PlayerSettings.companyName = GameIdentity.CompanyName;
@@ -75,15 +81,22 @@ namespace Puzzle.Client.EditorTools
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, GameIdentity.ApplicationId);
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.allowedAutorotateToPortrait = true;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = true;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
             EditorUserBuildSettings.buildAppBundle = false;
         }
     }
 
     /// <summary>
     /// The build's manifest step: once Unity has made the Gradle project of an Android build (this tool's, or any
-    /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>).
-    /// A manifest that cannot be read or written stops the build: a package without them would fail on the phone.
+    /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>),
+    /// and must say that the application is a game (<see cref="ManifestGameCategory"/>). A manifest that cannot be read
+    /// or written, or one of another category, stops the build: a package without them would fail on the phone, or
+    /// turn on a tablet as Android wants rather than as the game does.
     /// </summary>
     public sealed class AndroidManifestStep : IPostGenerateGradleAndroidProject
     {
@@ -93,8 +106,10 @@ namespace Puzzle.Client.EditorTools
         public void OnPostGenerateGradleAndroidProject(string path)
         {
             string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
-            File.WriteAllText(manifest, ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions));
-            Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}.");
+            string written = ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions);
+            ManifestGameCategory.Require(written);
+            File.WriteAllText(manifest, written);
+            Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game.");
         }
     }
 }

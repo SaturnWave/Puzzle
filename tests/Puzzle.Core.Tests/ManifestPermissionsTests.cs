@@ -77,4 +77,23 @@ public class ManifestPermissionsTests
     {
         Assert.Throws<InvalidOperationException>(() => ManifestPermissions.Apply("<resources />", new[] { PermissionLine.Ask(Vibrate) }));
     }
+
+    [Fact]
+    public void The_manifest_of_a_game_passes_and_keeps_Android_honouring_the_games_own_turning()
+    {
+        string game = UnitysManifest.Replace("<application ", "<application android:appCategory=\"game\" ");
+
+        ManifestGameCategory.Require(ManifestPermissions.Apply(game, new[] { PermissionLine.Ask(Vibrate) }));
+    }
+
+    [Theory]
+    [InlineData("<application android:allowBackup=\"true\">")]
+    [InlineData("<application android:appCategory=\"productivity\">")]
+    public void A_manifest_that_is_not_a_games_stops_the_build(string application)
+    {
+        string manifest = UnitysManifest.Replace("<application android:allowBackup=\"true\" android:extractNativeLibs=\"true\">", application);
+
+        Assert.Throws<InvalidOperationException>(() => ManifestGameCategory.Require(manifest));
+        Assert.Throws<InvalidOperationException>(() => ManifestGameCategory.Require("<manifest />"));
+    }
 }

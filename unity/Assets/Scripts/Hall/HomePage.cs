@@ -1,7 +1,9 @@
 #nullable enable
+using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
+using Puzzle.Client.Collections;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Jigsaws;
@@ -39,6 +41,10 @@ namespace Puzzle.Client.Hall
     /// </list>
     /// Left out of the design, because the game has nothing behind them yet: the event frame at the workbench's left,
     /// and on the wallet row the settings' button (the settings' stage brings it).
+    /// On a tablet held sideways the hall is this column in the middle of a wide wall: a lamp hangs beside the frame,
+    /// and beyond it the room's restored paintings hang in the collection's narrow frames (<see cref="HallLayout.PaintingsBeside"/>).
+    /// They are made the first time the screen has room for them and taken down when it has none, so a phone never
+    /// loads them.
     /// </remarks>
     public sealed class HomePage : IMuseumPage, IMovingPage, IShopPage
     {
@@ -93,6 +99,8 @@ namespace Puzzle.Client.Hall
         private const float CelebrationBeginsAfter = 0.4f;
 
         private readonly Transform _root;
+        private readonly ArtCatalogue _art;
+        private readonly PaintingGallery _paintings;
         private readonly PaintingLook _look;
         private readonly Wall _wall;
         private readonly RoomTrim _trim;
@@ -122,6 +130,12 @@ namespace Puzzle.Client.Hall
         private readonly RestoredSparkles? _sparkles;
         private readonly PaintingNumber _shown;
 
+        /// <summary>The room's restored paintings but the one in the frame, in the room's order: what may hang beside the frame.</summary>
+        private readonly HungPainting[] _restoredBeside;
+
+        /// <summary>The restored paintings that hang beside the frame now, each with the look that holds its picture; none while the wall has no room for them.</summary>
+        private readonly List<(ExhibitFrame Frame, PaintingLook Look)> _hungBeside = new List<(ExhibitFrame Frame, PaintingLook Look)>();
+
         private HomePage(Transform parent, ArtCatalogue art, PaintingGallery paintings, MuseumVisit visit, RoomNumber? restored)
         {
             _root = new GameObject("Home").transform;
@@ -132,6 +146,9 @@ namespace Puzzle.Client.Hall
             _shown = restored is RoomNumber whole ? whole.Paintings.Last() : visit.Painting;
             HungPainting painting = room.Painting(_shown);
             int piecesWaiting = isCelebrating ? 0 : painting.PiecesWaiting;
+            _art = art;
+            _paintings = paintings;
+            _restoredBeside = room.Paintings.Where(other => other.Standing == PaintingStanding.Whole && other.Number != _shown).ToArray();
             _look = paintings.LookOf(_shown);
             _wall = Wall.Create(_root, art);
             _trim = RoomTrim.Create(_root, art);
@@ -218,6 +235,7 @@ namespace Puzzle.Client.Hall
             _sparkles?.Place(layout.Hanging.Frame);
             _gift?.Place(layout);
             HangTheLamps(layout);
+            HangTheRestoredPaintingsBeside(layout);
         }
 
         public void AddPressables(PressSet<MuseumPress> presses)
@@ -263,6 +281,7 @@ namespace Puzzle.Client.Hall
             _gift?.Dispose();
             _pips?.Dispose();
             _waitingPiece?.Dispose();
+            TakeDownThePaintingsBeside();
             _look.Dispose();
             SceneObjects.DestroyObjectOf(_root);
         }
@@ -321,10 +340,48 @@ namespace Puzzle.Client.Hall
                 return;
             }
 
-            float fromMiddle = layout.Frame.Right + layout.WallBesideTheFrame / 2f;
             float foot = layout.Frame.MiddleY - LampFootUnderFrameMiddle;
-            _leftLamp.localPosition = new Vector3(-fromMiddle, foot, 0f);
-            _rightLamp.localPosition = new Vector3(fromMiddle, foot, 0f);
+            _leftLamp.localPosition = new Vector3(-layout.LampMiddleX, foot, 0f);
+            _rightLamp.localPosition = new Vector3(layout.LampMiddleX, foot, 0f);
+        }
+
+        /// <summary>
+        /// The room's restored paintings beside the frame, where the wall has room for them: made the first time it has,
+        /// placed anew on every screen that has, and taken down, their pictures let go, on one that has not.
+        /// </summary>
+        private void HangTheRestoredPaintingsBeside(HallLayout layout)
+        {
+            if (!layout.HasPaintingsBeside)
+            {
+                TakeDownThePaintingsBeside();
+                return;
+            }
+
+            if (_hungBeside.Count == 0)
+            {
+                foreach (HungPainting painting in _restoredBeside.Take(HallLayout.MostPaintingsBeside))
+                {
+                    PaintingLook look = _paintings.LookOf(painting.Number);
+                    _hungBeside.Add((ExhibitFrame.Create(_root, _art, look, painting), look));
+                }
+            }
+
+            IReadOnlyList<ExhibitPlace> places = layout.PaintingsBeside(_hungBeside.Select(hung => hung.Look.Aspect).ToArray());
+            for (int painting = 0; painting < places.Count; painting++)
+            {
+                _hungBeside[painting].Frame.Place(places[painting], layout.Page.View, layout.Page.RailBottom);
+            }
+        }
+
+        private void TakeDownThePaintingsBeside()
+        {
+            foreach ((ExhibitFrame frame, PaintingLook look) in _hungBeside)
+            {
+                frame.Dispose();
+                look.Dispose();
+            }
+
+            _hungBeside.Clear();
         }
 
         /// <summary>

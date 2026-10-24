@@ -28,6 +28,7 @@ public class JigsawScreenTests
         (1080, 2424, 0, 0), (1080, 2424, 96, 48), (1080, 2340, 0, 0), (1080, 2340, 110, 60), (1080, 1920, 0, 0), (1080, 1920, 90, 48),
         (720, 1280, 0, 0), (1200, 1920, 0, 0), (2076, 2152, 0, 0), (2076, 2152, 80, 60), (1600, 2560, 0, 0),
         (2048, 2732, 48, 40), (1640, 2360, 48, 40), (1488, 2266, 48, 40),
+        (2732, 2048, 0, 40), (2732, 2048, 48, 40), (2360, 1640, 0, 40), (2152, 2076, 0, 0), (2560, 1600, 0, 0),
     };
 
     /// <summary>A player who has won so many levels and put so many of the pieces they gave in place, in the museum's order.</summary>
@@ -188,11 +189,22 @@ public class JigsawScreenTests
         Assert.Equal("Otomatik tamamla", MuseumWords.PlaceThemAll);
     }
 
-    public static TheoryData<int, int, int, int, float, int, bool> EveryScreenPictureAndCut()
+    /// <summary>Every screen on which the jigsaw stacks its parts upright, with every picture and every cut.</summary>
+    public static TheoryData<int, int, int, int, float, int, bool> EveryScreenPictureAndCut() => PicturesAndCutsOn(sideways: false);
+
+    /// <summary>Every screen held sideways, on which the jigsaw stands its parts in two columns, with every picture and every cut.</summary>
+    public static TheoryData<int, int, int, int, float, int, bool> EverySidewaysScreenPictureAndCut() => PicturesAndCutsOn(sideways: true);
+
+    private static TheoryData<int, int, int, int, float, int, bool> PicturesAndCutsOn(bool sideways)
     {
         var cases = new TheoryData<int, int, int, int, float, int, bool>();
         foreach ((int width, int height, int top, int bottom) in Screens)
         {
+            if (PageLayout.Of(new ScreenShape(width, height, top, bottom)).IsSideways != sideways)
+            {
+                continue;
+            }
+
             foreach (float aspect in PictureAspects)
             {
                 foreach (JigsawSize size in JigsawSize.All)
@@ -270,6 +282,115 @@ public class JigsawScreenTests
         Assert.Equal(well.MiddleX, jigsaw.TrayPlaceMiddle(0, 1).X, precision: 3);
         Assert.Throws<ArgumentOutOfRangeException>(() => jigsaw.TrayPlaceMiddle(jigsaw.TrayPlaces, jigsaw.TrayPlaces));
         Assert.Throws<ArgumentOutOfRangeException>(() => jigsaw.TrayPlaceMiddle(0, jigsaw.TrayPlaces + 1));
+    }
+
+    [Theory]
+    [MemberData(nameof(EverySidewaysScreenPictureAndCut))]
+    public void Held_sideways_the_jigsaw_hangs_its_painting_at_the_left_and_its_tray_at_the_right_without_any_two_meeting(
+        int width, int height, int top, int bottom, float aspect, int pieceCount, bool isUpright)
+    {
+        JigsawSize size = JigsawSize.All.Single(cut => cut.PieceCount == pieceCount);
+        PaintingOrientation orientation = isUpright ? PaintingOrientation.Portrait : PaintingOrientation.Landscape;
+        JigsawLayout jigsaw = JigsawLayout.Of(new ScreenShape(width, height, top, bottom), aspect, size, orientation);
+        PageLayout page = jigsaw.Page;
+        ScreenView view = page.View;
+        Box frame = jigsaw.Hanging.Frame;
+        float hintTop = jigsaw.Hint.MiddleY + JigsawLayout.HintHeight / 2;
+
+        Assert.Equal(JigsawArrangement.SideBySide, jigsaw.Arrangement);
+        Assert.True(jigsaw.Plaque.Top < page.CorniceBottom && jigsaw.Plaque.Bottom > page.RailTop, "the counter's plaque leaves its strip of wall");
+        Assert.InRange(jigsaw.Plaque.MiddleX, frame.Left, frame.Right);
+        Assert.True(jigsaw.Back.Left >= view.UsableLeft && jigsaw.Back.Right < jigsaw.Plaque.Left, "the back button is cut off, or lies on the plaque");
+
+        Assert.True(frame.Top < page.RailBottom, "the frame runs into the picture rail");
+        Assert.True(frame.Left >= view.UsableLeft, "the frame is cut off at the left");
+        Assert.True(jigsaw.Hanging.PlateBottom > view.UsableBottom, "the painting's plate is under the system bar");
+
+        // The column at the right: pips, hint, tray and button from the rail down, clear of the frame and of each other.
+        foreach (Box part in new[] { jigsaw.Pips, jigsaw.Tray, jigsaw.Button })
+        {
+            Assert.True(part.Left > frame.Right && part.Right <= view.UsableRight, $"a part of the column at {part} meets the frame or leaves the screen");
+        }
+
+        Assert.True(jigsaw.Pips.Top < page.RailBottom, "the pips run into the picture rail");
+        Assert.Equal(page.RailBottom, jigsaw.PipsHangFrom);
+        Assert.True(hintTop < jigsaw.Pips.Bottom, "the tray's hint runs into the pips");
+        Assert.True(jigsaw.Button.Top < jigsaw.Tray.Bottom, "the button runs into the tray");
+        Assert.True(jigsaw.Button.Bottom - JigsawLayout.ButtonLip * jigsaw.ButtonScale > view.UsableBottom, "the button's lip is under the system bar");
+
+        float onePixel = 1f / view.PixelsPerPoint;
+        Box picture = jigsaw.Hanging.Picture;
+        Assert.InRange(picture.Width / picture.Height, aspect * (1 - 2 * onePixel / picture.Height) - 0.01f, aspect * (1 + 2 * onePixel / picture.Height) + 0.01f);
+        Assert.True(picture.Height >= 190f, $"the picture held sideways is only {picture.Height} points high");
+    }
+
+    [Theory]
+    [MemberData(nameof(EverySidewaysScreenPictureAndCut))]
+    public void Held_sideways_the_tray_lays_its_pieces_in_rows_and_columns_each_in_a_place_of_its_own(
+        int width, int height, int top, int bottom, float aspect, int pieceCount, bool isUpright)
+    {
+        JigsawSize size = JigsawSize.All.Single(cut => cut.PieceCount == pieceCount);
+        PaintingOrientation orientation = isUpright ? PaintingOrientation.Portrait : PaintingOrientation.Landscape;
+        JigsawLayout jigsaw = JigsawLayout.Of(new ScreenShape(width, height, top, bottom), aspect, size, orientation);
+        Box well = jigsaw.Well;
+        (float placeWidth, float placeHeight) = jigsaw.TrayPlaceSize;
+
+        Assert.Equal(JigsawLayout.MostTrayPlaces, jigsaw.TrayPlaces);
+        Assert.Contains((jigsaw.TrayColumns, jigsaw.TrayRows), new[] { (2, 3), (3, 2) });
+        Assert.InRange(jigsaw.TrayPieceScale, 0.2f, 1f);
+
+        // A piece with its knobs lies in its place.
+        Assert.True(1.3f * jigsaw.LargestCell.Width * jigsaw.TrayPieceScale <= placeWidth);
+        Assert.True(1.5f * jigsaw.LargestCell.Height * jigsaw.TrayPieceScale <= placeHeight);
+
+        // Whatever number of places is used, each lies in the well, a place's width or height away from every other.
+        for (int used = 1; used <= jigsaw.TrayPlaces; used++)
+        {
+            var middles = Enumerable.Range(0, used).Select(place => jigsaw.TrayPlaceMiddle(place, used)).ToArray();
+            foreach ((float x, float y) in middles)
+            {
+                Assert.True(well.Contains(x, y), $"a place of {used} lies outside the well");
+            }
+
+            for (int place = 0; place < used; place++)
+            {
+                for (int other = place + 1; other < used; other++)
+                {
+                    bool apart = Math.Abs(middles[place].X - middles[other].X) >= placeWidth - 0.01f || Math.Abs(middles[place].Y - middles[other].Y) >= placeHeight - 0.01f;
+                    Assert.True(apart, $"places {place} and {other} of {used} overlap");
+                }
+            }
+        }
+
+        Assert.Equal(well.MiddleX, jigsaw.TrayPlaceMiddle(0, 1).X, precision: 3);
+        Assert.Equal(well.MiddleY, jigsaw.TrayPlaceMiddle(0, 1).Y, precision: 3);
+    }
+
+    [Theory]
+    [InlineData(2732, 2048, 2048, 2732)]
+    [InlineData(2360, 1640, 1640, 2360)]
+    [InlineData(2560, 1600, 1600, 2560)]
+    public void A_tablet_held_sideways_draws_an_upright_painting_larger_than_held_upright(int width, int height, int uprightWidth, int uprightHeight)
+    {
+        JigsawLayout sideways = JigsawLayout.Of(new ScreenShape(width, height), 0.81f, JigsawSize.Forty, PaintingOrientation.Portrait);
+        JigsawLayout upright = JigsawLayout.Of(new ScreenShape(uprightWidth, uprightHeight), 0.81f, JigsawSize.Forty, PaintingOrientation.Portrait);
+
+        Assert.Equal(JigsawArrangement.SideBySide, sideways.Arrangement);
+        Assert.Equal(JigsawArrangement.Stacked, upright.Arrangement);
+        Assert.True(sideways.Hanging.Picture.Height > 1.3f * upright.Hanging.Picture.Height, $"{sideways.Hanging.Picture.Height} points sideways, {upright.Hanging.Picture.Height} upright");
+    }
+
+    [Theory]
+    [InlineData(2152, 2076)]
+    [InlineData(2076, 2152)]
+    [InlineData(1080, 2424)]
+    public void The_open_foldable_held_either_way_and_a_phone_keep_the_upright_jigsaw(int width, int height)
+    {
+        JigsawLayout jigsaw = JigsawLayout.Of(new ScreenShape(width, height), 1.25f, JigsawSize.Twenty, PaintingOrientation.Landscape);
+
+        Assert.Equal(JigsawArrangement.Stacked, jigsaw.Arrangement);
+        Assert.Equal(1, jigsaw.TrayRows);
+        Assert.Equal(jigsaw.Hanging.PlateBottom, jigsaw.PipsHangFrom);
     }
 
     [Fact]

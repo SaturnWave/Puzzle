@@ -298,9 +298,19 @@ namespace Puzzle.Client.Flow
         /// <summary>True while the store does not hold the progress, because the last save failed.</summary>
         public bool HasUnsavedProgress => !_progress.Equals(_saved);
 
-        /// <summary>Lays the stage out for a screen, and every later stage too; call again whenever the screen changes.</summary>
+        /// <summary>
+        /// Lays the stage out for a screen, and every later stage too; call again whenever the screen changes. A finger
+        /// that is down when the screen changes (the device turned, a fold opened) is let go first, as when the device
+        /// takes the touch away: its gesture began on the screen before, whose pixels no longer mean the same places,
+        /// so a drag goes on to no other cell and a carried piece goes back to its tray.
+        /// </summary>
         public void Fit(ScreenShape screen)
         {
+            if (screen != _screen)
+            {
+                _front.PointerCancelled();
+            }
+
             _screen = screen;
             _front.Fit(screen);
         }

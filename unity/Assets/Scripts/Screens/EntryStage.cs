@@ -301,7 +301,7 @@ namespace Puzzle.Client.Screens
         public void Fit(ScreenShape screen)
         {
             _screen = screen;
-            _tap = null; // a finger on the screen before has no place on this one
+            PointerCancelled(); // a finger on the screen before has no place on this one, nor on the card's buttons
             EntryLayout layout = EntryLayout.Of(screen);
             _layout = layout;
             ScreenView view = layout.View;

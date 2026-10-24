@@ -35,6 +35,9 @@ namespace Puzzle.Client
     /// gives way to another app's music, which the root asks the device about (<see cref="OtherAudio"/>).
     /// </summary>
     /// <remarks>
+    /// The screen may change while the game runs: a tablet or an open foldable turns with the device, a fold opens or
+    /// closes, a window beside another app is resized. A finger on the glass is then let go, the rule of what turns
+    /// is applied again (<see cref="DeviceScreen"/>), and the page or the session is laid out anew for the new shape.
     /// Being put away and brought back needs little: Unity stops calling <see cref="Update"/> while the game is in
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
@@ -80,6 +83,9 @@ namespace Puzzle.Client
         private ISettingsStore? _settings;
         private ScreenShape _fittedTo;
 
+        /// <summary>The kind of screen the rule of turning was last applied for; nothing before that, and in the Editor and on a desktop.</summary>
+        private ScreenClass? _turnsAs;
+
         /// <summary>The entry page while it is shown; nothing once the player has left it, or when the game could not start.</summary>
         private EntryStage? _entry;
 
@@ -106,6 +112,7 @@ namespace Puzzle.Client
 
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
+            LetTheScreenTurnAsTheDeviceAllows();
             _fittedTo = CurrentScreen();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
             _settings = settings;
@@ -153,6 +160,11 @@ namespace Puzzle.Client
             ScreenShape screen = CurrentScreen();
             if (_fittedTo != screen)
             {
+                // The device turned, a fold opened, a window was resized: a finger still on the glass began its gesture
+                // on the screen before, whose pixels no longer mean the same places. It is let go, and followed again
+                // only once it comes down anew. A fold that opened or closed may also have changed what turns.
+                LetGoOfTheFinger();
+                LetTheScreenTurnAsTheDeviceAllows();
                 _entry?.Fit(screen);
                 _session?.Fit(screen);
                 _fittedTo = screen;
@@ -527,13 +539,34 @@ namespace Puzzle.Client
             }
         }
 
-        /// <summary>The screen as the device reports it; the safe area leaves out camera cutouts and system bars.</summary>
+        /// <summary>
+        /// The rule of turning (<see cref="ScreenTurns"/>), applied when the game starts and again whenever the screen
+        /// changes: a foldable that opens becomes a tablet that turns, one that folds a phone that stands upright.
+        /// Unity is told only when the kind of screen changes; the Editor and a desktop are never told.
+        /// </summary>
+        private void LetTheScreenTurnAsTheDeviceAllows()
+        {
+            ScreenClass? screen = DeviceScreen.ClassOfThisDevice();
+            if (screen is ScreenClass known && screen != _turnsAs)
+            {
+                DeviceScreen.LetTurn(known);
+            }
+
+            _turnsAs = screen;
+        }
+
+        /// <summary>
+        /// The screen as the device reports it; the safe area leaves out camera cutouts and system bars, at the top and
+        /// the foot, and at the sides of a device held sideways.
+        /// </summary>
         private static ScreenShape CurrentScreen()
         {
             Rect safe = Screen.safeArea;
             int topInset = Mathf.RoundToInt(Screen.height - safe.yMax);
             int bottomInset = Mathf.RoundToInt(safe.yMin);
-            return new ScreenShape(Screen.width, Screen.height, topInset, bottomInset);
+            int leftInset = Mathf.RoundToInt(safe.xMin);
+            int rightInset = Mathf.RoundToInt(Screen.width - safe.xMax);
+            return new ScreenShape(Screen.width, Screen.height, topInset, bottomInset, leftInset, rightInset);
         }
     }
 }

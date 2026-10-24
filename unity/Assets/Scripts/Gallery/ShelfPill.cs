@@ -71,6 +71,9 @@ namespace Puzzle.Client.Gallery
         private float _edgeAt;
         private PillEdge _edge = PillEdge.Foot;
 
+        /// <summary>The middle of the pill's width, in the layout's points: the screen's middle but where a page stands it in a column of its own.</summary>
+        private float _across;
+
         private ShelfPill(Transform parent, ArtCatalogue art, string name, DrawOrder card, DrawOrder lettering)
         {
             _root = new GameObject(name).transform;
@@ -120,13 +123,15 @@ namespace Puzzle.Client.Gallery
         public void StandOverTheShelf(ScreenLayout layout, float scale) => Stand(layout.ShelfTop + OverThePlank * scale, PillEdge.Foot, scale, layout.ShelfWidth);
 
         /// <summary>
-        /// Puts the pill centred on the screen with one edge on a line, drawn at a size, its words as wide as the room
-        /// allows, and lays its words out for it.
+        /// Puts the pill centred on the screen, or on a column of it, with one edge on a line, drawn at a size, its
+        /// words as wide as the room allows, and lays its words out for it.
         /// </summary>
         /// <param name="at">The line, in the layout's points.</param>
         /// <param name="widest">How wide the pill may be at most, in the layout's points.</param>
-        public void Stand(float at, PillEdge edge, float scale, float widest)
+        /// <param name="across">The middle of the pill's width: the screen's middle unless a page has a column for it (the jigsaw held sideways).</param>
+        public void Stand(float at, PillEdge edge, float scale, float widest, float across = 0f)
         {
+            _across = across;
             _scale = scale;
             _room = widest / _scale - 2f * WordsInFromSides;
             _edgeAt = at;
@@ -180,7 +185,7 @@ namespace Puzzle.Client.Gallery
                 PillEdge.Head => _edgeAt - toTheMiddle,
                 _ => _edgeAt,
             };
-            _root.localPosition = new Vector3(0f, middle, 0f);
+            _root.localPosition = new Vector3(_across, middle, 0f);
         }
 
         /// <summary>

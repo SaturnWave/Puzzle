@@ -19,7 +19,7 @@ public class ScreenLayoutTests
 
     public static TheoryData<int, int, int, int, bool> ScreensAndBoards()
     {
-        (int Width, int Height)[] screens = { (1080, 2424), (1080, 2340), (1080, 1920), (1200, 1920), (2076, 2152), (1038, 1076), (720, 1280), (2048, 2732), (1640, 2360), (1488, 2266) };
+        (int Width, int Height)[] screens = { (1080, 2424), (1080, 2340), (1080, 1920), (1200, 1920), (2076, 2152), (1038, 1076), (720, 1280), (2048, 2732), (1640, 2360), (1488, 2266), (2732, 2048), (2360, 1640), (2152, 2076), (2560, 1600) };
         (int Columns, int Rows, bool HasExits)[] boards = { (10, 10, false), (11, 13, false), (10, 11, true), (16, 16, true), (5, 5, false), (16, 4, false) };
         var cases = new TheoryData<int, int, int, int, bool>();
         foreach ((int width, int height) in screens)
@@ -63,6 +63,10 @@ public class ScreenLayoutTests
     [InlineData(2048, 2732, 48, 40)]
     [InlineData(1640, 2360, 48, 40)]
     [InlineData(1488, 2266, 48, 40)]
+    [InlineData(2732, 2048, 0, 40)]
+    [InlineData(2360, 1640, 0, 40)]
+    [InlineData(2152, 2076, 0, 0)]
+    [InlineData(2560, 1600, 0, 0)]
     public void The_plaques_and_the_shelf_stay_on_the_usable_screen(int width, int height, int topInset, int bottomInset)
     {
         ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height, topInset, bottomInset), new BoardFootprint(10, 10, hasExits: false));
@@ -134,6 +138,10 @@ public class ScreenLayoutTests
     [InlineData(2048, 2732, 48, 40)]
     [InlineData(1640, 2360, 48, 40)]
     [InlineData(1488, 2266, 48, 40)]
+    [InlineData(2732, 2048, 0, 40)]
+    [InlineData(2360, 1640, 0, 40)]
+    [InlineData(2152, 2076, 0, 0)]
+    [InlineData(2560, 1600, 0, 0)]
     public void The_shelfs_five_discs_stand_apart_on_its_plank_from_end_to_end_and_none_is_less_than_a_fingertip_in_the_hand(int width, int height, int topInset, int bottomInset)
     {
         ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height, topInset, bottomInset), new BoardFootprint(10, 12, hasExits: false));

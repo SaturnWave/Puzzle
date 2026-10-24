@@ -74,6 +74,10 @@ public class LanguageCardLayoutTests
         { 2048, 2732, 48, 40 },
         { 1640, 2360, 48, 40 },
         { 1488, 2266, 48, 40 },
+        { 2732, 2048, 0, 40 },
+        { 2360, 1640, 0, 40 },
+        { 2152, 2076, 0, 0 },
+        { 2560, 1600, 0, 0 },
     };
 
     /// <summary>The three languages of this build; up to five stand in front of the settings card the same way.</summary>
