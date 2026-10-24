@@ -114,6 +114,12 @@ namespace Puzzle.Client.EditorTools
         /// settings card's rows, the level card and the shop that press nothing, on one sheet.
         /// </summary>
         WayBack,
+
+        /// <summary>
+        /// The entry page the game opens on (EntryTR), whatever the state: while its bar fills, once it is ready, and
+        /// with the card the way back brings down, walked by touches on the way (<see cref="EntryShots"/>).
+        /// </summary>
+        Entry,
     }
 
     /// <summary>
@@ -397,7 +403,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,wayback,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,wayback,entry,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
@@ -501,6 +507,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Boosters => GameWalk.RunTheBoosterIntroWalk(screen, studio),
             ShotPage.WorldMap => GameWalk.RunTheWorldMapWalk(screen, studio),
             ShotPage.WayBack => GameWalk.RunTheWayBackWalk(screen, studio),
+            ShotPage.Entry => EntryShots.Shoot(screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 

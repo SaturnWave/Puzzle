@@ -103,6 +103,16 @@ namespace Puzzle.Client.EditorTools
         private static readonly Color DarkBlue = new Color32(0x0F, 0x26, 0x70, 0xFF);
         private static readonly Color DarkRed = new Color32(0x5E, 0x0A, 0x0C, 0xFF);
 
+        /// <summary>The dark brown of the gilt's own line (the wallet's pills, the entry page's bar), which lettering on the entry page's cream stands in.</summary>
+        private static readonly Color DarkBrown = new Color32(0x4B, 0x26, 0x08, 0xFF);
+
+        /// <summary>
+        /// The hard shade under the entry page's gilt title (EntryTR: "drop-shadow(0 3px 0 #3A1E06)" at 46 px), under
+        /// its outline: the outline, the drop and the edge's softness together stay inside what Young Serif's picture
+        /// reaches (0.125 of the type size).
+        /// </summary>
+        private static readonly Shade EdgeUnderTheGiltTitle = new Shade(new Color32(0x3A, 0x1E, 0x06, 0xFF), drop: 0.055f, softness: 0.05f);
+
         /// <summary>
         /// What each style draws around the strokes of its typeface and under them; the strokes themselves are
         /// drawn as the font file has them. A style with an outline (<see cref="LetteringOutlines"/> has its
@@ -132,6 +142,8 @@ namespace Puzzle.Client.EditorTools
             [LetteringStyle.OnHeart] = new Look("Lettering On Heart", outlineColour: DarkRed),
             [LetteringStyle.OnPricePill] = new Look("Lettering On Price Pill"),
             [LetteringStyle.OnDarkTeal] = new Look("Lettering On Dark Teal"),
+            [LetteringStyle.GiltTitle] = new Look("Lettering Gilt Title", shade: EdgeUnderTheGiltTitle, outlineColour: DarkBrown),
+            [LetteringStyle.OnCream] = new Look("Lettering On Cream", outlineColour: DarkBrown),
         };
 
         /// <summary>Makes what is missing and returns each style's typeface and material, and each fallback's typeface, for the art catalogue.</summary>

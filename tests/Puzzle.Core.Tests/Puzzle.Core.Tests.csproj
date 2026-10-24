@@ -128,6 +128,10 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceView.cs" Link="Unity\Flow\DeviceView.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\TesterMode.cs" Link="Unity\Flow\TesterMode.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SettingsWords.cs" Link="Unity\Flow\SettingsWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\StartUpWork.cs" Link="Unity\Flow\StartUpWork.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LoadingBar.cs" Link="Unity\Flow\LoadingBar.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\EntryWords.cs" Link="Unity\Flow\EntryWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\EntryLayout.cs" Link="Unity\Layout\EntryLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\LanguageCardLayout.cs" Link="Unity\Layout\LanguageCardLayout.cs" />

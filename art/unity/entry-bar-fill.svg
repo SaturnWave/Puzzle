@@ -1,0 +1,17 @@
+<!-- The green that runs in the well of the entry page's bar as the game starts (EntryTR): the green of the game's
+     buttons, a white light along its top inside and a darker line along its foot. One unit is one point of the
+     design. The fill is 40 x 16 at (4, 4), as high as the bar's well; the game stretches the middle of the picture
+     sideways to how far the bar has filled, so nothing between x = 12 and x = 36 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 48 24">
+<defs>
+<linearGradient id="green" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="20"><stop offset="0" stop-color="#9BE36C"/><stop offset=".55" stop-color="#4CBF3A"/><stop offset="1" stop-color="#2E9A2C"/></linearGradient>
+<clipPath id="in-fill"><rect x="4" y="4" width="40" height="16" rx="8"/></clipPath>
+</defs>
+<rect x="4" y="4" width="40" height="16" rx="8" fill="url(#green)"/>
+<g clip-path="url(#in-fill)">
+<!-- the light along the top inside: the fill less itself moved 2 points down -->
+<path fill="#FFFFFF" fill-opacity=".45" fill-rule="evenodd" d="M12 4H36A8 8 0 0 1 44 12A8 8 0 0 1 36 20H12A8 8 0 0 1 4 12A8 8 0 0 1 12 4Z M12 6H36A8 8 0 0 1 44 14A8 8 0 0 1 36 22H12A8 8 0 0 1 4 14A8 8 0 0 1 12 6Z"/>
+<!-- a darker green along the foot inside -->
+<path fill="#1E6E20" fill-opacity=".45" fill-rule="evenodd" d="M12 4H36A8 8 0 0 1 44 12A8 8 0 0 1 36 20H12A8 8 0 0 1 4 12A8 8 0 0 1 12 4Z M12 2.8H36A8 8 0 0 1 44 10.8A8 8 0 0 1 36 18.8H12A8 8 0 0 1 4 10.8A8 8 0 0 1 12 2.8Z"/>
+</g>
+</svg>

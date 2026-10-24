@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Escolha para começar com uma paleta arco-íris"},
     {"id":"TutorialStartExtraMoves","one":"Escolha para começar com {moves} jogada extra","other":"Escolha para começar com {moves} jogadas extras"},
     {"id":"BoosterCardTouchToClose","text":"Toque para fechar"},
-    {"id":"TutorialLongPress","text":"Segure um reforço para ver de novo o que ele faz"}
+    {"id":"TutorialLongPress","text":"Segure um reforço para ver de novo o que ele faz"},
+    {"id":"EntryTitle","text":"Quebra-Cabeça do Museu"},
+    {"id":"EntryWorkingTitle","text":"TÍTULO PROVISÓRIO"},
+    {"id":"EntrySubtitle","text":"Restaure as pinturas, reabra o museu"},
+    {"id":"EntryLoading","text":"Carregando… {percent}%"},
+    {"id":"EntryTapToStart","text":"Toque para começar"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Versão {version} · versão de teste"}
   ]
 }

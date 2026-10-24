@@ -16,7 +16,8 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Starts the game's scene as a built game starts it and follows its music (#9) by touches alone, as a player's
-    /// finger would press: the music begins once; it plays on, never begun again, while the pages of the museum turn
+    /// finger would press, from the entry page on, which a touch leaves once it is ready: the music begins once, on
+    /// the entry page; it plays on, never begun again, into the hall and while the pages of the museum turn
     /// (the map, the collection, the shop, the hall) and while a level is opened and left without a move; the
     /// settings card's music switch turns it off at once in the device file, the music fades out in about
     /// <see cref="MusicFade.Seconds"/> and is held where it was; turned on, the file says so at once, and the music
@@ -80,6 +81,7 @@ namespace Puzzle.Client.EditorTools
 
         private static GameRoot? _root;
         private static float? _playBegan;
+        private static bool _isTheEntryTouched;
         private static float _litPressed = float.NegativeInfinity;
         private static double _audioClockAtTheStart;
         private static MusicPlace _lastPlace;
@@ -146,6 +148,7 @@ namespace Puzzle.Client.EditorTools
             _root ??= UnityEngine.Object.FindAnyObjectByType<GameRoot>();
             if (_root?.Session == null)
             {
+                TouchTheReadyEntryPage();
                 if (Time.realtimeSinceStartup - _playBegan > LongestStartSeconds)
                 {
                     Fail($"the game opened no session in {LongestStartSeconds} s of play");
@@ -174,6 +177,20 @@ namespace Puzzle.Client.EditorTools
             }
 
             Finish();
+        }
+
+        /// <summary>The entry page, once its bar is full and the line to touch shows, is touched in its middle, once: the game then opens its hall.</summary>
+        private static void TouchTheReadyEntryPage()
+        {
+            if (_isTheEntryTouched || !(_root?.Entry is EntryStage { IsReady: true } entry))
+            {
+                return;
+            }
+
+            entry.PointerDown(entry.MiddlePixel);
+            entry.PointerUp();
+            _isTheEntryTouched = true;
+            Findings.Add($"the entry page was ready and touched {Time.realtimeSinceStartup - _playBegan:0.0} s into play");
         }
 
         private static void TakeTheStep(Step step)

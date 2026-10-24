@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"选中后开局自带彩虹调色盘"},
     {"id":"TutorialStartExtraMoves","text":"选中后开局多{moves}步"},
     {"id":"BoosterCardTouchToClose","text":"轻触关闭"},
-    {"id":"TutorialLongPress","text":"长按道具，可再次查看它的效果"}
+    {"id":"TutorialLongPress","text":"长按道具，可再次查看它的效果"},
+    {"id":"EntryTitle","text":"美术馆拼图"},
+    {"id":"EntryWorkingTitle","text":"暂定名"},
+    {"id":"EntrySubtitle","text":"修复画作，重开美术馆"},
+    {"id":"EntryLoading","text":"加载中… {percent}%"},
+    {"id":"EntryTapToStart","text":"轻触开始"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"版本{version} · 测试版"}
   ]
 }

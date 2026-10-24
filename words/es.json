@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Elígelo para empezar con una paleta arcoíris"},
     {"id":"TutorialStartExtraMoves","one":"Elígelo para empezar con {moves} movimiento extra","other":"Elígelo para empezar con {moves} movimientos extra"},
     {"id":"BoosterCardTouchToClose","text":"Toca para cerrar"},
-    {"id":"TutorialLongPress","text":"Mantén pulsado un potenciador para volver a ver qué hace"}
+    {"id":"TutorialLongPress","text":"Mantén pulsado un potenciador para volver a ver qué hace"},
+    {"id":"EntryTitle","text":"Puzle del Museo"},
+    {"id":"EntryWorkingTitle","text":"TÍTULO PROVISIONAL"},
+    {"id":"EntrySubtitle","text":"Restaura los cuadros, reabre el museo"},
+    {"id":"EntryLoading","text":"Cargando… {percent} %"},
+    {"id":"EntryTapToStart","text":"Toca para empezar"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Versión {version} · versión de prueba"}
   ]
 }

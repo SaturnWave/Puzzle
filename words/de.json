@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Wählst du ihn, startest du mit einer Regenbogenpalette"},
     {"id":"TutorialStartExtraMoves","one":"Wählst du ihn, startest du mit {moves} Extrazug","other":"Wählst du ihn, startest du mit {moves} Extrazügen"},
     {"id":"BoosterCardTouchToClose","text":"Zum Schließen tippen"},
-    {"id":"TutorialLongPress","text":"Halte einen Booster gedrückt, um wieder zu sehen, was er tut"}
+    {"id":"TutorialLongPress","text":"Halte einen Booster gedrückt, um wieder zu sehen, was er tut"},
+    {"id":"EntryTitle","text":"Museumspuzzle"},
+    {"id":"EntryWorkingTitle","text":"ARBEITSTITEL"},
+    {"id":"EntrySubtitle","text":"Restauriere die Gemälde, eröffne das Museum"},
+    {"id":"EntryLoading","text":"Wird geladen… {percent} %"},
+    {"id":"EntryTapToStart","text":"Zum Starten tippen"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Version {version} · Testversion"}
   ]
 }

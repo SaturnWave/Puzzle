@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Выберите его, чтобы начать с радужной палитрой"},
     {"id":"TutorialStartExtraMoves","one":"Выберите его, чтобы начать с {moves} лишним ходом","few":"Выберите его, чтобы начать с {moves} лишними ходами","many":"Выберите его, чтобы начать с {moves} лишними ходами","other":"Выберите его, чтобы начать с {moves} лишними ходами"},
     {"id":"BoosterCardTouchToClose","text":"Нажмите, чтобы закрыть"},
-    {"id":"TutorialLongPress","text":"Удерживайте бонус, чтобы снова увидеть, что он делает"}
+    {"id":"TutorialLongPress","text":"Удерживайте бонус, чтобы снова увидеть, что он делает"},
+    {"id":"EntryTitle","text":"Музейный пазл"},
+    {"id":"EntryWorkingTitle","text":"РАБОЧЕЕ НАЗВАНИЕ"},
+    {"id":"EntrySubtitle","text":"Отреставрируйте картины, откройте музей"},
+    {"id":"EntryLoading","text":"Загрузка… {percent} %"},
+    {"id":"EntryTapToStart","text":"Нажмите, чтобы начать"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Версия {version} · тестовая версия"}
   ]
 }

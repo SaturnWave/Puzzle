@@ -39,6 +39,8 @@ namespace Puzzle.Client.Art
             LetteringStyle.OnHeart => Typeface.PaytoneOne,
             LetteringStyle.OnPricePill => Typeface.PaytoneOne,
             LetteringStyle.OnDarkTeal => Typeface.GabaritoExtraBold,
+            LetteringStyle.GiltTitle => Typeface.YoungSerif,
+            LetteringStyle.OnCream => Typeface.PaytoneOne,
             _ => throw new ArgumentOutOfRangeException(nameof(style), style, "A lettering style no typeface is chosen for."),
         };
     }
@@ -48,7 +50,10 @@ namespace Puzzle.Client.Art
     /// colour: with a stroke under the letters, half of which shows outside them. As parts of the type size:
     /// "Bölüm 47" at 29 px has a stroke of 5 px, 0.086 outside the letters (HomeTR); "Tablo" at 19 px one of 4,
     /// 0.105; the lives at 18 px one of 3.4, 0.094. On teal the design goes from 0.089 (a room's number at 18 px) to
-    /// 0.124 (a destination's name at 14.5 px), and one width serves both.
+    /// 0.124 (a destination's name at 14.5 px), and one width serves both. The entry page draws two more on its cream
+    /// (EntryTR, drawn for a night-blue ground and adapted): "Başlamak için dokun" at 24 px in a stroke of 4, 0.083
+    /// outside, taken a little wider to read on a light ground; and the gilt title in a thinner line of dark brown
+    /// with a hard shade under it, the canvas' "drop-shadow(0 3px 0 #3A1E06)" at 46 px (0.065).
     /// </summary>
     public static class LetteringOutlines
     {
@@ -67,6 +72,8 @@ namespace Puzzle.Client.Art
             LetteringStyle.Soft => 0f,
             LetteringStyle.OnPricePill => 0f,
             LetteringStyle.OnDarkTeal => 0f,
+            LetteringStyle.GiltTitle => 0.055f,
+            LetteringStyle.OnCream => 0.09f,
             _ => throw new ArgumentOutOfRangeException(nameof(style), style, "A lettering style whose outline is not listed."),
         };
     }

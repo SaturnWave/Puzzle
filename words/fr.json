@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Choisissez-le pour commencer avec une palette arc-en-ciel"},
     {"id":"TutorialStartExtraMoves","one":"Choisissez-le pour commencer avec {moves} coup en plus","other":"Choisissez-le pour commencer avec {moves} coups en plus"},
     {"id":"BoosterCardTouchToClose","text":"Touchez pour fermer"},
-    {"id":"TutorialLongPress","text":"Maintenez un bonus appuyé pour revoir ce qu'il fait"}
+    {"id":"TutorialLongPress","text":"Maintenez un bonus appuyé pour revoir ce qu'il fait"},
+    {"id":"EntryTitle","text":"Puzzle du Musée"},
+    {"id":"EntryWorkingTitle","text":"TITRE PROVISOIRE"},
+    {"id":"EntrySubtitle","text":"Restaurez les tableaux, rouvrez le musée"},
+    {"id":"EntryLoading","text":"Chargement… {percent} %"},
+    {"id":"EntryTapToStart","text":"Touchez pour commencer"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Version {version} · version de test"}
   ]
 }

@@ -22,6 +22,7 @@ public partial class ScriptsOfTheTablesTests
         "ID",      // the player's id on the settings and support cards, as every language writes it
         "Unity",   // the engine the privacy text names
         "Android", // the system the privacy text names
+        "SaturnWave", // the studio's name at the entry page's foot
     };
 
     /// <summary>The words a language says in Latin letters on purpose: Japanese "OK" on the button that closes a card, as Japanese interfaces do.</summary>
@@ -68,7 +69,12 @@ public partial class ScriptsOfTheTablesTests
             string words = Places().Replace(line.Words, " ");
             bool saysAWord = words.Any(char.IsLetter);
             bool isSaidInLatinOnPurpose = SaidInLatinOnPurpose.Contains((language, words.Trim()));
-            Assert.True(!saysAWord || isSaidInLatinOnPurpose || script.IsMatch(words), $"{Languages.CodeOf(language)} {line.What} says \"{line.Words}\" in no letter of its script");
+
+            // A line that is only a name every language keeps as it is (the studio's) has no word of its own to say.
+            bool isANameKeptAsItIs = KeptAsTheyAre.Contains(words.Trim());
+            Assert.True(
+                !saysAWord || isSaidInLatinOnPurpose || isANameKeptAsItIs || script.IsMatch(words),
+                $"{Languages.CodeOf(language)} {line.What} says \"{line.Words}\" in no letter of its script");
         });
     }
 

@@ -11,6 +11,11 @@ namespace Puzzle.Client.EditorTools
     /// transparency, and its invisible pixels take their neighbours' colour, so scaling it down leaves no dark rim
     /// around the palette. The whole icon and the background are opaque and are kept without an alpha channel, as the
     /// App Store asks of its 1024 icon. <see cref="AppIcons"/> sets them in the player settings.
+    /// <para>
+    /// Beside them lies the entry page's logo, the same art at the whole icon's size on transparency. It is no icon:
+    /// the game draws it, so it keeps its transparency as the foreground does and is compressed in high quality (a
+    /// quarter of the memory of its pixels) instead of kept exactly.
+    /// </para>
     /// </summary>
     public sealed class AppIconImport : AssetPostprocessor
     {
@@ -25,6 +30,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The Android adaptive icon's top layer: the palette and the brush, inside the middle 66% the launchers keep.</summary>
         public const string ForegroundPath = IconFolder + "/adaptive-foreground-1024.png";
 
+        /// <summary>The entry page's logo: the palette and the brush at the whole icon's size, see-through around them.</summary>
+        public const string EntryLogoPath = IconFolder + "/entry-logo-1024.png";
+
         /// <summary>Each picture's side in pixels: the largest size asked of it, the App Store's.</summary>
         public const int PictureSize = 1024;
 
@@ -38,7 +46,8 @@ namespace Puzzle.Client.EditorTools
                 return;
             }
 
-            bool isSeeThrough = assetPath == ForegroundPath;
+            bool isTheLogo = assetPath == EntryLogoPath;
+            bool isSeeThrough = assetPath == ForegroundPath || isTheLogo;
             var importer = (TextureImporter)assetImporter;
             importer.textureType = TextureImporterType.Default;
             importer.sRGBTexture = true;
@@ -49,7 +58,7 @@ namespace Puzzle.Client.EditorTools
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.filterMode = FilterMode.Bilinear;
             importer.maxTextureSize = PictureSize;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.textureCompression = isTheLogo ? TextureImporterCompression.CompressedHQ : TextureImporterCompression.Uncompressed;
             importer.ClearPlatformTextureSettings("Android");
             importer.ClearPlatformTextureSettings("iPhone");
         }

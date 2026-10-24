@@ -12,6 +12,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Yeni denetim `CollectionMemoryCheck`: 20 oda beş kez gezilir (üçü düğmelerle, ikisi kaydırarak). Eski kodda aynı anda 100 resim, denetim kırılıyor; yeni kodda en çok 20, her gezinti sonunda 15; ağ, malzeme ve nesne sayıları sabit.
 - 4.122 test geçti; ekonomi denetimi temiz; Unity'de bütün denetimler hatasız. Telefon testleri T420–T425; telefonda henüz denenmedi.
 
+**Giriş sayfası**
+- Bitti: oyun her soğuk açılışta giriş sayfasıyla açılıyor (EntryTR, F simgesine uyarlandı): krem zemin ve damask, ışık huzmeleri, simgenin paleti, süzülen dört taş, yaldızlı "Müze Yapbozu" ve "ÇALIŞMA ADI" rozeti, yaldızlı yükleme çubuğu, nefes alan "Başlamak için dokun", alt satırda "SaturnWave" ve sürüm. Arka plandan dönüşte çıkmıyor.
+- Çubuk gerçek açılış işini izliyor: bölümler, katalog, ekonomi, oturum (salon ve resimleri), her karede bir adım. 1,2 saniyeden kısa sürede dolmuyor. Dokununca sayfa kararıyor, salon o karanlıktan aydınlanıyor; salon, öğretici ve hediyeler eskisi gibi.
+- Geri tuşu salondaki çıkış kartını indiriyor (aynı kart, aynı kural).
+- Logo için simgenin çizimi tam boyunda ayrıca çizildi (`art/icon/entry-logo-1024.png`); simgenin kendi dosyaları değişmedi.
+- 4.153 test geçti (31'i yeni); ekonomi denetimi temiz; Unity'de `PlayModeCheck` ve `MusicCheck` giriş sayfasından salona ve bir bölüme geçiyor. Görüntüler iki ekranda ve dört dilde bakıldı. Telefon testleri T430–T436; telefonda henüz denenmedi.
+- Açık: oturumu açan adım bir kareyi yaklaşık yarım saniye tutuyor (Editör); telefondaki süre günlükten okunacak.
+
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 
 **Kullanıcı kararları**

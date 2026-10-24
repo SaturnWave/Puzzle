@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"選取後開局自帶彩虹調色盤"},
     {"id":"TutorialStartExtraMoves","text":"選取後開局多{moves}步"},
     {"id":"BoosterCardTouchToClose","text":"輕觸關閉"},
-    {"id":"TutorialLongPress","text":"長按道具，可再次查看它的效果"}
+    {"id":"TutorialLongPress","text":"長按道具，可再次查看它的效果"},
+    {"id":"EntryTitle","text":"美術館拼圖"},
+    {"id":"EntryWorkingTitle","text":"暫定名"},
+    {"id":"EntrySubtitle","text":"修復畫作，重開美術館"},
+    {"id":"EntryLoading","text":"載入中… {percent}%"},
+    {"id":"EntryTapToStart","text":"輕觸開始"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"版本{version} · 測試版"}
   ]
 }

@@ -194,6 +194,8 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.MapPillAhead] = "map-pill-ahead",
             [GalleryArt.MapStep] = "map-step",
             [GalleryArt.MapGlyphChevron] = "map-glyph-chevron",
+            [GalleryArt.EntryBar] = "entry-bar",
+            [GalleryArt.EntryBarFill] = "entry-bar-fill",
             [GalleryArt.WideAlcove] = "alcove-wide",
         };
 
@@ -245,6 +247,7 @@ namespace Puzzle.Client.EditorTools
             catalogue.FillSounds(sounds);
             catalogue.FillMusic(music);
             catalogue.FillMap(MapMaterials());
+            catalogue.FillEntry(EntryLogo());
             EditorUtility.SetDirty(catalogue);
         }
 
@@ -374,6 +377,19 @@ namespace Puzzle.Client.EditorTools
             }
 
             return sprites;
+        }
+
+        /// <summary>The entry page's logo, the app icon's art at the whole icon's size (<see cref="AppIconImport"/>).</summary>
+        /// <exception cref="InvalidOperationException">The picture is missing.</exception>
+        private static Texture2D EntryLogo()
+        {
+            Texture2D logo = AssetDatabase.LoadAssetAtPath<Texture2D>(AppIconImport.EntryLogoPath);
+            if (logo == null)
+            {
+                throw new InvalidOperationException($"{AppIconImport.EntryLogoPath} is missing; copy it from art/icon (art/icon/tools/final_icon.py draws it).");
+            }
+
+            return logo;
         }
 
         private static Texture2D Damask()

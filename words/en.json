@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Pick it to start with a rainbow palette"},
     {"id":"TutorialStartExtraMoves","one":"Pick it to start with {moves} extra move","other":"Pick it to start with {moves} extra moves"},
     {"id":"BoosterCardTouchToClose","text":"Tap to close"},
-    {"id":"TutorialLongPress","text":"Hold a booster to watch what it does again"}
+    {"id":"TutorialLongPress","text":"Hold a booster to watch what it does again"},
+    {"id":"EntryTitle","text":"Museum Puzzle"},
+    {"id":"EntryWorkingTitle","text":"WORKING TITLE"},
+    {"id":"EntrySubtitle","text":"Restore the paintings, reopen the museum"},
+    {"id":"EntryLoading","text":"Loading… {percent}%"},
+    {"id":"EntryTapToStart","text":"Tap to start"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Version {version} · test build"}
   ]
 }

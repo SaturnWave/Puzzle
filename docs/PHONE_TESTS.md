@@ -469,6 +469,20 @@ Bellek `adb shell dumpsys meminfo com.saturnwave.puzzle` ile ölçülür (TOTAL 
 | T424 | Sayfalar ve sahneler | Koleksiyon, salon ve harita arasında 10 kez gidip gel; haritada iki dönemin kartını aç; sonra bir bölüm oyna, yapbozu aç ve salona dön. Belleği başta ve sonda ölç. | Salonun tablosu, plaketin küçük resimleri, haritanın iğneleri ve kartı, yapboz ve ödül resmi doğru; hiçbir resim boş değil. Sondaki bellek baştakinden belirgin fazla değil. | Müze odaları | Bekliyor |
 | T425 | Uzun gezinti | 5 dakika boyunca koleksiyonda ve haritada gez; mümkünse daha az bellekli bir telefonda da dene. | Çökme yok, uygulama arka plana atılmıyor; bellek dalgalansa da sürekli artmıyor. | Müze odaları | Bekliyor |
 
+### F21. Giriş sayfası (24 Ekim)
+
+Açılış adımlarının süreleri `adb logcat -s Unity` çıktısında "Start-up:" satırlarıdır.
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T430 | Soğuk açılış | Oyunu son uygulamalardan kaydırıp kapat, simgeden aç. | Önce giriş sayfası: krem zemin, palet, dört taş süzülüyor, yaldızlı başlık ve "ÇALIŞMA ADI" rozeti. Çubuk "Yükleniyor… %…" ile en az 1 saniyede doluyor; sıçramıyor, geri gitmiyor. Sonra "Başlamak için dokun" nefes alıyor. Müzik bu sayfada başlıyor. | Giriş sayfası | Bekliyor |
+| T431 | Dokunup salona | Çubuk dolarken ekrana dokun ve kaydır; dolunca herhangi bir yere dokun. | Dolmadan dokunuş ve kaydırma bir şey yapmaz. Hazırken dokununca sayfa kararır, salon karanlıktan aydınlanır; salon, öğretici adımı ve hediye çerçevesi giriş sayfasından önceki gibi. | Giriş sayfası | Bekliyor |
+| T432 | Arka plandan dönüş | Salonda ve bir bölümde ana ekrana çık, oyuna dön. Giriş sayfasındayken de arka plana at ve dön. | Salondan ve bölümden dönünce giriş sayfası çıkmaz, oyun kaldığı yerden sürer. Giriş sayfasındayken dönünce sayfa yerinde, çubuk kaldığı yerden dolar. | Giriş sayfası | Bekliyor |
+| T433 | Geri tuşu | Giriş sayfasında çubuk dolarken ve dolduktan sonra Android geri tuşuna bas ya da kenardan geri hareketi yap. | Salondaki "Oyundan çıkılsın mı?" kartı iner. "Vazgeç" ve yeniden geri kartı kaldırır; "Çık" oyunu kapatır. Yeniden açınca ilerleme, cüzdan ve ayarlar yerinde. | Giriş sayfası, geri tuşu | Bekliyor |
+| T434 | İki ekran, güvenli alan | Dış ekranda aç; katlıyı açıp iç ekranda aç; sayfa açıkken katla ve aç. | Hiçbir şey kamera çentiğinin, durum çubuğunun ya da hareket çubuğunun altında değil. Başlık, rozet, çubuk ve alt satır kesik değil. Ekran değişince sayfa hemen yeni ekrana yerleşiyor. | Giriş sayfası | Bekliyor |
+| T435 | Diller | Ayarlardan İngilizce, Almanca, Rusça ve Japonca seç; her birinde oyunu kapatıp aç. | Sayfanın yazıları seçilen dilde ve sığıyor; Almanca ve Rusçada yüzde işareti sayıdan sonra. "SaturnWave" her dilde aynı. | Giriş sayfası, diller | Bekliyor |
+| T436 | Açılış süresi | Soğuk açılışı üç kez yap; logcat'te "Start-up:" satırlarını oku. | Simgeye dokunmaktan "Başlamak için dokun"a birkaç saniye. Oturum adımında (en uzun adım) taşların durması göze batmıyor; batıyorsa süreleri not et. | Giriş sayfası | Bekliyor |
+
 ### G. Görünüm
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |

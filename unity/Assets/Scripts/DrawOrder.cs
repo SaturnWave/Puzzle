@@ -280,6 +280,23 @@ namespace Puzzle.Client
         WalletButton = 1513,
         WalletButtonGlyph = 1514,
 
+        /// <summary>
+        /// The entry page shown as the game starts (EntryTR), which no other screen shares, from its ground up: the
+        /// cream ground, the damask printed on it, the light (the rays from above and the glow behind the palette),
+        /// the gems that float, the palette, the badge's line, the bar's gilt, its green and the sheen that runs over
+        /// the green, and its lettering. The dark and the card the way back brings come over all of it.
+        /// </summary>
+        EntryGround = 1600,
+        EntryDamask = 1601,
+        EntryLight = 1602,
+        EntryGem = 1603,
+        EntryLogo = 1604,
+        EntryBadge = 1605,
+        EntryBar = 1606,
+        EntryBarFill = 1607,
+        EntryBarSheen = 1608,
+        EntryLettering = 1609,
+
         /// <summary>The dark that falls over the whole room, plaques and shelf included, when a game is decided.</summary>
         Veil = 2000,
 

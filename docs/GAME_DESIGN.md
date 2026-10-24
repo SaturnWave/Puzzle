@@ -1446,6 +1446,24 @@ Bu kararlarla 10. aşama başladı.
   - Eski kodda: aynı anda 100 resim, denetim kırılıyor. Yeni kodda: en çok 20, her gezinti sonunda 15 resim; ağ, malzeme ve nesne sayıları gezintiden gezintiye aynı.
 - **Doğrulama:** 4.122 test (11'i yeni). Ekonomi denetimi temiz. Unity'de bütün denetimler hatasız; koleksiyonun görüntüleri değişmedi. Telefon testleri T420–T425.
 
+**Giriş sayfası (2026-10-24).**
+
+- **Ne:** oyun her soğuk açılışta salondan önce giriş sayfasıyla açılır. Tür proje sahibinin seçimi ("logo ve dokunarak başla"); çizim tasarım tuvalindeki EntryTR, gece mavisi yerine F simgesine uyarlandı. Oyun arka plandan dönünce sayfa çıkmaz, oyun kaldığı yerden sürer.
+- **Görünüm:** simgenin krem zemini (#FFF8E6 → #F6E4BC → #D9B77A) ve üstünde galerinin damaskı kahverengi baskıyla; yukarıdan iki ışık huzmesi, paletin arkasında beyaz ışıma ve altında sıcak bir gölge.
+  - Ortada simgenin paleti ve fırçası (`art/icon/entry-logo-1024.png`: simgenin çizimi tam boyunda, saydam zeminde). Yanında paletteki üç taş dışındaki dört taş (mor, turkuaz, pembe, yeşil) yavaşça süzülür.
+  - Altında yaldızlı "Müze Yapbozu" koyu kahve çerçeve ve gölgeyle, "Tabloları onar, müzeyi yeniden aç" ve "ÇALIŞMA ADI" rozeti: başlık hâlâ çalışma adı.
+  - Altta yaldızlı çubuk (koyu kuyu, yeşil dolgu, üstünden geçen parıltı) ve "Yükleniyor… %45"; en altta "SaturnWave" ile "Sürüm 1.0 · test sürümü". Müzik bu sayfada başlar.
+- **Çubuk gerçek işi izler:** bölümler, müze kataloğu, ekonomi ve oturum (efektleri çizer, salonu ve odanın beş resmini hazırlar). Her karede bir adım yapılır; ilk adım sayfanın ilk karesi çizildikten sonra.
+  - Adımların payı Editör'de ölçülen sürelerdir (200, 10, 50, 650 ms). Telefonda her adım süresiyle günlüğe yazılır ("Start-up: … took … ms").
+  - Çubuk işin önüne geçmez, geri gitmez ve 1,2 saniyeden kısa sürede dolmaz: hızlı telefonda da dolduğu görülür, yanıp sönmez. Dolunca 0,15 sn durur ve 0,3 sn'de yerini nefes alan "Başlamak için dokun"a bırakır.
+- **Dokunuş:** hazır sayfada herhangi bir yere dokunmak sayfayı 0,22 sn'de karartır; salon, bir bölümden dönüşteki gibi o karanlıktan aydınlanır. Salon sayfa gösterilirken arkada, karanlıkta açılmıştır: öğretici, hediyeler ve bölüm düğmesi bugünkü gibi. Çubuk dolmadan dokunuş bir şey yapmaz; kaydırma dokunuş sayılmaz.
+- **Geri tuşu:** salondaki "Oyundan çıkılsın mı?" kartının aynısını indirir, çubuk dolarken de. "Vazgeç" ya da yeniden geri kartı kaldırır; "Çık" oyunu kapatır (oturum açıldıysa önce kaydeder).
+  - Gerekçe: giriş sayfasının da salon gibi daha geri bir yeri yok; aynı kural, kenar hareketiyle yanlışlıkla çıkılmasın diye. iOS'ta kart hiç çıkmaz.
+- **Ekranlar:** sayfa tasarımın ölçeğinde çizilir: dar dış ekranda genişliğe göre (%92), geniş iç ekranda tasarımın kendi boyunda; logo resmindeki pikselden fazlasıyla çizilmez. Kamera çentiğinin ve sistem çubuklarının altına bir şey konmaz; artan yükseklik paletin üstüne, rozet ile çubuk arasına ve çubuk ile alt satır arasına paylaşılır.
+- **Yapı:** `EntryStage` (sayfa; salonu görmesin diye sahnenin uzağında kurulur), `EntryLayout`, `LoadingBar`, `StartUpWork` (son üçü Unity'siz, testli) ve `GameRoot` (adımlar, geçiş, ses). Yeni yazı stilleri `GiltTitle` ve `OnCream`; çizimler `entry-bar` ve `entry-bar-fill`. 7 yeni yazı 13 dilde; "SaturnWave" her dilde aynı.
+- **Bilinen:** oturumu açan adım bir kareyi tutar (Editör'de yaklaşık 0,5 sn); o arada taşlar ve parıltı durur. Telefondaki süre günlükten okunacak, gerekirse resimler kare kare yüklenir. Alt satırdaki "test sürümü" mağaza sürümünde değişmeli.
+- **Doğrulama:** 4.153 test (31'i yeni). Ekonomi denetimi temiz. Unity'de `PlayModeCheck` (giriş sayfası → salon) ve `MusicCheck` (giriş → salon → bölüm → salon) hatasız; sayfanın görüntüleri iki ekranda, güvenli alanlarla ve dört dilde (`ScreenShots -screens entry`). Telefon testleri T430–T436.
+
 ## 24. Bölüm bankası ve derleyici
 
 **Karar (2026-10-08).** Zorluk ayarının kalıcı çözümü: üretilen tahtalar atılmaz, ölçümleriyle birlikte saklanır; oyunun 1000 bölümü bu bankadan bir **politikayla** seçilir. Kullanıcının isteği: "kalıcı bir çözüm; üretilen bölümlerin çoğunu harddiske kaydedebiliriz". §8 ve §9'daki üretici (`generate`) duruyor; derleyici kendini kanıtladıkça onun yerini alır.

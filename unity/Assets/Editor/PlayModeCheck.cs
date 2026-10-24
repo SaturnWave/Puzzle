@@ -3,6 +3,7 @@ using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Play;
+using Puzzle.Client.Screens;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -11,34 +12,50 @@ using UnityEngine.Rendering;
 namespace Puzzle.Client.EditorTools
 {
     /// <summary>
-    /// Starts the game's scene the way a built game starts it, lets it run for a second and a half and writes its
-    /// last frame: the check that the scene file and the code it starts belong together. Halfway it sounds every cue
-    /// once through the running game's player. The pictures of the game are
-    /// taken by RenderHarness, which needs no running game; this only proves that the running game gets there too.
+    /// Starts the game's scene the way a built game starts it and follows it through its entry page into the hall:
+    /// it pictures the entry page once the page is ready, touches it as a finger would, and writes the hall's
+    /// frame a second and a half after the hall has come: the check that the scene file and the code it starts belong
+    /// together, and that the start-up behind the entry page opens the hall. Halfway through the hall's second it
+    /// sounds every cue once through the running game's player. The pictures of the game are taken by RenderHarness,
+    /// which needs no running game; this only proves that the running game gets there too.
     /// usage: Unity.exe -batchmode -projectPath unity -executeMethod Puzzle.Client.EditorTools.PlayModeCheck.Run
     /// Without -quit: the command ends the Editor itself, with exit code 1 when the game failed.
     /// </summary>
     [InitializeOnLoad]
     public static class PlayModeCheck
     {
+        private const string EntryPicturePath = "../out/unity/shots/play-mode-entry.png";
         private const string PicturePath = "../out/unity/shots/play-mode.png";
-        private const int FramesToRun = 90;
 
-        /// <summary>Halfway: the game has opened its session, and errors of its sounds still fail the check.</summary>
-        private const int FramesBeforeTheSounds = FramesToRun / 2;
+        /// <summary>The hall is pictured this many frames after the entry page was left.</summary>
+        private const int FramesInTheHall = 90;
+
+        /// <summary>Halfway: the game has opened its hall, and errors of its sounds still fail the check.</summary>
+        private const int FramesBeforeTheSounds = FramesInTheHall / 2;
+
+        /// <summary>A game that has not reached its hall through the entry page in this long after play mode began has failed.</summary>
+        private const float LongestStartSeconds = 60f;
 
         /// <summary>Entering play mode loads the scripts anew and forgets every static field; the Editor's session state survives it.</summary>
         private const string IsRunningKey = "Puzzle.Client.PlayModeCheck.IsRunning";
 
         /// <summary>
         /// Stands in for the screen. A batch-mode Editor has no game window, and a camera without a target is then
-        /// never rendered; the game must be drawn every frame from its first one, as a phone draws it.
+        /// never rendered; the game must be drawn every frame from its first one, as a phone draws it. It follows the
+        /// one camera the game draws with: the entry page's, then the hall's.
         /// </summary>
         private static RenderTexture? _screen;
 
         private static bool _gameFailed;
         private static bool _isDone;
         private static bool _hasSounded;
+        private static bool _isTheEntryPictured;
+        private static bool _isTheEntryTouched;
+
+        /// <summary>The frame in which the hall was first the game's; nothing before.</summary>
+        private static int? _hallFrom;
+
+        private static float? _began;
 
         static PlayModeCheck()
         {
@@ -46,7 +63,7 @@ namespace Puzzle.Client.EditorTools
             {
                 Application.logMessageReceived += NoteTheGamesErrors;
                 EditorApplication.update += WatchTheGame;
-                RenderPipelineManager.endCameraRendering += KeepTheLastFrame;
+                RenderPipelineManager.endCameraRendering += KeepTheFrames;
             }
         }
 
@@ -75,28 +92,66 @@ namespace Puzzle.Client.EditorTools
                 return;
             }
 
-            if (_screen == null && Camera.allCamerasCount == 1)
+            _began ??= Time.realtimeSinceStartup;
+            AimTheScreenAtTheOneCamera();
+            GameRoot? root = Object.FindAnyObjectByType<GameRoot>();
+            if (root?.Entry is EntryStage entry)
             {
-                _screen = new RenderTexture(Screen.width, Screen.height, 24);
-                Camera.allCameras[0].targetTexture = _screen;
+                if (!_isTheEntryPictured && entry.IsSettled)
+                {
+                    // Rendered once more as it stands: a frame read back while it is drawn may be one the game has already left.
+                    CameraPicture.Write(entry.Camera, Screen.width, Screen.height, EntryPicturePath);
+                    _isTheEntryPictured = true;
+                    Debug.Log($"Play mode check: the entry page, ready in frame {Time.frameCount} of a {Screen.width}x{Screen.height} screen, is at {EntryPicturePath}; game errors: {_gameFailed}.");
+                }
+                else if (_isTheEntryPictured && !_isTheEntryTouched)
+                {
+                    entry.PointerDown(entry.MiddlePixel);
+                    entry.PointerUp();
+                    _isTheEntryTouched = true;
+                    Debug.Log($"Play mode check: the ready entry page was touched in frame {Time.frameCount}.");
+                }
+            }
+            else if (root?.Session != null && _hallFrom == null)
+            {
+                _hallFrom = Time.frameCount;
+                Debug.Log($"Play mode check: the hall is the game's from frame {Time.frameCount}.");
             }
 
-            if (!_hasSounded && Time.frameCount >= FramesBeforeTheSounds)
+            if (!_hasSounded && _hallFrom is int hall && Time.frameCount >= hall + FramesBeforeTheSounds)
             {
                 _hasSounded = true;
-                SoundEveryCueOnce();
+                SoundEveryCueOnce(root);
             }
 
-            bool hasNoPictureInTime = _screen == null && Time.frameCount > FramesToRun;
-            if (hasNoPictureInTime)
+            bool isLate = !_isDone && Time.realtimeSinceStartup - _began > LongestStartSeconds;
+            if (isLate)
             {
-                Debug.LogError($"Play mode check: the running game has {Camera.allCamerasCount} cameras; it draws everything with one.");
+                Debug.LogError(
+                    $"Play mode check: the running game did not reach its hall through the entry page in {LongestStartSeconds} s "
+                    + $"(entry pictured: {_isTheEntryPictured}, touched: {_isTheEntryTouched}; {Camera.allCamerasCount} cameras; it draws everything with one).");
             }
 
-            if (_isDone || hasNoPictureInTime)
+            if (_isDone || isLate)
             {
                 SessionState.EraseBool(IsRunningKey);
-                EditorApplication.Exit(_gameFailed || hasNoPictureInTime ? 1 : 0);
+                EditorApplication.Exit(_gameFailed || isLate ? 1 : 0);
+            }
+        }
+
+        /// <summary>The stand-in screen follows the one camera the game draws with, from the frame it has only one.</summary>
+        private static void AimTheScreenAtTheOneCamera()
+        {
+            if (Camera.allCamerasCount != 1)
+            {
+                return;
+            }
+
+            _screen ??= new RenderTexture(Screen.width, Screen.height, 24);
+            Camera camera = Camera.allCameras[0];
+            if (camera.targetTexture != _screen)
+            {
+                camera.targetTexture = _screen;
             }
         }
 
@@ -106,9 +161,8 @@ namespace Puzzle.Client.EditorTools
         /// or a sound that fails to play, is an error and fails the check. (A batch-mode Editor may have no sound device:
         /// then nothing is heard, but the clips are still loaded and handed to the sources.)
         /// </summary>
-        private static void SoundEveryCueOnce()
+        private static void SoundEveryCueOnce(GameRoot? root)
         {
-            GameRoot? root = Object.FindAnyObjectByType<GameRoot>();
             if (root?.Cues is not ICuePlayer cues)
             {
                 Debug.LogError("Play mode check: the running game has no cue player.");
@@ -134,17 +188,21 @@ namespace Puzzle.Client.EditorTools
             Debug.Log($"Play mode check: the running game's player sounded all {everyCue.Length} cues that are heard and both ticks; the phone's settings are {settings}.");
         }
 
-        private static void KeepTheLastFrame(ScriptableRenderContext context, Camera camera)
+        /// <summary>The hall's frame a second and a half after it came, as the game drew it.</summary>
+        private static void KeepTheFrames(ScriptableRenderContext context, Camera camera)
         {
-            if (_isDone || _screen == null || camera.targetTexture != _screen || Time.frameCount < FramesToRun)
+            if (_isDone || _screen == null || camera.targetTexture != _screen)
             {
                 return;
             }
 
-            CameraPicture.Save(_screen, PicturePath);
-            int sprites = Object.FindObjectsByType<SpriteRenderer>().Length;
-            Debug.Log($"Play mode check: frame {Time.frameCount} of a {_screen.width}x{_screen.height} screen with {sprites} sprites is at {PicturePath}; game errors: {_gameFailed}.");
-            _isDone = true;
+            if (_hallFrom is int hall && Time.frameCount >= hall + FramesInTheHall)
+            {
+                CameraPicture.Save(_screen, PicturePath);
+                int sprites = Object.FindObjectsByType<SpriteRenderer>().Length;
+                Debug.Log($"Play mode check: frame {Time.frameCount} of a {_screen.width}x{_screen.height} screen with {sprites} sprites is at {PicturePath}; game errors: {_gameFailed}.");
+                _isDone = true;
+            }
         }
     }
 }
