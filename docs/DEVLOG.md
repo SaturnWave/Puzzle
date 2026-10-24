@@ -20,6 +20,18 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 4.153 test geçti (31'i yeni); ekonomi denetimi temiz; Unity'de `PlayModeCheck` ve `MusicCheck` giriş sayfasından salona ve bir bölüme geçiyor. Görüntüler iki ekranda ve dört dilde bakıldı. Telefon testleri T430–T436; telefonda henüz denenmedi.
 - Açık: oturumu açan adım bir kareyi yaklaşık yarım saniye tutuyor (Editör); telefondaki süre günlükten okunacak.
 
+**Kullanıcı kararları (2026-10-24)**
+- Restoratör rütbesi (XP) sonraki sürüme önerilen kaynaklarla girer: kazanılan bölüm, zor bölüm, ilk denemede kazanma, tablo, oda, mini oyunlar. Kalan hamle ve kullanılan booster XP vermez.
+- Sıra: önce yan çevirme, sonra mini oyunlar.
+- Yan çevirme: iPad her zaman, Android'de kısa kenarı 600 dp ve üstü olan ekranlar (tabletler, açık Fold) döner; telefonlar dik kalır. Önce dik sütun ve galeri kanatları, sonra haritanın geniş çerçevesi ve yapbozda tablo solda, tepsi sağda. iPad'de pencere kipi de olur. Plan ve fikir çizimleri: `out/landscape/`.
+- Mini oyunlar: "eşya sıralama" gibi küçük, basit oyunlar, ayın belli haftalarında etkinlik olarak; altın, can ve başka ödüllerle. Önce hangi türlerin oyuna girebileceğine bakılacak.
+
+**Mini oyun kataloğu**
+- 5 ajan (3 araştırmacı, 1 doğrulayıcı, 1 tasarımcı), yaklaşık 0,9 milyon token. Doğrulayıcı 34 iddianın 22'sini olduğu gibi tuttu, 10'unda ayrıntı düzeltti; uydurma sayı bulmadı.
+- Sonuç: `docs/research/mini-games.md` ("Araştırma Raporu" PDF'i); notlar, fikir çizimi ve çizimin betiği `docs/research/mini-games-2026-10/`.
+- Bulgu: 2025'te bulmaca büyümesini yeni türler taşıdı (birleştirme, sıralama, blok, vida). Büyük üçlü eşleştirme oyunları liste hitlerini olduğu gibi gömmüyor; renk sırası, yapboz, kazı ve hafıza gibi oyunları etkinlik olarak koyuyor. Hepsi kazanılan bölümden gelen jetonla besleniyor, can harcatmıyor.
+- Öneri: önce ortak çerçeve (takvim, etkinlik kartı, mini oyun sahnesi, sonuç ve ödül), sonra Boya Tüpleri (tüp sıralama), Pigment Tarifi (renk sırası), Takas Yapbozu (kart takası), Depo Sıkışıklığı (kayan sandıklar), isteğe bağlı Çerçeve Vidaları. Ayın 1. ve 3. haftası "Atölye Haftası": hafta içi ve hafta sonu birer zincir, telefonun saatiyle, sunucusuz. 14 soru proje sahibinin kararını bekliyor.
+
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 
 **Kullanıcı kararları**
