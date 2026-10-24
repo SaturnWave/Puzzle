@@ -168,11 +168,14 @@ public enum AdsInTheBuild
     Simulated,
 }
 
-/// <summary>What the build of the game the settings are for sells for real money. Closed set; the format knows one answer.</summary>
+/// <summary>What the build of the game the settings are for sells for real money. Closed set.</summary>
 public enum RealMoneyInTheBuild
 {
-    /// <summary>Nothing: coin packs are shown and cannot be bought.</summary>
+    /// <summary>Nothing: the store's coin packs are shown and cannot be bought (a test build).</summary>
     NotAvailable,
+
+    /// <summary>The store's products, through the platform's own store, which takes the money.</summary>
+    ThroughTheStore,
 }
 
 /// <summary>A set of boosters the game's shop sells for coins.</summary>
@@ -218,9 +221,6 @@ public sealed record GameOnlySettings
 
     /// <summary>When the game shows a hint by itself, how many an attempt, and whose move it shows.</summary>
     public required HintSettings Hints { get; init; }
-
-    /// <summary>Coins in each pack the shop shows for real money, by the pack's name.</summary>
-    public required IReadOnlyDictionary<string, Coins> CoinPacks { get; init; }
 
     public required IReadOnlyDictionary<string, BoosterSetSettings> BoosterSets { get; init; }
 

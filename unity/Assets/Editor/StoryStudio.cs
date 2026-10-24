@@ -47,6 +47,20 @@ namespace Puzzle.Client.EditorTools
         /// <exception cref="EconomyFormatException">The project carries no economy pack the game can play by.</exception>
         public static EconomyRules Economy => PackedEconomy.Value;
 
+        private static readonly Lazy<EconomyRules> PackedTestBuildEconomy = new Lazy<EconomyRules>(() =>
+        {
+            EconomyFile file = EconomyPack.LoadPackedFile();
+            file.build.realMoneyPurchases = EconomyFileMapper.NoRealMoneyWord;
+            return EconomyFileMapper.ToRules(file);
+        });
+
+        /// <summary>
+        /// The economy the game is packed with as a test build has it, which sells nothing for money: the tester mode
+        /// is offered only by such a build, so the tools that walk the tester mode play by it.
+        /// </summary>
+        /// <exception cref="EconomyFormatException">The project carries no economy pack the game can play by.</exception>
+        public static EconomyRules TestBuildEconomy => PackedTestBuildEconomy.Value;
+
         /// <summary>
         /// The tools' wall clock: always a Wednesday noon in Istanbul, so what a picture or a check shows of lives
         /// and days does not depend on the hour it was made at.

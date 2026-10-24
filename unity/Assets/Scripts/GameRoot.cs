@@ -9,6 +9,7 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Sound;
 using Puzzle.Client.Stage;
@@ -404,8 +405,9 @@ namespace Puzzle.Client
         {
             var clock = new SystemWallClock();
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
+            IStore sales = UnityStore.OfThisPlatform();
             GameSession SessionOn(IProgressStore store) =>
-                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, screen, SessionOpening.InTheMuseumOutOfTheDark);
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, sales, screen, SessionOpening.InTheMuseumOutOfTheDark);
 
             try
             {

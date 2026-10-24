@@ -114,13 +114,12 @@ public static class SettingsCatalogue
         new("hints.idleSeconds", "seconds", Provenance.Decided, SettingUse.GameOnly),
         new("hints.perAttempt", "hints", Provenance.Decided, SettingUse.GameOnly),
         new("hints.bot", "player model", Provenance.Decided, SettingUse.GameOnly),
-        new("shop.coinPacks.*.coins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.priceCoins", Coins, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.boosterSets.*.boosters.*", Boosters, Provenance.Placeholder, SettingUse.GameOnly),
         new("shop.adForCoins.coins", Coins, Provenance.Decided, SettingUse.GameOnly),
         new("shop.adForCoins.perDay", AdsADay, Provenance.Placeholder, SettingUse.GameOnly),
         new("build.ads", "how an ad is shown", Provenance.Proposed, SettingUse.GameOnly),
-        new("build.realMoneyPurchases", "what is sold for money", Provenance.Proposed, SettingUse.GameOnly),
+        new("build.realMoneyPurchases", "what is sold for money", Provenance.Decided, SettingUse.GameOnly),
 
         // What the game sells for real money (the owner's products of 2026-10-24). The prices, the once and the level
         // are decided; the amounts are the research's proposals as the simulator checked them; the product ids wait

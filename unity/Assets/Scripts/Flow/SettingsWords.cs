@@ -88,8 +88,8 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// The line under the foot that says what kind of build this is, from the build's marks in the economy's
-        /// settings: "Test sürümü · reklamlar canlandırma, satın alma kapalı". Each mark has one value today, a test
-        /// build's; a build with real ads or real purchases must say so here before it can be made.
+        /// settings: "Test sürümü · reklamlar canlandırma, satın alma kapalı", or "… satın alma mağazadan" for a build
+        /// that sells through the platform's store. A build with real ads must say so here before it can be made.
         /// </summary>
         public static string BuildLine(AdSource ads, RealMoneySales realMoney)
         {
@@ -101,6 +101,7 @@ namespace Puzzle.Client.Flow
             string buying = realMoney switch
             {
                 RealMoneySales.NotAvailable => Speech.Say(WordId.BuildNoBuying),
+                RealMoneySales.ThroughTheStore => Speech.Say(WordId.BuildStoreBuying),
                 _ => throw new ArgumentOutOfRangeException(nameof(realMoney), realMoney, "A way of selling the settings card cannot name."),
             };
             return Speech.Say(WordId.SettingsBuildLine, ("ads", adsAre), ("buying", buying));

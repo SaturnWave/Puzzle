@@ -19,7 +19,11 @@ namespace Puzzle.Client.Engine
 
         /// <summary>The rules the game carries with it.</summary>
         /// <exception cref="EconomyFormatException">The pack is missing or holds no settings the game can play by.</exception>
-        public static EconomyRules LoadPacked()
+        public static EconomyRules LoadPacked() => EconomyFileMapper.ToRules(LoadPackedFile());
+
+        /// <summary>The pack the game carries, as Unity's reader takes it in, unchecked: for a tool that plays by it with a mark changed.</summary>
+        /// <exception cref="EconomyFormatException">The pack is missing, not JSON, or empty.</exception>
+        public static EconomyFile LoadPackedFile()
         {
             TextAsset? packed = Resources.Load<TextAsset>(PackResource);
             if (packed == null)
@@ -27,7 +31,7 @@ namespace Puzzle.Client.Engine
                 throw new EconomyFormatException("The game carries no economy settings; run node tools/unity/sync-engine.js from the repository root.");
             }
 
-            return Read(packed.text);
+            return ReadFile(packed.text);
         }
 
         /// <exception cref="EconomyFormatException">The text holds no settings the game can play by.</exception>

@@ -191,14 +191,7 @@
   },
 
   "shop": {
-    // Packs of coins for real money, in the order the shop shows them. This build sells nothing for money
-    // (build.realMoneyPurchases), so a pack has no price: it is shown and cannot be bought. The amounts are the
-    // samples of the design's drawing. [placeholder]
-    "coinPacks": {
-      "small": { "coins": 500 },
-      "medium": { "coins": 1200 },
-      "large": { "coins": 2500 }
-    },
+    // The packs of coins the shop shows are the store's (store.coinPacks), sold for real money.
     // Sets of boosters for coins, in the order the shop shows them. Each costs what its boosters cost one by one
     // under prices.boosters (200 + 500 + 200, and three times 400 + 700 + 700 + 300), so no discount is invented.
     // A set's price does not follow when a single price changes. [placeholder]
@@ -223,19 +216,22 @@
   },
 
   // What this build of the game can do. The game refuses any other word here, so a build cannot claim real ads
-  // or real purchases it does not have.
+  // or real purchases it does not have; the tester mode is offered only by a build whose ads are simulated and that
+  // sells nothing for money.
   "build": {
     // How an ad is shown: "simulated" is a card that stands in for one; nothing is advertised. [proposed]
     "ads": "simulated",
-    // What is sold for real money: "notAvailable" shows the coin packs and sells none. [proposed]
-    "realMoneyPurchases": "notAvailable"
+    // What is sold for real money: "store" sells the store section's products through the platform's own store
+    // (Google Play, the App Store), which takes the money; "notAvailable" shows its coin packs and sells none, as a
+    // test build did before v1. v1 sells (the owner's decision of 2026-10-24). [decided 2026-10-24]
+    "realMoneyPurchases": "store"
   },
 
   // What the game sells for real money in v1: the owner's products of 2026-10-24 (docs/research/monetization-and-
-  // retention.md section 3), with the amounts the simulator checked that day (docs/GAME_DESIGN.md section 25). The game
-  // reads none of this yet: this build sells nothing for money (build.realMoneyPurchases) and its shop shows the sample
-  // packs of shop.coinPacks, which these products replace when the game sells them. The simulator buys a product only
-  // for a player whose player.purchases says so; the default player is free and buys nothing.
+  // retention.md section 3), with the amounts the simulator checked that day (docs/GAME_DESIGN.md section 25). The
+  // game's shop shows them and, as build.realMoneyPurchases says, sells them through the platform's store; the store's
+  // own price, in the player's currency, is what a player sees. The simulator buys a product only for a player whose
+  // player.purchases says so; the default player is free and buys nothing.
   // A price is the price point of the US store in cents ($1.99 is 199): every other country takes the store's own
   // equivalent, and the game shows a price as the store words it for the player, never this number. A product's id in
   // both stores is the game's application id, a dot and its productIdSuffix: com.saturnwave.puzzle.coins.pouch while the

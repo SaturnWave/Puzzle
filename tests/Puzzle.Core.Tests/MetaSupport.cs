@@ -25,7 +25,9 @@ internal static class MetaSupport
     /// 900 coins or one of 3 ads a day; a new player with 100 coins, one rocket-and-bomb and two shuffles; the boosters
     /// used during play opening on levels 7, 12, 16 and 20 with three, two, one and none of their kind; two start
     /// boosters an attempt; two hints an attempt by the novice after 8 s untouched; a starter set for 2 100 and a
-    /// master set for 6 300; 50 coins for one of 2 ads a day.
+    /// master set for 6 300; 50 coins for one of 2 ads a day; a store of a small pack (500 coins for $0.99), a large
+    /// one (2 500 for $4.99) and a starter pack (1 500 coins and a start booster of each kind for $1.99, once, from
+    /// level 20), which this test build does not sell (<see cref="InAStoreBuild"/> sells it).
     /// </summary>
     public static EconomyFile Pack() => new()
     {
@@ -64,7 +66,6 @@ internal static class MetaSupport
         hints = { idleSeconds = 8, perAttempt = 2, bot = "novice" },
         shop =
         {
-            coinPacks = [new CoinPackFile { name = "small", coins = 500 }, new CoinPackFile { name = "large", coins = 2500 }],
             boosterSets =
             [
                 new BoosterSetFile
@@ -82,8 +83,31 @@ internal static class MetaSupport
             ],
             adForCoins = { coins = 50, perDay = 2 },
         },
+        store =
+        {
+            coinPacks =
+            [
+                new CoinPackFile { name = "small", productIdSuffix = "coins.small", priceUsdCents = 99, coins = 500 },
+                new CoinPackFile { name = "large", productIdSuffix = "coins.large", priceUsdCents = 499, coins = 2500 },
+            ],
+            starterPack = new StarterPackFile
+            {
+                productIdSuffix = "starter.kit",
+                priceUsdCents = 199,
+                coins = 1500,
+                boosters = [Count("start-rocket-and-bomb", 1), Count("start-color-bomb", 1), Count("start-extra-moves", 1)],
+                timesPerPlayer = 1,
+                fromLevel = 20,
+            },
+        },
         build = { ads = EconomyFileMapper.SimulatedAdsWord, realMoneyPurchases = EconomyFileMapper.NoRealMoneyWord },
     };
+
+    /// <summary>The application id the tests' products' store ids begin with.</summary>
+    public const string TestApplicationId = "com.example.puzzle";
+
+    /// <summary>The tests' pack in a build that sells the store's products for money.</summary>
+    public static void InAStoreBuild(EconomyFile pack) => pack.build.realMoneyPurchases = EconomyFileMapper.StoreWord;
 
     /// <summary>The rules of the tests' pack, with <paramref name="change"/> made to the pack first.</summary>
     public static EconomyRules Rules(Action<EconomyFile>? change = null)

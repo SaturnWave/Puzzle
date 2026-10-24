@@ -87,12 +87,10 @@ public class TesterModeTests
     }
 
     [Fact]
-    public void In_the_tester_mode_a_pack_is_still_not_sold_and_the_ads_and_the_gift_keep_their_rules()
+    public void In_the_tester_mode_the_ads_and_the_gift_keep_their_rules()
     {
         Wallet wallet = WalletWith(100);
 
-        Assert.IsType<WalletRefusal.NotOnSale>(
-            Assert.IsType<WalletAnswer.Refused>(Shop.Answer(new WalletRequest.BuyACoinPack(TheRules.Shop.CoinPacks[0]), wallet, Evening, WalletHandling.Unlimited)).Why);
         Wallet firstAd = Received(Shop.Answer(new WalletRequest.CoinsForAnAd(), wallet, Evening, WalletHandling.Unlimited)).Wallet;
         Wallet secondAd = Received(Shop.Answer(new WalletRequest.CoinsForAnAd(), firstAd, Evening, WalletHandling.Unlimited)).Wallet;
         Assert.Equal(new Coins(200), secondAd.Coins);

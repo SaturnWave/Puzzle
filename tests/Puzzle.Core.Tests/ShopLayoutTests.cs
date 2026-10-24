@@ -4,14 +4,18 @@ namespace Puzzle.Core.Tests;
 
 /// <summary>
 /// Where the Unity game puts the shop on a screen (<c>ShopLayout</c>, the Unity project's source file, compiled into
-/// these tests): the sign under the wallet row, the three panels over the navigation bar, one column on a phone and
-/// two on the opened foldable, nothing scrolled away and every button large enough for a finger.
+/// these tests): the sign under the wallet row, the three panels over the navigation bar (the App Store's restore row
+/// at the foot of the packs'), one column on a phone and two on the opened foldable, nothing scrolled away and every
+/// button large enough for a finger.
 /// </summary>
 public class ShopLayoutTests
 {
-    /// <summary>The shipped settings' goods: three packs of coins and two sets.</summary>
-    private const int Packs = 3;
+    /// <summary>The shipped settings' goods: four packs of coins and two sets.</summary>
+    private const int Packs = 4;
     private const int Sets = 2;
+
+    /// <summary>The shop with the App Store's restore row, and without it.</summary>
+    private static readonly bool[] WithAndWithoutTheRestoreRow = { false, true };
 
     /// <summary>The screens the design names for the shop, and the tall phone of the other pictures.</summary>
     public static TheoryData<int, int> FourScreens() => new() { { 1080, 2340 }, { 1080, 1920 }, { 2076, 2152 }, { 1080, 2424 } };
@@ -29,9 +33,35 @@ public class ShopLayoutTests
     [MemberData(nameof(FourScreens))]
     public void On_the_four_screens_the_shop_keeps_at_least_the_columns_least_size(int width, int height)
     {
-        ShopLayout shop = ShopLayout.Of(new ScreenShape(width, height), Packs, Sets);
+        Assert.All(WithAndWithoutTheRestoreRow, hasRestore =>
+            Assert.InRange(ShopLayout.Of(new ScreenShape(width, height), Packs, Sets, hasRestore).Share, ShopLayout.SmallestShare, 1f));
+    }
 
-        Assert.InRange(shop.Share, ShopLayout.SmallestShare, 1f);
+    [Fact]
+    public void Four_packs_stand_in_one_row_at_three_quarters_and_three_as_the_canvas_draws_them()
+    {
+        Assert.Equal((1f, 200f), (ShopLayout.PackScale(3), ShopLayout.CoinsPanelHeight(3)));
+        Assert.Equal(0.75f, ShopLayout.PackScale(4));
+        Assert.True(ShopLayout.CoinsPanelHeight(4) < ShopLayout.CoinsPanelHeight(3), "four smaller packs make the panel taller");
+        float left = ShopLayout.PackMiddle(0, 4) - ShopLayout.PackColumnWidthFor(4) / 2f;
+        float right = ShopLayout.PackMiddle(3, 4) + ShopLayout.PackColumnWidthFor(4) / 2f;
+        Assert.Equal(ShopLayout.PanelWidth - right, left, precision: 3);
+        Assert.InRange(left, 12f, 16f);
+        Assert.Equal(78f, ShopLayout.PackButtonWidth(4));
+    }
+
+    [Theory]
+    [MemberData(nameof(EveryScreen))]
+    public void The_restore_row_lies_at_the_foot_of_the_coins_panel_under_the_packs_buttons(int width, int height, int top, int bottom)
+    {
+        ShopLayout shop = ShopLayout.Of(new ScreenShape(width, height, top, bottom), Packs, Sets, hasRestore: true);
+        Box row = shop.RestoreRow ?? throw new InvalidOperationException("no restore row");
+        Box coins = shop.Panel(ShopPanel.Coins);
+
+        Assert.True(Inside(row, coins), $"the restore row {row} leaves the coins' panel {coins}");
+        Assert.All(Enumerable.Range(0, Packs).Select(shop.PackButton), button => Assert.False(Overlap(row, button), $"the restore row {row} runs into the button {button}"));
+        Assert.Null(ShopLayout.Of(new ScreenShape(width, height, top, bottom), Packs, Sets).RestoreRow);
+        Assert.Equal(ShopLayout.CoinsPanelHeight(Packs) + ShopLayout.RestoreRowRoom, coins.Height / shop.Scale, precision: 2);
     }
 
     [Theory]
@@ -58,9 +88,13 @@ public class ShopLayoutTests
     [MemberData(nameof(EveryScreen))]
     public void Nothing_of_the_shop_overlaps_and_all_of_it_lies_between_the_wallet_row_and_the_bar(int width, int height, int top, int bottom)
     {
-        ShopLayout shop = ShopLayout.Of(new ScreenShape(width, height, top, bottom), Packs, Sets);
+        Assert.All(WithAndWithoutTheRestoreRow, hasRestore => NothingOverlaps(ShopLayout.Of(new ScreenShape(width, height, top, bottom), Packs, Sets, hasRestore)));
+    }
+
+    private static void NothingOverlaps(ShopLayout shop)
+    {
         PageLayout page = shop.Page;
-        Box[] parts = new[] { shop.Sign }.Concat(ShopLayout.Panels.Select(shop.Panel)).ToArray();
+        Box[] parts = new[] { shop.Sign }.Concat(shop.PanelsShown.Select(shop.Panel)).ToArray();
 
         Assert.True(shop.Pin.Top < page.WalletRow.Bottom, "the sign's pin runs into the wallet row");
         Assert.All(parts, part =>
@@ -81,9 +115,13 @@ public class ShopLayoutTests
     [MemberData(nameof(EveryScreen))]
     public void Every_button_is_held_at_least_38_points_high_inside_its_panel_and_apart_from_the_others(int width, int height, int top, int bottom)
     {
-        ShopLayout shop = ShopLayout.Of(new ScreenShape(width, height, top, bottom), Packs, Sets);
+        Assert.All(WithAndWithoutTheRestoreRow, hasRestore => EveryButtonIsHeld(ShopLayout.Of(new ScreenShape(width, height, top, bottom), Packs, Sets, hasRestore)));
+    }
+
+    private static void EveryButtonIsHeld(ShopLayout shop)
+    {
         Box[] buttons = shop.Buttons.ToArray();
-        Box[] panels = ShopLayout.Panels.Select(shop.Panel).ToArray();
+        Box[] panels = shop.PanelsShown.Select(shop.Panel).ToArray();
 
         Assert.Equal(Packs + Sets + 1, buttons.Length);
         Assert.All(buttons, button =>
@@ -104,10 +142,11 @@ public class ShopLayoutTests
     [Fact]
     public void Packs_stand_as_a_centred_row_and_a_shelf_gives_each_disc_an_equal_column()
     {
-        ShopLayout shop = ShopLayout.Of(new ScreenShape(1080, 2340), Packs, Sets);
+        const int ThreePacks = 3;
+        ShopLayout shop = ShopLayout.Of(new ScreenShape(1080, 2340), ThreePacks, Sets);
 
-        Assert.Equal(ShopLayout.PanelWidth / 2f, ShopLayout.PackMiddle(1, Packs), precision: 3);
-        Assert.Equal(ShopLayout.PanelWidth - ShopLayout.PackMiddle(2, Packs), ShopLayout.PackMiddle(0, Packs), precision: 3);
+        Assert.Equal(ShopLayout.PanelWidth / 2f, ShopLayout.PackMiddle(1, ThreePacks), precision: 3);
+        Assert.Equal(ShopLayout.PanelWidth - ShopLayout.PackMiddle(2, ThreePacks), ShopLayout.PackMiddle(0, ThreePacks), precision: 3);
         Assert.Equal(0f, shop.PackButton(1).MiddleX, precision: 3);
         Assert.Equal(ShopLayout.ShelfLeft + ShopLayout.ShelfWidth / 2f, ShopLayout.DiscMiddle(1, 3), precision: 3);
         Assert.Equal(ShopLayout.DiscMiddle(1, 4) - ShopLayout.DiscMiddle(0, 4), ShopLayout.DiscMiddle(3, 4) - ShopLayout.DiscMiddle(2, 4), precision: 3);
@@ -118,7 +157,7 @@ public class ShopLayoutTests
     public void A_shop_without_goods_or_with_more_packs_than_a_row_holds_is_refused()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => ShopLayout.Of(new ScreenShape(1080, 2340), 0, Sets));
-        Assert.Throws<ArgumentOutOfRangeException>(() => ShopLayout.Of(new ScreenShape(1080, 2340), 4, Sets));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ShopLayout.Of(new ScreenShape(1080, 2340), ShopLayout.MostPacks + 1, Sets));
         Assert.Throws<ArgumentOutOfRangeException>(() => ShopLayout.Of(new ScreenShape(1080, 2340), Packs, 0));
     }
 

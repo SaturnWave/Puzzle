@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Client.Purchases;
 using Puzzle.Meta;
 
 namespace Puzzle.Client.Flow
@@ -62,35 +63,32 @@ namespace Puzzle.Client.Flow
     }
 
     /// <summary>
-    /// What the shop and the hall's gift frame show at one instant, by the economy's rules: the packs of coins (which
-    /// a test build shows and does not sell), the sets with whether the player's coins cover each, the ad for coins
-    /// with how many are left on the player's calendar day, and whether the daily reward waits or when the next one
-    /// comes. Every number comes from the settings through the rules; nothing here is a price of its own. Whoever
-    /// owns the wallet makes it anew at every step, so a new day opens the ads and the gift as the clock passes
-    /// midnight. This file has no Unity dependency, so the repository's tests compile it too.
+    /// What the shop and the hall's gift frame show at one instant, by the economy's rules: the store (its packs of
+    /// coins with the store's prices, the starter pack while it is offered, and where a purchase for money stands;
+    /// a test build shows the packs and sells none), the sets with whether the player's coins cover each, the ad for
+    /// coins with how many are left on the player's calendar day, and whether the daily reward waits or when the next
+    /// one comes. Every number comes from the settings through the rules, and every price for money from the store;
+    /// nothing here is a price of its own. Whoever owns the wallet makes it anew at every step, so a new day opens the
+    /// ads and the gift as the clock passes midnight. This file has no Unity dependency, so the repository's tests
+    /// compile it too.
     /// </summary>
     public sealed class ShopView
     {
         private ShopView(
-            IReadOnlyList<CoinPack> coinPacks, IReadOnlyList<SetOffer> sets, Coins coinsForAnAd, int adsLeftToday, int adsPerDay, AdSource ads,
-            RealMoneySales realMoney, GiftView gift, int giftEveryDays)
+            StoreView store, IReadOnlyList<SetOffer> sets, Coins coinsForAnAd, int adsLeftToday, int adsPerDay, AdSource ads, GiftView gift, int giftEveryDays)
         {
             GiftEveryDays = giftEveryDays;
-            CoinPacks = coinPacks;
+            Store = store;
             Sets = sets;
             CoinsForAnAd = coinsForAnAd;
             AdsLeftToday = adsLeftToday;
             AdsPerDay = adsPerDay;
             Ads = ads;
-            RealMoney = realMoney;
             Gift = gift;
         }
 
-        /// <summary>The packs of coins, in the order the settings list them.</summary>
-        public IReadOnlyList<CoinPack> CoinPacks { get; }
-
-        /// <summary>Whether a pack of coins can be bought at all in this build.</summary>
-        public RealMoneySales RealMoney { get; }
+        /// <summary>What the store sells for money and where a purchase stands: the packs of coins in the order the settings list them, with the store's prices.</summary>
+        public StoreView Store { get; }
 
         /// <summary>The sets, in the order the settings list them.</summary>
         public IReadOnlyList<SetOffer> Sets { get; }
@@ -124,14 +122,19 @@ namespace Puzzle.Client.Flow
         /// </summary>
         /// <param name="now">The player's time, with the offset of their time zone: a calendar day is theirs.</param>
         /// <exception cref="ArgumentNullException">No rules or no wallet.</exception>
-        public static ShopView Of(EconomyRules rules, Wallet wallet, DateTimeOffset now, WalletHandling handling)
+        public static ShopView Of(EconomyRules rules, Wallet wallet, DateTimeOffset now, WalletHandling handling) =>
+            Of(rules, wallet, now, handling, StoreView.Unasked((rules ?? throw new ArgumentNullException(nameof(rules))).Shop.Store, rules.Shop.RealMoney));
+
+        /// <summary>The shop and the gift as above, with the store as the purchase's course has it (Checkout.ViewFor).</summary>
+        /// <exception cref="ArgumentNullException">No rules, no wallet or no store.</exception>
+        public static ShopView Of(EconomyRules rules, Wallet wallet, DateTimeOffset now, WalletHandling handling, StoreView store)
         {
             Shop shop = (rules ?? throw new ArgumentNullException(nameof(rules))).Shop;
             Wallet held = wallet ?? throw new ArgumentNullException(nameof(wallet));
             DayStamp today = DayStamp.Of(now);
             SetOffer[] sets = shop.BoosterSets.Select(set => new SetOffer(set, handling.ToPay(set.Price, held).Coins)).ToArray();
             return new ShopView(
-                shop.CoinPacks, sets, shop.AdForCoins.Coins, shop.AdsForCoinsLeft(held, today), shop.AdForCoins.PerDay, rules.Ads, shop.RealMoney,
+                store ?? throw new ArgumentNullException(nameof(store)), sets, shop.AdForCoins.Coins, shop.AdsForCoinsLeft(held, today), shop.AdForCoins.PerDay, rules.Ads,
                 GiftOf(rules.Daily, held, now), rules.Daily.EveryDays);
         }
 

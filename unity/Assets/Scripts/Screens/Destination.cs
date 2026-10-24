@@ -16,7 +16,7 @@ namespace Puzzle.Client.Screens
     /// </summary>
     public enum Destination
     {
-        /// <summary>The shop: sets of boosters for coins, coins for an ad, and the coin packs a test build does not sell.</summary>
+        /// <summary>The shop: what the store sells for money (coin packs, the starter pack), sets of boosters for coins, and coins for an ad.</summary>
         Shop,
 
         /// <summary>The hall: the painting being restored, and the way into the next level.</summary>
@@ -134,15 +134,28 @@ namespace Puzzle.Client.Screens
             public BoosterSet Set { get; }
         }
 
-        /// <summary>The button of a pack of coins in the shop: the rules say whether this build sells it.</summary>
-        public sealed class BuyACoinPack : MuseumPress
+        /// <summary>
+        /// The button of a product of the store in the shop (a pack of coins, the starter pack): in a build that sells
+        /// for money, the card that asks before paying; in a test build, the card that says it sells nothing.
+        /// </summary>
+        public sealed class BuyFromTheStore : MuseumPress
         {
-            public BuyACoinPack(CoinPack pack)
+            public BuyFromTheStore(StoreProduct product)
             {
-                Pack = pack ?? throw new ArgumentNullException(nameof(pack));
+                Product = product ?? throw new ArgumentNullException(nameof(product));
             }
 
-            public CoinPack Pack { get; }
+            public StoreProduct Product { get; }
+        }
+
+        /// <summary>The green button of the card that asks before paying: the store's own payment sheet, for the product the card shows.</summary>
+        public sealed class PayInTheStore : MuseumPress
+        {
+        }
+
+        /// <summary>The shop's row that asks the store for the player's purchases back (the App Store's restore).</summary>
+        public sealed class RestorePurchases : MuseumPress
+        {
         }
 
         /// <summary>The blue button of the shop's free strip: an ad, and coins once it is over.</summary>
@@ -332,19 +345,6 @@ namespace Puzzle.Client.Screens
             public override string ToString() => $"buy the {Set}";
         }
 
-        /// <summary>A pack of coins for real money.</summary>
-        public sealed class BuyACoinPack : WalletRequest
-        {
-            public BuyACoinPack(CoinPack pack)
-            {
-                Pack = pack ?? throw new ArgumentNullException(nameof(pack));
-            }
-
-            public CoinPack Pack { get; }
-
-            public override string ToString() => $"buy the {Pack}";
-        }
-
         /// <summary>The coins of an ad for coins that was watched to its end.</summary>
         public sealed class CoinsForAnAd : WalletRequest
         {
@@ -355,6 +355,62 @@ namespace Puzzle.Client.Screens
         public sealed class TakeTheDailyGift : WalletRequest
         {
             public override string ToString() => "the daily gift";
+        }
+    }
+
+    /// <summary>
+    /// What a press in the museum asks of the store, which the museum shows and does not hold: whoever owns the
+    /// museum hands it to the purchase's course (Checkout), which says what it came to at the next step. Money is only
+    /// ever paid by <see cref="Pay"/>, the answer of the card that asks before paying: no single press pays. A closed
+    /// set (private constructor).
+    /// </summary>
+    public abstract class StoreRequest
+    {
+        private StoreRequest()
+        {
+        }
+
+        /// <summary>A product of the store was pressed: the card that asks before paying, if it can be bought now.</summary>
+        public sealed class Ask : StoreRequest
+        {
+            public Ask(StoreProduct product)
+            {
+                Product = product ?? throw new ArgumentNullException(nameof(product));
+            }
+
+            public StoreProduct Product { get; }
+
+            public override string ToString() => $"ask to buy {Product.Name}";
+        }
+
+        /// <summary>The card that asks was answered with the green button: to the store's payment sheet.</summary>
+        public sealed class Pay : StoreRequest
+        {
+            public override string ToString() => "pay";
+        }
+
+        /// <summary>The card that asks was closed without paying.</summary>
+        public sealed class Decline : StoreRequest
+        {
+            public override string ToString() => "decline";
+        }
+
+        /// <summary>The card that told what a purchase came to was closed.</summary>
+        public sealed class Dismiss : StoreRequest
+        {
+            public override string ToString() => "dismiss";
+        }
+
+        /// <summary>The shop's row that asks for the player's purchases back.</summary>
+        public sealed class Restore : StoreRequest
+        {
+            public override string ToString() => "restore";
+        }
+
+        /// <summary>The card that told what asking for the purchases back came to was closed.</summary>
+        public sealed class DismissTheRestore : StoreRequest
+        {
+            public override string ToString() => "dismiss the restore";
         }
     }
 

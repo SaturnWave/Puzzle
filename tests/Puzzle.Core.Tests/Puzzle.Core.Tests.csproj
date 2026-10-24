@@ -123,6 +123,12 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopWords.cs" Link="Unity\Flow\ShopWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletLedger.cs" Link="Unity\Flow\WalletLedger.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ShopLayout.cs" Link="Unity\Layout\ShopLayout.cs" />
+    <!-- Nor have the purchases for real money: what the player bought, how the game talks to the store, the course of a purchase, the scripted store of the tools, and their words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchasesMade.cs" Link="Unity\Purchases\PurchasesMade.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\StoreTalk.cs" Link="Unity\Purchases\StoreTalk.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\Checkout.cs" Link="Unity\Purchases\Checkout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\ScriptedStore.cs" Link="Unity\Purchases\ScriptedStore.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PurchaseWords.cs" Link="Unity\Flow\PurchaseWords.cs" />
     <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />

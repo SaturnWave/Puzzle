@@ -11,6 +11,7 @@ using Puzzle.Client.Hall;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Maps;
 using Puzzle.Client.Play;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Shops;
 using Puzzle.Client.Stage;
 using Puzzle.Client.Words;
@@ -196,6 +197,18 @@ namespace Puzzle.Client.Screens
         /// <summary>What presses asked of the phone that the stage's owner has not taken yet, in the order they were made.</summary>
         private readonly List<DeviceRequest> _askedOfThePhone = new List<DeviceRequest>();
 
+        /// <summary>What presses asked of the store that the stage's owner has not taken yet, in the order they were made.</summary>
+        private readonly List<StoreRequest> _askedOfTheStore = new List<StoreRequest>();
+
+        /// <summary>
+        /// The card that shows where a purchase for money stands, with what it shows: a state of the purchase's course,
+        /// or the end of a restore. Nothing while no such card hangs, or once it is on its way up.
+        /// </summary>
+        private (NoticeCard Card, object ShowsFor)? _purchaseCard;
+
+        /// <summary>What the player closed the purchase card of (or the cancel the stage passed over), until the course moves on: no card comes down for it again.</summary>
+        private object? _closedFor;
+
         /// <summary>What the stage sounded that its owner has not taken yet: presses, switches, cards and coins.</summary>
         private readonly CuesSounded _sounded = new CuesSounded();
 
@@ -286,7 +299,7 @@ namespace Puzzle.Client.Screens
         public Destination Showing { get; private set; }
 
         /// <summary>True when no page is turning or being dragged, no card is on its way, no ad is being shown, and the room is neither lighting up nor going dark.</summary>
-        public bool IsSettled => IsStill && !_swipe.IsDragging;
+        public bool IsSettled => IsStill && !_swipe.IsDragging && !IsAPurchaseCardDue;
 
         /// <summary>
         /// What the player has left the museum for, once they pressed what leads there and the room has gone dark:
@@ -396,7 +409,15 @@ namespace Puzzle.Client.Screens
         public Vector2? GetMoreToTheShopPixel => TopCard is GetMoreCard offer ? PixelOnTheCard(offer.ToTheShopMiddle) : null;
 
         /// <summary>The pixel in the middle of the "Tamam" of the card that tells what a request came to; nothing while it is not down in front.</summary>
-        public Vector2? NoticeDonePixel => TopCard is NoticeCard notice ? PixelOnTheCard(notice.DoneButtonMiddle) : null;
+        public Vector2? NoticeDonePixel => TopCard is NoticeCard { DoneButtonMiddle: Vector2 done } ? PixelOnTheCard(done) : null;
+
+        /// <summary>The pixels in the middle of the green "Satın al" and the blue "Vazgeç" of the card that asks before paying; nothing while it is not down in front.</summary>
+        public Vector2? NoticeBuyPixel => TopCard is NoticeCard { BuyButtonMiddle: Vector2 buy } ? PixelOnTheCard(buy) : null;
+
+        public Vector2? NoticeDeclinePixel => TopCard is NoticeCard { DeclineButtonMiddle: Vector2 decline } ? PixelOnTheCard(decline) : null;
+
+        /// <summary>The pixel in the middle of the round button of the notice card in front; nothing while none is, or while it has none.</summary>
+        public Vector2? NoticeClosePixel => TopCard is NoticeCard { CanBeClosed: true } notice ? PixelOnTheCard(notice.Card.CloseButtonMiddle) : null;
 
         /// <summary>The pixel in the middle of the wallet row's coins' plus, which leads to the shop; nothing while the page's controls are not pressed.</summary>
         public Vector2? CoinsPlusPixel => PixelWhileListening(_wallet.CoinsPlusMiddle);
@@ -413,6 +434,14 @@ namespace Puzzle.Client.Screens
         public Vector2? ShopSetPixel(int set) => _page is ShopPage shop ? PixelWhileListening(shop.SetButtonMiddle(set)) : null;
 
         public Vector2? ShopAdPixel => _page is ShopPage shop ? PixelWhileListening(shop.AdButtonMiddle) : null;
+
+        /// <summary>The pixels in the middle of the starter pack's button and of the row that asks for the purchases back; nothing while the shop shows neither.</summary>
+        public Vector2? ShopStarterPixel => _page is ShopPage shop ? PixelWhileListening(shop.StarterButtonMiddle) : null;
+
+        public Vector2? ShopRestorePixel => _page is ShopPage shop ? PixelWhileListening(shop.RestoreRowMiddle) : null;
+
+        /// <summary>True while a pack's button in the shop can be pressed to buy it: the store gave its price; false otherwise, and on another page.</summary>
+        public bool IsShopPackForSale(int pack) => _page is ShopPage shop && shop.IsPackForSale(pack);
 
         /// <summary>True while the shop's set's button is lit; false while it is dimmed, and on another page.</summary>
         public bool IsShopSetLit(int set) => _page is ShopPage shop && shop.IsSetButtonLit(set);
@@ -597,6 +626,9 @@ namespace Puzzle.Client.Screens
                     TurnTo(to);
                 }
             }
+
+            // Done here too, after the step: the card of a purchase that comes next hangs in the step the card before it is gone.
+            FollowTheStore();
         }
 
         /// <summary>
@@ -621,6 +653,7 @@ namespace Puzzle.Client.Screens
             (_page as IShopPage)?.Tell(shop);
             (_leaving as IShopPage)?.Tell(shop);
             (_pageBeside?.Page as IShopPage)?.Tell(shop);
+            FollowTheStore();
         }
 
         /// <summary>
@@ -659,6 +692,19 @@ namespace Puzzle.Client.Screens
 
             DeviceRequest[] taken = _askedOfThePhone.ToArray();
             _askedOfThePhone.Clear();
+            return taken;
+        }
+
+        /// <summary>What presses asked of the store since the owner last took it, in order: the owner hands it to the purchase's course and tells the stage where it stands after it.</summary>
+        public IReadOnlyList<StoreRequest> TakeWhatWasAskedOfTheStore()
+        {
+            if (_askedOfTheStore.Count == 0)
+            {
+                return Array.Empty<StoreRequest>();
+            }
+
+            StoreRequest[] taken = _askedOfTheStore.ToArray();
+            _askedOfTheStore.Clear();
             return taken;
         }
 
@@ -746,9 +792,15 @@ namespace Puzzle.Client.Screens
                 return;
             }
 
+            if (TopCard is NoticeCard { CanBeClosed: false })
+            {
+                return; // the card of a payment the store is taking stands until the store answers
+            }
+
             if (_cards.Count > 0)
             {
                 StopShowingTheStartBoosters(); // cut short: the step comes again on the next card
+                AskOnClosingThePurchaseCard();
                 TakeTheCardInFrontUp();
             }
             else if (_page.TryGoBack())
@@ -929,6 +981,7 @@ namespace Puzzle.Client.Screens
                     Hang(LivesCard.Create(_root.transform, _art, _wallet.Wallet), roomIsDark: false);
                     break;
                 case MuseumPress.CloseTheCard _ when _cards.Count > 0:
+                    AskOnClosingThePurchaseCard();
                     TakeTheCardInFrontUp();
                     break;
                 case MuseumPress.ChooseStartBooster choose when StartCard is LevelStartCard start:
@@ -944,8 +997,23 @@ namespace Puzzle.Client.Screens
                 case MuseumPress.BuyASet buy:
                     _asked.Add(new WalletRequest.BuyASet(buy.Set));
                     break;
-                case MuseumPress.BuyACoinPack buy:
-                    _asked.Add(new WalletRequest.BuyACoinPack(buy.Pack));
+                case MuseumPress.BuyFromTheStore _ when _shop.Store.Status is StoreStatus.NotSold:
+                    // A test build sells nothing for money: no course is asked, and the card says so.
+                    Hang(
+                        NoticeCard.Create(
+                            _root.transform, _art, ShopWords.PacksTitle, new NoticeExhibit.Mark(GalleryArt.CoinChest, NoticeMarkSize), ShopWords.NotOnSale,
+                            ShopWords.WhereCoinsComeFrom),
+                        roomIsDark: false);
+                    break;
+                case MuseumPress.BuyFromTheStore buy:
+                    _askedOfTheStore.Add(new StoreRequest.Ask(buy.Product));
+                    break;
+                case MuseumPress.PayInTheStore _ when TopCard is NoticeCard { Answers: NoticeAnswers.BuyOrDecline }:
+                    // The card stays until the course moves on: then it goes up, and the card of the payment comes down.
+                    _askedOfTheStore.Add(new StoreRequest.Pay());
+                    break;
+                case MuseumPress.RestorePurchases _:
+                    _askedOfTheStore.Add(new StoreRequest.Restore());
                     break;
                 case MuseumPress.WatchAnAdForCoins _ when _shop.CanWatchAnAd:
                     ShowAnAdForCoins();
@@ -1301,10 +1369,6 @@ namespace Puzzle.Client.Screens
                         ShopWords.CoinsShortFor(set.Set, coinsShort.Missing), ShopWords.GatherCoins, raisedBy);
                 case WalletAnswer.Refused { Why: WalletRefusal.CoinsShort _ }:
                     return null; // the card that offered one booster dims its button and says so itself
-                case WalletAnswer.Refused { Why: WalletRefusal.NotOnSale _ }:
-                    return NoticeCard.Create(
-                        _root.transform, _art, ShopWords.PacksTitle, new NoticeExhibit.Mark(GalleryArt.CoinChest, NoticeMarkSize),
-                        ShopWords.NotOnSale, ShopWords.WhereCoinsComeFrom, raisedBy);
                 case WalletAnswer.Refused { Why: WalletRefusal.NoAdLeftToday _ }:
                     return NoticeCard.Create(
                         _root.transform, _art, ShopWords.NoAdTitle, new NoticeExhibit.Mark(GalleryArt.CoinPile, NoticeMarkSize),
@@ -1318,6 +1382,104 @@ namespace Puzzle.Client.Screens
                     throw new InvalidOperationException($"The museum has no card for the answer \"{answer}\" to \"{request}\".");
             }
         }
+
+        // ---------- the store ----------
+
+        /// <summary>
+        /// The card of where a purchase for money stands follows the purchase's course at every step: the card that
+        /// asks before paying, the card of the payment the store is taking (no answer: it goes when the store answers),
+        /// and the cards of what came of it, a restore's included. When the course moves on, the card that shows the
+        /// step before goes up, and the next comes down once it is gone, over a page with no other card in front: a
+        /// payment approved while the settings card hangs waits for it to close. A purchase the player cancelled on the
+        /// store's own sheet, which said so, has no card: the course is told so and goes back to idle. A card the player
+        /// closed tells the course (declined, seen) and does not come down again.
+        /// </summary>
+        private void FollowTheStore()
+        {
+            StoreView store = _shop.Store;
+            if (store.Purchase is PurchaseState.Cancelled cancelled && !ReferenceEquals(_closedFor, cancelled))
+            {
+                _askedOfTheStore.Add(new StoreRequest.Dismiss());
+                _closedFor = cancelled;
+            }
+
+            object? due = DuePurchaseCard(store);
+            if (_purchaseCard is (NoticeCard shown, object showsFor))
+            {
+                if (!ReferenceEquals(showsFor, due) && ReferenceEquals(TopCard, shown) && IsStill)
+                {
+                    _purchaseCard = null;
+                    TakeTheCardInFrontUp();
+                }
+
+                return;
+            }
+
+            if (due != null && _cards.Count == 0 && ListensToThePlayer)
+            {
+                NoticeCard card = PurchaseCardFor(due, store);
+                _purchaseCard = (card, due);
+                Hang(card, roomIsDark: false);
+            }
+        }
+
+        /// <summary>True while a card of a purchase is due and has not come down yet: the museum is not settled until it hangs.</summary>
+        private bool IsAPurchaseCardDue => _purchaseCard == null && _cards.Count == 0 && !_isLeaving && PlayerLeftFor == null && DuePurchaseCard(_shop.Store) != null;
+
+        /// <summary>What a purchase card is due to show now: where the purchase stands, else the end of a restore; nothing for what the player closed.</summary>
+        private object? DuePurchaseCard(StoreView store)
+        {
+            object? due = store.Purchase is PurchaseState.Nothing || store.Purchase is PurchaseState.Cancelled
+                ? store.Restore as RestoreState.Ended
+                : store.Purchase;
+            return ReferenceEquals(due, _closedFor) ? null : due;
+        }
+
+        /// <summary>The player closes the purchase card in front: the course is told (declined, seen), and the card does not come down again.</summary>
+        private void AskOnClosingThePurchaseCard()
+        {
+            if (_purchaseCard is (NoticeCard card, object showsFor) && ReferenceEquals(TopCard, card))
+            {
+                _askedOfTheStore.Add(showsFor switch
+                {
+                    PurchaseState.Asking _ => new StoreRequest.Decline(),
+                    RestoreState.Ended _ => new StoreRequest.DismissTheRestore(),
+                    _ => (StoreRequest)new StoreRequest.Dismiss(),
+                });
+                _closedFor = showsFor;
+                _purchaseCard = null;
+            }
+        }
+
+        /// <summary>
+        /// The card of a step of a purchase for money: the product's goods on the card that asks, on the card of the
+        /// payment and on the card of what came; the chest of coins on a card of nothing bought and of a restore.
+        /// </summary>
+        private NoticeCard PurchaseCardFor(object due, StoreView store)
+        {
+            switch (due)
+            {
+                case PurchaseState.Asking asking:
+                    PurchaseCardWords ask = PurchaseWords.Asking(asking.Bought, asking.Price);
+                    return NoticeCard.Create(_root.transform, _art, ask.Title, GoodsOf(asking.Bought), ask.FirstLine, ask.SecondLine, raisedBy: 0, NoticeAnswers.BuyOrDecline);
+                case PurchaseState state:
+                    PurchaseCardWords said = PurchaseWords.Of(state) ?? throw new InvalidOperationException($"A purchase that stands at {state} has no card.");
+                    NoticeExhibit exhibit = state is PurchaseState.Failed ? new NoticeExhibit.Mark(GalleryArt.CoinChest, NoticeMarkSize)
+                        : state is PurchaseState.Delivered delivered ? new NoticeExhibit.Goods(GoodsItem.Of(delivered.What))
+                        : GoodsOf(state.Product ?? throw new InvalidOperationException($"A purchase that stands at {state} is of no product."));
+                    return NoticeCard.Create(
+                        _root.transform, _art, said.Title, exhibit, said.FirstLine, said.SecondLine, raisedBy: 0,
+                        state is PurchaseState.Pending ? NoticeAnswers.None : NoticeAnswers.Done);
+                case RestoreState restore:
+                    PurchaseCardWords back = PurchaseWords.Of(restore, store.StarterPackProduct) ?? throw new InvalidOperationException($"A restore that stands at {restore} has no card.");
+                    return NoticeCard.Create(
+                        _root.transform, _art, back.Title, new NoticeExhibit.Mark(GalleryArt.CoinChest, NoticeMarkSize), back.FirstLine, back.SecondLine);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(due), due, "The store's course has no card for that.");
+            }
+        }
+
+        private static NoticeExhibit GoodsOf(StoreProduct product) => new NoticeExhibit.Goods(GoodsItem.Of(product.Contents));
 
         /// <summary>
         /// The stand-in ad for coins: the room darkens and its card comes down; its seconds run once it hangs, and

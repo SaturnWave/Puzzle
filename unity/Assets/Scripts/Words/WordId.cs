@@ -810,5 +810,110 @@ namespace Puzzle.Client.Words
 
         /// <summary>Entry page: what the line under the bar says instead of the share when the game could not start (a file it needs could not be read). The player is to close the game and open it again; short, one line.</summary>
         EntryCouldNotStart,
+
+        /// <summary>Name of the starter pack (coins and one start booster of each kind, sold once): "the apprentice's bag".</summary>
+        StarterPackName,
+
+        /// <summary>Shop, on the top edge of the starter pack's frame (small capitals): it is sold to a player only once.</summary>
+        ShopStarterOnce,
+
+        /// <summary>Shop: a pack's button while the store has not said its price yet. Keep the ellipsis.</summary>
+        ShopPriceComing,
+
+        /// <summary>Shop: the button of a coin pack the store does not sell now.</summary>
+        ShopPackNotOnSale,
+
+        /// <summary>Shop, in the coins' panel instead of the buttons: the phone's app store (Google Play, App Store) cannot be reached now. Calm, no blame.</summary>
+        ShopStoreUnreachable,
+
+        /// <summary>Shop, the link under the panels (iPhone and iPad only): asks the App Store for the player's purchases back (Apple's "Restore Purchases").</summary>
+        ShopRestore,
+
+        /// <summary>Name of the smallest coin pack: a pouch of coins.</summary>
+        PackPouch,
+
+        /// <summary>Name of the second coin pack: a bag of coins.</summary>
+        PackBag,
+
+        /// <summary>Name of the third coin pack: a chest of coins.</summary>
+        PackChest,
+
+        /// <summary>Name of the largest coin pack: a treasure of coins.</summary>
+        PackTreasure,
+
+        /// <summary>Card before paying, first line: asks whether to buy. {price} is the price as the store writes it in the player's currency ("₺89,99").</summary>
+        PurchaseAskQuestion,
+
+        /// <summary>Card before paying, second line: the phone's app store takes the payment; the game never sees the player's payment details.</summary>
+        PurchaseAskStoreLine,
+
+        /// <summary>Card before paying: the green button that opens the store's payment sheet.</summary>
+        PurchaseBuy,
+
+        /// <summary>Card before paying: the blue button that closes it without paying.</summary>
+        PurchaseDecline,
+
+        /// <summary>Card while the store takes the payment: its nameplate.</summary>
+        PurchasePendingTitle,
+
+        /// <summary>Card while the store takes the payment, first line.</summary>
+        PurchasePendingLine,
+
+        /// <summary>Second line of the cards whose payment is not made yet: what was bought arrives once it is paid.</summary>
+        PurchaseComesWhenPaid,
+
+        /// <summary>Card after a payment, first line: the coins arrived. {coins} is the amount.</summary>
+        PurchaseCoinsArrived,
+
+        /// <summary>Card after a payment, second line under the coins.</summary>
+        PurchaseThanks,
+
+        /// <summary>Card when the payment waits for someone's approval (a parent's "Ask to Buy") or for cash at a shop: its nameplate.</summary>
+        PurchaseDeferredTitle,
+
+        /// <summary>Card when the payment waits for approval, first line.</summary>
+        PurchaseDeferredLine,
+
+        /// <summary>Card when a purchase came to nothing: its nameplate.</summary>
+        PurchaseFailedTitle,
+
+        /// <summary>Second line of the card when a purchase came to nothing: no money was taken.</summary>
+        PurchaseNothingPaid,
+
+        /// <summary>That card, first line: the store cannot be reached now.</summary>
+        PurchaseStoreClosed,
+
+        /// <summary>That card, first line: the store does not sell this product now.</summary>
+        PurchaseNotOnSale,
+
+        /// <summary>That card, first line: the starter pack is sold once and the player has it. {name} is its name.</summary>
+        PurchaseSoldOut,
+
+        /// <summary>That card, first line: the store did not take the payment.</summary>
+        PurchaseNotPaid,
+
+        /// <summary>That card, first line: a payment for this product is waiting already.</summary>
+        PurchaseAlreadyWaiting,
+
+        /// <summary>Card after asking the store for the purchases back: its nameplate.</summary>
+        RestoreTitle,
+
+        /// <summary>That card, first line: the starter pack came back. {name} is its name.</summary>
+        RestoreBroughtBack,
+
+        /// <summary>That card, first line: there was nothing to bring back.</summary>
+        RestoreNothing,
+
+        /// <summary>That card, second line: coin packs bought before are not restored, only the starter pack. {name} is its name.</summary>
+        RestoreOnlyTheStarter,
+
+        /// <summary>That card, first line: the store did not answer.</summary>
+        RestoreFailed,
+
+        /// <summary>That card, second line: try again later.</summary>
+        RestoreTryLater,
+
+        /// <summary>Build line: things are sold for money through the phone's app store.</summary>
+        BuildStoreBuying,
     }
 }

@@ -32,6 +32,15 @@ namespace Puzzle.Meta.Settings
         /// <summary>The settings' word for a build that sells nothing for money.</summary>
         public const string NoRealMoneyWord = "notAvailable";
 
+        /// <summary>The settings' word for a build that sells the store's products through the platform's store.</summary>
+        public const string StoreWord = "store";
+
+        /// <summary>The starter pack's name, as the economy simulator's reports call it.</summary>
+        public const string StarterPackName = "starter-pack";
+
+        /// <summary>The most a product may cost in the US store, in cents: the settings file's own bound.</summary>
+        public const long LargestPriceCents = 99_999;
+
         /// <summary>
         /// No amount of coins in the settings may be above this, the same bound the economy simulator holds its
         /// settings to: far above any price a game has, far below what whole-number arithmetic holds.
@@ -126,7 +135,7 @@ namespace Puzzle.Meta.Settings
             return new Shop(
                 BoosterPricesOf(file.prices, win),
                 Named(ListOrNone(shop.boosterSets), set => set.name, "shop.boosterSets").Select(SetOf).ToArray(),
-                Named(ListOrNone(shop.coinPacks), pack => pack.name, "shop.coinPacks").Select(PackOf).ToArray(),
+                StoreOf(file.store),
                 new AdForCoins(CoinsOf(shop.adForCoins.coins, "shop.adForCoins.coins"), AtLeast(shop.adForCoins.perDay, 0, "shop.adForCoins.perDay")),
                 realMoney);
         }
@@ -171,11 +180,65 @@ namespace Puzzle.Meta.Settings
             return new BoosterSet(file.name, CoinsOf(AtLeast(file.priceCoins, 1L, $"{field}.priceCoins"), $"{field}.priceCoins"), ShelfOf(boosters));
         }
 
-        private static CoinPack PackOf(CoinPackFile file)
+        /// <summary>
+        /// What the game sells for real money: at least one coin pack, and the starter pack, each with a price, coins
+        /// and an id of its own that both stores take. The pricing rules between them are the economy simulator's
+        /// balance policy, not the format's.
+        /// </summary>
+        private static StoreCatalogue StoreOf(StoreFile? file)
         {
-            string field = $"shop.coinPacks.{file.name}.coins";
-            return new CoinPack(file.name, CoinsOf(AtLeast(file.coins, 1L, field), field));
+            StoreFile store = file ?? new StoreFile();
+            StoreProduct[] packs = Named(ListOrNone(store.coinPacks), pack => pack.name, "store.coinPacks")
+                .Select(pack => ProductOf(
+                    pack.name, StoreProductKind.CoinPack, pack.productIdSuffix, pack.priceUsdCents, pack.coins, BoosterShelf.Empty, $"store.coinPacks.{pack.name}"))
+                .ToArray();
+            if (packs.Length == 0)
+            {
+                throw Invalid("store.coinPacks is empty: the store sells at least one pack of coins");
+            }
+
+            const string Starter = "store.starterPack";
+            StarterPackFile starter = store.starterPack ?? new StarterPackFile();
+            Dictionary<BoosterKind, int> boosters = CountsOf(starter.boosters, $"{Starter}.boosters", leastCount: 1);
+            StoreProduct starterProduct = ProductOf(
+                StarterPackName, StoreProductKind.StarterPack, starter.productIdSuffix, starter.priceUsdCents, starter.coins, ShelfOf(boosters), Starter);
+            var starterPack = new StarterPack(
+                starterProduct, AtLeast(starter.timesPerPlayer, 1, $"{Starter}.timesPerPlayer"), AtLeast(starter.fromLevel, 1, $"{Starter}.fromLevel"));
+
+            string? repeated = packs.Append(starterProduct).GroupBy(product => product.IdSuffix).FirstOrDefault(sameId => sameId.Count() > 1)?.Key;
+            if (repeated != null)
+            {
+                throw Invalid($"store: two products have the product id suffix '{repeated}'; a store knows a product by its id alone");
+            }
+
+            return new StoreCatalogue(packs, starterPack);
         }
+
+        private static StoreProduct ProductOf(string name, StoreProductKind kind, string? idSuffix, long priceUsdCents, long coins, BoosterShelf boosters, string field)
+        {
+            if (!IsProductIdSuffix(idSuffix))
+            {
+                throw Invalid(
+                    $"{field}.productIdSuffix '{idSuffix}' must be lowercase letters, digits, '_' and '.', begin and end with a letter or a digit and hold no two dots together: what both stores take in a product id");
+            }
+
+            if (priceUsdCents < 1 || priceUsdCents > LargestPriceCents)
+            {
+                throw Invalid($"{field}.priceUsdCents {priceUsdCents} must be a price in US cents from 1 to {LargestPriceCents}");
+            }
+
+            return new StoreProduct(name, idSuffix!, kind, new UsCents(priceUsdCents), CoinsOf(AtLeast(coins, 1L, $"{field}.coins"), $"{field}.coins"), boosters);
+        }
+
+        /// <summary>The end of a product id both stores take: lowercase letters, digits, '_' and '.', a letter or a digit at each end, no two dots together.</summary>
+        public static bool IsProductIdSuffix(string? suffix) =>
+            !string.IsNullOrEmpty(suffix)
+            && suffix.All(letter => IsLowerLetterOrDigit(letter) || letter == '_' || letter == '.')
+            && IsLowerLetterOrDigit(suffix[0])
+            && IsLowerLetterOrDigit(suffix[suffix.Length - 1])
+            && !suffix.Contains("..");
+
+        private static bool IsLowerLetterOrDigit(char letter) => (letter >= 'a' && letter <= 'z') || (letter >= '0' && letter <= '9');
 
         private static Wallet StartingWalletOf(StartFile file)
         {
@@ -279,8 +342,11 @@ namespace Puzzle.Meta.Settings
             {
                 case NoRealMoneyWord:
                     return RealMoneySales.NotAvailable;
+                case StoreWord:
+                    return RealMoneySales.ThroughTheStore;
                 default:
-                    throw Invalid($"build.realMoneyPurchases is \"{build.realMoneyPurchases}\"; this build sells nothing for money, which is \"{NoRealMoneyWord}\"");
+                    throw Invalid(
+                        $"build.realMoneyPurchases is \"{build.realMoneyPurchases}\"; a build sells nothing for money (\"{NoRealMoneyWord}\") or sells the store's products through the platform's store (\"{StoreWord}\")");
             }
         }
 

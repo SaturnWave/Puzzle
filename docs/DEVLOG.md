@@ -6,6 +6,15 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
+**Gerçek satın almalar (istemci, IAP 5.4.4)**
+- Bitti (ana dal): Unity IAP 5.4.4 projede, Unity Gaming Services olmadan. Satın almanın kapalı yolu `Checkout` (boşta → soruyor → bekliyor → verildi, vazgeçildi, olmadı ya da onay bekliyor); mağaza arabirimi `IStore` (oyunda `UnityStore`, araçlarda ve testlerde `ScriptedStore`). Ödeme `WalletLedger.Deliver` ile bir kez verilir, mağazaya onay kayıttan sonra gider; arada kapanan oyun ödemeyi bir kez verir. İlerleme dosyası 6. düzende (`purchases`).
+- Mağaza: dört paket mağazanın yerel fiyatıyla; cevap yokken "…", satılmayan "Satışta değil", ulaşılamayınca "Mağaza şu anda açılamıyor" (15 sn'de bir yeniden sorar). Çırak Çantası 20. bölümden alınana kadar kesenin yerinde, "BİR KEZ" ile: ayrı panel en kısa telefonlarda ve dik iPad'de düğmeleri 38 noktanın altına indiriyordu. iOS'ta "Satın alımları geri yükle". Onay, ödeme sürüyor, satın alındı, olmadı, onay bekleniyor ve geri yükleme kartları; 35 yeni yazı 13 dilde.
+- Ekonomi paketi biçim 4 (`store` pakette), `shop.coinPacks` örnekleri kalktı, `build.realMoneyPurchases: "store"`. Bu yüzden v1 derlemesinde test modu yok (kural değişmedi); araçlar test modunu `TestBuildEconomy` ile yürüyor.
+- Sunucu yok: iade edilen altın oyuncuda kalır; silip kurunca altın paketleri gelmez, Çırak Çantası gelir (§19). IAP 5.4.4'ün satın alma olayları iOS'ta Unity'ye gider; Android'de INTERNET hâlâ silinmiş.
+- `PurchaseCheck` yeni: oyunun oturumunda betikli mağazayla bütün yollar (resimler `walk-purchase-*`), sonra oyun kipinde IAP 5.4.4 ve sahte mağaza; kaydı tutmayan depoyla düşüyor.
+- 5.457 test geçti (49'u yeni); betik testleri ve ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `PurchaseCheck`, `RotationCheck`, `PlayModeCheck`, `MusicCheck` (`-quit` olmadan) hatasız; mağaza ve kart yürüyüşleri üç ekranda bakıldı. APK yapılmadı, telefona kurulmadı.
+- Sahipte: Play Console ve App Store Connect'te uygulama, beş ürün ve test hesapları; Çırak Çantası'nın yeri; test modu için ayrı derleme isteği; gizlilik metni (sonraki aşama). Telefon testleri T470–T489.
+
 **Ödeyen oyuncular ve ürünlerin tutarları (simülatör)**
 - Bitti (ana dal): v1'in ürünleri `economy/default.json`'un yeni `store` bölümünde: kese $1.99 = 1.000, torba $4.99 = 2.750, sandık $9.99 = 6.000, hazine $19.99 = 13.000 altın; Çırak Çantası $1.99 = 1.500 altın + üç bölüm öncesi booster, oyuncu başına bir kez, 20. bölümden. Her alanın birimi ve kaynağı yazılı (fiyat sent olarak, kesirsiz). Araştırmanın tutarları korundu: simülatör değiştirmek için bir neden göstermedi.
 - Ürün kimlikleri uygulama kimliğine bağlı yer tutucular: `com.saturnwave.puzzle.coins.pouch`, `.coins.bag`, `.coins.chest`, `.coins.treasure`, `.starter.apprentice_kit`. Dosya yalnız noktadan sonrasını tutar; uygulama kimliği değişince kimlikler onu izler. Ürünleri Play Console'da ve App Store Connect'te proje sahibi açacak.

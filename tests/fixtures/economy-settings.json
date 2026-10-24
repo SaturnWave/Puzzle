@@ -138,12 +138,6 @@
   },
 
   "shop": {
-    // Packs of coins for real money; no build sells one, so a pack has no price. [placeholder]
-    "coinPacks": {
-      "small": { "coins": 500 },
-      "medium": { "coins": 1200 },
-      "large": { "coins": 2500 }
-    },
     // Sets of boosters for coins, each at the sum of this file's single prices. [placeholder]
     "boosterSets": {
       "starter": {

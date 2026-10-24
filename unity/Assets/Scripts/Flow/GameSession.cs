@@ -9,6 +9,7 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
 using Puzzle.Client.Words;
@@ -81,6 +82,16 @@ namespace Puzzle.Client.Flow
     /// set bought in the shop, a pack of coins, the coins of an ad that was watched, the day's gift) is done here by
     /// the economy's rules (<see cref="WalletLedger"/>) and saved at once; the museum is told what the rules said, and
     /// a refusal changes nothing. The row counts the coins down or up.
+    /// </para>
+    /// <para>
+    /// What the store sells for money is bought through the session's purchase course (<see cref="Checkout"/>) over
+    /// the platform's store: the store is asked to open when the session opens, and asked again when the player comes
+    /// to the shop while it could not be reached. A product pressed in the shop is asked about on a card; its green
+    /// button opens the store's own payment sheet; and a payment the store took is given by the rules
+    /// (<see cref="WalletLedger.Deliver"/>), saved at once with the payment counted, and confirmed to the store only
+    /// once the save holds it. The store's news is taken at every step, at a board too, so a payment approved while the
+    /// player plays is given then and its card waits for the museum. The museum is told where the purchase stands with
+    /// the shop. The Editor's tools have a scripted store that sells at the US prices.
     /// </para>
     /// <para>
     /// The board is told the wallet at every step too, with what the extra moves cost on the player's calendar day,
@@ -163,6 +174,12 @@ namespace Puzzle.Client.Flow
         private readonly EconomyRules _rules;
         private readonly IWallClock _clock;
 
+        /// <summary>The course of a purchase for money between the museum and the platform's store.</summary>
+        private readonly Checkout _checkout;
+
+        /// <summary>How long the session has run, by its own steps: the time the purchase's course waits by.</summary>
+        private TimeSpan _running;
+
         /// <summary>What is thrown over the board, painted once for all the stages of this session: painting it anew for every level would hold up each level's first frame.</summary>
         private readonly EffectArt _effectArt;
         private ScreenShape _screen;
@@ -212,15 +229,7 @@ namespace Puzzle.Client.Flow
         {
         }
 
-        /// <summary>Loads the player's progress and opens the game where the opening says, laid out for a screen.</summary>
-        /// <param name="levels">The levels in the order they are played.</param>
-        /// <param name="paintings">The museum's paintings, for the museum's pages and for the pieces a win gives.</param>
-        /// <param name="rules">The economy the attempts are kept by: what a win pays, what a loss costs.</param>
-        /// <param name="clock">The time the rules count lives and days by, and the attempt records tell: the device's, or a tool's fixed one.</param>
-        /// <param name="attempts">Where the record of every attempt that ends for good goes: the phone's log, or a tool's in memory.</param>
-        /// <param name="settings">Where the player's settings are kept: the phone's device file, or a tool's in memory.</param>
-        /// <param name="abilities">What the build honours on the phone, whose switches the settings card shows: <see cref="DeviceAbilities.OfThisBuild"/> in the game.</param>
-        /// <param name="cues">Where what the stages sound goes, as far as the settings let it through: the phone's speaker and vibrator in the game, <see cref="CuePlayer.Silent"/> in the tools.</param>
+        /// <summary>As the session the game opens, with the Editor's scripted store, which sells at the US prices (<see cref="ToolsStore"/>).</summary>
         /// <exception cref="ArgumentException">There is no level to play.</exception>
         /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
@@ -235,6 +244,37 @@ namespace Puzzle.Client.Flow
             ISettingsStore settings,
             DeviceAbilities abilities,
             ICuePlayer cues,
+            ScreenShape screen,
+            SessionOpening opening)
+            : this(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, ToolsStore(rules), screen, opening)
+        {
+        }
+
+        /// <summary>Loads the player's progress and opens the game where the opening says, laid out for a screen.</summary>
+        /// <param name="levels">The levels in the order they are played.</param>
+        /// <param name="paintings">The museum's paintings, for the museum's pages and for the pieces a win gives.</param>
+        /// <param name="rules">The economy the attempts are kept by: what a win pays, what a loss costs.</param>
+        /// <param name="clock">The time the rules count lives and days by, and the attempt records tell: the device's, or a tool's fixed one.</param>
+        /// <param name="attempts">Where the record of every attempt that ends for good goes: the phone's log, or a tool's in memory.</param>
+        /// <param name="settings">Where the player's settings are kept: the phone's device file, or a tool's in memory.</param>
+        /// <param name="abilities">What the build honours on the phone, whose switches the settings card shows: <see cref="DeviceAbilities.OfThisBuild"/> in the game.</param>
+        /// <param name="cues">Where what the stages sound goes, as far as the settings let it through: the phone's speaker and vibrator in the game, <see cref="CuePlayer.Silent"/> in the tools.</param>
+        /// <param name="sales">The platform's store (UnityStore in the game), or a scripted one; a build that sells nothing for money never asks it.</param>
+        /// <exception cref="ArgumentException">There is no level to play.</exception>
+        /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
+        public GameSession(
+            IReadOnlyList<LevelDefinition> levels,
+            ArtCatalogue art,
+            PaintingGallery paintings,
+            EconomyRules rules,
+            IWallClock clock,
+            IProgressStore store,
+            IAttemptLog attempts,
+            ISettingsStore settings,
+            DeviceAbilities abilities,
+            ICuePlayer cues,
+            IStore sales,
             ScreenShape screen,
             SessionOpening opening)
         {
@@ -266,6 +306,8 @@ namespace Puzzle.Client.Flow
                 SaveProgress();
             }
 
+            _checkout = new Checkout(rules.Shop.Store, rules.Shop.RealMoney, Application.identifier, sales ?? throw new ArgumentNullException(nameof(sales)));
+            _checkout.Open(_running);
             _effectArt = EffectArt.Paint();
             _front = opening switch
             {
@@ -295,6 +337,9 @@ namespace Puzzle.Client.Flow
         /// <summary>The player's progress as it stands now, saved or not.</summary>
         public PlayerProgress Progress => _progress;
 
+        /// <summary>The course of a purchase for money, as the Editor's checks look at it.</summary>
+        public Checkout Checkout => _checkout;
+
         /// <summary>True while the store does not hold the progress, because the last save failed.</summary>
         public bool HasUnsavedProgress => !_progress.Equals(_saved);
 
@@ -322,11 +367,13 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public void Advance(float deltaSeconds)
         {
+            _running += TimeSpan.FromSeconds(deltaSeconds);
             TellTheStageTheWallet();
             _front.Advance(deltaSeconds);
             KeepWhatHappened();
             DoWhatTheStageAskedFor();
             DoWhatWasAskedOfThePhone();
+            DoWhatWasAskedOfTheStore();
             KeepWhatWasPlaced();
             KeepTheTutorialStepsDone();
             PlayWhatSounded();
@@ -359,6 +406,7 @@ namespace Puzzle.Client.Flow
             KeepWhatHappened();
             DoWhatTheStageAskedFor();
             DoWhatWasAskedOfThePhone();
+            DoWhatWasAskedOfTheStore();
         }
 
         /// <summary>
@@ -442,8 +490,17 @@ namespace Puzzle.Client.Flow
         private ExtraMovesTerms ExtraMovesNow =>
             _rules.ExtraMoves.TermsFor(HandlingNow.ToPay(_rules.ExtraMoves.Price, _progress.Wallet), DayStamp.Of(_clock.Now));
 
-        /// <summary>The shop and the gift as the rules have them for the player now, on their calendar day.</summary>
-        private ShopView ShopNow => ShopView.Of(_rules, _progress.Wallet, _clock.Now, HandlingNow);
+        /// <summary>The shop and the gift as the rules have them for the player now, on their calendar day, with the store as the purchase's course has it.</summary>
+        private ShopView ShopNow => ShopView.Of(_rules, _progress.Wallet, _clock.Now, HandlingNow, _checkout.ViewFor(_progress.Purchases, LevelNumberNow));
+
+        /// <summary>The level the player stands on, counted from 1: the starter pack is offered from its level on.</summary>
+        private int LevelNumberNow => _progress.LevelIndexIn(_levels.Count) + 1;
+
+        /// <summary>
+        /// The Editor's tools' store, never the game's: it opens at once with the US prices (worded as the US store
+        /// words them, "$1.99"), takes every payment, and offers no restore.
+        /// </summary>
+        private static IStore ToolsStore(EconomyRules rules) => ScriptedStore.AtUsPrices(rules.Shop.Store, Application.identifier, offersRestore: false);
 
         /// <summary>The phone as the settings card shows it now: the settings kept, the records there are, this build's versions and marks.</summary>
         private DeviceView DeviceNow => new DeviceView(
@@ -686,6 +743,53 @@ namespace Puzzle.Client.Flow
                 {
                     asking.Hear(request, answer);
                 }
+            }
+        }
+
+        /// <summary>
+        /// What the museum asked of the store since it was last asked (a product pressed, the green button of the card
+        /// that asks, a card closed, the restore row), handed to the purchase's course in order; then the store's news
+        /// is taken, a payment given and saved and confirmed once saved, at a board too. An unreachable store is asked
+        /// again while the player is in the shop.
+        /// </summary>
+        private void DoWhatWasAskedOfTheStore()
+        {
+            (PurchaseState State, RestoreState Restore, StoreStatus Status, Coins Coins) before = (_checkout.State, _checkout.Restore, _checkout.Status, _progress.Wallet.Coins);
+            if (Museum is MuseumStage museum)
+            {
+                int levelNumber = LevelNumberNow;
+                foreach (StoreRequest request in museum.TakeWhatWasAskedOfTheStore())
+                {
+                    bool isTaken = request switch
+                    {
+                        StoreRequest.Ask ask => _checkout.Ask(ask.Product, _progress.Purchases, levelNumber),
+                        StoreRequest.Pay _ => _checkout.Pay(),
+                        StoreRequest.Decline _ => _checkout.Decline(),
+                        StoreRequest.Dismiss _ => _checkout.Dismiss(),
+                        StoreRequest.Restore _ => _checkout.RestorePurchases(),
+                        StoreRequest.DismissTheRestore _ => _checkout.DismissTheRestore(),
+                        _ => throw new InvalidOperationException($"The session does not know the request \"{request}\" of the store."),
+                    };
+                    if (!isTaken)
+                    {
+                        Debug.Log($"The purchase's course let \"{request}\" go: it stands at {_checkout.State}.");
+                    }
+                }
+
+                if (museum.Showing == Destination.Shop)
+                {
+                    _checkout.OpenAgainIfUnreachable(_running);
+                }
+            }
+
+            _checkout.Step(new KeeperOfThePurchases(this));
+
+            // The stage is told at once, as after a request of the wallet's: its card comes down in this step, and its row counts the coins.
+            bool hasMoved = !ReferenceEquals(before.State, _checkout.State) || !ReferenceEquals(before.Restore, _checkout.Restore)
+                || !ReferenceEquals(before.Status, _checkout.Status) || before.Coins != _progress.Wallet.Coins;
+            if (hasMoved)
+            {
+                TellTheStageTheWallet();
             }
         }
 
@@ -948,6 +1052,42 @@ namespace Puzzle.Client.Flow
                 }
 
                 public GameStage Board { get; }
+            }
+        }
+
+        /// <summary>The session as the purchase's course needs it: the rules give the payment, the session keeps and saves the progress after it.</summary>
+        private sealed class KeeperOfThePurchases : IPurchaseKeeper
+        {
+            private readonly GameSession _session;
+
+            public KeeperOfThePurchases(GameSession session)
+            {
+                _session = session;
+            }
+
+            public bool IsSaved => !_session.HasUnsavedProgress;
+
+            public Delivery Deliver(StoreProduct product, StorePayment payment)
+            {
+                Delivery delivery = _session._walletLedger.Deliver(_session._progress, product, payment.TransactionId);
+                switch (delivery)
+                {
+                    case Delivery.Given given:
+                        _session._progress = given.Progress;
+                        Debug.Log($"The store's {payment} gave {given.What}.");
+                        break;
+                    case Delivery.SoldOut soldOut:
+                        _session._progress = soldOut.Progress;
+                        Debug.Log($"The store's {payment} is for a product sold out to this player; nothing was given.");
+                        break;
+                    case Delivery.AlreadyGiven _:
+                        break;
+                    default:
+                        throw new InvalidOperationException($"The session does not know the delivery \"{delivery}\".");
+                }
+
+                _session.SaveProgress();
+                return delivery;
             }
         }
     }

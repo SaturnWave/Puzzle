@@ -16,7 +16,7 @@ namespace Puzzle.Meta.Settings
     [Serializable]
     public sealed class EconomyFile
     {
-        public const int CurrentFormatVersion = 3;
+        public const int CurrentFormatVersion = 4;
 
         public int formatVersion;
         public LivesFile lives = new LivesFile();
@@ -29,6 +29,7 @@ namespace Puzzle.Meta.Settings
         public StartBoostersFile startBoosters = new StartBoostersFile();
         public HintsFile hints = new HintsFile();
         public ShopFile shop = new ShopFile();
+        public StoreFile store = new StoreFile();
         public BuildFile build = new BuildFile();
     }
 
@@ -152,16 +153,8 @@ namespace Puzzle.Meta.Settings
     [Serializable]
     public sealed class ShopFile
     {
-        public CoinPackFile[] coinPacks = Array.Empty<CoinPackFile>();
         public BoosterSetFile[] boosterSets = Array.Empty<BoosterSetFile>();
         public AdForCoinsFile adForCoins = new AdForCoinsFile();
-    }
-
-    [Serializable]
-    public sealed class CoinPackFile
-    {
-        public string name = string.Empty;
-        public long coins;
     }
 
     [Serializable]
@@ -181,13 +174,50 @@ namespace Puzzle.Meta.Settings
         public int perDay;
     }
 
+    /// <summary>What the game sells for real money; in the pack since format version 4, in place of the shop's sample packs.</summary>
+    [Serializable]
+    public sealed class StoreFile
+    {
+        /// <summary>The coin packs, in the order the shop shows them.</summary>
+        public CoinPackFile[] coinPacks = Array.Empty<CoinPackFile>();
+        public StarterPackFile starterPack = new StarterPackFile();
+    }
+
+    [Serializable]
+    public sealed class CoinPackFile
+    {
+        public string name = string.Empty;
+
+        /// <summary>The end of the product's id in both stores, after the application id and a dot: "coins.pouch".</summary>
+        public string productIdSuffix = string.Empty;
+
+        /// <summary>The price point in the US store, in whole cents: 199 for $1.99.</summary>
+        public long priceUsdCents;
+        public long coins;
+    }
+
+    [Serializable]
+    public sealed class StarterPackFile
+    {
+        public string productIdSuffix = string.Empty;
+        public long priceUsdCents;
+        public long coins;
+
+        /// <summary>The boosters it gives besides the coins, each kind once and with a count of at least 1.</summary>
+        public BoosterCountFile[] boosters = Array.Empty<BoosterCountFile>();
+        public int timesPerPlayer;
+
+        /// <summary>The level, counted from 1, from which the shop offers it.</summary>
+        public int fromLevel;
+    }
+
     [Serializable]
     public sealed class BuildFile
     {
         /// <summary>"simulated": the only way this build shows an ad.</summary>
         public string ads = string.Empty;
 
-        /// <summary>"notAvailable": this build sells nothing for money.</summary>
+        /// <summary>"notAvailable": this build sells nothing for money; "store": it sells the store's products through the platform's store.</summary>
         public string realMoneyPurchases = string.Empty;
     }
 }

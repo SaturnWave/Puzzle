@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Purchases;
 using Puzzle.Meta;
 using Puzzle.Meta.Settings;
 using static Puzzle.Core.Tests.MetaSupport;
@@ -27,8 +28,10 @@ public class ShopViewTests
 
         Assert.All(view.Sets, offer => Assert.True(offer.IsCovered));
         Assert.Equal(["starter", "master"], view.Sets.Select(offer => offer.Set.Name));
-        Assert.Equal([new Coins(500), new Coins(2500)], view.CoinPacks.Select(pack => pack.Coins));
-        Assert.Equal(RealMoneySales.NotAvailable, view.RealMoney);
+        Assert.Equal([new Coins(500), new Coins(2500)], view.Store.CoinPacks.Select(pack => pack.Product.Coins));
+        Assert.IsType<StoreStatus.NotSold>(view.Store.Status);
+        Assert.All(view.Store.CoinPacks, pack => Assert.False(pack.CanBeBought));
+        Assert.Null(view.Store.StarterPack);
         Assert.Equal((new Coins(50), 2, 2, true), (view.CoinsForAnAd, view.AdsLeftToday, view.AdsPerDay, view.CanWatchAnAd));
         Assert.Equal(AdSource.Simulated, view.Ads);
 

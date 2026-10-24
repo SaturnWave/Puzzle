@@ -101,6 +101,9 @@ namespace Puzzle.Client.Screens
         /// <summary>Takes the button away for good.</summary>
         public void Remove() => _pill.Remove();
 
+        /// <summary>What the button says now.</summary>
+        public string Label => _label.text;
+
         /// <summary>Changes what the button says, where it stands; its mark and its words are centred together anew.</summary>
         public void Say(string label)
         {

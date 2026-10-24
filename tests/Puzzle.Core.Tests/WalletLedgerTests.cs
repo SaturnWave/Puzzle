@@ -59,12 +59,8 @@ public class WalletLedgerTests
     }
 
     [Fact]
-    public void A_pack_of_coins_is_not_on_sale_in_this_build_and_one_the_shop_does_not_show_is_no_request()
+    public void A_set_the_shop_does_not_sell_is_no_request()
     {
-        CoinPack shown = Rules.Shop.CoinPacks[0];
-
-        Assert.IsType<WalletRefusal.NotOnSale>(Refused(Ledger.Answer(new WalletRequest.BuyACoinPack(shown), WalletWith(0), Evening)));
-        Assert.Throws<ArgumentException>(() => Ledger.Answer(new WalletRequest.BuyACoinPack(new CoinPack("huge", new Coins(99_999))), WalletWith(0), Evening));
         Assert.Throws<ArgumentException>(() => Ledger.Answer(new WalletRequest.BuyASet(new BoosterSet("free", Coins.None, BoosterShelf.Empty.WithOneMore(BoosterKind.Shuffle))), WalletWith(0), Evening));
     }
 

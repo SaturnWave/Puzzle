@@ -68,7 +68,7 @@ test("pack_keepsTheGamesSectionsOnly_andListsWhatTheSettingsKeyByName", () => {
   const packed = packedEconomy(shippedText(), SETTINGS);
   const settings = parsedSettings(shippedText(), SETTINGS);
 
-  assert.deepEqual(Object.keys(packed), ["formatVersion", "lives", "coins", "rewards", "extraMovesOffer", "prices", "start", "boosterUnlocks", "startBoosters", "hints", "shop", "build"]);
+  assert.deepEqual(Object.keys(packed), ["formatVersion", "lives", "coins", "rewards", "extraMovesOffer", "prices", "start", "boosterUnlocks", "startBoosters", "hints", "shop", "store", "build"]);
   for (const simulatorsOwn of ["name", "players", "habit", "player", "measurement", "report", "observed"]) {
     assert.ok(Object.hasOwn(settings, simulatorsOwn), `the settings have a section ${simulatorsOwn}`);
     assert.ok(!Object.hasOwn(packed, simulatorsOwn), `the pack has no section ${simulatorsOwn}`);
@@ -80,7 +80,11 @@ test("pack_keepsTheGamesSectionsOnly_andListsWhatTheSettingsKeyByName", () => {
   assert.deepEqual(packed.start.boosters.map((held) => [held.booster, held.count]), Object.entries(settings.start.boosters));
   assert.deepEqual(packed.boosterUnlocks.levels.map((opens) => [opens.booster, opens.level]), Object.entries(settings.boosterUnlocks.levels));
   assert.deepEqual(packed.boosterUnlocks.gift.map((given) => [given.booster, given.count]), Object.entries(settings.boosterUnlocks.gift));
-  assert.deepEqual(packed.shop.coinPacks.map((coinPack) => coinPack.name), Object.keys(settings.shop.coinPacks));
+  assert.deepEqual(packed.store.coinPacks.map((coinPack) => coinPack.name), Object.keys(settings.store.coinPacks));
+  assert.deepEqual(packed.store.coinPacks.map((coinPack) => coinPack.productIdSuffix), Object.values(settings.store.coinPacks).map((coinPack) => coinPack.productIdSuffix));
+  assert.deepEqual(packed.store.starterPack.boosters.map((held) => [held.booster, held.count]), Object.entries(settings.store.starterPack.boosters));
+  assert.equal(packed.store.starterPack.fromLevel, settings.store.starterPack.fromLevel);
+  assert.ok(!Object.hasOwn(packed.shop, "coinPacks"), "the shop's sample packs are gone: the store's packs are sold");
   assert.deepEqual(packed.shop.boosterSets.map((set) => set.name), Object.keys(settings.shop.boosterSets));
   const [firstSet] = packed.shop.boosterSets;
   assert.deepEqual(firstSet.boosters.map((held) => [held.booster, held.count]), Object.entries(settings.shop.boosterSets[firstSet.name].boosters));

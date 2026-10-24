@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
@@ -212,6 +213,23 @@ public class GameWordsTests
         MuseumRoom firstRoom = museum.Room(new RoomNumber(1));
         Artwork waterLilies = firstRoom.Artworks[3];
 
+        StoreCatalogue store = rules.Shop.Store;
+        StoreProduct pack = store.CoinPacks[0];
+        StoreProduct starter = store.StarterPack.Product;
+        var purchaseCards = new List<(string What, PurchaseCardWords? Words)>
+        {
+            ("Asking", PurchaseWords.Asking(pack, new StorePrice("com.example.coins.pouch", "₺44,99", 44.99m, "TRY"))),
+            ("Pending", PurchaseWords.Of(new PurchaseState.Pending(pack))),
+            ("Deferred", PurchaseWords.Of(new PurchaseState.Deferred(pack))),
+            ("Delivered pack", PurchaseWords.Of(new PurchaseState.Delivered(pack, pack.Contents))),
+            ("Delivered one coin", PurchaseWords.Of(new PurchaseState.Delivered(pack, new Reward(new Coins(1), Array.Empty<BoosterKind>())))),
+            ("Delivered starter", PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents))),
+            ("Restore failed", PurchaseWords.Of(new RestoreState.Ended(Array.Empty<StoreProduct>(), succeeded: false), starter)),
+            ("Restore nothing", PurchaseWords.Of(new RestoreState.Ended(Array.Empty<StoreProduct>(), succeeded: true), starter)),
+            ("Restore starter", PurchaseWords.Of(new RestoreState.Ended(new[] { starter }, succeeded: true), starter)),
+        };
+        purchaseCards.AddRange(Enum.GetValues<PurchaseFailure>().Select(why => ($"Failed {why}", PurchaseWords.Of(new PurchaseState.Failed(starter, why)))));
+
         var said = new List<(string, string)>
         {
             ("MuseumWords.ShopTab", MuseumWords.ShopTab), ("MuseumWords.HomeTab", MuseumWords.HomeTab), ("MuseumWords.MapTab", MuseumWords.MapTab),
@@ -251,6 +269,10 @@ public class GameWordsTests
             ("ShopWords.HowToUse start", ShopWords.HowToUse(new Reward(Coins.None, new[] { BoosterKind.StartColorBomb }))),
             ("ShopWords.HowToUse play", ShopWords.HowToUse(new Reward(Coins.None, new[] { BoosterKind.HitRow }))),
             ("ShopWords.HowToUse mix", ShopWords.HowToUse(new Reward(Coins.None, new[] { BoosterKind.HitRow, BoosterKind.StartColorBomb }))),
+            ("PurchaseWords.StarterOnce", PurchaseWords.StarterOnce),
+            ("PurchaseWords.PriceComing", PurchaseWords.PriceComing), ("PurchaseWords.PackNotOnSale", PurchaseWords.PackNotOnSale),
+            ("PurchaseWords.StoreUnreachable", PurchaseWords.StoreUnreachable), ("PurchaseWords.Restore", PurchaseWords.Restore),
+            ("PurchaseWords.Buy", PurchaseWords.Buy), ("PurchaseWords.Decline", PurchaseWords.Decline),
             ("WalletWords.Full", WalletWords.Full), ("WalletWords.LivesTitle", WalletWords.LivesTitle), ("WalletWords.AllLivesThere", WalletWords.AllLivesThere),
             ("WalletWords.PlayWhenALifeComes", WalletWords.PlayWhenALifeComes), ("WalletWords.TesterModePill", WalletWords.TesterModePill),
             ("WalletWords.UnlimitedLives", WalletWords.UnlimitedLives), ("WalletWords.TesterModeOn", WalletWords.TesterModeOn), ("WalletWords.NoLifeIsLost", WalletWords.NoLifeIsLost),
@@ -289,7 +311,21 @@ public class GameWordsTests
             ("ResultWords.TakeTheMovesForCoins", ResultWords.TakeTheMovesForCoins(terms)), ("ResultWords.TakeTheMovesForCoins covered", ResultWords.TakeTheMovesForCoins(coinsCoverIt)),
             ("ResultWords.TakeTheMovesForAnAd", ResultWords.TakeTheMovesForAnAd(terms)), ("ResultWords.PriceOfTheMoves", ResultWords.PriceOfTheMoves(terms)),
             ("ResultWords.CoinsWon", ResultWords.CoinsWon(new Coins(45))),
+            ("SettingsWords.BuildLine test build", SettingsWords.BuildLine(rules.Ads, RealMoneySales.NotAvailable)),
         };
+
+        foreach (StoreProduct product in store.Products)
+        {
+            said.Add(($"PurchaseWords.NameOf {product.Name}", PurchaseWords.NameOf(product)));
+        }
+
+        foreach ((string what, PurchaseCardWords? words) in purchaseCards)
+        {
+            PurchaseCardWords card = words ?? throw new InvalidOperationException($"The purchase card {what} says nothing.");
+            said.Add(($"PurchaseWords {what} title", card.Title));
+            said.Add(($"PurchaseWords {what} first line", card.FirstLine));
+            said.Add(($"PurchaseWords {what} second line", card.SecondLine));
+        }
 
         foreach (DeviceSetting setting in Enum.GetValues<DeviceSetting>())
         {

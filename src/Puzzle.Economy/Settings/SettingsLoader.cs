@@ -40,6 +40,7 @@ public static class SettingsLoader
     private const string NameField = "name";
     private const string SimulatedAdsWord = "simulated";
     private const string NoRealMoneyWord = "notAvailable";
+    private const string StoreWord = "store";
 
     /// <summary>
     /// No amount of coins in a settings file may be above this. It is far above any price a game has and far below
@@ -383,8 +384,6 @@ public static class SettingsLoader
             {
                 StartBoostersPerAttempt = file.StartBoosters.PerAttempt,
                 Hints = HintsOf(file.Hints),
-                CoinPacks = ByPlainName(file.Shop.CoinPacks, "shop.coinPacks")
-                    .ToDictionary(pack => pack.Key, pack => CoinsOf(AtLeast(pack.Value.Coins, 1L, $"shop.coinPacks.{pack.Key}.coins"), $"shop.coinPacks.{pack.Key}.coins")),
                 BoosterSets = ByPlainName(file.Shop.BoosterSets, "shop.boosterSets")
                     .ToDictionary(set => set.Key, set => BoosterSetOf(set.Value, $"shop.boosterSets.{set.Key}")),
                 CoinsForAnAd = CoinsOf(file.Shop.AdForCoins.Coins, "shop.adForCoins.coins"),
@@ -392,9 +391,13 @@ public static class SettingsLoader
                 Ads = file.Build.Ads == SimulatedAdsWord
                     ? AdsInTheBuild.Simulated
                     : throw Invalid($"build.ads is '{file.Build.Ads}'; the only way a build shows an ad is '{SimulatedAdsWord}'"),
-                RealMoneyPurchases = file.Build.RealMoneyPurchases == NoRealMoneyWord
-                    ? RealMoneyInTheBuild.NotAvailable
-                    : throw Invalid($"build.realMoneyPurchases is '{file.Build.RealMoneyPurchases}'; a build sells nothing for money, which is '{NoRealMoneyWord}'"),
+                RealMoneyPurchases = file.Build.RealMoneyPurchases switch
+                {
+                    NoRealMoneyWord => RealMoneyInTheBuild.NotAvailable,
+                    StoreWord => RealMoneyInTheBuild.ThroughTheStore,
+                    _ => throw Invalid(
+                        $"build.realMoneyPurchases is '{file.Build.RealMoneyPurchases}'; a build sells nothing for money ('{NoRealMoneyWord}') or sells the store's products through the platform's store ('{StoreWord}')"),
+                },
             };
         }
 
@@ -859,16 +862,9 @@ public static class SettingsLoader
 
     private sealed class ShopFile
     {
-        public required Dictionary<string, CoinPackFile> CoinPacks { get; init; }
-
         public required Dictionary<string, BoosterSetFile> BoosterSets { get; init; }
 
         public required AdForCoinsFile AdForCoins { get; init; }
-    }
-
-    private sealed class CoinPackFile
-    {
-        public required long Coins { get; init; }
     }
 
     private sealed class BoosterSetFile

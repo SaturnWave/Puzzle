@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
 using Puzzle.Meta;
 using Puzzle.Museum;
@@ -26,12 +27,6 @@ namespace Puzzle.Client.Flow
             public Coins Missing { get; }
 
             public override string ToString() => $"{Missing} coins short";
-        }
-
-        /// <summary>The thing is sold for real money, and this build sells nothing for money.</summary>
-        public sealed class NotOnSale : WalletRefusal
-        {
-            public override string ToString() => "not on sale in this build";
         }
 
         /// <summary>The day's ads for coins are used up.</summary>
@@ -91,14 +86,60 @@ namespace Puzzle.Client.Flow
         }
     }
 
+    /// <summary>What delivering a payment of the store came to. A closed set (private constructor).</summary>
+    public abstract class Delivery
+    {
+        private Delivery()
+        {
+        }
+
+        /// <summary>Given: the progress with the product in the wallet and the payment counted, and what the player received.</summary>
+        public sealed class Given : Delivery
+        {
+            public Given(PlayerProgress progress, Reward what)
+            {
+                Progress = progress ?? throw new ArgumentNullException(nameof(progress));
+                What = what ?? throw new ArgumentNullException(nameof(what));
+            }
+
+            public PlayerProgress Progress { get; }
+
+            public Reward What { get; }
+
+            public override string ToString() => $"given {What}";
+        }
+
+        /// <summary>The payment was given (or seen) before: nothing changes. The store told of it again.</summary>
+        public sealed class AlreadyGiven : Delivery
+        {
+            public override string ToString() => "given already";
+        }
+
+        /// <summary>
+        /// The product is sold out to this player (the starter pack bought as often as it is sold): nothing is given,
+        /// and the progress counts the payment as seen, so it is answered so once.
+        /// </summary>
+        public sealed class SoldOut : Delivery
+        {
+            public SoldOut(PlayerProgress progress)
+            {
+                Progress = progress ?? throw new ArgumentNullException(nameof(progress));
+            }
+
+            public PlayerProgress Progress { get; }
+
+            public override string ToString() => "sold out to this player";
+        }
+    }
+
     /// <summary>
     /// What the requests of the museum's pages and of the board do to the player's wallet, by the rules of the
-    /// economy and at the time of the player's clock: a booster or a set bought for its price, a pack of coins that a
-    /// test build does not sell, the coins of an ad that was watched, the daily reward; and the reward of a painting,
-    /// given in the same change as the piece that completes it. A request the rules refuse changes nothing and says
-    /// why. In the tester mode (<see cref="WalletHandling.Unlimited"/>) a booster or a set is bought by the same rules
-    /// and its price never leaves the coins; a pack, an ad and the daily reward are as ever. Whoever holds the progress
-    /// keeps what comes back and saves it at once.
+    /// economy and at the time of the player's clock: a booster or a set bought for its price, the coins of an ad that
+    /// was watched, the daily reward; the reward of a painting, given in the same change as the piece that completes
+    /// it; and what the store was paid for, given once per payment (<see cref="Deliver"/>). A request the rules refuse
+    /// changes nothing and says why. In the tester mode (<see cref="WalletHandling.Unlimited"/>) a booster or a set is
+    /// bought by the same rules and its price never leaves the coins; an ad and the daily reward are as ever. Whoever
+    /// holds the progress keeps what comes back and saves it at once.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class WalletLedger
@@ -111,11 +152,11 @@ namespace Puzzle.Client.Flow
         }
 
         /// <summary>The rules' answer to a request made at <paramref name="now"/> on the player's clock, for a wallet held as the rules have it.</summary>
-        /// <exception cref="ArgumentException">A set or a pack is asked for that is not the shop's: a price comes from the settings, never from a caller.</exception>
+        /// <exception cref="ArgumentException">A set is asked for that is not the shop's: a price comes from the settings, never from a caller.</exception>
         public WalletAnswer Answer(WalletRequest request, Wallet wallet, DateTimeOffset now) => Answer(request, wallet, now, WalletHandling.Normal);
 
         /// <summary>The rules' answer to a request made at <paramref name="now"/> on the player's clock, for a wallet held as the client holds it.</summary>
-        /// <exception cref="ArgumentException">A set or a pack is asked for that is not the shop's: a price comes from the settings, never from a caller.</exception>
+        /// <exception cref="ArgumentException">A set is asked for that is not the shop's: a price comes from the settings, never from a caller.</exception>
         public WalletAnswer Answer(WalletRequest request, Wallet wallet, DateTimeOffset now, WalletHandling handling)
         {
             DayStamp today = DayStamp.Of(now);
@@ -127,13 +168,6 @@ namespace Puzzle.Client.Flow
                 case WalletRequest.BuyASet buy:
                     Purchase set = handling.Buy(buy.Set.Price, wallet, paying => _rules.Shop.Buy(buy.Set, paying));
                     return AnswerTo(set, new Reward(Coins.None, EachOf(buy.Set.Boosters)));
-                case WalletRequest.BuyACoinPack buy:
-                    if (!_rules.Shop.CoinPacks.Contains(buy.Pack))
-                    {
-                        throw new ArgumentException($"The shop does not show the {buy.Pack}.", nameof(request));
-                    }
-
-                    return AnswerTo(_rules.Shop.Buy(buy.Pack), new Reward(buy.Pack.Coins, Array.Empty<BoosterKind>()));
                 case WalletRequest.CoinsForAnAd _:
                     return _rules.Shop.CoinsForAnAd(wallet, today) switch
                     {
@@ -175,6 +209,39 @@ namespace Puzzle.Client.Flow
                 : placed;
         }
 
+        /// <summary>
+        /// A payment the store took for a product, put into the progress once: the product's coins and boosters into
+        /// the wallet and the payment into the purchases, in one change, so one save holds both and a payment the
+        /// store tells of again finds itself given (<see cref="Delivery.AlreadyGiven"/>). The starter pack bought as
+        /// often as it is sold gives nothing more (<see cref="Delivery.SoldOut"/>). Nothing here takes a life or
+        /// touches a level: what is bought for money never changes difficulty. The tester mode plays no part: a
+        /// build that sells for money has none.
+        /// </summary>
+        /// <exception cref="ArgumentException">The product is not the store's: what a payment gives comes from the settings, never from a caller.</exception>
+        public Delivery Deliver(PlayerProgress progress, StoreProduct product, string transactionId)
+        {
+            StoreCatalogue store = _rules.Shop.Store;
+            if (!store.Products.Contains(product))
+            {
+                throw new ArgumentException($"The store does not sell the {product}.", nameof(product));
+            }
+
+            PurchasesMade made = progress.Purchases;
+            if (made.HasSeen(transactionId))
+            {
+                return new Delivery.AlreadyGiven();
+            }
+
+            bool isSoldOut = product.Kind == StoreProductKind.StarterPack && made.TimesBought(product.IdSuffix) >= store.StarterPack.TimesPerPlayer;
+            if (isSoldOut)
+            {
+                return new Delivery.SoldOut(progress.WithPurchases(made.WithSeen(transactionId)));
+            }
+
+            Reward what = product.Contents;
+            return new Delivery.Given(progress.WithWallet(what.AddedTo(progress.Wallet)).WithPurchases(made.WithDelivered(product.IdSuffix, transactionId)), what);
+        }
+
         /// <summary>What completing a painting will give the player, for its jigsaw to show; nothing for a painting that is whole already.</summary>
         public Reward? RewardForCompleting(PlayerProgress progress, PaintingNumber painting) =>
             progress.Museum.IsComplete(painting) ? null : _rules.PaintingCompleted.NextFor(progress.Wallet);
@@ -183,7 +250,6 @@ namespace Puzzle.Client.Flow
         {
             Purchase.Bought done => new WalletAnswer.Received(done.Wallet, bought),
             Purchase.NotEnoughCoins notEnough => new WalletAnswer.Refused(new WalletRefusal.CoinsShort(notEnough.Missing)),
-            Purchase.NotOnSale _ => new WalletAnswer.Refused(new WalletRefusal.NotOnSale()),
             _ => throw new InvalidOperationException("A purchase ended in a way the ledger does not know."),
         };
 
