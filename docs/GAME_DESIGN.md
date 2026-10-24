@@ -1083,6 +1083,7 @@ Açık nokta: 10 sütunlu tahtada hücre telefonda yaklaşık 36 pt; dokunma hed
 | Müzenin durumu ve kesimler | `... -executeMethod Puzzle.Client.EditorTools.MuseumReport.Run` |
 | Bitiş şöleninin kareleri | `... -executeMethod Puzzle.Client.EditorTools.FinaleStory.Run -finaleLevels 40 -finaleLeft 3,12,30 -finaleSize 1080x2340` (kalan hamle sayısı, ekran boyu, atlama anı seçilir; görüntüler `out/unity/shots/finale`) |
 | Bitiş şöleninin denetimi | `... -executeMethod Puzzle.Client.EditorTools.FinaleCheck.Run` (sonuna kadar izleme, dokunuşla ve geri tuşuyla atlama, şölensiz kazanma ve kaybetme, hata durumunda kartın yine gelmesi) |
+| Koleksiyonda bellek denetimi | `... -executeMethod Puzzle.Client.EditorTools.CollectionMemoryCheck.Run` (20 oda beş kez gezilir; bellekte aynı anda 25'ten fazla resim olmaz, gezintiden gezintiye hiçbir şey artmaz; sayılar `out/unity/collection-memory.json`) |
 | Yazı örnek föyü | `... -executeMethod Puzzle.Client.EditorTools.LetteringSheet.Run` (on bir yazı stili kendi zemininde, Türkçe harflerle; `out/unity/shots/lettering-sheet-2x.png`) |
 | Çizim föyü | `... -executeMethod Puzzle.Client.EditorTools.ArtSheet.Run` (kataloğun bütün çizimleri duvar, krem ve ahşap üstünde; `art-sheet-2x.png`) |
 | Ortak parçaların föyü | `... -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run -screens controls -screenSizes 1080x2340` (düğmeler ve diskler; duvar, krem kart ve ahşap üstünde) |
@@ -1434,6 +1435,34 @@ Bu kararlarla 10. aşama başladı.
   - Eşik sayfa kaydırmasınınkiyle aynıdır (Android'in kendi eşiği kadar); kartlarda kartın kendi ölçüsünde ölçülür.
   - Bütün kartlar, sayfalar, tahta ve yapboz düğmeleri için geçerli. Yapı: `TapSlop` (Unity'siz, testli), `PressSet`, `PageSwipe`.
 - **Doğrulama:** 4.111 test. Unity'de bütün denetimler ve yeni "wayback" yürüyüşü (tr, en, ko) hatasız; yürüyüş eski kodda kırılıyor. Telefon testleri T410–T414; T43'ün beklenen sonucu güncellendi.
+
+**Koleksiyonda bellek (2026-10-24, A42/4).**
+
+- **Bulgu:** 23 Ekim telefon turunda koleksiyonun 20 odası gezilince oyunun belleği 401 MB'tan 649 MB'a çıktı. Neden: her odanın resimleri `Resources` ile yükleniyor, oda kaldırılınca bırakılmıyordu. Yalnızca sahne değişince (tahtaya ya da yapboza geçişte) boşaltılıyordu. Bir gezintide müzenin 100 resminin hepsi bellekte kalıyordu; telefonda resim başına yaklaşık 2,5 MB (ASTC 6x6, 2048 piksel, mipmap'li). Ağlar, malzemeler ve sahne nesneleri zaten temizleniyordu.
+- **Düzeltme:** `PictureShelf` (Unity'siz, testli) her resmi bir kez yükler. Resmi gösteren her şey onu tutar ve kaldırılınca bırakır (`PaintingLook` artık `IDisposable`). Hiçbir şeyin tutmadığı resimlerden yalnızca son bırakılan 10'u (iki oda) bellekte kalır; fazlası, en eskisinden başlayarak `Resources.UnloadAsset` ile boşaltılır. Tutulan bir resim hiç boşaltılmaz; sahne değişince kalan 10 da boşaltılır.
+  - Resmi tutanlar: koleksiyonun odaları ve yakından bakılan tablo, salon ve plaketteki küçük resimler, haritanın iğneleri ve kartı, yapboz, tahtanın ödül resmi ve sonuç kartı.
+- **Oyuncunun gördüğü:** değişiklik yok. Son iki odaya dönmek hiçbir şey yüklemez; daha uzaktaki bir oda, ilk açılışındaki gibi yüklenir.
+- **Denetim:** `CollectionMemoryCheck`. Son odadaki bir oyuncu için koleksiyonu 20. odadan 1.'ye ve geri gezer: üç kez düğmelerle, iki kez plakette kaydırarak. Her dönüşte ve parmak inikken bellekteki resimleri sayar. 25'ten fazla resim ya da ilk gezintiden sonra artan bir sayı (resim, doku, ağ, malzeme, sahne nesnesi) hatadır.
+  - Eski kodda: aynı anda 100 resim, denetim kırılıyor. Yeni kodda: en çok 20, her gezinti sonunda 15 resim; ağ, malzeme ve nesne sayıları gezintiden gezintiye aynı.
+- **Doğrulama:** 4.122 test (11'i yeni). Ekonomi denetimi temiz. Unity'de bütün denetimler hatasız; koleksiyonun görüntüleri değişmedi. Telefon testleri T420–T425.
+
+**Giriş sayfası (2026-10-24).**
+
+- **Ne:** oyun her soğuk açılışta salondan önce giriş sayfasıyla açılır. Tür proje sahibinin seçimi ("logo ve dokunarak başla"); çizim tasarım tuvalindeki EntryTR, gece mavisi yerine F simgesine uyarlandı. Oyun arka plandan dönünce sayfa çıkmaz, oyun kaldığı yerden sürer.
+- **Görünüm:** simgenin krem zemini (#FFF8E6 → #F6E4BC → #D9B77A) ve üstünde galerinin damaskı kahverengi baskıyla; yukarıdan iki ışık huzmesi, paletin arkasında beyaz ışıma ve altında sıcak bir gölge.
+  - Ortada simgenin paleti ve fırçası (`art/icon/entry-logo-1024.png`: simgenin çizimi tam boyunda, saydam zeminde). Yanında paletteki üç taş dışındaki dört taş (mor, turkuaz, pembe, yeşil) yavaşça süzülür.
+  - Altında yaldızlı "Müze Yapbozu" koyu kahve çerçeve ve gölgeyle, "Tabloları onar, müzeyi yeniden aç" ve "ÇALIŞMA ADI" rozeti: başlık hâlâ çalışma adı.
+  - Altta yaldızlı çubuk (koyu kuyu, yeşil dolgu, üstünden geçen parıltı) ve "Yükleniyor… %45"; en altta "SaturnWave" ile "Sürüm 1.0 · test sürümü". Müzik bu sayfada başlar.
+- **Çubuk gerçek işi izler:** bölümler, müze kataloğu, ekonomi ve oturum (efektleri çizer, salonu ve odanın beş resmini hazırlar). Her karede bir adım yapılır; ilk adım sayfanın ilk karesi çizildikten sonra.
+  - Adımların payı Editör'de ölçülen sürelerdir (200, 10, 50, 650 ms). Telefonda her adım süresiyle günlüğe yazılır ("Start-up: … took … ms").
+  - Çubuk işin önüne geçmez, geri gitmez ve 1,2 saniyeden kısa sürede dolmaz: hızlı telefonda da dolduğu görülür, yanıp sönmez. Dolunca 0,15 sn durur ve 0,3 sn'de yerini nefes alan "Başlamak için dokun"a bırakır.
+- **Dokunuş:** hazır sayfada herhangi bir yere dokunmak sayfayı 0,22 sn'de karartır; salon, bir bölümden dönüşteki gibi o karanlıktan aydınlanır. Salon sayfa gösterilirken arkada, karanlıkta açılmıştır: öğretici, hediyeler ve bölüm düğmesi bugünkü gibi. Çubuk dolmadan dokunuş bir şey yapmaz; kaydırma dokunuş sayılmaz.
+- **Geri tuşu:** salondaki "Oyundan çıkılsın mı?" kartının aynısını indirir, çubuk dolarken de. "Vazgeç" ya da yeniden geri kartı kaldırır; "Çık" oyunu kapatır (oturum açıldıysa önce kaydeder).
+  - Gerekçe: giriş sayfasının da salon gibi daha geri bir yeri yok; aynı kural, kenar hareketiyle yanlışlıkla çıkılmasın diye. iOS'ta kart hiç çıkmaz.
+- **Ekranlar:** sayfa tasarımın ölçeğinde çizilir: dar dış ekranda genişliğe göre (%92), geniş iç ekranda tasarımın kendi boyunda; logo resmindeki pikselden fazlasıyla çizilmez. Kamera çentiğinin ve sistem çubuklarının altına bir şey konmaz; artan yükseklik paletin üstüne, rozet ile çubuk arasına ve çubuk ile alt satır arasına paylaşılır.
+- **Yapı:** `EntryStage` (sayfa; salonu görmesin diye sahnenin uzağında kurulur), `EntryLayout`, `LoadingBar`, `StartUpWork` (son üçü Unity'siz, testli) ve `GameRoot` (adımlar, geçiş, ses). Yeni yazı stilleri `GiltTitle` ve `OnCream`; çizimler `entry-bar` ve `entry-bar-fill`. 7 yeni yazı 13 dilde; "SaturnWave" her dilde aynı.
+- **Bilinen:** oturumu açan adım bir kareyi tutar (Editör'de yaklaşık 0,5 sn); o arada taşlar ve parıltı durur. Telefondaki süre günlükten okunacak, gerekirse resimler kare kare yüklenir. Alt satırdaki "test sürümü" mağaza sürümünde değişmeli.
+- **Doğrulama:** 4.153 test (31'i yeni). Ekonomi denetimi temiz. Unity'de `PlayModeCheck` (giriş sayfası → salon) ve `MusicCheck` (giriş → salon → bölüm → salon) hatasız; sayfanın görüntüleri iki ekranda, güvenli alanlarla ve dört dilde (`ScreenShots -screens entry`). Telefon testleri T430–T436.
 
 ## 24. Bölüm bankası ve derleyici
 

@@ -123,6 +123,9 @@ namespace Puzzle.Client.Gallery
         private readonly List<Transform> _exhibits = new List<Transform>();
         private readonly List<(Transform Sparkle, float Size, float Phase)> _sparkles = new List<(Transform, float, float)>();
         private readonly List<LoosePiece> _pieces = new List<LoosePiece>();
+
+        /// <summary>The painting the pieces won belong to: the alcove holds its picture while it stands; nothing for an alcove of no pieces.</summary>
+        private PaintingLook? _look;
         private SpriteRenderer? _winLight;
 
         private ResultAlcove(Transform card, ArtCatalogue art)
@@ -206,6 +209,8 @@ namespace Puzzle.Client.Gallery
             {
                 piece.Dispose();
             }
+
+            _look?.Dispose();
         }
 
         private void StandTheStar(ArtCatalogue art, EffectArt effects)
@@ -217,8 +222,10 @@ namespace Puzzle.Client.Gallery
         }
 
         /// <summary>The jigsaw pieces a won level gave, side by side on the shelf, centred as a row, each as large as its share of the row allows.</summary>
+        /// <param name="look">The painting the pieces belong to; the alcove takes it over, and disposes of it with itself.</param>
         private void StandThePieces(PieceReward reward, PaintingLook look, ArtCatalogue art, EffectArt effects)
         {
+            _look = look;
             int count = reward.Pieces.Count;
             var box = count == 1
                 ? LonePieceBox

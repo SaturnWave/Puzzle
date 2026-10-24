@@ -86,6 +86,10 @@ namespace Puzzle.Client.EditorTools
             new Specimen(LetteringStyle.OnDarkTeal, DarkTeal, Lettering.CreamOnTeal, typicalSize: 11.5f, new Sample("Oda 2", 11.5f), new Sample("Oda 3", 11.5f)),
             new Specimen(LetteringStyle.OnWood, Wood, Lettering.OnDark, typicalSize: 13f,
                 new Sample("Sürükle ya da iki komşu taşa sırayla dokun", 13f), new Sample("2. deneme · taşlar yeniden dizildi", 13f)),
+
+            // The entry page's cream (EntryTR): the gilt title in one of its colours (the page draws it in a gradient), and the line that pulses.
+            new Specimen(LetteringStyle.GiltTitle, Cream, Brass, typicalSize: 44f, new Sample("Müze Yapbozu", 44f), new Sample("Museum Puzzle", 40f)),
+            new Specimen(LetteringStyle.OnCream, Cream, Color.white, typicalSize: 24f, new Sample("Başlamak için dokun", 24f), new Sample("Tap to start", 24f)),
         };
 
         public static void Run()

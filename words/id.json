@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Pilih ini untuk mulai dengan palet pelangi"},
     {"id":"TutorialStartExtraMoves","text":"Pilih ini untuk mulai dengan {moves} langkah tambahan"},
     {"id":"BoosterCardTouchToClose","text":"Ketuk untuk menutup"},
-    {"id":"TutorialLongPress","text":"Tahan sebuah booster untuk melihat lagi fungsinya"}
+    {"id":"TutorialLongPress","text":"Tahan sebuah booster untuk melihat lagi fungsinya"},
+    {"id":"EntryTitle","text":"Puzzle Museum"},
+    {"id":"EntryWorkingTitle","text":"JUDUL SEMENTARA"},
+    {"id":"EntrySubtitle","text":"Pulihkan lukisan, buka kembali museum"},
+    {"id":"EntryLoading","text":"Memuat… {percent}%"},
+    {"id":"EntryTapToStart","text":"Ketuk untuk mulai"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Versi {version} · versi uji"}
   ]
 }

@@ -14,7 +14,12 @@ namespace Puzzle.Client.Canvases
     /// and the jigsaw it is cut into. A place no work is chosen for yet is a blank canvas of ordinary proportions
     /// with a cut of its own, so the room it hangs in can be shown all the same.
     /// </summary>
-    public sealed class PaintingLook
+    /// <remarks>
+    /// A look from <see cref="PaintingGallery.LookOf"/> holds its picture in memory: whoever asked for it owns it and
+    /// disposes of it when it takes down what shows the picture; whatever it hands the look to (a canvas, a frame, a
+    /// loose piece) only borrows it. Once the look is disposed of, its picture may be unloaded.
+    /// </remarks>
+    public sealed class PaintingLook : IDisposable
     {
         /// <summary>The proportions of a canvas whose painting is not chosen yet, or whose picture is missing: a common landscape format.</summary>
         private const float BlankCanvasAspect = 4f / 3f;
@@ -32,16 +37,21 @@ namespace Puzzle.Client.Canvases
 
         private readonly float? _recordedAspect;
 
+        /// <summary>What keeps the picture in memory while the look is shown; nothing for a picture nobody unloads.</summary>
+        private readonly IDisposable? _hold;
+
         /// <param name="recordedAspect">
         /// The picture's true width over height when the game's size list knows it; nothing for a picture that comes
         /// from elsewhere, whose texture then has the picture's own proportions.
         /// </param>
-        public PaintingLook(PaintingNumber number, Artwork? artwork, Texture2D? picture, float? recordedAspect = null)
+        /// <param name="hold">What keeps the picture in memory until the look is disposed of; nothing for a picture nobody unloads.</param>
+        public PaintingLook(PaintingNumber number, Artwork? artwork, Texture2D? picture, float? recordedAspect = null, IDisposable? hold = null)
         {
             Number = number;
             Artwork = artwork;
             Picture = picture;
             _recordedAspect = recordedAspect;
+            _hold = hold;
         }
 
         public PaintingNumber Number { get; }
@@ -91,29 +101,44 @@ namespace Puzzle.Client.Canvases
             _cutsKept.Add(made);
             return made;
         }
+
+        /// <summary>Lets go of the picture: nothing shows it through this look any more. A second call does nothing.</summary>
+        public void Dispose() => _hold?.Dispose();
     }
 
     /// <summary>
     /// The museum's paintings for the screens that draw them: the catalogue, and the pictures it names, each loaded
-    /// when a screen first asks for it. The pictures are the game's own resources; Unity keeps one copy of each
-    /// however often it is asked for, and whoever closes the screens that showed them tells Unity to let go of the
-    /// ones no longer used (<see cref="LetGoOfUnusedPictures"/>), so a hundred paintings never sit in memory together.
+    /// when a screen first asks for it and held while a look shows it (<see cref="LookOf"/>). Of the pictures nothing
+    /// shows any more the gallery keeps the last few loaded (<see cref="PicturesKeptUnheld"/>), so a room the player
+    /// turns back to hangs at once, and unloads the others; whoever closes the screens unloads the kept ones too
+    /// (<see cref="LetGoOfUnusedPictures"/>). However long a player browses, only the pictures on the screen and the
+    /// few kept sit in memory, never the museum's hundred (A42).
     /// </summary>
     public sealed class PaintingGallery
     {
-        private readonly Func<Artwork, Texture2D?> _pictureOf;
+        /// <summary>
+        /// How many pictures that nothing shows stay loaded: the two rooms the player left last, so turning back to
+        /// them, or swiping to and fro between three rooms, loads nothing. About 2.5 MB each on a phone (ASTC 6x6,
+        /// 2048 pixels, with mipmaps).
+        /// </summary>
+        public const int PicturesKeptUnheld = 2 * MuseumPlan.PaintingsPerRoom;
+
+        private readonly PictureShelf<Artwork, Texture2D> _pictures;
 
         /// <summary>The true sizes of the game's own pictures; absent when the pictures come from elsewhere.</summary>
         private readonly PaintingSizes? _sizes;
 
         /// <param name="pictureOf">
         /// Where a work's picture comes from; nothing for the game's own resources. The Editor's picture commands
-        /// give another source to show the screens with pictures the game does not carry yet.
+        /// give another source to show the screens with pictures the game does not carry yet; that source keeps its
+        /// pictures, and the gallery never unloads them.
         /// </param>
         public PaintingGallery(MuseumCatalogue catalogue, Func<Artwork, Texture2D?>? pictureOf = null)
         {
             Catalogue = catalogue;
-            _pictureOf = pictureOf ?? (artwork => Resources.Load<Texture2D>(MuseumPack.PictureResourceOf(artwork)));
+            _pictures = pictureOf == null
+                ? new PictureShelf<Artwork, Texture2D>(PicturesKeptUnheld, artwork => Resources.Load<Texture2D>(MuseumPack.PictureResourceOf(artwork)), Resources.UnloadAsset)
+                : new PictureShelf<Artwork, Texture2D>(PicturesKeptUnheld, pictureOf, _ => { });
             _sizes = pictureOf == null ? PaintingSizes.LoadPacked() : null;
         }
 
@@ -123,20 +148,35 @@ namespace Puzzle.Client.Canvases
         /// <exception cref="CatalogueFormatException">The catalogue is missing or is not a valid catalogue.</exception>
         public static PaintingGallery OfThePackedMuseum() => new PaintingGallery(MuseumPack.LoadPacked());
 
+        /// <summary>
+        /// A painting as a screen draws it, holding its picture in memory until the look is disposed of: the caller
+        /// owns the look, and disposes of it when it takes down what shows it.
+        /// </summary>
         public PaintingLook LookOf(PaintingNumber number)
         {
             Artwork? artwork = Catalogue.ArtworkAt(number);
-            Texture2D? picture = artwork == null ? null : _pictureOf(artwork);
-            if (artwork != null && picture == null)
+            if (artwork == null)
+            {
+                return new PaintingLook(number, artwork: null, picture: null);
+            }
+
+            PictureShelf<Artwork, Texture2D>.PictureHold hold = _pictures.Hold(artwork);
+            if (hold.Picture == null)
             {
                 Debug.LogError($"The game carries no picture \"{artwork.ImageFile}\" for painting {number} ({artwork.Id}); its canvas is shown blank.");
             }
 
-            float? recordedAspect = artwork == null ? null : _sizes?.AspectOf(artwork.ImageFile);
-            return new PaintingLook(number, artwork, picture, recordedAspect);
+            return new PaintingLook(number, artwork, hold.Picture, _sizes?.AspectOf(artwork.ImageFile), hold);
         }
 
-        /// <summary>Frees the pictures that nothing on any screen shows any more.</summary>
-        public static void LetGoOfUnusedPictures() => Resources.UnloadUnusedAssets();
+        /// <summary>
+        /// Unloads the pictures that nothing on any screen shows any more, the few kept for a quick way back too, and
+        /// lets Unity free whatever else the closed screens used: what a change of stage does, in the dark.
+        /// </summary>
+        public void LetGoOfUnusedPictures()
+        {
+            _pictures.LetGoOfUnheld();
+            Resources.UnloadUnusedAssets();
+        }
     }
 }

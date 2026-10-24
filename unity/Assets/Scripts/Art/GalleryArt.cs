@@ -376,6 +376,13 @@ namespace Puzzle.Client.Art
 
         /// <summary>The dark chevron pointing up on a card's step button, in a box of 12 points; turned over it points down. Its pivot is its middle.</summary>
         MapGlyphChevron,
+
+        // The entry page (EntryTR).
+        /// <summary>The gilt bar that fills while the game starts, 22 points high around a dark well 16 high; its middle stretches sideways to any width. Its pivot is the middle of the bar.</summary>
+        EntryBar,
+
+        /// <summary>The green that runs in that well, 16 points high; its middle stretches sideways to how far the bar has filled. Its pivot is the middle of the green.</summary>
+        EntryBarFill,
     }
 
     /// <summary>
@@ -418,5 +425,14 @@ namespace Puzzle.Client.Art
 
         /// <summary>Cream lettering on the gallery's dark teal where no plate lies under it: a place that is not chosen, a locked room's name.</summary>
         OnDarkTeal,
+
+        /// <summary>
+        /// The game's title on the entry page (EntryTR): the serif of titles, set large in gilt (a gradient of its own,
+        /// the line's colours) in a dark brown outline with a hard shade under it, so it reads on the page's cream.
+        /// </summary>
+        GiltTitle,
+
+        /// <summary>White lettering on the entry page's cream ("Başlamak için dokun"): Paytone One in a dark brown outline.</summary>
+        OnCream,
     }
 }

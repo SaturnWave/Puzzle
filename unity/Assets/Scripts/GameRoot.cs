@@ -1,25 +1,33 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Play;
+using Puzzle.Client.Screens;
 using Puzzle.Client.Sound;
+using Puzzle.Client.Stage;
 using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Puzzle.Client
 {
     /// <summary>
-    /// The one object of the game's scene. It opens the player's session, in the museum's hall, when the game starts
-    /// and then only passes on what the device tells it: the time of each frame, the shape of the screen, where a finger touches it, and
-    /// when the game is put away. Everything that is seen is built in code by the session's stage, so the scene file
+    /// The one object of the game's scene. When the game starts it shows the entry page (<see cref="EntryStage"/>)
+    /// and starts the game behind it, one step a frame, so the page's bar follows the work: the levels, the museum's
+    /// catalogue, the economy, and the player's session, which opens the museum's hall with its pictures in the dark.
+    /// Once the player has touched the ready page and it has gone dark, the page is taken down and the hall comes out
+    /// of the dark. From then on the root only passes on what the device tells it: the time of each frame, the shape
+    /// of the screen, where a finger touches it, and when the game is put away. Everything that is seen is built in code by the session's stage, so the scene file
     /// stays a few lines and the Editor can build the same pictures without it. What is heard and felt goes the other
     /// way: the root holds the phone's speaker and vibrator (<see cref="SoundPlayer"/>), which the session plays its
     /// cues on; the Editor's sessions have none, and are silent. The root also holds the game's music
@@ -33,7 +41,8 @@ namespace Puzzle.Client
     /// a finger that was down, to hold the music where it is (it fades in from there on the way back, unless another
     /// app's music plays by then), and to save progress and attempt records that could not be saved before. If the
     /// device closes the game while it is away, the attempt in progress is gone: the game comes back in the museum, and
-    /// the level starts again with its next board.
+    /// the level starts again with its next board. The entry page is shown at a cold start only: a game brought back
+    /// from the background comes back where it was.
     /// </remarks>
     public sealed class GameRoot : MonoBehaviour
     {
@@ -52,13 +61,33 @@ namespace Puzzle.Client
 
         private const int MouseButton = 0;
 
+        /// <summary>
+        /// The share of the start-up each step takes: the milliseconds the Editor's play mode timed on 2026-10-24 (each
+        /// step is logged with its time on a phone too, "Start-up: ... took ... ms"). Opening the session, which paints
+        /// the effects, builds the hall and loads its five pictures, is most of it.
+        /// </summary>
+        private const float LevelsWeight = 200f;
+        private const float CatalogueWeight = 10f;
+        private const float EconomyWeight = 50f;
+        private const float SessionWeight = 650f;
+
         [SerializeField] private ArtCatalogue? _art;
 
         private GameSession? _session;
         private SoundPlayer? _sounds;
         private IOtherAudio? _otherAudio;
         private MusicPlayer? _music;
+        private ISettingsStore? _settings;
         private ScreenShape _fittedTo;
+
+        /// <summary>The entry page while it is shown; nothing once the player has left it, or when the game could not start.</summary>
+        private EntryStage? _entry;
+
+        /// <summary>The work of the start-up behind the entry page; nothing when the game could not start.</summary>
+        private StartUpWork? _startUp;
+
+        /// <summary>True once a frame of the entry page has been drawn: the start-up's first step waits for it.</summary>
+        private bool _isTheEntryDrawn;
 
         /// <summary>
         /// The finger the game follows. A second finger that comes down meanwhile is not followed; the session is
@@ -79,13 +108,17 @@ namespace Puzzle.Client
             Input.simulateMouseWithTouches = false;
             _fittedTo = CurrentScreen();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
+            _settings = settings;
             Haptics haptics = Haptics.OfThisDevice();
             DeviceAbilities abilities = haptics.DeviceHasNone ? DeviceAbilities.OfThisBuildWithoutVibrator : DeviceAbilities.OfThisBuild;
             _sounds = new SoundPlayer(gameObject, _art, haptics);
             _otherAudio = OtherAudio.OfThisDevice();
             _music = MusicOf(gameObject, _art, settings, _otherAudio);
-            _session = OpenSession(
-                LevelPack.LoadPacked(), _art, PaintingGallery.OfThePackedMuseum(), EconomyPack.LoadPacked(), phone, settings, abilities, _sounds, _fittedTo);
+
+            // The game speaks before anything is built, the entry page first.
+            SpeakThePlayersLanguage(settings);
+            _entry = EntryStage.Open(_art, Application.version, _fittedTo);
+            _startUp = StartUpOf(_art, phone, settings, abilities, _sounds);
         }
 
         /// <summary>
@@ -106,34 +139,136 @@ namespace Puzzle.Client
         /// </summary>
         public IOtherAudio? OtherAudioOfTheDevice => _otherAudio;
 
-        /// <summary>The running game's session; nothing before the game has started. For the Editor's music check, which presses the game's buttons as a finger does.</summary>
-        public GameSession? Session => _session;
+        /// <summary>
+        /// The running game's session; nothing before the player has left the entry page, though it is opened behind
+        /// it. For the Editor's music check, which presses the game's buttons as a finger does.
+        /// </summary>
+        public GameSession? Session => _entry == null ? _session : null;
+
+        /// <summary>The entry page while it is shown; nothing once the player has left it. For the Editor's checks, which touch it as a finger does.</summary>
+        public EntryStage? Entry => _entry;
 
         private void Update()
         {
-            if (_session == null)
+            ScreenShape screen = CurrentScreen();
+            if (_fittedTo != screen)
+            {
+                _entry?.Fit(screen);
+                _session?.Fit(screen);
+                _fittedTo = screen;
+            }
+
+            float step = Mathf.Min(Time.deltaTime, LongestStepSeconds);
+            if (_entry is EntryStage entry)
+            {
+                FollowTheEntry(entry, step);
+            }
+            else if (_session is GameSession session)
+            {
+                FollowTheSession(session, step);
+            }
+            else
             {
                 return; // Start failed and said why; there is nothing to show.
             }
 
-            ScreenShape screen = CurrentScreen();
-            if (_fittedTo != screen)
+            // After the page or the session: a switch flipped this frame is kept by now, and the music follows it in the same frame.
+            _music?.Advance(step);
+        }
+
+        /// <summary>
+        /// A frame of the entry page: one step of the start-up behind it (none before the page's first frame is drawn),
+        /// then the touches, the page's clock and its sounds. Once the player has left it, the hall comes out of its dark.
+        /// </summary>
+        private void FollowTheEntry(EntryStage entry, float step)
+        {
+            if (_isTheEntryDrawn)
             {
-                _session.Fit(screen);
-                _fittedTo = screen;
+                TakeTheNextStepOfTheStartUp(entry);
             }
 
-            ReadTouches(_session);
-            ReadMouse(_session);
-            ReadTheWayBack(_session);
-            float step = Mathf.Min(Time.deltaTime, LongestStepSeconds);
-            _session.Advance(step);
-
-            // After the session: a switch flipped this frame is kept by now, and the music follows it in the same frame.
-            _music?.Advance(step);
-            if (_session.TakeTheWishToQuit())
+            ReadTouches(entry);
+            ReadMouse(entry);
+            ReadTheWayBack(entry);
+            entry.Advance(step);
+            PlayWhatSounded(entry);
+            _isTheEntryDrawn = true;
+            if (entry.TakeTheWishToQuit())
             {
                 Quit(_session);
+            }
+
+            if (entry.HasLeft)
+            {
+                LeaveTheEntry(entry);
+            }
+        }
+
+        private void FollowTheSession(GameSession session, float step)
+        {
+            ReadTouches(session);
+            ReadMouse(session);
+            ReadTheWayBack(session);
+            session.Advance(step);
+            if (session.TakeTheWishToQuit())
+            {
+                Quit(session);
+            }
+        }
+
+        /// <summary>
+        /// Does the next step of the start-up and tells the entry page how far the work has come. A step that fails
+        /// throws once (Unity logs it) and the start-up goes no further: the page stays with its bar where it was.
+        /// </summary>
+        private void TakeTheNextStepOfTheStartUp(EntryStage entry)
+        {
+            if (!(_startUp is StartUpWork work) || work.IsDone || work.HasFailed)
+            {
+                return;
+            }
+
+            Stopwatch watch = Stopwatch.StartNew();
+            StartUpStep done = work.DoTheNext();
+            Debug.Log($"Start-up: {done.Name} took {watch.ElapsedMilliseconds} ms.");
+            entry.Tell(work.Done);
+        }
+
+        /// <summary>
+        /// The player has left the ready entry page and it is dark: it is taken down, the hall that waited behind it
+        /// is shown from the next frame on, out of the same dark, and the logo's picture is let go.
+        /// </summary>
+        private void LeaveTheEntry(EntryStage entry)
+        {
+            GameSession session = _session ?? throw new InvalidOperationException("The entry page was left before the session behind it was opened.");
+            entry.Dispose();
+            _entry = null;
+            session.Front.Camera.enabled = true;
+            if (_art != null)
+            {
+                Resources.UnloadAsset(_art.EntryLogo);
+            }
+        }
+
+        /// <summary>What the entry page sounded, heard and felt as the player's settings are at this moment, as the session plays its stages' cues.</summary>
+        private void PlayWhatSounded(EntryStage entry)
+        {
+            if (!(_settings is ISettingsStore settings) || !(_sounds is SoundPlayer cues))
+            {
+                return;
+            }
+
+            foreach (SoundCue cue in entry.TakeWhatSounded())
+            {
+                (SoundCue? sound, Tick? tick) = SoundScore.Reaching(cue, settings.Settings);
+                if (sound is SoundCue heard)
+                {
+                    cues.Sound(heard);
+                }
+
+                if (tick is Tick felt)
+                {
+                    cues.Buzz(felt);
+                }
             }
         }
 
@@ -172,9 +307,55 @@ namespace Puzzle.Client
 
         private void OnDestroy()
         {
+            _entry?.Dispose();
             _session?.Dispose();
             _sounds?.Dispose();
             (_otherAudio as IDisposable)?.Dispose();
+        }
+
+        /// <summary>
+        /// The language the game speaks, from before anything is built: the player's choice, or the phone's language
+        /// where the game offers it.
+        /// </summary>
+        private static void SpeakThePlayersLanguage(ISettingsStore settings)
+        {
+            Language phoneLanguage = PhoneLanguage.OfThisDevice();
+            Language speaking = WordsPack.InEffect(settings.Settings, phoneLanguage);
+            WordsPack.Speak(speaking);
+            Debug.Log($"The game speaks {Languages.CodeOf(speaking)} (the phone's language: {PhoneLanguage.Tag()}; chosen: {(settings.Settings.Language is Language chosen ? Languages.CodeOf(chosen) : "none")}).");
+        }
+
+        /// <summary>
+        /// The start-up behind the entry page, step by step: the levels, the museum's catalogue, the economy, and the
+        /// player's session, opened in the hall out of the dark and kept unseen (its camera off) until the page is left.
+        /// </summary>
+        private StartUpWork StartUpOf(ArtCatalogue art, DeviceId phone, ISettingsStore settings, DeviceAbilities abilities, ICuePlayer cues)
+        {
+            IReadOnlyList<LevelDefinition>? levels = null;
+            PaintingGallery? paintings = null;
+            EconomyRules? rules = null;
+            void OpenTheSessionBehindTheEntry()
+            {
+                _session = OpenSession(
+                    levels ?? throw new InvalidOperationException("The session was opened before the levels were read."),
+                    art,
+                    paintings ?? throw new InvalidOperationException("The session was opened before the museum's catalogue was read."),
+                    rules ?? throw new InvalidOperationException("The session was opened before the economy was read."),
+                    phone,
+                    settings,
+                    abilities,
+                    cues,
+                    _fittedTo);
+                _session.Front.Camera.enabled = false;
+            }
+
+            return new StartUpWork(new[]
+            {
+                new StartUpStep("the levels", LevelsWeight, () => levels = LevelPack.LoadPacked()),
+                new StartUpStep("the museum's catalogue", CatalogueWeight, () => paintings = PaintingGallery.OfThePackedMuseum()),
+                new StartUpStep("the economy", EconomyWeight, () => rules = EconomyPack.LoadPacked()),
+                new StartUpStep("the session in the hall with its pictures", SessionWeight, OpenTheSessionBehindTheEntry),
+            });
         }
 
         /// <summary>
@@ -191,15 +372,9 @@ namespace Puzzle.Client
             DeviceAbilities abilities, ICuePlayer cues, ScreenShape screen)
         {
             var clock = new SystemWallClock();
-
-            // The game speaks before anything is built: the player's choice, or the phone's language where the game offers it.
-            Language phoneLanguage = PhoneLanguage.OfThisDevice();
-            Language speaking = WordsPack.InEffect(settings.Settings, phoneLanguage);
-            WordsPack.Speak(speaking);
-            Debug.Log($"The game speaks {Languages.CodeOf(speaking)} (the phone's language: {PhoneLanguage.Tag()}; chosen: {(settings.Settings.Language is Language chosen ? Languages.CodeOf(chosen) : "none")}).");
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
             GameSession SessionOn(IProgressStore store) =>
-                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, screen, SessionOpening.InTheMuseum);
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, screen, SessionOpening.InTheMuseumOutOfTheDark);
 
             try
             {
@@ -252,10 +427,10 @@ namespace Puzzle.Client
         private void LetGoOfTheFinger()
         {
             _finger = null;
-            _session?.PointerCancelled();
+            ((ITouchable?)_entry ?? _session)?.PointerCancelled();
         }
 
-        private void ReadTouches(GameSession session)
+        private void ReadTouches(ITouchable session)
         {
             for (int index = 0; index < Input.touchCount; index++)
             {
@@ -276,7 +451,7 @@ namespace Puzzle.Client
             }
         }
 
-        private void FollowTheFinger(Touch touch, GameSession session)
+        private void FollowTheFinger(Touch touch, ITouchable session)
         {
             switch (touch.phase)
             {
@@ -302,12 +477,12 @@ namespace Puzzle.Client
 
         /// <summary>
         /// Android reports its back button and its back gesture as the Escape key; on a desktop it is that key
-        /// itself. The game never closes on it alone: in the hall, where there is no way further back, it asks first
-        /// whether to close the game. An iPhone or iPad has neither, and needs neither, and never asks: every card has
-        /// its cross, a level its pause disc, a jigsaw its back button, a painting hung forward goes back at a touch,
-        /// and the bar at the foot leads to the hall.
+        /// itself. The game never closes on it alone: in the hall and on the entry page, where there is no way further
+        /// back, it asks first whether to close the game. An iPhone or iPad has neither, and needs neither, and never
+        /// asks: every card has its cross, a level its pause disc, a jigsaw its back button, a painting hung forward
+        /// goes back at a touch, and the bar at the foot leads to the hall.
         /// </summary>
-        private static void ReadTheWayBack(GameSession session)
+        private static void ReadTheWayBack(ITouchable session)
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -316,14 +491,15 @@ namespace Puzzle.Client
         }
 
         /// <summary>
-        /// The player answered the hall's question with "Çık". What could not be saved or written yet gets its last
-        /// chance, as on the way out to the background; then Android closes the game. Anywhere else (the Editor's play
-        /// mode above all) it stays open and says so: the question comes only from Android's way back.
+        /// The player answered the question of the hall or of the entry page with "Çık". What could not be saved or
+        /// written yet gets its last chance, as on the way out to the background (on the entry page there may be no
+        /// session yet, and nothing to save); then Android closes the game. Anywhere else (the Editor's play mode above
+        /// all) it stays open and says so: the question comes only from Android's way back.
         /// </summary>
-        private static void Quit(GameSession session)
+        private static void Quit(GameSession? session)
         {
-            session.SaveProgress();
-            session.WriteWaitingRecords();
+            session?.SaveProgress();
+            session?.WriteWaitingRecords();
             if (Application.platform != RuntimePlatform.Android)
             {
                 Debug.Log($"The player asked to close the game; it closes on Android only, so on {Application.platform} it stays open.");
@@ -334,7 +510,7 @@ namespace Puzzle.Client
         }
 
         /// <summary>A mouse is a finger too: in the Editor and on a desktop the game is played with it.</summary>
-        private static void ReadMouse(GameSession session)
+        private static void ReadMouse(ITouchable session)
         {
             if (Input.GetMouseButtonDown(MouseButton))
             {

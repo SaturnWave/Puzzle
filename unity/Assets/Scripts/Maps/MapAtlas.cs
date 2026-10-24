@@ -8,7 +8,6 @@ using Puzzle.Client.Words;
 using Puzzle.Museum;
 using Puzzle.Museum.Catalogue;
 using Puzzle.Museum.Places;
-using UnityEngine;
 
 namespace Puzzle.Client.Maps
 {
@@ -115,11 +114,10 @@ namespace Puzzle.Client.Maps
             return new MapPoint(x / places.Count, y / places.Count);
         }
 
-        /// <summary>The picture of a painting and its true proportions; nothing for a place no work is chosen for.</summary>
-        public (Texture2D Picture, float Aspect)? PictureOf(PaintingNumber painting)
-        {
-            PaintingLook look = _paintings.LookOf(painting);
-            return look.Picture is Texture2D picture ? (picture, look.Aspect) : ((Texture2D, float)?)null;
-        }
+        /// <summary>
+        /// A painting with its picture and its true proportions; no picture for a place no work is chosen for. The
+        /// look holds the picture in memory: the caller owns it and disposes of it when it takes the picture down.
+        /// </summary>
+        public PaintingLook LookOf(PaintingNumber painting) => _paintings.LookOf(painting);
     }
 }

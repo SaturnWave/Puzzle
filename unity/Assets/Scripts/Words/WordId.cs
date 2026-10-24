@@ -786,5 +786,26 @@ namespace Puzzle.Client.Words
 
         /// <summary>Booster intro, once, right after the first booster used by hand: its disc is lit and this one sentence says that holding (a long press on) any booster's round button shows again what it does. "basılı tutmak" = to press and hold.</summary>
         TutorialLongPress,
+
+        /// <summary>Entry page shown as the game starts: the game's title under the palette. It is a working title (see EntryWorkingTitle); translate it as a short game title.</summary>
+        EntryTitle,
+
+        /// <summary>Entry page: the small badge under the title that says the title is only a working title, in small capitals.</summary>
+        EntryWorkingTitle,
+
+        /// <summary>Entry page: the line under the title, what the game is about. "onarmak" = to restore (a painting).</summary>
+        EntrySubtitle,
+
+        /// <summary>Entry page: the line under the bar that fills while the game starts. {percent} is a whole number from 0 to 100; Turkish writes the sign before it.</summary>
+        EntryLoading,
+
+        /// <summary>Entry page: the line that pulses once the bar is full; a touch anywhere opens the museum.</summary>
+        EntryTapToStart,
+
+        /// <summary>Entry page, foot, left: the studio's name. A name: the same in every language.</summary>
+        EntryStudio,
+
+        /// <summary>Entry page, foot, right: the game's version and that this is a test build. {version} is the version, "1.0".</summary>
+        EntryVersion,
     }
 }

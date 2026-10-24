@@ -49,6 +49,7 @@ namespace Puzzle.Client.Collections
             Lettering.Say(_line, MuseumWords.TouchToClose);
         }
 
+        /// <param name="look">The painting; the viewer takes it over, and disposes of it with itself.</param>
         /// <param name="onTheWall">The painting's picture as it hangs on the collection's wall, in the page's points.</param>
         public static PaintingViewer Create(Transform parent, ArtCatalogue art, PaintingLook look, Box onTheWall) =>
             new PaintingViewer(parent, art, look, onTheWall);
@@ -99,6 +100,7 @@ namespace Puzzle.Client.Collections
         {
             _dark.Dispose();
             _painting.Dispose();
+            _look.Dispose();
             SceneObjects.DestroyObjectOf(_root);
         }
     }

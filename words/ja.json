@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"選ぶと虹のパレットを持ってスタート"},
     {"id":"TutorialStartExtraMoves","text":"選ぶと手数+{moves}でスタート"},
     {"id":"BoosterCardTouchToClose","text":"タップで閉じる"},
-    {"id":"TutorialLongPress","text":"ブースターを長押しすると、効果をもう一度見られます"}
+    {"id":"TutorialLongPress","text":"ブースターを長押しすると、効果をもう一度見られます"},
+    {"id":"EntryTitle","text":"美術館パズル"},
+    {"id":"EntryWorkingTitle","text":"仮タイトル"},
+    {"id":"EntrySubtitle","text":"絵画を修復して、美術館を再開しよう"},
+    {"id":"EntryLoading","text":"読み込み中… {percent}%"},
+    {"id":"EntryTapToStart","text":"タップしてスタート"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"バージョン {version} · テスト版"}
   ]
 }

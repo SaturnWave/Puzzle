@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"Sceglilo per iniziare con una tavolozza arcobaleno"},
     {"id":"TutorialStartExtraMoves","one":"Sceglilo per iniziare con {moves} mossa in più","other":"Sceglilo per iniziare con {moves} mosse in più"},
     {"id":"BoosterCardTouchToClose","text":"Tocca per chiudere"},
-    {"id":"TutorialLongPress","text":"Tieni premuto un booster per rivedere cosa fa"}
+    {"id":"TutorialLongPress","text":"Tieni premuto un booster per rivedere cosa fa"},
+    {"id":"EntryTitle","text":"Puzzle del Museo"},
+    {"id":"EntryWorkingTitle","text":"TITOLO PROVVISORIO"},
+    {"id":"EntrySubtitle","text":"Restaura i dipinti, riapri il museo"},
+    {"id":"EntryLoading","text":"Caricamento… {percent}%"},
+    {"id":"EntryTapToStart","text":"Tocca per iniziare"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"Versione {version} · versione di prova"}
   ]
 }

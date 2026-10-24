@@ -4,6 +4,22 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-24 · Oturum 30 — Kalan işler
+
+**Koleksiyonda bellek (A42/4)**
+- Bitti (8960aa8): 23 Ekim telefon turunda koleksiyonun 20 odası gezilince bellek 401 MB'tan 649 MB'a çıkmıştı. Neden: odaların resimleri `Resources` ile yükleniyor, oda kaldırılınca bırakılmıyordu; 20 oda gezilince müzenin 100 resmi de bellekte kalıyordu (telefonda her biri yaklaşık 2,5 MB). Ağlar, malzemeler ve sahne nesneleri zaten temizleniyordu.
+- Artık resmi gösteren her şey onu tutuyor ve kaldırılınca bırakıyor (`PictureShelf`, Unity'siz, 11 test). Hiçbir şeyin tutmadığı resimlerden son bırakılan 10'u (iki oda) kalıyor, fazlası boşaltılıyor; sahne değişince hepsi. Görünürde değişiklik yok (GAME_DESIGN §23).
+- Yeni denetim `CollectionMemoryCheck`: 20 oda beş kez gezilir (üçü düğmelerle, ikisi kaydırarak). Eski kodda aynı anda 100 resim, denetim kırılıyor; yeni kodda en çok 20, her gezinti sonunda 15; ağ, malzeme ve nesne sayıları sabit.
+- 4.122 test geçti; ekonomi denetimi temiz; Unity'de bütün denetimler hatasız. Telefon testleri T420–T425; telefonda henüz denenmedi.
+
+**Giriş sayfası**
+- Bitti: oyun her soğuk açılışta giriş sayfasıyla açılıyor (EntryTR, F simgesine uyarlandı): krem zemin ve damask, ışık huzmeleri, simgenin paleti, süzülen dört taş, yaldızlı "Müze Yapbozu" ve "ÇALIŞMA ADI" rozeti, yaldızlı yükleme çubuğu, nefes alan "Başlamak için dokun", alt satırda "SaturnWave" ve sürüm. Arka plandan dönüşte çıkmıyor.
+- Çubuk gerçek açılış işini izliyor: bölümler, katalog, ekonomi, oturum (salon ve resimleri), her karede bir adım. 1,2 saniyeden kısa sürede dolmuyor. Dokununca sayfa kararıyor, salon o karanlıktan aydınlanıyor; salon, öğretici ve hediyeler eskisi gibi.
+- Geri tuşu salondaki çıkış kartını indiriyor (aynı kart, aynı kural).
+- Logo için simgenin çizimi tam boyunda ayrıca çizildi (`art/icon/entry-logo-1024.png`); simgenin kendi dosyaları değişmedi.
+- 4.153 test geçti (31'i yeni); ekonomi denetimi temiz; Unity'de `PlayModeCheck` ve `MusicCheck` giriş sayfasından salona ve bir bölüme geçiyor. Görüntüler iki ekranda ve dört dilde bakıldı. Telefon testleri T430–T436; telefonda henüz denenmedi.
+- Açık: oturumu açan adım bir kareyi yaklaşık yarım saniye tutuyor (Editör); telefondaki süre günlükten okunacak.
+
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 
 **Kullanıcı kararları**
@@ -29,8 +45,10 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 **Ressam avatarı**
 - Ücretsiz yollar denendi; üç aday aynı CC0 paketten (KayKit Adventurers 1.0, Kay Lousberg): A kız ressam, B uzun saçlı ressam, C erkek ressam. Bere, palet ve fırça eklendi, renkler oyunun paletinden. Karşılaştırma sayfası `out/avatar/avatar-candidates.jpg`; karar proje sahibinde.
 
-**Araştırma başladı**
-- Rakiplerin ABD fiyatları, sezon pasosu ve XP, mini oyunlar, meta katmanı, etkinlikler ve sosyal özellikler; 6 araştırmacı, 1 doğrulayıcı, 1 tasarımcı. Sonuç `docs/research/monetization-and-retention.md` belgesine yazılacak.
+**Araştırma: gelir ve oyuncu tutma**
+- 8 ajan: 6 araştırmacı, 1 doğrulayıcı, 1 tasarımcı. Yaklaşık 2,6 milyon token, 53 dakika. 15 oyunun ABD App Store fiyatları ve pass, XP, ara oyun, meta, etkinlik kuralları toplandı. Doğrulayıcı 158 fiyatın 150'sini, 32 iddianın 28'ini tuttu; tutmayanlar belgede kullanılmadı.
+- Sonuç: `docs/research/monetization-and-retention.md` ("Araştırma Raporu" PDF'i). Ham notlar ve fiyat çizelgesinin JSON'u: `docs/research/monetization-2026-10/`.
+- Öneriler: dört altın paketi ($1.99–$19.99), bir kez satılan $1.99'luk başlangıç paketi, ayda bir $4.99'luk "Sergi Sezonu" pasosu, XP'li Restoratör rütbesi, ilk 100 bölüme ara oyunlar, yayından sonra düzenli yeni odalar. Rastgele ücretli içerik ve parayla can yok. Hepsi öneri: 16 soru proje sahibinin kararını bekliyor ve her sayı yayından önce ekonomi simülatöründen geçecek.
 
 ## 2026-10-22 · Oturum 28 — Müzik
 

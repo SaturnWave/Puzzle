@@ -293,7 +293,7 @@ namespace Puzzle.Client.Collections
                 return;
             }
 
-            PaintingViewer viewer = PaintingViewer.Create(_root, _art, _room.Looks[painting.PlaceInRoom - 1], onTheWall);
+            PaintingViewer viewer = PaintingViewer.Create(_root, _art, _paintings.LookOf(painting), onTheWall);
             viewer.Fit(screen, onTheWall);
             _viewer = viewer;
             _viewed = painting;
@@ -327,6 +327,8 @@ namespace Puzzle.Client.Collections
         /// <summary>
         /// The paintings of one room on the wall, under a root of their own that a swipe on the plaque slides
         /// sideways. Where a finger touches a painting does not move with them: nothing is pressed while they slide.
+        /// The room holds its pictures while it hangs and lets go of them when it is taken down, so a room turned past
+        /// leaves behind no more than the few pictures the gallery keeps (<see cref="PaintingGallery.PicturesKeptUnheld"/>).
         /// </summary>
         private sealed class HungRoom : IDisposable
         {
@@ -353,8 +355,6 @@ namespace Puzzle.Client.Collections
 
             public IReadOnlyList<ExhibitFrame> Exhibits => _exhibits;
 
-            public IReadOnlyList<PaintingLook> Looks => _looks;
-
             /// <summary>Hangs the paintings where the room's layout puts them on a screen; the layout is the page's too.</summary>
             public CollectionLayout Fit(ScreenShape screen)
             {
@@ -375,6 +375,11 @@ namespace Puzzle.Client.Collections
                 foreach (ExhibitFrame exhibit in _exhibits)
                 {
                     exhibit.Dispose();
+                }
+
+                foreach (PaintingLook look in _looks)
+                {
+                    look.Dispose();
                 }
 
                 _exhibits.Clear();

@@ -145,6 +145,10 @@ namespace Puzzle.Client.EditorTools
             ["map-pill-ahead"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 12f), stretchesFrom: 14f, largestSide: 128),
             ["map-step"] = new Picture(pointsWide: 32f, pivot: new Vector2(16f, 16f), largestSide: 128),
             ["map-glyph-chevron"] = new Picture(pointsWide: 12f, pivot: new Vector2(6f, 6f), largestSide: 64),
+
+            // The entry page (EntryTR): the bar 260 points wide on a screen drawn at up to 3.4 pixels a point.
+            ["entry-bar"] = new Picture(pointsWide: 64f, pivot: new Vector2(32f, 15f), stretchesFrom: 20f, largestSide: 512),
+            ["entry-bar-fill"] = new Picture(pointsWide: 48f, pivot: new Vector2(24f, 12f), stretchesFrom: 12f, largestSide: 512),
         };
 
         /// <summary>Raise after changing the settings below: Unity then imports the pictures again.</summary>

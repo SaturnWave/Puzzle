@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Puzzle.Client.Art;
+using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Layout;
@@ -111,6 +112,9 @@ namespace Puzzle.Client.Maps
 
         private readonly Transform _root;
         private readonly List<PaintedShape> _shapes = new List<PaintedShape>();
+
+        /// <summary>The painting whose picture the card shows: the card holds it while it is up; nothing for a painting ahead, which is veiled.</summary>
+        private PaintingLook? _look;
         private readonly List<(MapCardPress Press, MapButton Button)> _buttons = new List<(MapCardPress, MapButton)>();
         private readonly ArtCatalogue _art;
 
@@ -149,6 +153,7 @@ namespace Puzzle.Client.Maps
                 shape.Dispose();
             }
 
+            _look?.Dispose();
             SceneObjects.DestroyObjectOf(_root);
         }
 
@@ -184,10 +189,12 @@ namespace Puzzle.Client.Maps
             var middle = new Vector2(Inside + FrameSize / 2f, -(Inside + FrameSize / 2f));
             var picture = new Rect(middle.x - PictureSize / 2f, middle.y - PictureSize / 2f, PictureSize, PictureSize);
             var anywhere = new Rect(MeshSketch.AnywhereInTheTexture, Vector2.zero);
-            if (mark != MapMark.Ahead && atlas.PictureOf(painting) is { } shown)
+            PaintingLook? look = mark == MapMark.Ahead ? null : atlas.LookOf(painting);
+            _look = look;
+            if (look?.Picture is Texture2D texture)
             {
                 // The painting being restored is seen dimmed, as at 70 % over the frame's dark ground.
-                (Texture2D texture, float aspect) = shown;
+                float aspect = look.Aspect;
                 float across = Math.Min(1f, 1f / aspect);
                 float upright = Math.Min(1f, aspect);
                 Color light = mark == MapMark.Here ? MapOverlay.DimmedTo(HereImageStrength) : Color.white;

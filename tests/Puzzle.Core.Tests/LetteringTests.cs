@@ -47,13 +47,20 @@ public partial class LetteringTests
     }
 
     [Fact]
-    public void Only_white_lettering_on_colour_is_drawn_in_an_outline_and_in_none_wider_than_a_typefaces_picture_reaches()
+    public void Only_white_lettering_on_colour_and_the_entry_pages_gilt_title_are_drawn_in_an_outline_and_in_none_wider_than_a_typefaces_picture_reaches()
     {
         LetteringStyle[] outlined = Enum.GetValues<LetteringStyle>().Where(style => LetteringOutlines.WidthOf(style) > 0f).ToArray();
+        LetteringStyle[] white = outlined.Where(style => style != LetteringStyle.GiltTitle).ToArray();
 
-        Assert.Equal(new[] { LetteringStyle.OnButton, LetteringStyle.OnTeal, LetteringStyle.OnBlue, LetteringStyle.OnHeart }, outlined);
-        Assert.All(outlined, style => Assert.Equal(Typeface.PaytoneOne, Typefaces.Of(style)));
-        Assert.All(outlined, style => Assert.InRange(LetteringOutlines.WidthOf(style), 0.07f, 0.125f));
+        Assert.Equal(
+            new[] { LetteringStyle.OnButton, LetteringStyle.OnTeal, LetteringStyle.OnBlue, LetteringStyle.OnHeart, LetteringStyle.GiltTitle, LetteringStyle.OnCream },
+            outlined);
+        Assert.All(white, style => Assert.Equal(Typeface.PaytoneOne, Typefaces.Of(style)));
+        Assert.All(white, style => Assert.InRange(LetteringOutlines.WidthOf(style), 0.07f, 0.125f));
+
+        // The title's thinner line leaves room in the serif's picture for the hard shade under it.
+        Assert.Equal(Typeface.YoungSerif, Typefaces.Of(LetteringStyle.GiltTitle));
+        Assert.InRange(LetteringOutlines.WidthOf(LetteringStyle.GiltTitle), 0.04f, 0.07f);
         Assert.Throws<ArgumentOutOfRangeException>(() => LetteringOutlines.WidthOf((LetteringStyle)999));
     }
 

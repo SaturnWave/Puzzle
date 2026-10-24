@@ -24,8 +24,14 @@ namespace Puzzle.Client.Flow
     /// <summary>Where a session begins.</summary>
     public enum SessionOpening
     {
-        /// <summary>In the museum's hall, as the game starts for a player.</summary>
+        /// <summary>In the museum's hall, in the lit room: what the Editor's walks through the game begin with.</summary>
         InTheMuseum,
+
+        /// <summary>
+        /// In the museum's hall, out of the dark the entry page left behind, as the game starts for a player: the room
+        /// lights up as it does when the hall is come back to from a level, and the hall is otherwise as it opens lit.
+        /// </summary>
+        InTheMuseumOutOfTheDark,
 
         /// <summary>At the board of the level the player stands on: what the Editor's board studies begin with.</summary>
         AtTheBoard,
@@ -136,7 +142,7 @@ namespace Puzzle.Client.Flow
     /// returns.
     /// </para>
     /// </remarks>
-    public sealed class GameSession : IDisposable
+    public sealed class GameSession : IDisposable, ITouchable
     {
         /// <summary>The program that plays, as the attempt records name it.</summary>
         private const string ThisClient = "unity";
@@ -264,6 +270,7 @@ namespace Puzzle.Client.Flow
             _front = opening switch
             {
                 SessionOpening.InTheMuseum => OpenTheMuseum(StageOpening.InTheLitRoom, MuseumDoor.Home),
+                SessionOpening.InTheMuseumOutOfTheDark => OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.Home),
                 SessionOpening.AtTheBoard => OpenTheBoard(StageOpening.InTheLitRoom, StartChoice.None),
                 _ => throw new ArgumentOutOfRangeException(nameof(opening), opening, "A session opens in the museum or at the board."),
             };
@@ -462,7 +469,7 @@ namespace Puzzle.Client.Flow
                     ChangeTheStage(() => OpenTheBoard(StageOpening.OutOfTheDark, toPlay.StartBoosters));
 
                     // The hall's paintings are not seen on a board; the result's card loads the one it shows by itself.
-                    PaintingGallery.LetGoOfUnusedPictures();
+                    _paintings.LetGoOfUnusedPictures();
                     break;
                 case MuseumStage { PlayerLeftFor: MuseumExit.ToAJigsaw jigsaw } museum:
                     _wayBack = new WayBack.ToTheMuseum(museum.Door);
@@ -510,7 +517,7 @@ namespace Puzzle.Client.Flow
                 _restoredJustNow = null;
                 (back as WayBack.ToTheCard)?.Board.Dispose();
                 _front = OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.AtTheRestored(restored));
-                PaintingGallery.LetGoOfUnusedPictures();
+                _paintings.LetGoOfUnusedPictures();
                 return;
             }
 
@@ -528,7 +535,7 @@ namespace Puzzle.Client.Flow
                     throw new InvalidOperationException($"A way back of the kind {back.GetType().Name} leads nowhere.");
             }
 
-            PaintingGallery.LetGoOfUnusedPictures();
+            _paintings.LetGoOfUnusedPictures();
         }
 
         /// <summary>Takes the open stage down and then builds the next one: never two cameras at once.</summary>

@@ -260,6 +260,13 @@
     {"id":"TutorialStartColorBomb","text":"고르면 무지개 팔레트를 들고 시작해요"},
     {"id":"TutorialStartExtraMoves","text":"고르면 이동 {moves}회를 더 받고 시작해요"},
     {"id":"BoosterCardTouchToClose","text":"닫으려면 터치하세요"},
-    {"id":"TutorialLongPress","text":"부스터를 길게 누르면 하는 일을 다시 볼 수 있어요"}
+    {"id":"TutorialLongPress","text":"부스터를 길게 누르면 하는 일을 다시 볼 수 있어요"},
+    {"id":"EntryTitle","text":"미술관 퍼즐"},
+    {"id":"EntryWorkingTitle","text":"가제"},
+    {"id":"EntrySubtitle","text":"그림을 복원하고 미술관을 다시 열어요"},
+    {"id":"EntryLoading","text":"불러오는 중… {percent}%"},
+    {"id":"EntryTapToStart","text":"터치하여 시작"},
+    {"id":"EntryStudio","text":"SaturnWave"},
+    {"id":"EntryVersion","text":"버전 {version} · 테스트 버전"}
   ]
 }

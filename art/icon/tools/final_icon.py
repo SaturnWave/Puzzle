@@ -5,6 +5,9 @@ usage: final_g.py OUT_DIR
 - adaptive-background-1024.png: the cream background alone, opaque.
 - adaptive-foreground-1024.png: the palette and brush alone on transparency, shrunk into the middle 66 %
   (Android's adaptive-icon safe zone: launchers may cut up to a sixth from every side).
+- entry-logo-1024.png: the palette and brush alone on transparency at the whole icon's size, the logo of the
+  game's entry page, which draws it larger than a launcher draws the foreground (render it alone with
+  py -c "import final_icon, pathlib; final_icon.entry_logo(pathlib.Path('OUT_DIR'))" from this folder).
 """
 import shutil
 import subprocess
@@ -37,12 +40,27 @@ def shoot(html, png, profile, transparent):
     html_path.unlink()
 
 
-def main(out):
-    out.mkdir(parents=True, exist_ok=True)
+def icon_art():
+    """The palette with the game's three gems on it and the brush, in the icon's 1024 units, with no background."""
     gem = {c: data_uri(REPO / f"unity/Assets/Art/Pieces/gem-{c}.png", 512) for c in ("red", "yellow", "blue")}
     three = [gem["red"], gem["yellow"], gem["blue"]]
     big = [(450, 340, 235), (680, 340, 235), (760, 560, 225)]
-    art = palette(three, big, -8) + brush(610, 610, 146, 0.92)
+    return palette(three, big, -8) + brush(610, 610, 146, 0.92)
+
+
+def entry_logo(out):
+    """The entry page's logo: the icon's art alone on transparency, as large as the whole icon draws it."""
+    out.mkdir(parents=True, exist_ok=True)
+    profile = out / ".chrome-profile"
+    try:
+        shoot(svg(icon_art(), with_background=False), out / "entry-logo-1024.png", profile, transparent=True)
+    finally:
+        shutil.rmtree(profile, ignore_errors=True)
+
+
+def main(out):
+    out.mkdir(parents=True, exist_ok=True)
+    art = icon_art()
     shrink = (1 - SAFE) / 2 * SIZE
     foreground = f'<g transform="translate({shrink:.1f} {shrink:.1f}) scale({SAFE})">{art}</g>'
     profile = out / ".chrome-profile"
@@ -52,6 +70,7 @@ def main(out):
         shoot(svg(foreground, with_background=False), out / "adaptive-foreground-1024.png", profile, transparent=True)
     finally:
         shutil.rmtree(profile, ignore_errors=True)
+    entry_logo(out)
     print("rendered", sorted(p.name for p in out.glob("*.png")))
 
 

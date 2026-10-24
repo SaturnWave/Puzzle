@@ -460,6 +460,7 @@ namespace Puzzle.Client.Jigsaws
             _veil.Dispose();
             _spotlight.Dispose();
             _lessonPill.Dispose();
+            _look.Dispose();
             SceneObjects.Destroy(_root);
         }
 

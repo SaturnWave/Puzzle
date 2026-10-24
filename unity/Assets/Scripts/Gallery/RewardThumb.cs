@@ -116,6 +116,7 @@ namespace Puzzle.Client.Gallery
             _veil.Dispose();
             _litPieces.Dispose();
             _lines.Dispose();
+            _look.Dispose();
             SceneObjects.DestroyObjectOf(Transform);
         }
 

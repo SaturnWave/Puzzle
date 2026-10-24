@@ -76,6 +76,9 @@ namespace Puzzle.Client.Art
 
         [SerializeField] private AudioClip? _musicLoop;
 
+        /// <summary>The palette the entry page shows (Assets/Art/Icon/entry-logo-1024.png).</summary>
+        [SerializeField] private Texture2D? _entryLogo;
+
         /// <summary>The unlit sprite material: the gallery is drawn as painted, with no light of the engine on it.</summary>
         /// <exception cref="InvalidOperationException">The catalogue was never built.</exception>
         public Material SpriteMaterial => Built(_spriteMaterial, "sprite material");
@@ -121,6 +124,13 @@ namespace Puzzle.Client.Art
             int index = (int)cue;
             return index < _sounds.Length && _sounds[index] != null ? _sounds[index] : null;
         }
+
+        /// <summary>
+        /// The palette of the app icon with its brush, at the whole icon's size: 1024 pixels square, see-through around
+        /// them. The entry page shows it as its logo; the running game lets go of it once the page is left.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The catalogue is older than the entry page.</exception>
+        public Texture2D EntryLogo => Built(_entryLogo, "entry page's logo");
 
         /// <summary>The game's music; nothing in a catalogue older than the music, whose game then plays none rather than stop.</summary>
         public MusicClips? Music => _musicIntro != null && _musicLoop != null ? new MusicClips(_musicIntro, _musicLoop) : null;
@@ -202,6 +212,9 @@ namespace Puzzle.Client.Art
 
             _sounds = inOrder;
         }
+
+        /// <summary>Editor only: replaces the entry page's logo.</summary>
+        public void FillEntry(Texture2D logo) => _entryLogo = logo;
 
         /// <summary>Editor only: replaces the music's two clips.</summary>
         public void FillMusic(MusicClips music)

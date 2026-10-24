@@ -109,6 +109,8 @@
     <!-- Nor has what a finger on the museum's pages means: a tap, a swipe that drags the row of pages, and where the row settles; nor the slop within which a touch taps, and presses a control. -->
     <Compile Include="..\..\unity\Assets\Scripts\Screens\PageSwipe.cs" Link="Unity\Screens\PageSwipe.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\TapSlop.cs" Link="Unity\Screens\TapSlop.cs" />
+    <!-- Nor has the shelf of the paintings' pictures: each loaded once, a held one never unloaded, and only the few let go of last kept. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Canvases\PictureShelf.cs" Link="Unity\Canvases\PictureShelf.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Engine\LevelStart.cs" Link="Unity\Engine\LevelStart.cs" />
     <!-- Nor have the board's plaques and the result's card: what the plaques say by the piece a level gives, and the rows of the card. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\BoardWords.cs" Link="Unity\Flow\BoardWords.cs" />
@@ -126,6 +128,10 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceView.cs" Link="Unity\Flow\DeviceView.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\TesterMode.cs" Link="Unity\Flow\TesterMode.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\SettingsWords.cs" Link="Unity\Flow\SettingsWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\StartUpWork.cs" Link="Unity\Flow\StartUpWork.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LoadingBar.cs" Link="Unity\Flow\LoadingBar.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\EntryWords.cs" Link="Unity\Flow\EntryWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\EntryLayout.cs" Link="Unity\Layout\EntryLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\LanguageCardLayout.cs" Link="Unity\Layout\LanguageCardLayout.cs" />

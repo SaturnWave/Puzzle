@@ -263,6 +263,7 @@ namespace Puzzle.Client.Hall
             _gift?.Dispose();
             _pips?.Dispose();
             _waitingPiece?.Dispose();
+            _look.Dispose();
             SceneObjects.DestroyObjectOf(_root);
         }
 
