@@ -6,6 +6,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 30 — Kalan işler
 
+**İnceleme düzeltmeleri (yön, açılış hatası, yan paylar)**
+- Bitti (ana dal): manifest adımı Unity etkinliğinin dik (`portrait`) açıldığını da denetliyor (`ManifestOrientation`, 7 test); başka bir değerde derleme duruyor. `ProjectSettings` iki dalda da dik ve hedef API 36 kayıtlı; derleme dosyayı artık değiştirmiyor. iOS derlemesi `AutoRotation`'ı ve "tam ekran istemez"i yalnız kendi dışa aktarması için koyup geri alıyor (`feature/ios`).
+- Açılış adımı hata verirse giriş sayfası "Yükleniyor… %N"de kalmıyor: satır "Oyun açılamadı; yeniden başlatın" oluyor (13 dil), geri tuşu ve "Çık" çalışıyor. Açılış işi bitince ya da durunca bırakılıyor. `ScreenShots -screens entry` bu hâli de yürütüyor (Almanca ve Japoncada da sığıyor).
+- Ekran boyu okunamayan Android cihaz tek uyarıyla telefon sayılıyor (değerler denetleniyor, geniş yakalama yok); dönme kuralı ekran değişince sayfa yerleştikten sonra uygulanıyor. Oyun açılışta ve her ekran değişiminde ekranı ve güvenli alanı günlüğe yazıyor (T460, T465).
+- `RotationCheck`'e Fold'un sağ kameralı yan duruşu eklendi (`2152x2076+0+0+0+90`): 84 değişiklik, hatasız. Yan ekranların görüntü komutuna da bu ekran girdi (GAME_DESIGN §23 komut tablosu).
+- 5.376 test geçti; ekonomi denetimi temiz (100. bölüm 8. gün); Unity'de `RotationCheck`, `PlayModeCheck`, `MusicCheck` (`-quit` olmadan) ve `EngineSmokeTest` hatasız.
+- Yeni APK (`unity/Build/Android/puzzle.apk`, 294,7 MB, 30 dk): sürüm kodu 1, hedef API 36, en düşük 26; izinler `VIBRATE` ve Unity'nin `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`'ı; etkinlik `portrait`, kategori oyun. Telefona kurulmadı.
+
 **Yan çevirme (tablet, açık Fold, iPad)**
 - Bitti (ana dal): iPad her zaman, Android'de kısa kenarı 600 dp ve üstü olan ekranlar dört yöne dönüyor, ters dik de; telefonlar ve Fold'un dış ekranı dik. Android paketi dik açılıyor, oyun ilk karede kuralı uyguluyor (`ScreenTurns`, `DeviceScreen`). Manifestte `appCategory="game"` yoksa derleme duruyor; hedef API 36'ya sabitlendi.
 - Seçenek A: dik düzen ortada, yanlarda galeri duvarı. Yatay tablette salonda odanın onarılmış tabloları (en çok dört), haritada geniş çerçeve (şeritte 9–10 dönem), yapbozda tablo solda ve tepsi sağda (altı yer, 2×3 ya da 3×2). Fold yan tutulunca bugünkü düzen.

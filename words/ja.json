@@ -267,6 +267,7 @@
     {"id":"EntryLoading","text":"読み込み中… {percent}%"},
     {"id":"EntryTapToStart","text":"タップしてスタート"},
     {"id":"EntryStudio","text":"SaturnWave"},
-    {"id":"EntryVersion","text":"バージョン {version} · テスト版"}
+    {"id":"EntryVersion","text":"バージョン {version} · テスト版"},
+    {"id":"EntryCouldNotStart","text":"ゲームを開けませんでした。再起動してください"}
   ]
 }

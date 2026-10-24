@@ -267,6 +267,7 @@
     {"id":"EntryLoading","text":"Memuat… {percent}%"},
     {"id":"EntryTapToStart","text":"Ketuk untuk mulai"},
     {"id":"EntryStudio","text":"SaturnWave"},
-    {"id":"EntryVersion","text":"Versi {version} · versi uji"}
+    {"id":"EntryVersion","text":"Versi {version} · versi uji"},
+    {"id":"EntryCouldNotStart","text":"Game tidak dapat dibuka; mulai ulang"}
   ]
 }

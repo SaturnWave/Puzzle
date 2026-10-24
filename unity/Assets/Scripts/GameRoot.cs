@@ -89,7 +89,7 @@ namespace Puzzle.Client
         /// <summary>The entry page while it is shown; nothing once the player has left it, or when the game could not start.</summary>
         private EntryStage? _entry;
 
-        /// <summary>The work of the start-up behind the entry page; nothing when the game could not start.</summary>
+        /// <summary>The work of the start-up behind the entry page; nothing once it is done or has failed, so what its steps held is let go.</summary>
         private StartUpWork? _startUp;
 
         /// <summary>True once a frame of the entry page has been drawn: the start-up's first step waits for it.</summary>
@@ -112,8 +112,8 @@ namespace Puzzle.Client
 
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
-            LetTheScreenTurnAsTheDeviceAllows();
             _fittedTo = CurrentScreen();
+            SayTheScreen(_fittedTo);
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
             _settings = settings;
             Haptics haptics = Haptics.OfThisDevice();
@@ -126,6 +126,9 @@ namespace Puzzle.Client
             SpeakThePlayersLanguage(settings);
             _entry = EntryStage.Open(_art, Application.version, _fittedTo);
             _startUp = StartUpOf(_art, phone, settings, abilities, _sounds);
+
+            // Last, as after every change of the screen: the page and its start-up are there whatever the device answers.
+            LetTheScreenTurnAsTheDeviceAllows();
         }
 
         /// <summary>
@@ -162,12 +165,15 @@ namespace Puzzle.Client
             {
                 // The device turned, a fold opened, a window was resized: a finger still on the glass began its gesture
                 // on the screen before, whose pixels no longer mean the same places. It is let go, and followed again
-                // only once it comes down anew. A fold that opened or closed may also have changed what turns.
+                // only once it comes down anew. A fold that opened or closed may also have changed what turns; that is
+                // asked last, once the page is laid out for the new shape, so a device that cannot answer leaves the
+                // page fitted and is not asked again until the screen changes once more.
                 LetGoOfTheFinger();
-                LetTheScreenTurnAsTheDeviceAllows();
                 _entry?.Fit(screen);
                 _session?.Fit(screen);
                 _fittedTo = screen;
+                SayTheScreen(screen);
+                LetTheScreenTurnAsTheDeviceAllows();
             }
 
             float step = Mathf.Min(Time.deltaTime, LongestStepSeconds);
@@ -230,12 +236,21 @@ namespace Puzzle.Client
 
         /// <summary>
         /// Does the next step of the start-up and tells the entry page how far the work has come. A step that fails
-        /// throws once (Unity logs it) and the start-up goes no further: the page stays with its bar where it was.
+        /// throws once (Unity logs what it threw) and the start-up goes no further: in the next frame the page is told,
+        /// and says that the game cannot open where its bar's line was; its way back still asks whether to close the
+        /// game. Once the work is done or has failed it is let go, and with it what its steps held on the way.
         /// </summary>
         private void TakeTheNextStepOfTheStartUp(EntryStage entry)
         {
-            if (!(_startUp is StartUpWork work) || work.IsDone || work.HasFailed)
+            if (!(_startUp is StartUpWork work))
             {
+                return;
+            }
+
+            if (work.HasFailed)
+            {
+                entry.TellTheStartUpFailed();
+                _startUp = null;
                 return;
             }
 
@@ -243,6 +258,10 @@ namespace Puzzle.Client
             StartUpStep done = work.DoTheNext();
             Debug.Log($"Start-up: {done.Name} took {watch.ElapsedMilliseconds} ms.");
             entry.Tell(work.Done);
+            if (work.IsDone)
+            {
+                _startUp = null;
+            }
         }
 
         /// <summary>
@@ -554,6 +573,14 @@ namespace Puzzle.Client
 
             _turnsAs = screen;
         }
+
+        /// <summary>
+        /// The screen the pages are laid out for, in the device's log with the safe area it was read from: at the start
+        /// and after every change, since an Android tablet or foldable opens upright and turns only once the game runs.
+        /// A phone test reads there the strips a camera takes at the sides of a device held sideways (T460).
+        /// </summary>
+        private static void SayTheScreen(ScreenShape screen) =>
+            Debug.Log($"The screen is {screen} (width x height + insets at the top, foot, left and right), from {Screen.width}x{Screen.height} with the safe area {Screen.safeArea}.");
 
         /// <summary>
         /// The screen as the device reports it; the safe area leaves out camera cutouts and system bars, at the top and

@@ -23,7 +23,7 @@ public class SidewaysScreenTests
 
     public static TheoryData<string> ScreensWithoutPaintingsBeside() => new()
     {
-        "2152x2076", "2152x2076+0+0+90+0", "2076x2152", "2048x2732+48+40", "1640x2360+48+40", "1080x2424", "1080x1920", "720x1280",
+        "2152x2076", "2152x2076+0+0+90+0", "2152x2076+0+0+0+90", "2076x2152", "2048x2732+48+40", "1640x2360+48+40", "1080x2424", "1080x1920", "720x1280",
     };
 
     public static TheoryData<string> ScreensWithACameraAtASide() => new()
@@ -50,6 +50,7 @@ public class SidewaysScreenTests
     [InlineData(float.PositiveInfinity)]
     public void A_side_that_is_no_length_is_refused(float smallestSideDp)
     {
+        Assert.False(ScreenTurns.IsALength(smallestSideDp));
         Assert.Throws<ArgumentOutOfRangeException>(() => ScreenTurns.OfAnAndroidScreen(smallestSideDp));
     }
 

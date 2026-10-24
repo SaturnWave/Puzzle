@@ -29,6 +29,9 @@ namespace Puzzle.Client.Flow
                 ? Speech.Say(WordId.EntryLoading, ("percent", percent.ToString(CultureInfo.InvariantCulture)))
                 : throw new ArgumentOutOfRangeException(nameof(percent), percent, "A share of the start-up is from 0 to 100.");
 
+        /// <summary>What the bar's line says in its place when the game could not start: "Oyun açılamadı; yeniden başlatın".</summary>
+        public static string CouldNotStart => Speech.Say(WordId.EntryCouldNotStart);
+
         /// <summary>The foot's version line: "Sürüm 1.0 · test sürümü".</summary>
         public static string Version(string gameVersion) => Speech.Say(WordId.EntryVersion, ("version", gameVersion));
     }

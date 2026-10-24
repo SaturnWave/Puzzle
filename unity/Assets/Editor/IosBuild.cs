@@ -62,7 +62,12 @@ namespace Puzzle.Client.EditorTools
                 target = BuildTarget.iOS,
                 options = BuildOptions.None,
             };
-            BuildSummary summary = BuildPipeline.BuildPlayer(options).summary;
+            BuildSummary summary;
+            using (TurningForTheExport.Apply())
+            {
+                summary = BuildPipeline.BuildPlayer(options).summary;
+            }
+
             if (summary.result != BuildResult.Succeeded)
             {
                 Debug.LogError($"iOS build: {summary.result} with {summary.totalErrors} errors.");
@@ -107,7 +112,8 @@ namespace Puzzle.Client.EditorTools
         /// iPhones and iPads, turning with the device: the Info.plist lets an iPhone stand upright only and an iPad every
         /// way (<see cref="InfoPlistLines"/>), and the game's root asks for the same once it runs. Unity applies the rest
         /// of the project's settings to both (the name, the splash, the status bar hidden, other apps' sound mixed under
-        /// the game's and the silent switch obeyed).
+        /// the game's and the silent switch obeyed). What is set here the project's committed settings say already, so
+        /// an export leaves them as they were; the turning is the export's own (<see cref="TurningForTheExport"/>).
         /// </summary>
         private static void ApplyPlayerSettings()
         {
@@ -121,22 +127,52 @@ namespace Puzzle.Client.EditorTools
             PlayerSettings.iOS.targetOSVersionString = OldestIos;
             PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
 
-            // The game turns with an iPad, all four ways, from its first frame; an iPhone's Info.plist keeps it upright.
-            // The Android build sets its own package upright again (AndroidBuild).
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            // Every way of standing is allowed for the game's own rule, as on Android; which ways a device offers is the
+            // Info.plist's, and the default the export turns to is TurningForTheExport's.
             PlayerSettings.allowedAutorotateToPortrait = true;
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = true;
             PlayerSettings.allowedAutorotateToLandscapeLeft = true;
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
-
-            // An iPad runs in a window beside other apps and in Stage Manager, and is laid out for any shape it is given.
-            PlayerSettings.iOS.requiresFullScreen = false;
 
             // Xcode signs on the Mac with the owner's team, which xcodebuild is given there; the project carries none.
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
 
             // The build's number as Android's; Xcode raises it on the way to App Store Connect when that has it already.
             PlayerSettings.iOS.buildNumber = PlayerSettings.Android.bundleVersionCode.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// The player settings the export turns for itself and gives back once it is made, whether it was made or not:
+        /// the game turns with an iPad, all four ways, from its first frame (AutoRotation), and an iPad runs in a window
+        /// beside other apps and in Stage Manager, laid out for any shape it is given (no full screen). The project keeps
+        /// the defaults the Android package needs, upright (AndroidBuild, ManifestOrientation): left turned, they would
+        /// open the next Android build sideways on a phone and leave ProjectSettings changed after every export.
+        /// </summary>
+        private sealed class TurningForTheExport : IDisposable
+        {
+            private readonly UIOrientation _orientation;
+            private readonly bool _requiresFullScreen;
+
+            private TurningForTheExport(UIOrientation orientation, bool requiresFullScreen)
+            {
+                _orientation = orientation;
+                _requiresFullScreen = requiresFullScreen;
+            }
+
+            /// <summary>Turns the settings for the export and keeps what they were, to give back.</summary>
+            public static TurningForTheExport Apply()
+            {
+                var kept = new TurningForTheExport(PlayerSettings.defaultInterfaceOrientation, PlayerSettings.iOS.requiresFullScreen);
+                PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+                PlayerSettings.iOS.requiresFullScreen = false;
+                return kept;
+            }
+
+            public void Dispose()
+            {
+                PlayerSettings.defaultInterfaceOrientation = _orientation;
+                PlayerSettings.iOS.requiresFullScreen = _requiresFullScreen;
+            }
         }
     }
 

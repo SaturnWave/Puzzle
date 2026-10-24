@@ -72,7 +72,9 @@ namespace Puzzle.Client.EditorTools
         /// that a later Unity cannot move the target on its own: from API level 37 on Android has no way out of its rules
         /// for large screens but the game category (<see cref="ManifestGameCategory"/>). The package opens upright, so a
         /// phone never shows it sideways; every way of standing is allowed for the game's own rule, which turns a tablet
-        /// or an open foldable with the device once the game runs (Scripts/Engine/DeviceScreen.cs).
+        /// or an open foldable with the device once the game runs (Scripts/Engine/DeviceScreen.cs). The project's
+        /// committed settings say the same, the target too, so a build leaves them as they were; the manifest step stops
+        /// a package that would open another way (<see cref="ManifestOrientation"/>).
         /// </summary>
         private static void ApplyPlayerSettings()
         {
@@ -94,9 +96,10 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// The build's manifest step: once Unity has made the Gradle project of an Android build (this tool's, or any
     /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>),
-    /// and must say that the application is a game (<see cref="ManifestGameCategory"/>). A manifest that cannot be read
-    /// or written, or one of another category, stops the build: a package without them would fail on the phone, or
-    /// turn on a tablet as Android wants rather than as the game does.
+    /// must say that the application is a game (<see cref="ManifestGameCategory"/>), and must open Unity's activity
+    /// upright (<see cref="ManifestOrientation"/>). A manifest that cannot be read or written, one of another category,
+    /// or one that opens another way stops the build: a package without them would fail on the phone, turn on a tablet
+    /// as Android wants rather than as the game does, or show a phone the game sideways.
     /// </summary>
     public sealed class AndroidManifestStep : IPostGenerateGradleAndroidProject
     {
@@ -108,8 +111,9 @@ namespace Puzzle.Client.EditorTools
             string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
             string written = ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions);
             ManifestGameCategory.Require(written);
+            ManifestOrientation.Require(written);
             File.WriteAllText(manifest, written);
-            Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game.");
+            Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game that opens {ManifestOrientation.Upright}.");
         }
     }
 }

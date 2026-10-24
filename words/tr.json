@@ -267,6 +267,7 @@
     {"id":"EntryLoading","text":"Yükleniyor… %{percent}","note":"Entry page: the line under the bar that fills while the game starts. {percent} is a whole number from 0 to 100; Turkish writes the sign before it."},
     {"id":"EntryTapToStart","text":"Başlamak için dokun","note":"Entry page: the line that pulses once the bar is full; a touch anywhere opens the museum."},
     {"id":"EntryStudio","text":"SaturnWave","note":"Entry page, foot, left: the studio's name. A name: the same in every language."},
-    {"id":"EntryVersion","text":"Sürüm {version} · test sürümü","note":"Entry page, foot, right: the game's version and that this is a test build. {version} is the version, \"1.0\"."}
+    {"id":"EntryVersion","text":"Sürüm {version} · test sürümü","note":"Entry page, foot, right: the game's version and that this is a test build. {version} is the version, \"1.0\"."},
+    {"id":"EntryCouldNotStart","text":"Oyun açılamadı; yeniden başlatın","note":"Entry page: what the line under the bar says instead of the share when the game could not start (a file it needs could not be read). The player is to close the game and open it again; short, one line."}
   ]
 }
