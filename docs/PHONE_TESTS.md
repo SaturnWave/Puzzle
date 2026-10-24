@@ -2,7 +2,7 @@
 
 Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henüz kapatılmamış ya da bilerek kabul edilmiş eksikler) ve **telefon testleri** (yalnızca gerçek bir telefonda kanıtlanabilecek davranışlar). Bilgisayardaki testler (C# testleri, betik testleri, Unity denetimleri) her değişiklikte koşuyor; telefon testleri ise kullanıcının kendi telefonunda, zamanı geldiğinde, hepsi birden koşulacak.
 
-**Cihaz:** Pixel 9 Pro Fold. Dış ekran 1080×2424, iç ekran 2076×2152. Oyunun Unity denetimleri bu iki boyutta ve 1080×2340'ta görüntü alıyor.
+**Cihaz:** Pixel 9 Pro Fold. Dış ekran 1080×2424, iç ekran 2076×2152. Oyunun Unity denetimleri bu iki boyutta ve 1080×2340'ta görüntü alıyor. iOS için iPad Pro 12.9" (6. nesil, 2048×2732, `feature/ios` dalı); iPad testleri F22'de.
 
 **Kayıt kuralı:** her testin sonucu bu belgedeki tabloya işlenir. Durum değerleri: *Bekliyor*, *Geçti*, *Kaldı*, *Ertelendi*. Tarih ve kısa not eklenir. Kalan bir test için ekran görüntüsü ya da ekran kaydı ve `adb logcat` çıktısı saklanır.
 
@@ -482,6 +482,23 @@ Açılış adımlarının süreleri `adb logcat -s Unity` çıktısında "Start-
 | T434 | İki ekran, güvenli alan | Dış ekranda aç; katlıyı açıp iç ekranda aç; sayfa açıkken katla ve aç. | Hiçbir şey kamera çentiğinin, durum çubuğunun ya da hareket çubuğunun altında değil. Başlık, rozet, çubuk ve alt satır kesik değil. Ekran değişince sayfa hemen yeni ekrana yerleşiyor. | Giriş sayfası | Bekliyor |
 | T435 | Diller | Ayarlardan İngilizce, Almanca, Rusça ve Japonca seç; her birinde oyunu kapatıp aç. | Sayfanın yazıları seçilen dilde ve sığıyor; Almanca ve Rusçada yüzde işareti sayıdan sonra. "SaturnWave" her dilde aynı. | Giriş sayfası, diller | Bekliyor |
 | T436 | Açılış süresi | Soğuk açılışı üç kez yap; logcat'te "Start-up:" satırlarını oku. | Simgeye dokunmaktan "Başlamak için dokun"a birkaç saniye. Oturum adımında (en uzun adım) taşların durması göze batmıyor; batıyorsa süreleri not et. | Giriş sayfası | Bekliyor |
+
+### F22. iPad (24 Ekim)
+
+Cihaz: iPad Pro 12.9" (6. nesil, 2048×2732, iPadOS 26.5); kurulum IOS_BUILD §3.2.1. Oyun dikey oynanır; ekranda durum çubuğu yok, altta ana ekran çizgisi var. Bütün ekranlar Editör'de üç iPad boyutunda görüntülendi ve sığıyor; bu testler gerçek cihazdaki görünüşü, okunurluğu ve dokunuşu doğrular.
+
+| Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
+|---|---|---|---|---|---|
+| T440 | Açılış ve giriş sayfası | Oyunu simgeden aç; çubuk dolunca dokun. | Unity açılış ekranından sonra giriş sayfası bütün ekranı kaplıyor: krem zemin, palet, taşlar, başlık, rozet, çubuk, alt satır. Hiçbir şey yuvarlak köşelerde ya da ana ekran çizgisinin altında kesik değil. Dokununca salon karanlıktan aydınlanıyor. | iPad'e kurulu | Bekliyor |
+| T441 | Salon ve alt çubuk | Salona bak; alt çubuğun dört sekmesine sırayla dokun, sonra sayfalar arasında kaydır. | Tablonun iki yanında duvar lambaları; cüzdan satırı, plaket, tablo, tezgâh, hediye çerçevesi ve bölüm düğmesi dengeli aralıklarla. Ana ekran çizgisi sekmeleri örtmüyor; her sekme ilk dokunuşta açılıyor. | iPad'e kurulu | Bekliyor |
+| T442 | Koleksiyon üçer | Koleksiyonu aç; odalar arasında oklarla ve plakette kaydırarak gez; onarılmış bir tabloya dokun, sonra yeniden dokun. | Bir odanın beş tablosu iki sırada: üstte üç, altta iki. Tablolar duvarı dolduruyor, plaketleri okunuyor, parça rozeti çerçevenin köşesinde. Dokunulan tablo büyüyor, "Kapatmak için dokun" okunuyor; dokununca yerine dönüyor. | iPad'e kurulu | Bekliyor |
+| T443 | Dünya haritası | Haritayı aç; dönem şeridinde gez; bir iğnenin kartını aç ve kapat. | Harita çerçevesinde tam; kamera dönemin iğnelerini ve kartını birlikte gösteriyor; şerit ve kart kesik değil. | iPad'e kurulu | Bekliyor |
+| T444 | Mağaza ve ayarlar | Mağazayı aç; çarktan ayarları aç; Dil, Gizlilik ve veri, Destek kartlarını aç. | Mağaza tek sütun, ortada. Ayarlar kartında yalnızca Ses ve Müzik anahtarı var, Titreşim yok. Kartlar ve yazılar kesik değil. | iPad'e kurulu | Bekliyor |
+| T445 | Bölüm kartı ve tahta | Bir bölüm aç; kartta bir booster seç; tahtada hamle yap, rafın booster disklerine bas, en alt sırada kaydır. | Kart ve tahta ekrana sığıyor; taşlar büyük ve net; plaketler ve raf okunuyor; disklere ilk dokunuşta basılıyor. En alt sıradaki kaydırma ana ekran hareketini tetiklemiyor. | iPad'e kurulu | Bekliyor |
+| T446 | Sonuç kartları | Bir bölümü kazan; bir bölümü hamlesi bitene kadar oyna (+3 hamle teklifi, kaybetme kartı). | Kartlar tahtanın önünde, ortada; yazılar ve düğmeler kesik değil; "Devam", "Tekrar dene" ve "Müze" ilk dokunuşta çalışıyor. | iPad'e kurulu | Bekliyor |
+| T447 | Yapboz | Kazanma kartından yapboza geç; bir parçayı tepsiden tabloya sürükle; "Otomatik tamamla"yı dene; geri düğmesiyle dön. | Parça parmağı izliyor ve yerine oturuyor; tepsi ve düğmeler ekranın içinde. | iPad'e kurulu | Bekliyor |
+| T448 | Sistem hareketleri | Bir bölümde ve salonda: alttan yukarı kaydırıp ana ekrana çık ve dön; sağ üstten Denetim Merkezi'ni aç ve kapat; uygulama değiştiriciyi aç ve oyuna dön. | Oyun kaldığı yerden sürüyor; parmak bırakılmış sayılıyor, taş elde takılı kalmıyor; müzik bekleyip sürüyor. Çıkış kartı hiç çıkmıyor (iPad'de geri tuşu yok). | iPad'e kurulu | Bekliyor |
+| T449 | Kol mesafesinden okuma | iPad'i kol mesafesinde tut; salon, koleksiyon, tahta ve kartlarda en küçük yazılara bak (tablo plaketleri, raf yazısı, "ÇALIŞMA ADI"). | Hepsi rahat okunuyor; tablolar ve taşlar bulanık ya da pikselli değil; Türkçe harfler doğru. | iPad'e kurulu | Bekliyor |
 
 ### G. Görünüm
 

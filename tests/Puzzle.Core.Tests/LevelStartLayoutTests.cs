@@ -17,7 +17,7 @@ public class LevelStartLayoutTests
     private const float TwoFigures = 2 * 0.56f * LevelStartLayout.GoalNumberSize;
     private const float ThreeFigures = 3 * 0.56f * LevelStartLayout.GoalNumberSize;
 
-    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the open fold, and the tall phone with its cutout and system bar.</summary>
+    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the open fold, the tall phone with its cutout and system bar, and the three iPads upright.</summary>
     public static TheoryData<int, int, int, int> Screens() => new TheoryData<int, int, int, int>
     {
         { 1080, 2340, 0, 0 },
@@ -26,6 +26,9 @@ public class LevelStartLayoutTests
         { 1080, 2340, 110, 60 },
         { 1080, 1920, 90, 48 },
         { 720, 1280, 0, 0 },
+        { 2048, 2732, 48, 40 },
+        { 1640, 2360, 48, 40 },
+        { 1488, 2266, 48, 40 },
     };
 
     [Theory]

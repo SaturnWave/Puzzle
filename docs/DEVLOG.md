@@ -20,6 +20,16 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 4.153 test geçti (31'i yeni); ekonomi denetimi temiz; Unity'de `PlayModeCheck` ve `MusicCheck` giriş sayfasından salona ve bir bölüme geçiyor. Görüntüler iki ekranda ve dört dilde bakıldı. Telefon testleri T430–T436; telefonda henüz denenmedi.
 - Açık: oturumu açan adım bir kareyi yaklaşık yarım saniye tutuyor (Editör); telefondaki süre günlükten okunacak.
 
+**iPad ekranı (`feature/ios`)**
+- Ana dal (giriş sayfası, koleksiyonda bellek) `feature/ios`'a birleştirildi. `GameRoot`'ta iki taraf da korundu: oturumu giriş sayfasının arkasında açan adım cihazın yeteneklerini alıyor, iPad'de Titreşim anahtarı yine çıkmıyor.
+- Her ekran ve kart (giriş sayfası, salon, koleksiyon ve yakından bakış, harita, mağaza, ayarlar ve kartları, bölüm kartı, booster'lı tahta, sonuç kartları, +3 hamle teklifi, yapboz, çıkış kartı; yürüyüşleriyle) üç iPad boyutunda görüntülendi: 12.9" Pro 2048×2732, 10. nesil 1640×2360, mini 1488×2266; dikey, 24 noktalık durum çubuğu ve 20 noktalık ana ekran çizgisiyle. iPad, katlının iç ekranı gibi 640 nokta yüksek, 420–480 nokta geniş düzenleniyor. Kesik, taşan ya da sistem çizgilerinin altında kalan bir şey yok; yazılar elde telefondakinden büyük (12.9" Pro'da bir nokta 0,41 mm, Pixel'in dış ekranında 0,18 mm).
+- Düzeltildi: koleksiyon bir odanın beş tablosunu iPad'de üç sıra ikişer asıyordu; her tablo yaklaşık 67 nokta yüksek, duvar boştu. Artık 410 noktadan geniş ekranda (her iPad) üçer; 12.9" Pro'da tablolar 95–130 nokta. Telefonlar (360) ve 10:16 tablet (400) ikişer kalıyor, katlının iç ekranı zaten üçerdi (GAME_DESIGN §23).
+- Ayarlar kartının iPad'deki hâli (yalnızca Ses ve Müzik) ilk kez görüntülendi: `ScreenShots -screens settings` artık `settings-without-vibrator` resmini de alıyor; kart doğru.
+- Testlerin ekran listelerine üç iPad eklendi (salon, koleksiyon, harita, yapboz, mağaza, ayarlar, dil kartı, bölüm kartı, giriş sayfası, tahta, raf): her düzen kuralı iPad'lerde de denetleniyor, hepsi geçti.
+- Telefonlar değişmedi: Pixel'in dış ekranında (1080×2424) önceki ve sonraki 412 resimden 388'i piksel piksel aynı; kalan 24'ü yalnızca parıltı ve ışıltılarda birkaç bin pikselle ayrılıyor, aynı kodun iki çizimi de aynı yerlerde ayrılıyor. Koleksiyon, yakından bakış ve ayarlar resimleri birebir aynı.
+- Bilerek bırakılanlar: ilk denemede rafın üstündeki yazı tahta çerçevesinin alt kenarına biniyor (katlıda da öyle; parmak nişan alırken soluklaşıyor); mağaza tek sütun ve ortada; gizlilik kartı hâlâ "Android" diyor (IOS_BUILD §5'te karar bekliyor).
+- 4.604 test geçti (443'ü yeni: iPad ekranlarıyla ve koleksiyonun üçer asılışı); ekonomi denetimi temiz (ortalama oyuncu 100. bölüme 8. günde). Unity'de `PlayModeCheck` hatasız; `MusicCheck` ilk çalıştırmada, test takımı aynı anda koşarken, Mağaza sekmesine geçişte 12 saniyede sonuç alamadı, tek başına yeniden çalıştırınca bütün adımları geçti. Xcode projesi yeniden dışa aktarıldı (`IosBuild.Run`, 6 dk). Telefon testleri T440–T449 (F22); iPad'de henüz denenmedi.
+
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 
 **Kullanıcı kararları**

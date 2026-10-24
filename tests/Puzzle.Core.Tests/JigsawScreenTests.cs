@@ -27,6 +27,7 @@ public class JigsawScreenTests
     {
         (1080, 2424, 0, 0), (1080, 2424, 96, 48), (1080, 2340, 0, 0), (1080, 2340, 110, 60), (1080, 1920, 0, 0), (1080, 1920, 90, 48),
         (720, 1280, 0, 0), (1200, 1920, 0, 0), (2076, 2152, 0, 0), (2076, 2152, 80, 60), (1600, 2560, 0, 0),
+        (2048, 2732, 48, 40), (1640, 2360, 48, 40), (1488, 2266, 48, 40),
     };
 
     /// <summary>A player who has won so many levels and put so many of the pieces they gave in place, in the museum's order.</summary>
@@ -325,7 +326,7 @@ public class JigsawScreenTests
             Assert.True(touch.Left >= page.View.Left && touch.Right <= page.View.Right, $"painting {painting + 1} is cut off at a side");
             Assert.True(exhibit.Picture.Height >= 50f, $"painting {painting + 1} is only {exhibit.Picture.Height} points high");
             Assert.InRange(exhibit.Picture.Width / exhibit.Picture.Height, aspects[painting] - 0.05f, aspects[painting] + 0.05f);
-            Assert.Equal(painting < (page.View.Width >= 520f ? 3 : 2), exhibit.HangsFromTheRail);
+            Assert.Equal(painting < (page.View.Width >= 410f ? 3 : 2), exhibit.HangsFromTheRail);
 
             for (int other = painting + 1; other < collection.Exhibits.Count; other++)
             {
@@ -339,6 +340,32 @@ public class JigsawScreenTests
         Assert.True(collection.PreviousRoom.Left > page.Plaque.Left && collection.NextRoom.Right < page.Plaque.Right);
         Assert.True(collection.PreviousRoom.Right < collection.NextRoom.Left);
         Assert.True(collection.NextRoom.Top < page.Plaque.Top && collection.NextRoom.Bottom > page.Plaque.Bottom);
+    }
+
+    [Theory]
+    [InlineData(2048, 2732, 48, 40, 3)]
+    [InlineData(1640, 2360, 48, 40, 3)]
+    [InlineData(1488, 2266, 48, 40, 3)]
+    [InlineData(2076, 2152, 0, 0, 3)]
+    [InlineData(1080, 2424, 0, 0, 2)]
+    [InlineData(1080, 1920, 0, 0, 2)]
+    [InlineData(1600, 2560, 0, 0, 2)]
+    public void An_ipad_upright_and_the_open_fold_hang_a_rooms_paintings_three_to_a_row_and_a_phone_two(int width, int height, int top, int bottom, int inTheTopRow)
+    {
+        float[] aspects = { 1.25f, 0.81f, 1.29f, 1.04f, 1.69f };
+        CollectionLayout collection = CollectionLayout.Of(new ScreenShape(width, height, top, bottom), aspects);
+
+        Assert.Equal(inTheTopRow, collection.Exhibits.Count(exhibit => exhibit.HangsFromTheRail));
+    }
+
+    [Fact]
+    public void On_the_largest_ipad_every_painting_of_a_room_is_larger_than_three_rows_of_two_hung_it()
+    {
+        // Three rows of two gave every painting of this room 67 points of height on the 12.9" iPad Pro.
+        float[] aspects = { 1.25f, 0.81f, 1.29f, 1.04f, 1.69f };
+        CollectionLayout collection = CollectionLayout.Of(new ScreenShape(2048, 2732, 48, 40), aspects);
+
+        Assert.All(collection.Exhibits, exhibit => Assert.True(exhibit.Picture.Height > 70f, $"a painting is only {exhibit.Picture.Height} points high"));
     }
 
     [Fact]

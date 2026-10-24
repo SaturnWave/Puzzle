@@ -52,9 +52,9 @@ namespace Puzzle.Client.Layout
     /// <summary>
     /// Where everything of the collection's page lies, as the design canvas hangs a room's paintings (CollectionTR):
     /// under the page's plaque and rail the room's five paintings in rows, each in a narrow gilt frame with its
-    /// brass plate, over the navigation bar. A phone shows them two to a row, the open foldable three; a row that is
-    /// not full is centred. Each painting is as large as its proportions and its share of the wall allow. Lengths
-    /// are in points. No Unity dependency.
+    /// brass plate, over the navigation bar. A phone shows them two to a row, an iPad and the open foldable three; a
+    /// row that is not full is centred. Each painting is as large as its proportions and its share of the wall allow.
+    /// Lengths are in points. No Unity dependency.
     /// </summary>
     /// <remarks>
     /// What the page's top takes (the cornice, the wallet row, the plaque) comes out of the paintings alone: the
@@ -70,8 +70,14 @@ namespace Puzzle.Client.Layout
         public const float PlateHeight = 28f;
         public const float PlateOverFrame = 6f;
 
-        /// <summary>From this width on, a screen shows three paintings in a row.</summary>
-        private const float WidthForThreeInARow = 520f;
+        /// <summary>
+        /// From this width on, a screen shows three paintings in a row. A screen as high as the design's phone and
+        /// this wide hangs a room's five paintings larger in all in two rows of three than in three rows of two, or
+        /// about as large where they are all wide landscapes; the wider, the more the two rows win. Every iPad
+        /// upright is wider (the mini is 420 points, the 12.9" Pro 480), and so is the open foldable; every phone
+        /// (360) and a 10:16 tablet (400) are narrower and keep two to a row.
+        /// </summary>
+        private const float WidthForThreeInARow = 410f;
 
         /// <summary>A painting's share of the wall is at most this wide, and keeps this much wall around what hangs in it.</summary>
         private const float WidestShare = 206f;

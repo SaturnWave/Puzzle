@@ -15,7 +15,8 @@ public class EntryPageTests
 {
     /// <summary>
     /// The Pixel Fold's two screens bare and with a cutout and system bars as large as a phone's (a status bar of
-    /// about 44 points and a gesture bar of about 21), the tall phone, the tight 9:16 one and a small one.
+    /// about 44 points and a gesture bar of about 21), the tall phone, the tight 9:16 one and a small one; and the
+    /// three iPads upright, with the status bar and the home indicator (24 and 20 of their points).
     /// </summary>
     public static TheoryData<int, int, int, int> Screens() => new TheoryData<int, int, int, int>
     {
@@ -26,6 +27,9 @@ public class EntryPageTests
         { 1080, 2340, 0, 0 },
         { 1080, 1920, 90, 48 },
         { 720, 1280, 0, 0 },
+        { 2048, 2732, 48, 40 },
+        { 1640, 2360, 48, 40 },
+        { 1488, 2266, 48, 40 },
     };
 
     [Fact]

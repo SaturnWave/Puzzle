@@ -6,7 +6,8 @@ namespace Puzzle.Core.Tests;
 /// Where the Unity game puts a board on a screen. <c>ScreenLayout</c> is the Unity project's source file, compiled
 /// into these tests: it has no Unity dependency, so the screens the game must support are checked here in numbers.
 /// The screens are a tall phone (1080 x 2340, and 1080 x 2424: the cover display of the foldable the game is tried
-/// on), the 9:16 phone of the design (1080 x 1920, 720 x 1280), and that foldable opened (2076 x 2152, nearly square).
+/// on), the 9:16 phone of the design (1080 x 1920, 720 x 1280), that foldable opened (2076 x 2152, nearly square),
+/// and the iPads upright (3:4: the 12.9" Pro 2048 x 2732, the 10th generation 1640 x 2360, the mini 1488 x 2266).
 /// </summary>
 public class ScreenLayoutTests
 {
@@ -18,7 +19,7 @@ public class ScreenLayoutTests
 
     public static TheoryData<int, int, int, int, bool> ScreensAndBoards()
     {
-        (int Width, int Height)[] screens = { (1080, 2424), (1080, 2340), (1080, 1920), (1200, 1920), (2076, 2152), (1038, 1076), (720, 1280) };
+        (int Width, int Height)[] screens = { (1080, 2424), (1080, 2340), (1080, 1920), (1200, 1920), (2076, 2152), (1038, 1076), (720, 1280), (2048, 2732), (1640, 2360), (1488, 2266) };
         (int Columns, int Rows, bool HasExits)[] boards = { (10, 10, false), (11, 13, false), (10, 11, true), (16, 16, true), (5, 5, false), (16, 4, false) };
         var cases = new TheoryData<int, int, int, int, bool>();
         foreach ((int width, int height) in screens)
@@ -59,6 +60,9 @@ public class ScreenLayoutTests
     [InlineData(2076, 2152, 0, 0)]
     [InlineData(2076, 2152, 80, 60)]
     [InlineData(1038, 1076, 0, 0)]
+    [InlineData(2048, 2732, 48, 40)]
+    [InlineData(1640, 2360, 48, 40)]
+    [InlineData(1488, 2266, 48, 40)]
     public void The_plaques_and_the_shelf_stay_on_the_usable_screen(int width, int height, int topInset, int bottomInset)
     {
         ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height, topInset, bottomInset), new BoardFootprint(10, 10, hasExits: false));
@@ -127,6 +131,9 @@ public class ScreenLayoutTests
     [InlineData(2076, 2152, 0, 0)]
     [InlineData(2076, 2152, 80, 60)]
     [InlineData(1038, 1076, 0, 0)]
+    [InlineData(2048, 2732, 48, 40)]
+    [InlineData(1640, 2360, 48, 40)]
+    [InlineData(1488, 2266, 48, 40)]
     public void The_shelfs_five_discs_stand_apart_on_its_plank_from_end_to_end_and_none_is_less_than_a_fingertip_in_the_hand(int width, int height, int topInset, int bottomInset)
     {
         ScreenLayout layout = ScreenLayout.Of(new ScreenShape(width, height, topInset, bottomInset), new BoardFootprint(10, 12, hasExits: false));
