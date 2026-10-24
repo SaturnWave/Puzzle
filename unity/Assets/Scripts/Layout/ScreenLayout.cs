@@ -1,17 +1,23 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Puzzle.Client.Layout
 {
     /// <summary>
-    /// A screen in pixels, with the strips at its top and bottom that a camera cutout or a system bar takes away.
-    /// The game is played upright, so cutouts at the sides are not modelled.
+    /// A screen in pixels, with the strips at its edges that a camera cutout or a system bar takes away: at the top
+    /// and the foot on every screen, and at the sides of a screen turned sideways, where a tablet's or an open
+    /// foldable's camera lies then. The strips at the sides are nothing unless they are given, so an upright screen
+    /// is written as it always was.
     /// </summary>
     public readonly struct ScreenShape : IEquatable<ScreenShape>
     {
+        private static readonly Regex Written = new Regex(@"^(\d+)x(\d+)(?:\+(\d+)\+(\d+)(?:\+(\d+)\+(\d+))?)?$");
+
         /// <exception cref="ArgumentOutOfRangeException">The screen has no area, or the strips leave none of it.</exception>
-        public ScreenShape(int pixelWidth, int pixelHeight, int topInsetPixels = 0, int bottomInsetPixels = 0)
+        public ScreenShape(int pixelWidth, int pixelHeight, int topInsetPixels = 0, int bottomInsetPixels = 0, int leftInsetPixels = 0, int rightInsetPixels = 0)
         {
             if (pixelWidth < 1 || pixelHeight < 1)
             {
@@ -23,10 +29,17 @@ namespace Puzzle.Client.Layout
                 throw new ArgumentOutOfRangeException(nameof(topInsetPixels), $"Insets of {topInsetPixels} and {bottomInsetPixels} px do not fit a screen {pixelHeight} px high.");
             }
 
+            if (leftInsetPixels < 0 || rightInsetPixels < 0 || leftInsetPixels + rightInsetPixels >= pixelWidth)
+            {
+                throw new ArgumentOutOfRangeException(nameof(leftInsetPixels), $"Insets of {leftInsetPixels} and {rightInsetPixels} px do not fit a screen {pixelWidth} px wide.");
+            }
+
             PixelWidth = pixelWidth;
             PixelHeight = pixelHeight;
             TopInsetPixels = topInsetPixels;
             BottomInsetPixels = bottomInsetPixels;
+            LeftInsetPixels = leftInsetPixels;
+            RightInsetPixels = rightInsetPixels;
         }
 
         public int PixelWidth { get; }
@@ -37,18 +50,53 @@ namespace Puzzle.Client.Layout
 
         public int BottomInsetPixels { get; }
 
+        public int LeftInsetPixels { get; }
+
+        public int RightInsetPixels { get; }
+
+        /// <summary>
+        /// A screen as <see cref="ToString"/> writes it, which is how the Editor's picture commands are told of one:
+        /// 1080x2340, 1080x2340+96+48 with its top and bottom strips, 2152x2076+0+0+90+0 with its left and right ones too.
+        /// </summary>
+        /// <exception cref="FormatException">The text is not a screen written so.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The screen has no area, or its strips leave none of it.</exception>
+        public static ScreenShape Parse(string text)
+        {
+            Match match = Written.Match(text);
+            if (!match.Success)
+            {
+                throw new FormatException(
+                    $"\"{text}\" is not a screen: write 1080x2340, 1080x2340+96+48 with top and bottom insets, or 2152x2076+0+0+90+0 with left and right insets too.");
+            }
+
+            int Number(int group) => match.Groups[group].Success
+                ? int.Parse(match.Groups[group].Value, NumberStyles.None, CultureInfo.InvariantCulture)
+                : 0;
+            return new ScreenShape(Number(1), Number(2), Number(3), Number(4), Number(5), Number(6));
+        }
+
         public bool Equals(ScreenShape other) =>
             PixelWidth == other.PixelWidth && PixelHeight == other.PixelHeight
-            && TopInsetPixels == other.TopInsetPixels && BottomInsetPixels == other.BottomInsetPixels;
+            && TopInsetPixels == other.TopInsetPixels && BottomInsetPixels == other.BottomInsetPixels
+            && LeftInsetPixels == other.LeftInsetPixels && RightInsetPixels == other.RightInsetPixels;
 
         public override bool Equals(object? obj) => obj is ScreenShape other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(PixelWidth, PixelHeight, TopInsetPixels, BottomInsetPixels);
+        public override int GetHashCode() =>
+            HashCode.Combine(PixelWidth, PixelHeight, TopInsetPixels, BottomInsetPixels, LeftInsetPixels, RightInsetPixels);
 
-        /// <summary>As the screenshot command writes a screen: 1080x2340, or 1080x2340+96+48 with its insets.</summary>
-        public override string ToString() => TopInsetPixels == 0 && BottomInsetPixels == 0
-            ? $"{PixelWidth}x{PixelHeight}"
-            : $"{PixelWidth}x{PixelHeight}+{TopInsetPixels}+{BottomInsetPixels}";
+        /// <summary>As the screenshot command writes a screen: 1080x2340, 1080x2340+96+48 with its insets, 2152x2076+0+0+90+0 with insets at its sides.</summary>
+        public override string ToString()
+        {
+            bool hasSideInsets = LeftInsetPixels != 0 || RightInsetPixels != 0;
+            if (!hasSideInsets && TopInsetPixels == 0 && BottomInsetPixels == 0)
+            {
+                return $"{PixelWidth}x{PixelHeight}";
+            }
+
+            string upright = $"{PixelWidth}x{PixelHeight}+{TopInsetPixels}+{BottomInsetPixels}";
+            return hasSideInsets ? $"{upright}+{LeftInsetPixels}+{RightInsetPixels}" : upright;
+        }
 
         public static bool operator ==(ScreenShape left, ScreenShape right) => left.Equals(right);
 

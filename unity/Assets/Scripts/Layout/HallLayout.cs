@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 
 namespace Puzzle.Client.Layout
 {
@@ -9,7 +10,10 @@ namespace Puzzle.Client.Layout
     /// below; under it stands the workbench on the floor, and in front of the floor the play button, over the
     /// navigation bar. The painting comes first: it is as large as its proportions and the wall allow; on a short
     /// screen the workbench is drawn smaller, and smaller still where a cutout or a system bar takes more of the
-    /// height, before the painting gives up what it needs to be seen. No Unity dependency.
+    /// height, before the painting gives up what it needs to be seen. On a screen held sideways the hall keeps this
+    /// upright column in its middle, and the wide wall at its sides is the gallery's: a lamp beside the frame, and on
+    /// a tablet the room's restored paintings, two above each other at each side (<see cref="PaintingsBeside"/>).
+    /// No Unity dependency.
     /// </summary>
     /// <remarks>
     /// What the page's top takes (the cornice, the wallet row, the plaque) comes out of the wall in this order: the
@@ -73,6 +77,27 @@ namespace Puzzle.Client.Layout
 
         /// <summary>A wall lamp hangs beside the painting where the wall there is at least this wide: on an open foldable, not on a phone.</summary>
         public const float WallForALamp = 70f;
+
+        /// <summary>
+        /// On a screen held sideways, from this much bare wall beside the frame on the room's restored paintings hang
+        /// on it: the 12.9" iPad has 259 to 363 points there, as its painting is wide or narrow, a 16:10 tablet 344 to
+        /// 448. Elsewhere the lamp alone hangs there.
+        /// </summary>
+        public const float WallForPaintings = 190f;
+
+        /// <summary>At most this many of the room's restored paintings hang beside the frame: two above each other at each side.</summary>
+        public const int MostPaintingsBeside = 4;
+
+        /// <summary>
+        /// With paintings beside it, the lamp hangs in this much wall next to the frame, and the paintings hang beyond
+        /// it, each in a share of the wall at most this wide, clear of the screen's side by this much, between the
+        /// picture rail and the skirting board with this much wall under the one and over the other.
+        /// </summary>
+        private const float LampRoomBesideTheFrame = 80f;
+        private const float WidestShareBeside = 150f;
+        private const float WallAtTheSide = 12f;
+        private const float PaintingsUnderTheRail = 10f;
+        private const float PaintingsOverTheSkirting = 8f;
 
         /// <summary>
         /// The note the hall has for a player with nothing to restore just now: a pill of this height that stands
@@ -165,7 +190,7 @@ namespace Puzzle.Client.Layout
             // The gift frame is drawn as large as the wallet row, and smaller where the wall between the skirting and the plate is shorter.
             float giftFoot = FloorLine + SkirtingHeight + page.Between(TightGiftOverTheSkirting, RoomyGiftOverTheSkirting);
             GiftScale = Math.Min(page.WalletRowScale, (Hanging.PlateBottom - GiftUnderThePlate - giftFoot) / GiftHeight);
-            float giftMiddleX = Math.Min(GiftAcross * GiftScale, view.Right - GiftFromTheSide * GiftScale);
+            float giftMiddleX = Math.Min(GiftAcross * GiftScale, view.UsableRight - GiftFromTheSide * GiftScale);
             GiftMiddle = (giftMiddleX, giftFoot + (GiftHeight - GiftMiddleUnderTop) * GiftScale);
         }
 
@@ -246,11 +271,63 @@ namespace Puzzle.Client.Layout
             GiftFrameSize * GiftScale,
             GiftHeight * GiftScale);
 
-        /// <summary>The bare wall between a side of the screen and the frame.</summary>
-        public float WallBesideTheFrame => Frame.Left - Page.View.Left;
+        /// <summary>The bare wall between the frame and the nearer side of the usable screen, the same at both sides of the frame.</summary>
+        public float WallBesideTheFrame => Math.Min(Frame.Left - Page.View.UsableLeft, Page.View.UsableRight - Frame.Right);
 
         /// <summary>True when a wall lamp has room at each side of the painting.</summary>
         public bool HasLamps => WallBesideTheFrame >= WallForALamp;
+
+        /// <summary>
+        /// True on a screen held sideways (<see cref="PageLayout.IsSideways"/>) whose wall beside the frame is wide
+        /// enough for the room's restored paintings: every tablet held sideways. An upright screen keeps its hall as it
+        /// is, and so does the open foldable either way, whose wall is wide for a narrow painting but whose screen is
+        /// nearly square.
+        /// </summary>
+        public bool HasPaintingsBeside => Page.IsSideways && WallBesideTheFrame >= WallForPaintings;
+
+        /// <summary>
+        /// How far right of the screen's middle the right lamp hangs, the left one as far left: midway in the wall
+        /// beside the frame, or nearer the frame where paintings hang beyond the lamp.
+        /// </summary>
+        public float LampMiddleX => Frame.Right + (HasPaintingsBeside ? LampRoomBesideTheFrame : WallBesideTheFrame) / 2;
+
+        /// <summary>
+        /// Where the room's restored paintings hang beside the frame, in the order they are given: the left upper
+        /// place, the right upper one, then the left and the right lower ones, each in the collection's narrow frame
+        /// with its plate, the upper two from the picture rail. Nothing where the wall is too narrow for them
+        /// (<see cref="HasPaintingsBeside"/>), and no more than <see cref="MostPaintingsBeside"/>.
+        /// </summary>
+        /// <param name="pictureAspects">Each restored painting's width over its height, in the order they are to hang.</param>
+        /// <exception cref="ArgumentException">Proportions that are not those of a picture.</exception>
+        public IReadOnlyList<ExhibitPlace> PaintingsBeside(IReadOnlyList<float> pictureAspects)
+        {
+            int count = HasPaintingsBeside ? Math.Min(pictureAspects.Count, MostPaintingsBeside) : 0;
+            ScreenView view = Page.View;
+            float wingInside = Frame.Right + LampRoomBesideTheFrame;
+            float wingOutside = Math.Min(-view.UsableLeft, view.UsableRight) - WallAtTheSide;
+            float shareWidth = Math.Min(WidestShareBeside, wingOutside - wingInside);
+            float shareMiddle = (wingInside + wingOutside) / 2;
+            float top = Page.RailBottom - PaintingsUnderTheRail;
+            float foot = FloorLine + SkirtingHeight + PaintingsOverTheSkirting;
+            float shareHeight = (top - foot) / 2;
+
+            var places = new ExhibitPlace[count];
+            for (int painting = 0; painting < count; painting++)
+            {
+                float aspect = pictureAspects[painting];
+                if (!(aspect > 0f) || float.IsInfinity(aspect))
+                {
+                    throw new ArgumentException($"A picture has a width and a height; {aspect} is not their proportion.", nameof(pictureAspects));
+                }
+
+                int side = painting % 2 == 0 ? -1 : 1;
+                int row = painting / 2;
+                var share = new Box(side * shareMiddle - shareWidth / 2, top - (row + 1) * shareHeight, shareWidth, shareHeight);
+                places[painting] = CollectionLayout.HungIn(share, aspect, view, hangsFromTheRail: row == 0);
+            }
+
+            return places;
+        }
 
         /// <param name="pictureAspect">The painting's width over its height.</param>
         /// <param name="hasJigsawButton">True while pieces wait: the button that leads to the jigsaw stands beside the play button.</param>

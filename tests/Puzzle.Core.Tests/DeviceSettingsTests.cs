@@ -67,6 +67,14 @@ public class DeviceSettingsTests
     }
 
     [Fact]
+    public void On_a_device_with_nothing_to_buzz_the_card_offers_sound_and_music_only()
+    {
+        // An iPad has no Taptic Engine and some tablets have no vibrator (Haptics.DeviceHasNone): a vibration switch
+        // there would change nothing, and the card offers no such switch.
+        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music }, DeviceAbilities.OfThisBuildWithoutVibrator.Settings);
+    }
+
+    [Fact]
     public void Settings_kept_in_memory_are_the_ones_given_last()
     {
         var store = new SettingsInMemory(DeviceSettings.Default);

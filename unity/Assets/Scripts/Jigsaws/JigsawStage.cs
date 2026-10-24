@@ -310,7 +310,8 @@ namespace Puzzle.Client.Jigsaws
             _veil.Fit(view);
             _spotlight.Fit(view);
             _windowsCutWhileCarried = null;
-            _lessonPill.Stand(layout.Button.MiddleY, ShelfPill.PillEdge.Middle, scale: 1f, Mathf.Min(WidestLessonPill, view.Width - 2f * LessonPillSideRoom));
+            float lessonRoom = layout.Arrangement == JigsawArrangement.SideBySide ? JigsawLayout.SidewaysColumnWidth : view.Width - 2f * LessonPillSideRoom;
+            _lessonPill.Stand(layout.Button.MiddleY, ShelfPill.PillEdge.Middle, scale: 1f, Mathf.Min(WidestLessonPill, lessonRoom), across: layout.Button.MiddleX);
 
             _row = new TrayRow(Table.Waiting, layout.TrayPlaces);
             _tray.Lay(_row);

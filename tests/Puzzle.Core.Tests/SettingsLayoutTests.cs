@@ -17,8 +17,8 @@ public class SettingsLayoutTests
     public static TheoryData<int> Switches() => new TheoryData<int> { 0, 2, 3, 4 };
 
     /// <summary>
-    /// The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, and the two
-    /// phones with a cutout and a system bar.
+    /// The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, the two
+    /// phones with a cutout and a system bar, and the largest and the smallest iPad upright.
     /// </summary>
     public static TheoryData<int, int, int, int, int> ScreensAndSwitches()
     {
@@ -31,6 +31,11 @@ public class SettingsLayoutTests
             data.Add(2076, 2152, 0, 0, switches);
             data.Add(1080, 2340, 110, 60, switches);
             data.Add(1080, 1920, 90, 48, switches);
+            data.Add(2048, 2732, 48, 40, switches);
+            data.Add(2732, 2048, 0, 40, switches);
+            data.Add(2152, 2076, 0, 0, switches);
+            data.Add(2560, 1600, 0, 0, switches);
+            data.Add(1488, 2266, 48, 40, switches);
         }
 
         return data;

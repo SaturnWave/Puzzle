@@ -31,7 +31,7 @@ namespace Puzzle.Client.EditorTools
     /// out/unity/shots/offer-...-SIZE.png, with one sheet of a size's pictures; in another language than Turkish
     /// (<c>-language en</c>) their names end in its code.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.OfferShots.Run
-    ///            [-offerSizes 1080x2340,1080x1920,2076x2152] [-offerLevels 47,11,280]
+    ///            [-offerSizes 1080x2340,1080x1920,2076x2152,2732x2048,2152x2076] [-offerLevels 47,11,280]
     /// </summary>
     public static class OfferShots
     {
@@ -47,7 +47,7 @@ namespace Puzzle.Client.EditorTools
             try
             {
                 string[] arguments = Environment.GetCommandLineArgs();
-                ScreenShape[] screens = ListAfter("-offerSizes", arguments, "1080x2340,1080x1920,2076x2152").Select(ScreenOf).ToArray();
+                ScreenShape[] screens = ListAfter("-offerSizes", arguments, "1080x2340,1080x1920,2076x2152,2732x2048,2152x2076").Select(ScreenArgument.Of).ToArray();
                 int[] levelNumbers = ListAfter("-offerLevels", arguments, "47,11,280").Select(WholeNumber).ToArray();
                 ArtCatalogue art = AssetDatabase.LoadAssetAtPath<ArtCatalogue>(ArtCatalogueBuilder.CataloguePath);
                 if (art == null)
@@ -97,12 +97,6 @@ namespace Puzzle.Client.EditorTools
 
         private static int WholeNumber(string text) =>
             int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? number : throw new ArgumentException($"\"{text}\" is not a whole number.");
-
-        private static ScreenShape ScreenOf(string text)
-        {
-            string[] sides = text.Split('x');
-            return sides.Length == 2 ? new ScreenShape(WholeNumber(sides[0]), WholeNumber(sides[1])) : throw new ArgumentException($"\"{text}\" is not a screen such as 1080x2340.");
-        }
 
         /// <summary>The wallets the offer is pictured for: one whose coins cover the price with every ad of the day, one short of the price with none.</summary>
         private static IEnumerable<(string Name, Wallet Wallet)> Wallets()

@@ -62,7 +62,7 @@ public class LanguageCardLayoutTests
         Assert.Equal(SettingsLayout.BodyWidth, LanguageCardLayout.BodyWidth);
     }
 
-    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, and the two phones with a cutout and a system bar.</summary>
+    /// <summary>The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, the two phones with a cutout and a system bar, and the three iPads upright.</summary>
     public static TheoryData<int, int, int, int> Screens() => new()
     {
         { 1080, 2340, 0, 0 },
@@ -71,6 +71,13 @@ public class LanguageCardLayoutTests
         { 2076, 2152, 0, 0 },
         { 1080, 2340, 110, 60 },
         { 1080, 1920, 90, 48 },
+        { 2048, 2732, 48, 40 },
+        { 1640, 2360, 48, 40 },
+        { 1488, 2266, 48, 40 },
+        { 2732, 2048, 0, 40 },
+        { 2360, 1640, 0, 40 },
+        { 2152, 2076, 0, 0 },
+        { 2560, 1600, 0, 0 },
     };
 
     /// <summary>The three languages of this build; up to five stand in front of the settings card the same way.</summary>

@@ -1464,6 +1464,27 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** oturumu açan adım bir kareyi tutar (Editör'de yaklaşık 0,5 sn); o arada taşlar ve parıltı durur. Telefondaki süre günlükten okunacak, gerekirse resimler kare kare yüklenir. Alt satırdaki "test sürümü" mağaza sürümünde değişmeli.
 - **Doğrulama:** 4.153 test (31'i yeni). Ekonomi denetimi temiz. Unity'de `PlayModeCheck` (giriş sayfası → salon) ve `MusicCheck` (giriş → salon → bölüm → salon) hatasız; sayfanın görüntüleri iki ekranda, güvenli alanlarla ve dört dilde (`ScreenShots -screens entry`). Telefon testleri T430–T436.
 
+**Yan çevirme: tabletler ve açık Fold (2026-10-24).**
+
+- **Kural (sahibinin kararı):** iPad her zaman döner. Android'de ekranın en büyük penceresinin kısa kenarı 600 dp ve üstüyse (tabletler, açık Fold) döner; o anki pencereye bakılmaz, bölünmüş ekrandaki tablet telefon sanılmaz. Telefonlar ve Fold'un dış ekranı dik kalır.
+  - Dönen ekran dört yöne döner, ters dik de: Apple başka uygulamanın yanında çalışan iPad uygulamasından dört yönü ister, Android tablet de iki yönde tutulur (planın önerisi).
+  - Bölüm oynanırken de döner: iOS kilidi garanti etmiyor, pencere zaten boyut değiştirebiliyor.
+  - Android paketi dik açılır, telefon hiç yan görünmez; oyun ilk karede kuralı uygular. Sistemin döndürme kilidine uyulur. Yapı: `ScreenTurns` (Unity'siz, testli), `DeviceScreen`, `GameRoot`.
+  - Manifestte `appCategory="game"` yoksa Android derlemesi durur (`ManifestGameCategory`): Android 16 ve sonrası büyük ekranda oyun olmayan uygulamanın yön isteğine uymuyor. Hedef API 36'ya sabitlendi; bir Unity güncellemesi onu sessizce 37'ye çekemez.
+- **Görünüm (seçenek A):** dik düzen ekranın ortasında tam boy kalır, yanlarda galerinin duvarı: desen, köşelerde koyulaşma, lambalar. Siyah bant yok.
+  - Yatay tablette (genişlik yüksekliğin en az 1,25 katı) salonda lamba çerçeveye yaklaşır, ötesinde odanın onarılmış tabloları asılır: en çok dört, her yanda ikişer, koleksiyonun ince çerçevesi ve plakasıyla; üsttekiler raydan tellerle. Tabloların resimleri plaketin küçük resimlerinin zaten tuttuğu resimlerdir; bellek artmaz. Telefonda hiç yüklenmezler.
+  - Harita: çerçeve dünyanın biçimine doğru genişler (haritanın yüksekliğinin en çok 2,1 katı, yanlarda 28 nokta duvar); şeritte 9–10 dönem birden görünür. Tablo kartı ortada, en çok 420 nokta.
+  - Yapboz: tablo solda ekranın yüksekliğince (12,9" iPad'de dik tablo, dik iPad'dekinin 1,3 katından büyük); sağda bir sütun: raydan asılı pip çubukları, ipucu, tepsi ve "Otomatik tamamla". Tepside altı yer, 2×3 ya da 3×2; parçaları büyük gösteren seçilir.
+  - Fold yan tutulunca ekran neredeyse kare (663×640 nokta): salon, harita ve yapboz bugünkü gibi kalır.
+  - Tahtanın gerçek yatay düzeni (B) bu adımda yok; iPad'de A denendikten sonra konuşulacak. Booster yazısının en alt sırayı örtmesi (A24) sürüyor.
+- **Döndürmeye dayanıklılık:** ekran değişince (dönme, katlanma, pencere boyutu) basılı parmak bırakılır (`GameRoot`, `GameSession.Fit`). Dönmeden önce başlamış bir sürükleme başka bir çifti takas etmez, taşınan parça tepsiye döner. Giriş sayfasında kartın düğmesine basılı parmak da bırakılır.
+- **Yan paylar:** yan tutulunca kamera deliği yana geçer. `ScreenShape` sol ve sağ payı taşır (varsayılan 0, dik ekranlar aynı), `ScreenView.UsableLeft/UsableRight`. Geri düğmesi, hediye çerçevesi, giriş sayfasının alt satırı, salonun kanatları, harita ve yapboz paylara uyar. Editör araçları ekranı `2152x2076+0+0+90+0` biçiminde de alır.
+- **iPad dalından ana dala:** koleksiyon 410 noktadan geniş ekranda üçlü sıra (dik iPad'ler), titreşim motoru olmayan cihazda ayarlarda titreşim anahtarı yok (birçok Android tablet), `MusicCheck` sayfanın yerleşmesini bekler.
+- **Denetim:** `RotationCheck` oyunu oturum üzerinden sürer ve ekranı riskli anlarda değiştirir: 12,9" iPad dik↔yan, Fold iç ekran dik↔yan (kamera yanda), Fold dış ekrandan iç ekrana. Taşlar düşerken, sürüklemenin ortasında, tahtanın ve müzenin bütün kartları açıkken, finalde, yapboz parçası taşınırken ve giriş sayfasında; her değişiklikten sonra tahta motorunkiyle aynı, düğmeler kullanılabilir ekranda, günlükte hata yok. Eski kodda sürüklemenin ortasında dönünce bir hamle oynanıyordu; denetim kırılıyor.
+- **Telefonlar değişmedi:** Pixel dış ve iç ekranın 262 görüntüsü (19 sayfa ve kart, üç oyuncu) önce ve sonra piksel piksel aynı.
+- **iOS** (`feature/ios`): Info.plist'te iPad dört yön, iPhone yalnız dik; "tam ekran zorunlu" kalktı, oyun Pencereli Uygulamalar'da ve Stage Manager'da da çalışır (`docs/IOS_BUILD.md`).
+- **Doğrulama:** 5.367 test. Ekonomi denetimi temiz. Unity'de `PlayModeCheck`, `MusicCheck`, `RotationCheck` ve öteki denetimler hatasız; yatay görüntüler üç ekranda (12,9" iPad, 16:10 tablet, Fold yan) bakıldı. Telefon testleri T450–T465.
+
 ## 24. Bölüm bankası ve derleyici
 
 **Karar (2026-10-08).** Zorluk ayarının kalıcı çözümü: üretilen tahtalar atılmaz, ölçümleriyle birlikte saklanır; oyunun 1000 bölümü bu bankadan bir **politikayla** seçilir. Kullanıcının isteği: "kalıcı bir çözüm; üretilen bölümlerin çoğunu harddiske kaydedebiliriz". §8 ve §9'daki üretici (`generate`) duruyor; derleyici kendini kanıtladıkça onun yerini alır.

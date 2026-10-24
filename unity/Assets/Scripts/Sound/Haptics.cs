@@ -8,8 +8,8 @@ namespace Puzzle.Client.Sound
     /// <summary>
     /// Short ticks through Android's vibrator, as the phone's own keyboard ticks: one of Android's predefined clicks
     /// from Android 10 on, a pulse of a few milliseconds before that. The build asks for the permission to vibrate
-    /// (AndroidBuild's manifest step). Anywhere but on an Android phone (the Editor, a desktop), and on a phone without
-    /// a vibrator, a tick is nothing. A vibrator that fails is said once and not asked again in the run.
+    /// (AndroidBuild's manifest step). Anywhere but on an Android phone (the Editor, a desktop), and on a device without
+    /// a vibrator (many tablets), a tick is nothing. A vibrator that fails is said once and not asked again in the run.
     /// </summary>
     public sealed class Haptics : IDisposable
     {
@@ -30,18 +30,19 @@ namespace Puzzle.Client.Sound
         private readonly int _androidVersion;
         private AndroidJavaObject? _vibrator;
 
-        private Haptics(AndroidJavaObject? vibrator, int androidVersion)
+        private Haptics(AndroidJavaObject? vibrator, int androidVersion, bool deviceHasNone)
         {
             _vibrator = vibrator;
             _androidVersion = androidVersion;
+            DeviceHasNone = deviceHasNone;
         }
 
-        /// <summary>The vibrator of the phone the game runs on; one that ticks nothing where there is none to reach.</summary>
+        /// <summary>The vibrator of the device the game runs on; one that ticks nothing where there is none to reach.</summary>
         public static Haptics OfThisDevice()
         {
             if (Application.platform != RuntimePlatform.Android)
             {
-                return new Haptics(null, androidVersion: 0);
+                return new Haptics(null, androidVersion: 0, deviceHasNone: false);
             }
 
             try
@@ -53,17 +54,24 @@ namespace Puzzle.Client.Sound
                 if (vibrator == null || !vibrator.Call<bool>("hasVibrator"))
                 {
                     vibrator?.Dispose();
-                    return new Haptics(null, androidVersion: 0);
+                    return new Haptics(null, androidVersion: 0, deviceHasNone: true);
                 }
 
-                return new Haptics(vibrator, version.GetStatic<int>("SDK_INT"));
+                return new Haptics(vibrator, version.GetStatic<int>("SDK_INT"), deviceHasNone: false);
             }
             catch (AndroidJavaException failure)
             {
                 Debug.LogWarning($"The phone's vibrator cannot be reached, so play does not tick: {failure.Message}");
-                return new Haptics(null, androidVersion: 0);
+                return new Haptics(null, androidVersion: 0, deviceHasNone: true);
             }
         }
+
+        /// <summary>
+        /// Whether the device has nothing to tick from the start: an Android device without a vibrator (many tablets) or
+        /// whose vibrator cannot be reached. The settings card then leaves the vibration switch out. False in the Editor
+        /// and on a desktop, which are drawn as the phone, switch and all.
+        /// </summary>
+        public bool DeviceHasNone { get; }
 
         /// <summary>One short tick, lighter or firmer; nothing where there is no vibrator to reach.</summary>
         public void Buzz(Tick tick)

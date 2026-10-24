@@ -21,6 +21,8 @@ public class MuseumLayoutTests
     {
         (1080, 2424, 0, 0), (1080, 2424, 96, 48), (1080, 2340, 0, 0), (1080, 2340, 110, 60), (1080, 1920, 0, 0), (1080, 1920, 90, 48),
         (720, 1280, 0, 0), (1200, 1920, 0, 0), (2076, 2152, 0, 0), (2076, 2152, 80, 60), (1600, 2560, 0, 0),
+        (2048, 2732, 48, 40), (1640, 2360, 48, 40), (1488, 2266, 48, 40),
+        (2732, 2048, 0, 40), (2732, 2048, 48, 40), (2360, 1640, 0, 40), (2152, 2076, 0, 0), (2560, 1600, 0, 0),
     };
 
     public static TheoryData<int, int, int, int> EveryScreen()
@@ -202,8 +204,11 @@ public class MuseumLayoutTests
         Assert.InRange(hall.BenchScale, HallLayout.SmallestBench, 1f);
 
         // The bench before the painting: a picture under the height the bench gives way to has the smallest bench over it.
+        // The picture's width is rounded down to a pixel and its height after it, which may cost an upright picture
+        // up to 1 / aspect pixels of height and one more (the open foldable held sideways, at 3.24 pixels a point).
         bool isAsWideAsTheWallAllows = hall.Picture.Width >= Math.Min(HallLayout.WidestPicture, page.View.Width - 2 * (HallLayout.FrameWidth + 10f)) - 2 * onePixel;
-        if (hall.Picture.Height < HallLayout.PictureHeightTheBenchGivesWayTo - 2 * onePixel && !isAsWideAsTheWallAllows)
+        float roundedAway = Math.Max(2f, 1f / aspect + 1f) * onePixel;
+        if (hall.Picture.Height < HallLayout.PictureHeightTheBenchGivesWayTo - roundedAway && !isAsWideAsTheWallAllows)
         {
             Assert.Equal(HallLayout.SmallestBench, hall.BenchScale, precision: 3);
         }

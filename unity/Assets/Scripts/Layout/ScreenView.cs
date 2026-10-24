@@ -16,13 +16,15 @@ namespace Puzzle.Client.Layout
         public const float DesignWidth = 360f;
         public const float DesignHeight = 640f;
 
-        private ScreenView(float pixelsPerPoint, float width, float height, float usableTop, float usableBottom)
+        private ScreenView(float pixelsPerPoint, float width, float height, float usableTop, float usableBottom, float usableLeft, float usableRight)
         {
             PixelsPerPoint = pixelsPerPoint;
             Width = width;
             Height = height;
             UsableTop = usableTop;
             UsableBottom = usableBottom;
+            UsableLeft = usableLeft;
+            UsableRight = usableRight;
         }
 
         public float PixelsPerPoint { get; }
@@ -37,6 +39,15 @@ namespace Puzzle.Client.Layout
 
         /// <summary>The height above which a system bar at the foot no longer covers the screen.</summary>
         public float UsableBottom { get; }
+
+        /// <summary>
+        /// Where, from the left, a camera cutout at the screen's left side no longer covers it: the screen's left
+        /// edge but on a device held sideways with its camera at that side. What is anchored to a side keeps inside.
+        /// </summary>
+        public float UsableLeft { get; }
+
+        /// <summary>Where a camera cutout at the screen's right side begins: the screen's right edge on an upright screen.</summary>
+        public float UsableRight { get; }
 
         public float Left => -Width / 2;
 
@@ -54,7 +65,9 @@ namespace Puzzle.Client.Layout
             float height = screen.PixelHeight / pixelsPerPoint;
             float usableTop = height / 2 - screen.TopInsetPixels / pixelsPerPoint;
             float usableBottom = -height / 2 + screen.BottomInsetPixels / pixelsPerPoint;
-            return new ScreenView(pixelsPerPoint, width, height, usableTop, usableBottom);
+            float usableLeft = -width / 2 + screen.LeftInsetPixels / pixelsPerPoint;
+            float usableRight = width / 2 - screen.RightInsetPixels / pixelsPerPoint;
+            return new ScreenView(pixelsPerPoint, width, height, usableTop, usableBottom, usableLeft, usableRight);
         }
 
         /// <summary>

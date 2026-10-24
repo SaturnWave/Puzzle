@@ -66,9 +66,9 @@ namespace Puzzle.Client.Jigsaws
             SetOutThePips(layout.PipRows, barWidth, rowsApart);
 
             var wires = new MeshSketch();
-            float wire = Mathf.Min(WireFromMiddle * scale, layout.Hanging.WidestPlate / 2f);
-            PictureWire.Add(wires, layout.Pips.MiddleX - wire, layout.Pips.Top, layout.Hanging.PlateBottom);
-            PictureWire.Add(wires, layout.Pips.MiddleX + wire - PictureWire.Width, layout.Pips.Top, layout.Hanging.PlateBottom);
+            float wire = Mathf.Min(WireFromMiddle * scale, layout.PipWiresReach);
+            PictureWire.Add(wires, layout.Pips.MiddleX - wire, layout.Pips.Top, layout.PipsHangFrom);
+            PictureWire.Add(wires, layout.Pips.MiddleX + wire - PictureWire.Width, layout.Pips.Top, layout.PipsHangFrom);
             _wires.Show(wires.ToMesh("Pip wires"));
         }
 

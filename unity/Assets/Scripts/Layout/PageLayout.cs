@@ -194,6 +194,18 @@ namespace Puzzle.Client.Layout
         /// <summary>A length that is one thing on the tight screen and another on a roomy one, and between them in between.</summary>
         public float Between(float tight, float roomy) => tight + (roomy - tight) * Roominess;
 
+        /// <summary>
+        /// True for a screen held sideways with room beside the upright column: one at least <see cref="SidewaysShape"/>
+        /// times as wide as it is high, as a tablet held sideways is (the 12.9" iPad 854 by 640 points, a 16:10 tablet
+        /// 1024). The pages that gain most from the width lay themselves out for it there: the map's frame widens and
+        /// the jigsaw puts its tray beside the painting. The open foldable held sideways (663 by 640) is nearly square
+        /// and keeps the upright pages, as every page keeps them on a phone.
+        /// </summary>
+        public bool IsSideways => View.Width >= SidewaysShape * View.Height;
+
+        /// <summary>A screen at least this many times as wide as it is high counts as one held sideways (<see cref="IsSideways"/>).</summary>
+        public const float SidewaysShape = 1.25f;
+
         /// <summary>The middle of a destination's place on the bar, the places being centred as a row.</summary>
         /// <param name="index">Which place, counted from 0 at the left.</param>
         /// <param name="count">How many places the bar has.</param>

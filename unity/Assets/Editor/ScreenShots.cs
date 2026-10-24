@@ -307,8 +307,6 @@ namespace Puzzle.Client.EditorTools
     /// <summary>What a run of the picture command is asked for.</summary>
     internal sealed class ShotPlan
     {
-        private static readonly Regex ScreenPattern = new Regex(@"^(\d+)x(\d+)(?:\+(\d+)\+(\d+))?$");
-
         /// <summary>What <c>-screens</c> calls the sheets of the controls several screens share: they show no player, so they are no page of <see cref="ShotPage"/>.</summary>
         private const string Controls = "controls";
 
@@ -318,7 +316,7 @@ namespace Puzzle.Client.EditorTools
             ShowsTheControls = screens.Contains(Controls);
             Pages = screens.Where(text => text != Controls).Select(text => OneOf<ShotPage>(text, $"a page, nor \"{Controls}\"")).ToArray();
             States = ListAfter("-screenStates", arguments, "0,46+42,50+50,640+3000").Select(PlayerState.Parse).ToArray();
-            Screens = ListAfter("-screenSizes", arguments, "1080x2424,2076x2152").Select(ScreenFrom).ToArray();
+            Screens = ListAfter("-screenSizes", arguments, "1080x2424,2076x2152,2732x2048,2152x2076").Select(ScreenArgument.Of).ToArray();
             JigsawMoments = ListAfter("-jigsawMoments", arguments, "rest,carried,placed,flying,restored").Select(text => OneOf<JigsawMoment>(text, "a moment of the jigsaw")).ToArray();
             Painting = ValueAfter("-jigsawPainting", arguments) is string painting ? new PaintingNumber(WholeNumber(painting)) : (PaintingNumber?)null;
             CollectionRoom = ValueAfter("-collectionRoom", arguments) is string room ? new RoomNumber(WholeNumber(room)) : (RoomNumber?)null;
@@ -385,18 +383,6 @@ namespace Puzzle.Client.EditorTools
 
             return at >= 0 ? arguments[at + 1] : null;
         }
-
-        private static ScreenShape ScreenFrom(string text)
-        {
-            Match match = ScreenPattern.Match(text);
-            if (!match.Success)
-            {
-                throw new ArgumentException($"\"{text}\" is not a screen: write 1080x2340, or 1080x2340+96+48 with top and bottom insets.");
-            }
-
-            int Number(int group) => match.Groups[group].Success ? WholeNumber(match.Groups[group].Value) : 0;
-            return new ScreenShape(Number(1), Number(2), topInsetPixels: Number(3), bottomInsetPixels: Number(4));
-        }
     }
 
     /// <summary>
@@ -404,7 +390,7 @@ namespace Puzzle.Client.EditorTools
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
     /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,wayback,entry,controls]
-    /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152]
+    /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152,2732x2048,2152x2076]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
     /// A state is the levels won, or the levels won and the pieces in place, with the wallet after it where it is

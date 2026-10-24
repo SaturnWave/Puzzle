@@ -23,6 +23,12 @@ namespace Puzzle.Client.Flow
         /// </summary>
         public static DeviceAbilities OfThisBuild { get; } = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration);
 
+        /// <summary>
+        /// What this build honours on a device with nothing to buzz (an iPad, a tablet without a vibrator; the game's
+        /// Haptics tells which): its sounds and its music, so the card offers no vibration switch that changes nothing.
+        /// </summary>
+        public static DeviceAbilities OfThisBuildWithoutVibrator { get; } = new DeviceAbilities(DeviceSetting.Sound, DeviceSetting.Music);
+
         /// <summary>The settings whose rows the card draws, in its order.</summary>
         public IReadOnlyList<DeviceSetting> Settings { get; }
     }

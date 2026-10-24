@@ -180,8 +180,6 @@ namespace Puzzle.Client.EditorTools
         /// <summary>What one run pictures: which levels, on which screens, at which moments, after how many moves.</summary>
         private sealed class ShotPlan
         {
-            private static readonly Regex ScreenPattern = new Regex(@"^(\d+)x(\d+)(?:\+(\d+)\+(\d+))?$");
-
             private ShotPlan(IReadOnlyList<int> levelNumbers, IReadOnlyList<ScreenShape> screens, IReadOnlyList<Moment> moments, int movesPlayed, int? pieceAfterLevelsWon)
             {
                 LevelNumbers = levelNumbers;
@@ -224,7 +222,7 @@ namespace Puzzle.Client.EditorTools
             /// <exception cref="ArgumentException">An argument is not written as the usage says.</exception>
             public static ShotPlan FromCommandLine(string[] arguments) => new ShotPlan(
                 ListAfter("-shotLevels", arguments, "1,40,52,114").Select(WholeNumber).ToArray(),
-                ListAfter("-shotSizes", arguments, "1080x2340,1080x1920,1038x1076").Select(ScreenFrom).ToArray(),
+                ListAfter("-shotSizes", arguments, "1080x2340,1080x1920,1038x1076").Select(ScreenArgument.Of).ToArray(),
                 ListAfter("-shotTimes", arguments, "settled").Select(Moment.Parse)
                     .OrderBy(moment => moment.IsSettled).ThenBy(moment => moment.Seconds).ToArray(),
                 ListAfter("-shotMoves", arguments, "0").Select(WholeNumber).Single(),
@@ -246,18 +244,6 @@ namespace Puzzle.Client.EditorTools
                 int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out int number)
                     ? number
                     : throw new ArgumentException($"\"{text}\" is not a whole number.");
-
-            private static ScreenShape ScreenFrom(string text)
-            {
-                Match match = ScreenPattern.Match(text);
-                if (!match.Success)
-                {
-                    throw new ArgumentException($"\"{text}\" is not a screen: write 1080x2340, or 1080x2340+96+48 with top and bottom insets.");
-                }
-
-                int Number(int group) => match.Groups[group].Success ? WholeNumber(match.Groups[group].Value) : 0;
-                return new ScreenShape(Number(1), Number(2), topInsetPixels: Number(3), bottomInsetPixels: Number(4));
-            }
         }
     }
 }

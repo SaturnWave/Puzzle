@@ -45,6 +45,12 @@ namespace Puzzle.Client.Maps
         public const float InFromTheSides = 7f;
         public const float OverTheFoot = 6f;
 
+        /// <summary>
+        /// The card is never wider than this: on the wide sheet of a screen held sideways it stands in the middle of the
+        /// sheet's foot, a little wider than on a phone (324), and the map stays seen at its sides.
+        /// </summary>
+        public const float WidestCard = 420f;
+
         private const float Inside = 13f;
         private const float FrameSize = 92f;
         private const float PictureSize = 85f;
@@ -160,8 +166,8 @@ namespace Puzzle.Client.Maps
         private void Build(MapAtlas atlas, PaintingNumber painting, Box sheet)
         {
             Painting = painting;
-            float width = sheet.Width - 2f * InFromTheSides;
-            Box = new Box(sheet.Left + InFromTheSides, sheet.Bottom + OverTheFoot, width, Height);
+            float width = Math.Min(WidestCard, sheet.Width - 2f * InFromTheSides);
+            Box = new Box(sheet.MiddleX - width / 2f, sheet.Bottom + OverTheFoot, width, Height);
             _root.localPosition = new Vector3(Box.Left, Box.Top, 0f); // the card's own points: x to the right, y up from its top left corner
 
             SpriteRenderer face = SceneObjects.AddSprite("Card", _root, _art.Of(GalleryArt.MapCard), _art.SpriteMaterial, DrawOrder.MapCard);

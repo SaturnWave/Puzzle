@@ -12,7 +12,8 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// The pictures of the settings card and the three cards it opens, on the game's own session and by touches alone:
-    /// the hall with the settings card come down from the gear; the privacy card in front of it with the tools' stand-in
+    /// the hall with the settings card come down from the gear, as the build has it and as a device with nothing to buzz
+    /// has it (an iPad: no switch of vibration); the privacy card in front of it with the tools' stand-in
     /// records, its question, and the card once "Sil" has deleted them; the support card; the language card. The records lie in a folder
     /// of the tools laid out as a phone's (<see cref="StoryStudio.RecordsOnAPhone"/>), so the support card shows a
     /// path as long as a phone's. And the settings card with its switch of vibration turned off, drawn on the museum's
@@ -23,13 +24,17 @@ namespace Puzzle.Client.EditorTools
         /// <summary>How many records the tools' stand-in phone keeps.</summary>
         public const int RecordsOnThePhone = 37;
 
+        /// <summary>
+        /// The settings card with every switch the build honours, and again on a device with nothing to buzz (an iPad,
+        /// a tablet without a vibration motor), where the game leaves the switch of vibration out.
+        /// </summary>
         /// <returns>How many pictures were taken.</returns>
+        /// <exception cref="InvalidOperationException">The gear did not bring the card, or the card shows other switches than the device's.</exception>
         public static int ShootTheSettings(PlayerState state, ScreenShape screen, Studio studio)
         {
-            using GameSession session = SessionInTheHall(state, screen, studio, StoryStudio.AttemptsKeptInMemory());
-            MuseumStage museum = OpenTheSettings(session);
-            ScreenShots.WritePicture(museum, screen, studio.FileName("settings", state, screen));
-            return 1;
+            ShootTheSettingsOf(DeviceAbilities.OfThisBuild, "settings", state, screen, studio);
+            ShootTheSettingsOf(DeviceAbilities.OfThisBuildWithoutVibrator, "settings-without-vibrator", state, screen, studio);
+            return 2;
         }
 
         /// <returns>How many pictures were taken.</returns>
@@ -92,13 +97,26 @@ namespace Puzzle.Client.EditorTools
             return 1;
         }
 
-        private static GameSession SessionInTheHall(PlayerState state, ScreenShape screen, Studio studio, IAttemptLog records)
+        private static void ShootTheSettingsOf(DeviceAbilities abilities, string name, PlayerState state, ScreenShape screen, Studio studio)
+        {
+            using GameSession session = SessionInTheHall(state, screen, studio, StoryStudio.AttemptsKeptInMemory(), abilities);
+            MuseumStage museum = OpenTheSettings(session);
+            Require(
+                museum.SwitchesShown.Count == abilities.Settings.Count,
+                $"the settings card shows {museum.SwitchesShown.Count} switches, not the device's {abilities.Settings.Count}");
+            ScreenShots.WritePicture(museum, screen, studio.FileName(name, state, screen));
+        }
+
+        private static GameSession SessionInTheHall(PlayerState state, ScreenShape screen, Studio studio, IAttemptLog records) =>
+            SessionInTheHall(state, screen, studio, records, DeviceAbilities.OfThisBuild);
+
+        private static GameSession SessionInTheHall(PlayerState state, ScreenShape screen, Studio studio, IAttemptLog records, DeviceAbilities abilities)
         {
             // A scene of its own that is never saved: nothing of an earlier picture is left in the next.
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var session = new GameSession(
                 studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), records,
-                new SettingsInMemory(DeviceSettings.Default), DeviceAbilities.OfThisBuild, CuePlayer.Silent, screen, SessionOpening.InTheMuseum);
+                new SettingsInMemory(DeviceSettings.Default), abilities, CuePlayer.Silent, screen, SessionOpening.InTheMuseum);
             StoryStudio.AdvanceUntilSettled(session);
             return session;
         }

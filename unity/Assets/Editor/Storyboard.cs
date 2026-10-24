@@ -334,7 +334,7 @@ namespace Puzzle.Client.EditorTools
                 string flow = After("-storyFlow", arguments, string.Empty);
                 return new Plan(
                     After("-storyLevels", arguments, "1").Split(',').Select(WholeNumber).ToArray(),
-                    ScreenFrom(After("-storySize", arguments, "1080x1920")),
+                    ScreenArgument.Of(After("-storySize", arguments, "1080x1920")),
                     bot,
                     After("-storyTurns", arguments, "1,2,3").Split(',').Select(WholeNumber).ToArray(),
                     After("-storyTimes", arguments, "0.08,0.2,0.32,0.44,0.6,end").Split(',').Select(Moment.Parse)
@@ -366,17 +366,6 @@ namespace Puzzle.Client.EditorTools
                 }
 
                 return at >= 0 ? arguments[at + 1] : byDefault;
-            }
-
-            private static ScreenShape ScreenFrom(string text)
-            {
-                string[] sides = text.Split('x');
-                if (sides.Length != 2)
-                {
-                    throw new ArgumentException($"\"{text}\" is not a screen: write 1080x1920.");
-                }
-
-                return new ScreenShape(WholeNumber(sides[0]), WholeNumber(sides[1]));
             }
         }
     }

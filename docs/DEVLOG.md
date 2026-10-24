@@ -6,6 +6,17 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 30 — Kalan işler
 
+**Yan çevirme (tablet, açık Fold, iPad)**
+- Bitti (ana dal): iPad her zaman, Android'de kısa kenarı 600 dp ve üstü olan ekranlar dört yöne dönüyor, ters dik de; telefonlar ve Fold'un dış ekranı dik. Android paketi dik açılıyor, oyun ilk karede kuralı uyguluyor (`ScreenTurns`, `DeviceScreen`). Manifestte `appCategory="game"` yoksa derleme duruyor; hedef API 36'ya sabitlendi.
+- Seçenek A: dik düzen ortada, yanlarda galeri duvarı. Yatay tablette salonda odanın onarılmış tabloları (en çok dört), haritada geniş çerçeve (şeritte 9–10 dönem), yapbozda tablo solda ve tepsi sağda (altı yer, 2×3 ya da 3×2). Fold yan tutulunca bugünkü düzen.
+- Ekran değişince basılı parmak bırakılıyor: dönmeden önce başlayan sürükleme takas etmiyor, taşınan parça tepsiye dönüyor. Yan paylar: `ScreenShape` sol ve sağ payı, `ScreenView.UsableLeft/Right`; geri düğmesi, hediye ve giriş sayfasının alt satırı paylara uyuyor.
+- iPad dalından alınanlar: koleksiyonda üçlü sıra 410 noktadan (dik iPad'ler), titreşimi olmayan cihazda titreşim anahtarı yok (Android tabletler), `MusicCheck` sayfanın yerleşmesini bekliyor.
+- Yeni denetim `RotationCheck`: iPad dik↔yan, Fold iç dik↔yan (kamera yanda), Fold dış→iç; taşlar düşerken, sürüklerken, bütün kartlar açıkken, finalde, parça taşınırken, giriş sayfasında 63 değişiklik. Eski kodda sürüklemenin ortasında dönünce bir hamle oynanıyordu; denetim kırılıyor.
+- Pixel dış ve iç ekranın 262 görüntüsü önce ve sonra piksel piksel aynı. Yatay görüntüler 12,9" iPad, 16:10 tablet ve Fold yan ekranında bakıldı.
+- 5.367 test geçti; ekonomi denetimi temiz; Unity'de `PlayModeCheck`, `MusicCheck` (`-quit` olmadan), `RotationCheck` ve öteki denetimler hatasız. Telefon testleri T450–T465; cihazda henüz denenmedi.
+- iOS (`feature/ios`): Info.plist'te iPad dört yön, iPhone yalnız dik; "tam ekran zorunlu" kalktı (Pencereli Uygulamalar, Stage Manager). Ayrıntı `docs/IOS_BUILD.md`.
+- Açık: tahtanın yatay düzeni (B) iPad'de denendikten sonra; Android tablette ilk karenin dik görünüp dönmesi cihazda ölçülecek (T464); iPadOS 26 pencere düğmeleri ile geri düğmesi (T457).
+
 **Koleksiyonda bellek (A42/4)**
 - Bitti (8960aa8): 23 Ekim telefon turunda koleksiyonun 20 odası gezilince bellek 401 MB'tan 649 MB'a çıkmıştı. Neden: odaların resimleri `Resources` ile yükleniyor, oda kaldırılınca bırakılmıyordu; 20 oda gezilince müzenin 100 resmi de bellekte kalıyordu (telefonda her biri yaklaşık 2,5 MB). Ağlar, malzemeler ve sahne nesneleri zaten temizleniyordu.
 - Artık resmi gösteren her şey onu tutuyor ve kaldırılınca bırakıyor (`PictureShelf`, Unity'siz, 11 test). Hiçbir şeyin tutmadığı resimlerden son bırakılan 10'u (iki oda) kalıyor, fazlası boşaltılıyor; sahne değişince hepsi. Görünürde değişiklik yok (GAME_DESIGN §23).

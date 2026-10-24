@@ -35,6 +35,9 @@ namespace Puzzle.Client
     /// gives way to another app's music, which the root asks the device about (<see cref="OtherAudio"/>).
     /// </summary>
     /// <remarks>
+    /// The screen may change while the game runs: a tablet or an open foldable turns with the device, a fold opens or
+    /// closes, a window beside another app is resized. A finger on the glass is then let go, the rule of what turns
+    /// is applied again (<see cref="DeviceScreen"/>), and the page or the session is laid out anew for the new shape.
     /// Being put away and brought back needs little: Unity stops calling <see cref="Update"/> while the game is in
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
@@ -80,6 +83,9 @@ namespace Puzzle.Client
         private ISettingsStore? _settings;
         private ScreenShape _fittedTo;
 
+        /// <summary>The kind of screen the rule of turning was last applied for; nothing before that, and in the Editor and on a desktop.</summary>
+        private ScreenClass? _turnsAs;
+
         /// <summary>The entry page while it is shown; nothing once the player has left it, or when the game could not start.</summary>
         private EntryStage? _entry;
 
@@ -106,17 +112,20 @@ namespace Puzzle.Client
 
             // A touch is read as a touch; without this the device would report it a second time as a mouse.
             Input.simulateMouseWithTouches = false;
+            LetTheScreenTurnAsTheDeviceAllows();
             _fittedTo = CurrentScreen();
             (DeviceId phone, ISettingsStore settings) = ThisPhone();
             _settings = settings;
-            _sounds = new SoundPlayer(gameObject, _art, Haptics.OfThisDevice());
+            Haptics haptics = Haptics.OfThisDevice();
+            DeviceAbilities abilities = haptics.DeviceHasNone ? DeviceAbilities.OfThisBuildWithoutVibrator : DeviceAbilities.OfThisBuild;
+            _sounds = new SoundPlayer(gameObject, _art, haptics);
             _otherAudio = OtherAudio.OfThisDevice();
             _music = MusicOf(gameObject, _art, settings, _otherAudio);
 
             // The game speaks before anything is built, the entry page first.
             SpeakThePlayersLanguage(settings);
             _entry = EntryStage.Open(_art, Application.version, _fittedTo);
-            _startUp = StartUpOf(_art, phone, settings, _sounds);
+            _startUp = StartUpOf(_art, phone, settings, abilities, _sounds);
         }
 
         /// <summary>
@@ -151,6 +160,11 @@ namespace Puzzle.Client
             ScreenShape screen = CurrentScreen();
             if (_fittedTo != screen)
             {
+                // The device turned, a fold opened, a window was resized: a finger still on the glass began its gesture
+                // on the screen before, whose pixels no longer mean the same places. It is let go, and followed again
+                // only once it comes down anew. A fold that opened or closed may also have changed what turns.
+                LetGoOfTheFinger();
+                LetTheScreenTurnAsTheDeviceAllows();
                 _entry?.Fit(screen);
                 _session?.Fit(screen);
                 _fittedTo = screen;
@@ -327,7 +341,7 @@ namespace Puzzle.Client
         /// The start-up behind the entry page, step by step: the levels, the museum's catalogue, the economy, and the
         /// player's session, opened in the hall out of the dark and kept unseen (its camera off) until the page is left.
         /// </summary>
-        private StartUpWork StartUpOf(ArtCatalogue art, DeviceId phone, ISettingsStore settings, ICuePlayer cues)
+        private StartUpWork StartUpOf(ArtCatalogue art, DeviceId phone, ISettingsStore settings, DeviceAbilities abilities, ICuePlayer cues)
         {
             IReadOnlyList<LevelDefinition>? levels = null;
             PaintingGallery? paintings = null;
@@ -341,6 +355,7 @@ namespace Puzzle.Client
                     rules ?? throw new InvalidOperationException("The session was opened before the economy was read."),
                     phone,
                     settings,
+                    abilities,
                     cues,
                     _fittedTo);
                 _session.Front.Camera.enabled = false;
@@ -358,7 +373,7 @@ namespace Puzzle.Client
         /// <summary>
         /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
         /// device's clock, with the attempt log in the same folder under the phone's id and the player's settings in
-        /// the device file beside it. If that file is there but
+        /// the device file beside it; its settings card offers a switch for each of the device's abilities. If that file is there but
         /// cannot be read from the device, the player can still play: this run starts at the first level as a new
         /// player, keeps its progress in memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes on from where that file says the
         /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
@@ -366,12 +381,12 @@ namespace Puzzle.Client
         /// </summary>
         private static GameSession OpenSession(
             IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, DeviceId phone, ISettingsStore settings,
-            ICuePlayer cues, ScreenShape screen)
+            DeviceAbilities abilities, ICuePlayer cues, ScreenShape screen)
         {
             var clock = new SystemWallClock();
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
             GameSession SessionOn(IProgressStore store) =>
-                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, DeviceAbilities.OfThisBuild, cues, screen, SessionOpening.InTheMuseumOutOfTheDark);
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, screen, SessionOpening.InTheMuseumOutOfTheDark);
 
             try
             {
@@ -522,13 +537,34 @@ namespace Puzzle.Client
             }
         }
 
-        /// <summary>The screen as the device reports it; the safe area leaves out camera cutouts and system bars.</summary>
+        /// <summary>
+        /// The rule of turning (<see cref="ScreenTurns"/>), applied when the game starts and again whenever the screen
+        /// changes: a foldable that opens becomes a tablet that turns, one that folds a phone that stands upright.
+        /// Unity is told only when the kind of screen changes; the Editor and a desktop are never told.
+        /// </summary>
+        private void LetTheScreenTurnAsTheDeviceAllows()
+        {
+            ScreenClass? screen = DeviceScreen.ClassOfThisDevice();
+            if (screen is ScreenClass known && screen != _turnsAs)
+            {
+                DeviceScreen.LetTurn(known);
+            }
+
+            _turnsAs = screen;
+        }
+
+        /// <summary>
+        /// The screen as the device reports it; the safe area leaves out camera cutouts and system bars, at the top and
+        /// the foot, and at the sides of a device held sideways.
+        /// </summary>
         private static ScreenShape CurrentScreen()
         {
             Rect safe = Screen.safeArea;
             int topInset = Mathf.RoundToInt(Screen.height - safe.yMax);
             int bottomInset = Mathf.RoundToInt(safe.yMin);
-            return new ScreenShape(Screen.width, Screen.height, topInset, bottomInset);
+            int leftInset = Mathf.RoundToInt(safe.xMin);
+            int rightInset = Mathf.RoundToInt(Screen.width - safe.xMax);
+            return new ScreenShape(Screen.width, Screen.height, topInset, bottomInset, leftInset, rightInset);
         }
     }
 }

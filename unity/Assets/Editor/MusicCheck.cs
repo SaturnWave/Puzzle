@@ -235,12 +235,15 @@ namespace Puzzle.Client.EditorTools
                         + $"{Profiler.GetRuntimeMemorySizeLong(Music.Clips.Intro) / 1048576.0:0.00} MB, the streamed loop {Profiler.GetRuntimeMemorySizeLong(Music.Clips.Loop) / 1048576.0:0.00} MB");
                 }));
 
+            // A page has turned once the museum is settled on it: until then it takes no touch, and the press of the next
+            // step would be lost. The turn is timed on the game's clock, which slow frames hold back (GameRoot's longest
+            // step): in an Editor that decodes the paintings of an iOS import, the collection's turn outlasts the second.
             foreach (Destination page in new[] { Destination.Map, Destination.Collection, Destination.Shop, Destination.Home })
             {
                 Steps.Add(new Step(
                     $"the page turned to {page} and the music played on",
                     begin: () => Press(Museum.PixelOf(page), $"the bar's place for {page}"),
-                    hasComeAbout: waited => waited >= SettleSeconds && Session.Museum?.Showing == page,
+                    hasComeAbout: waited => waited >= SettleSeconds && Session.Museum is MuseumStage museum && museum.Showing == page && museum.IsSettled,
                     end: () => RequireTheMusicPlaysOn($"the page turned to {page}")));
             }
 
