@@ -1472,6 +1472,13 @@ Bu kararlarla 10. aşama başladı.
 - **Ayarlar:** iPad'de titreşim motoru olmadığı için kartta yalnızca Ses ve Müzik anahtarı vardır; `ScreenShots` bu kartı da görüntüler (`settings-without-vibrator`).
 - **Doğrulama:** ekran düzeni testleri üç iPad boyutunu da kapsar. Telefon testleri T440–T449.
 
+**iPad ekranı, ikinci bakış (2026-10-24, `feature/ios`).**
+
+- **Güvenli alan:** oyun durum çubuğunu gizler; iPad'in üst güvenli alanı o zaman büyük olasılıkla 0, altta 20 noktalık ana ekran çizgisi kalır. Ekranlar hem böyle (`2048x2732+0+40`) hem 24 noktalık çubukla (`+48+40`, en dar hâl) görüntülenir; ikisinde de her şey sığar.
+- **Salon:** 3:4'te yükseklik 9:16 telefonununki kadardır: tablo 128–136 nokta yüksek, tezgâh en küçüğüne yakın, iki yanda duvar lambası. Bilerek böyle bırakıldı (katlının iç ekranıyla aynı); karar sahibinin iPad'deki izlenimine bağlı (T441).
+  - Gerekçe: büyük tablette noktayı küçültmek (12.9" Pro'da bir nokta elde telefondakinin 2,3 katı) salonu ferahlatır ama tablonun ekrandaki payını büyütmez: salon tabloyu en çok 290 nokta geniş asar, artan yüksekliği önce tezgâha verir. Tabloyu büyütmek salonun kendi kuralını değiştirmeyi ister.
+- **Denetim:** `MusicCheck` bir sayfanın çevrildiğini müze durulunca sayar. iOS içe aktarmasıyla Editör'de kareler uzun, oyunun saati geri kalır; sonraki basış çevrilme bitmeden gelirse kaybolurdu.
+
 ## 24. Bölüm bankası ve derleyici
 
 **Karar (2026-10-08).** Zorluk ayarının kalıcı çözümü: üretilen tahtalar atılmaz, ölçümleriyle birlikte saklanır; oyunun 1000 bölümü bu bankadan bir **politikayla** seçilir. Kullanıcının isteği: "kalıcı bir çözüm; üretilen bölümlerin çoğunu harddiske kaydedebiliriz". §8 ve §9'daki üretici (`generate`) duruyor; derleyici kendini kanıtladıkça onun yerini alır.
