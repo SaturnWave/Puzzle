@@ -11,7 +11,7 @@ namespace Puzzle.Economy.Simulating;
 /// Walks one player through their days: sessions at the habit's times, attempts while there is a life and the session
 /// is short of its ceiling, each attempt read from a stored game. It plays no game itself and decides nothing about
 /// difficulty: which stored game an attempt meets depends on the player's seed, the level and the attempt's number,
-/// never on what the player owns or has spent.
+/// never on what the player owns or has spent, with coins or with money.
 /// </summary>
 public sealed class PlayerSimulator
 {
@@ -20,6 +20,7 @@ public sealed class PlayerSimulator
     private readonly MeasuredHalf _half;
     private readonly StartBoosterRule _startBoosters;
     private readonly AttemptReader _reader;
+    private readonly PurchaseHabit _purchases;
 
     /// <summary>The in-level boosters whose assumed worth is above 0, in the engine's order; none by default.</summary>
     private readonly BoosterKind[] _inLevelBoostersWithAnEffect;
@@ -35,7 +36,9 @@ public sealed class PlayerSimulator
             .Order()
             .ToArray();
         _startBoosters = new StartBoosterRule(settings.Player.StartBoosters, settings.Prices.Boosters);
-        _reader = new AttemptReader(levels.Spec, settings.Player.InLevelBoosters, new ExtraMovesRule(settings.Player.ExtraMoves, settings.ExtraMovesOffer.Price));
+        _purchases = settings.Player.Purchases;
+        var extraMoves = new ExtraMovesRule(settings.Player.ExtraMoves, settings.ExtraMovesOffer.Price, _purchases.PackWhenShortForExtraMoves);
+        _reader = new AttemptReader(levels.Spec, settings.Player.InLevelBoosters, extraMoves);
     }
 
     /// <summary>Plays the player's whole journey: to the last measured level or the last day of the horizon.</summary>
@@ -44,7 +47,7 @@ public sealed class PlayerSimulator
         var journey = new Journey(player, new LifeMeter(_settings.Lives));
         PlayerTime firstSession = PlayerTime.At(new DayNumber(1), _settings.Habit.SessionStarts[0]);
         GiveTheWelcomeGift(journey, firstSession, log);
-        GiveTheGiftsOpeningOn(new LevelId(1), journey, firstSession, log);
+        ComeTo(new LevelId(1), journey, firstSession, log);
         for (int day = 1; day <= _settings.Players.HorizonDays && !IsOver(journey); day++)
         {
             PlayDay(journey, new DayNumber(day), log);
@@ -56,8 +59,14 @@ public sealed class PlayerSimulator
     private void PlayDay(Journey journey, DayNumber day, IJourneyLog log)
     {
         IReadOnlyList<TimeOnly> starts = _settings.Habit.SessionStarts;
+        PlayerTime dayBegins = PlayerTime.At(day, starts[0]);
         journey.FreeAdsLeft = _settings.ExtraMovesOffer.FreeAdsPerDay;
-        GiveDailyReward(journey, day, PlayerTime.At(day, starts[0]), log);
+        GiveDailyReward(journey, day, dayBegins, log);
+        if (_purchases.OnASchedule is ScheduledPurchase scheduled && scheduled.IsDueOn(day))
+        {
+            Buy(journey, scheduled.Pack, PurchaseOccasion.Scheduled, dayBegins, log);
+        }
+
         foreach (TimeOnly start in starts)
         {
             if (!IsOver(journey))
@@ -140,12 +149,12 @@ public sealed class PlayerSimulator
         AttemptReading reading = _reader.Read(
             met.In(line),
             new AttemptTerms(line.MoveLimit, taken == BoosterKind.StartExtraMoves, InLevelBoosterAtHand(journey.Shelf, level), attempt.LossesBefore, journey.Balance, journey.FreeAdsLeft));
-        Settle(journey, reading);
 
         TimeSpan playTime = _settings.Habit.PerMove * reading.MovesPlayed.Value;
         TimeSpan untilDecided = playTime + (reading.ExtraMoves is ExtraMovesDecision.TakenForAd ? _settings.Habit.PerAd : TimeSpan.Zero);
         TimeSpan duration = untilDecided + _settings.Habit.BetweenAttempts;
         PlayerTime decidedAt = startedAt + untilDecided;
+        Settle(journey, reading, decidedAt, log);
         WinCoins coins = SettleEnding(journey, reading.Ending, decidedAt);
         log.AttemptPlayed(new AttemptPlayed(
             level, attempt, met, startedAt, decidedAt, playTime, duration, startBooster, reading, coins.Finale, coins.Level, journey.Lives.Lives, journey.Standing));
@@ -156,7 +165,7 @@ public sealed class PlayerSimulator
 
         if (reading.Ending is AttemptEnding.Won)
         {
-            GiveTheGiftsOpeningOn(new LevelId(journey.LevelsWon + 1), journey, decidedAt, log);
+            ComeTo(new LevelId(journey.LevelsWon + 1), journey, decidedAt, log);
         }
 
         return duration;
@@ -200,7 +209,11 @@ public sealed class PlayerSimulator
         }
     }
 
-    private static void Settle(Journey journey, AttemptReading reading)
+    /// <summary>
+    /// What the attempt used: its in-level booster, and the extra moves with what paid for them. A coin pack bought
+    /// for them is told as bought when the attempt was decided, before the moves are paid with its coins.
+    /// </summary>
+    private static void Settle(Journey journey, AttemptReading reading, PlayerTime decidedAt, IJourneyLog log)
     {
         if (reading.InLevelBoosterUsed is BoosterKind used)
         {
@@ -213,6 +226,11 @@ public sealed class PlayerSimulator
                 journey.FreeAdsLeft--;
                 break;
             case ExtraMovesDecision.TakenForCoins bought:
+                if (bought.PackBoughtFirst is StoreProduct pack)
+                {
+                    Buy(journey, pack, PurchaseOccasion.ShortForExtraMoves, decidedAt, log);
+                }
+
                 journey.Balance = journey.Balance.Less(bought.Price);
                 break;
             case ExtraMovesDecision.NotOffered or ExtraMovesDecision.NotWanted or ExtraMovesDecision.WantedUnpaid:
@@ -259,15 +277,35 @@ public sealed class PlayerSimulator
 
     /// <summary>
     /// The player has come to a level: the boosters used during play that open on it bring their gift, the welcome
-    /// gift's part for them. A level on which nothing opens, or whose openings bring nothing, gives nothing.
+    /// gift's part for them, and from the starter pack's level on the shop offers that pack. A level on which nothing
+    /// opens, or whose openings bring nothing, gives nothing.
     /// </summary>
-    private void GiveTheGiftsOpeningOn(LevelId level, Journey journey, PlayerTime at, IJourneyLog log)
+    private void ComeTo(LevelId level, Journey journey, PlayerTime at, IJourneyLog log)
     {
         BoosterKind[] gift = _settings.Unlocks.GiftOpeningOn(level).ToArray();
         if (gift.Length > 0)
         {
             Receive(journey, CoinSource.UnlockGift, Coins.None, gift, at, log);
         }
+
+        StarterPackSettings starter = _settings.Store.StarterPack;
+        if (_purchases.BuysTheStarterPack && !journey.BoughtTheStarterPack && level.Value >= starter.FromLevel.Value && !IsOver(journey))
+        {
+            Buy(journey, starter.Product, PurchaseOccasion.StarterPackOffered, at, log);
+            journey.BoughtTheStarterPack = true;
+        }
+    }
+
+    /// <summary>The product's coins and boosters go to the player, who pays its price in money; nothing of it reaches a game.</summary>
+    private static void Buy(Journey journey, StoreProduct product, PurchaseOccasion occasion, PlayerTime at, IJourneyLog log)
+    {
+        journey.Balance += product.Coins;
+        foreach (BoosterKind booster in product.BoostersOneByOne)
+        {
+            journey.Shelf = journey.Shelf.WithOneMore(booster);
+        }
+
+        log.PurchaseMade(new PurchaseMade(product, occasion, at, journey.Standing));
     }
 
     private static void Give(Journey journey, CoinSource source, RewardRule rule, int rewardNumber, PlayerTime at, IJourneyLog log) =>
@@ -309,6 +347,9 @@ public sealed class PlayerSimulator
         public int PaintingRewards { get; set; }
 
         public int DailyRewards { get; set; }
+
+        /// <summary>A simulated player buys the starter pack once, the first time the shop offers it.</summary>
+        public bool BoughtTheStarterPack { get; set; }
 
         public Standing Standing => new(LevelsWon, Balance, Shelf);
     }

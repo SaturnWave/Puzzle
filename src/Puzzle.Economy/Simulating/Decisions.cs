@@ -1,3 +1,4 @@
+using Puzzle.Economy.Settings;
 using Puzzle.Economy.Units;
 
 namespace Puzzle.Economy.Simulating;
@@ -39,7 +40,11 @@ public abstract record ExtraMovesDecision
 
     public sealed record TakenForAd : ExtraMovesDecision;
 
-    public sealed record TakenForCoins(Coins Price) : ExtraMovesDecision;
+    /// <param name="PackBoughtFirst">
+    /// The coin pack the player bought for real money because their coins fell short of the price; absent when the
+    /// coins they had paid for it.
+    /// </param>
+    public sealed record TakenForCoins(Coins Price, StoreProduct? PackBoughtFirst = null) : ExtraMovesDecision;
 
     /// <summary>The player wanted the moves and went without.</summary>
     /// <param name="Shortfall">The price and the coins that were missing; absent when the player does not pay coins for moves at all.</param>
@@ -107,6 +112,22 @@ public enum CoinSource
     /// (the settings' boosterUnlocks.gift). Boosters only, no coins.
     /// </summary>
     UnlockGift,
+
+    /// <summary>A coin pack or the starter pack, bought for real money (the settings' store section).</summary>
+    BoughtForMoney,
+}
+
+/// <summary>Why a simulated player bought something for real money: each is a rule of the settings' player.purchases. Closed set.</summary>
+public enum PurchaseOccasion
+{
+    /// <summary>The extra moves were wanted, no free ad was left today and the coins fell short of their price.</summary>
+    ShortForExtraMoves,
+
+    /// <summary>The player came to the level from which the shop offers the starter pack.</summary>
+    StarterPackOffered,
+
+    /// <summary>A day of the schedule began.</summary>
+    Scheduled,
 }
 
 /// <summary>What coins are spent on in this version. Closed set.</summary>

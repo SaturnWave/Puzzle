@@ -26,7 +26,7 @@ public class EconomyRunTests
         IReadOnlyDictionary<string, string> otherSeed = SmallWorld.Report(SmallWorld.Settings("""{ "players": { "seed": 2 } }""")).Files();
 
         Assert.Equal(
-            ["boosters.csv", "coins.csv", "lives.csv", "offers.csv", "pace.csv", "settings.csv", "spending.csv", "stalls.csv", "summary.txt"],
+            ["boosters.csv", "coins.csv", "lives.csv", "offers.csv", "pace.csv", "purchases.csv", "settings.csv", "spending.csv", "stalls.csv", "summary.txt"],
             first.Keys);
         Assert.All(first, file => Assert.Equal(file.Value, again[file.Key]));
         Assert.All(first.Values, text => Assert.DoesNotContain('\r', text));

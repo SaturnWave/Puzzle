@@ -171,6 +171,32 @@
     "realMoneyPurchases": "notAvailable"
   },
 
+  // What the game sells for real money: the products as they were first settled (2026-10-24). Simulated only for a
+  // player whose player.purchases buys something; the fixture's player buys nothing.
+  "store": {
+    // Coin packs: the end of the product id [placeholder], the US price in cents [decided] and the coins [proposed].
+    "coinPacks": {
+      "pouch": { "productIdSuffix": "coins.pouch", "priceUsdCents": 199, "coins": 1000 },
+      "bag": { "productIdSuffix": "coins.bag", "priceUsdCents": 499, "coins": 2750 },
+      "chest": { "productIdSuffix": "coins.chest", "priceUsdCents": 999, "coins": 6000 },
+      "treasure": { "productIdSuffix": "coins.treasure", "priceUsdCents": 1999, "coins": 13000 }
+    },
+    "starterPack": {
+      // The end of its product id. [placeholder]
+      "productIdSuffix": "starter.apprentice_kit",
+      // The US price in cents. [decided]
+      "priceUsdCents": 199,
+      // Coins in it. [proposed]
+      "coins": 1500,
+      // Boosters in it besides the coins. [proposed]
+      "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 },
+      // Times one player can buy it. [decided]
+      "timesPerPlayer": 1,
+      // The shop offers it from this level on. [decided]
+      "fromLevel": 20
+    }
+  },
+
   "player": {
     "extraMoves": {
       // The +5 is wanted when the moves run out with at least this percent of the goals done; 0 means always, any
@@ -202,6 +228,17 @@
       "useWhenGoalsDonePercent": 80,
       // In-level boosters per attempt; only 1 in this version. [proposed]
       "perAttempt": 1
+    },
+    // What the player buys for real money: nothing. [proposed]
+    "purchases": {
+      // The coin pack bought when the coins fall short of a +5 the player wants; null means never. [proposed]
+      "packWhenShortForExtraMoves": null,
+      // Whether the starter pack is bought when the shop first offers it. [proposed]
+      "buysTheStarterPack": false,
+      // A coin pack bought on day 1 and every scheduledEveryDays days after; null means never. [proposed]
+      "scheduledPack": null,
+      // Days from one scheduled purchase to the next. [proposed]
+      "scheduledEveryDays": 30
     }
   },
 

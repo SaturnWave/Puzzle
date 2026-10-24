@@ -47,6 +47,9 @@ public static class SettingsLoader
     /// </summary>
     private const long LargestAmount = 1_000_000;
 
+    /// <summary>No store price in a settings file may be above this, in US cents ($999.99): far above anything a game of this kind sells.</summary>
+    private const long LargestPriceCents = 99_999;
+
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -228,7 +231,9 @@ public static class SettingsLoader
                 PerLevelWon = CoinsOf(file.Coins.PerLevelWon, "coins.perLevelWon"),
             };
             PopulationSettings players = PlayersOf(file.Players);
-            PlayerRules player = RulesOf(file.Player, measurement);
+            ExtraMovesOfferSettings offer = OfferOf(file.ExtraMovesOffer, coins);
+            StoreSettings store = StoreOf(file.Store);
+            PlayerRules player = RulesOf(file.Player, measurement, store, offer);
             RequireStartsARuleCanUse(measurement, player.StartBoosters);
             return new EconomySettings
             {
@@ -249,7 +254,7 @@ public static class SettingsLoader
                     Daily = RewardOf(file.Rewards.Daily.Coins, file.Rewards.Daily.BoostersEachTime, file.Rewards.Daily.BoosterRotation, "rewards.daily"),
                     DailyEveryDays = AtLeast(file.Rewards.Daily.EveryDays, 1, "rewards.daily.everyDays"),
                 },
-                ExtraMovesOffer = OfferOf(file.ExtraMovesOffer, coins),
+                ExtraMovesOffer = offer,
                 Prices = PricesOf(file.Prices, coins),
                 Start = new WelcomeGift(
                     CoinsOf(file.Start.Coins, "start.coins"),
@@ -257,6 +262,7 @@ public static class SettingsLoader
                         .ToDictionary(held => held.Key, held => AtLeast(held.Value, 0, $"start.boosters.{held.Key.Name()}"))),
                 Unlocks = UnlocksOf(file.BoosterUnlocks),
                 Game = GameOnlyOf(file),
+                Store = store,
                 Player = player,
                 Measurement = measurement,
                 Report = ReportOf(file.Report, players.HorizonDays),
@@ -409,15 +415,90 @@ public static class SettingsLoader
         private BoosterSetSettings BoosterSetOf(BoosterSetFile file, string field)
         {
             Require(file.Boosters.Count > 0, $"{field}.boosters is empty: a set gives at least one booster");
-            var boosters = new Dictionary<BoosterKind, int>();
-            foreach ((string name, int count) in file.Boosters)
-            {
-                BoosterKind kind = BoosterKinds.Find(name) ?? throw Invalid($"{field}.boosters names '{name}', which is no booster ({BoosterNamesListed(BoosterKinds.All)})");
-                boosters[kind] = AtLeast(count, 1, $"{field}.boosters.{name}");
-            }
-
+            Dictionary<BoosterKind, int> boosters = NamedBoosters(file.Boosters, $"{field}.boosters");
             return new BoosterSetSettings(CoinsOf(AtLeast(file.PriceCoins, 1L, $"{field}.priceCoins"), $"{field}.priceCoins"), boosters);
         }
+
+        /// <summary>
+        /// What the game sells for real money: at least one coin pack, and the starter pack. Every product has a price
+        /// and coins of its own and a product id no other product has; the pricing rules between them (docs/GAME_DESIGN.md
+        /// section 25) are the balance policy's, not the format's.
+        /// </summary>
+        private StoreSettings StoreOf(StoreFile file)
+        {
+            StoreProduct[] packs = ByPlainName(file.CoinPacks, "store.coinPacks")
+                .Select(pack => ProductOf(pack.Key, pack.Value.ProductIdSuffix, pack.Value.PriceUsdCents, pack.Value.Coins, new Dictionary<BoosterKind, int>(), $"store.coinPacks.{pack.Key}"))
+                .ToArray();
+            Require(packs.Length > 0, "store.coinPacks is empty: the store sells at least one pack of coins");
+
+            const string Starter = "store.starterPack";
+            StarterPackFile starter = file.StarterPack;
+            var starterPack = new StarterPackSettings(
+                ProductOf(StarterPackSettings.Name, starter.ProductIdSuffix, starter.PriceUsdCents, starter.Coins, NamedBoosters(starter.Boosters, $"{Starter}.boosters"), Starter),
+                AtLeast(starter.TimesPerPlayer, 1, $"{Starter}.timesPerPlayer"),
+                new LevelId(AtLeast(starter.FromLevel, 1, $"{Starter}.fromLevel")));
+
+            var store = new StoreSettings(packs, starterPack);
+            string? repeated = store.Products.GroupBy(product => product.ProductIdSuffix).FirstOrDefault(sameId => sameId.Count() > 1)?.Key;
+            Require(repeated is null, $"store: two products have the product id suffix '{repeated}'; a store knows a product by its id alone");
+            return store;
+        }
+
+        private StoreProduct ProductOf(string name, string productIdSuffix, long priceUsdCents, long coins, IReadOnlyDictionary<BoosterKind, int> boosters, string field)
+        {
+            Require(
+                IsProductIdSuffix(productIdSuffix),
+                $"{field}.productIdSuffix '{productIdSuffix}' must be lowercase letters, digits, '_' and '.', begin and end with a letter or a digit and hold no two dots together: what both stores take in a product id");
+            Require(
+                priceUsdCents is >= 1 and <= LargestPriceCents,
+                $"{field}.priceUsdCents {priceUsdCents} must be a price in US cents from 1 to {LargestPriceCents}");
+            return new StoreProduct(name, productIdSuffix, new UsDollars(priceUsdCents), CoinsOf(AtLeast(coins, 1L, $"{field}.coins"), $"{field}.coins"), boosters);
+        }
+
+        /// <summary>Boosters named by kind, each with a count of at least 1: what a set or a pack gives.</summary>
+        private Dictionary<BoosterKind, int> NamedBoosters(Dictionary<string, int> stated, string field)
+        {
+            var boosters = new Dictionary<BoosterKind, int>();
+            foreach ((string name, int count) in stated)
+            {
+                BoosterKind kind = BoosterKinds.Find(name) ?? throw Invalid($"{field} names '{name}', which is no booster ({BoosterNamesListed(BoosterKinds.All)})");
+                boosters[kind] = AtLeast(count, 1, $"{field}.{name}");
+            }
+
+            return boosters;
+        }
+
+        /// <summary>
+        /// What a simulated player buys for real money. A pack bought because the coins fall short of the extra moves
+        /// is bought only by a player who pays coins for them, and pays for them by itself: a player who bought it
+        /// and still could not pay would have bought nothing they could use.
+        /// </summary>
+        private PurchaseHabit PurchasesOf(PurchasesFile file, ExtraMovesHabit extraMoves, StoreSettings store, ExtraMovesOfferSettings offer)
+        {
+            const string Field = "player.purchases";
+            StoreProduct? whenShort = file.PackWhenShortForExtraMoves is string shortName ? CoinPackNamed(shortName, store, $"{Field}.packWhenShortForExtraMoves") : null;
+            if (whenShort is not null)
+            {
+                Require(extraMoves.PaysCoins, $"{Field}.packWhenShortForExtraMoves needs player.extraMoves.paysCoins: the coins it buys are paid for the extra moves");
+                Require(
+                    whenShort.Coins >= offer.Price,
+                    $"{Field}.packWhenShortForExtraMoves '{whenShort.Name}' gives {whenShort.Coins} coins and must pay for the extra moves at {offer.Price} by itself");
+            }
+
+            int everyDays = AtLeast(file.ScheduledEveryDays, 1, $"{Field}.scheduledEveryDays");
+            return new PurchaseHabit
+            {
+                PackWhenShortForExtraMoves = whenShort,
+                BuysTheStarterPack = file.BuysTheStarterPack,
+                OnASchedule = file.ScheduledPack is string scheduledName
+                    ? new ScheduledPurchase(CoinPackNamed(scheduledName, store, $"{Field}.scheduledPack"), everyDays)
+                    : null,
+            };
+        }
+
+        private StoreProduct CoinPackNamed(string name, StoreSettings store, string field) =>
+            store.CoinPacks.FirstOrDefault(pack => pack.Name == name)
+            ?? throw Invalid($"{field} names '{name}', which is no pack of store.coinPacks ({string.Join(", ", store.CoinPacks.Select(pack => pack.Name))})");
 
         /// <summary>The entries of an object keyed by names of the owner's choosing: a name goes into the paths of the reports, where a dot would split it.</summary>
         private Dictionary<string, TValue> ByPlainName<TValue>(Dictionary<string, TValue> stated, string field)
@@ -430,7 +511,7 @@ public static class SettingsLoader
             return stated;
         }
 
-        private PlayerRules RulesOf(PlayerFile file, MeasurementPlan measurement)
+        private PlayerRules RulesOf(PlayerFile file, MeasurementPlan measurement, StoreSettings store, ExtraMovesOfferSettings offer)
         {
             BoosterKind[] preference = file.StartBoosters.Preference
                 .Select(name => BoosterKinds.Find(name) is BoosterKind kind && kind.IsStart()
@@ -448,14 +529,15 @@ public static class SettingsLoader
                 buyAfter is null || useAfter <= buyAfter,
                 $"player.startBoosters.buyAfterLossesOnLevel {buyAfter} needs useAfterLossesOnLevel stated and at most {buyAfter}: a player who buys a start booster uses it, "
                 + "so a booster they already hold is used by then, and one held unused would keep them from ever buying. To study purchases alone, give no start booster as a reward");
+            var extraMoves = new ExtraMovesHabit
+            {
+                TakeWhenGoalsDone = MarkOf(file.ExtraMoves.TakeWhenGoalsDonePercent, "player.extraMoves.takeWhenGoalsDonePercent", measurement),
+                WatchesAds = file.ExtraMoves.WatchesAds,
+                PaysCoins = file.ExtraMoves.PaysCoins,
+            };
             return new PlayerRules
             {
-                ExtraMoves = new ExtraMovesHabit
-                {
-                    TakeWhenGoalsDone = MarkOf(file.ExtraMoves.TakeWhenGoalsDonePercent, "player.extraMoves.takeWhenGoalsDonePercent", measurement),
-                    WatchesAds = file.ExtraMoves.WatchesAds,
-                    PaysCoins = file.ExtraMoves.PaysCoins,
-                },
+                ExtraMoves = extraMoves,
                 StartBoosters = new StartBoosterHabit
                 {
                     UseAfterLossesOnLevel = useAfter,
@@ -468,6 +550,7 @@ public static class SettingsLoader
                         .ToDictionary(worth => worth.Key, worth => new MoveCount(AtLeast(worth.Value, 0, $"player.inLevelBoosters.assumedMovesWorth.{worth.Key.Name()}"))),
                     UseWhenGoalsDone = MarkOf(file.InLevelBoosters.UseWhenGoalsDonePercent, "player.inLevelBoosters.useWhenGoalsDonePercent", measurement),
                 },
+                Purchases = PurchasesOf(file.Purchases, extraMoves, store, offer),
             };
         }
 
@@ -602,6 +685,16 @@ public static class SettingsLoader
 
         private static bool IsPlainName(string name) => name.Length > 0 && name.All(c => char.IsAsciiLetterOrDigit(c) || c == '-');
 
+        /// <summary>What both stores take after an application id: Google Play's product ids are the stricter, lowercase and no '-'.</summary>
+        private static bool IsProductIdSuffix(string suffix) =>
+            suffix.Length > 0
+            && suffix.All(c => char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c) || c is '_' or '.')
+            && IsLowerLetterOrDigit(suffix[0])
+            && IsLowerLetterOrDigit(suffix[^1])
+            && !suffix.Contains("..", StringComparison.Ordinal);
+
+        private static bool IsLowerLetterOrDigit(char c) => char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c);
+
         private void Require(bool condition, string message)
         {
             if (!condition)
@@ -642,6 +735,8 @@ public static class SettingsLoader
         public required ShopFile Shop { get; init; }
 
         public required BuildFile Build { get; init; }
+
+        public required StoreFile Store { get; init; }
 
         public required PlayerFile Player { get; init; }
 
@@ -797,6 +892,37 @@ public static class SettingsLoader
         public required string RealMoneyPurchases { get; init; }
     }
 
+    private sealed class StoreFile
+    {
+        public required Dictionary<string, CoinPackProductFile> CoinPacks { get; init; }
+
+        public required StarterPackFile StarterPack { get; init; }
+    }
+
+    private sealed class CoinPackProductFile
+    {
+        public required string ProductIdSuffix { get; init; }
+
+        public required long PriceUsdCents { get; init; }
+
+        public required long Coins { get; init; }
+    }
+
+    private sealed class StarterPackFile
+    {
+        public required string ProductIdSuffix { get; init; }
+
+        public required long PriceUsdCents { get; init; }
+
+        public required long Coins { get; init; }
+
+        public required Dictionary<string, int> Boosters { get; init; }
+
+        public required int TimesPerPlayer { get; init; }
+
+        public required int FromLevel { get; init; }
+    }
+
     private sealed class PlayerFile
     {
         public required ExtraMovesFile ExtraMoves { get; init; }
@@ -804,6 +930,21 @@ public static class SettingsLoader
         public required StartBoostersFile StartBoosters { get; init; }
 
         public required InLevelBoostersFile InLevelBoosters { get; init; }
+
+        public required PurchasesFile Purchases { get; init; }
+    }
+
+    private sealed class PurchasesFile
+    {
+        /// <summary>A pack of store.coinPacks, or null for none.</summary>
+        public required string? PackWhenShortForExtraMoves { get; init; }
+
+        public required bool BuysTheStarterPack { get; init; }
+
+        /// <summary>A pack of store.coinPacks, or null for none.</summary>
+        public required string? ScheduledPack { get; init; }
+
+        public required int ScheduledEveryDays { get; init; }
     }
 
     private sealed class ExtraMovesFile

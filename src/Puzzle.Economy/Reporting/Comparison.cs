@@ -71,6 +71,8 @@ public enum ComparedFigure
     PriceOfUnpaidWants,
     StartBoostersUsed,
     StartBoostersBought,
+    Purchases,
+    CoinsBoughtForMoney,
     EndedByLivesShare,
     HoursDeniedByLives,
 }
@@ -92,6 +94,8 @@ public static class ComparedFigures
         ComparedFigure.PriceOfUnpaidWants => "priceOfUnpaidWants",
         ComparedFigure.StartBoostersUsed => "startBoostersUsed",
         ComparedFigure.StartBoostersBought => "startBoostersBought",
+        ComparedFigure.Purchases => "purchasesForMoney",
+        ComparedFigure.CoinsBoughtForMoney => "coinsBoughtForMoney",
         ComparedFigure.EndedByLivesShare => "endedByLivesShare",
         ComparedFigure.HoursDeniedByLives => "hoursDeniedByLives",
         _ => throw new ArgumentOutOfRangeException(nameof(figure), figure, "Unknown figure."),
@@ -137,6 +141,8 @@ public sealed record Comparison(
         new(ComparedFigure.PriceOfUnpaidWants, FigureUnit.Coins, Summed.AsMean, reached => reached.Totals.UnpaidInAll.Price.Amount),
         new(ComparedFigure.StartBoostersUsed, FigureUnit.TimesPerPlayer, Summed.AsMean, reached => reached.Totals.StartBoostersUsed),
         new(ComparedFigure.StartBoostersBought, FigureUnit.TimesPerPlayer, Summed.AsMean, reached => reached.Totals.StartBoostersBought),
+        new(ComparedFigure.Purchases, FigureUnit.TimesPerPlayer, Summed.AsMean, reached => reached.Totals.Purchases),
+        new(ComparedFigure.CoinsBoughtForMoney, FigureUnit.Coins, Summed.AsMean, reached => reached.Totals.Earned(CoinSource.BoughtForMoney).Amount),
         new(ComparedFigure.EndedByLivesShare, FigureUnit.ShareOfAPlayersSessions, Summed.AsMean, reached => reached.Totals.Sessions == 0 ? 0 : reached.Totals.SessionsEndedByLives / (double)reached.Totals.Sessions),
         new(ComparedFigure.HoursDeniedByLives, FigureUnit.Hours, Summed.AsMean, reached => reached.Totals.PlayDeniedByLives.TotalHours),
     ];

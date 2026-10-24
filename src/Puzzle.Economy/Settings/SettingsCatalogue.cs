@@ -61,6 +61,9 @@ public static class SettingsCatalogue
     private const string ShareOfGoals = "percent of the goals";
     private const string YesOrNo = "yes or no";
     private const string AdsADay = "ads a day";
+    private const string UsCents = "US cents";
+    private const string ProductId = "end of a store product id";
+    private const string CoinPack = "coin pack of the store";
 
     public static IReadOnlyList<SettingDescription> Fields { get; } =
     [
@@ -118,6 +121,19 @@ public static class SettingsCatalogue
         new("shop.adForCoins.perDay", AdsADay, Provenance.Placeholder, SettingUse.GameOnly),
         new("build.ads", "how an ad is shown", Provenance.Proposed, SettingUse.GameOnly),
         new("build.realMoneyPurchases", "what is sold for money", Provenance.Proposed, SettingUse.GameOnly),
+
+        // What the game sells for real money (the owner's products of 2026-10-24). The prices, the once and the level
+        // are decided; the amounts are the research's proposals as the simulator checked them; the product ids wait
+        // for the game's application id. A simulated player buys only as player.purchases says.
+        new("store.coinPacks.*.productIdSuffix", ProductId, Provenance.Placeholder, SettingUse.GameOnly),
+        new("store.coinPacks.*.priceUsdCents", UsCents, Provenance.Decided),
+        new("store.coinPacks.*.coins", Coins, Provenance.Proposed),
+        new("store.starterPack.productIdSuffix", ProductId, Provenance.Placeholder, SettingUse.GameOnly),
+        new("store.starterPack.priceUsdCents", UsCents, Provenance.Decided),
+        new("store.starterPack.coins", Coins, Provenance.Proposed),
+        new("store.starterPack.boosters.*", Boosters, Provenance.Proposed),
+        new("store.starterPack.timesPerPlayer", "times per player", Provenance.Decided, SettingUse.GameOnly),
+        new("store.starterPack.fromLevel", "level", Provenance.Decided),
         new("player.extraMoves.takeWhenGoalsDonePercent", ShareOfGoals, Provenance.Proposed),
         new("player.extraMoves.watchesAds", YesOrNo, Provenance.Proposed),
         new("player.extraMoves.paysCoins", YesOrNo, Provenance.Proposed),
@@ -128,6 +144,10 @@ public static class SettingsCatalogue
         new("player.inLevelBoosters.assumedMovesWorth.*", "moves (not measured)", Provenance.Proposed),
         new("player.inLevelBoosters.useWhenGoalsDonePercent", ShareOfGoals, Provenance.Proposed),
         new("player.inLevelBoosters.perAttempt", Boosters, Provenance.Proposed),
+        new("player.purchases.packWhenShortForExtraMoves", CoinPack, Provenance.Proposed),
+        new("player.purchases.buysTheStarterPack", YesOrNo, Provenance.Proposed),
+        new("player.purchases.scheduledPack", CoinPack, Provenance.Proposed),
+        new("player.purchases.scheduledEveryDays", Days, Provenance.Proposed),
         new("measurement.moveCap", Moves, Provenance.Tool),
         new("measurement.firstRepeat", "bot repeat", Provenance.Tool),
         new("measurement.progressMarksPercent", ShareOfGoals, Provenance.Tool),

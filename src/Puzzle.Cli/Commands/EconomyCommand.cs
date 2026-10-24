@@ -10,8 +10,8 @@ using Puzzle.Tooling;
 namespace Puzzle.Cli.Commands;
 
 /// <summary>
-/// <c>economy measure|run|compare</c>: the economy simulator (docs/GAME_DESIGN.md section 19). It models free players
-/// and prices; nothing in it changes a level's difficulty or needs it changed.
+/// <c>economy measure|run|compare</c>: the economy simulator (docs/GAME_DESIGN.md section 19). It models free players,
+/// players who pay real money as their settings say, and prices; nothing in it changes a level's difficulty or needs it changed.
 /// <list type="bullet">
 /// <item><c>measure [settings.json] [--levels levels/generated] [--from 1] [--to &lt;last&gt;] [--out out/economy/measurement.jsonl]
 /// [--workers N] [--restart] [--low-priority]</c>: bots of the settings' rungs play every level on its own pool seeds past its limit,
@@ -20,7 +20,7 @@ namespace Puzzle.Cli.Commands;
 /// <c>--low-priority</c> lets everything else on the machine go first.</item>
 /// <item><c>run [settings.json] [--measurement ...] [--levels ...] [--out out/economy/&lt;settings name&gt;] [--trust-measurement]</c>:
 /// simulates the settings' players from the measurement alone and writes the reports (pace, stalls, lives, coins,
-/// spending, boosters, offers, settings as CSV, and summary.txt, which is also printed).</item>
+/// spending, purchases, boosters, offers, settings as CSV, and summary.txt, which is also printed).</item>
 /// <item><c>compare &lt;a.json&gt; &lt;b.json&gt; [--measurement ...] [--levels ...] [--out out/economy/compare-&lt;a&gt;-vs-&lt;b&gt;]
 /// [--trust-measurement]</c>: two settings files on the same measurement, as compare.csv and differences.txt.</item>
 /// </list>

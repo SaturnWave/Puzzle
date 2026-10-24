@@ -58,6 +58,16 @@ public class EconomySettingsTests
         Assert.False(takesNothing.PaysCoins);
         Assert.Null(Shipped("no-offers.json").Player.StartBoosters.UseAfterLossesOnLevel);
         Assert.Null(Shipped("no-offers.json").Player.StartBoosters.BuyAfterLossesOnLevel);
+
+        // The default player is free; the three paying players buy what their names say: the smallest pack when short
+        // of a +5, the starter pack, and the $9.99 pack every 30 days.
+        Assert.False(standard.Player.Purchases.PaysMoney);
+        string cheapest = standard.Store.CoinPacks.MinBy(pack => pack.Price)!.Name;
+        Assert.Equal(cheapest, Shipped("pays-when-short.json").Player.Purchases.PackWhenShortForExtraMoves?.Name);
+        PurchaseHabit starter = Shipped("buys-the-starter-pack.json").Player.Purchases;
+        Assert.True(starter.BuysTheStarterPack && starter.PackWhenShortForExtraMoves is null && starter.OnASchedule is null);
+        ScheduledPurchase? monthly = Shipped("pays-monthly.json").Player.Purchases.OnASchedule;
+        Assert.Equal((999L, 30), (monthly?.Pack.Price.Cents, monthly?.EveryDays));
     }
 
     [Fact]
@@ -299,7 +309,7 @@ public class EconomySettingsTests
 
         // The catalogue says of each of these that no simulated player meets it, and of nothing else.
         string[] gameOnly = SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly).Select(field => field.Path.Split('.')[0]).Distinct().ToArray();
-        Assert.Equal(["startBoosters", "hints", "shop", "build"], gameOnly);
+        Assert.Equal(["startBoosters", "hints", "shop", "build", "store"], gameOnly);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("lives.max").Use);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("start.coins").Use);
         Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("start.boosters.hit-row").Use);
@@ -307,6 +317,12 @@ public class EconomySettingsTests
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("startBoosters.perAttempt").Use);
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("hints.bot").Use);
         Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("shop.boosterSets.starter.boosters.start-color-bomb").Use);
+
+        // The store is simulated for a paying player, but its product ids and how often the starter pack is sold are the game's.
+        Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("store.coinPacks.pouch.coins").Use);
+        Assert.Equal(SettingUse.Simulated, SettingsCatalogue.Describe("store.starterPack.priceUsdCents").Use);
+        Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("store.coinPacks.pouch.productIdSuffix").Use);
+        Assert.Equal(SettingUse.GameOnly, SettingsCatalogue.Describe("store.starterPack.timesPerPlayer").Use);
         Assert.All(
             SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly),
             field => Assert.Contains(field.Provenance, new[] { Provenance.Decided, Provenance.Placeholder, Provenance.Proposed }));

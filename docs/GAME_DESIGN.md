@@ -942,6 +942,14 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
   - Etkileşimli tasarım tasarım tuvalinde ("Dünya haritası · dönemler"): açılınca dünyadan oyuncunun dönemine kayar; alttaki şeritte 20 dönem; iğneye dokununca tablo kartı; şu anki tabloda "Oyna". Konum listesi bir ilk derlemedir; 10 tablonun yeri yalnızca bölge düzeyinde, oyuna girmeden doğrulanacak. Proje sahibi tasarımı onayladı (2026-10-22: "eskisine göre daha iyi").
   - **Karar (2026-10-22):** oyunda tek bir genel müzik var: M1 Müze teması, her yerde çalar. Kısa parçalar (kazanma, kaybetme, tablo tamamlandı, oda onarıldı, ödül) ve ayrı tahta müziği yok. Ayarlar kartına "Müzik" anahtarı gelir.
 
+**Karar (2026-10-24): v1'de gerçek parayla satılanlar.** v1, bugünkü oyun ve gerçek satın almalardır. Satılanlar `economy/default.json`'un `store` bölümündedir; tutarlar simülatörden geçti (§25).
+
+- **Dört altın paketi:** kese $1.99 = 1.000, torba $4.99 = 2.750, sandık $9.99 = 6.000, hazine $19.99 = 13.000 altın.
+- **Çırak Çantası:** $1.99; 1.500 altın ve üç bölüm öncesi booster (fırça + sıçrama, renk bombası, +3 hamle, birer). Oyuncu başına bir kez. 20. bölümden itibaren mağazanın başında durur; geri sayım yok.
+- **Fiyat kuralları** (araştırma §3.2, denge testlerinde): paket büyüdükçe dolar başına altın düşmez, en büyük paket en küçükten en çok %35 fazla verir; her paket tam sayıda "+5" eder ve büyüdükçe daha çok; başlangıç paketinin değeri aynı paradaki altının en çok 2,5 katıdır; fiyatlar .99 ile biter, hiçbiri $19.99'u geçmez.
+- Hiçbir üründe rastgele içerik yok; içerik satın almadan önce görünür. Hiçbir satın alma bölümün hamle limitine, tohumlarına ya da yardımına dokunmaz (§17). Her satın almada onay adımı var; kaybetme kartından tek dokunuşla ücret alınmaz.
+- Ürün kimlikleri oyunun uygulama kimliğine bağlıdır: `com.saturnwave.puzzle.coins.pouch` gibi. Uygulama kimliği oyunun adıyla birlikte kesinleşir; ürünleri mağazalarda proje sahibi açar.
+
 ## 20. Kalibrasyon, veri ve yayın
 
 **Karar (2026-10-02).**
@@ -1496,6 +1504,8 @@ Bu kararlarla 10. aşama başladı.
 - **Yan paylar:** `RotationCheck` Fold'u iki yana da çevirir (kamera solda `2152x2076+0+0+90+0`, sağda `+0+0+0+90`). Oyun açılışta ve her ekran değişiminde ekranı ve güvenli alanı günlüğe yazar ("The screen is …"); telefon testinde yan paylar oradan okunur (T460, T465).
 - **Doğrulama:** 5.376 test. Ekonomi denetimi temiz. Unity'de `RotationCheck` (84 değişiklik), `PlayModeCheck`, `MusicCheck`, `EngineSmokeTest` hatasız; giriş sayfası (açılamayan hâli de) ve salon 1080×2424, 2732×2048 ve yan Fold'da bakıldı. APK'da etkinlik dik, kategori oyun, hedef API 36.
 
+**v1'in ürünleri istemci için (2026-10-24).** Gerçek parayla satılacak dört altın paketi ve Çırak Çantası `economy/default.json`'un `store` bölümünde (§19, §25): her ürünün ABD fiyatı (sent), altını, booster'ları ve ürün kimliğinin uygulama kimliğinden sonraki kısmı (`coins.pouch` → `com.saturnwave.puzzle.coins.pouch`). İstemci bu bölümü henüz okumuyor; `tools/unity/economy-pack.js` onu pakete koymuyor, `Economy.json` değişmedi. Mağaza sayfası üç paket sütunu için çizildi (`ShopLayout`: panel 362, dört sütun 449 nokta); satışı açan aşama dört paketi ve Çırak Çantası'nı yerleştirmeli, fiyatı mağazanın yerel yazısıyla göstermeli.
+
 ## 24. Bölüm bankası ve derleyici
 
 **Karar (2026-10-08).** Zorluk ayarının kalıcı çözümü: üretilen tahtalar atılmaz, ölçümleriyle birlikte saklanır; oyunun 1000 bölümü bu bankadan bir **politikayla** seçilir. Kullanıcının isteği: "kalıcı bir çözüm; üretilen bölümlerin çoğunu harddiske kaydedebiliriz". §8 ve §9'daki üretici (`generate`) duruyor; derleyici kendini kanıtladıkça onun yerini alır.
@@ -1644,7 +1654,7 @@ Hediye hızı değiştirmiyor (kural 7). Keseye 200–400 altın ekliyor; ortala
 Simülasyonda hediyenin 12 bölüm içi booster'ı etkisiz sayılır, çünkü bölüm içi booster ölçülmedi. Oyunda ilk bölümleri bundan biraz daha kolaylaştırırlar.
 
 **Sınırlar**
-- Bölüm içi booster'lar ölçülmedi (hiçbir bot ne zaman kullanacağını bilmiyor). Gerçek para simüle edilmiyor; ücretsiz oyuncunun eksiği raporlanıyor.
+- Bölüm içi booster'lar ölçülmedi (hiçbir bot ne zaman kullanacağını bilmiyor). Gerçek para 2026-10-24'ten beri yalnız `player.purchases`'ın üç kuralıyla simüle ediliyor (aşağıda); varsayılan oyuncu ücretsizdir ve eksiği raporlanır.
 - Tek tek bölüm sıralaması gürültülüdür; yalnızca kademe bazındaki tablo sağlamdır.
 - Hedefi 2–4 adımda ilerleyen 71 bölümde "+5"in istenme kuralı ilerlemeyi göremiyor; bu bölümler raporda ayrı gösterilir.
 - Oyuncu can beklemez, erken dönmez: "bekleme" yerine canın kestiği oyun süresi raporlanır.
@@ -1653,6 +1663,26 @@ Simülasyonda hediyenin 12 bölüm içi booster'ı etkisiz sayılır, çünkü b
 
 **Açık kararlar:** coin sayılarının tek tek onayı; bölüm içi booster fiyatları (ölçüm yok); yan koleksiyonun büyüklüğü ve parça fiyatı.
 
+**Ödeyen oyuncular ve v1'in ürünleri (2026-10-24).** v1'in satışları (§19) `economy/default.json`'un yeni `store` bölümüne yazıldı: dört altın paketi (kese $1.99 = 1.000, torba $4.99 = 2.750, sandık $9.99 = 6.000, hazine $19.99 = 13.000) ve Çırak Çantası ($1.99: 1.500 altın ve üç bölüm öncesi booster, oyuncu başına bir kez, 20. bölümden). Fiyat bir ABD sentidir (199 = $1.99); oyuncu fiyatı mağazanın kendi ülkesindeki yazısıyla görür. Ürün kimliği uygulama kimliği, bir nokta ve `productIdSuffix`'tir (`com.saturnwave.puzzle.coins.pouch`); uygulama kimliği kesinleşince kimlikler onu izler. Oyun bu bölümü henüz okumuyor: bu derleme parayla bir şey satmıyor ve mağazası `shop.coinPacks`'in örnek paketlerini gösteriyor; oyunun paketi (`Economy.json`) değişmedi.
+
+Simülatöre üç ödeyen oyuncu eklendi. Kuralları ayar dosyasında (`player.purchases`), her biri ayrı bir değişken dosyada: `pays-when-short.json` (reklam kalmamışken "+5" istenir ve altın yetmezse en küçük paketi alır), `buys-the-starter-pack.json` (Çırak Çantası'nı 20. bölüme gelince alır), `pays-monthly.json` (1. gün ve her 30 günde bir $9.99'luk sandığı alır). Satın alma hiçbir oyunu değiştirmez; bir oyuncu dört ayarda da aynı saklı oyunlarla karşılaşır (test). Raporlarda yeni `purchases.csv` ve özetteki "PURCHASES" tablosu var; coin tablosunda satın alınan altın ayrı sütundur.
+
+Ölçüm (4.000 oyuncu, aynı oyuncular, ölçüm bu derlemeyle denetlendi), ortalama oyuncu (55. basamak):
+
+| Oyuncu | 100. / 300. / 1000. bölüm | Kese, ortanca: 100. / 300. / 1000. bölümde | "+5", 1000. bölüme kadar: reklamla / altınla / karşılanmayan | Ödenen, 1000. bölüme kadar |
+|---|---|---|---|---|
+| Ücretsiz (`default`) | 8. / 25. / 90. gün | 4.004 / 4.192 / 6.744 | 204,4 / 34,2 / 2,8 | — |
+| Altın yetmeyince kese | 8. / 25. / 89. gün | 4.004 / 4.196 / 6.840 | 204,2 / 36,9 / 0 | 2,4 alım, ortalama $4,84 (ortanca $1,99; oyuncuların yarısı hiç almıyor) |
+| Çırak Çantası | 8. / 25. / 89. gün | 5.516 / 5.612 / 7.836 | 204,3 / 35,0 / 1,9 | $1,99 |
+| Ayda bir sandık | 8. / 25. / 89. gün | 10.004 / 10.124 / 25.180 | 204,2 / 36,8 / 0,1 | 3,3 alım, ortalama $32,79 |
+
+- **Zayıf oyuncu (45. basamak)** en çok alan: altın yetmeyince 1000 bölümde 36 kese alır (ortalama $71,57; onda biri $95,52 ya da daha fazla öder), karşılanmayan 44,6 "+5" isteği sıfıra iner ve 1000. bölüme 108 yerine 105. günde gelir. Ayda bir sandıkla yine 18 isteği karşılanmaz: para, istediği günlere denk gelmiyor.
+- **İyi oyuncu (65. basamak)** altın yetmeyince neredeyse hiç almaz (binde bir oyuncu, bir kese).
+- **Booster:** bölüm öncesi booster kullanımı dört ayarda da aynı (ortalama oyuncu 1000 bölümde yaklaşık 57); hiçbiri coin'le booster almaz. Çırak Çantası'nın üç booster'ı ödül olarak gelenlerin yanında küçük kalır.
+- **Denge politikası:** ayar ilişkileri tutuyor (`EconomyBalancePolicyTests`); politikaya araştırmanın fiyat kuralları 1, 2, 3 ve 6 eklendi: dolar başına altın 503 / 551 / 601 / 650 (en büyük paket %29 fazla, sınır %35); paketler 1 / 3 / 6 / 14 kez "+5" eder; Çırak Çantası'nın değeri 2.400 altın, aynı paradaki kesenin 2,4 katı (sınır 2,5) ve bir kez; fiyatlar .99 ile bitiyor, en yükseği $19.99. Fiyat kuralı 4 (rastgele içerik yok) biçimden gelir: dosya yalnız sabit içerik yazabilir. Simülatörle bakılan denge kurallarından 6. kural (100. bölüm 7–9. günde) dört oyuncuda da tutuyor (8. gün). 8. kuralın bandı (kese 2–8 "+5") ücretsiz oyuncu için yazıldı ve tutuyor (4,4–7,5); ödeyende kese satın aldığı kadar yükseliyor: Çırak Çantası 1000. bölümde 8,7, ayda bir sandık 11–28 "+5" değerinde.
+- **Tutarlar değişmedi.** Simülatör araştırmanın önerisini değiştirmek için bir neden göstermedi. Gösterdiği şu: günde üç ücretsiz reklam ortalama oyuncunun "+5" isteklerinin çoğunu karşılıyor; ödeyen ortalama oyuncu az alıyor, düzenli ödeyenin altını ise birikiyor. v1'de altının gidecek yeri "+5" ve bölüm öncesi booster'dır (simüle edilen oyuncu mağazadan set almaz). Biriken altının yeri yan koleksiyondur (2026-10-14 kararı); parça fiyatı açık.
+- Simüle edilmeyenler: iade, yeniden kurulumda kaybolan satın alma, ödemeyi bırakan ya da başka türlü ödeyen oyuncu.
+
 **Komutlar**
 
 | İş | Komut |
@@ -1660,3 +1690,4 @@ Simülasyonda hediyenin 12 bölüm içi booster'ı etkisiz sayılır, çünkü b
 | Ölç (bir kez; kaldığı yerden sürer) | `puzzle economy measure economy/default.json` |
 | Simüle et | `puzzle economy run economy/default.json` (raporlar `out/economy/<ad>`: `summary.txt`, hız, takılma, can, coin, harcama, booster, teklif CSV'leri) |
 | İki ayarı karşılaştır | `puzzle economy compare economy/default.json economy/sessions-20-minutes.json` |
+| Ödeyen oyuncuyu ücretsizle karşılaştır | `puzzle economy compare economy/default.json economy/pays-when-short.json` (ya da `buys-the-starter-pack.json`, `pays-monthly.json`) |

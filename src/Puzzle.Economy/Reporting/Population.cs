@@ -78,6 +78,18 @@ public static class Statistics
         return new Coins((sum + (amounts.Count / 2)) / amounts.Count);
     }
 
+    /// <summary>A mean of amounts of money, as whole cents (rounded to the nearest cent); absent when there are none.</summary>
+    public static UsDollars? MeanMoney(IReadOnlyCollection<UsDollars> amounts)
+    {
+        if (amounts.Count == 0)
+        {
+            return null;
+        }
+
+        long sum = amounts.Sum(amount => amount.Cents);
+        return new UsDollars((sum + (amounts.Count / 2)) / amounts.Count);
+    }
+
     /// <summary>The Wilson interval that holds a share with 90 % confidence, given the games it was counted on; absent without games.</summary>
     public static (double Low, double High)? Wilson90(double share, double games)
     {

@@ -4,6 +4,17 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-24 · Oturum 31 — v1: satın alma
+
+**Ödeyen oyuncular ve ürünlerin tutarları (simülatör)**
+- Bitti (ana dal): v1'in ürünleri `economy/default.json`'un yeni `store` bölümünde: kese $1.99 = 1.000, torba $4.99 = 2.750, sandık $9.99 = 6.000, hazine $19.99 = 13.000 altın; Çırak Çantası $1.99 = 1.500 altın + üç bölüm öncesi booster, oyuncu başına bir kez, 20. bölümden. Her alanın birimi ve kaynağı yazılı (fiyat sent olarak, kesirsiz). Araştırmanın tutarları korundu: simülatör değiştirmek için bir neden göstermedi.
+- Ürün kimlikleri uygulama kimliğine bağlı yer tutucular: `com.saturnwave.puzzle.coins.pouch`, `.coins.bag`, `.coins.chest`, `.coins.treasure`, `.starter.apprentice_kit`. Dosya yalnız noktadan sonrasını tutar; uygulama kimliği değişince kimlikler onu izler. Ürünleri Play Console'da ve App Store Connect'te proje sahibi açacak.
+- Oyun bu bölümü henüz okumuyor (paket ve `Economy.json` değişmedi; mağaza üç örnek paketi gösteriyor). Mağaza sayfası üç sütun için çizili; satışı açan aşama dört paketi ve Çırak Çantası'nı yerleştirecek.
+- Simülatöre üç ödeyen oyuncu eklendi, kuralları ayar dosyasında (`player.purchases`): `pays-when-short.json` (altın yetmeyince kese), `buys-the-starter-pack.json`, `pays-monthly.json` (ayda bir sandık). Yeni rapor `purchases.csv`, özette "PURCHASES" tablosu, coin tablosunda satın alınan altın.
+- Ortalama oyuncu dört ayarda da 100. bölüme 8. günde geliyor (1000. bölüme 90 yerine 89). Altın yetmeyince kese alan 1000 bölümde ortalama 2,4 kez öder ($4,84; yarısı hiç almaz); zayıf oyuncu 36 kez ($71,57), karşılanmayan "+5" isteği 44,6'dan sıfıra iner. Ayda bir sandık alanın kesesi 10.000–25.000'e çıkar: v1'de altının "+5" ve booster dışında gidecek yeri yok (yan koleksiyonun parça fiyatı açık). Ayrıntı GAME_DESIGN §25.
+- Denge politikasına fiyat kuralları 1, 2, 3 ve 6 eklendi (`EconomyBalancePolicyTests`): dolar başına altın 503 / 551 / 601 / 650 (en büyük %29 fazla, sınır %35); 1 / 3 / 6 / 14 kez "+5"; Çırak Çantası 2.400 altın değerinde, kesenin 2,4 katı (sınır 2,5) ve bir kez; fiyatlar .99 ile biter, en çok $19.99. Satın almanın hiçbir oyunu değiştirmediği ayrıca test edildi.
+- 5.408 test geçti (32'si yeni); ekonomi denetimi temiz (100. bölüm 8. gün); oyunun paketinin testleri değişmeden geçiyor. Telefonda görünen bir değişiklik yok; telefon testi gerekmiyor.
+
 ## 2026-10-24 · Oturum 30 — Kalan işler
 
 **İnceleme düzeltmeleri (yön, açılış hatası, yan paylar)**

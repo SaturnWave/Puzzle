@@ -48,6 +48,7 @@ public static class Summary
         AppendLives(text, report);
         AppendCoins(text, report);
         AppendSpending(text, report);
+        AppendPurchases(text, report);
         AppendStalls(text, report);
         AppendAssumptions(text, report);
         AppendGameOnlySettings(text, report);
@@ -72,7 +73,8 @@ public static class Summary
             text.AppendLine(Line($"  NOTE: the measurement block of the settings asks for another measurement than the one that was read ({string.Join("; ", report.SettingsAskForAnotherMeasurement)}). The block says how `economy measure` would measure; this run read the file as it is."));
         }
 
-        text.AppendLine(Line($"players: {settings.Players.Count} free players ({mix}), seed {settings.Players.Seed}, followed for {settings.Players.HorizonDays} days at most; the average player is {settings.Players.AverageRung}"));
+        string who = settings.Player.Purchases.PaysMoney ? "paying players (what they buy is under PURCHASES)" : "free players";
+        text.AppendLine(Line($"players: {settings.Players.Count} {who} ({mix}), seed {settings.Players.Seed}, followed for {settings.Players.HorizonDays} days at most; the average player is {settings.Players.AverageRung}"));
         text.AppendLine();
     }
 
@@ -192,7 +194,7 @@ public static class Summary
         string offer = OfferName(report);
         text.AppendLine(Line($"COINS at each milestone (means per player; balances as p10 / p50 / p90). The {offer} moves cost {settings.ExtraMovesOffer.Price}, a side-collection piece {settings.Prices.SideCollectionPiece}"));
         var table = new TextTable(
-            "population", "level", "reached", "balance", "welcome gift", "from the finale", "level wins", "paintings", "daily", $"spent on {offer}", "on boosters",
+            "population", "level", "reached", "balance", "welcome gift", "from the finale", "level wins", "paintings", "daily", "bought", $"spent on {offer}", "on boosters",
             "unpaid wants: gaps", "their full price", $"p50 buys {offer}", "side pieces");
         foreach (CoinsRow row in report.Coins.Where(row => row.At == BalanceMoment.Milestone))
         {
@@ -206,6 +208,7 @@ public static class Summary
                 Whole(row.EarnedLevelWon),
                 Whole(row.EarnedPainting),
                 Whole(row.EarnedDaily),
+                Whole(row.EarnedBoughtForMoney),
                 Whole(row.SpentExtraMoves),
                 Whole(row.SpentStartBoosters),
                 Whole(row.GapsAtUnpaidWants),
@@ -215,9 +218,10 @@ public static class Summary
         }
 
         table.AppendTo(text);
-        text.AppendLine("  (the balance day by day is in coins.csv. 'gaps' adds the coins missing at each unpaid want: the coins a player holds are missing from none of them, though");
-        text.AppendLine("   they would pay for one want only, so it understates what taking every want would have cost. 'full price' adds the prices of what was gone without.");
-        text.AppendLine("   A player who paid would also have played on differently, so neither is the size of a purchase: that takes a simulated payer, which this version has not.)");
+        text.AppendLine("  (the balance day by day is in coins.csv; 'bought' is the coins bought for real money. 'gaps' adds the coins missing at each unpaid want: the coins a player");
+        text.AppendLine("   holds are missing from none of them, though they would pay for one want only, so it understates what taking every want would have cost. 'full price'");
+        text.AppendLine("   adds the prices of what was gone without. A player who paid would also have played on differently, so neither is the size of a purchase: a paying");
+        text.AppendLine("   player is simulated by settings whose player.purchases buys something, as economy/pays-when-short.json does.)");
         AppendWhatDecidesTheCoins(text, report);
         AppendSurvivorNote(text, report.Coins.Where(row => row.At == BalanceMoment.Milestone).Select(row => row.ReachedShare));
         text.AppendLine();
@@ -246,7 +250,7 @@ public static class Summary
     private static void AppendSpending(StringBuilder text, EconomyReport report)
     {
         string offer = OfferName(report);
-        text.AppendLine("EXTRA MOVES AND BOOSTERS a free player gets, up to each milestone (means per player who reached it)");
+        text.AppendLine("EXTRA MOVES AND BOOSTERS a player gets, up to each milestone (means per player who reached it)");
         var table = new TextTable(
             "population", "level", "reached", "out of moves", $"{offer} wanted", "a day", "by ad", "for coins", "wanted, unpaid", "gaps", "full price", $"taken {offer} that won",
             "start boosters received", "used", "bought", "held", "wanted, unpaid", "in-level received", "held");
@@ -282,6 +286,72 @@ public static class Summary
         text.AppendLine("   what an offer or a booster is worth, with its price beside it, is in offers.csv)");
         AppendSurvivorNote(text, report.Spending.Select(row => row.ReachedShare));
         text.AppendLine();
+    }
+
+    /// <summary>What the players bought for real money, under the habit that made them buy it; nothing for free players, whose table would be all naught.</summary>
+    private static void AppendPurchases(StringBuilder text, EconomyReport report)
+    {
+        PurchaseHabit habit = report.Settings.Player.Purchases;
+        if (!habit.PaysMoney)
+        {
+            return;
+        }
+
+        text.AppendLine("PURCHASES FOR REAL MONEY up to each milestone (means per player who reached it; money at the US store's prices, before the store's share and taxes)");
+        foreach (string rule in RulesOf(habit, report))
+        {
+            text.AppendLine(Line($"  the player {rule}"));
+        }
+
+        var table = new TextTable("population", "level", "reached", "purchases", "paid anything", "paid mean", "p50", "p90", "coins bought");
+        foreach (PurchaseRow row in report.Purchases)
+        {
+            table.Add(
+                Named(row.Population),
+                Whole(row.Level.Value),
+                Percent(row.ReachedShare),
+                Number(row.PurchasesMean),
+                Percent(row.PayingShare),
+                Money(row.SpentMean),
+                Money(row.SpentP50),
+                Money(row.SpentP90),
+                Whole(row.CoinsBoughtMean));
+        }
+
+        table.AppendTo(text);
+        text.AppendLine("  (a purchase changes no game a player meets: it changes only what the player can pay for. Refunds, a purchase lost with a reinstall, and a player");
+        text.AppendLine("   who stops paying or pays otherwise than the rules above are not simulated. The starter pack's boosters count as received in the table above.)");
+        AppendSurvivorNote(text, report.Purchases.Select(row => row.ReachedShare));
+        text.AppendLine();
+    }
+
+    /// <summary>Each rule of the habit in words, with the product it buys.</summary>
+    private static IEnumerable<string> RulesOf(PurchaseHabit habit, EconomyReport report)
+    {
+        string offer = OfferName(report);
+        if (habit.PackWhenShortForExtraMoves is StoreProduct whenShort)
+        {
+            yield return Line($"buys the {Described(whenShort.Name, whenShort)} when the {offer} is wanted, no free ad is left today and the coins fall short of {report.Settings.ExtraMovesOffer.Price}");
+        }
+
+        if (habit.BuysTheStarterPack)
+        {
+            StarterPackSettings starter = report.Settings.Store.StarterPack;
+            yield return Line($"buys the {Described("starter pack", starter.Product)} when the shop first offers it, on coming to level {starter.FromLevel}");
+        }
+
+        if (habit.OnASchedule is ScheduledPurchase scheduled)
+        {
+            yield return Line($"buys the {Described(scheduled.Pack.Name, scheduled.Pack)} on day 1 and every {scheduled.EveryDays} days after, whatever the purse holds");
+        }
+    }
+
+    /// <summary>A product as a reader of the summary knows it: its name, its price and what it gives.</summary>
+    private static string Described(string name, StoreProduct product)
+    {
+        string boosters = string.Join(", ", product.Boosters.Select(held => $"{held.Value} {held.Key.Name()}"));
+        string contents = boosters.Length == 0 ? $"{product.Coins} coins" : $"{product.Coins} coins and {boosters}";
+        return Line($"{name} ({product.Price}: {contents})");
     }
 
     private static void AppendStalls(StringBuilder text, EconomyReport report)
@@ -406,10 +476,12 @@ public static class Summary
         }
 
         text.AppendLine("NOT MEASURED: in-level boosters (received and held only, unless a worth is assumed above); two start boosters in one attempt.");
-        text.AppendLine("NOT SIMULATED: purchases with real money, players who quit, days without play, learning a level over retries, a slower pace of weaker players,");
-        text.AppendLine("  players whose habits differ, and a player who waits for a life or comes back early for one.");
-        text.AppendLine("What a free player goes without here (unpaid wants, play denied by lives) is where a paying player would spend; how much they would spend is not simulated.");
-        text.AppendLine("Nothing a player spends changes a game they meet.");
+        text.AppendLine("NOT SIMULATED: purchases other than the rules of player.purchases, refunds, players who quit, days without play, learning a level over retries,");
+        text.AppendLine("  a slower pace of weaker players, players whose habits differ, and a player who waits for a life or comes back early for one.");
+        text.AppendLine(report.Settings.Player.Purchases.PaysMoney
+            ? "What a player still goes without here (unpaid wants, play denied by lives) is where they would spend beyond their rules."
+            : "What a free player goes without here (unpaid wants, play denied by lives) is where a paying player would spend: player.purchases simulates one.");
+        text.AppendLine("Nothing a player spends, in coins or in money, changes a game they meet.");
     }
 
     /// <summary>A milestone row is about the players who reached the level; when that is not everyone, the reader has to know it.</summary>
@@ -452,6 +524,8 @@ public static class Summary
     private static string Whole(long? number) => number?.ToString(Invariant) ?? Unknown;
 
     private static string Whole(Coins? coins) => Whole(coins?.Amount);
+
+    private static string Money(UsDollars? amount) => amount?.ToString() ?? Unknown;
 
     private static string Number(double? number) => number?.ToString("0.0", Invariant) ?? Unknown;
 
