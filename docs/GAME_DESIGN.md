@@ -1466,7 +1466,7 @@ Bu kararlarla 10. aşama başladı.
 
 **iPad ekranı (2026-10-24, `feature/ios`).**
 
-- **Düzen:** iPad dikey oynanır ve katlının iç ekranı gibi düzenlenir: yüksekliği tasarımın 9:16 telefonu kadar (640 nokta), genişliği 420 (mini) ile 480 (12.9" Pro) nokta arası; artan genişlik duvar olur, salonda tablonun iki yanına lamba asılır. Her ekran ve kart üç iPad boyutunda görüntülendi; kesik, taşan ya da durum çubuğunun ve ana ekran çizgisinin altında kalan bir şey yok.
+- **Düzen:** iPad dikey tutulunca katlının iç ekranı gibi düzenlenir (2026-10-24'ten beri yan da döner; aşağıda "Yan çevirme"): yüksekliği tasarımın 9:16 telefonu kadar (640 nokta), genişliği 420 (mini) ile 480 (12.9" Pro) nokta arası; artan genişlik duvar olur, salonda tablonun iki yanına lamba asılır. Her ekran ve kart üç iPad boyutunda görüntülendi; kesik, taşan ya da durum çubuğunun ve ana ekran çizgisinin altında kalan bir şey yok.
 - **Koleksiyon:** 410 noktadan geniş ekran bir odanın beş tablosunu iki sıra (üç ve iki) asar; telefonlar (360) ve 10:16 tablet (400) ikişer asar, katlının iç ekranı zaten üçerdi.
   - Gerekçe: 3:4 ekranda üç sıra ikişer her tabloyu yaklaşık 67 noktaya küçültüyor, duvar boş kalıyordu; iki sıra üçer aynı duvarda tabloları 1,5–2 kat büyütür (12.9" Pro'da 95–130 nokta). Bu genişlikte üçer toplamda daha büyük asar; yalnızca hepsi geniş manzara olan bir oda mini'de aşağı yukarı eşit kalır.
 - **Ayarlar:** iPad'de titreşim motoru olmadığı için kartta yalnızca Ses ve Müzik anahtarı vardır; `ScreenShots` bu kartı da görüntüler (`settings-without-vibrator`).

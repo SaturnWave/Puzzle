@@ -101,4 +101,74 @@ public class InfoPlistTests
 
         Assert.Throws<InvalidOperationException>(() => InfoPlist.Apply(broken, new[] { PlistLine.Withdraw(Camera) }));
     }
+
+    /// <summary>The ways of standing a list names, as Apple spells them.</summary>
+    private const string Upright = "UIInterfaceOrientationPortrait";
+    private const string UpsideDown = "UIInterfaceOrientationPortraitUpsideDown";
+    private const string FootRight = "UIInterfaceOrientationLandscapeLeft";
+    private const string FootLeft = "UIInterfaceOrientationLandscapeRight";
+    private const string PhoneTurns = "UISupportedInterfaceOrientations";
+    private const string PadTurns = "UISupportedInterfaceOrientations~ipad";
+
+    /// <summary>A list as Unity writes it for a game that turns: every way for the phone, and the full screen asked for.</summary>
+    private static readonly string UnitysTurningPlist = UnitysPlist.Replace(
+        "\t<key>UIApplicationSceneManifest</key>\n",
+        "\t<key>UISupportedInterfaceOrientations</key>\n\t<array>\n\t\t<string>UIInterfaceOrientationPortrait</string>\n\t\t<string>UIInterfaceOrientationLandscapeLeft</string>\n\t</array>\n"
+        + "\t<key>UIApplicationSceneManifest</key>\n");
+
+    /// <summary>What the iOS build writes of the screen's turning: an iPhone upright only, an iPad every way, no full screen asked for.</summary>
+    private static readonly PlistLine[] TheBuildsTurning =
+    {
+        PlistLine.Lists(PhoneTurns, Upright),
+        PlistLine.Lists(PadTurns, Upright, UpsideDown, FootRight, FootLeft),
+        PlistLine.Withdraw("UIRequiresFullScreen"),
+    };
+
+    [Fact]
+    public void A_list_takes_the_place_of_the_one_unity_wrote_one_string_to_a_line()
+    {
+        string written = InfoPlist.Apply(UnitysTurningPlist, TheBuildsTurning);
+
+        Assert.Contains(
+            "\t<key>UISupportedInterfaceOrientations</key>\n\t<array>\n\t\t<string>UIInterfaceOrientationPortrait</string>\n\t</array>\n\t<key>UIApplicationSceneManifest</key>",
+            written);
+        Assert.DoesNotContain(PairsOf(written), pair => pair.Key == "UIRequiresFullScreen");
+    }
+
+    [Fact]
+    public void A_list_that_was_not_there_comes_at_the_end_with_its_strings_in_their_order()
+    {
+        string written = InfoPlist.Apply(UnitysTurningPlist, TheBuildsTurning);
+
+        Assert.Equal((PadTurns, "array"), PairsOf(written).Last());
+        XElement array = XDocument.Parse(written).Root!.Element("dict")!.Elements("array").Last();
+        Assert.Equal(new[] { Upright, UpsideDown, FootRight, FootLeft }, array.Elements("string").Select(item => item.Value));
+        Assert.Contains($"\t<key>{PadTurns}</key>\n\t<array>\n\t\t<string>{Upright}</string>\n\t\t<string>{UpsideDown}</string>\n", written);
+    }
+
+    [Fact]
+    public void A_list_indented_with_spaces_gets_its_strings_one_step_of_spaces_deeper()
+    {
+        // Unity's export writes the list with two spaces a step, under "  <dict>".
+        const string spaced = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<plist version=\"1.0\">\n  <dict>\n    <key>CFBundleIdentifier</key>\n    <string>com.saturnwave.puzzle</string>\n  </dict>\n</plist>\n";
+
+        string written = InfoPlist.Apply(spaced, new[] { PlistLine.Lists(PhoneTurns, Upright) });
+
+        Assert.Contains($"    <key>{PhoneTurns}</key>\n    <array>\n      <string>{Upright}</string>\n    </array>\n  </dict>", written);
+    }
+
+    [Fact]
+    public void Writing_the_lists_again_changes_nothing()
+    {
+        string once = InfoPlist.Apply(UnitysTurningPlist, TheBuildsTurning);
+
+        Assert.Equal(once, InfoPlist.Apply(once, TheBuildsTurning));
+    }
+
+    [Fact]
+    public void A_list_of_nothing_or_of_an_empty_string_is_refused()
+    {
+        Assert.Throws<ArgumentException>(() => PlistLine.Lists(PhoneTurns));
+        Assert.Throws<ArgumentException>(() => PlistLine.Lists(PhoneTurns, Upright, " "));
+    }
 }

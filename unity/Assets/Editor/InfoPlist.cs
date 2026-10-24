@@ -9,7 +9,10 @@ using System.Xml.Linq;
 
 namespace Puzzle.Client.EditorTools
 {
-    /// <summary>What the app's Info.plist is to say of one key. A closed set: a key that says yes or no, or a key withdrawn.</summary>
+    /// <summary>
+    /// What the app's Info.plist is to say of one key. A closed set: a key that says yes or no, a key that lists
+    /// strings (the ways the screen may stand), or a key withdrawn.
+    /// </summary>
     public abstract class PlistLine
     {
         private PlistLine(string key)
@@ -21,6 +24,9 @@ namespace Puzzle.Client.EditorTools
         public string Key { get; }
 
         public static PlistLine Says(string key, bool value) => new Flag(key, value);
+
+        /// <exception cref="ArgumentException">The list is empty, or names an empty string.</exception>
+        public static PlistLine Lists(string key, params string[] values) => new Strings(key, values);
 
         public static PlistLine Withdraw(string key) => new Withdrawn(key);
 
@@ -41,6 +47,22 @@ namespace Puzzle.Client.EditorTools
             public override string ToString() => $"{Key} {ValueElement}";
         }
 
+        /// <summary>The key lists strings, in this order: an array of them.</summary>
+        public sealed class Strings : PlistLine
+        {
+            internal Strings(string key, IReadOnlyList<string> values)
+                : base(key)
+            {
+                Values = values.Count > 0 && values.All(value => !string.IsNullOrWhiteSpace(value))
+                    ? values.ToArray()
+                    : throw new ArgumentException($"The list of {key} names at least one string, and no empty one.", nameof(values));
+            }
+
+            public IReadOnlyList<string> Values { get; }
+
+            public override string ToString() => $"{Key} [{string.Join(", ", Values)}]";
+        }
+
         /// <summary>The key is not in the plist, also where Unity wrote it.</summary>
         public sealed class Withdrawn : PlistLine
         {
@@ -56,8 +78,8 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// Writes the build's lines into an iOS app's Info.plist (the one Unity writes at the top of the Xcode project,
     /// which IosBuild's plist step hands over), an XML property list whose top is one dictionary: a key that says yes
-    /// or no is set to it once, where it stands or else at the dictionary's end, on a line of its own; a withdrawn key
-    /// goes, with its value. Nothing else of the list changes, its layout and line breaks included, but for how an
+    /// or no is set to it once, where it stands or else at the dictionary's end, on a line of its own; a key that lists
+    /// strings is set the same way to an array of them, one string to a line; a withdrawn key goes, with its value. Nothing else of the list changes, its layout and line breaks included, but for how an
     /// empty element is spelled (&lt;true/&gt; is written &lt;true /&gt;, the same XML). The list's document type is kept as
     /// it is written and never fetched. This file has no Unity dependency (nor on Unity's iOS module), so the
     /// repository's tests compile it too.
@@ -118,19 +140,11 @@ namespace Puzzle.Client.EditorTools
             switch (line)
             {
                 case PlistLine.Flag flag:
-                    var value = new XElement(flag.ValueElement);
-                    if (keys.Length == 0)
-                    {
-                        Append(dictionary, new XElement(Key, flag.Key), value);
-                        return;
-                    }
-
-                    ValueOf(keys[0]).ReplaceWith(value);
-                    foreach (XElement again in keys.Skip(1))
-                    {
-                        RemovePair(again);
-                    }
-
+                    Set(dictionary, keys, flag.Key, new XElement(flag.ValueElement));
+                    break;
+                case PlistLine.Strings strings:
+                    string indentation = IndentationOf(dictionary);
+                    Set(dictionary, keys, strings.Key, ArrayOf(strings.Values, indentation, StepOf(dictionary, indentation)));
                     break;
                 case PlistLine.Withdrawn _:
                     foreach (XElement key in keys)
@@ -143,6 +157,53 @@ namespace Puzzle.Client.EditorTools
                     throw new ArgumentOutOfRangeException(nameof(line), line, "A plist line the Info.plist step does not know.");
             }
         }
+
+        /// <summary>A key says a value once: in place of its first value where it stands, else at the dictionary's end.</summary>
+        private static void Set(XElement dictionary, XElement[] keys, string key, XElement value)
+        {
+            if (keys.Length == 0)
+            {
+                Append(dictionary, new XElement(Key, key), value);
+                return;
+            }
+
+            ValueOf(keys[0]).ReplaceWith(value);
+            foreach (XElement again in keys.Skip(1))
+            {
+                RemovePair(again);
+            }
+        }
+
+        /// <summary>An array of strings, each on a line of its own one step deeper than its key, the closing tag in line with the key.</summary>
+        private static XElement ArrayOf(IReadOnlyList<string> values, string indentation, string step)
+        {
+            var array = new XElement("array");
+            foreach (string value in values)
+            {
+                array.Add(new XText(indentation + step), new XElement("string", value));
+            }
+
+            array.Add(new XText(indentation));
+            return array;
+        }
+
+        /// <summary>
+        /// One step of indentation as the list is written: how far the dictionary's keys stand in from the dictionary
+        /// itself (a tab in Apple's own lists, two spaces in Unity's); a tab where that cannot be told.
+        /// </summary>
+        private static string StepOf(XElement dictionary, string keyIndentation)
+        {
+            string own = dictionary.PreviousNode is XText before && string.IsNullOrWhiteSpace(before.Value) ? before.Value : "\n";
+            return keyIndentation.Length > own.Length && keyIndentation.StartsWith(own, StringComparison.Ordinal)
+                ? keyIndentation.Substring(own.Length)
+                : "\t";
+        }
+
+        /// <summary>The line break and indentation before the dictionary's keys, as the list is written; a bare line break where it has none.</summary>
+        private static string IndentationOf(XElement dictionary) =>
+            dictionary.Elements().FirstOrDefault()?.PreviousNode is XText before && string.IsNullOrWhiteSpace(before.Value)
+                ? before.Value
+                : "\n";
 
         /// <summary>A key's value: the element after it.</summary>
         private static XElement ValueOf(XElement key) =>
@@ -168,9 +229,7 @@ namespace Puzzle.Client.EditorTools
         /// <summary>A key and its value at the dictionary's end, each on a line of its own, indented as the keys before it.</summary>
         private static void Append(XElement dictionary, XElement key, XElement value)
         {
-            string indentation = dictionary.Elements().FirstOrDefault()?.PreviousNode is XText before && string.IsNullOrWhiteSpace(before.Value)
-                ? before.Value
-                : "\n";
+            string indentation = IndentationOf(dictionary);
             object[] pair = { new XText(indentation), key, new XText(indentation), value };
             if (dictionary.LastNode is XText closing && string.IsNullOrWhiteSpace(closing.Value))
             {

@@ -79,6 +79,10 @@ namespace Puzzle.Client.EditorTools
         /// at all; the Android build withdraws the internet), so App Store Connect asks no export question of a build.
         /// It tracks no one and uses no camera, microphone or location: no purpose string for them is left, whatever a
         /// setting or a library would write. A purchase, ad or reporting library changes this list, and the privacy text.
+        /// The screen's turning, as the owner decided on 2026-10-24 (Scripts/Layout/ScreenClass.cs): an iPhone stands
+        /// upright only; an iPad turns all four ways and asks for no full screen, so it runs in a window beside other
+        /// apps and in Stage Manager. Apple requires the four ways of every iPad app that does not take the whole screen
+        /// (ITMS-90474), and from the iOS 27 SDK on it ignores the full-screen key anyway (TN3192).
         /// </summary>
         internal static readonly PlistLine[] InfoPlistLines =
         {
@@ -87,12 +91,23 @@ namespace Puzzle.Client.EditorTools
             PlistLine.Withdraw("NSCameraUsageDescription"),
             PlistLine.Withdraw("NSMicrophoneUsageDescription"),
             PlistLine.Withdraw("NSLocationWhenInUseUsageDescription"),
+            PlistLine.Lists("UISupportedInterfaceOrientations", "UIInterfaceOrientationPortrait"),
+            PlistLine.Lists(
+                "UISupportedInterfaceOrientations~ipad",
+                "UIInterfaceOrientationPortrait",
+                "UIInterfaceOrientationPortraitUpsideDown",
+                "UIInterfaceOrientationLandscapeLeft",
+                "UIInterfaceOrientationLandscapeRight"),
+            PlistLine.Withdraw("UIRequiresFullScreen"),
+            PlistLine.Withdraw("UIRequiresFullScreen~ipad"),
         };
 
         /// <summary>
-        /// The Android package's identity, orientation and code (IL2CPP, stripped as on Android, which a phone has
-        /// proven), for iPhones and iPads. Unity applies the rest of the project's settings to both (the name, the
-        /// splash, the status bar hidden, other apps' sound mixed under the game's and the silent switch obeyed).
+        /// The Android package's identity and code (IL2CPP, stripped as on Android, which a phone has proven), for
+        /// iPhones and iPads, turning with the device: the Info.plist lets an iPhone stand upright only and an iPad every
+        /// way (<see cref="InfoPlistLines"/>), and the game's root asks for the same once it runs. Unity applies the rest
+        /// of the project's settings to both (the name, the splash, the status bar hidden, other apps' sound mixed under
+        /// the game's and the silent switch obeyed).
         /// </summary>
         private static void ApplyPlayerSettings()
         {
@@ -102,13 +117,20 @@ namespace Puzzle.Client.EditorTools
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
             PlayerSettings.SetArchitecture(NamedBuildTarget.iOS, Arm64);
             PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.iOS, PlayerSettings.GetManagedStrippingLevel(NamedBuildTarget.Android));
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
             PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneAndiPad;
             PlayerSettings.iOS.targetOSVersionString = OldestIos;
             PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
 
-            // An iPad app that is played upright only must take the whole screen; App Store Connect refuses it otherwise.
-            PlayerSettings.iOS.requiresFullScreen = true;
+            // The game turns with an iPad, all four ways, from its first frame; an iPhone's Info.plist keeps it upright.
+            // The Android build sets its own package upright again (AndroidBuild).
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToPortrait = true;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = true;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
+
+            // An iPad runs in a window beside other apps and in Stage Manager, and is laid out for any shape it is given.
+            PlayerSettings.iOS.requiresFullScreen = false;
 
             // Xcode signs on the Mac with the owner's team, which xcodebuild is given there; the project carries none.
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
