@@ -32,6 +32,16 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Bulgu: 2025'te bulmaca büyümesini yeni türler taşıdı (birleştirme, sıralama, blok, vida). Büyük üçlü eşleştirme oyunları liste hitlerini olduğu gibi gömmüyor; renk sırası, yapboz, kazı ve hafıza gibi oyunları etkinlik olarak koyuyor. Hepsi kazanılan bölümden gelen jetonla besleniyor, can harcatmıyor.
 - Öneri: önce ortak çerçeve (takvim, etkinlik kartı, mini oyun sahnesi, sonuç ve ödül), sonra Boya Tüpleri (tüp sıralama), Pigment Tarifi (renk sırası), Takas Yapbozu (kart takası), Depo Sıkışıklığı (kayan sandıklar), isteğe bağlı Çerçeve Vidaları. Ayın 1. ve 3. haftası "Atölye Haftası": hafta içi ve hafta sonu birer zincir, telefonun saatiyle, sunucusuz. 14 soru proje sahibinin kararını bekliyor.
 
+**Satın alma denemesi (IAP)**
+- Atılan bir kopyada (`D:/puzzle-iap-spike`, 6fdd691) Unity IAP 5.4.4 eklendi; satış yapmayan en küçük kod (`coins_test` ürününü soran bir deneme) yalnız `IAP_SPIKE` tanımıyla derlendi. Üç Android derlemesi: IAP'siz, IAP'li ve INTERNET silinmiş, IAP'li ve silme kapalı. Kopya sonra silindi; oyuna hiçbir şey girmedi.
+- İzinler: IAP `com.android.vending.BILLING` ve `ACCESS_NETWORK_STATE` getiriyor. INTERNET'i Google'ın `transport-backend-cct` kütüphanesi istiyor; bizim izin adımı onu siliyor (Gradle raporu: "REJECTED"). Silme kapalıyken INTERNET geri geliyor. Konum izni yok.
+- Boyut: APK 294,7 MB'tan 302,7 MB'a, +8,0 MB (%2,7); çoğu derlenmiş C# kodu. Telefonda yaklaşık +26 MB.
+- UGS ve bulut projesi gerekmiyor: editörün oyun kipinde UGS başlatılmadan bağlandı ve ürün geldi. Derleme yalnız "bulut projesi yok, Google Play lisans anahtarı yok" uyarısı yazıyor.
+- Paketin kaynak kodundan: IAP'nin teşhis verisi UGS başlatılmadıkça gitmiyor. Ama 5.4.4 her satın alma adımını (fiş, ürün, fiyat, cihaz modeli, iOS'ta IDFV) Unity'nin sunucusuna yolluyor; kapatma ayarı yok. Android'de INTERNET yokken çıkamaz, iOS'ta çıkar. 5.3.1'de bu kod yok.
+- Tuzak: silme satırı kaldırılınca Unity eski manifesti kullanıyor ve INTERNET silinmiş kalıyor; Gradle projesindeki manifest silinince düzeldi.
+- Öneri: satın alma gelirse IAP 5.3.1 (Google'a göre 2027-08-31'e kadar geçerli) ve INTERNET silinmiş kalsın; analiz gelirse Aptabase, oyuncunun izniyle. Belge: `docs/research/iap-and-analytics.md` ("Araştırma Notu" PDF'i); kaynaklı araştırma notu `docs/research/iap-and-analytics-notes.md`. Kararlar sahibinde (belgenin 7. bölümü).
+- Açık: gerçek Google Play satın alması INTERNET'siz denenmedi (Play Console'da uygulama ve lisanslı test hesabı gerekiyor); iPad'de ağ dinlenmedi; 5.3.1 derlenmedi.
+
 ## 2026-10-23 · Oturum 29 — Simge, iOS hazırlığı, geri tuşu, yeni APK
 
 **Kullanıcı kararları**
