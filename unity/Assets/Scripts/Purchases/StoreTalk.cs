@@ -203,6 +203,26 @@ namespace Puzzle.Client.Purchases
             public override string ToString() => $"deferred: {StoreId}";
         }
 
+        /// <summary>
+        /// The store did not take the confirmation of a payment (it was not connected, or failed otherwise): it still
+        /// holds the payment as waiting, and the game confirms it again the next time the store opens.
+        /// </summary>
+        public sealed class NotConfirmed : StoreNews
+        {
+            public NotConfirmed(StorePayment payment, string why)
+            {
+                Payment = payment ?? throw new ArgumentNullException(nameof(payment));
+                Why = why ?? string.Empty;
+            }
+
+            public StorePayment Payment { get; }
+
+            /// <summary>What the store said, for the log; never shown to a player.</summary>
+            public string Why { get; }
+
+            public override string ToString() => $"not confirmed: {Payment} ({Why})";
+        }
+
         /// <summary>A request for the player's purchases back has ended; what it brought came as <see cref="Owned"/> or <see cref="Paid"/> before this.</summary>
         public sealed class RestoreEnded : StoreNews
         {
@@ -247,7 +267,10 @@ namespace Puzzle.Client.Purchases
         /// <summary>Opens the store's own payment sheet for the product; news follows.</summary>
         void Buy(StoreListing listing);
 
-        /// <summary>Tells the store the payment is delivered and saved, so it stops telling of it (and Google does not refund it).</summary>
+        /// <summary>
+        /// Tells the store the payment is delivered and saved, so it stops telling of it (and Google does not refund it).
+        /// A confirmation the store does not take comes back as <see cref="StoreNews.NotConfirmed"/>.
+        /// </summary>
         void Confirm(StorePayment payment);
 
         /// <summary>Asks the store for what the player owns (the App Store's restore); news follows, and <see cref="StoreNews.RestoreEnded"/> last.</summary>

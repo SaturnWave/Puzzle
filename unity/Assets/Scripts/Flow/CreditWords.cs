@@ -37,7 +37,8 @@ namespace Puzzle.Client.Flow
     /// game uses, and under which licences. Its nameplate, its first line and the headings are said in the language
     /// the game speaks (<see cref="Speech"/>); the lines under the headings are licence notices and stay in English in
     /// every language, word for word as the licence records have them (art/avatar/licences.json, art/fonts/licences.json,
-    /// art/paintings/room-NN/licences.json, art/sounds/licences.json; the tests hold these lines to them). A notice is
+    /// art/paintings/room-NN/licences.json, art/sounds/licences.json, and unity/Packages/licences.json for the software
+    /// the game carries; the tests hold these lines to them). A notice is
     /// no word of a table: a translator does not change it. Every line is written in the game's letters (a "©" of a
     /// record is written "(c)"). No Unity dependency.
     /// </summary>
@@ -46,7 +47,10 @@ namespace Puzzle.Client.Flow
     /// "modified"; his body is Microsoft Rocketbox (MIT), whose notice must go with every copy, so it is shown whole.
     /// The paintings, the sounds and the textures of the painter's clothes ask for no credit (public domain, CC0): they
     /// are named all the same. The typefaces' copyright lines go with the SIL Open Font License they are shared under.
-    /// The music is the owner's own and is not listed.
+    /// The software the game carries from its packages is named with its licences: the Aptabase SDK and Json.NET are
+    /// MIT, whose notice must go with every copy, so their copyright lines are shown with the MIT text whole; the parts
+    /// of Unity In-App Purchasing that its notices list under the Apache License 2.0 are named with their copyright
+    /// lines and the licence's address. The music is the owner's own and is not listed.
     /// </remarks>
     public static class CreditWords
     {
@@ -94,13 +98,35 @@ namespace Puzzle.Client.Flow
         /// <summary>The sounds of play.</summary>
         public const string SoundsLine = "Sounds of play: Kenney (www.kenney.nl), Creative Commons CC0 1.0 Universal.";
 
+        /// <summary>The software the game carries from its packages, by package, with its licence.</summary>
+        public static IReadOnlyList<string> SoftwareLines { get; } = new[]
+        {
+            "Aptabase SDK for Unity 0.3.1 (https://github.com/aptabase/aptabase-unity), MIT License.",
+            "Json.NET (Newtonsoft.Json, https://www.newtonsoft.com/json), in Unity's package com.unity.nuget.newtonsoft-json 3.2.2, MIT License.",
+            "In Unity In-App Purchasing 5.4.4, as its notices list them: Google Play Billing Library 9.0.0, Copyright (c) 2023 Google, LLC; Apple StoreKit 2, Copyright (c) 2023 Apple Computer, Inc.; under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0).",
+        };
+
+        /// <summary>The MIT License of the software above, whole: its copyright lines, then its text, a paragraph a line.</summary>
+        public static IReadOnlyList<string> SoftwareLicence { get; } = new[]
+        {
+            "MIT License",
+            "Copyright (c) 2023 Aptabase",
+            "Copyright (c) 2007 James Newton-King",
+            "Copyright (c) 2016 SaladLab",
+            "Copyright (c) 2019 Kalle Jillheden (jilleJr)",
+            "Copyright (c) 2019 Mike Wuetherick",
+            "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+            "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.",
+            "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+        };
+
         /// <summary>The credits card's nameplate, and the settings card's row that opens it.</summary>
         public static string Title => Speech.Say(WordId.SettingsCredits);
 
         /// <summary>The card's first line: the lines under the headings stay in English.</summary>
         public static string InEnglish => Speech.Say(WordId.CreditsInEnglish);
 
-        /// <summary>The card's parts, in the order it shows them: the painter and his licence's text, the paintings, the typefaces, the sounds.</summary>
+        /// <summary>The card's parts, in the order it shows them: the painter and his licence's text, the paintings, the typefaces, the sounds, the software and its licence's text.</summary>
         public static IReadOnlyList<CreditSection> Sections => new[]
         {
             new CreditSection(Speech.Say(WordId.CreditsPainter), new[] { EinarLine, RocketboxLine, PolyHavenLine }),
@@ -108,6 +134,8 @@ namespace Puzzle.Client.Flow
             new CreditSection(Speech.Say(WordId.CreditsPaintings), new[] { PaintingsLine }),
             new CreditSection(Speech.Say(WordId.CreditsTypefaces), TypefaceLines),
             new CreditSection(Speech.Say(WordId.CreditsSounds), new[] { SoundsLine }),
+            new CreditSection(Speech.Say(WordId.CreditsSoftware), SoftwareLines),
+            new CreditSection(heading: null, SoftwareLicence),
         };
     }
 }

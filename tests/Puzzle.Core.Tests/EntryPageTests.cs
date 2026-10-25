@@ -2,6 +2,7 @@ using System.IO;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Words;
+using Puzzle.Meta;
 
 namespace Puzzle.Core.Tests;
 
@@ -221,7 +222,9 @@ public class EntryPageTests
             Assert.Equal("Yükleniyor… %40", EntryWords.Loading(40));
             Assert.Equal("Başlamak için dokun", EntryWords.TapToStart);
             Assert.Equal("SaturnWave", EntryWords.Studio);
-            Assert.Equal("Sürüm 1.0 · test sürümü", EntryWords.Version("1.0"));
+            Assert.Equal("Sürüm 1.0 · test sürümü", EntryWords.Version("1.0", RealMoneySales.NotAvailable));
+            Assert.Equal("Sürüm 1.0", EntryWords.Version("1.0", RealMoneySales.ThroughTheStore));
+            Assert.Equal("Sürüm 1.0", EntryWords.VersionAlone("1.0"));
             Assert.Equal("Oyun açılamadı; yeniden başlatın", EntryWords.CouldNotStart);
         }
 

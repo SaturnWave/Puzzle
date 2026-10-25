@@ -151,7 +151,7 @@ namespace Puzzle.Client.EditorTools
             var keeper = new Keeper(rules, new PlayerProgress(StandingOnLevel - 1, attemptsOnLevel: 0, PlacedPieces.None, rules.StartingWallet));
             var checkout = new Checkout(catalogue, RealMoneySales.ThroughTheStore, Application.identifier, store);
 
-            checkout.Open(TimeSpan.Zero);
+            checkout.Open(TimeSpan.Zero, keeper);
             while (checkout.Status is StoreStatus.Connecting)
             {
                 _where = "the store's opening";
@@ -168,7 +168,7 @@ namespace Puzzle.Client.EditorTools
             foreach (StoreProduct product in catalogue.Products)
             {
                 PlayerProgress before = keeper.Saved;
-                Require(checkout.Ask(product, before.Purchases, StandingOnLevel) && checkout.State is PurchaseState.Asking && checkout.Pay(), $"{product.Name} could not be asked for and paid");
+                Require(checkout.Ask(product, before.Purchases, StandingOnLevel) && checkout.State is PurchaseState.Asking && checkout.Pay(TimeSpan.Zero), $"{product.Name} could not be asked for and paid");
                 while (checkout.State is PurchaseState.Pending)
                 {
                     _where = $"the payment for {product.Name}";
@@ -189,7 +189,7 @@ namespace Puzzle.Client.EditorTools
 
             // A sheet cancelled: nothing given, nothing to confirm.
             PlayerProgress beforeTheCancel = keeper.Saved;
-            Require(checkout.Ask(catalogue.CoinPacks[0], beforeTheCancel.Purchases, StandingOnLevel) && checkout.Pay(), "the first pack could not be asked for a second time");
+            Require(checkout.Ask(catalogue.CoinPacks[0], beforeTheCancel.Purchases, StandingOnLevel) && checkout.Pay(TimeSpan.Zero), "the first pack could not be asked for a second time");
             while (checkout.State is PurchaseState.Pending)
             {
                 _where = "the sheet to cancel";
@@ -226,7 +226,7 @@ namespace Puzzle.Client.EditorTools
             // A new install with the same store account: the store tells of the starter pack it keeps, and it is given once.
             var newInstall = new Keeper(rules, new PlayerProgress(levelsWon: 0, attemptsOnLevel: 0, PlacedPieces.None, rules.StartingWallet));
             var afterTheInstall = new Checkout(catalogue, RealMoneySales.ThroughTheStore, Application.identifier, store);
-            afterTheInstall.Open(TimeSpan.Zero);
+            afterTheInstall.Open(TimeSpan.Zero, newInstall);
             for (int frame = 0; frame < 60 && newInstall.Saved.Purchases.TimesBought(catalogue.StarterPack.Product.IdSuffix) == 0; frame++)
             {
                 _where = "the new install's opening";
@@ -299,7 +299,9 @@ namespace Puzzle.Client.EditorTools
 
             public bool IsSaved => true;
 
-            public Delivery Deliver(StoreProduct product, StorePayment payment)
+            public ProgressKeeping Keeping => ProgressKeeping.AfterClosing;
+
+            public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason)
             {
                 Delivery delivery = _ledger.Deliver(Saved, product, payment.TransactionId);
                 switch (delivery)

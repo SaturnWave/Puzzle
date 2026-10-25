@@ -24,10 +24,16 @@ namespace Puzzle.Client.EditorTools
     /// second starter pack refused before the store. A game closed between a payment and its delivery gives it once when it opens again, and one closed
     /// between the save and the confirmation finds it given and confirms it (<c>walk-purchase-restart-...</c>). On the
     /// App Store a new install asks for its purchases back by the shop's row and gets the starter pack once, a second
-    /// asking bringing nothing (<c>walk-purchase-restore-...</c>). A store that cannot be reached leaves the calm line
-    /// in place of the packs' buttons, a store that has not answered dims them, and the shop asks again a while later
-    /// (<c>walk-purchase-store-...</c>). Every walk fails when a touch does not lead where it should, when a payment is
-    /// not in the saved progress exactly once, or when one is confirmed before the save holds it.
+    /// asking bringing nothing (<c>walk-purchase-restore-...</c>); on Google Play a new install is given the starter
+    /// pack back when the store opens, and its card says it came back, not that it was bought
+    /// (<c>walk-purchase-givenback-...</c>). A store that cannot be reached leaves the calm line in place of the packs'
+    /// buttons, a store that has not answered dims them, and the shop asks again a while later
+    /// (<c>walk-purchase-store-...</c>). A payment sheet the store does not answer keeps its card without an answer for
+    /// half a minute, then lets it close, and the payment made later is given; a store lost while its sheet is up says
+    /// no answer came, never that nothing was paid (<c>walk-purchase-silent-...</c>). A run whose progress cannot be
+    /// kept sells nothing and leaves a payment of an earlier run with the store (<c>walk-purchase-unsaved-...</c>).
+    /// Every walk fails when a touch does not lead where it should, when a payment is not in the saved progress exactly
+    /// once, or when one is confirmed before the save holds it.
     /// </summary>
     internal static partial class GameWalk
     {
@@ -35,16 +41,21 @@ namespace Puzzle.Client.EditorTools
         private const int PurchaseLevel = 25;
 
         /// <summary>Walks every purchase on a screen; a delivery the save does not hold fails them.</summary>
-        public static void RunThePurchaseWalks(ScreenShape screen, Studio studio) => RunThePurchaseWalks(screen, studio, Saving.AsTheGameSavesIt);
+        /// <returns>How many pictures were taken.</returns>
+        public static int RunThePurchaseWalks(ScreenShape screen, Studio studio) => RunThePurchaseWalks(screen, studio, Saving.AsTheGameSavesIt);
 
         /// <summary>Walks every purchase on a screen with the saves made as the walk says: as the game makes them, or broken, to prove the walk fails then.</summary>
-        public static void RunThePurchaseWalks(ScreenShape screen, Studio studio, Saving saving)
+        /// <returns>How many pictures were taken.</returns>
+        public static int RunThePurchaseWalks(ScreenShape screen, Studio studio, Saving saving)
         {
             PlayerProgress standing = StoryStudio.StandingOn(LevelPack.Numbered(studio.Levels, PurchaseLevel), studio.Levels);
-            WalkThePurchases(standing, screen, studio);
-            WalkAPurchaseCutShort(standing, screen, studio, saving);
-            WalkARestore(standing, screen, studio);
-            WalkAStoreThatIsNotThere(standing, screen, studio);
+            return WalkThePurchases(standing, screen, studio)
+                + WalkAPurchaseCutShort(standing, screen, studio, saving)
+                + WalkARestore(standing, screen, studio)
+                + WalkAGivingBack(standing, screen, studio)
+                + WalkAStoreThatIsNotThere(standing, screen, studio)
+                + WalkASilentSheet(standing, screen, studio)
+                + WalkARunThatCannotSave(standing, screen, studio);
         }
 
         /// <summary>How the walks' progress is saved. A closed set.</summary>
@@ -58,7 +69,7 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>The shop's prices, the starter pack bought, every pack, a cancel, a refusal, a payment that waits, the starter pack again.</summary>
-        private static void WalkThePurchases(PlayerProgress before, ScreenShape screen, Studio studio)
+        private static int WalkThePurchases(PlayerProgress before, ScreenShape screen, Studio studio)
         {
             EconomyRules rules = StoryStudio.Economy;
             StoreCatalogue catalogue = rules.Shop.Store;
@@ -134,14 +145,16 @@ namespace Puzzle.Client.EditorTools
             CloseTheNotice(reel);
             reel.WriteSheet();
             Debug.Log($"Screen shots: walk {reel.Name}: every pack and the starter pack bought once, a cancel, a refusal and a payment that waited; the player now holds \"{session.Progress.Wallet}\".");
+            return reel.Taken;
         }
 
         /// <summary>
         /// A game closed between a payment and its delivery, and one closed between the save and the confirmation: the
         /// store tells of the payment again when the game opens, and it is given once, and confirmed.
         /// </summary>
-        private static void WalkAPurchaseCutShort(PlayerProgress before, ScreenShape screen, Studio studio, Saving saving)
+        private static int WalkAPurchaseCutShort(PlayerProgress before, ScreenShape screen, Studio studio, Saving saving)
         {
+            int pictures;
             StoreCatalogue catalogue = StoryStudio.Economy.Shop.Store;
             StoreProduct chest = catalogue.CoinPacks[catalogue.CoinPacks.Count - 2];
             StoreProduct treasure = catalogue.CoinPacks[catalogue.CoinPacks.Count - 1];
@@ -163,6 +176,7 @@ namespace Puzzle.Client.EditorTools
                 RequireGivenOnce(reopened, kept, store, chest, before, "the payment the closed game had not taken");
                 CloseTheNotice(reel);
                 reel.WriteSheet();
+                pictures = reel.Taken;
             }
 
             // Given and saved, and closed before the confirmation: found given on opening, confirmed then, given no second time.
@@ -171,7 +185,7 @@ namespace Puzzle.Client.EditorTools
             using (GameSession closing = SessionOverAStore(studio, kept, closingStore, screen))
             {
                 closing.Advance(StoryStudio.FrameSeconds);
-                ThroughTheCard.Require(closing.Checkout.Ask(treasure, closing.Progress.Purchases, PurchaseLevel) && closing.Checkout.Pay(), "the treasure could not be bought");
+                ThroughTheCard.Require(closing.Checkout.Ask(treasure, closing.Progress.Purchases, PurchaseLevel) && closing.Checkout.Pay(TimeSpan.Zero), "the treasure could not be bought");
                 closing.Advance(StoryStudio.FrameSeconds);
                 ThroughTheCard.Require(store.Unconfirmed.Count == 1, "the payment of a game closed before its confirmation is not waiting in the store");
             }
@@ -185,10 +199,11 @@ namespace Puzzle.Client.EditorTools
             }
 
             Debug.Log($"Purchases: a payment cut short before its delivery was given once on opening, and one cut short before its confirmation was confirmed on opening and not given again.");
+            return pictures;
         }
 
         /// <summary>A new install on the App Store asks for its purchases back: the starter pack comes back once, a coin pack never.</summary>
-        private static void WalkARestore(PlayerProgress before, ScreenShape screen, Studio studio)
+        private static int WalkARestore(PlayerProgress before, ScreenShape screen, Studio studio)
         {
             StoreCatalogue catalogue = StoryStudio.Economy.Shop.Store;
             StoreProduct starter = catalogue.StarterPack.Product;
@@ -200,7 +215,7 @@ namespace Puzzle.Client.EditorTools
                 foreach (StoreProduct bought in new[] { starter, catalogue.CoinPacks[0] })
                 {
                     ThroughTheCard.Require(
-                        firstPhone.Checkout.Ask(bought, firstPhone.Progress.Purchases, PurchaseLevel) && firstPhone.Checkout.Pay(), $"the first phone could not buy {bought.Name}");
+                        firstPhone.Checkout.Ask(bought, firstPhone.Progress.Purchases, PurchaseLevel) && firstPhone.Checkout.Pay(TimeSpan.Zero), $"the first phone could not buy {bought.Name}");
                     firstPhone.Advance(StoryStudio.FrameSeconds);
                     firstPhone.Checkout.Dismiss();
                 }
@@ -228,11 +243,47 @@ namespace Puzzle.Client.EditorTools
             ThroughTheCard.Require(newInstall.Load().Wallet.Coins == before.Wallet.Coins + starter.Coins, "asking again brought the starter pack a second time");
             CloseTheNotice(reel);
             reel.WriteSheet();
+            return reel.Taken;
+        }
+
+        /// <summary>
+        /// A new install on Google Play, which gives the starter pack back by itself when the store opens: it is given
+        /// once, and its card says it came back (the restore's words), not that it was bought.
+        /// </summary>
+        private static int WalkAGivingBack(PlayerProgress before, ScreenShape screen, Studio studio)
+        {
+            StoreProduct starter = StoryStudio.Economy.Shop.Store.StarterPack.Product;
+            var store = ScriptedStore.AtUsPrices(StoryStudio.Economy.Shop.Store, Application.identifier, offersRestore: false);
+            using (GameSession firstPhone = SessionOverAStore(studio, new ProgressInMemory(before), store, screen))
+            {
+                firstPhone.Advance(StoryStudio.FrameSeconds);
+                ThroughTheCard.Require(
+                    firstPhone.Checkout.Ask(starter, firstPhone.Progress.Purchases, PurchaseLevel) && firstPhone.Checkout.Pay(TimeSpan.Zero), "the first phone could not buy the starter pack");
+                firstPhone.Advance(StoryStudio.FrameSeconds);
+            }
+
+            var newInstall = new ProgressInMemory(before);
+            using GameSession session = SessionOverAStore(studio, newInstall, store, screen);
+            var reel = new Reel(session, screen, $"walk-purchase-givenback-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
+            reel.Advance(StoryStudio.FrameSeconds);
+            reel.Settle();
+            reel.Shoot("given-back");
+            ThroughTheCard.Require(
+                MuseumOf(session).NoticeShown == PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents, DeliveryReason.Restore))!.Title
+                && MuseumOf(session).NoticeShown != ShopWords.BoughtTitle,
+                $"the starter pack the store gave back brought the card \"{MuseumOf(session).NoticeShown}\", not the one that says it came back");
+            ThroughTheCard.Require(
+                newInstall.Load().Purchases.TimesBought(starter.IdSuffix) == 1 && newInstall.Load().Wallet.Coins == before.Wallet.Coins + starter.Coins,
+                $"the new install holds {newInstall.Load().Purchases} and {newInstall.Load().Wallet.Coins} coins, not the starter pack once");
+            CloseTheNotice(reel);
+            reel.WriteSheet();
+            return reel.Taken;
         }
 
         /// <summary>A store that cannot be reached, and one that has not answered: the shop says so calmly and sells nothing; it asks again a while later.</summary>
-        private static void WalkAStoreThatIsNotThere(PlayerProgress before, ScreenShape screen, Studio studio)
+        private static int WalkAStoreThatIsNotThere(PlayerProgress before, ScreenShape screen, Studio studio)
         {
+            int pictures = 0;
             StoreCatalogue catalogue = StoryStudio.Economy.Shop.Store;
             var unreachable = new ScriptedStore(prices: null, offersRestore: false);
             using (GameSession session = SessionOverAStore(studio, new ProgressInMemory(before), unreachable, screen))
@@ -242,8 +293,9 @@ namespace Puzzle.Client.EditorTools
                 TurnThePage(reel, Destination.Shop, picturesTheTurn: false);
                 reel.Shoot("unreachable");
                 ThroughTheCard.Require(
-                    MuseumOf(session).ShopPackPixel(0) == null && MuseumOf(session).ShopStarterPixel == null && session.Checkout.Status is StoreStatus.Unreachable,
-                    "a store that cannot be reached left the packs' buttons or the starter pack in the shop");
+                    MuseumOf(session).ShopPackPixel(0) == null && MuseumOf(session).ShopStarterPixel == null && session.Checkout.Status is StoreStatus.Unreachable
+                    && MuseumOf(session).ShopStoreLine == PurchaseWords.StoreUnreachable,
+                    "a store that cannot be reached left the packs' buttons or the starter pack in the shop, or did not say so");
 
                 unreachable.OpensWith(ScriptedStore.UsPricesOf(catalogue, Application.identifier));
                 reel.Advance((float)Checkout.PatienceBeforeAskingAgain.TotalSeconds + 1f);
@@ -251,6 +303,7 @@ namespace Puzzle.Client.EditorTools
                 reel.Shoot("open-again");
                 ThroughTheCard.Require(unreachable.TimesOpened == 2 && MuseumOf(session).IsShopPackForSale(1), $"the shop did not ask the store again a while later: it asked {unreachable.TimesOpened} times and stands at {session.Checkout.Status}");
                 reel.WriteSheet();
+                pictures += reel.Taken;
             }
 
             using (GameSession waiting = SessionOverAStore(studio, new ProgressInMemory(before), new StoreThatNeverAnswers(), screen))
@@ -261,7 +314,97 @@ namespace Puzzle.Client.EditorTools
                 reel.Shoot("connecting");
                 ThroughTheCard.Require(!MuseumOf(waiting).IsShopPackForSale(0) && MuseumOf(waiting).ShopPackPixel(0) != null, "a store that has not answered left a pack for sale, or its button away");
                 reel.WriteSheet();
+                pictures += reel.Taken;
             }
+
+            return pictures;
+        }
+
+        /// <summary>
+        /// A payment sheet the store does not answer: its card stands without an answer for half a minute, then says no
+        /// answer came and can be closed; the payment the store makes after that is given, with its card. A store lost
+        /// while its sheet is up brings that card at once, whose lines say the payment comes once made, never that
+        /// nothing was paid.
+        /// </summary>
+        private static int WalkASilentSheet(PlayerProgress before, ScreenShape screen, Studio studio)
+        {
+            StoreCatalogue catalogue = StoryStudio.Economy.Shop.Store;
+            StoreProduct bag = catalogue.CoinPacks[1]; // the pouch's place holds the starter pack on this level
+            var store = ScriptedStore.AtUsPrices(catalogue, Application.identifier, offersRestore: false);
+            store.NextAnswer = ScriptedAnswer.Silence;
+            var kept = new ProgressInMemory(before);
+            using GameSession session = SessionOverAStore(studio, kept, store, screen);
+            var reel = new Reel(session, screen, $"walk-purchase-silent-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
+            reel.Settle();
+            TurnThePage(reel, Destination.Shop, picturesTheTurn: false);
+            PlayerProgress beforeTheBag = session.Progress;
+            AskAndPay(reel, MuseumOf(session).ShopPackPixel(1), bag);
+            reel.Shoot("pending");
+            string pendingTitle = PurchaseWords.Of(new PurchaseState.Pending(bag))!.Title;
+            ThroughTheCard.Require(
+                MuseumOf(session).NoticeShown == pendingTitle && MuseumOf(session).NoticeDonePixel == null && MuseumOf(session).NoticeClosePixel == null,
+                $"the card of a payment the store is taking is \"{MuseumOf(session).NoticeShown}\", or can be closed before the store answers");
+
+            reel.Advance((float)Checkout.PatienceWithTheSheet.TotalSeconds + 1f);
+            reel.Settle();
+            reel.Shoot("unanswered");
+            ThroughTheCard.Require(
+                session.Checkout.State is PurchaseState.Unanswered && MuseumOf(session).NoticeShown == pendingTitle && MuseumOf(session).NoticeDonePixel != null,
+                $"half a minute of a silent store left the course at {session.Checkout.State}, with no way to close its card");
+            CloseTheNotice(reel);
+            ThroughTheCard.Require(session.Checkout.State is PurchaseState.Nothing && session.Progress.Equals(beforeTheBag), "closing the unanswered card left the course busy or gave something");
+
+            store.MakeTheDeferredPayment();
+            reel.Advance(StoryStudio.FrameSeconds);
+            reel.Settle();
+            reel.Shoot("paid-later");
+            RequireGivenOnce(session, kept, store, bag, beforeTheBag, "the payment the silent store made after its card was closed");
+            CloseTheNotice(reel);
+
+            // The store is lost while its sheet is up.
+            PlayerProgress beforeTheLoss = session.Progress;
+            AskAndPay(reel, MuseumOf(session).ShopPackPixel(1), bag);
+            store.Say(new StoreNews.Unreachable("the walk's connection dropped"));
+            reel.Advance(StoryStudio.FrameSeconds);
+            reel.Settle();
+            reel.Shoot("store-lost");
+            ThroughTheCard.Require(
+                session.Checkout.State is PurchaseState.Unanswered && MuseumOf(session).NoticeShown == pendingTitle && MuseumOf(session).NoticeDonePixel != null
+                && session.Progress.Equals(beforeTheLoss),
+                $"a store lost while its sheet was up left the course at {session.Checkout.State} with the card \"{MuseumOf(session).NoticeShown}\"");
+            CloseTheNotice(reel);
+            reel.Shoot("shop-after-the-loss");
+            reel.WriteSheet();
+            return reel.Taken;
+        }
+
+        /// <summary>
+        /// A run whose progress file could not be read keeps its progress for itself only: its shop says the store is
+        /// closed, in the packs' buttons' place, and never asks the store, so a payment of an earlier run waits there for a
+        /// run that can save it.
+        /// </summary>
+        private static int WalkARunThatCannotSave(PlayerProgress before, ScreenShape screen, Studio studio)
+        {
+            StoreCatalogue catalogue = StoryStudio.Economy.Shop.Store;
+            var store = ScriptedStore.AtUsPrices(catalogue, Application.identifier, offersRestore: false);
+            store.Buy(new StoreListing(catalogue.CoinPacks[1], Application.identifier)); // an earlier run's payment, never taken
+            var forThisRunOnly = ProgressInMemory.ForThisRunOnly(before);
+            using GameSession session = SessionOverAStore(studio, forThisRunOnly, store, screen);
+            var reel = new Reel(session, screen, $"walk-purchase-unsaved-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
+            reel.Settle();
+            TurnThePage(reel, Destination.Shop, picturesTheTurn: false);
+            reel.Advance((float)Checkout.PatienceBeforeAskingAgain.TotalSeconds + 1f);
+            reel.Settle();
+            reel.Shoot("closed-for-this-run");
+            ThroughTheCard.Require(
+                session.Checkout.Status is StoreStatus.ClosedForThisRun && MuseumOf(session).ShopStoreLine == PurchaseWords.StoreClosedForThisRun
+                && MuseumOf(session).ShopPackPixel(0) == null && MuseumOf(session).ShopStarterPixel == null && MuseumOf(session).ShopRestorePixel == null,
+                $"a run that cannot keep its progress shows the store at {session.Checkout.Status}, with \"{MuseumOf(session).ShopStoreLine}\" and its buttons");
+            ThroughTheCard.Require(
+                store.TimesOpened == 0 && store.Unconfirmed.Count == 1 && store.Confirmed.Count == 0 && session.Progress.Wallet.Equals(before.Wallet),
+                $"a run that cannot keep its progress asked the store {store.TimesOpened} times, or took the earlier run's payment ({store.Unconfirmed.Count} wait, {store.Confirmed.Count} confirmed)");
+            reel.WriteSheet();
+            return reel.Taken;
         }
 
         /// <summary>A product asked about, paid by the card's green button, given once and confirmed once saved; pictured where a name is given.</summary>
@@ -332,6 +475,9 @@ namespace Puzzle.Client.EditorTools
             {
                 _first = first;
             }
+
+            /// <summary>It says it keeps what it is given, as the progress file does: that is its lie.</summary>
+            public ProgressKeeping Keeping => ProgressKeeping.AfterClosing;
 
             public PlayerProgress Load() => _first;
 

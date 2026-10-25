@@ -4,6 +4,8 @@
 
 **Uygulama (2026-10-24, analiz aşaması):** §3'ün metinleri oyuna girdi (13 dil; gizlilik kartı, soru kartı, ayar satırları, onay kartının ikinci satırı), §3.7'nin koşulları kodda tutuluyor, §5.2'nin Google Play cevapları `GAME_DESIGN.md` §20'de. Onay hâlâ sahipte. Yapılmayanlar: site metni (§4, sahip yayımlar), App Store etiketi (§5.1, iOS dalı), oyundan politikaya bağlantı (sitenin adresi bekleniyor). Ayrıntı: `GAME_DESIGN.md` §19, §20, §23.
 
+**Değişiklik (2026-10-25, v1 incelemesi):** oyundaki istatistik paragrafı (`PrivacyParagraphStatistics`) ve sorunun ilk paragrafı (`ConsentParagraph1`) artık Aptabase'in bağlantının IP adresinden yaklaşık konumu (ülke ve bölge) çıkardığını söylüyor; §5.1'in Coarse Location ve §5.2'nin Approximate location beyanıyla aynı. Paragrafın sonu: "Aptabase notları Avrupa Birliği’nde sayar; bağlantının IP adresinden yaklaşık konumunu (ülke ve bölge) çıkarır ve IP adresini saklamaz." Sorunun: "… Avrupa Birliği’nde sayar ve bağlantından yaklaşık konumunu (ülke ve bölge) çıkarır." 13 dilde; taslak, onay sahipte.
+
 **Neye dayanıyor:** sahibin v1 kararları (Unity IAP 5.4.4 sabit; Aptabase yalnız oyuncunun izniyle; Android paketi INTERNET izni ister; sunucu yok, fiş cihazda doğrulanır; reklam kimliği ve başka izleyici yok), satın alma denemesinin sonuçları [L1] ve aynı günün araştırma notu [L2]. Bu belge onlardaki kararları yeniden açmaz; yalnız metinlere ve beyanlara çevirir.
 
 **Etiketler** (kardeş belgelerdeki gibi)

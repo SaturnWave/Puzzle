@@ -8,6 +8,7 @@ using Puzzle.Client.Layout;
 using Puzzle.Client.Painting;
 using Puzzle.Client.Play;
 using Puzzle.Client.Stage;
+using Puzzle.Meta;
 using TMPro;
 using UnityEngine;
 
@@ -177,6 +178,12 @@ namespace Puzzle.Client.Screens
         private ScreenShape? _screen;
         private float _clock;
 
+        /// <summary>
+        /// What the build sells for money, once the start-up has read the economy: the foot then says "test sürümü"
+        /// after the version of a build that sells nothing. Nothing before: the foot says the version alone.
+        /// </summary>
+        private RealMoneySales? _sales;
+
         /// <summary>How much of the start-up work is done, as the page was last told.</summary>
         private float _workDone;
 
@@ -301,6 +308,20 @@ namespace Puzzle.Client.Screens
         public void Tell(float workDone) => _workDone = workDone;
 
         /// <summary>
+        /// Tells the page what the build sells for money, once the start-up has read the economy: the foot's version
+        /// line says "Sürüm 1.0 · test sürümü" for a build that sells nothing, and "Sürüm 1.0", as before, for one that
+        /// sells through the platform's store.
+        /// </summary>
+        public void TellTheBuild(RealMoneySales sales)
+        {
+            _sales = sales;
+            if (_layout is EntryLayout layout)
+            {
+                SayTheVersion(layout);
+            }
+        }
+
+        /// <summary>
         /// Tells the page that the start-up failed and goes no further: the bar stays where it was and its line says,
         /// in its place, that the game cannot open and is to be started again. The page never becomes ready, so a touch
         /// leads nowhere; the way back still brings down the card that closes the game.
@@ -357,7 +378,7 @@ namespace Puzzle.Client.Screens
             _studio.fontSize = EntryLayout.FooterSize * scale;
             Lettering.SayFromLeft(_studio, EntryWords.Studio, layout.FooterLeft, layout.FooterMiddle);
             _version.fontSize = EntryLayout.FooterSize * scale;
-            Lettering.SayUpToRight(_version, EntryWords.Version(_gameVersion), layout.FooterRight, layout.FooterMiddle);
+            SayTheVersion(layout);
 
             _barGroup.localPosition = new Vector3(0f, layout.BarMiddle, 0f);
             _barGroup.localScale = new Vector3(scale, scale, 1f);
@@ -586,6 +607,12 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>The bar's line says that the game cannot open, at the line's size or smaller where a language's words are longer.</summary>
+        private void SayTheVersion(EntryLayout layout)
+        {
+            string version = _sales is RealMoneySales sales ? EntryWords.Version(_gameVersion, sales) : EntryWords.VersionAlone(_gameVersion);
+            Lettering.SayUpToRight(_version, version, layout.FooterRight, layout.FooterMiddle);
+        }
+
         private void SayTheFailure(EntryLayout layout) =>
             Lettering.SayWithin(_loadingLine, EntryWords.CouldNotStart, EntryLayout.LoadingLineSize * layout.Scale, layout.LineRoom);
 

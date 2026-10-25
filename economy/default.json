@@ -273,7 +273,9 @@
       // Times one player can buy it: once. [decided 2026-10-24]
       "timesPerPlayer": 1,
       // The shop offers it once the player has come to this level, the level the last booster opens on
-      // (boosterUnlocks.levels.shuffle), and keeps it at its head until it is bought; no countdown. [decided 2026-10-24]
+      // (boosterUnlocks.levels.shuffle), and keeps it in the coins' panel, in the first column, in the place of the
+      // pouch of the same price, until it is bought (docs/GAME_DESIGN.md section 19 says why it stands there and not in
+      // a panel of its own at the shop's head); no countdown. [decided 2026-10-24]
       "fromLevel": 20
     }
   },

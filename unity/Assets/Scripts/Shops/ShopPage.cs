@@ -102,9 +102,9 @@ namespace Puzzle.Client.Shops
         private const float PriceSize = 16f;
         private const float WatchSize = 18f;
 
-        /// <summary>The line that stands for the packs' buttons while the store cannot be reached: Gabarito ExtraBold of 14, 16 in from the panel's sides.</summary>
-        private const float UnreachableSize = 14f;
-        private const float UnreachableInFromTheSides = 16f;
+        /// <summary>The line that stands for the packs' buttons while nothing can be bought from the store: Gabarito ExtraBold of 14, 16 in from the panel's sides.</summary>
+        private const float StoreLineSize = 14f;
+        private const float StoreLineInFromTheSides = 16f;
 
         /// <summary>The free strip's two lines: small capitals of 10, apart by 9 hundredths of their size, and Gabarito ExtraBold of 15.</summary>
         private const float FreeLabelSize = 10f;
@@ -125,7 +125,8 @@ namespace Puzzle.Client.Shops
         private readonly List<(StoreProduct Product, Transform Column, SmallButton Button)> _packs = new List<(StoreProduct, Transform, SmallButton)>();
         private readonly (StoreProduct Product, Transform Column, SmallButton Button) _starter;
         private readonly List<(BoosterSet Set, SmallButton Button)> _sets = new List<(BoosterSet, SmallButton)>();
-        private readonly TextMeshPro _unreachable;
+        /// <summary>The calm line in the packs' buttons' place: the store cannot be reached, or is closed for this run.</summary>
+        private readonly TextMeshPro _storeLine;
         private readonly TextLink _restore;
         private readonly TextMeshPro _freeLabel;
         private readonly TextMeshPro _freeLine;
@@ -172,9 +173,8 @@ namespace Puzzle.Client.Shops
                 _sets.Add((shop.Sets[set].Set, AddTheSet(art, set, shop.Sets[set])));
             }
 
-            _unreachable = Lettering.Write("Store unreachable", _contents[ShopPanel.Coins], art, LetteringStyle.Label, UnreachableSize, Lettering.Ink, DrawOrder.ShopLettering);
-            Lettering.SayWithin(_unreachable, PurchaseWords.StoreUnreachable, UnreachableSize, ShopLayout.PanelWidth - 2f * UnreachableInFromTheSides);
-            _unreachable.transform.localPosition = At(ShopLayout.PanelWidth / 2f, ShopLayout.PacksDown + ShopLayout.PackButtonDown(packs.Count));
+            _storeLine = Lettering.Write("Store line", _contents[ShopPanel.Coins], art, LetteringStyle.Label, StoreLineSize, Lettering.Ink, DrawOrder.ShopLettering);
+            _storeLine.transform.localPosition = At(ShopLayout.PanelWidth / 2f, ShopLayout.PacksDown + ShopLayout.PackButtonDown(packs.Count));
             _restore = new TextLink("Restore", _root, art, PurchaseWords.Restore, cost: null, DrawOrder.ShopLettering);
 
             Transform free = _contents[ShopPanel.Free];
@@ -202,11 +202,14 @@ namespace Puzzle.Client.Shops
 
         /// <summary>
         /// The middle of a pack's button, in the layout's points: where a finger presses it. Nothing before the page is
-        /// fitted, while the buttons give way to the line of a store that cannot be reached, and for the first pack while
-        /// the starter pack stands in its place.
+        /// fitted, while the buttons give way to the line of a store nothing can be bought from, and for the first pack
+        /// while the starter pack stands in its place.
         /// </summary>
         public Vector2? PackButtonMiddle(int pack) =>
-            _layout != null && !(_store.Status is StoreStatus.Unreachable) && !(pack == 0 && ShowsTheStarterPack) ? _packs[pack].Button.Middle : (Vector2?)null;
+            _layout != null && StoreLineNow == null && !(pack == 0 && ShowsTheStarterPack) ? _packs[pack].Button.Middle : (Vector2?)null;
+
+        /// <summary>What the coins' panel says in the packs' buttons' place, as the store stands: nothing while it shows them.</summary>
+        public string? StoreLineShown => StoreLineNow;
 
         /// <summary>True while a pack's button buys: a test build's "Yakında", or the store's price.</summary>
         public bool IsPackForSale(int pack) => IsForSale(pack);
@@ -228,6 +231,18 @@ namespace Puzzle.Client.Shops
 
         /// <summary>True while the starter pack stands in the first pack's place.</summary>
         private bool ShowsTheStarterPack => _store.StarterPack != null;
+
+        /// <summary>
+        /// The calm line that stands in the packs' buttons' place while nothing can be bought from the store: it cannot
+        /// be reached (and is asked again meanwhile), or it is closed for a run that keeps no progress. Nothing while
+        /// the buttons show.
+        /// </summary>
+        private string? StoreLineNow => _store.Status switch
+        {
+            StoreStatus.Unreachable _ => PurchaseWords.StoreUnreachable,
+            StoreStatus.ClosedForThisRun _ => PurchaseWords.StoreClosedForThisRun,
+            _ => null,
+        };
 
         public void Fit(ScreenShape screen)
         {
@@ -373,22 +388,29 @@ namespace Puzzle.Client.Shops
         /// <summary>
         /// The products' columns and buttons as the store stands: the starter pack in the first pack's place while it
         /// is offered; "Yakında" in a test build, "…" while the store has not answered, the store's price, or "Satışta
-        /// değil", each written anew only when it changes; and the calm line in the buttons' place while the store
-        /// cannot be reached. The restore row shows where it is offered.
+        /// değil", each written anew only when it changes; and the calm line in the buttons' place while nothing can be
+        /// bought from the store (<see cref="StoreLineNow"/>), written anew only when it changes. The restore row shows
+        /// where it is offered.
         /// </summary>
         private void ShowTheStore()
         {
-            bool isUnreachable = _store.Status is StoreStatus.Unreachable;
-            _unreachable.gameObject.SetActive(isUnreachable);
+            string? storeLine = StoreLineNow;
+            bool showsTheLine = storeLine != null;
+            if (storeLine != null && storeLine != _storeLine.text)
+            {
+                Lettering.SayWithin(_storeLine, storeLine, StoreLineSize, ShopLayout.PanelWidth - 2f * StoreLineInFromTheSides);
+            }
+
+            _storeLine.gameObject.SetActive(showsTheLine);
             bool showsTheStarter = ShowsTheStarterPack;
             _starter.Column.gameObject.SetActive(showsTheStarter);
-            _starter.Button.Show(showsTheStarter && !isUnreachable);
+            _starter.Button.Show(showsTheStarter && !showsTheLine);
             for (int pack = 0; pack < _packs.Count; pack++)
             {
                 (_, Transform column, SmallButton button) = _packs[pack];
                 bool isInThePlaceOfTheStarter = pack == 0 && showsTheStarter;
                 column.gameObject.SetActive(!isInThePlaceOfTheStarter);
-                button.Show(!isUnreachable && !isInThePlaceOfTheStarter);
+                button.Show(!showsTheLine && !isInThePlaceOfTheStarter);
                 ProductOffer offer = _store.CoinPacks[pack];
                 (string words, bool isLit) = _store.Status switch
                 {

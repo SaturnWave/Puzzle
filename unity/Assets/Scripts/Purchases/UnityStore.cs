@@ -17,15 +17,19 @@ namespace Puzzle.Client.Purchases
     /// <para>
     /// A payment is confirmed (ConfirmPurchase: Google's acknowledgement and consumption, StoreKit's finish) only when
     /// the game asks, once its progress holds the payment: until then the store keeps it as pending and tells of it
-    /// again when the game opens. Pending orders the store hands back on opening come through OnPurchasePending
-    /// (IAP's own reroute of fetched pending orders, on by default); confirmed orders of the starter pack come through
-    /// OnPurchasesFetched as what the player owns, and so does an App Store restore.
+    /// again when the game opens. The pending order is held here until the store says the confirmation is done
+    /// (OnPurchaseConfirmed with a ConfirmedOrder); one it did not take (a FailedOrder: not connected, or another
+    /// failure) is told as <see cref="StoreNews.NotConfirmed"/>, and the game confirms it again when the store opens
+    /// anew, so it is not left to Google's refund after three days. Pending orders the store hands back on opening come
+    /// through OnPurchasePending (IAP's own reroute of fetched pending orders, on by default); confirmed orders of the
+    /// starter pack come through OnPurchasesFetched as what the player owns, and so does an App Store restore.
     /// </para>
     /// <para>
     /// IAP 5.4.4 itself reports every purchase step (receipt, product, price, device model, language, and the IDFV on
     /// iOS) to Unity's analytics endpoint, with no switch to turn it off; the game does not patch that out
     /// (docs/research/iap-and-analytics.md §3.4). On Android the package asks for com.android.vending.BILLING and
-    /// ACCESS_NETWORK_STATE; INTERNET stays withdrawn by AndroidBuild until the analytics stage brings it back.
+    /// ACCESS_NETWORK_STATE, and AndroidBuild keeps INTERNET, which the store's connection and the play statistics
+    /// need.
     /// </para>
     /// </summary>
     public sealed class UnityStore : IStore
@@ -35,7 +39,13 @@ namespace Puzzle.Client.Purchases
 
         private readonly object _gate = new object();
         private readonly List<StoreNews> _news = new List<StoreNews>();
+
+        /// <summary>The pending orders the store told of, by the payment's id: each is held until the store says its confirmation is done.</summary>
         private readonly Dictionary<string, PendingOrder> _waiting = new Dictionary<string, PendingOrder>(StringComparer.Ordinal);
+
+        /// <summary>The payments whose confirmation was sent and not yet answered: one is not sent twice at once.</summary>
+        private readonly HashSet<string> _confirming = new HashSet<string>(StringComparer.Ordinal);
+
         private IReadOnlyList<StoreListing> _listings = Array.Empty<StoreListing>();
         private StoreController? _controller;
         private bool _hasOpened;
@@ -100,15 +110,20 @@ namespace Puzzle.Client.Purchases
             PendingOrder? order;
             lock (_gate)
             {
-                if (!_waiting.TryGetValue(payment.TransactionId, out order))
+                if (!_waiting.TryGetValue(payment.TransactionId, out order) || !_confirming.Add(payment.TransactionId))
                 {
-                    return; // confirmed already, or handed back as owned: nothing waits
+                    return; // confirmed already, handed back as owned, or on its way: nothing more to send
                 }
-
-                _waiting.Remove(payment.TransactionId);
             }
 
-            _controller?.ConfirmPurchase(order);
+            if (_controller == null)
+            {
+                Unconfirmed(payment.TransactionId, "the store was never opened");
+                return;
+            }
+
+            // The order stays held until OnPurchaseConfirmed answers: done, or told back to the game to send again.
+            _controller.ConfirmPurchase(order);
         }
 
         public void Restore()
@@ -171,13 +186,7 @@ namespace Puzzle.Client.Purchases
                 EndTheRestoreAfterTheTelling(succeeded: false);
             };
             controller.OnPurchasePending += Paid;
-            controller.OnPurchaseConfirmed += order =>
-            {
-                if (order is FailedOrder failed)
-                {
-                    Debug.LogWarning($"The store did not take the confirmation of {StoreIdOf(order)}: {failed.FailureReason} ({failed.Details})");
-                }
-            };
+            controller.OnPurchaseConfirmed += Confirmed;
             controller.OnPurchaseFailed += Failed;
             controller.OnPurchaseDeferred += order => Tell(new StoreNews.Deferred(StoreIdOf(order)));
             return controller;
@@ -238,10 +247,86 @@ namespace Puzzle.Client.Purchases
             var payment = new StorePayment(storeId, TransactionIdOf(order, storeId));
             lock (_gate)
             {
+                // A payment told of again is still pending with the store: no confirmation of it is on its way.
                 _waiting[payment.TransactionId] = order;
+                _confirming.Remove(payment.TransactionId);
             }
 
             Tell(new StoreNews.Paid(payment));
+        }
+
+        /// <summary>
+        /// The store's answer to a confirmation: done, and the order is let go; or not taken, and the order is held and
+        /// the game told, to confirm it again when the store opens anew. A store that was not connected is told as
+        /// unreachable too, so the game asks it again.
+        /// </summary>
+        private void Confirmed(Order order)
+        {
+            string? transactionId = HeldPaymentOf(order);
+            if (transactionId == null)
+            {
+                Debug.LogWarning($"The store answered a confirmation the game did not send, of {StoreIdOf(order)}: {order.GetType().Name}.");
+                return;
+            }
+
+            switch (order)
+            {
+                case ConfirmedOrder _:
+                    lock (_gate)
+                    {
+                        _confirming.Remove(transactionId);
+                        _waiting.Remove(transactionId);
+                    }
+
+                    break;
+                case FailedOrder failed:
+                    if (failed.FailureReason == PurchaseFailureReason.StoreNotConnected)
+                    {
+                        Tell(new StoreNews.Unreachable($"the confirmation found the store not connected: {failed.Details}"));
+                    }
+
+                    Unconfirmed(transactionId, $"{failed.FailureReason}: {failed.Details}");
+                    break;
+                default:
+                    Unconfirmed(transactionId, $"the store answered with {order.GetType().Name}");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// The id of the held payment an answer to a confirmation is about: the payment's own id where the answer
+        /// carries it, otherwise the one confirmation on its way for the same product (the game confirms one product's
+        /// payment at a time). Nothing when no confirmation of it was sent.
+        /// </summary>
+        private string? HeldPaymentOf(Order order)
+        {
+            string storeId = StoreIdOf(order);
+            string transactionId = TransactionIdOf(order, storeId);
+            lock (_gate)
+            {
+                if (_confirming.Contains(transactionId))
+                {
+                    return transactionId;
+                }
+
+                return _confirming.FirstOrDefault(sent => _waiting.TryGetValue(sent, out PendingOrder? held) && held != null && StoreIdOf(held) == storeId);
+            }
+        }
+
+        /// <summary>A confirmation the store did not take: the order is still held, and the game is told so it sends it again.</summary>
+        private void Unconfirmed(string transactionId, string why)
+        {
+            PendingOrder? held;
+            lock (_gate)
+            {
+                _confirming.Remove(transactionId);
+                _waiting.TryGetValue(transactionId, out held);
+            }
+
+            if (held != null)
+            {
+                Tell(new StoreNews.NotConfirmed(new StorePayment(StoreIdOf(held), transactionId), why));
+            }
         }
 
         private void Failed(FailedOrder order)

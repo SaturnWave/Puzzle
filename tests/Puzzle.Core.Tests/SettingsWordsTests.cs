@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
 using Puzzle.Meta;
@@ -31,18 +32,52 @@ public class SettingsWordsTests
     }
 
     [Fact]
-    public void The_build_line_says_what_the_builds_marks_say_about_ads_and_purchases()
+    public void The_build_line_says_what_the_builds_marks_say_about_ads_and_purchases_and_calls_only_the_stand_in_build_a_test_build()
     {
         Assert.Equal("Test sürümü · reklamlar canlandırma, satın alma kapalı", SettingsWords.BuildLine(AdSource.Simulated, RealMoneySales.NotAvailable));
+        Assert.Equal("Bu sürüm · reklamlar canlandırma, satın alma mağazadan", SettingsWords.BuildLine(AdSource.Simulated, RealMoneySales.ThroughTheStore));
     }
 
     [Fact]
-    public void The_build_line_of_the_pack_the_game_carries_is_the_test_builds()
+    public void The_build_line_of_the_pack_the_game_carries_which_sells_through_the_store_is_no_test_builds()
     {
         var file = JsonSerializer.Deserialize<EconomyFile>(File.ReadAllText(RepoFiles.EconomyPackPath), AsUnityMapsIt)!;
         EconomyRules rules = EconomyFileMapper.ToRules(file);
 
-        Assert.StartsWith("Test sürümü", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney));
+        Assert.Equal(RealMoneySales.ThroughTheStore, rules.Shop.RealMoney);
+        Assert.DoesNotContain("Test", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney), StringComparison.Ordinal);
+        Assert.EndsWith("satın alma mağazadan", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Aptabase works out the player's country and region from the connection's IP address, and the stores' forms
+    /// declare it (Play's Approximate location, the App Store's Coarse Location): the privacy card and the question
+    /// before any note leaves the phone say so too, in every language.
+    /// </summary>
+    [Theory]
+    [InlineData(Language.Turkish, "ülke", "bölge")]
+    [InlineData(Language.English, "country", "region")]
+    [InlineData(Language.German, "Land", "Region")]
+    [InlineData(Language.Spanish, "país", "región")]
+    [InlineData(Language.French, "pays", "région")]
+    [InlineData(Language.Italian, "paese", "regione")]
+    [InlineData(Language.PortugueseBrazil, "país", "região")]
+    [InlineData(Language.Indonesian, "negara", "wilayah")]
+    [InlineData(Language.Russian, "страну", "регион")]
+    [InlineData(Language.Japanese, "国", "地域")]
+    [InlineData(Language.Korean, "국가", "지역")]
+    [InlineData(Language.ChineseSimplified, "国家", "地区")]
+    [InlineData(Language.ChineseTraditional, "國家", "地區")]
+    public void The_privacy_card_and_the_statistics_question_say_that_the_country_and_region_are_worked_out_from_the_connection(Language language, string country, string region)
+    {
+        using IDisposable speaking = TestWords.Speak(language);
+
+        string privacy = string.Join(" ", PrivacyWords.Text);
+        string question = string.Join(" ", ConsentWords.Text);
+
+        Assert.All(new[] { privacy, question }, said => Assert.Contains(country, said, StringComparison.Ordinal));
+        Assert.All(new[] { privacy, question }, said => Assert.Contains(region, said, StringComparison.Ordinal));
+        Assert.Contains("IP", privacy, StringComparison.Ordinal);
     }
 
     [Fact]

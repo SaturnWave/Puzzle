@@ -224,7 +224,7 @@
     {"id":"PrivacyParagraph3","text":"記録には名前もスマートフォンの情報も含まれず、このスマートフォンに割り当てられたランダムなIDだけが入っています。ゲームがこのIDをどこかへ送ることはありません。"},
     {"id":"PrivacyParagraph4","text":"スマートフォンのバックアップがオンの場合、Androidがこれらのファイルを自身のバックアップに含めることがあります。"},
     {"id":"PrivacyParagraphUnity","text":"購入のしくみはUnityのものです。購入のたびに、商品、価格、ストアのレシート、スマートフォンの機種と言語、iPhoneとiPadではAppleが端末に与えるアプリ用IDがUnityに送られます。Unityはこれらを自社の会計記録、法的義務、不正防止に使います。この送信はオフにできません。"},
-    {"id":"PrivacyParagraphStatistics","text":"許可すると、ゲームは遊び方についての短いメモを分析サービスAptabaseに送ります。内容は、ゲームの起動、遊んだレベル、勝ったかどうかと残り手数、完成させた絵と部屋、ショップを開いたことと購入したもの（支払い情報なし）です。各メモには時刻と、そのセッションだけのランダムな番号、ゲームのバージョン、スマートフォンのシステムと言語が含まれます。Aptabaseは欧州連合の域内で集計し、IPアドレスは保存しません。"},
+    {"id":"PrivacyParagraphStatistics","text":"許可すると、ゲームは遊び方についての短いメモを分析サービスAptabaseに送ります。内容は、ゲームの起動、遊んだレベル、勝ったかどうかと残り手数、完成させた絵と部屋、ショップを開いたことと購入したもの（支払い情報なし）です。各メモには時刻と、そのセッションだけのランダムな番号、ゲームのバージョン、スマートフォンのシステムと言語が含まれます。Aptabaseは欧州連合の域内で集計し、接続のIPアドレスからおおよその位置（国と地域）を割り出しますが、IPアドレスは保存しません。"},
     {"id":"PrivacyParagraphStatisticsChoice","text":"メモには名前、メールアドレス、広告ID、スマートフォンを識別するIDは含まれません。許可しなくてもゲームは同じように動きます。設定の「プレイ統計」スイッチでいつでも変更できます。"},
     {"id":"PrivacyParagraphNoServer","text":"コインと進行状況を知っているのはこのスマートフォンだけです。ゲームを削除したり機種変更したりすると失われます。バックアップで戻ることもありますが、ゲームはそれを保証できません。返金はGoogle PlayまたはAppleに申請してください。"},
     {"id":"PrivacyDeleteTheRecords","text":"記録を削除"},
@@ -239,7 +239,7 @@
     {"id":"PrivacyFileLine","text":"{file} · 終了した挑戦ごとに1行"},
     {"id":"PrivacyPageOf","text":"{page} / {pages}"},
     {"id":"ConsentQuestion","text":"ゲームをより良くするため、遊ばれ方を集計してもよいですか？"},
-    {"id":"ConsentParagraph1","text":"許可すると、ゲームは遊んだレベル、その結果、完成させた絵、ショップで購入したもの（支払い情報なし）についての短いメモを送ります。メモは分析サービスAptabaseが欧州連合の域内で集計します。"},
+    {"id":"ConsentParagraph1","text":"許可すると、ゲームは遊んだレベル、その結果、完成させた絵、ショップで購入したもの（支払い情報なし）についての短いメモを送ります。メモは分析サービスAptabaseが欧州連合の域内で集計し、接続からおおよその位置（国と地域）を割り出します。"},
     {"id":"ConsentParagraph2","text":"名前、メールアドレス、広告ID、スマートフォンを識別するIDは送られません。メモが広告に使われたり、誰かと共有されたりすることはありません。"},
     {"id":"ConsentParagraph3","text":"許可しなくても、ゲームも購入も同じように使えます。選択は設定からいつでも変更できます。"},
     {"id":"ConsentAllow","text":"許可する"},
@@ -322,6 +322,11 @@
     {"id":"RestoreOnlyTheStarter","text":"コインパックは復元されません。{name}だけが戻ります。"},
     {"id":"RestoreFailed","text":"ストアが応答していません。"},
     {"id":"RestoreTryLater","text":"しばらくしてからもう一度お試しください。"},
-    {"id":"BuildStoreBuying","text":"購入はストア経由"}
+    {"id":"BuildStoreBuying","text":"購入はストア経由"},
+    {"id":"ShopStoreClosedForThisRun","text":"このセッションではストアは閉じています"},
+    {"id":"PurchaseNoAnswerLine","text":"ストアからまだ応答がありません。"},
+    {"id":"EntryVersionAlone","text":"バージョン {version}"},
+    {"id":"SettingsBuildLineStoreBuild","text":"このバージョン · {ads}、{buying}"},
+    {"id":"CreditsSoftware","text":"ソフトウェア"}
   ]
 }

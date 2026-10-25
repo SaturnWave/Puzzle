@@ -343,7 +343,7 @@ namespace Puzzle.Client.Flow
             }
 
             _checkout = new Checkout(rules.Shop.Store, rules.Shop.RealMoney, Application.identifier, sales ?? throw new ArgumentNullException(nameof(sales)));
-            _checkout.Open(_running);
+            _checkout.Open(_running, new KeeperOfThePurchases(this));
             _statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
             _statistics.Follow(_settings.Settings); // turned off until a yes; the game's start is noted at once where the player said yes before
             bool asksAboutTheStatistics = _statistics.AsksOn(_settings.Settings);
@@ -789,9 +789,10 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// What the museum asked of the store since it was last asked (a product pressed, the green button of the card
-        /// that asks, a card closed, the restore row), handed to the purchase's course in order; then the store's news
-        /// is taken, a payment given and saved and confirmed once saved, at a board too. An unreachable store is asked
-        /// again while the player is in the shop.
+        /// that asks, a card closed, the restore row), handed to the purchase's course in order; then the course is told
+        /// the session's time (a silent payment sheet lets its card close, a confirmation the store did not take is
+        /// sent again) and the store's news is taken, a payment given and saved and confirmed once saved, at a board
+        /// too. An unreachable store is asked again while the player is in the shop.
         /// </summary>
         private void DoWhatWasAskedOfTheStore()
         {
@@ -804,7 +805,7 @@ namespace Puzzle.Client.Flow
                     bool isTaken = request switch
                     {
                         StoreRequest.Ask ask => _checkout.Ask(ask.Product, _progress.Purchases, levelNumber),
-                        StoreRequest.Pay _ => _checkout.Pay(),
+                        StoreRequest.Pay _ => _checkout.Pay(_running),
                         StoreRequest.Decline _ => _checkout.Decline(),
                         StoreRequest.Dismiss _ => _checkout.Dismiss(),
                         StoreRequest.Restore _ => _checkout.RestorePurchases(),
@@ -823,6 +824,7 @@ namespace Puzzle.Client.Flow
                 }
             }
 
+            _checkout.PassTime(_running);
             _checkout.Step(new KeeperOfThePurchases(this));
 
             // The stage is told at once, as after a request of the wallet's: its card comes down in this step, and its row counts the coins.
@@ -1127,7 +1129,12 @@ namespace Puzzle.Client.Flow
             }
         }
 
-        /// <summary>The session as the purchase's course needs it: the rules give the payment, the session keeps and saves the progress after it.</summary>
+        /// <summary>
+        /// The session as the purchase's course needs it: the rules give the payment, the session keeps and saves the
+        /// progress after it, and says whether its store keeps the progress after the game closes. A payment given is
+        /// noted as a purchase made (purchase_complete); what the store gives back by itself or on a restore is not a
+        /// purchase, and is not noted.
+        /// </summary>
         private sealed class KeeperOfThePurchases : IPurchaseKeeper
         {
             private readonly GameSession _session;
@@ -1137,17 +1144,23 @@ namespace Puzzle.Client.Flow
                 _session = session;
             }
 
+            public ProgressKeeping Keeping => _session._store.Keeping;
+
             public bool IsSaved => !_session.HasUnsavedProgress;
 
-            public Delivery Deliver(StoreProduct product, StorePayment payment)
+            public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason)
             {
                 Delivery delivery = _session._walletLedger.Deliver(_session._progress, product, payment.TransactionId);
                 switch (delivery)
                 {
                     case Delivery.Given given:
                         _session._progress = given.Progress;
-                        Debug.Log($"The store's {payment} gave {given.What}.");
-                        _session.Note(new PlayNote.PurchaseCompleted(product.IdSuffix));
+                        Debug.Log($"The store's {payment} ({reason}) gave {given.What}.");
+                        if (reason == DeliveryReason.Payment)
+                        {
+                            _session.Note(new PlayNote.PurchaseCompleted(product.IdSuffix));
+                        }
+
                         break;
                     case Delivery.SoldOut soldOut:
                         _session._progress = soldOut.Progress;

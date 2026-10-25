@@ -8,9 +8,10 @@ namespace Puzzle.Core.Tests;
 
 /// <summary>
 /// What the credits card says (the settings card's row "Künye"): the licence notices stay in English and say word for
-/// word what the licence records say (art/avatar, art/fonts, art/paintings, art/sounds), so a record and the card
-/// cannot drift apart; every notice is written in the game's letters; and the card's title and headings are said in
-/// every language the game offers. <c>CreditWords</c> is the Unity project's source file, compiled into these tests.
+/// word what the licence records say (art/avatar, art/fonts, art/paintings, art/sounds, unity/Packages), so a record
+/// and the card cannot drift apart, nor the software's record and the packages the game pins; every notice is written
+/// in the game's letters; and the card's title and headings are said in every language the game offers.
+/// <c>CreditWords</c> is the Unity project's source file, compiled into these tests.
 /// </summary>
 public class CreditWordsTests
 {
@@ -78,11 +79,66 @@ public class CreditWordsTests
     }
 
     [Fact]
+    public void The_software_the_game_carries_is_named_with_its_licence_and_its_MIT_notice_is_shown_whole_as_its_record_has_it()
+    {
+        using JsonDocument record = JsonDocument.Parse(File.ReadAllText(RepoFiles.RepositoryFile("unity/Packages/licences.json")));
+        JsonElement[] packages = record.RootElement.GetProperty("packages").EnumerateArray().ToArray();
+        string[] mitCopyrights = packages.Where(package => package.GetProperty("licence").GetString() == "MIT License")
+            .SelectMany(package => package.GetProperty("copyright").EnumerateArray().Select(line => line.GetString()!))
+            .ToArray();
+        string[] mitText = record.RootElement.GetProperty("mitLicenceText").EnumerateArray().Select(line => line.GetString()!).ToArray();
+
+        Assert.Equal(new[] { "MIT License" }.Concat(mitCopyrights).Concat(mitText), CreditWords.SoftwareLicence);
+        Assert.Contains("Copyright (c) 2023 Aptabase", CreditWords.SoftwareLicence);
+        Assert.Contains("Copyright (c) 2007 James Newton-King", CreditWords.SoftwareLicence);
+        Assert.Equal(CreditWords.RocketboxLicence.Skip(2), CreditWords.SoftwareLicence.Skip(1 + mitCopyrights.Length));
+        foreach (JsonElement package in packages)
+        {
+            string version = package.GetProperty("version").GetString()!;
+            Assert.True(
+                CreditWords.SoftwareLines.Any(line => line.Contains(version, StringComparison.Ordinal)),
+                $"no line of the software names {package.GetProperty("package").GetString()} {version}");
+        }
+
+        foreach (JsonElement notice in packages.Single(package => package.GetProperty("package").GetString() == "com.unity.purchasing").GetProperty("notices").EnumerateArray()
+            .Where(notice => notice.GetProperty("licence").GetString() == "Apache License 2.0"))
+        {
+            Assert.Contains(notice.GetProperty("copyright").GetString()!, CreditWords.SoftwareLines[2], StringComparison.Ordinal);
+        }
+
+        Assert.Contains("Apache License 2.0", CreditWords.SoftwareLines[2], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_software_record_names_the_versions_the_project_pins()
+    {
+        using JsonDocument record = JsonDocument.Parse(File.ReadAllText(RepoFiles.RepositoryFile("unity/Packages/licences.json")));
+        using JsonDocument locked = JsonDocument.Parse(File.ReadAllText(RepoFiles.RepositoryFile("unity/Packages/packages-lock.json")));
+        JsonElement dependencies = locked.RootElement.GetProperty("dependencies");
+
+        foreach (JsonElement package in record.RootElement.GetProperty("packages").EnumerateArray())
+        {
+            string name = package.GetProperty("package").GetString()!;
+            JsonElement pinned = dependencies.GetProperty(name);
+            if (package.TryGetProperty("pinnedAt", out JsonElement commit))
+            {
+                Assert.Equal(commit.GetString(), pinned.GetProperty("hash").GetString());
+            }
+            else
+            {
+                Assert.Equal(package.GetProperty("version").GetString(), pinned.GetProperty("version").GetString());
+            }
+        }
+    }
+
+    [Fact]
     public void Every_credit_line_is_written_in_the_games_letters()
     {
         IEnumerable<string> lines = new[] { CreditWords.EinarLine, CreditWords.RocketboxLine, CreditWords.PolyHavenLine, CreditWords.PaintingsLine, CreditWords.SoundsLine }
             .Concat(CreditWords.RocketboxLicence)
-            .Concat(CreditWords.TypefaceLines);
+            .Concat(CreditWords.TypefaceLines)
+            .Concat(CreditWords.SoftwareLines)
+            .Concat(CreditWords.SoftwareLicence);
 
         Assert.All(lines, line => Assert.Equal(string.Empty, LetterSet.LettersOutside(line)));
     }
@@ -97,11 +153,14 @@ public class CreditWordsTests
 
         Assert.False(string.IsNullOrWhiteSpace(CreditWords.Title));
         Assert.False(string.IsNullOrWhiteSpace(CreditWords.InEnglish));
-        Assert.Equal(5, sections.Count);
+        Assert.Equal(7, sections.Count);
         Assert.Null(sections[1].Heading);
-        Assert.All(sections.Where(section => section != sections[1]), section => Assert.False(string.IsNullOrWhiteSpace(section.Heading)));
+        Assert.Null(sections[6].Heading);
+        Assert.All(sections.Where(section => section != sections[1] && section != sections[6]), section => Assert.False(string.IsNullOrWhiteSpace(section.Heading)));
         Assert.Equal(CreditWords.EinarLine, sections[0].Lines[0]);
         Assert.Equal(CreditWords.RocketboxLicence, sections[1].Lines);
+        Assert.Equal(CreditWords.SoftwareLines, sections[5].Lines);
+        Assert.Equal(CreditWords.SoftwareLicence, sections[6].Lines);
     }
 
     [Fact]

@@ -126,6 +126,13 @@ namespace Puzzle.Client.EditorTools
         /// with the card the way back brings down, walked by touches on the way (<see cref="EntryShots"/>).
         /// </summary>
         Entry,
+
+        /// <summary>
+        /// The walks of purchases for real money over a scripted store, whatever the state (GameWalk.Purchases.cs): the
+        /// shop's prices and every product bought, a store that cannot be reached, a sheet the store does not answer, a
+        /// run that cannot keep its progress, a restore and a giving back, each walk on a sheet of its own.
+        /// </summary>
+        Purchases,
     }
 
     /// <summary>
@@ -502,6 +509,7 @@ namespace Puzzle.Client.EditorTools
             ShotPage.WorldMap => GameWalk.RunTheWorldMapWalk(screen, studio),
             ShotPage.WayBack => GameWalk.RunTheWayBackWalk(screen, studio),
             ShotPage.Entry => EntryShots.Shoot(screen, studio),
+            ShotPage.Purchases => GameWalk.RunThePurchaseWalks(screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
 

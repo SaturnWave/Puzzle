@@ -202,28 +202,64 @@ namespace Puzzle.Client.Flow
             $"{LevelsWon} levels won, {AttemptsOnLevel} attempts on the next, {Museum.PiecesPlaced} of {Museum.PiecesWon} jigsaw pieces placed; {Wallet}; tutorial: {Tutorial}; {Purchases}";
     }
 
+    /// <summary>How long what a progress store saves is kept. A closed set.</summary>
+    public enum ProgressKeeping
+    {
+        /// <summary>Also after the game is closed: the next run loads it. The progress file; a tool's store, which stands for it.</summary>
+        AfterClosing,
+
+        /// <summary>
+        /// Only while this run lasts: a run whose progress file cannot be read, or was written by a later version of the
+        /// game, saves nowhere and leaves the file as it is. Whatever it gives is gone when the game is closed.
+        /// </summary>
+        ForThisRunOnly,
+    }
+
     /// <summary>Where a player's progress is kept between two runs of the game.</summary>
     public interface IProgressStore
     {
+        /// <summary>
+        /// Whether what is saved here is still there when the game opens again. A run that keeps it for itself only
+        /// sells nothing for money: a payment it gave would be lost with it (Purchases/Checkout.cs).
+        /// </summary>
+        ProgressKeeping Keeping { get; }
+
         /// <summary>The progress that was saved last; a new player's (<see cref="PlayerProgress.NewPlayer"/>) when none ever was.</summary>
         /// <exception cref="System.IO.IOException">What was saved cannot be read, or is not this version's to read; the store is left as it is.</exception>
         PlayerProgress Load();
 
-        /// <summary>Keeps the progress so that a later <see cref="Load"/> returns it, also after the game was closed.</summary>
+        /// <summary>Keeps the progress so that a later <see cref="Load"/> returns it, also after the game was closed where <see cref="Keeping"/> says so.</summary>
         /// <exception cref="System.IO.IOException">The store could not be written; what it held before is still there.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not write the store; what it held before is still there.</exception>
         void Save(PlayerProgress progress);
     }
 
-    /// <summary>A store that forgets when the game closes: for the Editor's storyboard and for tests, which must not touch a player's own progress.</summary>
+    /// <summary>
+    /// A store in memory. For the Editor's storyboard and for tests, which must not touch a player's own progress, it
+    /// stands for the progress file and says it keeps what it is given after closing, as the file would (a tool has
+    /// no closing of its own). For the game's own run whose progress file cannot be used it is made
+    /// <see cref="ForThisRunOnly"/>, and says it keeps nothing after closing.
+    /// </summary>
     public sealed class ProgressInMemory : IProgressStore
     {
         private PlayerProgress _kept;
 
+        /// <summary>A store that stands for the progress file, for the Editor's tools and for tests.</summary>
         public ProgressInMemory(PlayerProgress start)
+            : this(start, ProgressKeeping.AfterClosing)
+        {
+        }
+
+        private ProgressInMemory(PlayerProgress start, ProgressKeeping keeping)
         {
             _kept = start;
+            Keeping = keeping;
         }
+
+        /// <summary>The store of a game's run whose progress file cannot be used: it holds the progress while the run lasts, and nothing after it.</summary>
+        public static ProgressInMemory ForThisRunOnly(PlayerProgress start) => new ProgressInMemory(start, ProgressKeeping.ForThisRunOnly);
+
+        public ProgressKeeping Keeping { get; }
 
         /// <summary>How often the progress was saved: a test's proof that a change was kept at once.</summary>
         public int TimesSaved { get; private set; }

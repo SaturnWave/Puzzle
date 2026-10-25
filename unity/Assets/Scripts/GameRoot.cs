@@ -361,8 +361,9 @@ namespace Puzzle.Client
         }
 
         /// <summary>
-        /// The start-up behind the entry page, step by step: the levels, the museum's catalogue, the economy, and the
-        /// player's session, opened in the hall out of the dark and kept unseen (its camera off) until the page is left.
+        /// The start-up behind the entry page, step by step: the levels, the museum's catalogue, the economy (whose
+        /// marks the page's foot is told), and the player's session, opened in the hall out of the dark and kept unseen
+        /// (its camera off) until the page is left.
         /// </summary>
         private StartUpWork StartUpOf(ArtCatalogue art, DeviceId phone, ISettingsStore settings, DeviceAbilities abilities, ICuePlayer cues)
         {
@@ -384,11 +385,19 @@ namespace Puzzle.Client
                 _session.Front.Camera.enabled = false;
             }
 
+            // The entry page's foot says "test sürümü" for a build that sells nothing for money, which the economy's marks say.
+            void ReadTheEconomy()
+            {
+                EconomyRules read = EconomyPack.LoadPacked();
+                rules = read;
+                _entry?.TellTheBuild(read.Shop.RealMoney);
+            }
+
             return new StartUpWork(new[]
             {
                 new StartUpStep("the levels", LevelsWeight, () => levels = LevelPack.LoadPacked()),
                 new StartUpStep("the museum's catalogue", CatalogueWeight, () => paintings = PaintingGallery.OfThePackedMuseum()),
-                new StartUpStep("the economy", EconomyWeight, () => rules = EconomyPack.LoadPacked()),
+                new StartUpStep("the economy", EconomyWeight, ReadTheEconomy),
                 new StartUpStep("the session in the hall with its pictures", SessionWeight, OpenTheSessionBehindTheEntry),
             });
         }
@@ -401,7 +410,10 @@ namespace Puzzle.Client
         /// cannot be read from the device, the player can still play: this run starts at the first level as a new
         /// player, keeps its progress in memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes on from where that file says the
         /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
-        /// finds its progress as it left it.
+        /// finds its progress as it left it. Either run keeps its progress for itself only
+        /// (<see cref="ProgressInMemory.ForThisRunOnly"/>), so its shop sells nothing for money: a payment it gave
+        /// would be lost when the game closes, and one the store holds from an earlier run is left unconfirmed for a
+        /// run that can save it.
         /// </summary>
         private static GameSession OpenSession(
             IReadOnlyList<LevelDefinition> levels, ArtCatalogue art, PaintingGallery paintings, EconomyRules rules, DeviceId phone, ISettingsStore settings,
@@ -421,13 +433,13 @@ namespace Puzzle.Client
             catch (ProgressOfALaterGameException later)
             {
                 PlayerProgress start = later.Understood ?? PlayerProgress.NewPlayer(rules.StartingWallet);
-                Debug.LogError($"{later.Message} This run goes on from \"{start}\" and does not save.");
-                return SessionOn(new ProgressInMemory(start));
+                Debug.LogError($"{later.Message} This run goes on from \"{start}\", does not save and sells nothing.");
+                return SessionOn(ProgressInMemory.ForThisRunOnly(start));
             }
             catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
             {
-                Debug.LogError($"The saved progress cannot be read, so this run starts at the first level and does not save: {failure.Message}");
-                return SessionOn(new ProgressInMemory(PlayerProgress.NewPlayer(rules.StartingWallet)));
+                Debug.LogError($"The saved progress cannot be read, so this run starts at the first level, does not save and sells nothing: {failure.Message}");
+                return SessionOn(ProgressInMemory.ForThisRunOnly(PlayerProgress.NewPlayer(rules.StartingWallet)));
             }
         }
 

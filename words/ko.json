@@ -224,7 +224,7 @@
     {"id":"PrivacyParagraph3","text":"기록에는 이름이나 휴대폰 정보가 없고, 이 휴대폰에 붙인 무작위 ID만 있어요. 게임은 이 ID를 어디에도 보내지 않아요."},
     {"id":"PrivacyParagraph4","text":"휴대폰 백업이 켜져 있으면 Android가 이 파일들을 백업에 넣을 수 있어요."},
     {"id":"PrivacyParagraphUnity","text":"구매 기능은 Unity의 것이에요. 구매를 시도할 때마다 상품, 가격, 스토어 영수증, 휴대폰 기종과 언어, 그리고 iPhone과 iPad에서는 Apple이 기기에 주는 앱 ID가 Unity로 가요. Unity는 이를 자사 회계 기록, 법적 의무, 사기 방지에 사용해요. 이 전송은 끌 수 없어요."},
-    {"id":"PrivacyParagraphStatistics","text":"허용하면 게임은 플레이 방식에 대한 짧은 기록을 분석 서비스 Aptabase에 보내요. 게임 실행, 플레이한 레벨, 이겼는지와 남은 이동 수, 완성한 그림과 방, 상점을 연 것과 상점에서 산 것(결제 정보 없이)이에요. 각 기록에는 시간과 그 세션에만 쓰이는 무작위 번호, 게임 버전, 휴대폰의 운영체제와 언어가 함께 가요. Aptabase는 이를 유럽연합에서 집계하며 IP 주소는 저장하지 않아요."},
+    {"id":"PrivacyParagraphStatistics","text":"허용하면 게임은 플레이 방식에 대한 짧은 기록을 분석 서비스 Aptabase에 보내요. 게임 실행, 플레이한 레벨, 이겼는지와 남은 이동 수, 완성한 그림과 방, 상점을 연 것과 상점에서 산 것(결제 정보 없이)이에요. 각 기록에는 시간과 그 세션에만 쓰이는 무작위 번호, 게임 버전, 휴대폰의 운영체제와 언어가 함께 가요. Aptabase는 이를 유럽연합에서 집계하며, 연결의 IP 주소로 대략적인 위치(국가와 지역)를 알아내지만 IP 주소는 저장하지 않아요."},
     {"id":"PrivacyParagraphStatisticsChoice","text":"기록에는 이름, 이메일, 광고 ID, 휴대폰을 알아보는 ID가 없어요. 허용하지 않아도 게임은 똑같이 작동해요. 설정의 게임 통계 스위치로 언제든 바꿀 수 있어요."},
     {"id":"PrivacyParagraphNoServer","text":"코인과 진행 상황은 이 휴대폰만 알아요. 게임을 삭제하거나 휴대폰을 바꾸면 사라져요. 휴대폰 백업으로 돌아올 수도 있지만 게임이 보장할 수는 없어요. 환불은 Google Play나 Apple에 요청해요."},
     {"id":"PrivacyDeleteTheRecords","text":"기록 삭제"},
@@ -239,7 +239,7 @@
     {"id":"PrivacyFileLine","text":"{file} · 끝난 시도마다 한 줄"},
     {"id":"PrivacyPageOf","text":"{page} / {pages}"},
     {"id":"ConsentQuestion","text":"게임을 더 좋게 만들기 위해 플레이 방식을 집계해도 될까요?"},
-    {"id":"ConsentParagraph1","text":"허용하면 게임은 플레이한 레벨, 그 결과, 완성한 그림, 상점에서 산 것(결제 정보 없이)에 대한 짧은 기록을 보내요. 분석 서비스 Aptabase가 이를 유럽연합에서 집계해요."},
+    {"id":"ConsentParagraph1","text":"허용하면 게임은 플레이한 레벨, 그 결과, 완성한 그림, 상점에서 산 것(결제 정보 없이)에 대한 짧은 기록을 보내요. 분석 서비스 Aptabase가 이를 유럽연합에서 집계하고, 연결 정보로 대략적인 위치(국가와 지역)를 알아내요."},
     {"id":"ConsentParagraph2","text":"이름, 이메일, 광고 ID, 휴대폰을 알아보는 ID는 보내지 않아요. 기록은 광고에 쓰이지 않고 누구와도 공유되지 않아요."},
     {"id":"ConsentParagraph3","text":"허용하지 않아도 게임과 구매는 똑같이 작동해요. 선택은 설정에서 언제든 바꿀 수 있어요."},
     {"id":"ConsentAllow","text":"허용"},
@@ -322,6 +322,11 @@
     {"id":"RestoreOnlyTheStarter","text":"코인 팩은 복원되지 않고 {name}만 돌아와요."},
     {"id":"RestoreFailed","text":"지금은 스토어가 응답하지 않아요."},
     {"id":"RestoreTryLater","text":"잠시 후 다시 시도해 주세요."},
-    {"id":"BuildStoreBuying","text":"구매는 스토어에서"}
+    {"id":"BuildStoreBuying","text":"구매는 스토어에서"},
+    {"id":"ShopStoreClosedForThisRun","text":"이번 세션에서는 스토어가 닫혀 있어요"},
+    {"id":"PurchaseNoAnswerLine","text":"스토어에서 아직 응답이 없어요."},
+    {"id":"EntryVersionAlone","text":"버전 {version}"},
+    {"id":"SettingsBuildLineStoreBuild","text":"이 버전 · {ads}, {buying}"},
+    {"id":"CreditsSoftware","text":"소프트웨어"}
   ]
 }
