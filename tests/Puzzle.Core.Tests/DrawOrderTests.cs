@@ -50,4 +50,24 @@ public class DrawOrderTests
         });
         Assert.True(DrawOrder.PlaqueRing > DrawOrder.PlaquePictureMark);
     }
+
+    [Theory]
+    [InlineData(DrawOrder.LessonPortrait, DrawOrder.LessonPillLettering, DrawOrder.Carried)]
+    [InlineData(DrawOrder.CardLessonPortrait, DrawOrder.CardLessonPillLettering, DrawOrder.SecondVeil)]
+    [InlineData(DrawOrder.CardPortrait, DrawOrder.CardBadgeLettering, DrawOrder.CardLettering)]
+    public void Every_part_of_the_painters_framed_bust_has_a_place_of_its_own_between_what_it_lies_over_and_under(DrawOrder portrait, DrawOrder over, DrawOrder under)
+    {
+        int[] places = Enum.GetValues<PortraitPart>().Select(part => (int)portrait + (int)part).ToArray();
+
+        Assert.Equal(new[] { PortraitPart.Velvet, PortraitPart.Bust, PortraitPart.Frame }, Enum.GetValues<PortraitPart>());
+        Assert.All(places, place => Assert.InRange(place, (int)over + 1, (int)under - 1));
+        Assert.DoesNotContain(Places, place => place != portrait && (int)place >= places[0] && (int)place <= places[^1]);
+    }
+
+    [Fact]
+    public void The_standing_painter_is_drawn_over_the_workbench_and_its_piece_and_over_the_trays_reward_under_its_label()
+    {
+        Assert.True(DrawOrder.HallPainter > DrawOrder.BenchSparkle && DrawOrder.HallPainter < DrawOrder.Floor);
+        Assert.True(DrawOrder.TrayPainter > DrawOrder.TrayRewardLettering && DrawOrder.TrayPainter < DrawOrder.ShelfPill);
+    }
 }

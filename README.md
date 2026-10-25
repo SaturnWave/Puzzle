@@ -1,6 +1,6 @@
 # Puzzle (çalışma adı)
 
-iOS ve Android için swap match-3 oyunu (Unity + C#). Genç bir ressam hasar görmüş bir müzeyi onarıyor: bölüm kazandıkça telifsiz gerçek tabloların yapboz parçalarını topluyor. 20 oda, 100 tablo, 1000 bölüm. Tahtalar büyük ve boyutu bölümden bölüme değişiyor (9x10 … 11x13); bölümler algoritmayla üretilip botlarla ayarlanıyor.
+iOS ve Android için swap match-3 oyunu (Unity + C#). Yaşlı bir usta ressam hasar görmüş bir müzeyi onarıyor: bölüm kazandıkça telifsiz gerçek tabloların yapboz parçalarını topluyor. 20 oda, 100 tablo, 1000 bölüm. Tahtalar büyük ve boyutu bölümden bölüme değişiyor (9x10 … 11x13); bölümler algoritmayla üretilip botlarla ayarlanıyor.
 
 **Durum (2026-10-15):** motor hazır, müze tamam, ekonomi sayıları kararlaştırıldı; Unity istemcisinde 15 aşamalı arayüz planının 1–9. aşamaları bitti, sıradaki bölüm içi booster'lar. Herkese açık web testi arayüz işleri bitene kadar kapalı.
 

@@ -607,6 +607,24 @@ namespace Puzzle.Client.Words
         /// <summary>Settings row that opens the support card, and that card's nameplate.</summary>
         SettingsSupport,
 
+        /// <summary>Settings row that opens the credits card, and that card's nameplate: who made the pictures, typefaces and sounds the game uses.</summary>
+        SettingsCredits,
+
+        /// <summary>Credits card, its first line: the licence lines under the headings stay in English, as their licences give them.</summary>
+        CreditsInEnglish,
+
+        /// <summary>Credits card, heading over the lines of the painter's pictures (the avatar).</summary>
+        CreditsPainter,
+
+        /// <summary>Credits card, heading over the line about the museum's paintings and their photographs.</summary>
+        CreditsPaintings,
+
+        /// <summary>Credits card, heading over the typefaces' copyright lines.</summary>
+        CreditsTypefaces,
+
+        /// <summary>Credits card, heading over the line about the sounds of play.</summary>
+        CreditsSounds,
+
         /// <summary>Settings card's foot: the player's ID and the game's version.</summary>
         SettingsFoot,
 

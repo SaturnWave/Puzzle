@@ -72,6 +72,9 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\RoomWall.cs" Link="Unity\Flow\RoomWall.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\PageLayout.cs" Link="Unity\Layout\PageLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\HallLayout.cs" Link="Unity\Layout\HallLayout.cs" />
+    <!-- Nor has the painter: his pictures, what each measures around his feet, his looks, and where he stands on a page. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Avatar\PainterPicture.cs" Link="Unity\Avatar\PainterPicture.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\FigurePlace.cs" Link="Unity\Layout\FigurePlace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\MapLayout.cs" Link="Unity\Layout\MapLayout.cs" />
     <!-- Nor has the world map (#4): its camera, how an era's pins stand, how far the strip of eras is scrolled, what it shows of a player's progress, and its words. -->
     <Compile Include="..\..\unity\Assets\Scripts\Maps\MapCamera.cs" Link="Unity\Maps\MapCamera.cs" />
@@ -140,6 +143,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\EntryWords.cs" Link="Unity\Flow\EntryWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\EntryLayout.cs" Link="Unity\Layout\EntryLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\CreditWords.cs" Link="Unity\Flow\CreditWords.cs" />
     <!-- Nor have the play statistics: the gate that lets a note through only with the player's yes, the notes there are, the key they go through, and the question's words. -->
     <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayStatistics.cs" Link="Unity\Statistics\PlayStatistics.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayNote.cs" Link="Unity\Statistics\PlayNote.cs" />

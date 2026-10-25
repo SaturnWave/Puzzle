@@ -13,7 +13,7 @@
 | Determinizm | Kendi PRNG'miz (PCG32) + yalnızca tam sayı aritmetiği | Aynı seed her cihazda aynı oyunu üretir; botun ölçtüğü şey oyuncunun oynadığı şeydir |
 | Tahta | Büyük: 10x10, 10x12 ve türevleri; bölüm başına değişken W×H + şekil maskesi | Zor bölümlerde satır/sütun sayısı değişecek |
 | İçerik | İlk 1000 bölüm algoritmik üretilecek, hamle sayıları botla kalibre edilecek | Elle 1000 bölüm dengelenemez |
-| Tema | Genç bir ressam hasar görmüş müzeyi onarıyor; tablolar yapboz parçaları olarak toplanıyor (§18) | Bölümler yalnızca ilerleme aracı; oyuncuyu geri getiren meta oyun. Kamu malı tablolar içerik maliyetini sıfıra yaklaştırıyor |
+| Tema | Yaşlı bir usta ressam hasar görmüş müzeyi onarıyor; tablolar yapboz parçaları olarak toplanıyor (§18; 2026-10-24'e kadar genç bir ressamdı) | Bölümler yalnızca ilerleme aracı; oyuncuyu geri getiren meta oyun. Kamu malı tablolar içerik maliyetini sıfıra yaklaştırıyor |
 | Hedef oyuncu | 30 yaş üstü rahat oyuncu; içerik aileye uygun (§19) | Türün en büyük ve kanıtlanmış kitlesi |
 | İş modeli | Ücretsiz oyun + uygulama içi satın alma + isteğe bağlı ödüllü reklam (§19) | Türün standardı |
 | Ekip | Kullanıcı ve Claude; görseller en son (Claude Design / 3D araçlar) | Darboğaz çizim; içerik parça parça çoğaltılabilir olmalı |
@@ -776,7 +776,9 @@ Bölümler ilerledikçe dört eksende yenilik gelir (her yeni öğe bir "kanca" 
 
 **Karar (2026-10-02).** Bölümler oyunun yakıtı; oyuncuyu ertesi gün geri getiren şey, bölümlerle kazandığını harcadığı yer. Tema kullanıcının fikri.
 
-**Hikâye:** genç bir ressamın sevdiği müze bir felakette hasar gördü; tablolar parçalanıp dağıldı. Ressam bölüm kazanarak parçaları topluyor, tabloları yapboz gibi birleştirip yerlerine asıyor ve müzeyi oda oda yeniden açıyor.
+**Hikâye:** yaşlı bir usta ressamın ömrünü verdiği müze bir felakette hasar gördü; tablolar parçalanıp dağıldı. Usta, bölüm kazanarak parçaları topluyor, tabloları yapboz gibi birleştirip yerlerine asıyor ve müzeyi oda oda yeniden açıyor.
+
+**Güncelleme (2026-10-24), onay bekliyor:** kahraman artık genç değil, yaşlı bir usta: proje sahibi avatar olarak keçe bereli usta ressamı seçti (§22). Yukarıdaki cümle yeni sözlerdir ve proje sahibinin onayını bekler; eskisi "genç bir ressamın sevdiği müze…" idi. Oyunun hiçbir yazısı ressamdan söz etmiyor (13 dilin tabloları tarandı), bu yüzden değişen yalnız belgeler: bu bölüm, §0, §22, `docs/OVERVIEW.md`, `README.md` ve müzik isteği (`docs/music/MUSIC_BRIEF.md`).
 
 **Yapı.** Üreticideki döngülerle birebir örtüşüyor; mevcut sisteme değişiklik gerektirmiyor:
 
@@ -969,6 +971,12 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Sunucu yok:** ilerleme ve altın yalnız telefonda. Oyun silinince ya da telefon değişince kaybolur (telefonun yedeği geri getirebilir); iadeyi Google Play ya da Apple yönetir. Gizlilik kartı bunu söyler.
 - **Metinler taslak:** gizlilik kartı, soru, ayar satırları ve onay kartının ikinci satırı taslağın §3'ünden; sahibin onayını bekler (13 dil, makine çevirisi). Sitedeki politika (taslak §4) v1'den önce sahibin yayımlayacağı iş; oyunun içinden politikaya bağlantı, sitenin adresi gelince eklenir.
 
+**Karar (2026-10-24): v1'in avatarı usta ressam; künye oyunda.**
+
+- **Avatar:** proje sahibinin seçtiği A adayı, keçe bereli yaşlı usta ressam; Blender'de işlenmiş resimler (§22). Hikâyenin kahramanı onunla birlikte usta oldu (§18; yeni hikâye cümlesi sahibin onayını bekliyor).
+- **Yerleri:** salon, öğretici ve booster tanıtımı yazıları, kazanma kartı, tamamlanan tablo, onarılan oda (§22, §23). Mağazada, kaybetme kartında ve hiçbir satın alma adımında yer almaz; oyunun akışına ve zorluğuna dokunmaz (§17).
+- **Künye:** Ayarlar'daki "Künye" satırı bir kart açar: ressamın kaynakları (Einar, CC BY 4.0, "modified" notuyla; Microsoft Rocketbox, MIT metni bütün), tablolar ve fotoğraflarının müzeleri, yazı tiplerinin telif satırları (SIL OFL 1.1), sesler (Kenney, CC0). Lisans satırları her dilde İngilizce, lisans kayıtlarındaki gibi; yalnız başlıklar 13 dile çevrilir. Testler oyunun satırlarını kayıtlarla karşılaştırır. Müzik sahibin kendi üretimi olduğu için listede yok.
+
 ## 20. Kalibrasyon, veri ve yayın
 
 **Karar (2026-10-02).**
@@ -1087,7 +1095,20 @@ Sıranın gerekçesi: yeniden üretim (6) bot düzeltmesine, casual korumasına 
 
 - **Renk:** duvar koyu camgöbeği. Giysinin ağırlıklı rengi camgöbeği ya da yeşil olmamalı; sıcak renkler (hardal, krem, mercan) öne çıkar.
 - **Işık ve çizgi:** taşlarla aynı ışık yönü (sol üst) ve sıcak koyu kahve dış çizgi uyumlu durur; şart değil.
-- **Yer:** tasarım tuvalindeki "Hediye" çerçevesi salonda figürün duracağı yerde asılı. Çizim gelince ikisinin yeri birlikte ayarlanacak.
+- **Yer:** tasarım tuvalindeki "Hediye" çerçevesi salonda figürün duracağı yerde asılı. Çizim gelince ikisinin yeri birlikte ayarlanacak. **Ayarlandı (2026-10-24):** ressam tezgâhın sağında duruyor, Hediye çerçevesi tezgâhın soluna, aynı yüksekliğe alındı.
+
+**Güncelleme (2026-10-24): avatar seçildi ve oyunda.** Proje sahibi üçüncü turun **A** adayını seçti: keçe bereli, hardal gömlekli, kanvas önlüklü yaşlı usta ressam. Çizim değil, Blender'de pozlanıp işlenmiş resimler: başı Blender Studio'nun "Charge" filmindeki Einar (CC BY 4.0, değiştirildi), gövdesi Microsoft Rocketbox (MIT); dokular Poly Haven (CC0). Hiçbir yüz elle çizilmedi ya da yontulmadı; ifadeler modelin kendi yüz kontrolleriyle. Kaynaklar ve lisans kaydı `art/avatar/` (`licences.json`, `credits.md`), oyundaki kopyalar `unity/Assets/Art/Avatar/Resources/Painter/`.
+
+| Resim | Oyunda nerede |
+|---|---|
+| Ayakta, palet ve fırçayla | Salonda tezgâhın sağında; 1080×2424 telefonda 450 piksel |
+| Ayakta, el sallayan | Aynı yerde, henüz bölüm kazanmamış yeni oyuncunun salonunda |
+| Ayakta, sevinen (iki kol havada) | Tablo tamamlanınca yapbozun tepsisinin sağ ucunun önünde; oda onarılınca salonda pankartın sağında |
+| Büst, yol gösteren | Öğretici ve booster tanıtımı yazılarının solunda, küçük yaldız çerçevede |
+| Büst, düşünen | Yeni bir engelin (sandık, vernik, bant, çerçeve köşesi) ve uzun basmanın yazısının yanında |
+| Büst, sevinen | Kazanma kartının nişinde, sol üstte; ilk tablo tamamlanınca yazının yanında |
+
+Bilinen üslup farkı: salon düz renkli çizim, ressam gerçekçi 3B işleme. Telefondaki boyutta resmin içindeki yumuşak gölge onu zemine bağlıyor; sıcak koyu kahve bir dış çizgi ileride denenebilir. Kaybetme kartı için üzgün ya da şaşıran büst ve bekleme canlandırması (nefes, göz kırpma) yapılmadı.
 
 Çizimlerdeki yer tutucular (karar değil): "+5 hamle" fiyatı `[fiyat]` olarak duruyor; coin ödülü (+45), booster adetleri ve "Güçlendirici seç" gibi başlıklar örnek metin. Yıldız puanı yok (oyunda böyle bir sistem tanımlı değil); bölüm ödülü yapboz parçası ve coin.
 
@@ -1575,6 +1596,23 @@ Bu kararlarla 10. aşama başladı.
 - **Yazılar:** 13 yeni, 5 değişen yazı, 13 dilde (makine çevirisi, `tr` kaynak, notlar "taslak, sahibin onayını bekliyor"). Rusça, Japonca ve Çincede Latin harfiyle yalnız adlar kalır (Aptabase, Unity, Google Play, App Store, Apple, iPhone, iPad, ID, IP). Çince sans yedek yazı tiplerinin resmi 2048×2048 oldu; yeni harfler 2048×1024'e sığmadı.
 - **Denetim (`ConsentCheck`, `-quit` ile):** oyunun oturumunda, kaydedici paketin yerinde. İlk açılışta soru iniyor ve kapalıdan başka bir şey duyulmuyor. Geri tuşu "hayır" kaydediyor; sonra mağaza ve sonuna kadar oynanan bölüm hiçbir şey göndermiyor. "İzin ver" sonrası sıra açık, `app_start`, `shop_open`, `purchase_complete` (ürünüyle), `level_start`, bölüm sonu (numarası ve kalan hamlesiyle); hiçbir notta kimlik yok. İzin vermiş oyuncunun sonraki açılışında soru yok, açılış not ediliyor. Anahtar kapanınca hemen kapalı ve sonra hiçbir şey; gizlilik satırı geri dönüyor. Gizlilik kartının sayfaları sona ve geri dönüyor. Ayar dosyası tek, anahtar boş ya da AB, çökme raporu kapalı.
 - **Doğrulama:** 5.505 test (48'i yeni), ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ConsentCheck` geçti. Türkçe metin gizlilik kartında 3 sayfa (Almancada 4, Japoncada 5); kart artık en çok 470 nokta (eskiden 382). Bu yükseklik, test edilen her ekranda üç ve daha çok anahtarlı ayar kartının önüne sığıyor; artık her derleme en az üç anahtar çiziyor. `RotationCheck` (84 değişiklik), `PlayModeCheck` (giriş sayfasından sonra salonda soru kartı; anahtarsız paketin satırı sayılmadı, oyun hatası yok) ve `MusicCheck` (soruyu "İzin verme" ile cevapladı) hatasız. `ScreenShots -screens consent,settings,privacy` 1080×2424, 2076×2152 ve 2732×2048'de, Almanca ve Japonca telefonda; `-screenWalk` üç ekranda geçti. Resimlere bakıldı. APK derlendi: eski kütüphane manifesti silindi, `aapt` APK'nın tam olarak INTERNET, VIBRATE, BILLING, ACCESS_NETWORK_STATE ve alıcı iznini istediğini okudu (290 MB). Telefon testleri T490–T499; cihazda denenmedi.
+
+**Ressam oyunda (2026-10-24).** §22'deki seçimin uygulaması; kararlar §19'da, telefon testleri T500–T509 (F26), açık A49.
+
+- **Resimler:** `art/avatar/` işleyicinin adlarıyla kaynaklar ve lisans kaydı (`licences.json`: her resmin özeti, kaynaklar, kredi satırları, MIT metni; `credits.md` işleyicinin kendi notu, olduğu gibi). Oyun aynı baytları İngilizce adlarla taşır: `unity/Assets/Art/Avatar/Resources/Painter/` (`painter-with-palette`, `painter-waving`, `painter-cheering`, `painter-bust-guiding`, `painter-bust-thinking`, `painter-bust-joyful`). Eşleme kaydın `inGame` alanında; oyunun kodu Türkçe sözcük taşımaz (`WordsOutsideTheTablesTests`), testler iki kopyanın özetini kayıtla karşılaştırır.
+- **İçe aktarma (`AvatarArtImport`):** sprite, mipmap yok, saydam piksel komşusunun renginde (saç ve sakal kenarında koyu hale yok). Ayakta resimler metreyle ölçülür (resmin 1100 pikseli bir metre) ve ayaklarından döner: üç poz aynı ölçekte, ayaklar aynı çizgide. En çok 1024 piksel, telefonda ASTC 6x6 (yaklaşık 0,3 MB). Büstler 100 birim genişlikte, ortadan döner; en çok 256 piksel, telefonda ASTC 4x4 (64 KB).
+- **Yükleme (`PainterGallery`, `PictureShelf` kurallarıyla):** bir resim onu gösteren ekran isteyince yüklenir, ekran kalkınca hemen bırakılır; bırakılan tutulmaz. Tablolarla aynı yoldan her ekrana gider (`PaintingGallery.Painter`).
+- **Salon (`HallLayout`, Unity'siz, testli):** ressam tezgâhın sağında, ayakları tezgâhın ayak çizgisinde. Boyu tezgâhın çiziminin 0,92'si (1080×2424 telefonda 150 nokta, 450 piksel), ama oda onarıldığında kalkan kolları pirinç levhaya değmeyecek kadar; ekranın kenarından 4 nokta içerde, sığmazsa masanın ucunun biraz önünde durur. Hediye çerçevesi aynı yükseklikte tezgâhın soluna aynalandı. Henüz bölüm kazanmamış oyuncuya el sallar. Yatay tabletlerde ortadaki sütunda kalır: kanatlar odanın tablolarının.
+- **Onarılan oda:** ressam iki kolu havada pankartın sağında. Pankart ortada kalır; ressam yer bırakmazsa yalnız gerektiği kadar sola kayar, soldaki duvar yetmezse küçülür (1080×2424'te tam boyunun %84'ü). Geniş ekranlarda ortada kaldığını test denetler (ilk denemede yatay iPad'de kanadın tablosunun üstüne kaymıştı).
+- **Rehber yazıları (`ShelfPill`):** adımın yazısının solunda küçük yaldız çerçevede büst (`PainterPortrait`: hediye çerçevesinin kadifesi ve çerçevesi). Çerçeve yazı kartı kadar yüksek, en az 44 nokta; ikisi birlikte ortalanır, yazının yeri çerçeve kadar daralır. Bakış adıma göre (`PainterPictures.MoodOf`, testli): hedef, hamleler, dörtlü, beşli, ilk parça, booster kullanımları ve başlangıç booster'ları yol gösteren; sandık, vernik, bant, çerçeve köşesi ve uzun basma düşünen; ilk tablonun tamamlanması sevinen. Tahtada, yapbozda ve bölüm başı kartında aynı; adım bitince büst bırakılır.
+- **Kazanma kartı:** nişin duvarında sol üstte 60 noktalık çerçevede sevinen büst, parçadan sonra belirir; o köşedeki büyük kıvılcım çıkarıldı. Kaybetme kartında büst yok.
+- **Tablo tamamlandı (`JigsawLayout.CheeringPainter`, testli):** ressam tepsinin sağ ucunun önünde, ayakları alt kenarında; boyu ellerinin tepsinin üstündeki yazıya değmeyeceği kadar, en çok 166 nokta (1080×2424'te yaklaşık 105). Işıkla birlikte aşağıdan yükselip belirir; ödül kuyunun onun solundaki kısmında ortalanır. Yalnız tablo bu ekranda tamamlanınca; tamamlanmış açılan tabloda yok.
+- **Künye:** Ayarlar'ın yönlendiren satırlarının sonuncusu "Künye" (koleksiyon işareti). Kart (`CreditsCard`) gizlilik kartı gibi sayfalı (Türkçede 4 sayfa); başlık ilk satırıyla aynı sayfada kalır, satır bölünmez. Oklar artık iki kartın ortak parçası (`PageArrow`), altta "Tamam". Lisans satırları `CreditWords`'te İngilizce, yazı tablolarının dışında; testler `art/avatar`, `art/fonts`, `art/paintings` ve `art/sounds` kayıtlarıyla karşılaştırır, oyunun harfleri dışında harf yok ("©" yerine "(c)"). Ayar kartı bir satır (53,5 nokta) uzadı; test edilen en kısa ekranlarda da satırlar 44 noktanın üstünde kalıyor.
+- **Yazılar:** 6 yeni yazı 13 dilde (makine çevirisi, `tr` kaynak ve notlu): "Künye", ilk satır ve dört başlık. Çince, Japonca ve Korece yedek yazı tiplerine yeni harfler eklendi.
+- **Çizim sırası:** salondaki ressam tezgâhın ve parçasının üstünde (`HallPainter`), tepsideki ödülün üstünde ve yazısının altında (`TrayPainter`); çerçeveli büstün üç parçası (kadife, büst, çerçeve) rehber kartının, bölüm başı kartındaki rehber kartının ve kazanma kartındaki rozetlerin üstünde kendi yerlerinde (`PortraitPart`, testli).
+- **Denetim (`AvatarCheck`, `-quit` ile):** 1080×2424'te yeni oyuncunun ve 47. bölümdeki oyuncunun salonu (mağazaya geçip dönerek), onarılan oda, üç bakışıyla rehber kartı, kazanma kartı ve düğmeyle tamamlanan ilk tablo; her adımdan sonra bellekteki ressam resimleri sayılır: ekranın gösterdiği tam olarak o, ekran kalkınca hiçbiri. 22 sayımın hepsi geçti.
+- **İlk içe aktarma:** yeni bir doku işleyicisi Unity'nin bütün dokuları bir kez yeniden içe aktarmasına yol açtı (yaklaşık 25 dakika). iOS modülü kurulu olduğu için Unity bu sırada 254 dokunun `.meta` dosyasına varsayılan (geçersiz kılınmamış) bir iOS bölümü yazdı; ayrı bir işlemede.
+- **Doğrulama:** 5.839 test (334 yeni), ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `AvatarCheck`, `RotationCheck` (84 değişiklik), `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan) hatasız; telefonda bütün kart yürüyüşleri (künye kartının sayfaları dahil) geçti. Resimler 1080×2424, 2076×2152, 2152×2076, 2732×2048, 2048×2732 ve 2560×1600'de bakıldı.
 
 ## 24. Bölüm bankası ve derleyici
 

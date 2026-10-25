@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Avatar;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Collections;
 using Puzzle.Client.Flow;
@@ -288,7 +289,7 @@ namespace Puzzle.Client.Screens
             _veil = Veil.Create(_root.transform, art);
             _secondVeil = Veil.Create(_root.transform, art, DrawOrder.SecondVeil);
             _spotlight = Spotlight.CreateOverACard(_root.transform, art);
-            _lessonPill = ShelfPill.CreateForLessonsOnACard(_root.transform, art);
+            _lessonPill = ShelfPill.CreateForLessonsOnACard(_root.transform, art, paintings.Painter);
             (_page as IShopPage)?.Tell(shop);
             ListenToThePage();
         }
@@ -462,6 +463,7 @@ namespace Puzzle.Client.Screens
             PrivacyCard _ => SettingsCardKind.Privacy,
             SupportCard _ => SettingsCardKind.Support,
             LanguageCard _ => SettingsCardKind.Language,
+            CreditsCard _ => SettingsCardKind.Credits,
             _ => null,
         };
 
@@ -484,6 +486,8 @@ namespace Puzzle.Client.Screens
         public Vector2? PrivacyRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.PrivacyRowMiddle) : null;
 
         public Vector2? SupportRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.SupportRowMiddle) : null;
+
+        public Vector2? CreditsRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.CreditsRowMiddle) : null;
 
         public Vector2? SwitchPixel(DeviceSetting setting) =>
             TopCard is SettingsCard settings && settings.Switches.Contains(setting) ? PixelOnTheCard(settings.SwitchMiddle(setting)) : null;
@@ -520,6 +524,16 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The pixel in the middle of the support card's "Tamam"; nothing while that card is not down in front, or asks about the tester mode.</summary>
         public Vector2? SupportDonePixel => TopCard is SupportCard support ? PixelOnTheCard(support.DoneButtonMiddle) : null;
+
+        /// <summary>Which page of the credits card's text is shown, of how many; nothing while that card is not in front.</summary>
+        public (int Page, int Pages)? CreditsPageShown => TopCard is CreditsCard credits ? credits.PageShown : ((int, int)?)null;
+
+        /// <summary>The pixels of the credits card's arrows and its "Tamam"; nothing while that card is not in front, or where there is no such page.</summary>
+        public Vector2? CreditsNextPagePixel => TopCard is CreditsCard credits ? PixelOnTheCard(credits.NextPageMiddle) : null;
+
+        public Vector2? CreditsPreviousPagePixel => TopCard is CreditsCard credits ? PixelOnTheCard(credits.PreviousPageMiddle) : null;
+
+        public Vector2? CreditsDonePixel => TopCard is CreditsCard credits ? PixelOnTheCard(credits.DoneButtonMiddle) : null;
 
         /// <summary>The pixel in the middle of the support card's version row; nothing while that card is not down in front, or its row opens no door.</summary>
         public Vector2? VersionRowPixel => TopCard is SupportCard support ? PixelOnTheCard(support.VersionRowMiddle) : null;
@@ -786,6 +800,7 @@ namespace Puzzle.Client.Screens
                     LanguageCard _ => LanguageCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
                     PrivacyCard _ => PrivacyCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
                     SupportCard _ => SupportCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
+                    CreditsCard _ => CreditsCard.Create(_root.transform, _art, (int)DrawOrder.OverACard),
                     _ => throw new InvalidOperationException($"A {card.GetType().Name} hangs, and no language is chosen on it."),
                 };
                 card.Dispose();
@@ -1068,6 +1083,12 @@ namespace Puzzle.Client.Screens
                 case MuseumPress.OpenTheSupport _ when TopCard is SettingsCard:
                     Hang(SupportCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
                     break;
+                case MuseumPress.OpenTheCredits _ when TopCard is SettingsCard:
+                    Hang(CreditsCard.Create(_root.transform, _art, (int)DrawOrder.OverACard), roomIsDark: false);
+                    break;
+                case MuseumPress.TurnTheCreditsPage turn when TopCard is CreditsCard credits:
+                    credits.TurnThePage(turn.IsForward);
+                    break;
                 case MuseumPress.OpenTheLanguages _ when TopCard is SettingsCard:
                     Hang(LanguageCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
                     break;
@@ -1197,6 +1218,7 @@ namespace Puzzle.Client.Screens
         {
             BoosterKind booster = LevelBrief.StartBoosters[lit];
             _spotlight.LightUp(new[] { start.PlaceOf(booster) });
+            _lessonPill.ShowThePainter(PainterPictures.MoodOf(TutorialStep.StartBoosters));
             _lessonPill.Show(TutorialWords.OfTheStartBooster(booster, _level.ExtraMoves));
             float widest = Mathf.Min(ScreenLayout.WidestShelf, layout.View.Width - 2f * LessonPillFromTheSides);
             float under = start.Card.Foot - start.Card.Scale * (LevelStartLayout.RidesBelow + LessonPillUnderTheCard);
@@ -1208,6 +1230,7 @@ namespace Puzzle.Client.Screens
             _startBoosterLit = null;
             _spotlight.Show(0f);
             _lessonPill.Show(PillWords.None);
+            _lessonPill.ShowThePainter(null);
         }
 
         /// <summary>

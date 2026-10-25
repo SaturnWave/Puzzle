@@ -5,7 +5,7 @@ namespace Puzzle.Core.Tests;
 /// <summary>
 /// Where the settings card hangs on a museum page and where its rows stand, before anything is drawn: the card of the
 /// design (SettingsTR) with as many switches as the build honours, on the screens the game is made for and on screens
-/// with a cutout and a system bar, and the privacy and support cards that hang in front of it. <c>SettingsLayout</c>
+/// with a cutout and a system bar, and the privacy, support and credits cards that hang in front of it. <c>SettingsLayout</c>
 /// and <c>PageLayout</c> are the Unity project's source files, compiled into these tests: they have no Unity dependency.
 /// </summary>
 public class SettingsLayoutTests
@@ -79,7 +79,7 @@ public class SettingsLayoutTests
 
     [Theory]
     [MemberData(nameof(ScreensAndTheBuildsSwitches))]
-    public void The_privacy_and_the_support_card_stand_in_front_of_the_settings_card_inside_the_usable_screen(
+    public void The_privacy_support_and_credits_cards_stand_in_front_of_the_settings_card_inside_the_usable_screen(
         int width, int height, int topInset, int bottomInset, int switches)
     {
         PageLayout page = PageLayout.Of(new ScreenShape(width, height, topInset, bottomInset));
@@ -87,7 +87,7 @@ public class SettingsLayoutTests
         CardPlace behind = card.PlaceOn(page);
         float footBehind = behind.Middle - behind.Scale * card.Height / 2f;
 
-        foreach (float front in new[] { SettingsLayout.PrivacyBodyHeight, SettingsLayout.SupportBodyHeight })
+        foreach (float front in new[] { SettingsLayout.PrivacyBodyHeight, SettingsLayout.SupportBodyHeight, SettingsLayout.CreditsBodyHeight })
         {
             // The museum's stage stands a card in front on the foot of the one behind, a little over it, at the same scale.
             float top = footBehind + behind.Scale * (SettingsLayout.InFrontOverTheFoot + front + SettingsLayout.RidesAbove);
@@ -96,12 +96,12 @@ public class SettingsLayoutTests
     }
 
     [Fact]
-    public void With_the_designs_three_switches_the_card_is_as_high_as_the_canvas_draws_it_with_the_builds_line_under_its_foot()
+    public void With_the_designs_three_switches_the_card_is_as_high_as_the_canvas_draws_it_with_the_builds_line_and_the_credits_row()
     {
         SettingsLayout card = SettingsLayout.For(3);
 
-        // SettingsTR: a body of 430 whose foot is one line; the build's line adds a band of 17.
-        Assert.Equal(430f + SettingsLayout.BuildLineBand, card.BodyHeight, precision: 3);
+        // SettingsTR: a body of 430 whose foot is one line; the build's line adds a band of 17, the credits' row (2026-10-24) a row and its hairline.
+        Assert.Equal(430f + SettingsLayout.BuildLineBand + SettingsLayout.RowHeight + SettingsLayout.Hairline, card.BodyHeight, precision: 3);
         Assert.Equal(37f + 3 * 52f + 2 * 1.5f + 17f / 2f, card.DividerMiddle!.Value, precision: 3);
         Assert.Equal(213f + 26f, card.RowOf(SettingsRowKind.Language).Middle, precision: 3);
     }
@@ -113,7 +113,7 @@ public class SettingsLayoutTests
         SettingsLayout three = SettingsLayout.For(3);
 
         Assert.Null(none.DividerMiddle);
-        Assert.Equal(new[] { SettingsRowKind.Language, SettingsRowKind.Privacy, SettingsRowKind.Support }, none.Rows.Select(row => row.Kind));
+        Assert.Equal(new[] { SettingsRowKind.Language, SettingsRowKind.Privacy, SettingsRowKind.Support, SettingsRowKind.Credits }, none.Rows.Select(row => row.Kind));
         Assert.Equal(SettingsLayout.RowsDown, none.Rows[0].Down, precision: 3);
         Assert.Equal(three.BodyHeight - 3 * SettingsLayout.RowHeight - 2 * SettingsLayout.Hairline - SettingsLayout.DividerBand, none.BodyHeight, precision: 3);
     }
@@ -124,9 +124,9 @@ public class SettingsLayoutTests
     {
         SettingsLayout card = SettingsLayout.For(switches);
 
-        Assert.Equal(switches + 3, card.Rows.Count);
+        Assert.Equal(switches + 4, card.Rows.Count);
         Assert.Equal(Enumerable.Range(0, switches), card.Rows.Take(switches).Select(row => row.SwitchIndex));
-        Assert.Equal(Math.Max(0, switches - 1) + 3, card.Hairlines.Count);
+        Assert.Equal(Math.Max(0, switches - 1) + 4, card.Hairlines.Count);
         for (int index = 1; index < card.Rows.Count; index++)
         {
             Assert.True(card.Rows[index].Down >= card.Rows[index - 1].Bottom, $"row {index} begins inside the one above it");

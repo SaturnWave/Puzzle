@@ -6,7 +6,7 @@ Oyunun müziği proje sahibinin Suno Premier hesabıyla üretilecek (#9). Bu bel
 
 ## 1. Oyunun sesi
 
-Oyun bir müzede geçiyor: genç bir ressam tablo parçalarını toplayıp odaları onarıyor. Görsel dil sıcak, yaldızlı çerçeveli, koyu camgöbeği duvarlı bir galeri. Müzik buna eşlik etmeli:
+Oyun bir müzede geçiyor: yaşlı bir usta ressam tablo parçalarını toplayıp odaları onarıyor (2026-10-24'e kadar genç bir ressamdı). Görsel dil sıcak, yaldızlı çerçeveli, koyu camgöbeği duvarlı bir galeri. Müzik buna eşlik etmeli:
 
 - **Sıcak ve sakin,** ama uyutmayan. Oturumlar kısa (yaklaşık 10 dakika), aynı parça defalarca duyulacak; yorucu bir melodi kısa sürede rahatsız eder.
 - **Küçük oda müziği:** piyano, pizzicato yaylılar, çelesta, glockenspiel, arp, yumuşak klarnet ya da flüt. Elektronik davul, bas düşüşü, vokal, koro yok.

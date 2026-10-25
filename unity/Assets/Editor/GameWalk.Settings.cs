@@ -56,6 +56,7 @@ namespace Puzzle.Client.EditorTools
                 $"the settings walk changed the progress ({session.Progress}, was {before}) or the settings ({settings.Settings})");
 
             LookAtTheSupportCard(reel);
+            int creditsPages = ReadTheCredits(reel);
             session.GoBack();
             reel.Settle();
             ThroughTheCard.Require(!MuseumOf(session).ShowsTheSettings, "the way back left the settings card hanging");
@@ -65,7 +66,7 @@ namespace Puzzle.Client.EditorTools
             reel.WriteSheet();
             Debug.Log(
                 $"Screen shots: walk {reel.Name}: the gear on {PagesWithTheWalletRow.Length} pages, {SettingsShots.RecordsOnThePhone} records deleted after a question, "
-                + $"the support card, the sound and the music turned off and kept, heard {heard} in all.");
+                + $"the support card, the credits' {creditsPages} pages, the sound and the music turned off and kept, heard {heard} in all.");
         }
 
         /// <summary>
@@ -236,6 +237,41 @@ namespace Puzzle.Client.EditorTools
             Press(session, MuseumOf(session).SupportDonePixel, "the support card's Tamam", reel, pressedShot: null);
             reel.Settle();
             ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Settings, "the support card's Tamam did not lead back to the settings card");
+        }
+
+        /// <summary>
+        /// The credits card comes in front of the settings card from its row "Künye"; its arrows turn every page of
+        /// its text and back to the first; its "Tamam" leads back to the settings card.
+        /// </summary>
+        /// <returns>How many pages the credits take.</returns>
+        private static int ReadTheCredits(Reel reel)
+        {
+            GameSession session = reel.Session;
+            Press(session, MuseumOf(session).CreditsRowPixel, "the settings card's credits row", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Credits, "the credits row did not bring the credits card");
+            (int page, int pages) = MuseumOf(session).CreditsPageShown ?? (0, 0);
+            ThroughTheCard.Require(page == 1 && pages >= 1, $"the credits card opened on page {page} of {pages}");
+            reel.Shoot("credits-1");
+            for (int next = 2; next <= pages; next++)
+            {
+                Press(session, MuseumOf(session).CreditsNextPagePixel, $"the credits card's arrow to page {next}", reel, pressedShot: null);
+                reel.Settle();
+                ThroughTheCard.Require(MuseumOf(session).CreditsPageShown?.Page == next, $"the credits card's arrow did not turn to page {next}");
+                reel.Shoot($"credits-{next}");
+            }
+
+            for (int back = pages - 1; back >= 1; back--)
+            {
+                Press(session, MuseumOf(session).CreditsPreviousPagePixel, $"the credits card's arrow back to page {back}", reel, pressedShot: null);
+                reel.Settle();
+                ThroughTheCard.Require(MuseumOf(session).CreditsPageShown?.Page == back, $"the credits card's arrow did not turn back to page {back}");
+            }
+
+            Press(session, MuseumOf(session).CreditsDonePixel, "the credits card's Tamam", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Settings, "the credits card's Tamam did not lead back to the settings card");
+            return pages;
         }
     }
 }

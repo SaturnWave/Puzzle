@@ -1,18 +1,21 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using Puzzle.Client.Avatar;
 
 namespace Puzzle.Client.Layout
 {
     /// <summary>
     /// Where everything of the museum's home lies, the hall with the painting that is being restored: under the
     /// page's plaque and rail hangs the painting in its frame, with its picture light above and its brass plate
-    /// below; under it stands the workbench on the floor, and in front of the floor the play button, over the
+    /// below; under it stands the workbench on the floor, the painter at its right (<see cref="PainterBesideTheBench"/>)
+    /// and the gift frame on the wall at its left, and in front of the floor the play button, over the
     /// navigation bar. The painting comes first: it is as large as its proportions and the wall allow; on a short
     /// screen the workbench is drawn smaller, and smaller still where a cutout or a system bar takes more of the
-    /// height, before the painting gives up what it needs to be seen. On a screen held sideways the hall keeps this
-    /// upright column in its middle, and the wide wall at its sides is the gallery's: a lamp beside the frame, and on
-    /// a tablet the room's restored paintings, two above each other at each side (<see cref="PaintingsBeside"/>).
+    /// height, before the painting gives up what it needs to be seen; the painter is drawn with the bench. On a
+    /// screen held sideways the hall keeps this upright column in its middle, the painter in it, and the wide wall
+    /// at its sides is the gallery's: a lamp beside the frame, and on a tablet the room's restored paintings, two
+    /// above each other at each side (<see cref="PaintingsBeside"/>).
     /// No Unity dependency.
     /// </summary>
     /// <remarks>
@@ -120,11 +123,12 @@ namespace Puzzle.Client.Layout
         private const float BannerSideMargin = 14f;
 
         /// <summary>
-        /// The gift frame on the wall at the workbench's right (HomeTR), in the canvas' points around the frame's
-        /// middle: a gilt frame of 60 by 60, its picture 50 by 50 in it; the pin it hangs from 39.5 over its middle,
-        /// the wire running from the pin to 18 at each side 27 over the middle, behind the frame; the pill of 21
-        /// with its middle 34.5 under the frame's; the red dot (13 across) at its upper right. From the pin's top to
-        /// the pill's foot it is 87 high, the frame's middle 42 under the top. Its middle stands 149 to the right of
+        /// The gift frame on the wall beside the workbench, in the canvas' points around the frame's middle: a gilt
+        /// frame of 60 by 60, its picture 50 by 50 in it; the pin it hangs from 39.5 over its middle, the wire running
+        /// from the pin to 18 at each side 27 over the middle, behind the frame; the pill of 21 with its middle 34.5
+        /// under the frame's; the red dot (13 across) at its upper right. From the pin's top to the pill's foot it is
+        /// 87 high, the frame's middle 42 under the top. The canvas hangs it at the bench's right (HomeTR); since the
+        /// painter stands there (§22, 2026-10-24) it hangs at the bench's left, as high: its middle 149 to the left of
         /// the screen's middle, and never nearer the screen's side than 46.
         /// </summary>
         public const float GiftFrameSize = 60f;
@@ -145,6 +149,23 @@ namespace Puzzle.Client.Layout
         private const float TightGiftOverTheSkirting = 6f;
         private const float RoomyGiftOverTheSkirting = 26f;
         private const float GiftUnderThePlate = 4f;
+
+        /// <summary>
+        /// The painter stands on the floor at the workbench's right (§22), his feet on the line of the bench's feet:
+        /// this share of the bench's drawing high (brushes and all) with the palette in his hand, which is 150 points,
+        /// 450 pixels, on the 1080x2424 phone; and never so high that his raised arms, when a room is restored, reach
+        /// the painting's brass plate. He keeps this far right of the bench's table, which is 200 of the bench's
+        /// points wide, and this far from the screen's side; where both cannot be, he stands a little in front of the
+        /// table's end.
+        /// </summary>
+        public const float PainterAgainstTheBench = 0.92f;
+        private const float TableHalfWidth = 100f;
+        private const float PainterBesideTheTable = 4f;
+        private const float PainterFromTheSide = 4f;
+        private const float PainterUnderThePlate = 4f;
+
+        /// <summary>In the hall of a room just restored, the banner keeps this far from the painter who cheers beside it.</summary>
+        private const float PainterBesideTheBanner = 6f;
 
         private HallLayout(PageLayout page, float pictureAspect, bool hasJigsawButton)
         {
@@ -190,8 +211,13 @@ namespace Puzzle.Client.Layout
             // The gift frame is drawn as large as the wallet row, and smaller where the wall between the skirting and the plate is shorter.
             float giftFoot = FloorLine + SkirtingHeight + page.Between(TightGiftOverTheSkirting, RoomyGiftOverTheSkirting);
             GiftScale = Math.Min(page.WalletRowScale, (Hanging.PlateBottom - GiftUnderThePlate - giftFoot) / GiftHeight);
-            float giftMiddleX = Math.Min(GiftAcross * GiftScale, view.UsableRight - GiftFromTheSide * GiftScale);
+            float giftMiddleX = -Math.Min(GiftAcross * GiftScale, -view.UsableLeft - GiftFromTheSide * GiftScale);
             GiftMiddle = (giftMiddleX, giftFoot + (GiftHeight - GiftMiddleUnderTop) * GiftScale);
+
+            // One scale for the painter in every pose: as the bench is drawn, but low enough for his raised arms.
+            float byTheBench = PainterAgainstTheBench * BenchHeight * BenchScale / PainterPictures.MeasureOf(PainterPicture.StandingWithPalette).Top;
+            float underThePlate = (Hanging.PlateBottom - PainterUnderThePlate - BenchFeet) / PainterPictures.MeasureOf(PainterPicture.StandingCheering).Top;
+            PainterPointsPerMetre = Math.Max(1f, Math.Min(byTheBench, underThePlate));
         }
 
         public PageLayout Page { get; }
@@ -231,29 +257,42 @@ namespace Puzzle.Client.Layout
 
         /// <summary>
         /// How large the banner of a restored room is drawn: its full size where the wall between the brass plate
-        /// and the button has room for it, smaller where it has not.
+        /// and the button has room for it, smaller where it has not, and smaller again where it would reach the
+        /// painter who cheers beside it.
         /// </summary>
-        public float BannerScale
+        public float BannerScale => RestoredRoom().BannerScale;
+
+        /// <summary>
+        /// The body of the banner of a restored room, in the middle of the wall between the brass plate and the button
+        /// (its nameplate rises over its top edge): in the middle of the screen where the painter beside it leaves it
+        /// room, else in the middle of the wall at his left.
+        /// </summary>
+        public Box Banner => RestoredRoom().Banner;
+
+        /// <summary>
+        /// How many points a metre of the painter is drawn in this hall, in every pose: <see cref="PainterAgainstTheBench"/>
+        /// of the bench's drawing with the palette in his hand, or less where his raised arms would reach the brass plate.
+        /// </summary>
+        public float PainterPointsPerMetre { get; }
+
+        /// <summary>
+        /// Where the painter stands in the hall as the player's progress has it, in the pose he is shown in: at the
+        /// workbench's right, his feet on the line of the bench's feet, clear of the screen's side.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">A bust, which does not stand in the hall.</exception>
+        public FigurePlace PainterBesideTheBench(PainterPicture pose)
         {
-            get
-            {
-                float room = Hanging.PlateBottom - Button.Top - 2 * BannerClearance;
-                float tallest = room / (BannerHeight + BannerNameplateRise + BannerPinsRise);
-                float widest = (Page.View.Width - 2 * BannerSideMargin) / BannerWidth;
-                return Math.Max(0.1f, Math.Min(1f, Math.Min(tallest, widest)));
-            }
+            StandingMeasure figure = PainterPictures.MeasureOf(pose);
+            float besideTheTable = TableHalfWidth * BenchScale + PainterBesideTheTable + figure.Left * PainterPointsPerMetre;
+            float clearOfTheSide = Page.View.UsableRight - PainterFromTheSide - figure.Right * PainterPointsPerMetre;
+            return new FigurePlace(Math.Min(besideTheTable, clearOfTheSide), BenchFeet, PainterPointsPerMetre);
         }
 
-        /// <summary>The body of the banner of a restored room, in the middle of the wall between the brass plate and the button; its nameplate rises over its top edge.</summary>
-        public Box Banner
-        {
-            get
-            {
-                float scale = BannerScale;
-                float roomMiddle = (Hanging.PlateBottom + Button.Top) / 2;
-                return Box.Around(0f, roomMiddle - (BannerNameplateRise + BannerPinsRise) * scale / 2, BannerWidth * scale, BannerHeight * scale);
-            }
-        }
+        /// <summary>
+        /// Where the painter cheers in the hall of a room just restored, where the workbench stands aside: at the
+        /// banner's right, as near it as his lowered body allows, clear of the screen's side.
+        /// </summary>
+        public FigurePlace CheeringPainter => RestoredRoom().Painter;
 
         /// <summary>Where the painting hangs: its picture, and the rail its wires come down from.</summary>
         public FramePlace Hanging => new FramePlace(Picture, Page.RailBottom);
@@ -327,6 +366,35 @@ namespace Puzzle.Client.Layout
             }
 
             return places;
+        }
+
+        /// <summary>
+        /// The hall of a room just restored: the painter cheering at the right, and the banner as large as the wall
+        /// between the plate and the button allows, in the middle of the screen where it stays clear of him below his
+        /// raised arms, else only as far left as he needs and, where the wall at his left is narrower than the banner,
+        /// drawn smaller to fit it.
+        /// </summary>
+        private (Box Banner, float BannerScale, FigurePlace Painter) RestoredRoom()
+        {
+            ScreenView view = Page.View;
+            float room = Hanging.PlateBottom - Button.Top - 2 * BannerClearance;
+            float tallest = room / (BannerHeight + BannerNameplateRise + BannerPinsRise);
+            float widest = (view.Width - 2 * BannerSideMargin) / BannerWidth;
+            float fullScale = Math.Max(0.1f, Math.Min(1f, Math.Min(tallest, widest)));
+
+            StandingMeasure cheering = PainterPictures.MeasureOf(PainterPicture.StandingCheering);
+            float besideTheBanner = BannerWidth * fullScale / 2 + PainterBesideTheBanner + cheering.LowLeft * PainterPointsPerMetre;
+            float clearOfTheSide = view.UsableRight - PainterFromTheSide - cheering.Right * PainterPointsPerMetre;
+            var painter = new FigurePlace(Math.Min(besideTheBanner, clearOfTheSide), BenchFeet, PainterPointsPerMetre);
+
+            // As large as the wall left of him allows, and in the middle of the screen, or only as far left of it as he needs.
+            float roomRight = painter.LowBounds(cheering).Left - PainterBesideTheBanner;
+            float roomLeft = view.UsableLeft + BannerSideMargin;
+            float scale = Math.Max(0.1f, Math.Min(fullScale, (roomRight - roomLeft) / BannerWidth));
+            float middleX = Math.Min(0f, roomRight - BannerWidth * scale / 2);
+            float roomMiddle = (Hanging.PlateBottom + Button.Top) / 2;
+            Box banner = Box.Around(middleX, roomMiddle - (BannerNameplateRise + BannerPinsRise) * scale / 2, BannerWidth * scale, BannerHeight * scale);
+            return (banner, scale, painter);
         }
 
         /// <param name="pictureAspect">The painting's width over its height.</param>

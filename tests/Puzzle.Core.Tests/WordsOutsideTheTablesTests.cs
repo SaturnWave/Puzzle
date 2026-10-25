@@ -14,7 +14,9 @@ namespace Puzzle.Core.Tests;
 /// outside plain Latin (a Turkish, Korean or any other language's letter), or when one of its words is a word of
 /// the Turkish table that the English table does not use as well ("Oyna", "Tamam", "Devam": Turkish written in
 /// plain letters). The two files whose texts are letters and not words are the game's alphabet, LetterSet.cs, and
-/// its line breaks, LineBreaks.cs.
+/// its line breaks, LineBreaks.cs. One file's texts are words the player reads that stay out of the tables on
+/// purpose: the credits card's licence notices, CreditWords.cs, which stay in English word for word in every
+/// language, as their licences give them ("SIL Open Font License" has the Turkish table's "Sil" in it).
 /// </summary>
 public partial class WordsOutsideTheTablesTests
 {
@@ -23,6 +25,9 @@ public partial class WordsOutsideTheTablesTests
     /// or begins with (TextMesh Pro's lists), written as letters, which is what they are for.
     /// </summary>
     private static readonly string[] Alphabet = { Path.Combine("Art", "LetterSet.cs"), Path.Combine("Art", "LineBreaks.cs") };
+
+    /// <summary>The licence notices of the credits card: English in every language, never a table's words (their headings are).</summary>
+    private static readonly string[] LicenceNotices = { Path.Combine("Flow", "CreditWords.cs") };
 
     /// <summary>A word shorter than this is no telling word: "de", "da" (a number's Turkish suffix) are in plain letters in any language's code.</summary>
     private const int ShortestTellingWord = 3;
@@ -42,7 +47,7 @@ public partial class WordsOutsideTheTablesTests
         foreach (string file in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories))
         {
             string named = Path.GetRelativePath(scripts, file);
-            if (Alphabet.Contains(named))
+            if (Alphabet.Contains(named) || LicenceNotices.Contains(named))
             {
                 continue;
             }

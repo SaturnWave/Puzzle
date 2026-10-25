@@ -1,0 +1,101 @@
+{
+  "about": "The painter, the game's avatar (docs/GAME_DESIGN.md §22): the old master painter in a felt beret, candidate A of the third round, chosen by the owner on 2026-10-24. Pictures rendered in Blender from the assets below; the scripts that pose, dress and render him stay outside the repository (out/avatar-final/src, out/avatar3/src). The pictures here are the sources, under the render's own names; the game carries copies of them in unity/Assets/Art/Avatar/Resources/Painter under the English names of \"inGame\" (the game's code speaks English), imported for the phone by unity/Assets/Editor/AvatarArtImport.cs. credits.md beside this file is the render agent's own credit note, kept as written.",
+  "chosen": "2026-10-24",
+  "madeWith": {
+    "tool": "Blender 4.5 LTS",
+    "toolLicence": "GPL; pictures made with Blender belong to the user, the GPL does not extend to them",
+    "notes": "No person was drawn or sculpted by hand: pose, clothes, light and rendering by script; the expressions are set with the Einar rig's own face controls."
+  },
+  "pictures": [
+    {
+      "file": "ressam_ayakta-palet.png",
+      "inGame": "painter-with-palette.png",
+      "use": "the hall, standing beside the workbench: palette in the left hand, brush raised in the right",
+      "width": 1301,
+      "height": 2186,
+      "sha256": "e17b1bc85f0542f961e708f90e9a7b2af3750e2b597acb220e4b4b667dee34c7",
+      "pivots": "ressam_ayakta-palet.json"
+    },
+    {
+      "file": "ressam_ayakta-selam.png",
+      "inGame": "painter-waving.png",
+      "use": "the hall of a new player who has won no level yet: the same place, waving",
+      "width": 1301,
+      "height": 2186,
+      "sha256": "8f0b3110e3cde5e6bc7f375f1d575acea3426a2fed4b6080d75a53166e522961",
+      "pivots": "ressam_ayakta-selam.json"
+    },
+    {
+      "file": "ressam_ayakta-sevinc.png",
+      "inGame": "painter-cheering.png",
+      "use": "a painting made whole (beside the jigsaw's tray) and a room restored (in its hall): both arms raised",
+      "width": 1577,
+      "height": 2402,
+      "sha256": "4447070106d9dcd836e79cf0b6dc1cb8aa197653e59e2840327b8d6730b79b78",
+      "pivots": "ressam_ayakta-sevinc.json"
+    },
+    {
+      "file": "ressam_bust-yol-gosteren.png",
+      "inGame": "painter-bust-guiding.png",
+      "use": "the bust that guides: beside the tutorial's and the booster intro's words",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "de1f02c6a6d3378e079289ac847e30048eda60897937a949e6f0eedbbaa1d838"
+    },
+    {
+      "file": "ressam_bust-dusunen.png",
+      "inGame": "painter-bust-thinking.png",
+      "use": "the bust that thinks: beside the words of a step that shows something new to work out (crates, varnish, tape, frame corners, the long press)",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "f3e89343b64139a0c155d81384a21ca4acd313d4caa8d80dfb6fe6af26db1dcb"
+    },
+    {
+      "file": "ressam_bust-sevinen.png",
+      "inGame": "painter-bust-joyful.png",
+      "use": "the joyful bust: on a won level's card, and beside the words of the first painting made whole",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "17bf1da94079d7673b5d8f7de7691653d7f7e66bed66e000caeb370e7c3914f9"
+    }
+  ],
+  "sources": [
+    {
+      "asset": "Einar Rig",
+      "usedFor": "head, hair, beard, brows, eyes, mouth and the sweater's roll-neck",
+      "author": "Blender Foundation",
+      "page": "https://studio.blender.org/characters/einar/v1/",
+      "from": "\"Charge\", Blender Studio, 2022",
+      "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "modified": "Only the head, hair, beard, brows, eyes, mouth and the sweater's roll-neck are used; hair and beard turned silver, the film's stray-hair layers and grime and bruise maps turned down, skin desaturated, roll-neck made plain navy, expressions set with the rig's own face controls, head placed on another body; beret, apron, palette and brush added.",
+      "creditLine": "Einar Rig (CC-BY) Blender Foundation | studio.blender.org, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), modified."
+    },
+    {
+      "asset": "Microsoft Rocketbox, Business_Male_04",
+      "usedFor": "body, clothes and hands",
+      "author": "Microsoft",
+      "page": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "licence": "MIT License",
+      "modified": "Head removed, shirt dyed ochre, arms and hands re-posed.",
+      "creditLine": "Microsoft Rocketbox, Business_Male_04 (https://github.com/microsoft/Microsoft-Rocketbox), MIT License, modified: head removed, shirt dyed ochre, arms and hands re-posed.",
+      "licenceText": [
+        "MIT License",
+        "Copyright (c) 2020 Microsoft",
+        "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.",
+        "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+      ]
+    },
+    {
+      "asset": "Poly Haven textures and studio light",
+      "usedFor": "beret felt (\"caban\"), apron canvas (\"terlenka\"), palette wood (\"plywood\"), reflections and ambient light (HDRI \"brown_photostudio_02\")",
+      "author": "Poly Haven",
+      "page": "https://polyhaven.com",
+      "licence": "CC0 1.0 Universal (public domain dedication); no attribution required",
+      "licenceUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "creditLine": "Textures and studio light: Poly Haven (polyhaven.com), CC0."
+    }
+  ],
+  "inGame": "The settings card's row \"Künye\" opens the credits card (unity/Assets/Scripts/Screens/CreditsCard.cs). It shows each creditLine above and the MIT text exactly as written here, in English in every language; the tests hold the game's lines (unity/Assets/Scripts/Flow/CreditWords.cs) to this file."
+}

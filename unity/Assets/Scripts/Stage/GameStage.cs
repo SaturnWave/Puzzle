@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Avatar;
 using Puzzle.Client.Boards;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Engine;
@@ -455,7 +456,7 @@ namespace Puzzle.Client.Stage
             _hintMark = new HintMark(_board.Root, _effectArt, art);
             _tutorial = tutorial;
             _spotlight = Spotlight.Create(_root.transform, art);
-            _lessonPill = ShelfPill.CreateForLessons(_root.transform, art);
+            _lessonPill = ShelfPill.CreateForLessons(_root.transform, art, paintings.Painter);
             _guideMark = new HintMark(_board.Root, _effectArt, art);
             _effects = new BoardEffects(_board.Root, _shape, _effectArt, art, _timeline);
             _turnPlayer = new TurnPlayer(_board, _effects, _timeline, CountTheMove, CountForAGoal, CountAMoveThrown);
@@ -2405,6 +2406,7 @@ namespace Puzzle.Client.Stage
         {
             _lessonLaid = lesson;
             _lessonLaidArmed = lesson is Lesson.Booster asked && ArmedBooster == asked.Kind;
+            _lessonPill.ShowThePainter(PainterPictures.MoodOf(lesson.Step));
             _lessonPill.Show(lesson is Lesson.Booster used
                 ? TutorialWords.OfTheBooster(used.Kind, _lessonLaidArmed)
                 : TutorialWords.Of(lesson.Step, asksForATouch: lesson is Lesson.Look));
@@ -2544,6 +2546,7 @@ namespace Puzzle.Client.Stage
             if (!(_lessonPill.Words is PillWords.Silent))
             {
                 _lessonPill.Show(PillWords.None);
+                _lessonPill.ShowThePainter(null);
                 _lessonLaid = null;
             }
         }

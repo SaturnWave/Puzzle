@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Avatar;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
@@ -17,10 +19,10 @@ namespace Puzzle.Client.Gallery
     /// <summary>
     /// The lit alcove of a result's card: a piece of the gallery wall in the design canvas' wide beaded gilt frame
     /// (WinTR, LoseTR), with a shelf on which stands what the game left behind. A level won leaves the jigsaw pieces
-    /// it gave, in a warm light and among sparkles (or its star, where it gave none); a game whose moves ran out
-    /// shows the gilt +5 it is offered among three sparkles (LoseTR); a level lost for good leaves the goals it did
-    /// not reach, each with what was left of it on a teal badge, and so does a level its player asks to leave: what is
-    /// still to do. Sizes and places are the web test page's (gallery.css, .alcove) spread over the canvas' wider
+    /// it gave, in a warm light and among sparkles (or its star, where it gave none), with the painter glad on the
+    /// niche's wall in his small gilt frame (§22); a game whose moves ran out shows the gilt +5 it is offered among
+    /// three sparkles (LoseTR); a level lost for good leaves the goals it did not reach, each with what was left of it
+    /// on a teal badge, and so does a level its player asks to leave: what is still to do. Sizes and places are the web test page's (gallery.css, .alcove) spread over the canvas' wider
     /// niche, and the canvas' own for the +5, in points around the middle of the frame.
     /// </summary>
     public sealed class ResultAlcove : IDisposable
@@ -91,6 +93,18 @@ namespace Puzzle.Client.Gallery
             (0.78f, 0.10f, 8f, 0.12f),
         };
 
+        /// <summary>The sparkles of a won level beside the painter's portrait: the large one high at the left, where his frame hangs, is left out.</summary>
+        private static readonly (float Across, float Down, float Size, float Phase)[] SparklesBesideThePainter = Sparkles.Skip(1).ToArray();
+
+        /// <summary>
+        /// A won level's alcove has the painter's joyful bust in its small gilt frame hanging on the niche's wall at
+        /// the upper left (§22), over what stands on the shelf: the frame this high, this far in from the niche's left
+        /// side and from its top.
+        /// </summary>
+        private const float PortraitSize = 60f;
+        private const float PortraitFromTheSide = 14f;
+        private const float PortraitFromTheTop = 8f;
+
         /// <summary>The three sparkles around the +5, where LoseTR places them, in the same terms.</summary>
         private static readonly (float Across, float Down, float Size, float Phase)[] SparklesAroundTheOffer =
         {
@@ -124,6 +138,9 @@ namespace Puzzle.Client.Gallery
         private readonly List<(Transform Sparkle, float Size, float Phase)> _sparkles = new List<(Transform, float, float)>();
         private readonly List<LoosePiece> _pieces = new List<LoosePiece>();
 
+        /// <summary>The painter's joyful bust on a won level's wall; nothing in the alcove of a game not won.</summary>
+        private PainterPortrait? _painter;
+
         /// <summary>The painting the pieces won belong to: the alcove holds its picture while it stands; nothing for an alcove of no pieces.</summary>
         private PaintingLook? _look;
         private SpriteRenderer? _winLight;
@@ -140,8 +157,11 @@ namespace Puzzle.Client.Gallery
         /// <summary>How long the exhibits take to pop up, from the first one's beginning to the last one's end.</summary>
         public float PopSeconds => Tempo.ExhibitPop + Tempo.ExhibitEvery * Math.Max(0, _exhibits.Count - 1);
 
-        /// <summary>Builds the alcove of a result with its exhibits, which are not seen until <see cref="Pop"/> shows them.</summary>
-        /// <param name="paintings">Where the picture of a piece that was won comes from.</param>
+        /// <summary>
+        /// Builds the alcove of a result with its exhibits, which are not seen until <see cref="Pop"/> shows them. A
+        /// won level's alcove has the painter's joyful bust on its wall beside them, and pops it up last.
+        /// </summary>
+        /// <param name="paintings">Where the picture of a piece that was won comes from, and the painter's.</param>
         public static ResultAlcove Create(Transform card, ArtCatalogue art, EffectArt effects, PaintingGallery paintings, LevelResult result)
         {
             var alcove = new ResultAlcove(card, art);
@@ -149,9 +169,11 @@ namespace Puzzle.Client.Gallery
             {
                 case LevelResult.Won { Reward: PieceReward reward }:
                     alcove.StandThePieces(reward, paintings.LookOf(reward.Painting), art, effects);
+                    alcove.HangThePainter(art, paintings.Painter);
                     break;
                 case LevelResult.Won _:
                     alcove.StandTheStar(art, effects);
+                    alcove.HangThePainter(art, paintings.Painter);
                     break;
                 case LevelResult.OutOfMoves _:
                     alcove.StandTheExtraMoves(art);
@@ -210,6 +232,7 @@ namespace Puzzle.Client.Gallery
                 piece.Dispose();
             }
 
+            _painter?.Dispose();
             _look?.Dispose();
         }
 
@@ -218,7 +241,20 @@ namespace Puzzle.Client.Gallery
             Transform stand = AddExhibit("Star", new Vector2(0f, StandingHeight(StarSize)));
             AddWinLight(stand, art, effects);
             SceneObjects.AddSprite("Star", stand, art.Of(PieceArt.Star), art.SpriteMaterial, DrawOrder.CardExhibit).transform.localScale = new Vector3(StarSize, StarSize, 1f);
-            AddSparkles(art, Sparkles);
+            AddSparkles(art, SparklesBesideThePainter);
+        }
+
+        /// <summary>
+        /// The painter's joyful bust in its small gilt frame on the niche's wall at the upper left, over the shelf's
+        /// exhibits; it pops up after what the level gave.
+        /// </summary>
+        private void HangThePainter(ArtCatalogue art, PainterGallery painter)
+        {
+            var middle = new Vector2(-NicheWidth / 2f + PortraitFromTheSide + PortraitSize / 2f, NicheHeight / 2f - PortraitFromTheTop - PortraitSize / 2f);
+            Transform hung = AddExhibit("Painter", middle);
+            _painter = new PainterPortrait("Portrait", hung, art, painter, DrawOrder.CardPortrait);
+            _painter.Place(Vector2.zero, PortraitSize);
+            _painter.Show(PainterMood.Joyful);
         }
 
         /// <summary>The jigsaw pieces a won level gave, side by side on the shelf, centred as a row, each as large as its share of the row allows.</summary>
@@ -246,7 +282,7 @@ namespace Puzzle.Client.Gallery
                 _pieces.Add(piece);
             }
 
-            AddSparkles(art, Sparkles);
+            AddSparkles(art, SparklesBesideThePainter);
         }
 
         /// <summary>The gilt +5 a game out of moves is offered, standing in the alcove's own light among three sparkles (LoseTR).</summary>

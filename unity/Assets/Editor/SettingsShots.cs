@@ -106,6 +106,29 @@ namespace Puzzle.Client.EditorTools
             return 1;
         }
 
+        /// <summary>The credits card in front of the settings card: each page of its text, turned by its arrow.</summary>
+        /// <returns>How many pictures were taken.</returns>
+        public static int ShootTheCredits(PlayerState state, ScreenShape screen, Studio studio)
+        {
+            using GameSession session = SessionInTheHall(state, screen, studio, StoryStudio.AttemptsKeptInMemory());
+            MuseumStage museum = OpenTheSettings(session);
+            Press(session, museum.CreditsRowPixel, "the settings card's credits row");
+            Require(museum.SettingsCardInFront == SettingsCardKind.Credits, "the credits row did not bring the credits card");
+            int pages = museum.CreditsPageShown?.Pages ?? 0;
+            for (int page = 1; page <= pages; page++)
+            {
+                if (page > 1)
+                {
+                    Press(session, museum.CreditsNextPagePixel, $"the credits card's arrow to page {page}");
+                }
+
+                Require(museum.CreditsPageShown?.Page == page, $"the credits card shows page {museum.CreditsPageShown?.Page}, not {page}");
+                ScreenShots.WritePicture(museum, screen, studio.FileName($"credits-{page}", state, screen));
+            }
+
+            return pages;
+        }
+
         /// <returns>How many pictures were taken.</returns>
         public static int ShootTheLanguages(PlayerState state, ScreenShape screen, Studio studio)
         {

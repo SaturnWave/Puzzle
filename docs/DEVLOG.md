@@ -6,6 +6,17 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
+**Ressam oyunda (avatar A)**
+- Bitti (ana dal): keçe bereli yaşlı usta ressamın son seti (`out/avatar-final`) `art/avatar`'a (kaynak, lisans kaydı, işleyicinin künye notu) ve İngilizce adlarla `unity/Assets/Art/Avatar/Resources/Painter`'a girdi. Ayakta resimler metreyle ölçülüp ayaklarından döner; telefonda ASTC, mipmap yok.
+- Resimler ekranla yüklenip ekranla bırakılıyor (`PainterGallery`, `PictureShelf`). `AvatarCheck` yeni: her ekranda tam olarak gösterdiği resim, kalkınca hiçbiri (22 sayım).
+- Salon: ressam tezgâhın sağında (telefonda 450 piksel), Hediye çerçevesi tezgâhın solunda; yeni oyuncuya el sallar. Onarılan odada pankartın sağında sevinir; pankart ortada kalır, gerekirse kayar ya da küçülür.
+- Rehber yazılarının solunda yaldız çerçevede büst: yol gösteren, yeni engelde ve uzun basmada düşünen, ilk tabloda sevinen. Kazanma kartının nişinde sevinen büst. Tablo tamamlanınca tepsinin sağ ucunun önünde sevinen ressam, ödül solunda.
+- Ayarlar'da "Künye": sayfalı kart, lisans satırları İngilizce (Einar CC BY 4.0 "modified", Rocketbox MIT metni bütün, müzeler, yazı tipleri, Kenney); testler satırları kayıtlarla karşılaştırıyor. 6 yeni yazı 13 dilde.
+- Hikâye: kahraman artık yaşlı bir usta (GAME_DESIGN §18, §0, §22; OVERVIEW, README, müzik isteği). Oyunun yazılarında ressam geçmiyordu; yeni cümle sahibin onayını bekliyor.
+- Yeni doku işleyicisi bütün dokuları bir kez yeniden içe aktardı; Unity 254 `.meta`'ya varsayılan iOS bölümü yazdı (ayrı işleme).
+- 5.839 test geçti (334 yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `AvatarCheck`, `RotationCheck`, `PlayModeCheck`, `MusicCheck` (`-quit` olmadan) hatasız; resimler telefon, açık Fold (iki yön) ve iPad'de (iki yön) bakıldı. Telefon testleri T500–T509 (F26), açık A49.
+- Sahipte: hikâye cümlesinin onayı; künyeye müzik satırı istenip istenmediği; kaybetme kartı için üzgün ya da şaşıran büst ve bekleme canlandırması (yapılmadı).
+
 **Oyun istatistikleri yalnız izinle, v1 gizlilik metni**
 - Bitti (ana dal): Aptabase'in Unity paketi 0.3.1 (resmî GitHub, işlemeye sabit, MIT). Ayar dosyası boş anahtarla geliyor: anahtar yokken paket hiçbir şey kurmuyor, oyun notları yalnız günlüğe yazıyor. Yalnız AB bölgesinin anahtarı (`A-EU-…`) gönderir; başka bölge reddedilir.
 - Kapı oyunun kodunda (`PlayStatistics`): not yalnız "İzin ver"den sonra pakete gider. Paket 0.3.1 kapalıyken de kuyruğa alıyor; bu yüzden yanıt yokken ve "hayır"dan sonra ona hiç not verilmiyor. Notlar: açılış, bölüm başı ve sonu (numara, kalan hamle), tablo ve oda, mağaza açıldı, satın alma (yalnız ürün). Kimlik yok.

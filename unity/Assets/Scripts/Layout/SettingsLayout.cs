@@ -18,6 +18,9 @@ namespace Puzzle.Client.Layout
 
         /// <summary>"Destek" with a chevron: it opens the support card.</summary>
         Support,
+
+        /// <summary>"Künye" with a chevron: it opens the credits card, who made the pictures, typefaces and sounds and under which licences.</summary>
+        Credits,
     }
 
     /// <summary>One row of the settings card: what it is, and where it lies, down from the card's top edge.</summary>
@@ -52,11 +55,12 @@ namespace Puzzle.Client.Layout
     /// The settings card, as the design canvas draws it (SettingsTR), in the canvas' own points: right of the middle
     /// of the card's body and down from its top edge. A body 362 wide with the brass nameplate "Ayarlar" on its top
     /// edge; under it the rows of the settings the build honours, each with its switch, then a gilt rule with a
-    /// diamond, then the rows that lead somewhere or say something: the language, privacy and data, support. Rows are
+    /// diamond, then the rows that lead somewhere or say something: the language, privacy and data, support, and the
+    /// credits (which the canvas does not draw: they came with the painter's pictures, 2026-10-24). Rows are
     /// parted by gilt hairlines; under the last one, the foot: the player's id and the game's version, and under them
     /// the line that says what kind of build this is. A build that honours no setting draws neither the switches nor
     /// the rule, and the card is that much shorter. A screen too small for the card draws all of it smaller
-    /// (<see cref="PageLayout.PlaceOfACard"/>). The two cards it opens, privacy and support, hang in front of it, as
+    /// (<see cref="PageLayout.PlaceOfACard"/>). The cards it opens (privacy, support, credits) hang in front of it, as
     /// wide, and are measured here too. No Unity dependency.
     /// </summary>
     public sealed class SettingsLayout
@@ -109,13 +113,15 @@ namespace Puzzle.Client.Layout
         public const float BottomMargin = 16.5f;
 
         /// <summary>
-        /// The privacy card and the support card are as wide as the settings card; the privacy card at most this high
-        /// (as its text needs), the support card this high. 470 is the most a card in front may be on every screen the
-        /// tests know, over a settings card of three switches or more, as every build now draws (sound, music and the
-        /// statistics at the least); it was 382 while the privacy text was four paragraphs.
+        /// The privacy card, the support card and the credits card are as wide as the settings card; the privacy card
+        /// and the credits card at most this high (as their text needs), the support card this high. 470 is the most a
+        /// card in front may be on every screen the tests know, over a settings card of three switches or more, as
+        /// every build now draws (sound, music and the statistics at the least); it was 382 while the privacy text was
+        /// four paragraphs.
         /// </summary>
         public const float PrivacyBodyHeight = 470f;
         public const float SupportBodyHeight = 372f;
+        public const float CreditsBodyHeight = PrivacyBodyHeight;
 
         /// <summary>A card in front of another stands this far over the foot of the one behind, in that card's points (the museum's stage).</summary>
         public const float InFrontOverTheFoot = 16f;
@@ -190,6 +196,7 @@ namespace Puzzle.Client.Layout
             down = AddRow(rows, hairlines, SettingsRowKind.Language, 0, RowHeight, down, isFirstOfItsGroup: true);
             down = AddRow(rows, hairlines, SettingsRowKind.Privacy, 0, TallRowHeight, down, isFirstOfItsGroup: false);
             down = AddRow(rows, hairlines, SettingsRowKind.Support, 0, RowHeight, down, isFirstOfItsGroup: false);
+            down = AddRow(rows, hairlines, SettingsRowKind.Credits, 0, RowHeight, down, isFirstOfItsGroup: false);
             hairlines.Add(down + Hairline / 2f);
             down += Hairline;
             return new SettingsLayout(rows, hairlines, divider, footMiddle: down + FootBand / 2f);

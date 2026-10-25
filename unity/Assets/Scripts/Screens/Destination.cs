@@ -231,6 +231,23 @@ namespace Puzzle.Client.Screens
         {
         }
 
+        /// <summary>The settings card's row "Künye": the credits card, in front of it.</summary>
+        public sealed class OpenTheCredits : MuseumPress
+        {
+        }
+
+        /// <summary>One of the credits card's arrows: its text turns to the next page, or to the one before.</summary>
+        public sealed class TurnTheCreditsPage : MuseumPress
+        {
+            public TurnTheCreditsPage(bool isForward)
+            {
+                IsForward = isForward;
+            }
+
+            /// <summary>True for the next page, false for the one before.</summary>
+            public bool IsForward { get; }
+        }
+
         /// <summary>The settings card's row "Dil": the language card, in front of it.</summary>
         public sealed class OpenTheLanguages : MuseumPress
         {
