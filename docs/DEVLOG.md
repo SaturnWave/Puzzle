@@ -17,8 +17,8 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Künye'ye "Yazılım": Aptabase SDK ve Json.NET'in MIT metni, IAP'nin bildirimlerindeki Google Play Billing Library ve StoreKit 2 (Apache 2.0); kayıt `unity/Packages/licences.json`, sürümleri `packages-lock.json`'la test ediliyor.
 - Mağazadan satan derleme "test sürümü" demiyor: giriş sayfası "Sürüm 1.0", ayarlar "Bu sürüm · …"; vekil derleme eskisi gibi.
 - Eskimiş yorumlar düzeldi (`UnityStore`'da INTERNET, `economy/default.json`'da Çırak Çantası'nın yeri). 5 yeni, 2 değişen yazı 13 dilde.
-- 5.861 test geçti (22'si yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `PurchaseCheck`, `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan), `ConsentCheck`, `AvatarCheck`, `RotationCheck` ve `EngineSmokeTest` hatasız. Resimlere 1080×2424 ve 2732×2048'de bakıldı. APK 290 MB, izinler tam beş. Telefona kurulmadı; telefon testleri T516–T519, açık A50.
-- Sahipte: yeni yazıların son ifadesi ("Bu sürüm", "Sürüm 1.0", konum cümlesi, sakin satırlar); Apache metninin bütünü ve URP'nin FXAA bildirimi; T516–T519 (A50).
+- 5.861 test geçti (22'si yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `PurchaseCheck`, `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan), `ConsentCheck`, `AvatarCheck`, `RotationCheck` ve `EngineSmokeTest` hatasız. Resimlere 1080×2424 ve 2732×2048'de bakıldı. APK 290 MB, izinler tam beş. Telefona kurulmadı; telefon testleri T516–T519, açık A51.
+- Sahipte: yeni yazıların son ifadesi ("Bu sürüm", "Sürüm 1.0", konum cümlesi, sakin satırlar); Apache metninin bütünü ve URP'nin FXAA bildirimi; T516–T519 (A51).
 
 **Ressam oyunda (avatar A)**
 - Bitti (ana dal): keçe bereli yaşlı usta ressamın son seti (`out/avatar-final`) `art/avatar`'a (kaynak, lisans kaydı, işleyicinin künye notu) ve İngilizce adlarla `unity/Assets/Art/Avatar/Resources/Painter`'a girdi. Ayakta resimler metreyle ölçülüp ayaklarından döner; telefonda ASTC, mipmap yok.
