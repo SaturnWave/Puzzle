@@ -494,6 +494,9 @@ namespace Puzzle.Client.Screens
                 ? settings.Switches.Select(setting => (setting, settings.ShowsOn(setting))).ToArray()
                 : Array.Empty<(DeviceSetting, bool)>();
 
+        /// <summary>What the settings card's privacy row says under its name, while the card hangs; nothing otherwise.</summary>
+        public string? PrivacyLineShown => (_cards.Find(card => card is SettingsCard) as SettingsCard)?.PrivacyLineSays;
+
         /// <summary>The pixel in the middle of the round button that closes the card in front, whichever it is; nothing while no card is down in front.</summary>
         public Vector2? CardClosePixel => TopCard is IMuseumCard card ? PixelOnTheCard(card.Card.CloseButtonMiddle) : null;
 
@@ -506,6 +509,14 @@ namespace Puzzle.Client.Screens
         public Vector2? KeepRecordsPixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.KeepButtonMiddle) : null;
 
         public Vector2? ConfirmDeletePixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.ConfirmButtonMiddle) : null;
+
+        /// <summary>Which page of its text the privacy card in front shows, of how many; nothing while it is not in front.</summary>
+        public (int Page, int Pages)? PrivacyPageShown => TopCard is PrivacyCard privacy ? privacy.PageShown : ((int, int)?)null;
+
+        /// <summary>The pixels in the middle of the privacy card's arrows to the next page and to the one before; nothing where there is no such page.</summary>
+        public Vector2? PrivacyNextPagePixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.NextPageMiddle) : null;
+
+        public Vector2? PrivacyPreviousPagePixel => TopCard is PrivacyCard privacy ? PixelOnTheCard(privacy.PreviousPageMiddle) : null;
 
         /// <summary>The pixel in the middle of the support card's "Tamam"; nothing while that card is not down in front, or asks about the tester mode.</summary>
         public Vector2? SupportDonePixel => TopCard is SupportCard support ? PixelOnTheCard(support.DoneButtonMiddle) : null;
@@ -523,6 +534,14 @@ namespace Puzzle.Client.Screens
         public Vector2? StayInTheGamePixel => TopCard is QuitCard quit ? PixelOnTheCard(quit.StayButtonMiddle) : null;
 
         public Vector2? QuitTheGamePixel => TopCard is QuitCard quit ? PixelOnTheCard(quit.QuitButtonMiddle) : null;
+
+        /// <summary>True while the question about the play statistics hangs, or is on its way down or up.</summary>
+        public bool ShowsTheStatisticsQuestion => _cards.Exists(card => card is ConsentCard);
+
+        /// <summary>The pixels in the middle of that question's "İzin ver" and "İzin verme"; nothing while it is not down in front.</summary>
+        public Vector2? AllowTheStatisticsPixel => TopCard is ConsentCard consent ? PixelOnTheCard(consent.AllowButtonMiddle) : null;
+
+        public Vector2? DeclineTheStatisticsPixel => TopCard is ConsentCard consent ? PixelOnTheCard(consent.DeclineButtonMiddle) : null;
 
         /// <summary>The pixels in the middle of the tester mode question's "Vazgeç" and "Aç"; nothing while the question is not asked in front.</summary>
         public Vector2? LeaveTheTesterModeOffPixel => TopCard is SupportCard support ? PixelOnTheCard(support.LeaveOffButtonMiddle) : null;
@@ -552,9 +571,14 @@ namespace Puzzle.Client.Screens
         /// <param name="opening">In the lit room, as the game starts; or out of the dark a result's card or a jigsaw left behind.</param>
         /// <param name="showsTheStartBoosters">True when the card before the level shows the start boosters one after another the first time it comes down (TutorialPlan.IntroducesTheStartBoosters).</param>
         /// <param name="effectArt">The pictures of what is thrown over a board, which the card a long press brings plays with; nothing paints them when that card first comes.</param>
+        /// <param name="asksAboutTheStatistics">
+        /// True when the visit begins with the question about the play statistics coming down over the hall, as the
+        /// game's first start after its entry page has it (Statistics/PlayStatistics.AsksOn): the room stays dark
+        /// under it until it is answered.
+        /// </param>
         public static MuseumStage Open(
             MuseumVisit visit, PaintingGallery paintings, ArtCatalogue art, MuseumDoor door, WalletView wallet, ShopView shop, DeviceView device, LevelBrief level,
-            StageOpening opening = StageOpening.InTheLitRoom, bool showsTheStartBoosters = false, EffectArt? effectArt = null)
+            StageOpening opening = StageOpening.InTheLitRoom, bool showsTheStartBoosters = false, EffectArt? effectArt = null, bool asksAboutTheStatistics = false)
         {
             var stage = new MuseumStage(visit, paintings, art, door, wallet, shop, device, level, showsTheStartBoosters, effectArt);
             bool isDark = opening == StageOpening.OutOfTheDark;
@@ -563,7 +587,12 @@ namespace Puzzle.Client.Screens
                 stage._veil.Darken(1f);
             }
 
-            if (door.HangsTheStartCard)
+            if (asksAboutTheStatistics)
+            {
+                // Before anything else of the hall, and alone: the player answers before the first press of the visit.
+                stage.Hang(ConsentCard.Create(stage._root.transform, art), roomIsDark: isDark);
+            }
+            else if (door.HangsTheStartCard)
             {
                 // The room stays dark, or goes dark, and the level's card comes down as it does after the play button.
                 stage.Hang(stage.TheLevelsCardOrTheLivesCard(), roomIsDark: isDark);
@@ -795,6 +824,12 @@ namespace Puzzle.Client.Screens
             if (TopCard is NoticeCard { CanBeClosed: false })
             {
                 return; // the card of a payment the store is taking stands until the store answers
+            }
+
+            if (TopCard is ConsentCard)
+            {
+                Follow(new MuseumPress.DeclineTheStatistics()); // the way back is a "no", never a "yes"
+                return;
             }
 
             if (_cards.Count > 0)
@@ -1050,6 +1085,9 @@ namespace Puzzle.Client.Screens
                     _askedOfThePhone.Add(new DeviceRequest.TurnASetting(flip.Setting, isOn));
                     _timeline.Add(0f, Tempo.SwitchSlides, progress => settings.Slide(flip.Setting, progress));
                     break;
+                case MuseumPress.TurnThePrivacyPage turn when TopCard is PrivacyCard privacy:
+                    privacy.TurnThePage(turn.IsForward);
+                    break;
                 case MuseumPress.AskToDeleteTheRecords _ when TopCard is PrivacyCard privacy:
                     privacy.Ask();
                     break;
@@ -1076,6 +1114,15 @@ namespace Puzzle.Client.Screens
                 case MuseumPress.QuitTheGame _ when TopCard is QuitCard:
                     // The card stays: on Android the game is gone with the next step, and elsewhere its "Vazgeç" or the way back takes it up.
                     _isAskedToQuit = true;
+                    break;
+                case MuseumPress.AllowTheStatistics _ when TopCard is ConsentCard:
+                    // The owner keeps the answer in the device file and lets the notes through from the next step on.
+                    _askedOfThePhone.Add(new DeviceRequest.TurnASetting(DeviceSetting.Statistics, isOn: true));
+                    TakeTheCardInFrontUp();
+                    break;
+                case MuseumPress.DeclineTheStatistics _ when TopCard is ConsentCard:
+                    _askedOfThePhone.Add(new DeviceRequest.TurnASetting(DeviceSetting.Statistics, isOn: false));
+                    TakeTheCardInFrontUp();
                     break;
                 case MuseumPress.Visit visit when _cards.Count > 0:
                     // A card's way to the shop: every card goes up, and then the page turns.

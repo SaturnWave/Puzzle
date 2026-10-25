@@ -595,8 +595,14 @@ namespace Puzzle.Client.Words
         /// <summary>Settings row with a switch: the tester mode, while it is on.</summary>
         SettingTesterMode,
 
-        /// <summary>Smaller line under the privacy row.</summary>
+        /// <summary>Settings row with a switch: the play statistics, which the player allows or declines; also the nameplate of the question that asks for them.</summary>
+        SettingStatistics,
+
+        /// <summary>Smaller line under the privacy row while the play statistics are off: only purchases leave the phone (the store's, and Unity's events).</summary>
         SettingsPrivacyLine,
+
+        /// <summary>Smaller line under the privacy row while the player allows the play statistics: purchases, and statistics without any ID, leave the phone.</summary>
+        SettingsPrivacyLineWithStatistics,
 
         /// <summary>Settings row that opens the support card, and that card's nameplate.</summary>
         SettingsSupport,
@@ -637,17 +643,29 @@ namespace Puzzle.Client.Words
         /// <summary>Privacy card nameplate and the settings row that opens it.</summary>
         PrivacyTitle,
 
-        /// <summary>Privacy card, paragraph 1 (approved text: keep every fact).</summary>
+        /// <summary>Privacy card, paragraph 1: what stays on the phone only (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
         PrivacyParagraph1,
 
-        /// <summary>Privacy card, paragraph 2 (approved text: keep every fact).</summary>
+        /// <summary>Privacy card, paragraph 2: the stores take the payments; no accounts, no ad network (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
         PrivacyParagraph2,
 
-        /// <summary>Privacy card, paragraph 3 (approved text: keep every fact).</summary>
+        /// <summary>Privacy card, paragraph 3: the records' random ID, which the game never sends (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
         PrivacyParagraph3,
 
         /// <summary>Privacy card, paragraph 4 (approved text: keep every fact).</summary>
         PrivacyParagraph4,
+
+        /// <summary>Privacy card, the paragraph on Unity's purchase events (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphUnity,
+
+        /// <summary>Privacy card, the paragraph on the play statistics: what the notes hold and where they go (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names; the list matches PlayNote.cs).</summary>
+        PrivacyParagraphStatistics,
+
+        /// <summary>Privacy card, after the statistics: what the notes never hold, and that the choice changes on the settings card (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphStatisticsChoice,
+
+        /// <summary>Privacy card, last paragraph: what having no server means for coins, progress and refunds (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphNoServer,
 
         /// <summary>Privacy card button that deletes the attempt records, after a question.</summary>
         PrivacyDeleteTheRecords,
@@ -678,6 +696,27 @@ namespace Puzzle.Client.Words
 
         /// <summary>Privacy card: the file's name and what a line of it is.</summary>
         PrivacyFileLine,
+
+        /// <summary>Privacy card, between the two arrows that turn its pages: which page of how many is shown ("2 / 3").</summary>
+        PrivacyPageOf,
+
+        /// <summary>Statistics question card, after the entry page of the first start: the question, under the nameplate (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentQuestion,
+
+        /// <summary>Statistics question card, paragraph 1: what is counted, and by whom and where (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph1,
+
+        /// <summary>Statistics question card, paragraph 2: what is never sent and never done with the notes (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph2,
+
+        /// <summary>Statistics question card, paragraph 3: no is a full answer, and the choice changes in the settings (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph3,
+
+        /// <summary>Statistics question card: the answer that allows the notes. As large and as bright as the other answer.</summary>
+        ConsentAllow,
+
+        /// <summary>Statistics question card: the answer that declines them; the way back answers so too. As large and as bright as the other answer.</summary>
+        ConsentDecline,
 
         /// <summary>Tutorial, level 1, before the first move, first line of the pill: the lit plaque shows the level's goal.</summary>
         TutorialGoal,
@@ -844,7 +883,7 @@ namespace Puzzle.Client.Words
         /// <summary>Card before paying, first line: asks whether to buy. {price} is the price as the store writes it in the player's currency ("₺89,99").</summary>
         PurchaseAskQuestion,
 
-        /// <summary>Card before paying, second line: the phone's app store takes the payment; the game never sees the player's payment details.</summary>
+        /// <summary>Card before paying, second line: the phone's app store takes the payment, and Unity, whose purchase library the game uses, is told of the purchase too.</summary>
         PurchaseAskStoreLine,
 
         /// <summary>Card before paying: the green button that opens the store's payment sheet.</summary>

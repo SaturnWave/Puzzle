@@ -20,10 +20,18 @@ public class SettingsLayoutTests
     /// The tall phone the canvas is drawn for, the tight 9:16 one, the owner's phone folded and open, the two
     /// phones with a cutout and a system bar, and the largest and the smallest iPad upright.
     /// </summary>
-    public static TheoryData<int, int, int, int, int> ScreensAndSwitches()
+    public static TheoryData<int, int, int, int, int> ScreensAndSwitches() => ScreensWith(0, 2, 3, 4, 5);
+
+    /// <summary>
+    /// Those screens with the switches a build of the game draws: sound, music and the statistics on a device with
+    /// nothing to buzz; vibration too elsewhere; and the tester mode's under them while it holds.
+    /// </summary>
+    public static TheoryData<int, int, int, int, int> ScreensAndTheBuildsSwitches() => ScreensWith(3, 4, 5);
+
+    private static TheoryData<int, int, int, int, int> ScreensWith(params int[] switchCounts)
     {
         var data = new TheoryData<int, int, int, int, int>();
-        foreach (int switches in new[] { 0, 2, 3, 4 })
+        foreach (int switches in switchCounts)
         {
             data.Add(1080, 2340, 0, 0, switches);
             data.Add(1080, 1920, 0, 0, switches);
@@ -70,7 +78,7 @@ public class SettingsLayoutTests
     }
 
     [Theory]
-    [MemberData(nameof(ScreensAndSwitches))]
+    [MemberData(nameof(ScreensAndTheBuildsSwitches))]
     public void The_privacy_and_the_support_card_stand_in_front_of_the_settings_card_inside_the_usable_screen(
         int width, int height, int topInset, int bottomInset, int switches)
     {

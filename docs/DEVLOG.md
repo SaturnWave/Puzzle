@@ -6,6 +6,16 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
+**Oyun istatistikleri yalnız izinle, v1 gizlilik metni**
+- Bitti (ana dal): Aptabase'in Unity paketi 0.3.1 (resmî GitHub, işlemeye sabit, MIT). Ayar dosyası boş anahtarla geliyor: anahtar yokken paket hiçbir şey kurmuyor, oyun notları yalnız günlüğe yazıyor. Yalnız AB bölgesinin anahtarı (`A-EU-…`) gönderir; başka bölge reddedilir.
+- Kapı oyunun kodunda (`PlayStatistics`): not yalnız "İzin ver"den sonra pakete gider. Paket 0.3.1 kapalıyken de kuyruğa alıyor; bu yüzden yanıt yokken ve "hayır"dan sonra ona hiç not verilmiyor. Notlar: açılış, bölüm başı ve sonu (numara, kalan hamle), tablo ve oda, mağaza açıldı, satın alma (yalnız ürün). Kimlik yok.
+- Soru kartı: ilk açılışta giriş sayfasından sonra salonun üstünde; iki düğme aynı boy ve renk; geri tuşu "hayır". Ayarlarda "Oyun istatistikleri" anahtarı (yeni işaret); gizlilik satırı anahtara göre. `device.json` 6. düzen (`statistics`).
+- Gizlilik metni taslaktan (`privacy-v1.md` §3): kart sekiz paragraf, sayfalı ("1 / 3", oklar). Onay kartının ikinci satırı Unity'yi söylüyor. 13 dilde, makine çevirisi; sahibin onayını bekliyor.
+- Android: INTERNET yeniden isteniyor. Derleme eski kütüphane manifestini siliyor; APK'nın izinleri `aapt` ile okunuyor, tam beş izin değilse derleme duruyor.
+- Belgeler: GAME_DESIGN §19 (karar), §20 (eski metin ve "rıza ekranı yok" notları güncellendi, Google Play Data safety cevapları), §23. Telefon testleri T490–T499 (F25), açık A48.
+- 5.505 test geçti (48'i yeni). Ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ConsentCheck`, `RotationCheck`, `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan) hatasız. Kartlar ve yürüyüş üç ekranda; Almanca ve Japonca telefonda bakıldı. Gizlilik kartı en çok 470 nokta, Türkçe 3 sayfa. Çince sans yedek yazı tiplerinin resmi 2048×2048 oldu. APK'nın izinleri tam beş.
+- Sahipte: metinlerin onayı; Aptabase hesabı (AB) ve anahtar; site adresi, iletişim e-postası, yasal ad ve adres; politikanın sitede yayımı; Play Console Data safety ve App Store Connect beyanı; uzman okuması (`privacy-v1.md` §6).
+
 **Gerçek satın almalar (istemci, IAP 5.4.4)**
 - Bitti (ana dal): Unity IAP 5.4.4 projede, Unity Gaming Services olmadan. Satın almanın kapalı yolu `Checkout` (boşta → soruyor → bekliyor → verildi, vazgeçildi, olmadı ya da onay bekliyor); mağaza arabirimi `IStore` (oyunda `UnityStore`, araçlarda ve testlerde `ScriptedStore`). Ödeme `WalletLedger.Deliver` ile bir kez verilir, mağazaya onay kayıttan sonra gider; arada kapanan oyun ödemeyi bir kez verir. İlerleme dosyası 6. düzende (`purchases`).
 - Mağaza: dört paket mağazanın yerel fiyatıyla; cevap yokken "…", satılmayan "Satışta değil", ulaşılamayınca "Mağaza şu anda açılamıyor" (15 sn'de bir yeniden sorar). Çırak Çantası 20. bölümden alınana kadar kesenin yerinde, "BİR KEZ" ile: ayrı panel en kısa telefonlarda ve dik iPad'de düğmeleri 38 noktanın altına indiriyordu. iOS'ta "Satın alımları geri yükle". Onay, ödeme sürüyor, satın alındı, olmadı, onay bekleniyor ve geri yükleme kartları; 35 yeni yazı 13 dilde.

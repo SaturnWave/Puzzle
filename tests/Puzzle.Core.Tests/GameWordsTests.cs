@@ -280,7 +280,12 @@ public class GameWordsTests
             ("WalletWords.LivesOfMost", WalletWords.LivesOfMost(wallet)), ("WalletWords.LivesOfMost unlimited", WalletWords.LivesOfMost(unlimited)),
             ("WalletWords.NextLife", WalletWords.NextLife(new TimeSpan(0, 12, 34))), ("WalletWords.FullAfter", WalletWords.FullAfter(new TimeSpan(1, 42, 0))),
             ("SettingsWords.Title", SettingsWords.Title), ("SettingsWords.Language", SettingsWords.Language), ("SettingsWords.Privacy", SettingsWords.Privacy),
-            ("SettingsWords.PrivacyLine", SettingsWords.PrivacyLine), ("SettingsWords.Support", SettingsWords.Support), ("SettingsWords.PlayerIdLabel", SettingsWords.PlayerIdLabel),
+            ("SettingsWords.PrivacyLine", SettingsWords.PrivacyLine(DeviceSettings.Default)),
+            ("SettingsWords.PrivacyLine statistics", SettingsWords.PrivacyLine(DeviceSettings.Default.With(DeviceSetting.Statistics, isOn: true))),
+            ("PrivacyWords.PageOf", PrivacyWords.PageOf(2, 3)),
+            ("ConsentWords.Title", ConsentWords.Title), ("ConsentWords.Question", ConsentWords.Question),
+            ("ConsentWords.Allow", ConsentWords.Allow), ("ConsentWords.Decline", ConsentWords.Decline),
+            ("SettingsWords.Support", SettingsWords.Support), ("SettingsWords.PlayerIdLabel", SettingsWords.PlayerIdLabel),
             ("SettingsWords.GameVersionLabel", SettingsWords.GameVersionLabel), ("SettingsWords.ContentVersionLabel", SettingsWords.ContentVersionLabel),
             ("SettingsWords.RecordsFileLabel", SettingsWords.RecordsFileLabel), ("SettingsWords.RecordsKeptInMemory", SettingsWords.RecordsKeptInMemory),
             ("SettingsWords.WhatToTell", SettingsWords.WhatToTell), ("SettingsWords.TesterModeQuestion", SettingsWords.TesterModeQuestion),
@@ -392,6 +397,16 @@ public class GameWordsTests
                 said.Add(($"ResultWords.GoOn {kind}", ResultWords.GoOn(result)));
                 said.Add(($"ResultWords.GoOnOnANarrowButton {kind}", ResultWords.GoOnOnANarrowButton(result)));
             }
+        }
+
+        for (int paragraph = 0; paragraph < PrivacyWords.Text.Count; paragraph++)
+        {
+            said.Add(($"PrivacyWords.Text {paragraph + 1}", PrivacyWords.Text[paragraph]));
+        }
+
+        for (int paragraph = 0; paragraph < ConsentWords.Text.Count; paragraph++)
+        {
+            said.Add(($"ConsentWords.Text {paragraph + 1}", ConsentWords.Text[paragraph]));
         }
 
         foreach (MuseumRoom room in museum.Rooms)

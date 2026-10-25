@@ -12,7 +12,7 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// What the game keeps about the phone itself, as device.json writes it:
-    /// <c>{"version":5,"id":"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a","settings":{"sound":true,"vibration":true,"testerMode":false,"language":"en","music":true}}</c>.
+    /// <c>{"version":6,"id":"6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a","settings":{"sound":true,"vibration":true,"testerMode":false,"language":"en","music":true,"statistics":"allowed"}}</c>.
     /// The id is 128 random bits, written as 32 lowercase hexadecimal digits, made on the game's first start; it is the
     /// only identity the phone's attempt records carry (Puzzle.Core's DeviceId, docs/GAME_DESIGN.md §20), and nothing
     /// about the player or the phone goes into it. Beside it are the player's settings (<see cref="DeviceSettings"/>),
@@ -20,7 +20,10 @@ namespace Puzzle.Client.Flow
     /// The tester mode joined the settings in layout 3; a file of an earlier layout reads with it off, whatever it holds.
     /// The language the player chose joined them in layout 4, as its code ("en"; empty for the phone's language); a
     /// file of an earlier layout reads with no language chosen, so the game speaks the phone's. The music's switch
-    /// joined them in layout 5; a file of an earlier layout reads with the music on, as every phone had it then.
+    /// joined them in layout 5; a file of an earlier layout reads with the music on, as every phone had it then. The
+    /// player's answer to the play statistics joined them in layout 6, as a word ("allowed", "declined"; empty while
+    /// not asked); a file of an earlier layout reads as not asked, whatever a hand wrote into it, so nothing is sent
+    /// from it and the question comes.
     /// The fields are public and named as the document names them, because that is how Unity's JSON reader maps a
     /// document; it makes an empty text of an id a document does not have, so a document is read by its layout's
     /// number and its id's spelling, and whether it holds settings by its layout's number, never by a false.
@@ -30,7 +33,7 @@ namespace Puzzle.Client.Flow
     public sealed class DeviceDocument
     {
         /// <summary>The layout this code writes. A file of a later layout is not guessed at.</summary>
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         private const int FirstVersion = 1;
 
@@ -45,6 +48,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The first layout that keeps the music's switch.</summary>
         private const int FirstVersionWithTheMusic = 5;
+
+        /// <summary>The first layout that keeps the player's answer to the play statistics.</summary>
+        private const int FirstVersionWithTheStatistics = 6;
 
         private const int IdBytes = 16;
 
@@ -107,6 +113,12 @@ namespace Puzzle.Client.Flow
                 settings = settings.With(DeviceSetting.Music, isOn: true);
             }
 
+            if (document.version < FirstVersionWithTheStatistics)
+            {
+                // Nothing an older file holds is a "yes": only the player's own answer, asked anew, lets a note leave the phone.
+                settings = settings.WithTheStatistics(StatisticsChoice.NotAsked);
+            }
+
             if (document.version > CurrentVersion)
             {
                 // Later layouts are expected to add to this one: the id and the settings are looked for in them too.
@@ -137,10 +149,14 @@ namespace Puzzle.Client.Flow
         }
     }
 
-    /// <summary>The player's settings as the device file writes them: <c>{"sound":true,"vibration":true,"testerMode":false,"language":"en","music":true}</c>.</summary>
+    /// <summary>The player's settings as the device file writes them: <c>{"sound":true,"vibration":true,"testerMode":false,"language":"en","music":true,"statistics":"allowed"}</c>.</summary>
     [Serializable]
     public sealed class SettingsDocument
     {
+        /// <summary>How <see cref="statistics"/> spells the player's two answers; anything else, the empty text above all, is not asked.</summary>
+        private const string Allowed = "allowed";
+        private const string Declined = "declined";
+
         public bool sound = DeviceSettings.Default.Sound;
         public bool vibration = DeviceSettings.Default.Vibration;
 
@@ -156,9 +172,15 @@ namespace Puzzle.Client.Flow
         /// <summary>The music's switch; in the file since layout 5, after the fields of the earlier layouts.</summary>
         public bool music = DeviceSettings.Default.Music;
 
+        /// <summary>
+        /// The player's answer to the play statistics, "allowed" or "declined"; in the file since layout 6, after the
+        /// fields of the earlier layouts. Empty while not asked; a word this game does not know reads as not asked too.
+        /// </summary>
+        public string statistics = string.Empty;
+
         /// <summary>The settings this block holds; a method, so that no JSON writer takes it for a field of the file.</summary>
         public DeviceSettings ToSettings() =>
-            new DeviceSettings(sound, vibration, testerMode, Languages.FromCode(language)).With(DeviceSetting.Music, music);
+            new DeviceSettings(sound, vibration, testerMode, Languages.FromCode(language)).With(DeviceSetting.Music, music).WithTheStatistics(StatisticsOf(statistics));
 
         public static SettingsDocument Of(DeviceSettings settings) => new SettingsDocument
         {
@@ -167,6 +189,22 @@ namespace Puzzle.Client.Flow
             testerMode = settings.TesterMode,
             language = settings.Language is Language chosen ? Languages.CodeOf(chosen) : string.Empty,
             music = settings.Music,
+            statistics = WordOf(settings.Statistics),
+        };
+
+        private static StatisticsChoice StatisticsOf(string? word) => word switch
+        {
+            Allowed => StatisticsChoice.Allowed,
+            Declined => StatisticsChoice.Declined,
+            _ => StatisticsChoice.NotAsked,
+        };
+
+        private static string WordOf(StatisticsChoice choice) => choice switch
+        {
+            StatisticsChoice.NotAsked => string.Empty,
+            StatisticsChoice.Allowed => Allowed,
+            StatisticsChoice.Declined => Declined,
+            _ => throw new ArgumentOutOfRangeException(nameof(choice), choice, "An answer to the statistics the device file cannot write."),
         };
     }
 

@@ -12,6 +12,7 @@ using Puzzle.Client.Play;
 using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Stage;
+using Puzzle.Client.Statistics;
 using Puzzle.Client.Words;
 using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
@@ -177,6 +178,12 @@ namespace Puzzle.Client.Flow
         /// <summary>The course of a purchase for money between the museum and the platform's store.</summary>
         private readonly Checkout _checkout;
 
+        /// <summary>The gate of the play statistics: what the session notes goes out only while the player allows it.</summary>
+        private readonly PlayStatistics _statistics;
+
+        /// <summary>True while the museum showed its shop at the last step: the shop's opening is noted once a visit to it.</summary>
+        private bool _wasInTheShop;
+
         /// <summary>How long the session has run, by its own steps: the time the purchase's course waits by.</summary>
         private TimeSpan _running;
 
@@ -277,6 +284,35 @@ namespace Puzzle.Client.Flow
             IStore sales,
             ScreenShape screen,
             SessionOpening opening)
+            : this(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, sales, PlayStatistics.Nowhere, screen, opening)
+        {
+        }
+
+        /// <summary>
+        /// As the session above, with the play statistics' gate the game opens it with: the question about them comes
+        /// down over the hall when the session opens in the museum and the player has not answered it, and what the
+        /// session notes (the game's start, a level started and ended, a painting and a room completed, the shop opened,
+        /// a purchase given) goes through the gate, which lets it out only while the player allows it.
+        /// </summary>
+        /// <param name="statistics">The game's gate (<see cref="PlayStatistics.Through"/>), or the tools' (<see cref="PlayStatistics.Nowhere"/>).</param>
+        /// <exception cref="ArgumentException">There is no level to play.</exception>
+        /// <exception cref="IOException">The store's progress is there but cannot be read.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not read the store.</exception>
+        public GameSession(
+            IReadOnlyList<LevelDefinition> levels,
+            ArtCatalogue art,
+            PaintingGallery paintings,
+            EconomyRules rules,
+            IWallClock clock,
+            IProgressStore store,
+            IAttemptLog attempts,
+            ISettingsStore settings,
+            DeviceAbilities abilities,
+            ICuePlayer cues,
+            IStore sales,
+            PlayStatistics statistics,
+            ScreenShape screen,
+            SessionOpening opening)
         {
             if (levels.Count == 0)
             {
@@ -308,11 +344,14 @@ namespace Puzzle.Client.Flow
 
             _checkout = new Checkout(rules.Shop.Store, rules.Shop.RealMoney, Application.identifier, sales ?? throw new ArgumentNullException(nameof(sales)));
             _checkout.Open(_running);
+            _statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
+            _statistics.Follow(_settings.Settings); // turned off until a yes; the game's start is noted at once where the player said yes before
+            bool asksAboutTheStatistics = _statistics.AsksOn(_settings.Settings);
             _effectArt = EffectArt.Paint();
             _front = opening switch
             {
-                SessionOpening.InTheMuseum => OpenTheMuseum(StageOpening.InTheLitRoom, MuseumDoor.Home),
-                SessionOpening.InTheMuseumOutOfTheDark => OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.Home),
+                SessionOpening.InTheMuseum => OpenTheMuseum(StageOpening.InTheLitRoom, MuseumDoor.Home, asksAboutTheStatistics),
+                SessionOpening.InTheMuseumOutOfTheDark => OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.Home, asksAboutTheStatistics),
                 SessionOpening.AtTheBoard => OpenTheBoard(StageOpening.InTheLitRoom, StartChoice.None),
                 _ => throw new ArgumentOutOfRangeException(nameof(opening), opening, "A session opens in the museum or at the board."),
             };
@@ -378,6 +417,7 @@ namespace Puzzle.Client.Flow
             KeepTheTutorialStepsDone();
             PlayWhatSounded();
             FollowThePlayer();
+            NoteTheShopOpened();
         }
 
         /// <summary>Plays a move on the board's stage, as <see cref="GameStage.TryPlay"/> does, and keeps what it means for the progress.</summary>
@@ -612,8 +652,8 @@ namespace Puzzle.Client.Flow
             _front = openTheNext();
         }
 
-        /// <summary>Opens the museum as the progress has it, on one of its pages.</summary>
-        private IStage OpenTheMuseum(StageOpening opening, MuseumDoor door)
+        /// <summary>Opens the museum as the progress has it, on one of its pages; at the session's opening, with the question about the play statistics where it is to be asked.</summary>
+        private IStage OpenTheMuseum(StageOpening opening, MuseumDoor door, bool asksAboutTheStatistics = false)
         {
             LevelDefinition level = LevelToPlay;
             var visit = new MuseumVisit(_progress.Museum, _paintings.Catalogue, level.Id.Value, hasWonEveryLevel: _progress.LevelsWon >= _levels.Count);
@@ -621,7 +661,7 @@ namespace Puzzle.Client.Flow
             WalletView wallet = WalletNow;
             MuseumStage museum = MuseumStage.Open(
                 visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, DeviceNow, brief, opening,
-                TutorialPlan.IntroducesTheStartBoosters(_progress.Tutorial, _progress.AttemptsOnLevel), _effectArt);
+                TutorialPlan.IntroducesTheStartBoosters(_progress.Tutorial, _progress.AttemptsOnLevel), _effectArt, asksAboutTheStatistics);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;
@@ -666,6 +706,7 @@ namespace Puzzle.Client.Flow
                 ThisClient,
                 _clock.Now,
                 game.ShuffleBoosterRule);
+            Note(new PlayNote.LevelStarted(level.Id.Value));
             var brief = new AttemptBrief(attempt + 1, _progress.IsOnLastLevelOf(_levels.Count), _rules.Win, _rewardOfTheBoard, TakenBy(game, startBoosters), _rules.Ads);
             GameStage stage = GameStage.Open(
                 game, _art, _effectArt, _paintings, brief, shelf, opening, HintBrief.Of(_rules.Hints, seeds.Play), TutorialWatch.ForTheBoard(level.Id.Value, _progress.Tutorial, seeds.Play, _rules.Unlocks));
@@ -828,6 +869,8 @@ namespace Puzzle.Client.Flow
                 }
             }
 
+            // The statistics' answer counts from this step on: a yes lets the notes out, a no stops them before the next.
+            _statistics.Follow(_settings.Settings);
             if (Speech.Language != spokenBefore)
             {
                 museum.SpeakAnew(DeviceNow);
@@ -927,9 +970,32 @@ namespace Puzzle.Client.Flow
             SaveProgress();
             if (hasEnded)
             {
+                NoteTheEndOf(board);
                 RecordTheAttempt(board, now, handling);
             }
         }
+
+        /// <summary>The level's end, won or not, with its number and the moves its board had left; before the attempt's record, which forgets how it began.</summary>
+        private void NoteTheEndOf(GameStage board)
+        {
+            AttemptStart start = _startOfTheBoard ?? throw new InvalidOperationException("An attempt ended without having begun.");
+            Note(new PlayNote.LevelEnded(start.Level.Value, isWon: board.Game.Status == GameStatus.Won, board.Game.MovesLeft));
+        }
+
+        /// <summary>The museum turned to its shop since the last step: noted once a visit to it.</summary>
+        private void NoteTheShopOpened()
+        {
+            bool isInTheShop = Museum?.Showing == Destination.Shop;
+            if (isInTheShop && !_wasInTheShop)
+            {
+                Note(new PlayNote.ShopOpened());
+            }
+
+            _wasInTheShop = isInTheShop;
+        }
+
+        /// <summary>Hands a note to the statistics' gate with the player's answer as it is kept now.</summary>
+        private void Note(PlayNote note) => _statistics.Note(note, _settings.Settings);
 
         /// <summary>
         /// Writes the record of the open attempt, which has just ended for good, to the phone's log: once, with the
@@ -1017,9 +1083,15 @@ namespace Puzzle.Client.Flow
             _progress = _walletLedger.WithPiecesInPlace(_progress, painting, jigsaw.Table.InPlace);
 
             bool isNewlyPlaced = !ReferenceEquals(before, _progress);
+            if (isNewlyPlaced && !before.Museum.IsComplete(painting) && _progress.Museum.IsComplete(painting))
+            {
+                Note(new PlayNote.PaintingCompleted(painting.Value, painting.Room.Value));
+            }
+
             if (isNewlyPlaced && !IsRestored(painting.Room, before) && IsRestored(painting.Room, _progress))
             {
                 _restoredJustNow = painting.Room;
+                Note(new PlayNote.RoomRestored(painting.Room.Value));
             }
         }
 
@@ -1075,6 +1147,7 @@ namespace Puzzle.Client.Flow
                     case Delivery.Given given:
                         _session._progress = given.Progress;
                         Debug.Log($"The store's {payment} gave {given.What}.");
+                        _session.Note(new PlayNote.PurchaseCompleted(product.IdSuffix));
                         break;
                     case Delivery.SoldOut soldOut:
                         _session._progress = soldOut.Progress;

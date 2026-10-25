@@ -76,13 +76,14 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// An error fails the check unless it comes out of the Editor's own code, which keeps working beside the
-        /// game (its search index, for one, reports an exception on a project it has not indexed yet).
+        /// game (its search index, for one, reports an exception on a project it has not indexed yet), or is the
+        /// statistics' package saying that the build holds no App Key (<see cref="KeylessStatisticsNotice"/>).
         /// </summary>
         private static void NoteTheGamesErrors(string message, string stackTrace, LogType type)
         {
             bool isError = type == LogType.Error || type == LogType.Exception || type == LogType.Assert;
             bool isTheEditorsOwn = stackTrace.Contains("UnityEditor.");
-            _gameFailed |= isError && !isTheEditorsOwn;
+            _gameFailed |= isError && !isTheEditorsOwn && !KeylessStatisticsNotice.Is(message);
         }
 
         private static void WatchTheGame()

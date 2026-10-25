@@ -140,6 +140,13 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\EntryWords.cs" Link="Unity\Flow\EntryWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\EntryLayout.cs" Link="Unity\Layout\EntryLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
+    <!-- Nor have the play statistics: the gate that lets a note through only with the player's yes, the notes there are, the key they go through, and the question's words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayStatistics.cs" Link="Unity\Statistics\PlayStatistics.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayNote.cs" Link="Unity\Statistics\PlayNote.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\StatisticsKey.cs" Link="Unity\Statistics\StatisticsKey.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ConsentWords.cs" Link="Unity\Flow\ConsentWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\TextPages.cs" Link="Unity\Layout\TextPages.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\PackagePermissions.cs" Link="Unity\Editor\PackagePermissions.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\LanguageCardLayout.cs" Link="Unity\Layout\LanguageCardLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\ToggleLook.cs" Link="Unity\Screens\ToggleLook.cs" />

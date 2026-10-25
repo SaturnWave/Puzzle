@@ -108,8 +108,13 @@ namespace Puzzle.Client.Layout
         public const float BuildLineBand = 17f;
         public const float BottomMargin = 16.5f;
 
-        /// <summary>The privacy card and the support card are as wide as the settings card; the privacy card at most this high (as its text needs), the support card this high.</summary>
-        public const float PrivacyBodyHeight = 382f;
+        /// <summary>
+        /// The privacy card and the support card are as wide as the settings card; the privacy card at most this high
+        /// (as its text needs), the support card this high. 470 is the most a card in front may be on every screen the
+        /// tests know, over a settings card of three switches or more, as every build now draws (sound, music and the
+        /// statistics at the least); it was 382 while the privacy text was four paragraphs.
+        /// </summary>
+        public const float PrivacyBodyHeight = 470f;
         public const float SupportBodyHeight = 372f;
 
         /// <summary>A card in front of another stands this far over the foot of the one behind, in that card's points (the museum's stage).</summary>

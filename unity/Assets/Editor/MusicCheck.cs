@@ -130,7 +130,7 @@ namespace Puzzle.Client.EditorTools
         private static void NoteTheGamesErrors(string message, string stackTrace, LogType type)
         {
             bool isError = type == LogType.Error || type == LogType.Exception || type == LogType.Assert;
-            if (isError && !stackTrace.Contains("UnityEditor."))
+            if (isError && !stackTrace.Contains("UnityEditor.") && !KeylessStatisticsNotice.Is(message))
             {
                 _failed = true;
             }
@@ -234,6 +234,22 @@ namespace Puzzle.Client.EditorTools
                         $"in memory (the Editor's measure of the {EditorUserBuildSettings.activeBuildTarget} import): the intro "
                         + $"{Profiler.GetRuntimeMemorySizeLong(Music.Clips.Intro) / 1048576.0:0.00} MB, the streamed loop {Profiler.GetRuntimeMemorySizeLong(Music.Clips.Loop) / 1048576.0:0.00} MB");
                 }));
+
+            // On the Editor's first start, or one after its device file was taken away, the question about the play
+            // statistics hangs over the hall and takes every touch until it is answered: "İzin verme", as the way back would.
+            bool wasAsked = false;
+            Steps.Add(new Step(
+                "the question about the play statistics, where it hung, was answered İzin verme and went up",
+                begin: () =>
+                {
+                    if (Museum.DeclineTheStatisticsPixel is Vector2 decline)
+                    {
+                        wasAsked = true;
+                        Press(decline, "the statistics question's İzin verme");
+                    }
+                },
+                hasComeAbout: waited => waited >= SettleSeconds && !Museum.ShowsTheStatisticsQuestion && Museum.IsSettled,
+                end: () => Findings.Add(wasAsked ? "the statistics question hung over the hall and was answered İzin verme" : "the statistics question was answered before")));
 
             // A page has turned once the museum is settled on it: until then it takes no touch, and the press of the next
             // step would be lost. The turn is timed on the game's clock, which slow frames hold back (GameRoot's longest

@@ -4,9 +4,11 @@ using Puzzle.Client.EditorTools;
 namespace Puzzle.Core.Tests;
 
 /// <summary>
-/// The Android build's manifest step: what it writes of each permission on its list into the Unity library's manifest.
-/// <c>ManifestPermissions</c> is the Unity project's Editor source file, compiled into these tests; the step itself
-/// runs only while a package is built (unity/Assets/Editor/AndroidBuild.cs), which these tests do not do.
+/// The Android build's manifest step: what it writes of each permission on its list into the Unity library's manifest;
+/// and the check of the built package, which must ask for exactly the build's permissions once every manifest is
+/// merged. <c>ManifestPermissions</c> and <c>PackagePermissions</c> are the Unity project's Editor source files,
+/// compiled into these tests; the step and the check run only while a package is built
+/// (unity/Assets/Editor/AndroidBuild.cs), which these tests do not do.
 /// </summary>
 public class ManifestPermissionsTests
 {
@@ -54,7 +56,7 @@ public class ManifestPermissionsTests
     [Fact]
     public void A_withdrawn_permission_loses_its_declaration_and_is_marked_for_the_merger_to_take_it_out_of_the_libraries_too()
     {
-        // Not on the build's list: the internet waits for the owner's decision. This is what a second line would do.
+        // The build asked so from 2026-10-16 until v1 asked for the internet again (AndroidBuild.Permissions).
         string written = ManifestPermissions.Apply(UnitysManifest, new[] { PermissionLine.Ask(Vibrate), PermissionLine.Withdraw(Internet) });
 
         XElement internet = Assert.Single(DeclarationsOf(written, Internet));
@@ -70,6 +72,74 @@ public class ManifestPermissionsTests
         string asked = ManifestPermissions.Apply(withdrawn, new[] { PermissionLine.Ask(Vibrate) });
 
         Assert.Null(Assert.Single(DeclarationsOf(asked, Vibrate)).Attribute(Tools + "node"));
+    }
+
+    [Fact]
+    public void Asking_for_the_internet_takes_away_the_mark_an_earlier_build_left_in_the_kept_manifest()
+    {
+        // The purchase spike's trap: a manifest written while the internet was withdrawn, kept by Unity for the next build.
+        string kept = ManifestPermissions.Apply(UnitysManifest, new[] { PermissionLine.Ask(Vibrate), PermissionLine.Withdraw(Internet) });
+
+        string written = ManifestPermissions.Apply(kept, new[] { PermissionLine.Ask(Vibrate), PermissionLine.Ask(Internet) });
+
+        Assert.Null(Assert.Single(DeclarationsOf(written, Internet)).Attribute(Tools + "node"));
+        Assert.Single(DeclarationsOf(written, Vibrate));
+    }
+
+    /// <summary>What aapt 36.0.0 says of the v1 package's permissions, as the purchase spike read them with the internet asked.</summary>
+    private const string V1Dump =
+        "package: com.saturnwave.puzzle\n"
+        + "uses-permission: name='android.permission.INTERNET'\n"
+        + "uses-permission: name='android.permission.VIBRATE'\n"
+        + "uses-permission: name='com.android.vending.BILLING'\n"
+        + "permission: com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\n"
+        + "uses-permission: name='com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'\n"
+        + "uses-permission: name='android.permission.ACCESS_NETWORK_STATE'\n";
+
+    private static readonly string[] V1Permissions =
+    {
+        Vibrate, Internet, "com.android.vending.BILLING", "android.permission.ACCESS_NETWORK_STATE",
+        "com.saturnwave.puzzle" + PackagePermissions.UnitysReceiverSuffix,
+    };
+
+    [Fact]
+    public void The_dump_of_a_package_lists_what_it_asks_for_and_not_what_it_only_declares()
+    {
+        Assert.Equal(
+            new[]
+            {
+                Internet, Vibrate, "com.android.vending.BILLING", "com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+                "android.permission.ACCESS_NETWORK_STATE",
+            },
+            PackagePermissions.AskedIn(V1Dump));
+        Assert.Equal(new[] { "android.permission.POST_NOTIFICATIONS" }, PackagePermissions.AskedIn("package: a.b\nuses-permission-sdk-23: name='android.permission.POST_NOTIFICATIONS'\n"));
+        Assert.Throws<InvalidOperationException>(() => PackagePermissions.AskedIn("ERROR: dump failed because no AndroidManifest.xml found"));
+    }
+
+    [Fact]
+    public void The_v1_package_asks_for_exactly_its_five_permissions()
+    {
+        PackagePermissions.Require(PackagePermissions.AskedIn(V1Dump).ToArray(), V1Permissions);
+    }
+
+    [Theory]
+    [InlineData("uses-permission: name='com.google.android.gms.permission.AD_ID'\n", "also asks for com.google.android.gms.permission.AD_ID")]
+    [InlineData("uses-permission: name='android.permission.ACCESS_COARSE_LOCATION'\n", "also asks for android.permission.ACCESS_COARSE_LOCATION")]
+    public void A_package_that_asks_for_more_stops_the_build_and_says_what(string extra, string said)
+    {
+        string[] asked = PackagePermissions.AskedIn(V1Dump + extra).ToArray();
+
+        var stopped = Assert.Throws<InvalidOperationException>(() => PackagePermissions.Require(asked, V1Permissions));
+        Assert.Contains(said, stopped.Message);
+    }
+
+    [Fact]
+    public void A_package_whose_internet_an_old_manifest_still_withdraws_stops_the_build()
+    {
+        string withdrawn = V1Dump.Replace("uses-permission: name='android.permission.INTERNET'\n", string.Empty);
+
+        var stopped = Assert.Throws<InvalidOperationException>(() => PackagePermissions.Require(PackagePermissions.AskedIn(withdrawn).ToArray(), V1Permissions));
+        Assert.Contains("does not ask for android.permission.INTERNET", stopped.Message);
     }
 
     [Fact]

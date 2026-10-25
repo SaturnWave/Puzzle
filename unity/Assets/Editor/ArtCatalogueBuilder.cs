@@ -136,6 +136,7 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.IconGlobe] = "icon-globe",
             [GalleryArt.IconShield] = "icon-shield",
             [GalleryArt.IconHelp] = "icon-help",
+            [GalleryArt.IconStatistics] = "icon-statistics",
             [GalleryArt.GlyphPlus] = "glyph-plus",
             [GalleryArt.GlyphClose] = "glyph-close",
             [GalleryArt.GlyphChevron] = "glyph-chevron",

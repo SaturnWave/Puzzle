@@ -32,7 +32,8 @@ namespace Puzzle.Client.Screens
     /// </summary>
     /// <remarks>
     /// A switch slides when its row is pressed, and its owner keeps the setting at once; the card shows the settings
-    /// it is told (<see cref="Tell(DeviceView)"/>). A whole row is what a finger presses, as large as the canvas
+    /// it is told (<see cref="Tell(DeviceView)"/>), the privacy row's smaller line too, which says what leaves the
+    /// phone as the statistics' switch stands. A whole row is what a finger presses, as large as the canvas
     /// draws it, not only its switch or chevron. The rows are those of the phone as the card came down: the tester
     /// mode's row turned off stays, off, until the card is opened again.
     /// </remarks>
@@ -55,6 +56,9 @@ namespace Puzzle.Client.Screens
         private readonly TextMeshPro _foot;
         private readonly TextMeshPro _buildLine;
         private readonly Dictionary<DeviceSetting, Toggle> _switches = new Dictionary<DeviceSetting, Toggle>();
+
+        /// <summary>The privacy row's smaller line and how far under the card's top edge it stands; nothing on a card built without the row.</summary>
+        private (TextMeshPro Line, float Down)? _privacyLine;
 
         private SettingsCard(Transform parent, ArtCatalogue art, DeviceView device)
         {
@@ -123,7 +127,7 @@ namespace Puzzle.Client.Screens
         {
         }
 
-        /// <summary>Shows the settings as they are kept; a switch whose state is that already does not move.</summary>
+        /// <summary>Shows the settings as they are kept; a switch whose state is that already does not move. The privacy row's smaller line follows them.</summary>
         public void Tell(DeviceView device)
         {
             foreach (KeyValuePair<DeviceSetting, Toggle> each in _switches)
@@ -134,7 +138,15 @@ namespace Puzzle.Client.Screens
                     each.Value.Set(isOn);
                 }
             }
+
+            if (_privacyLine is (TextMeshPro line, float down))
+            {
+                SayThePrivacyLine(line, down, device.Settings);
+            }
         }
+
+        /// <summary>What the privacy row's smaller line says now.</summary>
+        public string? PrivacyLineSays => _privacyLine?.Line.text;
 
         public void Dispose()
         {
@@ -167,7 +179,7 @@ namespace Puzzle.Client.Screens
                     _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenTheLanguages());
                     break;
                 case SettingsRowKind.Privacy:
-                    AddPrivacyRow(row, art);
+                    AddPrivacyRow(row, device.Settings, art);
                     _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenThePrivacy());
                     break;
                 case SettingsRowKind.Support:
@@ -180,7 +192,7 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>The privacy row: its disc, its name, and the smaller line under the name, the two centred together on the row.</summary>
-        private void AddPrivacyRow(SettingsRowPlace row, ArtCatalogue art)
+        private void AddPrivacyRow(SettingsRowPlace row, DeviceSettings settings, ArtCatalogue art)
         {
             float together = SettingsLayout.NameSize + SettingsLayout.SmallLineGap + SettingsLayout.SmallSize;
             float nameDown = row.Middle - together / 2f + SettingsLayout.NameSize / 2f;
@@ -188,7 +200,19 @@ namespace Puzzle.Client.Screens
             AddDisc(row, GalleryArt.IconShield, art);
             AddName(nameDown, PrivacyWords.Title, art);
             TextMeshPro line = Lettering.Write("Smaller line", _card.Content, art, LetteringStyle.Soft, SettingsLayout.SmallSize, Lettering.SoftInk, DrawOrder.CardLettering);
-            Lettering.SayFromLeft(line, SettingsWords.PrivacyLine, SettingsLayout.NameLeft, _card.At(lineDown).y);
+            _privacyLine = (line, lineDown);
+            SayThePrivacyLine(line, lineDown, settings);
+        }
+
+        /// <summary>
+        /// The privacy row's smaller line as the settings stand, from the name's left edge, set smaller where a language's
+        /// words would reach the chevron.
+        /// </summary>
+        private void SayThePrivacyLine(TextMeshPro line, float down, DeviceSettings settings)
+        {
+            float room = SettingsLayout.ValueRight(hasAChevron: true) - SettingsLayout.NameLeft;
+            Lettering.SayWithin(line, SettingsWords.PrivacyLine(settings), SettingsLayout.SmallSize, room);
+            line.transform.localPosition = new Vector3(SettingsLayout.NameLeft + Lettering.WidthOf(line, line.text) / 2f, _card.At(down).y, 0f);
         }
 
         private void AddDiscAndName(SettingsRowPlace row, GalleryArt mark, string name, ArtCatalogue art)
@@ -253,6 +277,7 @@ namespace Puzzle.Client.Screens
             DeviceSetting.Music => GalleryArt.IconMusic,
             DeviceSetting.Vibration => GalleryArt.IconBuzz,
             DeviceSetting.TesterMode => GalleryArt.IconCoin,
+            DeviceSetting.Statistics => GalleryArt.IconStatistics,
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a mark."),
         };
 

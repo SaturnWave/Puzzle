@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
@@ -13,17 +14,20 @@ namespace Puzzle.Client.Screens
 {
     /// <summary>
     /// The card the settings card's row "Gizlilik ve veri" opens, in front of it: what the game keeps on the phone and
-    /// that this build sends none of it anywhere (<see cref="PrivacyWords.Text"/>, the owner's draft), and under a
-    /// hairline how many attempt records the phone keeps, the file they are in, and "Kayıtları sil". That button asks
-    /// first, on the card itself: the count's place says how many records would go and what stays, and the buttons
-    /// are "Vazgeç" and "Sil". Closed by its round button and by the way back, which also take a question back.
+    /// what leaves it (<see cref="PrivacyWords.Text"/>), on as many pages as the text needs, turned by two arrows with
+    /// "2 / 3" between them; and under a hairline how many attempt records the phone keeps, the file they are in, and
+    /// "Kayıtları sil". That button asks first, on the card itself: the count's place says how many records would go
+    /// and what stays, and the buttons are "Vazgeç" and "Sil". Closed by its round button and by the way back, which
+    /// also take a question back.
     /// </summary>
     /// <remarks>
     /// The design canvas draws no such card. It is built in the language of the settings card it hangs in front of:
-    /// as wide, its text in the canvas' interface type, its buttons the small ones of the shop. Its sizes are the
-    /// canvas' points around the middle of its body. The text may be longer or shorter once the owner has read it:
-    /// the card is as high as its text needs, up to the highest card that may hang in front of the settings card
-    /// (<see cref="SettingsLayout.PrivacyBodyHeight"/>), and a text longer than that is set smaller, never cut off.
+    /// as wide, its text in the canvas' interface type, its buttons the small ones of the shop, its arrows the
+    /// chevrons of the settings card's rows. Its sizes are the canvas' points around the middle of its body. The card
+    /// is as high as its text needs, up to the highest card that may hang in front of the settings card
+    /// (<see cref="SettingsLayout.PrivacyBodyHeight"/>); a longer text is set on pages (<see cref="TextPages"/>), a
+    /// paragraph never broken over two, and every page is as high as the highest, so the records stay where they are as
+    /// the pages turn. A paragraph too high even for a page of its own sets the type smaller, never cut off.
     /// </remarks>
     public sealed class PrivacyCard : IMuseumCard, IDeviceCard
     {
@@ -35,7 +39,7 @@ namespace Puzzle.Client.Screens
         private const float ParagraphGap = 7f;
         private const float TextSize = 13f;
 
-        /// <summary>A text too long for the highest card is set smaller by this step, down to this size at the least.</summary>
+        /// <summary>A text whose paragraph is too high for a page is set smaller by this step, down to this size at the least.</summary>
         private const float SmallerStep = 0.94f;
         private const float SmallestTextSize = 10.5f;
 
@@ -48,8 +52,19 @@ namespace Puzzle.Client.Screens
         private const float ButtonsUnderText = 98f;
         private const float BodyUnderText = 142f;
 
-        /// <summary>The most the text may take: the card is then as high as the settings layout lets a card in front be.</summary>
+        /// <summary>The most the text may take on one card: the card is then as high as the settings layout lets a card in front be.</summary>
         private const float MostTextHeight = SettingsLayout.PrivacyBodyHeight - TextTop - BodyUnderText;
+
+        /// <summary>
+        /// The band of the arrows that turn the pages, under a text set on pages: its middle this far under the text,
+        /// the arrows this far left and right of the card's middle with the page's count between them, a finger's
+        /// reach around each as large as a row of the settings card is high.
+        /// </summary>
+        private const float PagerBand = 38f;
+        private const float PagerUnderText = 21f;
+        private const float ArrowsApart = 120f;
+        private const float PageCountSize = 13f;
+        private const float ArrowReach = SettingsLayout.RowHeight / 2f;
 
         /// <summary>"Kayıtları sil" alone in the middle; the question's two buttons side by side.</summary>
         private const float DeleteWidth = 170f;
@@ -58,13 +73,19 @@ namespace Puzzle.Client.Screens
         private const float ButtonLabelSize = 16f;
 
         private readonly HangingCard<MuseumPress> _card;
+        private readonly IReadOnlyList<TextMeshPro> _paragraphs;
+        private readonly IReadOnlyList<TextPage> _pages;
         private readonly PaintedShape _hairline;
         private readonly TextMeshPro _count;
         private readonly TextMeshPro _line;
         private readonly SmallButton _delete;
         private readonly SmallButton _keep;
         private readonly SmallButton _confirm;
+
+        /// <summary>The arrows and the count between them; nothing for a text that fits one page.</summary>
+        private readonly (PageArrow Back, PageArrow On, TextMeshPro Count)? _pager;
         private DeviceView _device;
+        private int _page;
 
         /// <summary>True once the records were deleted while the card hangs: the line under the count says so.</summary>
         private bool _hasDeleted;
@@ -73,19 +94,29 @@ namespace Puzzle.Client.Screens
         {
             _device = device;
 
-            // The text is set first, beside the card, to know how high the card must be to hold it.
-            IReadOnlyList<TextMeshPro> paragraphs = WriteTheText(parent, art, raisedBy, out float textHeight);
-            float textEnd = TextTop + textHeight;
+            // The text is set first, beside the card, to know how high the card must be to hold it, and on how many pages.
+            _paragraphs = WriteTheText(parent, art, raisedBy, out _pages, out float textHeight);
+            bool isPaged = _pages.Count > 1;
+            float textEnd = TextTop + textHeight + (isPaged ? PagerBand : 0f);
             _card = new HangingCard<MuseumPress>(
                 "Privacy card", parent, art, new Vector2(SettingsLayout.BodyWidth, textEnd + BodyUnderText),
                 new CardNameplate(PrivacyWords.Title, NameplateWidth, TitleSize), CardHanging.FromPinsInTheWall, raisedBy: raisedBy);
             _card.AddCloseButton(new MuseumPress.CloseTheCard());
-            foreach (TextMeshPro paragraph in paragraphs)
+            foreach (TextMeshPro paragraph in _paragraphs)
             {
                 paragraph.transform.SetParent(_card.Content, worldPositionStays: false);
             }
 
-            Lay(paragraphs, down => _card.At(down).y);
+            if (isPaged)
+            {
+                float pagerHeight = _card.At(TextTop + textHeight + PagerUnderText).y;
+                TextMeshPro count = Lettering.Write("Page count", _card.Content, art, LetteringStyle.Soft, PageCountSize, Lettering.SoftInk, DrawOrder.CardLettering + raisedBy);
+                count.transform.localPosition = new Vector3(0f, pagerHeight, 0f);
+                _pager = (
+                    new PageArrow("Page back", _card.Content, art, new Vector2(-ArrowsApart / 2f, pagerHeight), pointsBack: true, raisedBy),
+                    new PageArrow("Page on", _card.Content, art, new Vector2(ArrowsApart / 2f, pagerHeight), pointsBack: false, raisedBy),
+                    count);
+            }
 
             _hairline = PaintedShape.Create("Hairline", _card.Content, art.PaintMaterial, DrawOrder.CardArt + raisedBy);
             var sketch = new MeshSketch();
@@ -104,6 +135,7 @@ namespace Puzzle.Client.Screens
             _keep.Place(buttons + new Vector3(-AnswersApart / 2f, 0f, 0f));
             _confirm = new SmallButton("Confirm", _card.Content, art, SmallButtonColour.Green, PrivacyWords.Delete, AnswerWidth, ButtonLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
             _confirm.Place(buttons + new Vector3(AnswersApart / 2f, 0f, 0f));
+            ShowThePage(0);
             ShowTheRecords();
         }
 
@@ -115,6 +147,9 @@ namespace Puzzle.Client.Screens
         /// <summary>What the count says now.</summary>
         public string CountSays => _count.text;
 
+        /// <summary>Which page of the text is shown, counted from 1, and of how many.</summary>
+        public (int Page, int Pages) PageShown => (_page + 1, _pages.Count);
+
         /// <summary>The middle of "Kayıtları sil", in the layout's points; nothing while the question is asked, or while there is no record to delete.</summary>
         public Vector2? DeleteButtonMiddle => !AsksTheQuestion && _device.HasRecords ? _card.InTheLayout(_delete.Middle) : (Vector2?)null;
 
@@ -122,6 +157,11 @@ namespace Puzzle.Client.Screens
         public Vector2? KeepButtonMiddle => AsksTheQuestion ? _card.InTheLayout(_keep.Middle) : (Vector2?)null;
 
         public Vector2? ConfirmButtonMiddle => AsksTheQuestion ? _card.InTheLayout(_confirm.Middle) : (Vector2?)null;
+
+        /// <summary>The middles of the arrows to the next page and to the one before, in the layout's points; nothing where there is no such page.</summary>
+        public Vector2? NextPageMiddle => _pager is (_, PageArrow on, _) && _page < _pages.Count - 1 ? _card.InTheLayout(on.Middle) : (Vector2?)null;
+
+        public Vector2? PreviousPageMiddle => _pager is (PageArrow back, _, _) && _page > 0 ? _card.InTheLayout(back.Middle) : (Vector2?)null;
 
         /// <summary>Builds the card out of sight above the screen. Place it before the first picture.</summary>
         /// <param name="raisedBy">Added to the card's places in the drawing order: <see cref="DrawOrder.OverACard"/> in front of the settings card.</param>
@@ -139,6 +179,17 @@ namespace Puzzle.Client.Screens
         {
             AsksTheQuestion = false;
             ShowTheRecords();
+        }
+
+        /// <summary>An arrow was pressed: the text turns to the next page, or to the one before; past its first or last page it stays.</summary>
+        public void TurnThePage(bool isForward)
+        {
+            int turnedTo = Mathf.Clamp(_page + (isForward ? 1 : -1), 0, _pages.Count - 1);
+            if (turnedTo != _page)
+            {
+                ShowThePage(turnedTo);
+                ListenToTheControls();
+            }
         }
 
         /// <summary>The card tells of nothing of the wallet.</summary>
@@ -165,6 +216,31 @@ namespace Puzzle.Client.Screens
             _card.Dispose();
         }
 
+        /// <summary>The paragraphs of a page, laid one under the other from the text's top; the others are not shown. The count between the arrows follows.</summary>
+        private void ShowThePage(int page)
+        {
+            _page = page;
+            TextPage shown = _pages[page];
+            float width = SettingsLayout.RowsRight - SettingsLayout.RowsLeft;
+            float down = TextTop;
+            for (int index = 0; index < _paragraphs.Count; index++)
+            {
+                bool isOnThePage = shown.Shows(index);
+                _paragraphs[index].gameObject.SetActive(isOnThePage);
+                if (isOnThePage)
+                {
+                    down += Lettering.SayInLines(_paragraphs[index], PrivacyWords.Text[index], width, SettingsLayout.RowsLeft, _card.At(down).y) + ParagraphGap;
+                }
+            }
+
+            if (_pager is (PageArrow back, PageArrow on, TextMeshPro count))
+            {
+                Lettering.Say(count, PrivacyWords.PageOf(page + 1, _pages.Count));
+                back.Dim(page == 0);
+                on.Dim(page == _pages.Count - 1);
+            }
+        }
+
         /// <summary>The count and the line under it, and the buttons of the state the card is in; what is not in sight is not pressed.</summary>
         private void ShowTheRecords()
         {
@@ -186,8 +262,26 @@ namespace Puzzle.Client.Screens
             _delete.Dim(!_device.HasRecords);
             _keep.Show(AsksTheQuestion);
             _confirm.Show(AsksTheQuestion);
+            ListenToTheControls();
+        }
 
+        /// <summary>The controls in sight and live: the arrows to a page there is, and the buttons of the state the records' part is in.</summary>
+        private void ListenToTheControls()
+        {
             _card.ForgetTheControls();
+            if (_pager is (PageArrow back, PageArrow on, _))
+            {
+                if (_page > 0)
+                {
+                    _card.Listen(back, new MuseumPress.TurnThePrivacyPage(isForward: false));
+                }
+
+                if (_page < _pages.Count - 1)
+                {
+                    _card.Listen(on, new MuseumPress.TurnThePrivacyPage(isForward: true));
+                }
+            }
+
             if (AsksTheQuestion)
             {
                 _card.Listen(_keep, new MuseumPress.KeepTheRecords());
@@ -200,11 +294,12 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>
-        /// The draft text, a paragraph at a time, broken to the width of the rows' room: set beside the card, under
-        /// what the card will hang under, and smaller where it would make the card higher than a card in front may be.
+        /// The text, a paragraph at a time, set beside the card at its type size and broken to the width of the rows'
+        /// room, and the pages it takes: one where it fits the card, else as many as its paragraphs need, at a smaller
+        /// type only where a paragraph is too high even for a page of its own.
         /// </summary>
-        /// <param name="textHeight">How high the text is, from the top of its first line to the foot of its last.</param>
-        private static IReadOnlyList<TextMeshPro> WriteTheText(Transform beside, ArtCatalogue art, int raisedBy, out float textHeight)
+        /// <param name="textHeight">How high the text of the highest page is, from the top of its first line to the foot of its last.</param>
+        private static IReadOnlyList<TextMeshPro> WriteTheText(Transform beside, ArtCatalogue art, int raisedBy, out IReadOnlyList<TextPage> pages, out float textHeight)
         {
             var paragraphs = new List<TextMeshPro>();
             for (int index = 0; index < PrivacyWords.Text.Count; index++)
@@ -213,40 +308,88 @@ namespace Puzzle.Client.Screens
             }
 
             float size = TextSize;
-            foreach (TextMeshPro paragraph in paragraphs)
+            while (true)
             {
-                paragraph.fontSize = size;
-            }
-
-            textHeight = Lay(paragraphs, down => -down);
-            while (textHeight > MostTextHeight && size * SmallerStep >= SmallestTextSize)
-            {
-                size *= SmallerStep;
-                foreach (TextMeshPro paragraph in paragraphs)
+                IReadOnlyList<float> heights = HeightsAt(paragraphs, size);
+                IReadOnlyList<TextPage> onOneCard = TextPages.Of(heights, ParagraphGap, MostTextHeight);
+                pages = onOneCard.Count == 1 ? onOneCard : TextPages.Of(heights, ParagraphGap, MostTextHeight - PagerBand);
+                textHeight = pages.Max(page => TextPages.HeightOf(page, heights, ParagraphGap));
+                float room = pages.Count == 1 ? MostTextHeight : MostTextHeight - PagerBand;
+                if (textHeight <= room || size * SmallerStep < SmallestTextSize)
                 {
-                    paragraph.fontSize = size;
+                    return paragraphs;
                 }
 
-                textHeight = Lay(paragraphs, down => -down);
+                size *= SmallerStep;
             }
-
-            return paragraphs;
         }
 
-        /// <summary>Lays the paragraphs one under the other from the text's top, at their type size.</summary>
-        /// <param name="heightOf">Where a point that far under the body's top edge stands on what the paragraphs stand on.</param>
-        /// <returns>How high the text is.</returns>
-        private static float Lay(IReadOnlyList<TextMeshPro> paragraphs, Func<float, float> heightOf)
+        /// <summary>How high each paragraph is at a type size, broken to the width of the rows' room.</summary>
+        private static IReadOnlyList<float> HeightsAt(IReadOnlyList<TextMeshPro> paragraphs, float size)
         {
             float width = SettingsLayout.RowsRight - SettingsLayout.RowsLeft;
-            float down = TextTop;
+            var heights = new float[paragraphs.Count];
             for (int index = 0; index < paragraphs.Count; index++)
             {
-                float height = Lettering.SayInLines(paragraphs[index], PrivacyWords.Text[index], width, SettingsLayout.RowsLeft, heightOf(down));
-                down += height + ParagraphGap;
+                paragraphs[index].fontSize = size;
+                heights[index] = Lettering.SayInLines(paragraphs[index], PrivacyWords.Text[index], width, SettingsLayout.RowsLeft, 0f);
             }
 
-            return down - ParagraphGap - TextTop;
+            return heights;
+        }
+
+        /// <summary>
+        /// One of the two arrows that turn the pages: the settings rows' small teal disc with its white chevron, the one
+        /// to the page before turned round. A finger anywhere within a row's half height of its middle presses it; the
+        /// arrow at the first or the last page is dimmed and not listened to.
+        /// </summary>
+        private sealed class PageArrow : IPressable
+        {
+            private const float PressedDown = 1.5f;
+
+            private readonly Transform _arrow;
+            private readonly Vector2 _middle;
+            private bool _isDimmed;
+
+            public PageArrow(string name, Transform card, ArtCatalogue art, Vector2 middle, bool pointsBack, int raisedBy)
+            {
+                _middle = middle;
+                _arrow = new GameObject(name).transform;
+                _arrow.SetParent(card, worldPositionStays: false);
+                _arrow.localPosition = middle;
+                if (pointsBack)
+                {
+                    _arrow.localRotation = Quaternion.Euler(0f, 0f, 180f);
+                }
+
+                SceneObjects.AddSprite("Disc", _arrow, art.Of(GalleryArt.TinyTealDisc), art.SpriteMaterial, DrawOrder.CardDisc + raisedBy);
+                SceneObjects.AddSprite("Glyph", _arrow, art.Of(GalleryArt.GlyphChevron), art.SpriteMaterial, DrawOrder.CardDisc + (int)DiscPart.Picture + raisedBy);
+            }
+
+            /// <summary>The arrow's middle, in the card's points.</summary>
+            public Vector2 Middle => _middle;
+
+            public bool IsUnder(Vector2 point) => (point - _middle).sqrMagnitude <= ArrowReach * ArrowReach;
+
+            public void ShowPressed(bool isPressed)
+            {
+                _arrow.localPosition = _middle - new Vector2(0f, isPressed ? PressedDown : 0f);
+                Colour(isHeld: isPressed);
+            }
+
+            public void Dim(bool isDimmed)
+            {
+                _isDimmed = isDimmed;
+                Colour(isHeld: false);
+            }
+
+            private void Colour(bool isHeld)
+            {
+                foreach (SpriteRenderer part in _arrow.GetComponentsInChildren<SpriteRenderer>())
+                {
+                    part.color = Dimming.Of(_isDimmed, isHeld);
+                }
+            }
         }
     }
 }

@@ -79,8 +79,8 @@ namespace Puzzle.Client.Screens
     /// constructor): the player goes to another page, asks for the level they stand on, chooses its start boosters
     /// and goes into it, buys a booster or a set of them, asks for coins (a pack, an ad) or for the day's gift, opens
     /// a painting's jigsaw, opens or closes a card that hangs over the page, flips a setting, chooses the language or
-    /// deletes the attempt records after a question, closes the game after a question, or does something that stays
-    /// on the page that is shown.
+    /// deletes the attempt records after a question, closes the game after a question, answers the question about the
+    /// play statistics, or does something that stays on the page that is shown.
     /// </summary>
     public abstract class MuseumPress
     {
@@ -258,6 +258,18 @@ namespace Puzzle.Client.Screens
             public DeviceSetting Setting { get; }
         }
 
+        /// <summary>One of the privacy card's arrows: its text turns to the next page, or to the one before.</summary>
+        public sealed class TurnThePrivacyPage : MuseumPress
+        {
+            public TurnThePrivacyPage(bool isForward)
+            {
+                IsForward = isForward;
+            }
+
+            /// <summary>True for the next page, false for the one before.</summary>
+            public bool IsForward { get; }
+        }
+
         /// <summary>The privacy card's "Kayıtları sil": the card asks first.</summary>
         public sealed class AskToDeleteTheRecords : MuseumPress
         {
@@ -290,6 +302,16 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The "Çık" of the card the way back brings in the hall: the game is to close.</summary>
         public sealed class QuitTheGame : MuseumPress
+        {
+        }
+
+        /// <summary>The statistics question's "İzin ver": the play notes may leave the phone from now on, and the card goes up.</summary>
+        public sealed class AllowTheStatistics : MuseumPress
+        {
+        }
+
+        /// <summary>The statistics question's "İzin verme", or the way back on it: nothing is sent, and the card goes up.</summary>
+        public sealed class DeclineTheStatistics : MuseumPress
         {
         }
 

@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
+using Puzzle.Client.Statistics;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -47,6 +49,13 @@ namespace Puzzle.Client.EditorTools
             Press(session, museum.PrivacyRowPixel, "the settings card's privacy row");
             Require(museum.PrivacyShown?.Count == PrivacyWords.RecordsKept(RecordsOnThePhone), $"the privacy card counts \"{museum.PrivacyShown?.Count}\", not {RecordsOnThePhone} records");
             ScreenShots.WritePicture(museum, screen, studio.FileName("privacy", state, screen));
+            int pages = museum.PrivacyPageShown?.Pages ?? 1;
+            for (int page = 2; page <= pages; page++)
+            {
+                Press(session, museum.PrivacyNextPagePixel, $"the privacy card's arrow to page {page}");
+                Require(museum.PrivacyPageShown == (page, pages), $"the privacy card's arrow showed {museum.PrivacyPageShown}, not page {page} of {pages}");
+                ScreenShots.WritePicture(museum, screen, studio.FileName($"privacy-page-{page}", state, screen));
+            }
 
             Press(session, museum.DeleteRecordsPixel, "the privacy card's Kayıtları sil");
             Require(museum.PrivacyShown is (_, true), "Kayıtları sil did not ask first");
@@ -56,7 +65,34 @@ namespace Puzzle.Client.EditorTools
             Require(museum.PrivacyShown == (PrivacyWords.RecordsKept(0), false), $"after Sil the privacy card shows {museum.PrivacyShown}");
             Require(!File.Exists(records.Path) && records.CountRecords() == 0, "Sil left records on the stand-in phone");
             ScreenShots.WritePicture(museum, screen, studio.FileName("privacy-deleted", state, screen));
-            return 3;
+            return 2 + pages;
+        }
+
+        /// <summary>
+        /// The question about the play statistics as a first start brings it down over the hall, and the settings card
+        /// after its "İzin ver", the statistics' switch on and the privacy row saying that statistics leave too.
+        /// </summary>
+        /// <returns>How many pictures were taken.</returns>
+        /// <exception cref="InvalidOperationException">The question did not come, or its answer did not reach the settings card.</exception>
+        public static int ShootTheConsent(PlayerState state, ScreenShape screen, Studio studio)
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var settings = new SettingsInMemory(DeviceSettings.Default);
+            using var session = new GameSession(
+                studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(state.Progress), StoryStudio.AttemptsKeptInMemory(),
+                settings, DeviceAbilities.OfThisBuild, CuePlayer.Silent, ScriptedStore.AtUsPrices(StoryStudio.Economy.Shop.Store, Application.identifier, offersRestore: false),
+                PlayStatistics.Through(new NotesToTheLog(Debug.Log, "the tools send nothing")), screen, SessionOpening.InTheMuseum);
+            StoryStudio.AdvanceUntilSettled(session);
+            MuseumStage museum = session.Museum ?? throw new InvalidOperationException("The session did not open in the museum.");
+            Require(museum.ShowsTheStatisticsQuestion, "a first start did not bring the statistics question down");
+            ScreenShots.WritePicture(museum, screen, studio.FileName("consent", state, screen));
+
+            Press(session, museum.AllowTheStatisticsPixel, "the statistics question's İzin ver");
+            Require(settings.Settings.Statistics == StatisticsChoice.Allowed && !museum.ShowsTheStatisticsQuestion, "İzin ver did not keep a yes and take the question up");
+            Press(session, museum.GearPixel, "the wallet row's gear");
+            Require(museum.SwitchesShown.Contains((DeviceSetting.Statistics, true)), "the settings card does not show the statistics' switch on after İzin ver");
+            ScreenShots.WritePicture(museum, screen, studio.FileName("settings-statistics-on", state, screen));
+            return 2;
         }
 
         /// <returns>How many pictures were taken.</returns>

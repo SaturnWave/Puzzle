@@ -183,6 +183,9 @@ namespace Puzzle.Client.Art
         /// <summary>A question mark: the settings' row for support.</summary>
         IconHelp,
 
+        /// <summary>Three bars that rise: the settings' row for the play statistics (drawn by hand in the canvas' manner; the canvas has no such row).</summary>
+        IconStatistics,
+
         // The white strokes below stand on a round button or a badge, each in a picture as large as the canvas shows it.
 
         /// <summary>The white plus of "get more" on its dark green edge, 14 points across; it stands on <see cref="GreenDisc"/>. Its pivot is its middle.</summary>

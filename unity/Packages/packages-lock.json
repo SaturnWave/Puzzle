@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.aptabase": {
+      "version": "https://github.com/aptabase/aptabase-unity.git#138318625c09158ad6ff56e61f1cf41a1a1e3a75",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "138318625c09158ad6ff56e61f1cf41a1a1e3a75"
+    },
     "com.unity.burst": {
       "version": "2.0.0",
       "depth": 2,

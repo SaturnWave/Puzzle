@@ -193,9 +193,9 @@ public class TesterModeTests
         DeviceView on = PhoneWith(TurnedOn, AdSource.Simulated);
         DeviceView onInAnotherBuild = PhoneWith(TurnedOn, (AdSource)1);
 
-        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration }, off.SettingRows);
-        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration, DeviceSetting.TesterMode }, on.SettingRows);
-        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration }, onInAnotherBuild.SettingRows);
+        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration, DeviceSetting.Statistics }, off.SettingRows);
+        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration, DeviceSetting.Statistics, DeviceSetting.TesterMode }, on.SettingRows);
+        Assert.Equal(new[] { DeviceSetting.Sound, DeviceSetting.Music, DeviceSetting.Vibration, DeviceSetting.Statistics }, onInAnotherBuild.SettingRows);
         Assert.Equal((true, false, false), (off.CanTurnOnTheTesterMode, on.CanTurnOnTheTesterMode, onInAnotherBuild.CanTurnOnTheTesterMode));
         Assert.Equal((false, true, false), (off.IsInTesterMode, on.IsInTesterMode, onInAnotherBuild.IsInTesterMode));
     }
@@ -211,7 +211,7 @@ public class TesterModeTests
         string older = "{\"version\":2,\"id\":\"" + Id + "\",\"settings\":{\"sound\":true,\"vibration\":false,\"testerMode\":true}}";
         DeviceSettings readOlder = Assert.IsType<DeviceReading.Sound>(DeviceDocument.Read(JsonSerializer.Deserialize<DeviceDocument>(older, options))).Settings;
 
-        Assert.Equal("{\"version\":5,\"id\":\"" + Id + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":true,\"language\":\"\",\"music\":true}}", written);
+        Assert.Equal("{\"version\":6,\"id\":\"" + Id + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":true,\"language\":\"\",\"music\":true,\"statistics\":\"\"}}", written);
         Assert.Equal(TurnedOn, readBack);
         Assert.Equal(new DeviceSettings(sound: true, vibration: false, testerMode: false), readOlder);
     }

@@ -11,8 +11,9 @@ namespace Puzzle.Client.Flow
     /// What the settings card, the language card and the support card say, in the language the game speaks
     /// (<see cref="Speech"/>). The settings card's Turkish words are the design canvas' (SettingsTR) where they are
     /// true of this build; the line under "Gizlilik ve veri" is not the canvas' ("Yalnızca anonim oyun verisi
-    /// toplanır"), because this build gathers nothing. The language card and the support card have no drawing, and
-    /// their words are written in the canvas' manner. No Unity dependency.
+    /// toplanır"): it says what leaves the phone, the purchases and, while the player allows them, the play
+    /// statistics, which carry no id. The language card and the support card have no drawing, and their words are
+    /// written in the canvas' manner. No Unity dependency.
     /// </summary>
     public static class SettingsWords
     {
@@ -22,12 +23,17 @@ namespace Puzzle.Client.Flow
         /// <summary>The language row, which opens the language card, and that card's nameplate.</summary>
         public static string Language => Speech.Say(WordId.SettingsLanguage);
 
-        /// <summary>
-        /// The row that opens the privacy card, and its smaller line: what the game does with the data, which holds
-        /// beside Android's own backup that the privacy card tells of.
-        /// </summary>
+        /// <summary>The row that opens the privacy card.</summary>
         public static string Privacy => PrivacyWords.Title;
-        public static string PrivacyLine => Speech.Say(WordId.SettingsPrivacyLine);
+
+        /// <summary>
+        /// The privacy row's smaller line: what leaves the phone as the player has set it. Only the purchases, while
+        /// the play statistics are not allowed (not asked yet, or declined); the purchases and statistics without an
+        /// id, once they are.
+        /// </summary>
+        public static string PrivacyLine(DeviceSettings settings) => settings.IsOn(DeviceSetting.Statistics)
+            ? Speech.Say(WordId.SettingsPrivacyLineWithStatistics)
+            : Speech.Say(WordId.SettingsPrivacyLine);
 
         /// <summary>The row that opens the support card, and that card's nameplate.</summary>
         public static string Support => Speech.Say(WordId.SettingsSupport);
@@ -65,6 +71,7 @@ namespace Puzzle.Client.Flow
             DeviceSetting.Music => Speech.Say(WordId.SettingMusic),
             DeviceSetting.Vibration => Speech.Say(WordId.SettingVibration),
             DeviceSetting.TesterMode => Speech.Say(WordId.SettingTesterMode),
+            DeviceSetting.Statistics => Speech.Say(WordId.SettingStatistics),
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting without a name."),
         };
 
