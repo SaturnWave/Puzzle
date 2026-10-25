@@ -86,20 +86,23 @@ public class ManifestPermissionsTests
         Assert.Single(DeclarationsOf(written, Vibrate));
     }
 
-    /// <summary>What aapt 36.0.0 says of the v1 package's permissions, as the purchase spike read them with the internet asked.</summary>
+    /// <summary>
+    /// What aapt 36.0.0 says of the v1 package's permissions, as the purchase spike read them with the internet asked,
+    /// line for line what the package under its permanent id said on 2026-10-25.
+    /// </summary>
     private const string V1Dump =
-        "package: com.saturnwave.puzzle\n"
+        "package: com.saturnwave.museumpuzzle\n"
         + "uses-permission: name='android.permission.INTERNET'\n"
         + "uses-permission: name='android.permission.VIBRATE'\n"
         + "uses-permission: name='com.android.vending.BILLING'\n"
-        + "permission: com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\n"
-        + "uses-permission: name='com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'\n"
+        + "permission: com.saturnwave.museumpuzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\n"
+        + "uses-permission: name='com.saturnwave.museumpuzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'\n"
         + "uses-permission: name='android.permission.ACCESS_NETWORK_STATE'\n";
 
     private static readonly string[] V1Permissions =
     {
         Vibrate, Internet, "com.android.vending.BILLING", "android.permission.ACCESS_NETWORK_STATE",
-        "com.saturnwave.puzzle" + PackagePermissions.UnitysReceiverSuffix,
+        "com.saturnwave.museumpuzzle" + PackagePermissions.UnitysReceiverSuffix,
     };
 
     [Fact]
@@ -108,7 +111,7 @@ public class ManifestPermissionsTests
         Assert.Equal(
             new[]
             {
-                Internet, Vibrate, "com.android.vending.BILLING", "com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+                Internet, Vibrate, "com.android.vending.BILLING", "com.saturnwave.museumpuzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
                 "android.permission.ACCESS_NETWORK_STATE",
             },
             PackagePermissions.AskedIn(V1Dump));

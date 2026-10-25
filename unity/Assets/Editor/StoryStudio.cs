@@ -29,7 +29,7 @@ namespace Puzzle.Client.EditorTools
         public const string ShotsFolder = "../out/unity/shots";
 
         /// <summary>Where the tools keep the records of their stand-in phone (<see cref="RecordsOnAPhone"/>), and the real lines they are made of.</summary>
-        private const string PhoneFolder = "../out/unity/phone/Android/data/com.saturnwave.puzzle/files";
+        private const string PhoneFolder = "../out/unity/phone/Android/data/com.saturnwave.museumpuzzle/files";
         private const string RecordsFixture = "../tests/fixtures/attempt-records.first-shuffle-rule.jsonl";
 
         /// <summary>The clock is moved in the steps a phone would move it.</summary>

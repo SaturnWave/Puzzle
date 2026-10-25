@@ -2,6 +2,8 @@
 
 > **Durum (2026-10-23 akşam):** Kod iOS'a hazırlandı ve Xcode projesini dışa aktaran araç (`IosBuild.Run`) yazıldı. Bu PC'deki Unity 6000.6.4f1'e **iOS Build Support kuruldu** (Hub'ın komut satırıyla). Mac açık ve SSH ile ulaşılıyor: kullanıcı `arcancaglayan`, Intel, macOS 15.8, Xcode 26.3 (iOS 26.2 SDK), bir "Apple Development" sertifikası var. Depo Mac'te `~/Desktop/Puzzle` klasöründe (`feature/ios`); Mac'in kendi SSH anahtarı GitHub'a SaturnWave olarak ulaşıyor. Kod Windows'ta yazılır; Mac yalnızca dışa aktarılan Xcode projesini derler ve cihaza kurar. Dışa aktarma, Android kopyasının önbelleğine dokunmamak için D: diskindeki ayrı çalışma ağacında (`D:/puzzle-ios`) yapılır. iOS işi `feature/ios` dalında yürür; §3.2–§3.4 henüz denenmemiş bir plandır.
 >
+> **Kalıcı kimlik (2026-10-25):** bundle ID `com.saturnwave.museumpuzzle` (Android'in paket adıyla aynı). StoreKit'i bağlayan derleme In-App Purchase'lı açık bir App ID ister; joker profil bunu taşımadığı için v1'in ilk Mac derlemesi durdu. App ID'yi proje sahibi portalda açar ya da Xcode'a bıraktırır (§2 madde 5, §3.2.1).
+>
 > **v1 (2026-10-24):** gerçek satın almalar (Unity IAP 5.4.4, StoreKit 2), oyun istatistiklerinin rıza sorusu ve ressam `feature/ios`'a birleşti. Dışa aktarılan Xcode projesi StoreKit'i uygulamaya ve UnityFramework'e bağlıyor; bağlamazsa dışa aktarma artık duruyor (§3.1.2). Info.plist'e yeni anahtar gelmedi. App Store'un gizlilik etiketinin cevapları §4.1'de; ürünler, sandbox hesabı ve sözleşme proje sahibinde (§2 madde 8).
 
 ## 1. Yol
@@ -25,9 +27,11 @@ Neden Mac: Apple'ın imza ve yükleme araçları yalnızca macOS'ta, Xcode ile �
    - Remote Login açık kalsın (System Settings → General → Sharing). Derleme sürerken Mac uyumasın: prize takılıyken ekran kapanınca uyumayı kapatın (System Settings → Battery → Options).
 3. **Xcode.** App Store'dan en güncel Xcode (App Store Connect yalnızca güncel SDK ile yapılmış derlemeleri alır; Apple bu alt sınırı her yıl nisanda yükseltir). Bir kez açılıp ek bileşenleri kurdurun; Settings → Components'ta iOS platformu yüklü olsun. Terminal'de bir kez: `sudo xcodebuild -license accept`. Xcode → Settings → Accounts'ta Developer hesabının Apple ID'siyle oturum açık olsun. Sürümü bize yazın: `xcodebuild -version`. Mac bu Xcode'u çalıştıramayacak kadar eskiyse §6'daki bulut Mac yedeği devreye girer.
 4. **Team ID.** developer.apple.com/account → Membership details → **Team ID** (10 karakter). Gizli değildir; bize yazın.
-5. **Bundle ID kararı ve App Store Connect kaydı.**
-   - **Önce karar:** `com.saturnwave.puzzle` geçicidir. App Store Connect'te kayıt oluşturulduktan sonra bundle ID değiştirilemez ve başka uygulamaya verilemez. Kalıcı kimlik (oyunun adı belli olunca) bu adımdan önce seçilmeli; Android'deki kimlik de aynı kalır (ikisini birden `unity/Assets/Editor/GameIdentity.cs` tutar).
-   - developer.apple.com → Certificates, Identifiers & Profiles → Identifiers → **+** → App IDs → App → Explicit; bundle ID'yi yazın. Capabilities'te **In-App Purchase** kendiliğinden işaretli gelir, öyle kalsın (v1 satış yapıyor, §3.1.2). Başka hiçbirini işaretlemeyin (oyun Game Center, bildirim, iCloud kullanmıyor).
+5. **Bundle ID ve App Store Connect kaydı.**
+   - **Karar (2026-10-25):** bundle ID kalıcı olarak `com.saturnwave.museumpuzzle`; Android'in paket adı da aynı (ikisini birden `unity/Assets/Editor/GameIdentity.cs` tutar). Oyunun adı sonra kesinleşse de değişmez. App Store Connect'te kayıt oluşturulduktan sonra bundle ID değiştirilemez ve başka uygulamaya verilemez.
+   - **Açık App ID, In-App Purchase'la:** oyun StoreKit'i bağladığı için (§3.1.2) Xcode bu kimliğe açık (Explicit) bir App ID ister; takımın joker geliştirme profili ("iOS Team Provisioning Profile: *") In-App Purchase taşıyamaz (son Mac derlemesi "doesn't include the In-App Purchase capability" ile durdu). Kayıt iki yoldan biriyle olur:
+     - **Ya geliştirici portalında:** developer.apple.com → Certificates, Identifiers & Profiles → Identifiers → **+** → App IDs → App → Explicit; bundle ID `com.saturnwave.museumpuzzle`. Capabilities'te **In-App Purchase** kendiliğinden işaretli gelir, öyle kalsın. Başka hiçbirini işaretlemeyin (oyun Game Center, bildirim, iCloud kullanmıyor).
+     - **Ya da Xcode'a bırakarak:** Xcode → Settings → Accounts'ta Developer hesabıyla oturum açıkken `sign-and-install.sh` Mac'in kendi Terminal'inde çalıştırılır (§3.2.1). Betik `xcodebuild`'i `-allowProvisioningUpdates` ile çağırır: Xcode App ID'yi kaydeder ve onun geliştirme profilini (iPad'i de içeren) kendisi oluşturur.
    - appstoreconnect.apple.com → Apps → **+** → New App: Platform iOS; Name (App Store'da benzersiz, en çok 30 karakter; sonra değişebilir); Primary Language; Bundle ID (listeden); SKU (yalnızca size görünür, ör. `museum-puzzle-ios`).
 6. **Yükleme için App Store Connect API anahtarı.**
    - appstoreconnect.apple.com → Users and Access → Integrations → App Store Connect API → Team Keys → **Generate API Key** (ilk kez erişim isteği gerekebilir; bunu yalnızca Account Holder yapar).
@@ -37,15 +41,15 @@ Neden Mac: Apple'ın imza ve yükleme araçları yalnızca macOS'ta, Xcode ile �
 7. **Uygulama ikonu.** 1024×1024 PNG, saydamlıksız, köşeleri yuvarlatılmamış. TestFlight ikonsuz derlemeyi reddeder. Projede henüz ikon yok (Android paketi de Unity'nin varsayılanıyla çıkıyor); ikonu proje sahibi verir, projeye ajan ekler.
 8. **Satın alma (v1, 2026-10-24).** Hepsi proje sahibinin hesabında; ajan giriş yapmaz, ürün ya da hesap açmaz.
    - **Sözleşme:** App Store Connect → Business (Agreements, Tax, and Banking) → **Paid Applications** sözleşmesi, banka ve vergi bilgileri. Bu sözleşme etkin değilken StoreKit hiçbir ürünü vermez, sandbox'ta ve TestFlight'ta da; oyun o zaman "Mağaza şu anda açılamıyor" der (T470'in iOS hâli).
-   - **Beş ürün:** uygulamanın sayfası → Monetization → In-App Purchases → **+**. Ürün kimlikleri tam olarak şunlar (oyun onları bundle ID'den kurar; bundle ID değişirse bunlar da değişir, `economy/default.json` `store`):
+   - **Beş ürün:** uygulamanın sayfası → Monetization → In-App Purchases → **+**. Ürün kimlikleri tam olarak şunlar (oyun onları kalıcı bundle ID'den ve `economy/default.json`'un `store` bölümünden kurar):
 
      | Tür | Product ID | ABD fiyatı | İçerik |
      |---|---|---|---|
-     | Consumable | `com.saturnwave.puzzle.coins.pouch` | $1.99 | 1.000 altın |
-     | Consumable | `com.saturnwave.puzzle.coins.bag` | $4.99 | 2.750 altın |
-     | Consumable | `com.saturnwave.puzzle.coins.chest` | $9.99 | 6.000 altın |
-     | Consumable | `com.saturnwave.puzzle.coins.treasure` | $19.99 | 13.000 altın |
-     | **Non-Consumable** | `com.saturnwave.puzzle.starter.apprentice_kit` | $1.99 | Çırak Çantası: 1.500 altın ve üç bölüm öncesi booster, oyuncu başına bir kez |
+     | Consumable | `com.saturnwave.museumpuzzle.coins.pouch` | $1.99 | 1.000 altın |
+     | Consumable | `com.saturnwave.museumpuzzle.coins.bag` | $4.99 | 2.750 altın |
+     | Consumable | `com.saturnwave.museumpuzzle.coins.chest` | $9.99 | 6.000 altın |
+     | Consumable | `com.saturnwave.museumpuzzle.coins.treasure` | $19.99 | 13.000 altın |
+     | **Non-Consumable** | `com.saturnwave.museumpuzzle.starter.apprentice_kit` | $1.99 | Çırak Çantası: 1.500 altın ve üç bölüm öncesi booster, oyuncu başına bir kez |
 
      Her üründe: Reference Name (yalnız size görünür), fiyat (ABD temel fiyatı; öteki ülkeleri Apple çevirir, oyun mağazanın yerel fiyat yazısını gösterir), en az İngilizce ve Türkçe görünen ad ve açıklama (Apple'ın ödeme penceresi bunları gösterir), inceleme için mağaza ekranının bir görüntüsü (`ScreenShots -screens shop`).
    - **Aile Paylaşımı kapalı kalsın:** Çırak Çantası'nın sayfasındaki **Family Sharing** açılmaz. Apple'a göre bir ürün için açıldıktan sonra geri kapatılamaz; oyun Çırak Çantası'nı oyuncu başına bir kez verir ve aile üyesinin cihazına geri yüklemeyle gelmesini istemiyoruz (GAME_DESIGN §19). Altın paketleri tüketildiği için paylaşılamaz.
@@ -117,7 +121,8 @@ App Store Connect kaydı olmadan, takımın geliştirme sertifikasıyla doğruda
 - **İmza ve kurulum, Mac'in kendi Terminal'inde:** `sh ~/puzzle-ios/sign-and-install.sh` (depoda `tools/ios/sign-and-install.sh`). Aynı komutu aynı DerivedData ile yeniden çalıştırır: kodu yeniden derlemez, yalnızca imzalar. Sonra `xcrun devicectl device install app` ile iPad'e kurar. İlk çalıştırmada macOS, codesign'ın anahtarı kullanmasına izin isteyebilir: Mac şifresi, "Her Zaman İzin Ver".
 - **Gerekenler:**
   - Takım kimliği `W4P65SPZP9`.
-  - Xcode'un yönettiği joker geliştirme profili ("iOS Team Provisioning Profile: *"); iPad'in kimliği (`00008112-0016084A0C06201E`) bu profilde kayıtlı.
+  - **v1'den beri (2026-10-25):** `com.saturnwave.museumpuzzle` için In-App Purchase'lı açık App ID ve onun geliştirme profili (§2 madde 5). Joker profil ("iOS Team Provisioning Profile: *") StoreKit'i bağlayan derlemeyi imzalayamaz: v1'in Mac derlemesi "doesn't include the In-App Purchase capability" ile durdu. Betik `xcodebuild`'i `-allowProvisioningUpdates` ile çağırır; Xcode → Settings → Accounts'ta Developer hesabı açıkken Xcode App ID'yi (portalda yoksa) kaydeder ve profili kendisi oluşturur. iPad'in kimliği (`00008112-0016084A0C06201E`) takımda kayıtlı; Xcode'un profili takımın cihazlarını içerir.
+  - Profil henüz yokken SSH'deki derleme imzadan önce, "No profiles for 'com.saturnwave.museumpuzzle'" gibi bir hatayla durabilir. O zaman betik doğrudan Mac'in Terminal'inde çalıştırılır: derlenmemiş kodu da kendisi derler (ilk sefer uzun sürer).
   - iPad kabloyla bağlı ve Mac'le eşleşmiş; **Geliştirici Modu** açık (Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu → Aç; iPad yeniden başlar, açılınca "Aç" ve iPad şifresi).
 - **Sonuç:** Puzzle.app (imzalı, 854 MB) 2026-10-24'te proje sahibinin iPad Pro 12.9" (6. nesil, iPadOS 26.5) cihazına kuruldu.
 - Yeni bir sürüm için: dışa aktarma (§3.1), aktarma (§3.2), SSH'den derleme, sonra Mac'te aynı betik. TestFlight yolu (§3.3, bulut imzası) hâlâ denenmedi.

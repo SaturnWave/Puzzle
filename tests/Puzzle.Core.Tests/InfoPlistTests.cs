@@ -17,7 +17,7 @@ public class InfoPlistTests
         + "<plist version=\"1.0\">\n"
         + "<dict>\n"
         + "\t<key>CFBundleIdentifier</key>\n"
-        + "\t<string>com.saturnwave.puzzle</string>\n"
+        + "\t<string>com.saturnwave.museumpuzzle</string>\n"
         + "\t<key>NSCameraUsageDescription</key>\n"
         + "\t<string></string>\n"
         + "\t<key>UIRequiresFullScreen</key>\n"
@@ -77,7 +77,7 @@ public class InfoPlistTests
 
         Assert.DoesNotContain(PairsOf(written), pair => pair.Key == Camera);
         Assert.Contains("a nested key of the same name is not the app's", written);
-        Assert.Contains("<string>com.saturnwave.puzzle</string>\n\t<key>UIRequiresFullScreen</key>", written);
+        Assert.Contains("<string>com.saturnwave.museumpuzzle</string>\n\t<key>UIRequiresFullScreen</key>", written);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class InfoPlistTests
     public void A_list_indented_with_spaces_gets_its_strings_one_step_of_spaces_deeper()
     {
         // Unity's export writes the list with two spaces a step, under "  <dict>".
-        const string spaced = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<plist version=\"1.0\">\n  <dict>\n    <key>CFBundleIdentifier</key>\n    <string>com.saturnwave.puzzle</string>\n  </dict>\n</plist>\n";
+        const string spaced = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<plist version=\"1.0\">\n  <dict>\n    <key>CFBundleIdentifier</key>\n    <string>com.saturnwave.museumpuzzle</string>\n  </dict>\n</plist>\n";
 
         string written = InfoPlist.Apply(spaced, new[] { PlistLine.Lists(PhoneTurns, Upright) });
 

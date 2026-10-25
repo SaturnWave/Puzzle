@@ -234,8 +234,8 @@
   // player.purchases says so; the default player is free and buys nothing.
   // A price is the price point of the US store in cents ($1.99 is 199): every other country takes the store's own
   // equivalent, and the game shows a price as the store words it for the player, never this number. A product's id in
-  // both stores is the game's application id, a dot and its productIdSuffix: com.saturnwave.puzzle.coins.pouch while the
-  // application id is com.saturnwave.puzzle, itself a placeholder until the game's name is decided; the owner creates
+  // both stores is the game's application id, a dot and its productIdSuffix: com.saturnwave.museumpuzzle.coins.pouch,
+  // under the permanent application id com.saturnwave.museumpuzzle [decided 2026-10-25]; the owner creates
   // the products under these ids in Play Console and App Store Connect. Nothing is random: what a product gives is
   // listed here and shown before it is bought, and nothing of it reaches a level.
   // The pricing rules hold these numbers (EconomyBalancePolicyTests): coins per dollar never fall as a pack grows, and
@@ -244,9 +244,9 @@
   // ends in .99, and none is above $19.99.
   "store": {
     // The coin packs, in the order the shop shows them: a pouch, a bag, a chest and a treasure of coins. In each, the
-    // productIdSuffix is a placeholder (the application id is not decided), priceUsdCents is the owner's price
-    // [decided 2026-10-24], and coins is the research's amount, kept because the simulator showed no reason to change it
-    // [proposed 2026-10-24].
+    // productIdSuffix ends the product's id under the application id [decided 2026-10-25], priceUsdCents is the
+    // owner's price [decided 2026-10-24], and coins is the research's amount, kept because the simulator showed no
+    // reason to change it [proposed 2026-10-24].
     "coinPacks": {
       // One +5 and 100 coins over, as the leaders' smallest pack buys one +5: 503 coins a dollar.
       "pouch": { "productIdSuffix": "coins.pouch", "priceUsdCents": 199, "coins": 1000 },
@@ -260,7 +260,7 @@
     // "Çırak Çantası", the apprentice's bag: the starter pack. In the shape of Gardenscapes' Hot Offer ($1.99 for 1 500
     // coins and three boosters).
     "starterPack": {
-      // The end of its product id: com.saturnwave.puzzle.starter.apprentice_kit today. [placeholder]
+      // The end of its product id: com.saturnwave.museumpuzzle.starter.apprentice_kit. [decided 2026-10-25]
       "productIdSuffix": "starter.apprentice_kit",
       // The owner's price. [decided 2026-10-24]
       "priceUsdCents": 199,

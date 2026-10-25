@@ -16,7 +16,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 | 4 | Unity denetimleri | `ProjectSetup`, `EngineSmokeTest`, `EconomyCheck`, `FinaleCheck`, `PlayModeCheck`, `TouchWhileMovingCheck`, `CollectionMemoryCheck`, `PurchaseCheck`, `ScreenShots -screenWalk` (komutlar: GAME_DESIGN §23) |
 | 5 | Ekonomi | `puzzle economy run economy/default.json`: ortalama oyuncu 100. bölüme 7–9. günde (§25) |
 | 6 | APK | `AndroidBuild.Run` → `unity/Build/Android/puzzle.apk` |
-| 7 | Telefona kur | USB hata ayıklama telefonda onaylı; `adb install -r unity/Build/Android/puzzle.apk` |
+| 7 | Telefona kur | USB hata ayıklama telefonda onaylı; `adb install -r unity/Build/Android/puzzle.apk`. Paket kimliği 2026-10-25'ten beri `com.saturnwave.museumpuzzle`: bu APK eski test uygulamasının (`com.saturnwave.puzzle`) yanına ayrı bir uygulama olarak kurulur; eskisinin ilerlemesi, dosyaları kopyalanmadıkça gelmez |
 | 8 | Telefon testleri | Aşağıdaki T listesi, gruplar sırasıyla |
 
 Ön koşul sütunu "aşama N" diyorsa, o test arayüz planının o aşaması bitince anlam kazanır; ondan önce *Ertelendi* yazılır.
@@ -109,7 +109,7 @@ Bu belge iki şeyi tek yerde tutar: **bilinen açıklar** (bildiğimiz ama henü
 
 ### C2. Kayıt dosyasını okuyarak (cüzdan ekranı gelmeden)
 
-Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.json` (izin verilmezse `adb shell run-as com.saturnwave.puzzle cat files/progress.json`).
+Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.museumpuzzle/files/progress.json` (izin verilmezse `adb shell run-as com.saturnwave.museumpuzzle cat files/progress.json`).
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|
@@ -118,17 +118,17 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T25 | Kayıp bir can götürür, 30 dakikalık saati başlatır | Can doluyken (`"livesShort":0`) hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı ve telefonun saatini (`adb shell date +%s`) oku | `"livesShort":1`; `nextLifeAtUnixSeconds` kaybettiren hamlenin anı artı 1800 (birkaç saniye içinde). Yarım saat içinde ikinci kayıp: 2, aynı `nextLifeAtUnixSeconds` | Aşama 2 | Bekliyor |
 | T26 | Hamlesiz çıkış ve yarıda kapatma ücretsiz | Bir bölüm aç, hamle yapmadan yuvarlak düğmeyle müzeye dön, dosyayı oku. Sonra bir bölümde birkaç hamle oyna, uygulamayı kaydırarak kapat, aç, dosyayı oku | İkisi de `livesShort`'u değiştirmez; ikincisi yalnızca denemeyi sayar (`attemptsOnLevel` bir artar), oyun salonda açılır | Aşama 2 | Bekliyor |
 | T27 | Can bitince | 30 dakika içinde beş bölüm kaybet, sonra altıncıyı açmayı dene | Dosya `"livesShort":5`; 7. aşamadan beri altıncı bölüm açılmaz, can kartı gelir (T93) | Aşama 2 ve 7 | Bekliyor |
-| T28 | Kaydedilen an yeniden başlatmadan sağ çıkar | Bir kayıptan sonra `livesShort` ve `nextLifeAtUnixSeconds`'u not et; `adb shell am force-stop com.saturnwave.puzzle` ile durdur, aç; yarım saat içinde bir bölüm kazan, dosyayı oku | `livesShort` ve `nextLifeAtUnixSeconds` öncekiyle birebir aynı; `coins` ve `levelsWon` kazançla arttı | Aşama 2 | Bekliyor |
+| T28 | Kaydedilen an yeniden başlatmadan sağ çıkar | Bir kayıptan sonra `livesShort` ve `nextLifeAtUnixSeconds`'u not et; `adb shell am force-stop com.saturnwave.museumpuzzle` ile durdur, aç; yarım saat içinde bir bölüm kazan, dosyayı oku | `livesShort` ve `nextLifeAtUnixSeconds` öncekiyle birebir aynı; `coins` ve `levelsWon` kazançla arttı | Aşama 2 | Bekliyor |
 
 ### C3. Deneme kaydı ve cihaz kimliği (aşama 3)
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|
-| T80 | Cihaz kimliği | Yeni APK'yı kur, oyunu bir kez aç; `adb shell run-as com.saturnwave.puzzle cat files/device.json` ile kimliği not et; uygulamayı durdurup aç, yeniden oku; aynı APK'yı üstüne kur, oku; kaldırıp kur, oku | İlk üç okumada aynı kimlik; kaldırıp kurunca yeni bir kimlik | Aşama 3 | Bekliyor |
+| T80 | Cihaz kimliği | Yeni APK'yı kur, oyunu bir kez aç; `adb shell run-as com.saturnwave.museumpuzzle cat files/device.json` ile kimliği not et; uygulamayı durdurup aç, yeniden oku; aynı APK'yı üstüne kur, oku; kaldırıp kur, oku | İlk üç okumada aynı kimlik; kaldırıp kurunca yeni bir kimlik | Aşama 3 | Bekliyor |
 | T81 | Kazanılan bölümün satırı | `attempts.jsonl` satır sayısını not et; hamle kalmışken bir bölüm kazan, şölen başlar başlamaz uygulamayı kapat; son satırı oku | Bir satır fazla: `"result":"won"`, `"client":"unity"`, `deviceId` device.json'daki kimlik, `moveLimit` bölümün kendi limiti, hamle kadar `{"act":"move"}` | Aşama 3 | Bekliyor |
 | T82 | Kaybedilen bölümün satırı | Hamlesi biterek bir bölüm kaybet; kayıp kartı gelir gelmez dosyayı oku | Bir satır fazla: `"result":"outOfMoves"`, `movesUsed` bölümün hamle sayısı | Aşama 3 | Bekliyor |
 | T83 | Bırakma ve kapatma | Hamle yapmadan bölümden çık; iki hamle oynayıp çık; bir hamle oynayıp uygulamayı kapat; her adımdan sonra satırları say | İlki satır eklemez; ikincisi `"result":"abandoned"`, `"movesUsed":2` ile bir satır ekler; üçüncüsü satır eklemez | Aşama 3 | Bekliyor |
-| T84 | Araçlar telefonun dosyasını okur | Dosyayı bilgisayara al (`adb shell run-as com.saturnwave.puzzle cat files/attempts.jsonl > phone-attempts.jsonl`); `dotnet run --project src/Puzzle.Cli -c Debug -- humans phone-attempts.jsonl --out out/phone-humans.csv` | Her satır okunur, okunamayan satır yok; denemeler bölümlerine sayılır | Aşama 3 | Bekliyor |
+| T84 | Araçlar telefonun dosyasını okur | Dosyayı bilgisayara al (`adb shell run-as com.saturnwave.museumpuzzle cat files/attempts.jsonl > phone-attempts.jsonl`); `dotnet run --project src/Puzzle.Cli -c Debug -- humans phone-attempts.jsonl --out out/phone-humans.csv` | Her satır okunur, okunamayan satır yok; denemeler bölümlerine sayılır | Aşama 3 | Bekliyor |
 
 ### D. Can ve saat
 
@@ -266,7 +266,7 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 | T181 | Kartı oku | Ayarlar kartını aç ve oku | Dil (seçili dilin adı ve ok; dokunmak dil kartını açar), Gizlilik ve veri ("Oyun hiçbir şey göndermez"), Destek; üstte Ses, Müzik ve Titreşim anahtarları; altta "Oyuncu kimliği: XXXX-XXXX · Sürüm 1.0" ve "Test sürümü · reklamlar canlandırma, satın alma kapalı"; kesik yazı yok, ğ, ı, ş, ü doğru | Aşama 13 | Bekliyor |
 | T182 | Kayıt sayısı | İki bölümü sonuna kadar oyna (kazan ya da kaybet), sonra Gizlilik ve veri kartını aç | Metin rahat okunur ve sana göre doğru; "Deneme kayıtları" kayıtlar başladığından beri biten her denemeyi sayar (kazanılan, kaybedilen, bir hamleden sonra bırakılan) | Aşama 13 | Bekliyor |
 | T183 | Kayıtları sil | "Kayıtları sil"e dokun, sonra "Vazgeç"; yine dokun, sonra "Sil"; kartları kapat | Önce bir soru; Vazgeç bir şey değiştirmez; Sil sayıyı 0 yapar ve "Bütün kayıtlar silindi." der; düğme sönük; altın, can, bölüm, booster'lar ve yerleştirilmiş parçalar önceki gibi | Aşama 13 | Bekliyor |
-| T184 | Destek | Destek kartını aç. Telefon USB'deyken kartın gösterdiği klasörü aç | Oyuncu kimliği ayarlar kartının altındakiyle aynı; "Sürüm 1.0"; "Bölüm içeriği sürüm 1"; yol `/storage/emulated/0/Android/data/com.saturnwave.puzzle/files/attempts.jsonl`; T183'ten sonra dosya yok, bir bölüm daha bitince tek satırla geri gelir | Aşama 13 | Bekliyor |
+| T184 | Destek | Destek kartını aç. Telefon USB'deyken kartın gösterdiği klasörü aç | Oyuncu kimliği ayarlar kartının altındakiyle aynı; "Sürüm 1.0"; "Bölüm içeriği sürüm 1"; yol `/storage/emulated/0/Android/data/com.saturnwave.museumpuzzle/files/attempts.jsonl`; T183'ten sonra dosya yok, bir bölüm daha bitince tek satırla geri gelir | Aşama 13 | Bekliyor |
 | T185 | Yeniden açılış | T183'ten sonra oyunu tamamen kapat (kaydırıp at), yeniden aç; ayarları ve gizlilik kartını aç | Sayı hâlâ 0 (ya da o zamandan beri biten deneme kadar); oyuncu kimliği öncekiyle aynı | Aşama 13 | Bekliyor |
 | T186 | Veri kullanımı | Android Ayarlar > Uygulamalar > oyun > Mobil veri ve Wi-Fi: Wi-Fi açıkken 10 dakikalık bir oturumdan önce ve sonra bak; Uygulama bilgisi > İzinler'e de bak | Oyun veri kullanmamış (0 B); izin listesinde internet yok (2026-10-16'dan beri paket istemiyor). Veri görünürse gizlilik metni değişmeli | Aşama 13 | Bekliyor |
 | T187 | Üstüne kurulum | Yeni sürümü eskisinin üstüne kur (kaldırmadan), oyunu aç | İlerleme, altın ve canlar duruyor; ayarlar kartı açılıyor (1. düzendeki eski cihaz dosyası bütün ayarlar açık okunur); hata görünmüyor | Aşama 13 | Bekliyor |
@@ -467,7 +467,7 @@ Dosya: `adb shell cat /sdcard/Android/data/com.saturnwave.puzzle/files/progress.
 
 ### F20. Koleksiyonda bellek (24 Ekim)
 
-Bellek `adb shell dumpsys meminfo com.saturnwave.puzzle` ile ölçülür (TOTAL PSS). 23 Ekim'de 20 oda gezilince 401 MB'tan 649 MB'a çıkıyordu (A42/4).
+Bellek `adb shell dumpsys meminfo com.saturnwave.museumpuzzle` ile ölçülür (TOTAL PSS). 23 Ekim'de 20 oda gezilince 401 MB'tan 649 MB'a çıkıyordu (A42/4).
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|
@@ -534,7 +534,7 @@ Kural: iPad her zaman, Android'de kısa kenarı 600 dp ve üstü olan ekranlar (
 
 ### F24. Satın alma (24 Ekim)
 
-Mağazada dört altın paketi mağazanın yerel fiyatıyla; 20. bölümden Çırak Çantası ilk paketin yerinde ("BİR KEZ"). Her ürün önce bir kartla sorulur, ödeme yalnız kartın "Satın al"ıyla Google Play'in ya da App Store'un kendi sayfasında. Ödeme bir kez verilir ve kayıttan sonra mağazaya onaylanır. Sunucu yok: iade edilen altın kalır, silip kurunca altın paketleri gelmez, Çırak Çantası gelir. T472–T487 için Play Console'da uygulama ve beş ürün (`com.saturnwave.puzzle.coins.pouch`, `.coins.bag`, `.coins.chest`, `.coins.treasure` tüketilir; `.starter.apprentice_kit` tüketilmez) ve lisanslı test hesabı gerekir; iOS testleri için App Store Connect ürünleri ve sandbox hesabı. Günlük: `adb logcat -s Unity` içinde "The store said:" satırları.
+Mağazada dört altın paketi mağazanın yerel fiyatıyla; 20. bölümden Çırak Çantası ilk paketin yerinde ("BİR KEZ"). Her ürün önce bir kartla sorulur, ödeme yalnız kartın "Satın al"ıyla Google Play'in ya da App Store'un kendi sayfasında. Ödeme bir kez verilir ve kayıttan sonra mağazaya onaylanır. Sunucu yok: iade edilen altın kalır, silip kurunca altın paketleri gelmez, Çırak Çantası gelir. T472–T487 için Play Console'da uygulama ve beş ürün (`com.saturnwave.museumpuzzle.coins.pouch`, `.coins.bag`, `.coins.chest`, `.coins.treasure` tüketilir; `.starter.apprentice_kit` tüketilmez) ve lisanslı test hesabı gerekir; iOS testleri için App Store Connect ürünleri ve sandbox hesabı. Günlük: `adb logcat -s Unity` içinde "The store said:" satırları.
 
 | Kod | Test | Adımlar | Beklenen | Ön koşul | Durum |
 |---|---|---|---|---|---|

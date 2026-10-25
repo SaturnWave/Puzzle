@@ -32,7 +32,7 @@
 - "Az kalsın kaybettin" anları (near-miss) hedeflenmez, yalnızca ölçülür.
 - Toplanan veride kimlik yalnızca rastgele bir cihaz kimliğidir; isim, e-posta ve reklam takibi yoktur. KVKK ve GDPR için rıza ekranı ve gizlilik politikası planlıdır (Tasarım §20).
 
-**Ad ve ekip.** "Puzzle" bir çalışma adıdır; oyunun adı en sona bırakıldı (karar 2026-10-05). Paket kimliği (`com.saturnwave.puzzle`) de geçicidir. Proje sahibi SaturnWave'dir; kod, içerik ve belgeler sahibiyle Claude tarafından üretilir. Görsel yön, sahibinin Claude Design'da çizdirdiği tasarım tuvalidir (Tasarım §22).
+**Ad ve ekip.** "Puzzle" bir çalışma adıdır; oyunun adı en sona bırakıldı (karar 2026-10-05). Paket kimliği ise kalıcıdır: `com.saturnwave.museumpuzzle`, iki mağazada da (karar 2026-10-25). Proje sahibi SaturnWave'dir; kod, içerik ve belgeler sahibiyle Claude tarafından üretilir. Görsel yön, sahibinin Claude Design'da çizdirdiği tasarım tuvalidir (Tasarım §22).
 
 ## 2. Nasıl oynanır
 
@@ -475,7 +475,7 @@ Planlanan öteki adımlar:
 
 ### Açık kararlar
 
-- Oyunun adı (en sona bırakıldı) ve kalıcı paket kimliği.
+- Oyunun adı (en sona bırakıldı). Paket kimliği 2026-10-25'te kesinleşti (`com.saturnwave.museumpuzzle`).
 - Analiz servisi: Firebase mi, Unity Analytics mi (Tasarım §20).
 - Bölüm içi booster fiyatları; altın sayılarının tek tek onayı; yan koleksiyonun büyüklüğü ve parça fiyatı (Tasarım §25).
 - Malzeme indirme bölümlerinin hamle aralığı: şimdilik değişmiyor (karar 2026-10-12); bu bölümler hedefin altında kalıyor (%3,6, hedef %6).

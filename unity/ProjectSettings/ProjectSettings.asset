@@ -170,8 +170,8 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.saturnwave.puzzle
-    iPhone: com.saturnwave.puzzle
+    Android: com.saturnwave.museumpuzzle
+    iPhone: com.saturnwave.museumpuzzle
   buildNumber:
     Standalone: 0
     VisionOS: 0

@@ -257,8 +257,8 @@ public sealed record HintSettings
 /// <param name="Name">A coin pack's name in the file ("pouch"), or <see cref="StarterPackSettings.Name"/>.</param>
 /// <param name="ProductIdSuffix">
 /// What follows the game's application id and a dot in the product's id in both stores: with the application id
-/// com.saturnwave.puzzle, "coins.pouch" is the product com.saturnwave.puzzle.coins.pouch. The game puts the two
-/// together, so the ids follow the application id when that is decided.
+/// com.saturnwave.museumpuzzle, "coins.pouch" is the product com.saturnwave.museumpuzzle.coins.pouch. The game puts
+/// the two together, so the ids follow the application id its build carries.
 /// </param>
 /// <param name="Price">The price point in the US store; every other country takes the store's own equivalent.</param>
 /// <param name="Boosters">The boosters it gives besides the coins, each kind with a count of at least 1; none for a coin pack.</param>
