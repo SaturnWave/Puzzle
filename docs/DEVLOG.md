@@ -6,6 +6,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
+**Kalıcı uygulama kimliği (2026-10-25)**
+- Proje sahibinin kararı: iki mağazanın kalıcı uygulama kimliği `com.saturnwave.museumpuzzle` (Android'in paket adı, iOS'un bundle kimliği); yer tutucu `com.saturnwave.puzzle` bitti. Neden şimdi: iOS derlemesi StoreKit'i (IAP 5.4.4) bağlıyor, Xcode In-App Purchase için açık bir App ID istiyor; takımın joker geliştirme profili bunu taşıyamıyor (son Mac derlemesi: "doesn't include the In-App Purchase capability"). Oyunun adı ("Puzzle") hâlâ geçici; kimlik adla değişmeyecek.
+- Bitti (ana dal): `AndroidBuild`, `ProjectSettings.asset`, `StoryStudio`'nun vekil telefon klasörü, `PackagePermissions`'ın, `StoreTalk`'un ve `EconomySettings`'in yorumları, `economy/default.json` (`[decided 2026-10-25]`), testler; GAME_DESIGN §19, OVERVIEW ve PHONE_TESTS'in adb yolları. Ürün kimlikleri onu izliyor: `com.saturnwave.museumpuzzle.coins.pouch`, `.coins.bag`, `.coins.chest`, `.coins.treasure`, `.starter.apprentice_kit`. Günlüğün eski kayıtları eski kimliği tutuyor.
+- Android'de yeni paket eski test uygulamasının (`com.saturnwave.puzzle`) yanına ayrı bir uygulama olarak kurulur: eskisinin ilerlemesi (`files/progress.json` ve öteki kayıtlar) dosyaları kopyalanmadıkça yeniye gelmez. Eski uygulama telefondan kendiliğinden kalkmaz.
+- 5.861 test geçti; ekonomi denetimi temiz (100. bölüm 8. gün). APK 290 MB (7,1 dk). `aapt`: paket `com.saturnwave.museumpuzzle`, sürüm 1.0 (kod 1); izinler tam beş (INTERNET, VIBRATE, BILLING, ACCESS_NETWORK_STATE, `com.saturnwave.museumpuzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`); dik açılıyor; `appCategory` oyun. Telefona kurulmadı.
+- Sahipte: Play Console'da uygulamayı ve beş ürünü bu kimlikle açmak. App Store tarafı `feature/ios`'ta (IOS_BUILD §2).
+
 **v1 incelemesinin düzeltmeleri (2026-10-25)**
 - İnceleme çift teslim ve izinsiz giden veri bulmadı; on bulgu kapandı, her biri bir birim testiyle ya da Editor denetimiyle tutuluyor (ana dal).
 - Kaydı tutamayan açılış (ilerleme dosyası okunamıyor ya da daha yeni bir sürümün) artık satmıyor: ilerleme deposu kapanıştan sonra tutup tutmadığını söylüyor (`ProgressKeeping`), mağaza hiç sorulmuyor ("Mağaza bu oturumda kapalı"), önceki açılışın bekleyen ödemesi onaysız kalıyor ve kaydedebilen açılışta bir kez geliyor.

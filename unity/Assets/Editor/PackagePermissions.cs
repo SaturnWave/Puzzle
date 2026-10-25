@@ -18,7 +18,7 @@ namespace Puzzle.Client.EditorTools
     {
         /// <summary>
         /// The permission Unity's own library declares for itself and asks for, under the package's id, so that what it
-        /// registers to hear stays the game's own (Android 13 and later): "com.saturnwave.puzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION".
+        /// registers to hear stays the game's own (Android 13 and later): "com.saturnwave.museumpuzzle.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION".
         /// </summary>
         public const string UnitysReceiverSuffix = ".DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION";
 

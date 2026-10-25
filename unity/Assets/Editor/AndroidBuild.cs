@@ -36,10 +36,15 @@ namespace Puzzle.Client.EditorTools
         /// </summary>
         private const string KeptLibraryManifest = "Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/src/main/AndroidManifest.xml";
 
-        /// <summary>Placeholders: the game's name is decided last, and the package id follows it.</summary>
+        /// <summary>The name under the icon is a placeholder: the game's name is decided last.</summary>
         private const string CompanyName = "SaturnWave";
         private const string ProductName = "Puzzle";
-        private const string PackageId = "com.saturnwave.puzzle";
+
+        /// <summary>
+        /// The game's permanent package name, the same as its iOS bundle id (decided 2026-10-25): the stores know the game and
+        /// its products by it (com.saturnwave.museumpuzzle.coins.pouch), so it stays when the name is decided.
+        /// </summary>
+        private const string PackageId = "com.saturnwave.museumpuzzle";
 
         public static void Run()
         {

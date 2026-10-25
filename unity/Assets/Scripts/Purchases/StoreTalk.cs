@@ -8,8 +8,8 @@ namespace Puzzle.Client.Purchases
 {
     /// <summary>
     /// A product as the platform's store knows it: the game's product, and its id in both stores, which is the
-    /// game's application id, a dot and the product's id suffix (com.saturnwave.puzzle.coins.pouch). Putting the two
-    /// together here keeps the ids with the application id when that is decided.
+    /// game's application id, a dot and the product's id suffix (com.saturnwave.museumpuzzle.coins.pouch). Putting the
+    /// two together here keeps the ids with the application id the build carries.
     /// </summary>
     public sealed class StoreListing
     {

@@ -950,7 +950,7 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Çırak Çantası:** $1.99; 1.500 altın ve üç bölüm öncesi booster (fırça + sıçrama, renk bombası, +3 hamle, birer). Oyuncu başına bir kez. 20. bölümden itibaren mağazanın başında durur; geri sayım yok.
 - **Fiyat kuralları** (araştırma §3.2, denge testlerinde): paket büyüdükçe dolar başına altın düşmez, en büyük paket en küçükten en çok %35 fazla verir; her paket tam sayıda "+5" eder ve büyüdükçe daha çok; başlangıç paketinin değeri aynı paradaki altının en çok 2,5 katıdır; fiyatlar .99 ile biter, hiçbiri $19.99'u geçmez.
 - Hiçbir üründe rastgele içerik yok; içerik satın almadan önce görünür. Hiçbir satın alma bölümün hamle limitine, tohumlarına ya da yardımına dokunmaz (§17). Her satın almada onay adımı var; kaybetme kartından tek dokunuşla ücret alınmaz.
-- Ürün kimlikleri oyunun uygulama kimliğine bağlıdır: `com.saturnwave.puzzle.coins.pouch` gibi. Uygulama kimliği oyunun adıyla birlikte kesinleşir; ürünleri mağazalarda proje sahibi açar.
+- Ürün kimlikleri oyunun uygulama kimliğine bağlıdır: `com.saturnwave.museumpuzzle.coins.pouch` gibi. Uygulama kimliği kalıcıdır (karar 2026-10-25): Android'in paket adı ve iOS'un bundle kimliği `com.saturnwave.museumpuzzle`; oyunun adı sonra kesinleşse de değişmez. Ürünleri mağazalarda proje sahibi açar.
 
 **Karar ve uygulama notu (2026-10-24): satın almanın kuralları oyunda.** Satış açıldı (§23, "Gerçek satın almalar").
 
@@ -1487,7 +1487,7 @@ Bu kararlarla 10. aşama başladı.
 - **Bilinen:** oyunda ekran okuyucu bağlantısı yok (düğmelerin etiketleri var, okuyan yok). Uzun dönem adları plakada iki satıra bölünüyor (proje sahibinin seçimi, 2026-10-22); 14. dönem karşılaştırma için bilerek tek satırda, küçük kalıyor ve seçimden sonra kaldırılacak. 6. dönemin beş yeri Tokyo çevresinde, kamera en yakından açılıyor. Geleneksel Çince serif atlası büyüdü (+2 MB). Telefonda ölçülmedi.
 - **Doğrulama:** 4.068 test (kat planının yaklaşık 200 testi onunla gitti, 49 harita testi geldi). Ekonomi denetimi temiz. Unity'de bütün denetimler ve beş dilde harita yürüyüşleri hatasız. Telefon testleri: `docs/PHONE_TESTS.md`, T390–T403.
 
-**Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası.
+**Geçici olanlar:** paket kimliği `com.saturnwave.puzzle` ve ürün adı (oyunun adı en sona kaldı), Unity'nin deneme imzası. **Güncelleme (2026-10-25):** paket kimliği artık kalıcı: `com.saturnwave.museumpuzzle` (§19); ürün adı ve imza hâlâ geçici.
 
 **Salonda geri tuşu ve dokunuş eşiği (2026-10-23).**
 
