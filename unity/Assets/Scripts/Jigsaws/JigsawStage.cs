@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Avatar;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
@@ -23,9 +24,10 @@ namespace Puzzle.Client.Jigsaws
     /// pieces that are in place, the pieces the player has won waiting in the wooden tray, and the player's finger
     /// that carries a piece from the tray to its place. A piece let go near its place drops in; let go anywhere
     /// else it goes back to the tray, so no piece is ever lost. The blue button places every waiting piece for the
-    /// player. When the last piece is in, a light runs over the painting and sparkles burst around its frame, and the
-    /// tray's well shows what completing the painting gave: its coins and the booster the rotation gives, each with
-    /// the pill that counts it. A painting that was whole when the screen opened gave its reward then, and shows none.
+    /// player. When the last piece is in, a light runs over the painting and sparkles burst around its frame, the
+    /// painter comes up in front of the tray's right end cheering, both arms raised (§22), and the tray's well beside
+    /// him shows what completing the painting gave: its coins and the booster the rotation gives, each with the pill
+    /// that counts it. A painting that was whole when the screen opened gave its reward then, and shows neither.
     /// <para>
     /// Two steps of the tutorial come here (docs/GAME_DESIGN.md §19), each once to a player: on the first jigsaw a piece
     /// waits on, the screen dims but for a piece in the tray and its place in the painting, and the pill in the blue
@@ -66,6 +68,9 @@ namespace Puzzle.Client.Jigsaws
 
         /// <summary>The frame of a painting that is whole again swells once by this share of its size.</summary>
         private const float RestoredSwell = 0.035f;
+
+        /// <summary>The painter who cheers at a whole painting comes up from this far under his place as he fades in.</summary>
+        private const float PainterRisesBy = 14f;
 
         /// <summary>A step of the tutorial dims the screen over this long; its windows reach this share of a piece's cell past it (for its knobs), and its pill is at most this wide.</summary>
         private const float LessonComesIn = 0.35f;
@@ -111,6 +116,10 @@ namespace Puzzle.Client.Jigsaws
 
         /// <summary>What completing the painting gives, shown once it is whole; nothing for a painting that was whole when the screen opened.</summary>
         private readonly Reward? _reward;
+
+        /// <summary>The painter's pictures, and the painter who cheers in front of the tray once the painting has become whole here; nothing before.</summary>
+        private readonly PainterGallery _painterPictures;
+        private PainterFigure? _cheering;
 
         /// <summary>The reward in the tray's well, once the painting is whole; nothing before.</summary>
         private GoodsRow? _rewardRow;
@@ -200,7 +209,8 @@ namespace Puzzle.Client.Jigsaws
                 DrawOrder.PageButton, DrawOrder.PageButtonLettering);
             _veil = Veil.Create(_root.transform, art);
             _spotlight = Spotlight.Create(_root.transform, art);
-            _lessonPill = ShelfPill.CreateForLessons(_root.transform, art);
+            _lessonPill = ShelfPill.CreateForLessons(_root.transform, art, paintings.Painter);
+            _painterPictures = paintings.Painter;
             _lessonsToCome = new[] { TutorialStep.FirstPiece, TutorialStep.FirstPainting }.Where(step => !tutorial.Has(step)).ToList();
             _presses.Add(_back, JigsawPress.Leave);
             _presses.Add(_placeAll, JigsawPress.PlaceThemAll);
@@ -315,6 +325,7 @@ namespace Puzzle.Client.Jigsaws
 
             _row = new TrayRow(Table.Waiting, layout.TrayPlaces);
             _tray.Lay(_row);
+            PlaceThePainter(1f);
             PlaceTheReward(1f);
             ShowTheTable();
             ShowTheSparkles();
@@ -457,6 +468,7 @@ namespace Puzzle.Client.Jigsaws
                 SceneObjects.DestroyObjectOf(_rewardRow.Transform);
             }
 
+            _cheering?.Dispose();
             _sparkles.Dispose();
             _veil.Dispose();
             _spotlight.Dispose();
@@ -781,8 +793,9 @@ namespace Puzzle.Client.Jigsaws
         }
 
         /// <summary>
-        /// The painting is whole: after a breath a light runs over it and its frame swells once, and what it gave pops
-        /// up in the tray's well; the sparkles follow the time it has been whole.
+        /// The painting is whole: after a breath a light runs over it and its frame swells once, the painter comes up
+        /// in front of the tray's right end with both arms raised (§22), and what the painting gave pops up in the
+        /// tray's well beside him; the sparkles follow the time it has been whole.
         /// </summary>
         private void Celebrate()
         {
@@ -791,6 +804,9 @@ namespace Puzzle.Client.Jigsaws
             _timeline.At(Tempo.PauseBeforeRestored, () => _sounded.Add(SoundCue.PaintingWhole));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredLight, progress => _painting.Canvas.ShowLight(Easing.InOut(progress)));
             _timeline.Add(Tempo.PauseBeforeRestored, Tempo.RestoredSwell, progress => Swell(1f + RestoredSwell * Easing.Arch(progress)));
+            _cheering = new PainterFigure("Painter", _root.transform, _art, _painterPictures, PainterPicture.StandingCheering, DrawOrder.TrayPainter);
+            PlaceThePainter(0f);
+            _timeline.Add(Tempo.PauseBeforeRestored, Tempo.TrayRefills, progress => PlaceThePainter(Easing.Out(progress)));
             if (MakeTheRewardRow())
             {
                 PlaceTheReward(0f);
@@ -821,13 +837,29 @@ namespace Puzzle.Client.Jigsaws
                 return;
             }
 
-            Box well = layout.Well;
+            Box well = _cheering != null ? layout.WellBesideThePainter : layout.Well;
             float disc = Mathf.Min(LargestRewardDisc, RewardInTheWell * well.Height - RewardPillHeight);
-            float scale = disc / LargestRewardDisc;
+            float scale = Mathf.Min(disc / LargestRewardDisc, RewardInTheWell * well.Width / _rewardRow.Width);
 
             // The discs and the pills under them, as one block, in the middle of the well.
             float discMiddle = well.MiddleY + RewardPillHeight * scale / 2f;
             _rewardRow.Place(new Vector2(well.MiddleX, discMiddle), scale * grown);
+        }
+
+        /// <summary>
+        /// The painter who cheers in front of the tray, risen so far as he comes up: from a little under his place,
+        /// unseen, to his place, wholly seen. Nothing before the painting has become whole here.
+        /// </summary>
+        private void PlaceThePainter(float risen)
+        {
+            if (_cheering == null || _layout is not JigsawLayout layout)
+            {
+                return;
+            }
+
+            FigurePlace place = layout.CheeringPainter;
+            _cheering.Stand(new FigurePlace(place.FeetX, place.FeetY - PainterRisesBy * (1f - risen), place.PointsPerMetre));
+            _cheering.Fade(risen);
         }
 
         /// <summary>The sparkles of a painting that is whole, as long after its last piece as it is; none around one that is not.</summary>
@@ -961,6 +993,7 @@ namespace Puzzle.Client.Jigsaws
             _lesson = step;
             _lessonSince = _clock;
             _windowsCutWhileCarried = null;
+            _lessonPill.ShowThePainter(PainterPictures.MoodOf(step));
             _lessonPill.Show(TutorialWords.Of(step, asksForATouch: step == TutorialStep.FirstPainting));
             ShowTheTable();
         }
@@ -979,6 +1012,7 @@ namespace Puzzle.Client.Jigsaws
             _guidedPiece = null;
             _spotlight.Show(0f);
             _lessonPill.Show(PillWords.None);
+            _lessonPill.ShowThePainter(null);
             ShowTheTable();
         }
 

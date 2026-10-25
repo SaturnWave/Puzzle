@@ -2,7 +2,8 @@
   // The game's economy settings, which are the economy simulator's too: who plays, how they play, what the game
   // gives and what things cost. The game reads lives, coins, rewards, extraMovesOffer, the booster prices, start,
   // boosterUnlocks, startBoosters, hints, shop and build (tools/unity/sync-engine.js packs them for it); the simulator
-  // reads everything and simulates all but the last four.
+  // reads everything and simulates all but those last four. The store section, what v1 sells for real money, is
+  // simulated for a paying player and is the game's once it sells for money.
   // Every field must be stated; the code holds no default. Each comment ends with where the value comes from:
   //   [decided]     a product decision (docs/GAME_DESIGN.md section 19) or a fact of the engine
   //   [assumed n]   starting assumption n, approved by the owner as a default
@@ -11,8 +12,9 @@
   //   [placeholder] an amount or a price nobody has decided: read the reports, then change it
   //   [recorded]    from the test server's recordings of people
   //   [tool]        how the tool works; no claim about the game
-  // Nothing here reaches a level's move limit, its seeds or the engine's assist, and there is no purchase with real
-  // money: what a player spends never changes difficulty (section 17), and the first version simulates free players.
+  // Nothing here reaches a level's move limit, its seeds or the engine's assist: what a player spends, in coins or in
+  // money, never changes difficulty (section 17). The default player is free; player.purchases makes one who pays.
+  // An amount of money is a whole number of US cents, never a fraction.
   // A variant file states "extends": "default.json", a "name" of its own and only the fields it changes.
   // An amount of coins is a whole number from 0 to 1 000 000.
 
@@ -189,14 +191,7 @@
   },
 
   "shop": {
-    // Packs of coins for real money, in the order the shop shows them. This build sells nothing for money
-    // (build.realMoneyPurchases), so a pack has no price: it is shown and cannot be bought. The amounts are the
-    // samples of the design's drawing. [placeholder]
-    "coinPacks": {
-      "small": { "coins": 500 },
-      "medium": { "coins": 1200 },
-      "large": { "coins": 2500 }
-    },
+    // The packs of coins the shop shows are the store's (store.coinPacks), sold for real money.
     // Sets of boosters for coins, in the order the shop shows them. Each costs what its boosters cost one by one
     // under prices.boosters (200 + 500 + 200, and three times 400 + 700 + 700 + 300), so no discount is invented.
     // A set's price does not follow when a single price changes. [placeholder]
@@ -221,12 +216,66 @@
   },
 
   // What this build of the game can do. The game refuses any other word here, so a build cannot claim real ads
-  // or real purchases it does not have.
+  // or real purchases it does not have; the tester mode is offered only by a build whose ads are simulated and that
+  // sells nothing for money.
   "build": {
     // How an ad is shown: "simulated" is a card that stands in for one; nothing is advertised. [proposed]
     "ads": "simulated",
-    // What is sold for real money: "notAvailable" shows the coin packs and sells none. [proposed]
-    "realMoneyPurchases": "notAvailable"
+    // What is sold for real money: "store" sells the store section's products through the platform's own store
+    // (Google Play, the App Store), which takes the money; "notAvailable" shows its coin packs and sells none, as a
+    // test build did before v1. v1 sells (the owner's decision of 2026-10-24). [decided 2026-10-24]
+    "realMoneyPurchases": "store"
+  },
+
+  // What the game sells for real money in v1: the owner's products of 2026-10-24 (docs/research/monetization-and-
+  // retention.md section 3), with the amounts the simulator checked that day (docs/GAME_DESIGN.md section 25). The
+  // game's shop shows them and, as build.realMoneyPurchases says, sells them through the platform's store; the store's
+  // own price, in the player's currency, is what a player sees. The simulator buys a product only for a player whose
+  // player.purchases says so; the default player is free and buys nothing.
+  // A price is the price point of the US store in cents ($1.99 is 199): every other country takes the store's own
+  // equivalent, and the game shows a price as the store words it for the player, never this number. A product's id in
+  // both stores is the game's application id, a dot and its productIdSuffix: com.saturnwave.puzzle.coins.pouch while the
+  // application id is com.saturnwave.puzzle, itself a placeholder until the game's name is decided; the owner creates
+  // the products under these ids in Play Console and App Store Connect. Nothing is random: what a product gives is
+  // listed here and shown before it is bought, and nothing of it reaches a level.
+  // The pricing rules hold these numbers (EconomyBalancePolicyTests): coins per dollar never fall as a pack grows, and
+  // the largest gives at most 35 % more per dollar than the smallest; each pack buys a whole number of +5, more as it
+  // grows; the starter pack is worth at most 2.5 times what its price buys in coin packs, and is sold once; every price
+  // ends in .99, and none is above $19.99.
+  "store": {
+    // The coin packs, in the order the shop shows them: a pouch, a bag, a chest and a treasure of coins. In each, the
+    // productIdSuffix is a placeholder (the application id is not decided), priceUsdCents is the owner's price
+    // [decided 2026-10-24], and coins is the research's amount, kept because the simulator showed no reason to change it
+    // [proposed 2026-10-24].
+    "coinPacks": {
+      // One +5 and 100 coins over, as the leaders' smallest pack buys one +5: 503 coins a dollar.
+      "pouch": { "productIdSuffix": "coins.pouch", "priceUsdCents": 199, "coins": 1000 },
+      // Three +5 and 50 over: 551 coins a dollar, 10 % more than the pouch.
+      "bag": { "productIdSuffix": "coins.bag", "priceUsdCents": 499, "coins": 2750 },
+      // Six +5 and 600 over: 601 coins a dollar, 20 % more.
+      "chest": { "productIdSuffix": "coins.chest", "priceUsdCents": 999, "coins": 6000 },
+      // Fourteen +5 and 400 over: 650 coins a dollar, 29 % more; the rivals' largest packs give 24 to 33 % more.
+      "treasure": { "productIdSuffix": "coins.treasure", "priceUsdCents": 1999, "coins": 13000 }
+    },
+    // "Çırak Çantası", the apprentice's bag: the starter pack. In the shape of Gardenscapes' Hot Offer ($1.99 for 1 500
+    // coins and three boosters).
+    "starterPack": {
+      // The end of its product id: com.saturnwave.puzzle.starter.apprentice_kit today. [placeholder]
+      "productIdSuffix": "starter.apprentice_kit",
+      // The owner's price. [decided 2026-10-24]
+      "priceUsdCents": 199,
+      // Coins in it: with its boosters it is worth 2 400 coins at the shop's prices, 2.4 times the pouch of the same
+      // price. [proposed 2026-10-24]
+      "coins": 1500,
+      // Boosters in it besides the coins, each kind at least once: the three start boosters, whose prices are measured,
+      // so its worth is known. [proposed 2026-10-24]
+      "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 },
+      // Times one player can buy it: once. [decided 2026-10-24]
+      "timesPerPlayer": 1,
+      // The shop offers it once the player has come to this level, the level the last booster opens on
+      // (boosterUnlocks.levels.shuffle), and keeps it at its head until it is bought; no countdown. [decided 2026-10-24]
+      "fromLevel": 20
+    }
   },
 
   "player": {
@@ -261,6 +310,21 @@
       "useWhenGoalsDonePercent": 80,
       // In-level boosters per attempt; only 1 in this version. [proposed]
       "perAttempt": 1
+    },
+    // What the player buys for real money, from the store section. The default player is free and buys nothing; the
+    // paying players are the variants pays-when-short.json, buys-the-starter-pack.json and pays-monthly.json. A
+    // purchase never changes a game the player meets, only what they can pay for.
+    "purchases": {
+      // The coin pack the player buys when they want the +5, no free ad is left today and their coins fall short of
+      // it; null means never. It needs player.extraMoves.paysCoins and must pay for the +5 by itself. [proposed]
+      "packWhenShortForExtraMoves": null,
+      // Whether the player buys the starter pack the first time the shop offers it (store.starterPack.fromLevel). [proposed]
+      "buysTheStarterPack": false,
+      // A coin pack bought at the first session of day 1 and every scheduledEveryDays days after, whatever the purse
+      // holds; null means never. [proposed]
+      "scheduledPack": null,
+      // Days from one scheduled purchase to the next: 30, a month. Read only when scheduledPack names a pack. [proposed]
+      "scheduledEveryDays": 30
     }
   },
 

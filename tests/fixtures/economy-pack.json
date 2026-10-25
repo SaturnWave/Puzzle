@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "lives": {
     "max": 5,
     "minutesPerLife": 30
@@ -153,20 +153,6 @@
     "bot": "casual"
   },
   "shop": {
-    "coinPacks": [
-      {
-        "name": "small",
-        "coins": 500
-      },
-      {
-        "name": "medium",
-        "coins": 1200
-      },
-      {
-        "name": "large",
-        "coins": 2500
-      }
-    ],
     "boosterSets": [
       {
         "name": "starter",
@@ -214,8 +200,57 @@
       "perDay": 3
     }
   },
+  "store": {
+    "coinPacks": [
+      {
+        "name": "pouch",
+        "productIdSuffix": "coins.pouch",
+        "priceUsdCents": 199,
+        "coins": 1000
+      },
+      {
+        "name": "bag",
+        "productIdSuffix": "coins.bag",
+        "priceUsdCents": 499,
+        "coins": 2750
+      },
+      {
+        "name": "chest",
+        "productIdSuffix": "coins.chest",
+        "priceUsdCents": 999,
+        "coins": 6000
+      },
+      {
+        "name": "treasure",
+        "productIdSuffix": "coins.treasure",
+        "priceUsdCents": 1999,
+        "coins": 13000
+      }
+    ],
+    "starterPack": {
+      "productIdSuffix": "starter.apprentice_kit",
+      "priceUsdCents": 199,
+      "coins": 1500,
+      "boosters": [
+        {
+          "booster": "start-rocket-and-bomb",
+          "count": 1
+        },
+        {
+          "booster": "start-color-bomb",
+          "count": 1
+        },
+        {
+          "booster": "start-extra-moves",
+          "count": 1
+        }
+      ],
+      "timesPerPlayer": 1,
+      "fromLevel": 20
+    }
+  },
   "build": {
     "ads": "simulated",
-    "realMoneyPurchases": "notAvailable"
+    "realMoneyPurchases": "store"
   }
 }

@@ -70,7 +70,7 @@ function main() {
   // A settings file that leaves out a field the game reads stops here, by the field's name, and not inside the game.
   const economy = packedEconomy(fs.readFileSync(ECONOMY, "utf8"), ECONOMY);
   fs.writeFileSync(ECONOMY_PACK, JSON.stringify(economy));
-  console.log(`${ECONOMY}: ${economy.prices.boosters.length} booster prices, ${economy.shop.boosterSets.length} sets, ${economy.shop.coinPacks.length} coin packs -> ${ECONOMY_PACK}`);
+  console.log(`${ECONOMY}: ${economy.prices.boosters.length} booster prices, ${economy.shop.boosterSets.length} sets, ${economy.store.coinPacks.length} coin packs and a starter pack -> ${ECONOMY_PACK}`);
 
   // A table that is not JSON, or is named for another language than it says, stops here by name.
   const words = packTables(WORDS, WORDS_PACK, table => ({

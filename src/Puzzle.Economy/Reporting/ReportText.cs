@@ -16,6 +16,9 @@ public static class Cell
 
     public static string Whole(Coins? coins) => Whole(coins?.Amount);
 
+    /// <summary>An amount of US money in dollars to the cent, without the sign, so that a column holds numbers: 1.99.</summary>
+    public static string Money(UsDollars? amount) => amount?.Dollars.ToString("0.00", Invariant) ?? string.Empty;
+
     /// <summary>A share between 0 and 1, to three places.</summary>
     public static string Share(double? share) => share?.ToString("0.000", Invariant) ?? string.Empty;
 

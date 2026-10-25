@@ -58,8 +58,14 @@ public class EconomyFileTests
         Assert.Equal(new HintRules(stated.Hints.Idle, stated.Hints.PerAttempt, stated.Hints.Bot), game.Hints);
         Assert.True(HintAdvisor.TryCreate(game.Hints.Bot, out _), $"The shipped hints show the moves of '{game.Hints.Bot}', which gives no hints.");
         Assert.Equal(
-            stated.CoinPacks.ToDictionary(pack => pack.Key, pack => pack.Value.Amount),
-            game.Shop.CoinPacks.ToDictionary(pack => pack.Name, pack => pack.Coins.Amount));
+            simulated.Store.Products.Select(product => (product.Name, product.ProductIdSuffix, product.Price.Cents, product.Coins.Amount)),
+            game.Shop.Store.Products.Select(product => (product.Name, product.IdSuffix, product.UsPrice.Cents, product.Coins.Amount)));
+        Assert.Equal(
+            simulated.Store.StarterPack.Product.Boosters.ToDictionary(held => SimulatedBoosters.Name(held.Key), held => held.Value),
+            BoosterKinds.All.Where(game.Shop.Store.StarterPack.Product.Boosters.Has).ToDictionary(BoosterKinds.Name, game.Shop.Store.StarterPack.Product.Boosters.Count));
+        Assert.Equal(
+            (simulated.Store.StarterPack.TimesPerPlayer, simulated.Store.StarterPack.FromLevel.Value),
+            (game.Shop.Store.StarterPack.TimesPerPlayer, game.Shop.Store.StarterPack.FromLevel));
         Assert.Equal(stated.BoosterSets.Keys.Order(), game.Shop.BoosterSets.Select(set => set.Name).Order());
         Assert.All(game.Shop.BoosterSets, set =>
         {
@@ -71,8 +77,8 @@ public class EconomyFileTests
         });
         Assert.Equal(stated.CoinsForAnAd.Amount, game.Shop.AdForCoins.Coins.Amount);
         Assert.Equal(stated.AdsForCoinsPerDay, game.Shop.AdForCoins.PerDay);
-        Assert.Equal((AdsInTheBuild.Simulated, RealMoneyInTheBuild.NotAvailable), (stated.Ads, stated.RealMoneyPurchases));
-        Assert.Equal((AdSource.Simulated, RealMoneySales.NotAvailable), (game.Ads, game.Shop.RealMoney));
+        Assert.Equal((AdsInTheBuild.Simulated, RealMoneyInTheBuild.ThroughTheStore), (stated.Ads, stated.RealMoneyPurchases));
+        Assert.Equal((AdSource.Simulated, RealMoneySales.ThroughTheStore), (game.Ads, game.Shop.RealMoney));
     }
 
     [Fact]
@@ -124,7 +130,8 @@ public class EconomyFileTests
 
         Assert.Contains("format version 0", Assert.Throws<EconomyFormatException>(() => EconomyFileMapper.ToRules(noPack)).Message);
         Assert.Contains("format version 2", Refused(pack => pack.formatVersion = 2).Message);
-        Assert.Contains("format version 4", Refused(pack => pack.formatVersion = 4).Message);
+        Assert.Contains("format version 3", Refused(pack => pack.formatVersion = 3).Message); // the pack before the store
+        Assert.Contains("format version 5", Refused(pack => pack.formatVersion = 5).Message);
     }
 
     [Fact]
@@ -176,7 +183,8 @@ public class EconomyFileTests
     [InlineData("prices.boosters.hit-row")]
     [InlineData("start.coins")]
     [InlineData("shop.boosterSets.starter.priceCoins")]
-    [InlineData("shop.coinPacks.small.coins")]
+    [InlineData("store.coinPacks.small.coins")]
+    [InlineData("store.starterPack.coins")]
     [InlineData("shop.adForCoins.coins")]
     public void A_negative_amount_and_one_no_sum_could_hold_are_refused_by_their_field(string field)
     {
@@ -212,7 +220,6 @@ public class EconomyFileTests
             pack.shop.adForCoins.perDay = 0;
             pack.rewards.daily.boostersEachTime = 0;
             pack.rewards.daily.boosterRotation = [];
-            pack.shop.coinPacks = [];
             pack.shop.boosterSets = [];
         });
         Assert.Equal(0, bare.ExtraMoves.FreeAdsPerDay);
@@ -224,8 +231,48 @@ public class EconomyFileTests
     {
         Assert.Contains("build.ads is \"live\"; this build can only show an ad that is \"simulated\"", Refused(pack => pack.build.ads = "live").Message);
         Assert.Contains("build.ads is \"\"", Refused(pack => pack.build.ads = string.Empty).Message);
-        Assert.Contains("build.realMoneyPurchases is \"store\"; this build sells nothing for money, which is \"notAvailable\"", Refused(pack => pack.build.realMoneyPurchases = "store").Message);
+        Assert.Contains(
+            "build.realMoneyPurchases is \"live\"; a build sells nothing for money (\"notAvailable\") or sells the store's products through the platform's store (\"store\")",
+            Refused(pack => pack.build.realMoneyPurchases = "live").Message);
         Assert.Contains("build.realMoneyPurchases is \"Simulated\"", Refused(pack => pack.build.realMoneyPurchases = "Simulated").Message);
+        Assert.Equal(RealMoneySales.ThroughTheStore, MetaSupport.Rules(MetaSupport.InAStoreBuild).Shop.RealMoney);
+        Assert.Equal(RealMoneySales.NotAvailable, MetaSupport.Rules().Shop.RealMoney);
+    }
+
+    [Fact]
+    public void The_store_reads_its_products_in_the_shops_order_with_their_ids_prices_and_contents()
+    {
+        StoreCatalogue store = MetaSupport.Rules().Shop.Store;
+
+        Assert.Equal(["small", "large"], store.CoinPacks.Select(pack => pack.Name));
+        Assert.Equal(("coins.small", "$0.99", 500L), (store.CoinPacks[0].IdSuffix, store.CoinPacks[0].UsPrice.ToString(), store.CoinPacks[0].Coins.Amount));
+        Assert.All(store.CoinPacks, pack => Assert.Equal((StoreProductKind.CoinPack, true), (pack.Kind, pack.Boosters.IsEmpty)));
+        StarterPack starter = store.StarterPack;
+        Assert.Equal((EconomyFileMapper.StarterPackName, "starter.kit", StoreProductKind.StarterPack, 1, 20), (starter.Product.Name, starter.Product.IdSuffix, starter.Product.Kind, starter.TimesPerPlayer, starter.FromLevel));
+        Assert.Equal(
+            new Reward(new Coins(1500), [BoosterKind.StartRocketAndBomb, BoosterKind.StartColorBomb, BoosterKind.StartExtraMoves]),
+            starter.Product.Contents);
+        Assert.Equal(store.CoinPacks.Append(starter.Product), store.Products);
+        Assert.Same(store.CoinPacks[1], store.Find("coins.large"));
+        Assert.Null(store.Find("coins.huge"));
+    }
+
+    [Fact]
+    public void A_store_product_no_store_could_sell_is_refused_by_its_field()
+    {
+        Assert.Contains("store.coinPacks.small.productIdSuffix 'Coins.Small' must be lowercase letters", Refused(pack => pack.store.coinPacks[0].productIdSuffix = "Coins.Small").Message);
+        Assert.Contains("store.coinPacks.small.productIdSuffix 'coins..small'", Refused(pack => pack.store.coinPacks[0].productIdSuffix = "coins..small").Message);
+        Assert.Contains("store.coinPacks.small.productIdSuffix '.small'", Refused(pack => pack.store.coinPacks[0].productIdSuffix = ".small").Message);
+        Assert.Contains("store.starterPack.productIdSuffix ''", Refused(pack => pack.store.starterPack.productIdSuffix = string.Empty).Message);
+        Assert.Contains("store.coinPacks.large.priceUsdCents 0 must be a price in US cents from 1 to 99999", Refused(pack => pack.store.coinPacks[1].priceUsdCents = 0).Message);
+        Assert.Contains("store.starterPack.priceUsdCents 100000", Refused(pack => pack.store.starterPack.priceUsdCents = 100_000).Message);
+        Assert.Contains("store.coinPacks.small.coins 0 must be at least 1", Refused(pack => pack.store.coinPacks[0].coins = 0).Message);
+        Assert.Contains("store.starterPack.timesPerPlayer 0 must be at least 1", Refused(pack => pack.store.starterPack.timesPerPlayer = 0).Message);
+        Assert.Contains("store.starterPack.fromLevel 0 must be at least 1", Refused(pack => pack.store.starterPack.fromLevel = 0).Message);
+        Assert.Contains("store.starterPack.boosters.start-color-bomb 0 must be at least 1", Refused(pack => pack.store.starterPack.boosters[1].count = 0).Message);
+        Assert.Contains("store: two products have the product id suffix 'coins.small'", Refused(pack => pack.store.starterPack.productIdSuffix = "coins.small").Message);
+        Assert.Contains("store.coinPacks is empty", Refused(pack => pack.store.coinPacks = []).Message);
+        Assert.Contains("store.coinPacks is empty", Refused(pack => pack.store.coinPacks = null!).Message);
     }
 
     [Fact]
@@ -249,10 +296,9 @@ public class EconomyFileTests
         Assert.Contains("shop.boosterSets.starter.boosters is empty: a set gives at least one booster", Refused(pack => pack.shop.boosterSets[0].boosters = []).Message);
         Assert.Contains("shop.boosterSets.starter.boosters states 'shuffle' twice", Refused(pack => pack.shop.boosterSets[0].boosters = [MetaSupport.Count("shuffle", 1), MetaSupport.Count("shuffle", 2)]).Message);
         Assert.Contains("shop.boosterSets.starter.priceCoins 0 must be at least 1", Refused(pack => pack.shop.boosterSets[0].priceCoins = 0).Message);
-        Assert.Contains("shop.coinPacks.small.coins 0 must be at least 1", Refused(pack => pack.shop.coinPacks[0].coins = 0).Message);
         Assert.Contains("shop.boosterSets states 'starter' twice", Refused(pack => pack.shop.boosterSets[1].name = "starter").Message);
-        Assert.Contains("shop.coinPacks has an entry named 'big.one'", Refused(pack => pack.shop.coinPacks[1].name = "big.one").Message);
-        Assert.Contains("shop.coinPacks has an entry named ''", Refused(pack => pack.shop.coinPacks[1].name = string.Empty).Message);
+        Assert.Contains("store.coinPacks has an entry named 'big.one'", Refused(pack => pack.store.coinPacks[1].name = "big.one").Message);
+        Assert.Contains("store.coinPacks has an entry named ''", Refused(pack => pack.store.coinPacks[1].name = string.Empty).Message);
     }
 
     [Fact]
@@ -260,7 +306,7 @@ public class EconomyFileTests
     {
         // A JSON reader hands over null where the document says null; the mapper reads that as stated and empty, and judges it so.
         Assert.Contains("prices.boosters must state every booster", Refused(pack => pack.prices.boosters = null!).Message);
-        Assert.Empty(MetaSupport.Rules(pack => pack.shop.coinPacks = null!).Shop.CoinPacks);
+        Assert.Empty(MetaSupport.Rules(pack => pack.shop.boosterSets = null!).Shop.BoosterSets);
     }
 
     private static void AssertSameReward(RewardRule simulated, RewardRotation game)
@@ -299,8 +345,11 @@ public class EconomyFileTests
             case "shop.boosterSets.starter.priceCoins":
                 pack.shop.boosterSets.Single(set => set.name == "starter").priceCoins = amount;
                 break;
-            case "shop.coinPacks.small.coins":
-                pack.shop.coinPacks.Single(coinPack => coinPack.name == "small").coins = amount;
+            case "store.coinPacks.small.coins":
+                pack.store.coinPacks.Single(coinPack => coinPack.name == "small").coins = amount;
+                break;
+            case "store.starterPack.coins":
+                pack.store.starterPack.coins = amount;
                 break;
             case "shop.adForCoins.coins":
                 pack.shop.adForCoins.coins = amount;

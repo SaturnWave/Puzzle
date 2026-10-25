@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Linq;
+using Puzzle.Client.Avatar;
 using Puzzle.Museum;
 
 namespace Puzzle.Client.Layout
@@ -99,6 +100,18 @@ namespace Puzzle.Client.Layout
         private const float GapPipsToTray = 22f;
         private const float WallUnderThePlate = 14f;
         private static readonly (int Columns, int Rows)[] SidewaysGrids = { (2, 3), (3, 2) };
+
+        /// <summary>
+        /// The painter who cheers at a painting made whole: his feet this far over the tray's foot, on its lower rim;
+        /// his reach this far in from the tray's right side; his raised hands this far under the label over the tray;
+        /// his whole height, raised arms and all, this much at the most (the hall's painter with his palette is 150
+        /// points on the design phone); the reward this far from his lowered body.
+        /// </summary>
+        private const float PainterOnTheTrayRim = 8f;
+        private const float PainterInFromTheTraySide = 10f;
+        private const float PainterUnderTheLabel = 4f;
+        private const float PainterAtTheMost = 166f;
+        private const float PainterBesideTheReward = 8f;
 
         private JigsawLayout(PageLayout page, float pictureAspect, JigsawSize size, PaintingOrientation orientation)
         {
@@ -204,6 +217,36 @@ namespace Puzzle.Client.Layout
         public Box Button { get; }
 
         public float ButtonScale { get; }
+
+        /// <summary>
+        /// Where the painter cheers once the painting is whole (§22): standing in front of the tray's right end, his
+        /// feet on its lower rim, as tall as the hall's painter on the design phone at the most, and never so tall that
+        /// his raised hands reach the label over the tray.
+        /// </summary>
+        public FigurePlace CheeringPainter
+        {
+            get
+            {
+                StandingMeasure cheering = PainterPictures.MeasureOf(PainterPicture.StandingCheering);
+                float feetY = Tray.Bottom + PainterOnTheTrayRim;
+                float tallest = Math.Min(PainterAtTheMost, Hint.Bottom - PainterUnderTheLabel - feetY);
+                float pointsPerMetre = Math.Max(1f, tallest / cheering.Top);
+                return new FigurePlace(Tray.Right - PainterInFromTheTraySide - cheering.Right * pointsPerMetre, feetY, pointsPerMetre);
+            }
+        }
+
+        /// <summary>
+        /// The part of the tray's well left of the painter who cheers in front of it, his lowered body and a little
+        /// room around it: where the painting's reward is shown while he stands there.
+        /// </summary>
+        public Box WellBesideThePainter
+        {
+            get
+            {
+                float right = CheeringPainter.LowBounds(PainterPictures.MeasureOf(PainterPicture.StandingCheering)).Left - PainterBesideTheReward;
+                return new Box(Well.Left, Well.Bottom, Math.Max(1f, right - Well.Left), Well.Height);
+            }
+        }
 
         /// <param name="pictureAspect">The painting's width over its height.</param>
         /// <param name="size">How the painting is cut into pieces.</param>

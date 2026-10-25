@@ -163,7 +163,7 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>The blue button places every piece; a painting that is whole then is pictured in its celebration, any other at rest.</summary>
         /// <exception cref="InvalidOperationException">The button did not place the pieces.</exception>
-        private static bool PlaceThemAll(JigsawStage jigsaw)
+        internal static bool PlaceThemAll(JigsawStage jigsaw)
         {
             if (!PressPlaceThemAll(jigsaw, picturedAfter: 0f))
             {

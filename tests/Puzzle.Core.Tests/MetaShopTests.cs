@@ -21,6 +21,7 @@ public class MetaShopTests
         Assert.Equal(["starter", "master"], Shop.BoosterSets.Select(set => set.Name));
         Assert.Equal(["small", "large"], Shop.CoinPacks.Select(pack => pack.Name));
         Assert.Equal(new Coins(2500), Shop.CoinPacks[1].Coins);
+        Assert.Same(Shop.Store.CoinPacks, Shop.CoinPacks);
         Assert.Equal(new Coins(2100), Set("starter").Price);
         Assert.Equal(3, Set("starter").Boosters.Total);
         Assert.Equal(12, Set("master").Boosters.Total);
@@ -92,12 +93,11 @@ public class MetaShopTests
     }
 
     [Fact]
-    public void A_coin_pack_is_shown_and_is_not_on_sale_in_this_build()
+    public void A_test_build_sells_nothing_for_money_and_a_store_build_sells_the_store()
     {
         Assert.Equal(RealMoneySales.NotAvailable, Shop.RealMoney);
         Assert.Equal(AdSource.Simulated, Rules.Ads);
-
-        Assert.All(Shop.CoinPacks, pack => Assert.Equal(new Purchase.NotOnSale(), Shop.Buy(pack)));
+        Assert.Equal(RealMoneySales.ThroughTheStore, MetaSupport.Rules(MetaSupport.InAStoreBuild).Shop.RealMoney);
     }
 
     [Fact]

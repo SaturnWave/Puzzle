@@ -1,10 +1,15 @@
+#nullable enable
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Puzzle.Client.EditorTools
 {
@@ -15,11 +20,21 @@ namespace Puzzle.Client.EditorTools
     /// test phone, not for a store. What the Editor derives (the atlas, the art catalogue, the typefaces, the scene)
     /// is brought up to date first: the game reads the catalogue by the order of its lists of drawings, and a
     /// package with a catalogue older than those lists would stop at the first drawing added since. The manifest is
-    /// given the build's permissions on the way (<see cref="AndroidManifestStep"/>).
+    /// given the build's permissions on the way (<see cref="AndroidManifestStep"/>), from a manifest Unity has written
+    /// anew, and the package that comes out must ask for exactly the permissions of <see cref="MergedPermissions"/>,
+    /// as Android's own tool reads them from it (<see cref="PackagePermissions"/>).
     /// </summary>
     public static class AndroidBuild
     {
         private const string PackagePath = "Build/Android/puzzle.apk";
+
+        /// <summary>
+        /// The Unity library's manifest in the Gradle project Unity keeps between builds. Unity leaves an earlier build's
+        /// file in place, and with it what the manifest step wrote there, a permission withdrawn among it: a change of
+        /// <see cref="Permissions"/> would not reach the package (the purchase spike saw INTERNET stay withdrawn,
+        /// docs/research/iap-and-analytics.md §3.4). It is taken away before every build, and Unity writes it anew.
+        /// </summary>
+        private const string KeptLibraryManifest = "Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/src/main/AndroidManifest.xml";
 
         public static void Run()
         {
@@ -35,6 +50,7 @@ namespace Puzzle.Client.EditorTools
             }
 
             ApplyPlayerSettings();
+            TakeAwayTheKeptManifest();
             var options = new BuildPlayerOptions
             {
                 scenes = new[] { MainSceneBuilder.ScenePath },
@@ -50,22 +66,97 @@ namespace Puzzle.Client.EditorTools
                 return;
             }
 
+            try
+            {
+                IReadOnlyList<string> asked = PermissionsOfThePackage(summary.outputPath);
+                PackagePermissions.Require(asked.ToArray(), MergedPermissions);
+                Debug.Log($"Android build: the package asks for exactly {string.Join(", ", asked)}.");
+            }
+            catch (Exception failure) when (failure is InvalidOperationException || failure is IOException || failure is System.ComponentModel.Win32Exception)
+            {
+                Debug.LogError($"Android build: the package at {summary.outputPath} is not to be installed: {failure.Message}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
             Debug.Log($"Android build: succeeded, {summary.totalSize / (1024 * 1024)} MB at {summary.outputPath} in {summary.totalTime.TotalMinutes:F1} min.");
         }
 
         /// <summary>
         /// What the package's manifest says of Android's permissions beyond what Unity writes, one line each, in the
-        /// order they are written (<see cref="AndroidManifestStep"/>). The internet permission Unity asks for is taken
-        /// out (the owner's decision, 2026-10-16): the game calls no network, and without the permission the privacy
-        /// card's "sends nothing" holds by construction (Flow/PrivacyWords.cs). Ads, purchases or a reporting service
-        /// bring it back, together with a new privacy text. The application's backup flag is not this step's; it stays
-        /// on by the same decision.
+        /// order they are written (<see cref="AndroidManifestStep"/>). The internet permission was taken out on
+        /// 2026-10-16, while the game sent nothing; v1 asks for it again (the owner's decision, 2026-10-24): the play
+        /// statistics, once the player allows them, go to Aptabase over it, and Unity's purchase library sends its
+        /// purchase events over it (Flow/PrivacyWords.cs says both). The application's backup flag is not this step's;
+        /// it stays on by the earlier decision.
         /// </summary>
         internal static readonly PermissionLine[] Permissions =
         {
             PermissionLine.Ask("android.permission.VIBRATE"), // the short ticks of play (Scripts/Sound/Haptics.cs)
-            PermissionLine.Withdraw("android.permission.INTERNET"), // nothing leaves the phone
+            PermissionLine.Ask("android.permission.INTERNET"), // the play statistics (Scripts/Statistics) and the purchase library's events
         };
+
+        /// <summary>
+        /// Every permission the built package asks for, once all the manifests are merged, and no other: the build's
+        /// own two (<see cref="Permissions"/>); Google Play's billing and the look at whether a network is there, which
+        /// Unity In-App Purchasing 5.4.4 brings; and the permission Unity's library declares for what it registers to
+        /// hear. No advertising id (AD_ID), no location, no account: the store declarations (docs/GAME_DESIGN.md §20, Google Play's Data safety) rest on it.
+        /// </summary>
+        internal static readonly IReadOnlyCollection<string> MergedPermissions = new[]
+        {
+            "android.permission.VIBRATE",
+            "android.permission.INTERNET",
+            "com.android.vending.BILLING",
+            "android.permission.ACCESS_NETWORK_STATE",
+            GameIdentity.ApplicationId + PackagePermissions.UnitysReceiverSuffix,
+        };
+
+        /// <summary>The Unity library's manifest of the build before, taken away so that Unity writes it anew; nothing where there is none.</summary>
+        private static void TakeAwayTheKeptManifest()
+        {
+            if (File.Exists(KeptLibraryManifest))
+            {
+                File.Delete(KeptLibraryManifest);
+                Debug.Log($"Android build: the kept {KeptLibraryManifest} was taken away, so Unity writes it anew with the build's permissions.");
+            }
+        }
+
+        /// <summary>
+        /// What Android's own tool (aapt, from the newest build tools of Unity's Android SDK) says the package asks for.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">No aapt was found, or it did not read the package.</exception>
+        /// <exception cref="System.ComponentModel.Win32Exception">aapt could not be started.</exception>
+        private static IReadOnlyList<string> PermissionsOfThePackage(string package)
+        {
+            string buildTools = Path.Combine(AndroidExternalToolsSettings.sdkRootPath, "build-tools");
+            string? aapt = Directory.Exists(buildTools)
+                ? Directory.GetDirectories(buildTools).OrderByDescending(folder => Version.TryParse(Path.GetFileName(folder), out Version? number) ? number : new Version(0, 0))
+                    .Select(folder => Path.Combine(folder, Application.platform == RuntimePlatform.WindowsEditor ? "aapt.exe" : "aapt"))
+                    .FirstOrDefault(File.Exists)
+                : null;
+            if (aapt == null)
+            {
+                throw new InvalidOperationException($"no aapt was found under {buildTools} to read the package's permissions");
+            }
+
+            var reading = new ProcessStartInfo(aapt, $"dump permissions \"{Path.GetFullPath(package)}\"")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            using Process tool = Process.Start(reading) ?? throw new InvalidOperationException($"{aapt} did not start");
+            string dump = tool.StandardOutput.ReadToEnd();
+            string complaint = tool.StandardError.ReadToEnd();
+            tool.WaitForExit();
+            if (tool.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"{aapt} could not read the package (exit {tool.ExitCode}): {complaint.Trim()}");
+            }
+
+            return PackagePermissions.AskedIn(dump);
+        }
 
         /// <summary>
         /// A 64-bit ARM package for Android 16 (API level 36, what Google Play asks for since 31 August 2026), named so

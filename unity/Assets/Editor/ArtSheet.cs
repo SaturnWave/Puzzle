@@ -84,6 +84,7 @@ namespace Puzzle.Client.EditorTools
             [GalleryArt.IconGlobe] = new[] { Showing.Across(21f) },
             [GalleryArt.IconShield] = new[] { Showing.Across(21f) },
             [GalleryArt.IconHelp] = new[] { Showing.Across(21f) },
+            [GalleryArt.IconStatistics] = new[] { Showing.Across(21f) },
 
             // The discs: 60 on the board's shelf, 66 before a level with the ring of a chosen one, 44 in the shop; the pause disc is 46.
             [GalleryArt.CreamDisc] = new[] { Showing.AsDrawn, Showing.At(66f / 60f), Showing.At(44f / 60f) },

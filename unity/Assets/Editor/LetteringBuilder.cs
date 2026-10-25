@@ -74,8 +74,9 @@ namespace Puzzle.Client.EditorTools
         /// too, and Japanese and each Chinese write 550 to 720 of them with their kana and marks: at a sampling of 40
         /// they fit the Korean picture's size, half the memory and the package of a sampling of 48, which would take
         /// a picture of 2048 by 2048 each; a stroke of a dense character stays sharp at the sizes the game sets it.
-        /// Traditional Chinese in the serif writes the most of them once the world map's places are counted (#4): it
-        /// alone has a picture of 2048 by 2048.
+        /// Both Chinese in the serif write the most of them once the world map's places (#4) and the purchase cards'
+        /// words (v1) are counted: they have a picture of 2048 by 2048; both Chinese in the sans too, once the privacy
+        /// card's and the statistics question's words (v1, 2026-10-24) are counted.
         /// </summary>
         private static readonly IReadOnlyDictionary<FallbackTypeface, FontPicture> FallbackPictures = new Dictionary<FallbackTypeface, FontPicture>
         {
@@ -85,9 +86,9 @@ namespace Puzzle.Client.EditorTools
             [FallbackTypeface.NotoSerif] = new FontPicture("NotoSerif-Bold", samplingSize: 48, roomAroundALetter: 6, width: 512, height: 512),
             [FallbackTypeface.NotoSansJP] = new FontPicture("NotoSansJP-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
             [FallbackTypeface.NotoSerifJP] = new FontPicture("NotoSerifJP-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
-            [FallbackTypeface.NotoSansSC] = new FontPicture("NotoSansSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
-            [FallbackTypeface.NotoSerifSC] = new FontPicture("NotoSerifSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
-            [FallbackTypeface.NotoSansTC] = new FontPicture("NotoSansTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 1024, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSansSC] = new FontPicture("NotoSansSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 2048, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSerifSC] = new FontPicture("NotoSerifSC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 2048, ending: OpenTypeWithPostScriptOutlines),
+            [FallbackTypeface.NotoSansTC] = new FontPicture("NotoSansTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 2048, ending: OpenTypeWithPostScriptOutlines),
             [FallbackTypeface.NotoSerifTC] = new FontPicture("NotoSerifTC-Bold", samplingSize: 40, roomAroundALetter: 5, width: 2048, height: 2048, ending: OpenTypeWithPostScriptOutlines),
         };
 

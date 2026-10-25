@@ -145,6 +145,13 @@ public static class PopulationRun
             }
         }
 
+        public void PurchaseMade(PurchaseMade purchase)
+        {
+            _totals.Count(purchase);
+            _standing = purchase.After;
+            _now = purchase.At;
+        }
+
         public void DayEnded(DayEnded day)
         {
             _standing = day.Standing;

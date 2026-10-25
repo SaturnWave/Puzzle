@@ -123,6 +123,12 @@ namespace Puzzle.Client
         /// </summary>
         BenchPiece = -598,
         BenchSparkle = -595,
+
+        /// <summary>
+        /// The painter standing in the hall (§22): on the floor beside the workbench, in front of it where he must stand
+        /// a little before the table's end, and under the banner of a restored room, which keeps clear of him.
+        /// </summary>
+        HallPainter = -590,
         Floor = 0,
         FloorWeave = 1,
         TrayShade = 2,
@@ -179,6 +185,9 @@ namespace Puzzle.Client
         TrayReward = 1040,
         TrayRewardPill = 1046,
         TrayRewardLettering = 1047,
+
+        /// <summary>The painter who cheers in front of the tray's right end once the painting is whole: over the tray and its reward, under the label over the tray.</summary>
+        TrayPainter = 1050,
 
         /// <summary>
         /// The small card over the board's shelf that says what the shelf has to say, and its words; the ring of light
@@ -255,6 +264,9 @@ namespace Puzzle.Client
         LessonPill = 1260,
         LessonPillLettering = 1261,
 
+        /// <summary>The painter's framed bust beside a step's pill, over the dark; its parts take the places from here up (<see cref="PortraitPart"/>).</summary>
+        LessonPortrait = 1265,
+
         /// <summary>
         /// A jigsaw piece in the player's hand or on its way to its place, over everything of the page: its shadow
         /// takes the place below, the piece three places from here up. Over it, the sparkles of a painting just restored.
@@ -318,6 +330,9 @@ namespace Puzzle.Client
         CardExhibit = 2120,
         CardBadge = 2125,
         CardBadgeLettering = 2126,
+
+        /// <summary>The painter's framed bust hanging on the wall of a won level's alcove, over what stands on its shelf; its parts take the places from here up (<see cref="PortraitPart"/>).</summary>
+        CardPortrait = 2127,
         CardLettering = 2130,
         CardNameplate = 2140,
         CardNameplateLettering = 2141,
@@ -336,6 +351,9 @@ namespace Puzzle.Client
         CardLessonDim = 2150,
         CardLessonPill = 2160,
         CardLessonPillLettering = 2161,
+
+        /// <summary>The painter's framed bust beside the pill of a step shown over a card; its parts take the places from here up (<see cref="PortraitPart"/>).</summary>
+        CardLessonPortrait = 2165,
 
         /// <summary>
         /// The dark that falls over a card when a second card is hung in front of it, and what is added to the
@@ -373,6 +391,18 @@ namespace Puzzle.Client
 
         /// <summary>What a badge says.</summary>
         BadgeLettering = 5,
+    }
+
+    /// <summary>
+    /// What a framed bust of the painter is made of, from the wall up: the teal velvet behind him, his bust, and the
+    /// small gilt frame over both. Each is drawn at the portrait's own place in the drawing order plus its value. A
+    /// closed set.
+    /// </summary>
+    public enum PortraitPart
+    {
+        Velvet = 0,
+        Bust = 1,
+        Frame = 2,
     }
 
     /// <summary>

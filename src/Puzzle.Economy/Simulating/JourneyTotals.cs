@@ -93,6 +93,12 @@ public sealed class JourneyTotals
 
     public int ExtraMovesTaken => ExtraMovesByAd + ExtraMovesBought;
 
+    /// <summary>Things bought for real money: coin packs and the starter pack.</summary>
+    public int Purchases { get; private set; }
+
+    /// <summary>What the purchases cost, at the US store's prices.</summary>
+    public UsDollars MoneySpent { get; private set; }
+
     /// <summary>Sessions that ended for lack of a life: the moments a player would refill.</summary>
     public int RefillMoments => SessionsEndedByLives + SessionsWithoutALife;
 
@@ -180,6 +186,18 @@ public sealed class JourneyTotals
     {
         _earned[(int)reward.Source] += reward.Coins;
         foreach (BoosterKind booster in reward.Boosters)
+        {
+            _boostersReceived[(int)booster]++;
+        }
+    }
+
+    /// <summary>A product's coins count as bought, its boosters as received like a reward's.</summary>
+    internal void Count(PurchaseMade purchase)
+    {
+        Purchases++;
+        MoneySpent += purchase.Product.Price;
+        _earned[(int)CoinSource.BoughtForMoney] += purchase.Product.Coins;
+        foreach (BoosterKind booster in purchase.Product.BoostersOneByOne)
         {
             _boostersReceived[(int)booster]++;
         }

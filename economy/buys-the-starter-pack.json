@@ -1,0 +1,14 @@
+{
+  // A paying player: the default economy, and the starter pack bought the first time the shop offers it, on coming to
+  // level 20 (store.starterPack.fromLevel); nothing else is bought for money. The second of the three paying players the
+  // research asked for (docs/research/monetization-and-retention.md section 3.6). Set it beside the default:
+  // puzzle economy compare economy/default.json economy/buys-the-starter-pack.json.
+  "extends": "default.json",
+  "name": "buys-the-starter-pack",
+  "player": {
+    "purchases": {
+      // Bought once, when it is first offered. [a paying player to compare]
+      "buysTheStarterPack": true
+    }
+  }
+}

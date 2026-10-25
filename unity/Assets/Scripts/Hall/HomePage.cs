@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Puzzle.Client.Art;
+using Puzzle.Client.Avatar;
 using Puzzle.Client.Canvases;
 using Puzzle.Client.Collections;
 using Puzzle.Client.Flow;
@@ -24,9 +25,11 @@ namespace Puzzle.Client.Hall
     /// workbench on the floor, and the green button that opens the level the player stands on. While pieces of the
     /// painting wait to be placed, the next of them leans on the workbench among sparkles, and the blue "Tablo"
     /// button stands beside the green one, with a row of pips under its word for the pieces in place and a red badge
-    /// that counts the ones that wait: it leads to the painting's jigsaw. On the wall at the workbench's right hangs
-    /// the gift frame (<see cref="GiftFrame"/>): the daily reward, with a red dot while it waits. Over the plaque the
-    /// museum's stage shows the player's coins and lives (<see cref="WalletRow"/>).
+    /// that counts the ones that wait: it leads to the painting's jigsaw. At the workbench's right stands the painter
+    /// (§22), his palette in his hand, waving instead to a new player who has won no level yet; on the wall at the
+    /// workbench's left hangs the gift frame (<see cref="GiftFrame"/>): the daily reward, with a red dot while it
+    /// waits. The design canvas hangs the gift where the painter now stands. Over the plaque the museum's stage shows
+    /// the player's coins and lives (<see cref="WalletRow"/>).
     /// </summary>
     /// <remarks>
     /// The hall has two more faces, which the design canvas does not draw:
@@ -36,11 +39,12 @@ namespace Puzzle.Client.Hall
     /// which of the two it is.</item>
     /// <item>When the fifth painting of a room has just become whole, the hall shows that room restored before it
     /// moves on: all five paintings sealed on the plaque, the room's last painting in the frame under a running
-    /// light and among sparkles, and where the workbench stands a banner that says so and what comes next. Its
-    /// green button leads on to the hall as the player's progress has it.</item>
+    /// light and among sparkles, and where the workbench stands a banner that says so and what comes next, with the
+    /// painter cheering at its right. Its green button leads on to the hall as the player's progress has it.</item>
     /// </list>
-    /// Left out of the design, because the game has nothing behind them yet: the event frame at the workbench's left,
-    /// and on the wallet row the settings' button (the settings' stage brings it).
+    /// Left out of the design, because the game has nothing behind them yet: the event frame the canvas hangs at the
+    /// workbench's left (the gift frame hangs there now), and on the wallet row the settings' button (the settings'
+    /// stage brings it).
     /// On a tablet held sideways the hall is this column in the middle of a wide wall: a lamp hangs beside the frame,
     /// and beyond it the room's restored paintings hang in the collection's narrow frames (<see cref="HallLayout.PaintingsBeside"/>).
     /// They are made the first time the screen has room for them and taken down when it has none, so a phone never
@@ -102,6 +106,9 @@ namespace Puzzle.Client.Hall
         private readonly ArtCatalogue _art;
         private readonly PaintingGallery _paintings;
         private readonly PaintingLook _look;
+
+        /// <summary>The painter: by the workbench, or cheering beside a restored room's banner.</summary>
+        private readonly PainterFigure _painter;
         private readonly Wall _wall;
         private readonly RoomTrim _trim;
         private readonly RoomPlaque _plaque;
@@ -156,6 +163,7 @@ namespace Puzzle.Client.Hall
             _painting = FramedPainting.Create(_root, art, _look, painting);
             _bench = SceneObjects.AddSprite("Workbench", _root, art.Of(GalleryArt.Workbench), art.SpriteMaterial, DrawOrder.Bench).transform;
             _bench.gameObject.SetActive(!isCelebrating);
+            _painter = new PainterFigure("Painter", _root, art, paintings.Painter, PoseOf(visit, isCelebrating), DrawOrder.HallPainter);
             _leftLamp = SceneObjects.AddSprite("Left lamp", _root, art.Of(GalleryArt.Sconce), art.SpriteMaterial, DrawOrder.Sconce).transform;
             _rightLamp = SceneObjects.AddSprite("Right lamp", _root, art.Of(GalleryArt.Sconce), art.SpriteMaterial, DrawOrder.Sconce).transform;
 
@@ -220,6 +228,7 @@ namespace Puzzle.Client.Hall
             _painting.Place(layout.Hanging, layout.Page.View);
             _bench.localPosition = new Vector3(0f, layout.BenchFeet, 0f);
             _bench.localScale = new Vector3(layout.BenchScale, layout.BenchScale, 1f);
+            _painter.Stand(ShowsARestoredRoom ? layout.CheeringPainter : layout.PainterBesideTheBench(_painter.Pose));
             _play.Place(new Vector2(layout.Button.MiddleX, layout.Button.MiddleY), layout.ButtonScale);
             if (_toTheJigsaw != null && layout.JigsawButton is Box jigsawButton)
             {
@@ -277,6 +286,7 @@ namespace Puzzle.Client.Hall
             _trim.Dispose();
             _plaque.Dispose();
             _painting.Dispose();
+            _painter.Dispose();
             _sparkles?.Dispose();
             _gift?.Dispose();
             _pips?.Dispose();
@@ -304,6 +314,12 @@ namespace Puzzle.Client.Hall
 
             return piece;
         }
+
+        /// <summary>The painter cheers in a restored room; he waves to a player who has won no level yet; else he stands with his palette.</summary>
+        private static PainterPicture PoseOf(MuseumVisit visit, bool isCelebrating) =>
+            isCelebrating ? PainterPicture.StandingCheering
+            : visit.LevelToPlay == 1 && !visit.HasWonEveryLevel ? PainterPicture.StandingWaving
+            : PainterPicture.StandingWithPalette;
 
         /// <summary>What the green button says: the level it opens, the last level again once all are won, or the way on from a restored room.</summary>
         private static string PlayLabel(MuseumVisit visit, bool isCelebrating) =>

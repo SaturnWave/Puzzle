@@ -24,18 +24,44 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The game's one piece of music, heard on every screen ("Müzik"); the sounds of play do not depend on it.</summary>
         Music,
+
+        /// <summary>
+        /// The play statistics ("Oyun istatistikleri", <see cref="StatisticsChoice"/>): on only once the player has
+        /// allowed them, on the question after the entry page or with this switch; off before the question is answered.
+        /// </summary>
+        Statistics,
     }
 
     /// <summary>
-    /// What the player has set on this phone: each <see cref="DeviceSetting"/> on or off, and the language the player
-    /// chose on the language card, if they chose one. A phone that never set anything has <see cref="Default"/>:
-    /// everything on, as a player who opens a game for the first time expects, but the tester mode, which only the
-    /// owner's testers turn on; and no language chosen, so the game speaks the phone's. A value: two settings with the
-    /// same switches and the same choice are equal. This file has no Unity dependency, so the repository's tests compile it too.
+    /// What the player has said to the play statistics (Statistics/PlayStatistics.cs): asked once, after the entry page
+    /// of the first start, and changed with the settings card's switch at any time. Nothing is sent unless the answer
+    /// is <see cref="Allowed"/>. A closed set.
+    /// </summary>
+    public enum StatisticsChoice
+    {
+        /// <summary>Not asked yet: a first start, or a device file from before the question. Nothing is sent, and the question comes.</summary>
+        NotAsked,
+
+        /// <summary>"İzin ver" on the question, or the switch turned on: the game sends its notes.</summary>
+        Allowed,
+
+        /// <summary>"İzin verme", the way back on the question, or the switch turned off: nothing is sent.</summary>
+        Declined,
+    }
+
+    /// <summary>
+    /// What the player has set on this phone: each <see cref="DeviceSetting"/> on or off, the language the player
+    /// chose on the language card, if they chose one, and their answer to the play statistics. A phone that never set
+    /// anything has <see cref="Default"/>: everything on, as a player who opens a game for the first time expects, but
+    /// the tester mode, which only the owner's testers turn on, and the statistics, which only the player's own "yes"
+    /// turns on and which are not asked yet; and no language chosen, so the game speaks the phone's. A value: two
+    /// settings with the same switches and the same choices are equal. This file has no Unity dependency, so the
+    /// repository's tests compile it too.
     /// </summary>
     /// <remarks>
-    /// The public constructors leave the music on, as every phone had it before the music came; it is turned off with
-    /// <see cref="With"/>, so that no call names a row of switches long enough to be given in the wrong order.
+    /// The public constructors leave the music on, as every phone had it before the music came, and the statistics not
+    /// asked; they are changed with <see cref="With"/> and <see cref="WithTheStatistics"/>, so that no call names a
+    /// row of switches long enough to be given in the wrong order.
     /// </remarks>
     public sealed class DeviceSettings : IEquatable<DeviceSettings>
     {
@@ -54,17 +80,18 @@ namespace Puzzle.Client.Flow
         /// <summary>Settings with the music on.</summary>
         /// <param name="language">The language the player chose on the language card; nothing for the phone's.</param>
         public DeviceSettings(bool sound, bool vibration, bool testerMode, Language? language)
-            : this(sound: sound, music: true, vibration: vibration, testerMode: testerMode, language: language)
+            : this(sound: sound, music: true, vibration: vibration, testerMode: testerMode, language: language, StatisticsChoice.NotAsked)
         {
         }
 
-        private DeviceSettings(bool sound, bool music, bool vibration, bool testerMode, Language? language)
+        private DeviceSettings(bool sound, bool music, bool vibration, bool testerMode, Language? language, StatisticsChoice statistics)
         {
             Sound = sound;
             Music = music;
             Vibration = vibration;
             TesterMode = testerMode;
             Language = language;
+            Statistics = statistics;
         }
 
         /// <summary>The settings of a phone that never set anything, and of a device file from before the settings.</summary>
@@ -83,24 +110,36 @@ namespace Puzzle.Client.Flow
         /// <summary>The language the player chose on the language card; nothing while they never chose one, and the game speaks the phone's.</summary>
         public Language? Language { get; }
 
+        /// <summary>What the player said to the play statistics; not asked for a phone whose device file is older than the question (layout 6).</summary>
+        public StatisticsChoice Statistics { get; }
+
         public bool IsOn(DeviceSetting setting) => setting switch
         {
             DeviceSetting.Sound => Sound,
             DeviceSetting.Music => Music,
             DeviceSetting.Vibration => Vibration,
             DeviceSetting.TesterMode => TesterMode,
+            DeviceSetting.Statistics => Statistics == StatisticsChoice.Allowed,
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting the game does not know."),
         };
 
-        /// <summary>These settings with one of them turned on or off.</summary>
+        /// <summary>
+        /// These settings with one of them turned on or off. The statistics' switch answers their question: on is
+        /// <see cref="StatisticsChoice.Allowed"/>, off <see cref="StatisticsChoice.Declined"/>, never "not asked".
+        /// </summary>
         public DeviceSettings With(DeviceSetting setting, bool isOn) => setting switch
         {
-            DeviceSetting.Sound => new DeviceSettings(sound: isOn, music: Music, vibration: Vibration, testerMode: TesterMode, language: Language),
-            DeviceSetting.Music => new DeviceSettings(sound: Sound, music: isOn, vibration: Vibration, testerMode: TesterMode, language: Language),
-            DeviceSetting.Vibration => new DeviceSettings(sound: Sound, music: Music, vibration: isOn, testerMode: TesterMode, language: Language),
-            DeviceSetting.TesterMode => new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: isOn, language: Language),
+            DeviceSetting.Sound => new DeviceSettings(sound: isOn, music: Music, vibration: Vibration, testerMode: TesterMode, language: Language, Statistics),
+            DeviceSetting.Music => new DeviceSettings(sound: Sound, music: isOn, vibration: Vibration, testerMode: TesterMode, language: Language, Statistics),
+            DeviceSetting.Vibration => new DeviceSettings(sound: Sound, music: Music, vibration: isOn, testerMode: TesterMode, language: Language, Statistics),
+            DeviceSetting.TesterMode => new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: isOn, language: Language, Statistics),
+            DeviceSetting.Statistics => WithTheStatistics(isOn ? StatisticsChoice.Allowed : StatisticsChoice.Declined),
             _ => throw new ArgumentOutOfRangeException(nameof(setting), setting, "A setting the game does not know."),
         };
+
+        /// <summary>These settings with the player's answer to the play statistics; "not asked" for a device file older than the question.</summary>
+        public DeviceSettings WithTheStatistics(StatisticsChoice choice) =>
+            new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: TesterMode, language: Language, choice);
 
         /// <summary>These settings with the language the player chose on the language card.</summary>
         public DeviceSettings WithLanguage(Language chosen) => WithLanguageOrNone(chosen);
@@ -110,20 +149,30 @@ namespace Puzzle.Client.Flow
 
         public bool Equals(DeviceSettings? other) =>
             other != null && Sound == other.Sound && Music == other.Music && Vibration == other.Vibration && TesterMode == other.TesterMode
-            && Language == other.Language;
+            && Language == other.Language && Statistics == other.Statistics;
 
         public override bool Equals(object? obj) => Equals(obj as DeviceSettings);
 
         public override int GetHashCode() =>
-            ((Sound ? 1 : 0) | (Vibration ? 2 : 0) | (TesterMode ? 4 : 0) | (Music ? 8 : 0)) + 16 * (Language is Language chosen ? 1 + (int)chosen : 0);
+            ((Sound ? 1 : 0) | (Vibration ? 2 : 0) | (TesterMode ? 4 : 0) | (Music ? 8 : 0)) + 16 * (int)Statistics
+            + 64 * (Language is Language chosen ? 1 + (int)chosen : 0);
 
         public override string ToString() =>
             $"sound {(Sound ? "on" : "off")}, music {(Music ? "on" : "off")}, vibration {(Vibration ? "on" : "off")}"
             + $"{(TesterMode ? ", tester mode on" : string.Empty)}"
-            + $", {(Language is Language chosen ? $"language {Languages.CodeOf(chosen)}" : "the phone's language")}";
+            + $", {(Language is Language chosen ? $"language {Languages.CodeOf(chosen)}" : "the phone's language")}"
+            + $", statistics {WordsOf(Statistics)}";
+
+        private static string WordsOf(StatisticsChoice choice) => choice switch
+        {
+            StatisticsChoice.NotAsked => "not asked",
+            StatisticsChoice.Allowed => "allowed",
+            StatisticsChoice.Declined => "declined",
+            _ => throw new ArgumentOutOfRangeException(nameof(choice), choice, "An answer to the statistics the game does not know."),
+        };
 
         private DeviceSettings WithLanguageOrNone(Language? language) =>
-            new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: TesterMode, language: language);
+            new DeviceSettings(sound: Sound, music: Music, vibration: Vibration, testerMode: TesterMode, language: language, Statistics);
     }
 
     /// <summary>Where the player's settings are kept: the phone's device file, or memory for the Editor's tools and for tests.</summary>

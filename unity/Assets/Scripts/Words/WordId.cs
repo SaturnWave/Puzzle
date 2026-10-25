@@ -595,11 +595,35 @@ namespace Puzzle.Client.Words
         /// <summary>Settings row with a switch: the tester mode, while it is on.</summary>
         SettingTesterMode,
 
-        /// <summary>Smaller line under the privacy row.</summary>
+        /// <summary>Settings row with a switch: the play statistics, which the player allows or declines; also the nameplate of the question that asks for them.</summary>
+        SettingStatistics,
+
+        /// <summary>Smaller line under the privacy row while the play statistics are off: only purchases leave the phone (the store's, and Unity's events).</summary>
         SettingsPrivacyLine,
+
+        /// <summary>Smaller line under the privacy row while the player allows the play statistics: purchases, and statistics without any ID, leave the phone.</summary>
+        SettingsPrivacyLineWithStatistics,
 
         /// <summary>Settings row that opens the support card, and that card's nameplate.</summary>
         SettingsSupport,
+
+        /// <summary>Settings row that opens the credits card, and that card's nameplate: who made the pictures, typefaces and sounds the game uses.</summary>
+        SettingsCredits,
+
+        /// <summary>Credits card, its first line: the licence lines under the headings stay in English, as their licences give them.</summary>
+        CreditsInEnglish,
+
+        /// <summary>Credits card, heading over the lines of the painter's pictures (the avatar).</summary>
+        CreditsPainter,
+
+        /// <summary>Credits card, heading over the line about the museum's paintings and their photographs.</summary>
+        CreditsPaintings,
+
+        /// <summary>Credits card, heading over the typefaces' copyright lines.</summary>
+        CreditsTypefaces,
+
+        /// <summary>Credits card, heading over the line about the sounds of play.</summary>
+        CreditsSounds,
 
         /// <summary>Settings card's foot: the player's ID and the game's version.</summary>
         SettingsFoot,
@@ -637,17 +661,29 @@ namespace Puzzle.Client.Words
         /// <summary>Privacy card nameplate and the settings row that opens it.</summary>
         PrivacyTitle,
 
-        /// <summary>Privacy card, paragraph 1 (approved text: keep every fact).</summary>
+        /// <summary>Privacy card, paragraph 1: what stays on the phone only (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
         PrivacyParagraph1,
 
-        /// <summary>Privacy card, paragraph 2 (approved text: keep every fact).</summary>
+        /// <summary>Privacy card, paragraph 2: the stores take the payments; no accounts, no ad network (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
         PrivacyParagraph2,
 
-        /// <summary>Privacy card, paragraph 3 (approved text: keep every fact).</summary>
+        /// <summary>Privacy card, paragraph 3: the records' random ID, which the game never sends (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
         PrivacyParagraph3,
 
         /// <summary>Privacy card, paragraph 4 (approved text: keep every fact).</summary>
         PrivacyParagraph4,
+
+        /// <summary>Privacy card, the paragraph on Unity's purchase events (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphUnity,
+
+        /// <summary>Privacy card, the paragraph on the play statistics: what the notes hold and where they go (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names; the list matches PlayNote.cs).</summary>
+        PrivacyParagraphStatistics,
+
+        /// <summary>Privacy card, after the statistics: what the notes never hold, and that the choice changes on the settings card (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphStatisticsChoice,
+
+        /// <summary>Privacy card, last paragraph: what having no server means for coins, progress and refunds (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphNoServer,
 
         /// <summary>Privacy card button that deletes the attempt records, after a question.</summary>
         PrivacyDeleteTheRecords,
@@ -678,6 +714,27 @@ namespace Puzzle.Client.Words
 
         /// <summary>Privacy card: the file's name and what a line of it is.</summary>
         PrivacyFileLine,
+
+        /// <summary>Privacy card, between the two arrows that turn its pages: which page of how many is shown ("2 / 3").</summary>
+        PrivacyPageOf,
+
+        /// <summary>Statistics question card, after the entry page of the first start: the question, under the nameplate (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentQuestion,
+
+        /// <summary>Statistics question card, paragraph 1: what is counted, and by whom and where (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph1,
+
+        /// <summary>Statistics question card, paragraph 2: what is never sent and never done with the notes (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph2,
+
+        /// <summary>Statistics question card, paragraph 3: no is a full answer, and the choice changes in the settings (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph3,
+
+        /// <summary>Statistics question card: the answer that allows the notes. As large and as bright as the other answer.</summary>
+        ConsentAllow,
+
+        /// <summary>Statistics question card: the answer that declines them; the way back answers so too. As large and as bright as the other answer.</summary>
+        ConsentDecline,
 
         /// <summary>Tutorial, level 1, before the first move, first line of the pill: the lit plaque shows the level's goal.</summary>
         TutorialGoal,
@@ -810,5 +867,110 @@ namespace Puzzle.Client.Words
 
         /// <summary>Entry page: what the line under the bar says instead of the share when the game could not start (a file it needs could not be read). The player is to close the game and open it again; short, one line.</summary>
         EntryCouldNotStart,
+
+        /// <summary>Name of the starter pack (coins and one start booster of each kind, sold once): "the apprentice's bag".</summary>
+        StarterPackName,
+
+        /// <summary>Shop, on the top edge of the starter pack's frame (small capitals): it is sold to a player only once.</summary>
+        ShopStarterOnce,
+
+        /// <summary>Shop: a pack's button while the store has not said its price yet. Keep the ellipsis.</summary>
+        ShopPriceComing,
+
+        /// <summary>Shop: the button of a coin pack the store does not sell now.</summary>
+        ShopPackNotOnSale,
+
+        /// <summary>Shop, in the coins' panel instead of the buttons: the phone's app store (Google Play, App Store) cannot be reached now. Calm, no blame.</summary>
+        ShopStoreUnreachable,
+
+        /// <summary>Shop, the link under the panels (iPhone and iPad only): asks the App Store for the player's purchases back (Apple's "Restore Purchases").</summary>
+        ShopRestore,
+
+        /// <summary>Name of the smallest coin pack: a pouch of coins.</summary>
+        PackPouch,
+
+        /// <summary>Name of the second coin pack: a bag of coins.</summary>
+        PackBag,
+
+        /// <summary>Name of the third coin pack: a chest of coins.</summary>
+        PackChest,
+
+        /// <summary>Name of the largest coin pack: a treasure of coins.</summary>
+        PackTreasure,
+
+        /// <summary>Card before paying, first line: asks whether to buy. {price} is the price as the store writes it in the player's currency ("₺89,99").</summary>
+        PurchaseAskQuestion,
+
+        /// <summary>Card before paying, second line: the phone's app store takes the payment, and Unity, whose purchase library the game uses, is told of the purchase too.</summary>
+        PurchaseAskStoreLine,
+
+        /// <summary>Card before paying: the green button that opens the store's payment sheet.</summary>
+        PurchaseBuy,
+
+        /// <summary>Card before paying: the blue button that closes it without paying.</summary>
+        PurchaseDecline,
+
+        /// <summary>Card while the store takes the payment: its nameplate.</summary>
+        PurchasePendingTitle,
+
+        /// <summary>Card while the store takes the payment, first line.</summary>
+        PurchasePendingLine,
+
+        /// <summary>Second line of the cards whose payment is not made yet: what was bought arrives once it is paid.</summary>
+        PurchaseComesWhenPaid,
+
+        /// <summary>Card after a payment, first line: the coins arrived. {coins} is the amount.</summary>
+        PurchaseCoinsArrived,
+
+        /// <summary>Card after a payment, second line under the coins.</summary>
+        PurchaseThanks,
+
+        /// <summary>Card when the payment waits for someone's approval (a parent's "Ask to Buy") or for cash at a shop: its nameplate.</summary>
+        PurchaseDeferredTitle,
+
+        /// <summary>Card when the payment waits for approval, first line.</summary>
+        PurchaseDeferredLine,
+
+        /// <summary>Card when a purchase came to nothing: its nameplate.</summary>
+        PurchaseFailedTitle,
+
+        /// <summary>Second line of the card when a purchase came to nothing: no money was taken.</summary>
+        PurchaseNothingPaid,
+
+        /// <summary>That card, first line: the store cannot be reached now.</summary>
+        PurchaseStoreClosed,
+
+        /// <summary>That card, first line: the store does not sell this product now.</summary>
+        PurchaseNotOnSale,
+
+        /// <summary>That card, first line: the starter pack is sold once and the player has it. {name} is its name.</summary>
+        PurchaseSoldOut,
+
+        /// <summary>That card, first line: the store did not take the payment.</summary>
+        PurchaseNotPaid,
+
+        /// <summary>That card, first line: a payment for this product is waiting already.</summary>
+        PurchaseAlreadyWaiting,
+
+        /// <summary>Card after asking the store for the purchases back: its nameplate.</summary>
+        RestoreTitle,
+
+        /// <summary>That card, first line: the starter pack came back. {name} is its name.</summary>
+        RestoreBroughtBack,
+
+        /// <summary>That card, first line: there was nothing to bring back.</summary>
+        RestoreNothing,
+
+        /// <summary>That card, second line: coin packs bought before are not restored, only the starter pack. {name} is its name.</summary>
+        RestoreOnlyTheStarter,
+
+        /// <summary>That card, first line: the store did not answer.</summary>
+        RestoreFailed,
+
+        /// <summary>That card, second line: try again later.</summary>
+        RestoreTryLater,
+
+        /// <summary>Build line: things are sold for money through the phone's app store.</summary>
+        BuildStoreBuying,
     }
 }

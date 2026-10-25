@@ -4,6 +4,47 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-24 · Oturum 31 — v1: satın alma
+
+**Ressam oyunda (avatar A)**
+- Bitti (ana dal): keçe bereli yaşlı usta ressamın son seti (`out/avatar-final`) `art/avatar`'a (kaynak, lisans kaydı, işleyicinin künye notu) ve İngilizce adlarla `unity/Assets/Art/Avatar/Resources/Painter`'a girdi. Ayakta resimler metreyle ölçülüp ayaklarından döner; telefonda ASTC, mipmap yok.
+- Resimler ekranla yüklenip ekranla bırakılıyor (`PainterGallery`, `PictureShelf`). `AvatarCheck` yeni: her ekranda tam olarak gösterdiği resim, kalkınca hiçbiri (22 sayım).
+- Salon: ressam tezgâhın sağında (telefonda 450 piksel), Hediye çerçevesi tezgâhın solunda; yeni oyuncuya el sallar. Onarılan odada pankartın sağında sevinir; pankart ortada kalır, gerekirse kayar ya da küçülür.
+- Rehber yazılarının solunda yaldız çerçevede büst: yol gösteren, yeni engelde ve uzun basmada düşünen, ilk tabloda sevinen. Kazanma kartının nişinde sevinen büst. Tablo tamamlanınca tepsinin sağ ucunun önünde sevinen ressam, ödül solunda.
+- Ayarlar'da "Künye": sayfalı kart, lisans satırları İngilizce (Einar CC BY 4.0 "modified", Rocketbox MIT metni bütün, müzeler, yazı tipleri, Kenney); testler satırları kayıtlarla karşılaştırıyor. 6 yeni yazı 13 dilde.
+- Hikâye: kahraman artık yaşlı bir usta (GAME_DESIGN §18, §0, §22; OVERVIEW, README, müzik isteği). Oyunun yazılarında ressam geçmiyordu; yeni cümle sahibin onayını bekliyor.
+- Yeni doku işleyicisi bütün dokuları bir kez yeniden içe aktardı; Unity 254 `.meta`'ya varsayılan iOS bölümü yazdı (ayrı işleme).
+- 5.839 test geçti (334 yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `AvatarCheck`, `RotationCheck`, `PlayModeCheck`, `MusicCheck` (`-quit` olmadan) hatasız; resimler telefon, açık Fold (iki yön) ve iPad'de (iki yön) bakıldı. Telefon testleri T500–T509 (F26), açık A49.
+- Sahipte: hikâye cümlesinin onayı; künyeye müzik satırı istenip istenmediği; kaybetme kartı için üzgün ya da şaşıran büst ve bekleme canlandırması (yapılmadı).
+
+**Oyun istatistikleri yalnız izinle, v1 gizlilik metni**
+- Bitti (ana dal): Aptabase'in Unity paketi 0.3.1 (resmî GitHub, işlemeye sabit, MIT). Ayar dosyası boş anahtarla geliyor: anahtar yokken paket hiçbir şey kurmuyor, oyun notları yalnız günlüğe yazıyor. Yalnız AB bölgesinin anahtarı (`A-EU-…`) gönderir; başka bölge reddedilir.
+- Kapı oyunun kodunda (`PlayStatistics`): not yalnız "İzin ver"den sonra pakete gider. Paket 0.3.1 kapalıyken de kuyruğa alıyor; bu yüzden yanıt yokken ve "hayır"dan sonra ona hiç not verilmiyor. Notlar: açılış, bölüm başı ve sonu (numara, kalan hamle), tablo ve oda, mağaza açıldı, satın alma (yalnız ürün). Kimlik yok.
+- Soru kartı: ilk açılışta giriş sayfasından sonra salonun üstünde; iki düğme aynı boy ve renk; geri tuşu "hayır". Ayarlarda "Oyun istatistikleri" anahtarı (yeni işaret); gizlilik satırı anahtara göre. `device.json` 6. düzen (`statistics`).
+- Gizlilik metni taslaktan (`privacy-v1.md` §3): kart sekiz paragraf, sayfalı ("1 / 3", oklar). Onay kartının ikinci satırı Unity'yi söylüyor. 13 dilde, makine çevirisi; sahibin onayını bekliyor.
+- Android: INTERNET yeniden isteniyor. Derleme eski kütüphane manifestini siliyor; APK'nın izinleri `aapt` ile okunuyor, tam beş izin değilse derleme duruyor.
+- Belgeler: GAME_DESIGN §19 (karar), §20 (eski metin ve "rıza ekranı yok" notları güncellendi, Google Play Data safety cevapları), §23. Telefon testleri T490–T499 (F25), açık A48.
+- 5.505 test geçti (48'i yeni). Ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ConsentCheck`, `RotationCheck`, `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan) hatasız. Kartlar ve yürüyüş üç ekranda; Almanca ve Japonca telefonda bakıldı. Gizlilik kartı en çok 470 nokta, Türkçe 3 sayfa. Çince sans yedek yazı tiplerinin resmi 2048×2048 oldu. APK'nın izinleri tam beş.
+- Sahipte: metinlerin onayı; Aptabase hesabı (AB) ve anahtar; site adresi, iletişim e-postası, yasal ad ve adres; politikanın sitede yayımı; Play Console Data safety ve App Store Connect beyanı; uzman okuması (`privacy-v1.md` §6).
+
+**Gerçek satın almalar (istemci, IAP 5.4.4)**
+- Bitti (ana dal): Unity IAP 5.4.4 projede, Unity Gaming Services olmadan. Satın almanın kapalı yolu `Checkout` (boşta → soruyor → bekliyor → verildi, vazgeçildi, olmadı ya da onay bekliyor); mağaza arabirimi `IStore` (oyunda `UnityStore`, araçlarda ve testlerde `ScriptedStore`). Ödeme `WalletLedger.Deliver` ile bir kez verilir, mağazaya onay kayıttan sonra gider; arada kapanan oyun ödemeyi bir kez verir. İlerleme dosyası 6. düzende (`purchases`).
+- Mağaza: dört paket mağazanın yerel fiyatıyla; cevap yokken "…", satılmayan "Satışta değil", ulaşılamayınca "Mağaza şu anda açılamıyor" (15 sn'de bir yeniden sorar). Çırak Çantası 20. bölümden alınana kadar kesenin yerinde, "BİR KEZ" ile: ayrı panel en kısa telefonlarda ve dik iPad'de düğmeleri 38 noktanın altına indiriyordu. iOS'ta "Satın alımları geri yükle". Onay, ödeme sürüyor, satın alındı, olmadı, onay bekleniyor ve geri yükleme kartları; 35 yeni yazı 13 dilde.
+- Ekonomi paketi biçim 4 (`store` pakette), `shop.coinPacks` örnekleri kalktı, `build.realMoneyPurchases: "store"`. Bu yüzden v1 derlemesinde test modu yok (kural değişmedi); araçlar test modunu `TestBuildEconomy` ile yürüyor.
+- Sunucu yok: iade edilen altın oyuncuda kalır; silip kurunca altın paketleri gelmez, Çırak Çantası gelir (§19). IAP 5.4.4'ün satın alma olayları iOS'ta Unity'ye gider; Android'de INTERNET hâlâ silinmiş.
+- `PurchaseCheck` yeni: oyunun oturumunda betikli mağazayla bütün yollar (resimler `walk-purchase-*`), sonra oyun kipinde IAP 5.4.4 ve sahte mağaza; kaydı tutmayan depoyla düşüyor.
+- 5.457 test geçti (49'u yeni); betik testleri ve ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `PurchaseCheck`, `RotationCheck`, `PlayModeCheck`, `MusicCheck` (`-quit` olmadan) hatasız; mağaza ve kart yürüyüşleri üç ekranda bakıldı. APK yapılmadı, telefona kurulmadı.
+- Sahipte: Play Console ve App Store Connect'te uygulama, beş ürün ve test hesapları; Çırak Çantası'nın yeri; test modu için ayrı derleme isteği; gizlilik metni (sonraki aşama). Telefon testleri T470–T489.
+
+**Ödeyen oyuncular ve ürünlerin tutarları (simülatör)**
+- Bitti (ana dal): v1'in ürünleri `economy/default.json`'un yeni `store` bölümünde: kese $1.99 = 1.000, torba $4.99 = 2.750, sandık $9.99 = 6.000, hazine $19.99 = 13.000 altın; Çırak Çantası $1.99 = 1.500 altın + üç bölüm öncesi booster, oyuncu başına bir kez, 20. bölümden. Her alanın birimi ve kaynağı yazılı (fiyat sent olarak, kesirsiz). Araştırmanın tutarları korundu: simülatör değiştirmek için bir neden göstermedi.
+- Ürün kimlikleri uygulama kimliğine bağlı yer tutucular: `com.saturnwave.puzzle.coins.pouch`, `.coins.bag`, `.coins.chest`, `.coins.treasure`, `.starter.apprentice_kit`. Dosya yalnız noktadan sonrasını tutar; uygulama kimliği değişince kimlikler onu izler. Ürünleri Play Console'da ve App Store Connect'te proje sahibi açacak.
+- Oyun bu bölümü henüz okumuyor (paket ve `Economy.json` değişmedi; mağaza üç örnek paketi gösteriyor). Mağaza sayfası üç sütun için çizili; satışı açan aşama dört paketi ve Çırak Çantası'nı yerleştirecek.
+- Simülatöre üç ödeyen oyuncu eklendi, kuralları ayar dosyasında (`player.purchases`): `pays-when-short.json` (altın yetmeyince kese), `buys-the-starter-pack.json`, `pays-monthly.json` (ayda bir sandık). Yeni rapor `purchases.csv`, özette "PURCHASES" tablosu, coin tablosunda satın alınan altın.
+- Ortalama oyuncu dört ayarda da 100. bölüme 8. günde geliyor (1000. bölüme 90 yerine 89). Altın yetmeyince kese alan 1000 bölümde ortalama 2,4 kez öder ($4,84; yarısı hiç almaz); zayıf oyuncu 36 kez ($71,57), karşılanmayan "+5" isteği 44,6'dan sıfıra iner. Ayda bir sandık alanın kesesi 10.000–25.000'e çıkar: v1'de altının "+5" ve booster dışında gidecek yeri yok (yan koleksiyonun parça fiyatı açık). Ayrıntı GAME_DESIGN §25.
+- Denge politikasına fiyat kuralları 1, 2, 3 ve 6 eklendi (`EconomyBalancePolicyTests`): dolar başına altın 503 / 551 / 601 / 650 (en büyük %29 fazla, sınır %35); 1 / 3 / 6 / 14 kez "+5"; Çırak Çantası 2.400 altın değerinde, kesenin 2,4 katı (sınır 2,5) ve bir kez; fiyatlar .99 ile biter, en çok $19.99. Satın almanın hiçbir oyunu değiştirmediği ayrıca test edildi.
+- 5.408 test geçti (32'si yeni); ekonomi denetimi temiz (100. bölüm 8. gün); oyunun paketinin testleri değişmeden geçiyor. Telefonda görünen bir değişiklik yok; telefon testi gerekmiyor.
+
 ## 2026-10-24 · Oturum 30 — Kalan işler
 
 **İnceleme düzeltmeleri (yön, açılış hatası, yan paylar)**

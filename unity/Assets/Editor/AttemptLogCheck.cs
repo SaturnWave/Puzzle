@@ -751,13 +751,16 @@ namespace Puzzle.Client.EditorTools
             public GameSession SessionInTheHall(int levelNumber) =>
                 new GameSession(_levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(StoryStudio.StandingOn(Level(levelNumber), _levels)), Log, Screen, SessionOpening.InTheMuseum);
 
-            /// <summary>The game's own session at the board of a level, for a new player who has tried it so many times before, on the check's log, with the settings of a store.</summary>
+            /// <summary>
+            /// The game's own session at the board of a level, for a new player who has tried it so many times before, on
+            /// the check's log, with the settings of a store, in a test build (the tester mode is offered by no other).
+            /// </summary>
             public GameSession SessionAt(int levelNumber, int attempt, ISettingsStore settings)
             {
                 PlayerProgress standing = StoryStudio.StandingOn(Level(levelNumber), _levels);
                 var progress = new PlayerProgress(standing.LevelsWon, attempt).WithWallet(standing.Wallet);
                 return new GameSession(
-                    _levels, _art, _paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(progress), Log, settings, DeviceAbilities.OfThisBuild,
+                    _levels, _art, _paintings, StoryStudio.TestBuildEconomy, StoryStudio.Clock, new ProgressInMemory(progress), Log, settings, DeviceAbilities.OfThisBuild,
                     CuePlayer.Silent, Screen, SessionOpening.AtTheBoard);
             }
 

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using Puzzle.Client.Avatar;
 using Puzzle.Client.Engine;
 using Puzzle.Museum;
 using Puzzle.Museum.Catalogue;
@@ -112,7 +113,8 @@ namespace Puzzle.Client.Canvases
     /// shows any more the gallery keeps the last few loaded (<see cref="PicturesKeptUnheld"/>), so a room the player
     /// turns back to hangs at once, and unloads the others; whoever closes the screens unloads the kept ones too
     /// (<see cref="LetGoOfUnusedPictures"/>). However long a player browses, only the pictures on the screen and the
-    /// few kept sit in memory, never the museum's hundred (A42).
+    /// few kept sit in memory, never the museum's hundred (A42). The painter who restores the museum has his own
+    /// pictures beside the paintings (<see cref="Painter"/>), held by the same rules.
     /// </summary>
     public sealed class PaintingGallery
     {
@@ -143,6 +145,9 @@ namespace Puzzle.Client.Canvases
         }
 
         public MuseumCatalogue Catalogue { get; }
+
+        /// <summary>The painter's own pictures, the game's avatar (§22): always the game's own, whatever the paintings' pictures come from.</summary>
+        public PainterGallery Painter { get; } = new PainterGallery();
 
         /// <summary>The gallery of the catalogue a built game carries.</summary>
         /// <exception cref="CatalogueFormatException">The catalogue is missing or is not a valid catalogue.</exception>

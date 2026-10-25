@@ -75,6 +75,7 @@ public sealed record CoinsRow(
     Coins? EarnedLevelWon,
     Coins? EarnedPainting,
     Coins? EarnedDaily,
+    Coins? EarnedBoughtForMoney,
     Coins? SpentExtraMoves,
     Coins? SpentStartBoosters,
     Coins? GapsAtUnpaidWants,
@@ -108,6 +109,23 @@ public sealed record SpendingRow(
     Coins? GapsAtUnpaidStartBoosters,
     Coins? PriceOfUnpaidStartBoosters);
 
+/// <summary>What a population bought for real money up to a milestone: means per player who reached it, money at the US store's prices.</summary>
+/// <param name="ReachedShare">The share of the population the row is about.</param>
+/// <param name="PayingShare">Of the players the row is about, the share who bought anything.</param>
+/// <param name="SpentMean">The money a player paid, rounded to the cent.</param>
+/// <param name="CoinsBoughtMean">The coins the purchases gave, without the boosters of the starter pack.</param>
+public sealed record PurchaseRow(
+    Population Population,
+    LevelId Level,
+    int Players,
+    double? ReachedShare,
+    double? PurchasesMean,
+    double? PayingShare,
+    UsDollars? SpentMean,
+    UsDollars? SpentP50,
+    UsDollars? SpentP90,
+    Coins? CoinsBoughtMean);
+
 /// <summary>One booster in a population up to a milestone: means per player who reached it.</summary>
 public sealed record BoosterRow(Population Population, LevelId Level, BoosterKind Booster, int Players, double? ReachedShare, double? Received, double? Used, double? Bought, double? Held);
 
@@ -135,6 +153,8 @@ public static class JourneyReports
     public static IReadOnlyList<LivesRow> Lives(PopulationResult run) => AtMilestones(run, LivesOf);
 
     public static IReadOnlyList<SpendingRow> Spending(PopulationResult run) => AtMilestones(run, SpendingOf);
+
+    public static IReadOnlyList<PurchaseRow> Purchases(PopulationResult run) => AtMilestones(run, PurchasesOf);
 
     public static IReadOnlyList<BoosterRow> Boosters(PopulationResult run) =>
         AtMilestones(run, (population, level, arrived) => BoosterKinds.All.Select(booster => BoosterOf(population, level, booster, arrived)))
@@ -227,8 +247,8 @@ public static class JourneyReports
     {
         var table = new CsvTable(
             "population", "at", "value", "players", "reachedShare", "playersStillPlaying", "levelP50", "balanceP10", "balanceP50", "balanceP90",
-            "earnedWelcomeGift", "earnedFinale", "earnedLevelWon", "earnedPainting", "earnedDaily", "spentExtraMoves", "spentStartBoosters", "gapsAtUnpaidWants", "priceOfUnpaidWants",
-            "balanceBuysExtraMoves", "balanceBuysSidePieces");
+            "earnedWelcomeGift", "earnedFinale", "earnedLevelWon", "earnedPainting", "earnedDaily", "earnedBoughtForMoney", "spentExtraMoves", "spentStartBoosters",
+            "gapsAtUnpaidWants", "priceOfUnpaidWants", "balanceBuysExtraMoves", "balanceBuysSidePieces");
         foreach (CoinsRow row in rows)
         {
             table.Add(
@@ -247,6 +267,7 @@ public static class JourneyReports
                 Cell.Whole(row.EarnedLevelWon),
                 Cell.Whole(row.EarnedPainting),
                 Cell.Whole(row.EarnedDaily),
+                Cell.Whole(row.EarnedBoughtForMoney),
                 Cell.Whole(row.SpentExtraMoves),
                 Cell.Whole(row.SpentStartBoosters),
                 Cell.Whole(row.GapsAtUnpaidWants),
@@ -284,6 +305,28 @@ public static class JourneyReports
                 Cell.Fine(row.StartBoostersWantedUnpaid),
                 Cell.Whole(row.GapsAtUnpaidStartBoosters),
                 Cell.Whole(row.PriceOfUnpaidStartBoosters));
+        }
+
+        return table;
+    }
+
+    public static CsvTable PurchasesTable(IEnumerable<PurchaseRow> rows)
+    {
+        var table = new CsvTable(
+            "population", "level", "players", "reachedShare", "purchasesMean", "payingShare", "spentUsdMean", "spentUsdP50", "spentUsdP90", "coinsBoughtMean");
+        foreach (PurchaseRow row in rows)
+        {
+            table.Add(
+                row.Population.Name,
+                Cell.Whole(row.Level.Value),
+                Cell.Whole(row.Players),
+                Cell.Share(row.ReachedShare),
+                Cell.Fine(row.PurchasesMean),
+                Cell.Share(row.PayingShare),
+                Cell.Money(row.SpentMean),
+                Cell.Money(row.SpentP50),
+                Cell.Money(row.SpentP90),
+                Cell.Whole(row.CoinsBoughtMean));
         }
 
         return table;
@@ -377,6 +420,23 @@ public static class JourneyReports
             MeanCoins(totals, player => player.UnpaidStartBoosters.Price));
     }
 
+    private static PurchaseRow PurchasesOf(Population population, LevelId level, Arrived arrived)
+    {
+        JourneyTotals[] totals = arrived.Totals;
+        UsDollars[] spent = totals.Select(player => player.MoneySpent).ToArray();
+        return new PurchaseRow(
+            population,
+            level,
+            totals.Length,
+            arrived.Share,
+            Mean(totals, player => player.Purchases),
+            Ratio(totals.Count(player => player.Purchases > 0), totals.Length),
+            Statistics.MeanMoney(spent),
+            Statistics.Quantile(spent, Statistics.Median),
+            Statistics.Quantile(spent, Statistics.BandHigh),
+            MeanCoins(totals, player => player.Earned(CoinSource.BoughtForMoney)));
+    }
+
     private static BoosterRow BoosterOf(Population population, LevelId level, BoosterKind booster, Arrived arrived) => new(
         population,
         level,
@@ -409,6 +469,7 @@ public static class JourneyReports
             MeanCoins(totals, player => player.Earned(CoinSource.LevelWon)),
             MeanCoins(totals, player => player.Earned(CoinSource.PaintingCompleted)),
             MeanCoins(totals, player => player.Earned(CoinSource.Daily)),
+            MeanCoins(totals, player => player.Earned(CoinSource.BoughtForMoney)),
             MeanCoins(totals, player => player.Spent(CoinSink.ExtraMoves)),
             MeanCoins(totals, player => player.Spent(CoinSink.StartBooster)),
             MeanCoins(totals, player => player.UnpaidInAll.Gaps),

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Purchases;
 using Puzzle.Meta;
 using Puzzle.Meta.Settings;
 using Puzzle.Museum;
@@ -50,6 +51,11 @@ public class ProgressDocumentTests
     private static readonly string DocumentWithTheTutorial =
         DocumentWithAWallet.Replace("""{"version":4,""", """{"version":5,""", StringComparison.Ordinal)[..^1]
         + ""","tutorial":["goal","match","moves","four-in-a-line","five-in-a-line","box","jelly","first-piece","first-painting"]}""";
+
+    /// <summary>The same player, who has bought nothing, as this game writes them (layout 6): the purchases' block is there and empty.</summary>
+    private static readonly string DocumentWithPurchases =
+        DocumentWithTheTutorial.Replace("""{"version":5,""", """{"version":6,""", StringComparison.Ordinal)[..^1]
+        + ""","purchases":{"bought":[],"transactions":[]}}""";
 
     /// <summary>
     /// What a player on level 40 with the first painting whole had seen of the tutorial before the booster intro (#7):
@@ -134,7 +140,7 @@ public class ProgressDocumentTests
 
         // Saved again, it is in the current layout and reads back the same.
         string written = Written(read);
-        Assert.StartsWith("""{"version":5,""", written, StringComparison.Ordinal);
+        Assert.StartsWith("""{"version":6,""", written, StringComparison.Ordinal);
         Assert.Equal(read, Assert.IsType<ProgressReading.Sound>(Read(written, shipped.StartingWallet)).Progress);
     }
 
@@ -145,8 +151,38 @@ public class ProgressDocumentTests
 
         string written = Written(progress);
 
-        Assert.Equal(DocumentWithTheTutorial, written);
+        Assert.Equal(DocumentWithPurchases, written);
         Assert.Equal(progress, SoundProgressOf(written));
+    }
+
+    [Fact]
+    public void What_was_bought_for_money_is_written_and_reads_back_and_a_file_before_it_has_bought_nothing()
+    {
+        PurchasesMade made = PurchasesMade.None.WithDelivered("coins.pouch", "GPA.1").WithDelivered("starter.apprentice_kit", "GPA.2").WithSeen("GPA.3");
+        PlayerProgress progress = TutoredPlayer().WithPurchases(made);
+
+        string written = Written(progress);
+
+        Assert.EndsWith(
+            ""","purchases":{"bought":[{"product":"coins.pouch","times":1},{"product":"starter.apprentice_kit","times":1}],"transactions":["GPA.1","GPA.2","GPA.3"]}}""",
+            written,
+            StringComparison.Ordinal);
+        Assert.Equal(progress, SoundProgressOf(written));
+        Assert.Equal(PurchasesMade.None, SoundProgressOf(DocumentWithTheTutorial).Purchases);
+    }
+
+    [Theory]
+    [InlineData("""{"bought":[{"product":"coins.pouch","times":0}],"transactions":[]}""")]
+    [InlineData("""{"bought":[{"product":"","times":1}],"transactions":[]}""")]
+    [InlineData("""{"bought":[{"product":"coins.pouch","times":1},{"product":"coins.pouch","times":2}],"transactions":[]}""")]
+    [InlineData("""{"bought":[],"transactions":["GPA.1","GPA.1"]}""")]
+    [InlineData("""{"bought":[],"transactions":[""]}""")]
+    [InlineData("""{"bought":[null],"transactions":[]}""")]
+    public void Purchases_no_game_could_have_written_make_the_document_damaged(string purchases)
+    {
+        string document = DocumentWithPurchases.Replace("""purchases":{"bought":[],"transactions":[]}""", $"purchases\":{purchases}", StringComparison.Ordinal);
+
+        Assert.IsType<ProgressReading.Damaged>(Read(document));
     }
 
     [Fact]
@@ -252,13 +288,13 @@ public class ProgressDocumentTests
     [Fact]
     public void A_later_games_document_is_told_apart_and_what_this_game_knows_of_it_is_read()
     {
-        string laterGames = DocumentWithTheTutorial.Replace("""{"version":5,""", """{"version":6,""", StringComparison.Ordinal)
+        string laterGames = DocumentWithPurchases.Replace("""{"version":6,""", """{"version":7,""", StringComparison.Ordinal)
             .Replace("\"goal\",", "\"goal\",\"booster-intro\",", StringComparison.Ordinal)[..^1]
             + ""","device":"phone"}""";
 
         var later = Assert.IsType<ProgressReading.OfALaterGame>(Read(laterGames));
 
-        Assert.Equal(6, later.Version);
+        Assert.Equal(7, later.Version);
         Assert.Equal(TutoredPlayer(), later.Understood); // a step of the later game's is passed over
     }
 
@@ -266,15 +302,15 @@ public class ProgressDocumentTests
     public void Of_a_later_games_document_whose_pieces_or_wallet_this_game_cannot_read_the_players_place_is_still_known()
     {
         var later = Assert.IsType<ProgressReading.OfALaterGame>(
-            Read("""{"version":6,"levelsWon":12,"attemptsOnLevel":1,"placed":[{"painting":140,"pieces":[5]}]}"""));
+            Read("""{"version":7,"levelsWon":12,"attemptsOnLevel":1,"placed":[{"painting":140,"pieces":[5]}]}"""));
         Assert.Equal(new PlayerProgress(levelsWon: 12, attemptsOnLevel: 1, PlacedPieces.None, StartingWallet, TutorialSeen.None), later.Understood);
 
         // A booster this game does not know: the wallet is the later game's, and this game plays on the starting one.
         var unknownBooster = Assert.IsType<ProgressReading.OfALaterGame>(
-            Read(DocumentWithTheTutorial.Replace("""{"version":5,""", """{"version":6,""", StringComparison.Ordinal).Replace("hit-cell", "hit-diagonal", StringComparison.Ordinal)));
+            Read(DocumentWithPurchases.Replace("""{"version":6,""", """{"version":7,""", StringComparison.Ordinal).Replace("hit-cell", "hit-diagonal", StringComparison.Ordinal)));
         Assert.Equal(TutoredPlayer().WithWallet(StartingWallet), unknownBooster.Understood);
 
-        var unreadable = Assert.IsType<ProgressReading.OfALaterGame>(Read("""{"version":6,"levelsWon":-12,"attemptsOnLevel":1}"""));
+        var unreadable = Assert.IsType<ProgressReading.OfALaterGame>(Read("""{"version":7,"levelsWon":-12,"attemptsOnLevel":1}"""));
         Assert.Null(unreadable.Understood);
     }
 

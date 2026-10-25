@@ -41,11 +41,15 @@ internal sealed class JourneyList : IJourneyLog
 
     public IEnumerable<DayEnded> Days => Events.OfType<DayEnded>();
 
+    public IEnumerable<PurchaseMade> Purchases => Events.OfType<PurchaseMade>();
+
     public void AttemptPlayed(AttemptPlayed attempt) => Events.Add(attempt);
 
     public void SessionEnded(SessionEnded session) => Events.Add(session);
 
     public void RewardGiven(RewardGiven reward) => Events.Add(reward);
+
+    public void PurchaseMade(PurchaseMade purchase) => Events.Add(purchase);
 
     public void DayEnded(DayEnded day) => Events.Add(day);
 }

@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
@@ -212,6 +213,23 @@ public class GameWordsTests
         MuseumRoom firstRoom = museum.Room(new RoomNumber(1));
         Artwork waterLilies = firstRoom.Artworks[3];
 
+        StoreCatalogue store = rules.Shop.Store;
+        StoreProduct pack = store.CoinPacks[0];
+        StoreProduct starter = store.StarterPack.Product;
+        var purchaseCards = new List<(string What, PurchaseCardWords? Words)>
+        {
+            ("Asking", PurchaseWords.Asking(pack, new StorePrice("com.example.coins.pouch", "₺44,99", 44.99m, "TRY"))),
+            ("Pending", PurchaseWords.Of(new PurchaseState.Pending(pack))),
+            ("Deferred", PurchaseWords.Of(new PurchaseState.Deferred(pack))),
+            ("Delivered pack", PurchaseWords.Of(new PurchaseState.Delivered(pack, pack.Contents))),
+            ("Delivered one coin", PurchaseWords.Of(new PurchaseState.Delivered(pack, new Reward(new Coins(1), Array.Empty<BoosterKind>())))),
+            ("Delivered starter", PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents))),
+            ("Restore failed", PurchaseWords.Of(new RestoreState.Ended(Array.Empty<StoreProduct>(), succeeded: false), starter)),
+            ("Restore nothing", PurchaseWords.Of(new RestoreState.Ended(Array.Empty<StoreProduct>(), succeeded: true), starter)),
+            ("Restore starter", PurchaseWords.Of(new RestoreState.Ended(new[] { starter }, succeeded: true), starter)),
+        };
+        purchaseCards.AddRange(Enum.GetValues<PurchaseFailure>().Select(why => ($"Failed {why}", PurchaseWords.Of(new PurchaseState.Failed(starter, why)))));
+
         var said = new List<(string, string)>
         {
             ("MuseumWords.ShopTab", MuseumWords.ShopTab), ("MuseumWords.HomeTab", MuseumWords.HomeTab), ("MuseumWords.MapTab", MuseumWords.MapTab),
@@ -251,6 +269,10 @@ public class GameWordsTests
             ("ShopWords.HowToUse start", ShopWords.HowToUse(new Reward(Coins.None, new[] { BoosterKind.StartColorBomb }))),
             ("ShopWords.HowToUse play", ShopWords.HowToUse(new Reward(Coins.None, new[] { BoosterKind.HitRow }))),
             ("ShopWords.HowToUse mix", ShopWords.HowToUse(new Reward(Coins.None, new[] { BoosterKind.HitRow, BoosterKind.StartColorBomb }))),
+            ("PurchaseWords.StarterOnce", PurchaseWords.StarterOnce),
+            ("PurchaseWords.PriceComing", PurchaseWords.PriceComing), ("PurchaseWords.PackNotOnSale", PurchaseWords.PackNotOnSale),
+            ("PurchaseWords.StoreUnreachable", PurchaseWords.StoreUnreachable), ("PurchaseWords.Restore", PurchaseWords.Restore),
+            ("PurchaseWords.Buy", PurchaseWords.Buy), ("PurchaseWords.Decline", PurchaseWords.Decline),
             ("WalletWords.Full", WalletWords.Full), ("WalletWords.LivesTitle", WalletWords.LivesTitle), ("WalletWords.AllLivesThere", WalletWords.AllLivesThere),
             ("WalletWords.PlayWhenALifeComes", WalletWords.PlayWhenALifeComes), ("WalletWords.TesterModePill", WalletWords.TesterModePill),
             ("WalletWords.UnlimitedLives", WalletWords.UnlimitedLives), ("WalletWords.TesterModeOn", WalletWords.TesterModeOn), ("WalletWords.NoLifeIsLost", WalletWords.NoLifeIsLost),
@@ -258,7 +280,12 @@ public class GameWordsTests
             ("WalletWords.LivesOfMost", WalletWords.LivesOfMost(wallet)), ("WalletWords.LivesOfMost unlimited", WalletWords.LivesOfMost(unlimited)),
             ("WalletWords.NextLife", WalletWords.NextLife(new TimeSpan(0, 12, 34))), ("WalletWords.FullAfter", WalletWords.FullAfter(new TimeSpan(1, 42, 0))),
             ("SettingsWords.Title", SettingsWords.Title), ("SettingsWords.Language", SettingsWords.Language), ("SettingsWords.Privacy", SettingsWords.Privacy),
-            ("SettingsWords.PrivacyLine", SettingsWords.PrivacyLine), ("SettingsWords.Support", SettingsWords.Support), ("SettingsWords.PlayerIdLabel", SettingsWords.PlayerIdLabel),
+            ("SettingsWords.PrivacyLine", SettingsWords.PrivacyLine(DeviceSettings.Default)),
+            ("SettingsWords.PrivacyLine statistics", SettingsWords.PrivacyLine(DeviceSettings.Default.With(DeviceSetting.Statistics, isOn: true))),
+            ("PrivacyWords.PageOf", PrivacyWords.PageOf(2, 3)),
+            ("ConsentWords.Title", ConsentWords.Title), ("ConsentWords.Question", ConsentWords.Question),
+            ("ConsentWords.Allow", ConsentWords.Allow), ("ConsentWords.Decline", ConsentWords.Decline),
+            ("SettingsWords.Support", SettingsWords.Support), ("SettingsWords.PlayerIdLabel", SettingsWords.PlayerIdLabel),
             ("SettingsWords.GameVersionLabel", SettingsWords.GameVersionLabel), ("SettingsWords.ContentVersionLabel", SettingsWords.ContentVersionLabel),
             ("SettingsWords.RecordsFileLabel", SettingsWords.RecordsFileLabel), ("SettingsWords.RecordsKeptInMemory", SettingsWords.RecordsKeptInMemory),
             ("SettingsWords.WhatToTell", SettingsWords.WhatToTell), ("SettingsWords.TesterModeQuestion", SettingsWords.TesterModeQuestion),
@@ -271,6 +298,9 @@ public class GameWordsTests
             ("PrivacyWords.Delete", PrivacyWords.Delete), ("PrivacyWords.WhatStays", PrivacyWords.WhatStays), ("PrivacyWords.Deleted", PrivacyWords.Deleted),
             ("PrivacyWords.CannotCount", PrivacyWords.CannotCount), ("PrivacyWords.RecordsKept", PrivacyWords.RecordsKept(37)), ("PrivacyWords.RecordsUncounted", PrivacyWords.RecordsUncounted),
             ("PrivacyWords.FileLine", PrivacyWords.FileLine("attempts.jsonl")), ("PrivacyWords.Question", PrivacyWords.Question(37)), ("PrivacyWords.Question one", PrivacyWords.Question(1)),
+            ("CreditWords.Title", CreditWords.Title), ("CreditWords.InEnglish", CreditWords.InEnglish),
+            ("CreditWords.Sections painter", CreditWords.Sections[0].Heading!), ("CreditWords.Sections paintings", CreditWords.Sections[2].Heading!),
+            ("CreditWords.Sections typefaces", CreditWords.Sections[3].Heading!), ("CreditWords.Sections sounds", CreditWords.Sections[4].Heading!),
             ("BoardWords.Level", BoardWords.Level), ("BoardWords.Moves", BoardWords.Moves), ("BoardWords.Goals", BoardWords.Goals),
             ("BoardWords.LevelNumbered", BoardWords.LevelNumbered(47)), ("BoardWords.PieceOf", BoardWords.PieceOf(reward)), ("BoardWords.OpensOn", BoardWords.OpensOn(12)),
             ("BoosterWords.EveryLevelWithout", BoosterWords.EveryLevelWithout), ("BoosterWords.CostsNoMove", BoosterWords.CostsNoMove),
@@ -289,7 +319,21 @@ public class GameWordsTests
             ("ResultWords.TakeTheMovesForCoins", ResultWords.TakeTheMovesForCoins(terms)), ("ResultWords.TakeTheMovesForCoins covered", ResultWords.TakeTheMovesForCoins(coinsCoverIt)),
             ("ResultWords.TakeTheMovesForAnAd", ResultWords.TakeTheMovesForAnAd(terms)), ("ResultWords.PriceOfTheMoves", ResultWords.PriceOfTheMoves(terms)),
             ("ResultWords.CoinsWon", ResultWords.CoinsWon(new Coins(45))),
+            ("SettingsWords.BuildLine test build", SettingsWords.BuildLine(rules.Ads, RealMoneySales.NotAvailable)),
         };
+
+        foreach (StoreProduct product in store.Products)
+        {
+            said.Add(($"PurchaseWords.NameOf {product.Name}", PurchaseWords.NameOf(product)));
+        }
+
+        foreach ((string what, PurchaseCardWords? words) in purchaseCards)
+        {
+            PurchaseCardWords card = words ?? throw new InvalidOperationException($"The purchase card {what} says nothing.");
+            said.Add(($"PurchaseWords {what} title", card.Title));
+            said.Add(($"PurchaseWords {what} first line", card.FirstLine));
+            said.Add(($"PurchaseWords {what} second line", card.SecondLine));
+        }
 
         foreach (DeviceSetting setting in Enum.GetValues<DeviceSetting>())
         {
@@ -356,6 +400,16 @@ public class GameWordsTests
                 said.Add(($"ResultWords.GoOn {kind}", ResultWords.GoOn(result)));
                 said.Add(($"ResultWords.GoOnOnANarrowButton {kind}", ResultWords.GoOnOnANarrowButton(result)));
             }
+        }
+
+        for (int paragraph = 0; paragraph < PrivacyWords.Text.Count; paragraph++)
+        {
+            said.Add(($"PrivacyWords.Text {paragraph + 1}", PrivacyWords.Text[paragraph]));
+        }
+
+        for (int paragraph = 0; paragraph < ConsentWords.Text.Count; paragraph++)
+        {
+            said.Add(($"ConsentWords.Text {paragraph + 1}", ConsentWords.Text[paragraph]));
         }
 
         foreach (MuseumRoom room in museum.Rooms)

@@ -72,11 +72,17 @@ namespace Puzzle.Client.EditorTools
         /// <summary>The hall with the settings card hanging over it, as the wallet row's gear brings it down.</summary>
         Settings,
 
-        /// <summary>The privacy card in front of the settings card, with the tools' records: before "Kayıtları sil", its question, and after "Sil".</summary>
+        /// <summary>The privacy card in front of the settings card, with the tools' records: each page of its text, the question of "Kayıtları sil", and after "Sil".</summary>
         Privacy,
+
+        /// <summary>The question about the play statistics over the hall of a first start, and the settings card after its "İzin ver".</summary>
+        Consent,
 
         /// <summary>The support card in front of the settings card.</summary>
         Support,
+
+        /// <summary>The credits card in front of the settings card, each page of its text.</summary>
+        Credits,
 
         /// <summary>The language card in front of the settings card, ticking the language the tools speak.</summary>
         Languages,
@@ -389,7 +395,7 @@ namespace Puzzle.Client.EditorTools
     /// Pictures of the museum's screens for the Unity Editor's batch mode, of any player on any screen, with no game
     /// running:
     /// <c>Unity -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run
-    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,support,languages,settingspreview,hint,tutorial,boosters,worldmap,wayback,entry,controls]
+    /// [-screens home,map,collection,viewer,jigsaw,restored,leaving,lives,levelstart,levelstartchosen,getmore,entrance,shop,gift,settings,privacy,consent,support,credits,languages,settingspreview,hint,tutorial,boosters,worldmap,wayback,entry,controls]
     /// [-screenStates 0,46+42,50+50] [-screenSizes 1080x2424,2076x2152,2732x2048,2152x2076]
     /// [-collectionRoom 2] [-jigsawPainting 5] [-jigsawMoments rest,carried,goingback,placed,flying,restored,rewarded]
     /// [-paintingsFrom ../art/paintings] [-screenWalk] [-language en]</c>.
@@ -485,7 +491,9 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Gift => ShootTheGift(state, screen, studio),
             ShotPage.Settings => SettingsShots.ShootTheSettings(state, screen, studio),
             ShotPage.Privacy => SettingsShots.ShootThePrivacy(state, screen, studio),
+            ShotPage.Consent => SettingsShots.ShootTheConsent(state, screen, studio),
             ShotPage.Support => SettingsShots.ShootTheSupport(state, screen, studio),
+            ShotPage.Credits => SettingsShots.ShootTheCredits(state, screen, studio),
             ShotPage.Languages => SettingsShots.ShootTheLanguages(state, screen, studio),
             ShotPage.SettingsPreview => SettingsShots.ShootThePreview(state, screen, studio),
             ShotPage.Hint => HintShots.Shoot(state, screen, studio),

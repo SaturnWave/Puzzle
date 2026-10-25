@@ -81,6 +81,7 @@ namespace Puzzle.Client.EditorTools
             ["icon-globe"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
             ["icon-shield"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
             ["icon-help"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
+            ["icon-statistics"] = new Picture(pointsWide: 100f, pivot: new Vector2(50f, 50f), largestSide: 256),
 
             // The strokes that stand on a round button or a badge, each as large as the canvas shows it.
             ["glyph-plus"] = new Picture(pointsWide: 14f, pivot: new Vector2(7f, 7f), largestSide: 64),

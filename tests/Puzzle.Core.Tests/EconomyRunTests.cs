@@ -26,7 +26,7 @@ public class EconomyRunTests
         IReadOnlyDictionary<string, string> otherSeed = SmallWorld.Report(SmallWorld.Settings("""{ "players": { "seed": 2 } }""")).Files();
 
         Assert.Equal(
-            ["boosters.csv", "coins.csv", "lives.csv", "offers.csv", "pace.csv", "settings.csv", "spending.csv", "stalls.csv", "summary.txt"],
+            ["boosters.csv", "coins.csv", "lives.csv", "offers.csv", "pace.csv", "purchases.csv", "settings.csv", "spending.csv", "stalls.csv", "summary.txt"],
             first.Keys);
         Assert.All(first, file => Assert.Equal(file.Value, again[file.Key]));
         Assert.All(first.Values, text => Assert.DoesNotContain('\r', text));
@@ -90,7 +90,7 @@ public class EconomyRunTests
     public void What_is_stated_for_the_game_alone_changes_no_figure_and_is_listed_apart()
     {
         const string AnotherStartAndShop =
-            """{ "startBoosters": { "perAttempt": 1 }, "shop": { "coinPacks": { "huge": { "coins": 90000 } }, "boosterSets": { "starter": { "priceCoins": 1 } }, "adForCoins": { "coins": 999, "perDay": 20 } } }""";
+            """{ "startBoosters": { "perAttempt": 1 }, "shop": { "boosterSets": { "starter": { "priceCoins": 90000 } }, "adForCoins": { "coins": 999, "perDay": 20 } } }""";
         IReadOnlyDictionary<string, string> first = SmallWorld.Report(SmallWorld.Settings()).Files();
         IReadOnlyDictionary<string, string> otherGame = SmallWorld.Report(SmallWorld.Settings(AnotherStartAndShop)).Files();
 
@@ -99,16 +99,16 @@ public class EconomyRunTests
         // A player of the game would be far richer with these; a simulated player never meets one of them. (The welcome
         // gift of the start section is simulated: its tests are with the other rewards.)
         Assert.Equal(["settings.csv", EconomyReport.SummaryFile], differing);
-        Assert.Contains("shop.coinPacks.huge.coins,90000,coins (the game's; not simulated),Placeholder\n", otherGame["settings.csv"]);
+        Assert.Contains("shop.boosterSets.starter.priceCoins,90000,coins (the game's; not simulated),Placeholder\n", otherGame["settings.csv"]);
         Assert.Contains("lives.max,5,lives,Decided\n", otherGame["settings.csv"]);
 
         // The summary lists them after what the numbers rest on, under a heading of their own.
         string summary = otherGame[EconomyReport.SummaryFile];
         int restOn = summary.IndexOf("WHAT THE NUMBERS REST ON", StringComparison.Ordinal);
         int gameOnly = summary.IndexOf("STATED FOR THE GAME, NOT SIMULATED", StringComparison.Ordinal);
-        int stated = summary.IndexOf("    shop.coinPacks.huge.coins = 90000  (coins; Placeholder)", StringComparison.Ordinal);
-        Assert.True(restOn >= 0 && gameOnly > restOn && stated > gameOnly, $"the headings stand at {restOn} and {gameOnly}, the game's coin pack at {stated}");
-        Assert.DoesNotContain("shop.coinPacks", summary[restOn..gameOnly]);
+        int stated = summary.IndexOf("    shop.boosterSets.starter.priceCoins = 90000  (coins; Placeholder)", StringComparison.Ordinal);
+        Assert.True(restOn >= 0 && gameOnly > restOn && stated > gameOnly, $"the headings stand at {restOn} and {gameOnly}, the game's set at {stated}");
+        Assert.DoesNotContain("shop.boosterSets", summary[restOn..gameOnly]);
         Assert.Contains("extraMovesOffer.priceCoins = 900  (coins)", summary[restOn..gameOnly]);
     }
 

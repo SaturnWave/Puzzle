@@ -5,6 +5,7 @@ using Puzzle.Client.Flow;
 using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
 using Puzzle.Meta;
 using Puzzle.Museum;
@@ -15,8 +16,9 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// The walks of the shop, the gift and a painting's reward, once on each screen, on the game's own session and by
-    /// touches alone: the coins' plus leads to the shop; a pack of coins is answered with the card that says a test
-    /// build sells nothing for money; the first set is bought and its card says so, the row counts the price down;
+    /// touches alone: the coins' plus leads to the shop; a pack of coins, priced by the tools' store, is answered with
+    /// the card that asks before paying, whose "Vazgeç" buys nothing (the purchases themselves are PurchaseCheck's);
+    /// the first set is bought and its card says so, the row counts the price down;
     /// the last set, which the coins do not cover, is answered with what they lack and nothing is bought; the day's
     /// ads for coins are watched one after another, each paying its coins once it is over, until the free strip says
     /// "Yarın yine"; the hall's gift is taken, its card says what it gave, the frame then counts to the next one, and
@@ -79,12 +81,21 @@ namespace Puzzle.Client.EditorTools
             ThroughTheCard.Require(MuseumOf(session).Showing == Destination.Shop, $"the coins' plus led to {MuseumOf(session).Showing}, not to the shop");
             reel.Shoot("shop");
 
-            // A pack of coins: a test build sells nothing for money, and says so.
-            Press(session, MuseumOf(session).ShopPackPixel(0), "the first pack's button", reel, pressedShot: null);
+            // A pack of coins (the second: on this level the starter pack stands in the first one's place): the card
+            // that asks before paying comes down, and its "Vazgeç" buys nothing.
+            StoreProduct firstPack = rules.Shop.Store.CoinPacks[1];
+            ThroughTheCard.Require(MuseumOf(session).IsShopPackForSale(1), "the tools' store gave the second pack no price");
+            Press(session, MuseumOf(session).ShopPackPixel(1), "the second pack's price", reel, pressedShot: null);
             reel.Settle();
-            reel.Shoot("pack-not-on-sale");
-            ThroughTheCard.Require(MuseumOf(session).NoticeShown == ShopWords.PacksTitle && session.Progress.Equals(before), "a pack of coins was not answered with the card that says it is not on sale, or something changed");
-            CloseTheNotice(reel);
+            reel.Shoot("pack-asks");
+            ThroughTheCard.Require(
+                MuseumOf(session).NoticeShown == PurchaseWords.NameOf(firstPack) && session.Progress.Equals(before),
+                "a pack of coins was not answered with the card that asks before paying, or something changed");
+            Press(session, MuseumOf(session).NoticeDeclinePixel, "the card's Vazgeç", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(
+                MuseumOf(session).NoticeShown == null && session.Progress.Equals(before) && session.Checkout.State is PurchaseState.Nothing,
+                "the card's Vazgeç did not take it up, or bought something");
 
             // The first set, which the coins cover: bought for its price, its boosters on the shelf, its card says so.
             ThroughTheCard.Require(MuseumOf(session).IsShopSetLit(0) && !MuseumOf(session).IsShopSetLit(rules.Shop.BoosterSets.Count - 1), "the sets' buttons are not lit as the coins cover them");
@@ -145,7 +156,7 @@ namespace Puzzle.Client.EditorTools
             ThroughTheCard.Require(MuseumOf(session).NoticeShown == ShopWords.GiftTitle && session.Progress.Wallet.Equals(afterTheGift), "the gift frame gave a second gift on the same day");
             CloseTheNotice(reel);
             reel.WriteSheet();
-            Debug.Log($"Screen shots: walk {reel.Name}: shop, a pack not on sale, {first.Name} bought, {last.Name} refused, {rules.Shop.AdForCoins.PerDay} ads for coins, the gift taken once; the player now holds \"{session.Progress.Wallet}\".");
+            Debug.Log($"Screen shots: walk {reel.Name}: shop, a pack asked about and declined, {first.Name} bought, {last.Name} refused, {rules.Shop.AdForCoins.PerDay} ads for coins, the gift taken once; the player now holds \"{session.Progress.Wallet}\".");
         }
 
         /// <summary>A booster held none of, offered with too few coins: the card's way to the shop takes both cards up and leads there.</summary>

@@ -79,6 +79,7 @@ DOCUMENTS = (
     Document(Path("docs/research/spawn-control-and-solvability.md"), "Araştırma Raporu"),
     Document(Path("docs/research/monetization-and-retention.md"), "Araştırma Raporu"),
     Document(Path("docs/research/iap-and-analytics.md"), "Araştırma Notu"),
+    Document(Path("docs/research/privacy-v1.md"), "Taslak"),
     Document(Path("docs/research/mini-games.md"), "Araştırma Raporu"),
     Document(Path("research.md"), "Araştırma Özeti"),
 )

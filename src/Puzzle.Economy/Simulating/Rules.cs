@@ -58,13 +58,17 @@ public sealed class StartBoosterRule(StartBoosterHabit habit, IReadOnlyDictionar
     }
 }
 
-/// <summary>When a player takes the extra-moves offer and what they pay with (the settings' player.extraMoves and extraMovesOffer).</summary>
-public sealed class ExtraMovesRule(ExtraMovesHabit habit, Coins price)
+/// <summary>
+/// When a player takes the extra-moves offer and what they pay with (the settings' player.extraMoves and
+/// extraMovesOffer, and player.purchases.packWhenShortForExtraMoves for a player who buys coins for it).
+/// </summary>
+/// <param name="packWhenShort">The coin pack bought when the coins fall short; absent for a player who buys none. It pays for the moves by itself.</param>
+public sealed class ExtraMovesRule(ExtraMovesHabit habit, Coins price, StoreProduct? packWhenShort = null)
 {
     /// <summary>
     /// The offer is wanted when enough of the goals is done. It is paid with an ad while the player watches ads and
-    /// a free one is left today, otherwise with coins when the player pays coins and has them; a player who wants it
-    /// and cannot pay goes without.
+    /// a free one is left today, otherwise with coins when the player pays coins and has them; a player whose coins
+    /// fall short buys their pack first if their habit says so. A player who wants it and cannot pay goes without.
     /// </summary>
     public ExtraMovesDecision Decide(OutOfMovesView view)
     {
@@ -83,8 +87,13 @@ public sealed class ExtraMovesRule(ExtraMovesHabit habit, Coins price)
             return new ExtraMovesDecision.WantedUnpaid(Shortfall: null);
         }
 
-        return view.Balance.Covers(price)
-            ? new ExtraMovesDecision.TakenForCoins(price)
+        if (view.Balance.Covers(price))
+        {
+            return new ExtraMovesDecision.TakenForCoins(price);
+        }
+
+        return packWhenShort is StoreProduct pack
+            ? new ExtraMovesDecision.TakenForCoins(price, PackBoughtFirst: pack)
             : new ExtraMovesDecision.WantedUnpaid(new Shortfall(price, view.Balance.ShortOf(price)));
     }
 }

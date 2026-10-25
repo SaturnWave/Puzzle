@@ -6,35 +6,49 @@ namespace Puzzle.Client.Flow
 {
     /// <summary>
     /// What the privacy card says, in the language the game speaks (<see cref="Speech"/>): what the game keeps on the
-    /// phone, that this build sends none of it anywhere, how many attempt records there are, and the question before
+    /// phone and only there, what leaves it (the purchases, through the store and to Unity; the play statistics, only
+    /// with the player's yes), what having no server means, how many attempt records there are, and the question before
     /// they are deleted. The card has no drawing; its words are written in the design canvas' manner.
     /// </summary>
     /// <remarks>
-    /// The Turkish text was approved by the owner on 2026-10-16; the other languages translate it sentence by
-    /// sentence, and are marked machine-made until a native speaker has read them. Every sentence is true of this
-    /// build as it was checked on 2026-10-15: the game's code makes no network call and links no network,
-    /// advertising, purchase or account library; the package does not ask for the internet permission
-    /// (AndroidBuild.Permissions withdraws it); Unity's services (analytics, ads, purchasing, crash and performance
-    /// reports, engine diagnostics) are off in the project, and ProjectSetup switches Unity's own hardware
-    /// statistics off; the progress (progress.json), the phone's id and settings (device.json) and the attempt
-    /// records (attempts.jsonl) lie in the game's own data folder. Android's own backup, when the player has it on,
-    /// may copy that folder into the player's backup, which the game neither asks for nor sees; the last sentence
-    /// says so. Whatever changes one of these facts (an ad network, a purchase library, a service that reports)
-    /// changes this text, in every language, in the same work. No Unity dependency.
+    /// The text is the v1 draft of docs/research/privacy-v1.md §3.2 (2026-10-24), waiting for the owner's approval;
+    /// the first text, approved on 2026-10-16, said that the game sent nothing, which v1 no longer holds. The other
+    /// languages translate it sentence by sentence, and are marked machine-made until a native speaker has read them.
+    /// Every sentence is to be true of the build, as these facts make it: the progress (progress.json), the phone's id
+    /// and settings (device.json) and the attempt records (attempts.jsonl) lie in the game's own data folder, and no
+    /// server of the game's keeps a copy; Google Play or the App Store takes every payment in its own sheet; Unity In-App
+    /// Purchasing 5.4.4 sends Unity an event of every purchase attempt, which it offers no way to turn off
+    /// (docs/research/iap-and-analytics.md §3.4); the play statistics go to Aptabase's European region only after the
+    /// player's "İzin ver" (Statistics/PlayStatistics.cs), with the notes Statistics/PlayNote.cs lists and nothing that
+    /// tells one phone from another; the phone's id goes into no note; there is no account, no ad network, no
+    /// advertising id. Android's own backup, when the player has it on, may copy the data folder into the player's
+    /// backup, which the game neither asks for nor sees. Whatever changes one of these facts changes this text, in
+    /// every language, in the same work. No Unity dependency.
     /// </remarks>
     public static class PrivacyWords
     {
         /// <summary>The card's nameplate, which the settings card's row repeats.</summary>
         public static string Title => Speech.Say(WordId.PrivacyTitle);
 
-        /// <summary>The card's text, a paragraph at a time.</summary>
+        /// <summary>
+        /// The card's text, a paragraph at a time: what stays on the phone, the store, Unity's events, the play
+        /// statistics and the choice about them, the records' id, the phone's backup, and what no server means.
+        /// </summary>
         public static IReadOnlyList<string> Text => new[]
         {
             Speech.Say(WordId.PrivacyParagraph1),
             Speech.Say(WordId.PrivacyParagraph2),
+            Speech.Say(WordId.PrivacyParagraphUnity),
+            Speech.Say(WordId.PrivacyParagraphStatistics),
+            Speech.Say(WordId.PrivacyParagraphStatisticsChoice),
             Speech.Say(WordId.PrivacyParagraph3),
             Speech.Say(WordId.PrivacyParagraph4),
+            Speech.Say(WordId.PrivacyParagraphNoServer),
         };
+
+        /// <summary>Which page of the text the card shows, between the arrows that turn its pages: "2 / 3".</summary>
+        public static string PageOf(int page, int pages) =>
+            Speech.Say(WordId.PrivacyPageOf, ("page", NumberWords.Amount(page)), ("pages", NumberWords.Amount(pages)));
 
         /// <summary>The button that deletes the records, after one question.</summary>
         public static string DeleteTheRecords => Speech.Say(WordId.PrivacyDeleteTheRecords);

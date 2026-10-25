@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Client.Purchases;
 using Puzzle.Meta;
 using Puzzle.Museum;
 
@@ -11,11 +12,11 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// The saved progress as the file writes it:
-    /// <c>{"version":5,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...},"tutorial":["goal","match"]}</c>
-    /// (the wallet's block is <see cref="WalletDocument"/>; the tutorial's steps seen are named as
-    /// <see cref="TutorialSteps.NameOf"/> names them, in the order of the enumeration). The fields are public and named
-    /// as the document names them, because that is how Unity's JSON reader maps a document. Four earlier layouts are
-    /// still read. Layout 1,
+    /// <c>{"version":6,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...},"tutorial":["goal","match"],"purchases":{...}}</c>
+    /// (the wallet's block is <see cref="WalletDocument"/>, the purchases' <see cref="PurchasesDocument"/>; the
+    /// tutorial's steps seen are named as <see cref="TutorialSteps.NameOf"/> names them, in the order of the
+    /// enumeration). The fields are public and named as the document names them, because that is how Unity's JSON
+    /// reader maps a document. Five earlier layouts are still read. Layout 1,
     /// written before the game had a museum, has no <c>placed</c>: it reads as progress with no jigsaw piece in place
     /// yet, so the pieces of every level won before then wait on their trays. Layouts 1 and 2 have no wallet: their
     /// player holds what the rules give a new player, with every life; the gifts of the boosters used during play
@@ -24,16 +25,18 @@ namespace Puzzle.Client.Flow
     /// them in the welcome gift before the first level, as the game did then, so all count as given and none comes a
     /// second time. Layouts 1 to 4 keep no tutorial: their player has seen every step of a level they have won (an
     /// obstacle's level being the first that has it), the jigsaw's first piece once a piece is in place and the first
-    /// painting once one is whole, and nothing else (<see cref="TutorialPlan.OfAnOlderSave"/>). Unity's reader makes 0
-    /// of a number a document does not have, and an empty list of a list it does not have, so whether the wallet, the
-    /// gifts and the tutorial are there is decided by the layout's number, never by a zero or an empty list.
+    /// painting once one is whole, and nothing else (<see cref="TutorialPlan.OfAnOlderSave"/>). Layouts 1 to 5 keep no
+    /// purchases: they were written before the game sold anything for money, so their player has bought nothing.
+    /// Unity's reader makes 0 of a number a document does not have, and an empty list of a list it does not have, so
+    /// whether the wallet, the gifts, the tutorial and the purchases are there is decided by the layout's number,
+    /// never by a zero or an empty list.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     [Serializable]
     public sealed class ProgressDocument
     {
         /// <summary>The layout this code writes. A file of a later layout is not guessed at.</summary>
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         /// <summary>The oldest layout a player can have on a device; this code reads it as it reads its own.</summary>
         private const int FirstVersion = 1;
@@ -47,6 +50,9 @@ namespace Puzzle.Client.Flow
         /// <summary>The first layout that keeps which steps of the tutorial the player has seen.</summary>
         private const int FirstVersionWithTheTutorial = 5;
 
+        /// <summary>The first layout that keeps what the player bought for real money.</summary>
+        private const int FirstVersionWithPurchases = 6;
+
         public int version;
         public int levelsWon;
         public int attemptsOnLevel;
@@ -59,6 +65,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The steps of the tutorial the player has seen, by their names; in the file since layout 5.</summary>
         public string[] tutorial = Array.Empty<string>();
+
+        /// <summary>What the player bought for real money and was given; in the file since layout 6.</summary>
+        public PurchasesDocument purchases = new PurchasesDocument();
 
         /// <summary>The document that keeps a progress, in the current layout.</summary>
         public static ProgressDocument Of(PlayerProgress progress)
@@ -81,6 +90,7 @@ namespace Puzzle.Client.Flow
                 placed = placed.ToArray(),
                 wallet = WalletDocument.Of(progress.Wallet),
                 tutorial = progress.Tutorial.Steps.Select(TutorialSteps.NameOf).ToArray(),
+                purchases = PurchasesDocument.Of(progress.Purchases),
             };
         }
 
@@ -102,22 +112,24 @@ namespace Puzzle.Client.Flow
             Wallet? wallet = document.version < FirstVersionWithAWallet
                 ? startingWallet
                 : document.wallet?.PossibleWallet(givenAllInTheWelcomeGift: document.version < FirstVersionWithUnlockGifts);
+            PurchasesMade? purchases = document.version < FirstVersionWithPurchases ? PurchasesMade.None : document.purchases?.PossiblePurchases();
             if (document.version > CurrentVersion)
             {
                 // Later layouts are expected to add to this one, so what this game knows is looked for in them too:
-                // the pieces, the wallet and the tutorial if they still read as such, else at least where the player
-                // stands. A step this game does not have is passed over: a later game may have more.
+                // the pieces, the wallet, the tutorial and the purchases if they still read as such, else at least
+                // where the player stands. A step this game does not have is passed over: a later game may have more.
                 PlayerProgress? understood = !hasCounts ? null
                     : new PlayerProgress(
-                        document.levelsWon, document.attemptsOnLevel, placed ?? PlacedPieces.None, wallet ?? startingWallet, TutorialOfALaterGame(document));
+                        document.levelsWon, document.attemptsOnLevel, placed ?? PlacedPieces.None, wallet ?? startingWallet, TutorialOfALaterGame(document),
+                        purchases ?? PurchasesMade.None);
                 return new ProgressReading.OfALaterGame(document.version, understood);
             }
 
             TutorialSeen? tutorial = placed == null ? null
                 : document.version < FirstVersionWithTheTutorial ? TutorialPlan.OfAnOlderSave(new MuseumProgress(document.levelsWon, placed))
                 : PossibleTutorialOf(document);
-            return placed != null && wallet != null && tutorial != null
-                ? new ProgressReading.Sound(new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed, wallet, tutorial))
+            return placed != null && wallet != null && tutorial != null && purchases != null
+                ? new ProgressReading.Sound(new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed, wallet, tutorial, purchases))
                 : (ProgressReading)new ProgressReading.Damaged();
         }
 
@@ -307,6 +319,55 @@ namespace Puzzle.Client.Flow
             long seconds = instant.ToUnixTimeSeconds();
             return DateTimeOffset.FromUnixTimeSeconds(seconds) < instant ? seconds + 1 : seconds;
         }
+    }
+
+    /// <summary>
+    /// What the player bought for real money, as the file writes it (<see cref="PurchasesMade"/>):
+    /// <c>{"bought":[{"product":"coins.pouch","times":2},{"product":"starter.apprentice_kit","times":1}],"transactions":["GPA.3301-...","GPA.3302-..."]}</c>.
+    /// A product is named by the end of its id in the stores; the payments' ids are the latest delivered, the oldest
+    /// first.
+    /// </summary>
+    [Serializable]
+    public sealed class PurchasesDocument
+    {
+        public BoughtDocument[] bought = Array.Empty<BoughtDocument>();
+        public string[] transactions = Array.Empty<string>();
+
+        /// <summary>The block that keeps what was bought.</summary>
+        public static PurchasesDocument Of(PurchasesMade purchases) => new PurchasesDocument
+        {
+            bought = purchases.Bought.Select(entry => new BoughtDocument { product = entry.Product, times = entry.Times }).ToArray(),
+            transactions = purchases.Transactions.ToArray(),
+        };
+
+        /// <summary>What the block holds; nothing when no record can be so: a product with no name or named twice, a count under 1, a payment's id empty or named twice, more ids than are kept.</summary>
+        public PurchasesMade? PossiblePurchases()
+        {
+            if (ProgressDocument.ListOrNone(bought).Any(entry => entry == null))
+            {
+                return null;
+            }
+
+            try
+            {
+                return new PurchasesMade(
+                    ProgressDocument.ListOrNone(bought).Select(entry => (entry.product ?? string.Empty, entry.times)), ProgressDocument.ListOrNone(transactions));
+            }
+            catch (ArgumentException)
+            {
+                return null; // the record's own checks refuse what the game cannot have written
+            }
+        }
+    }
+
+    /// <summary>How many times one product was bought, as the file writes it.</summary>
+    [Serializable]
+    public sealed class BoughtDocument
+    {
+        /// <summary>The end of the product's id in the stores: "coins.pouch".</summary>
+        public string product = string.Empty;
+
+        public int times;
     }
 
     /// <summary>How many of one booster the player holds, as the file writes it.</summary>

@@ -33,14 +33,14 @@ namespace Puzzle.Client.EditorTools
     {
         public static void RunTheTesterModeWalk(ScreenShape screen, Studio studio)
         {
-            LifeRules lives = StoryStudio.Economy.Lives;
+            LifeRules lives = StoryStudio.TestBuildEconomy.Lives;
             PlayerProgress standing = StoryStudio.StandingOn(LevelPack.Numbered(studio.Levels, RetriedLevel), studio.Levels);
             PlayerProgress oneLife = standing.WithWallet(standing.Wallet.WithLives(new LifeMeter(lives.Max - 1, StoryStudio.Clock.Now + NextLifeWithoutALife)));
             var settings = new SettingsInMemory(DeviceSettings.Default);
 
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             using var session = new GameSession(
-                studio.Levels, studio.Art, studio.Paintings, StoryStudio.Economy, StoryStudio.Clock, new ProgressInMemory(oneLife), StoryStudio.AttemptsKeptInMemory(),
+                studio.Levels, studio.Art, studio.Paintings, StoryStudio.TestBuildEconomy, StoryStudio.Clock, new ProgressInMemory(oneLife), StoryStudio.AttemptsKeptInMemory(),
                 settings, DeviceAbilities.OfThisBuild, CuePlayer.Silent, screen, SessionOpening.InTheMuseum);
             var reel = new Reel(session, screen, $"walk-testermode-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
             reel.Settle();
@@ -178,8 +178,8 @@ namespace Puzzle.Client.EditorTools
         {
             GameSession session = reel.Session;
             TurnThePage(reel, Destination.Shop, picturesTheTurn: false);
-            int dearest = StoryStudio.Economy.Shop.BoosterSets.Count - 1;
-            BoosterSet set = StoryStudio.Economy.Shop.BoosterSets[dearest];
+            int dearest = StoryStudio.TestBuildEconomy.Shop.BoosterSets.Count - 1;
+            BoosterSet set = StoryStudio.TestBuildEconomy.Shop.BoosterSets[dearest];
             Wallet before = session.Progress.Wallet;
             ThroughTheCard.Require(!before.Coins.Covers(set.Price), $"{before.Coins} coins cover the {set}: the walk needs a set they do not");
             ThroughTheCard.Require(MuseumOf(session).IsShopSetLit(dearest), $"in the tester mode the button of the {set} is dimmed");

@@ -87,6 +87,9 @@ namespace Puzzle.Client.Screens
         /// <summary>Puts the middle of the row at a place of what the link stands on.</summary>
         public void Place(Vector2 middle) => _root.localPosition = new Vector3(middle.x, middle.y, 0f);
 
+        /// <summary>Shows the link, or hides it where it is not offered.</summary>
+        public void Show(bool isShown) => _root.gameObject.SetActive(isShown);
+
         /// <param name="point">A point of what the link stands on.</param>
         public bool IsUnder(Vector2 point)
         {

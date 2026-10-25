@@ -1,6 +1,7 @@
 // Packs the game's economy settings for the Unity client: the sections of economy/default.json that the game plays
 // by (lives, coins, rewards, the extra-moves offer, the booster prices, the start, when the boosters used during play
-// open, the start boosters an attempt takes, the hints, the shop and what the build can do), without the sections
+// open, the start boosters an attempt takes, the hints, the shop, what the store sells for money and what the build
+// can do), without the sections
 // that only describe simulated players, and with a list of named entries wherever the settings have an object keyed
 // by a name, because Unity's JSON reader knows no such object.
 // tools/unity/sync-engine.js writes the pack to unity/Assets/Generated/Resources/Economy.json; the game reads it
@@ -16,7 +17,7 @@ const SETTINGS = "economy/default.json";
 const PINNED_PACK = "tests/fixtures/economy-pack.json";
 
 // The layout of the pack; Puzzle.Meta's EconomyFile.CurrentFormatVersion is the reader's side of it.
-const FORMAT_VERSION = 3;
+const FORMAT_VERSION = 4;
 
 const TRAILING_COMMA_CLOSES = /\s*[}\]]/y;
 
@@ -160,15 +161,31 @@ function rewardOf(reward, ...numbers) {
 }
 
 function shopOf(shop) {
-  const coinPacks = shop.section("coinPacks");
   const boosterSets = shop.section("boosterSets");
   return {
-    coinPacks: coinPacks.names().map((name) => ({ name, coins: coinPacks.section(name).number("coins") })),
     boosterSets: boosterSets.names().map((name) => {
       const set = boosterSets.section(name);
       return { name, priceCoins: set.number("priceCoins"), boosters: listed(set.section("boosters"), "booster", "count") };
     }),
     adForCoins: shop.section("adForCoins").numbers("coins", "perDay"),
+  };
+}
+
+/** What the store sells for money: the coin packs in the shop's order, and the starter pack, each with the end of its product id. */
+function storeOf(store) {
+  const coinPacks = store.section("coinPacks");
+  const starter = store.section("starterPack");
+  return {
+    coinPacks: coinPacks.names().map((name) => {
+      const pack = coinPacks.section(name);
+      return { name, productIdSuffix: pack.word("productIdSuffix"), ...pack.numbers("priceUsdCents", "coins") };
+    }),
+    starterPack: {
+      productIdSuffix: starter.word("productIdSuffix"),
+      ...starter.numbers("priceUsdCents", "coins"),
+      boosters: listed(starter.section("boosters"), "booster", "count"),
+      ...starter.numbers("timesPerPlayer", "fromLevel"),
+    },
   };
 }
 
@@ -198,6 +215,7 @@ function packedEconomy(settingsText, fileName) {
     startBoosters: settings.section("startBoosters").numbers("perAttempt"),
     hints: { ...hints.numbers("idleSeconds", "perAttempt"), bot: hints.word("bot") },
     shop: shopOf(settings.section("shop")),
+    store: storeOf(settings.section("store")),
     build: { ads: build.word("ads"), realMoneyPurchases: build.word("realMoneyPurchases") },
   };
 }

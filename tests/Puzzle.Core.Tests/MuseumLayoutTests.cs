@@ -221,12 +221,13 @@ public class MuseumLayoutTests
         HallLayout hall = HallLayout.Of(new ScreenShape(width, height, top, bottom), aspect);
         Box gift = hall.GiftButton;
 
-        // The workbench's table is 200 of its drawing's points wide: the frame hangs at its right, not behind it.
-        float tableRight = 100f * hall.BenchScale;
+        // The workbench's table is 200 of its drawing's points wide: the frame hangs at its left, where the painter
+        // does not stand (§22), not behind it.
+        float tableLeft = -100f * hall.BenchScale;
         Assert.True(gift.Bottom >= hall.FloorLine + HallLayout.SkirtingHeight - 0.01f, "the gift frame stands on the skirting board");
         Assert.True(gift.Top <= hall.Hanging.PlateBottom - 0.01f, "the gift frame reaches the painting's plate");
-        Assert.True(gift.Left >= tableRight, $"the gift frame hangs behind the workbench ({gift.Left:0.#} against {tableRight:0.#})");
-        Assert.True(gift.Right <= hall.Page.View.Right, "the gift frame is cut off at the side");
+        Assert.True(gift.Right <= tableLeft, $"the gift frame hangs behind the workbench ({gift.Right:0.#} against {tableLeft:0.#})");
+        Assert.True(gift.Left >= hall.Page.View.UsableLeft, "the gift frame is cut off at the side");
         Assert.True(gift.Height >= 44f, $"the gift frame is only {gift.Height:0.#} points high for a finger");
         Assert.InRange(hall.GiftScale, 0.5f, hall.Page.WalletRowScale);
     }

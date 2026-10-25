@@ -12,7 +12,8 @@ using UnityEngine;
 namespace Puzzle.Client.Hall
 {
     /// <summary>
-    /// The hall's gift frame, as the design canvas hangs it on the wall at the workbench's right (HomeTR): a small
+    /// The hall's gift frame, as the design canvas draws it (HomeTR), on the wall at the workbench's left (the canvas
+    /// hangs it at the right, where the painter now stands, §22): a small
     /// gilt frame with the gift's picture in it, on a wire from a pin, a cream pill under it, and while the daily
     /// reward waits a red dot at its upper right and "Hediye" on the pill. Once the day's reward is taken the dot
     /// goes and the pill says how long until the next one. A press asks for the gift; the rules give it, or say when

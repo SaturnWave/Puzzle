@@ -72,6 +72,9 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\RoomWall.cs" Link="Unity\Flow\RoomWall.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\PageLayout.cs" Link="Unity\Layout\PageLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\HallLayout.cs" Link="Unity\Layout\HallLayout.cs" />
+    <!-- Nor has the painter: his pictures, what each measures around his feet, his looks, and where he stands on a page. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Avatar\PainterPicture.cs" Link="Unity\Avatar\PainterPicture.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\FigurePlace.cs" Link="Unity\Layout\FigurePlace.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\MapLayout.cs" Link="Unity\Layout\MapLayout.cs" />
     <!-- Nor has the world map (#4): its camera, how an era's pins stand, how far the strip of eras is scrolled, what it shows of a player's progress, and its words. -->
     <Compile Include="..\..\unity\Assets\Scripts\Maps\MapCamera.cs" Link="Unity\Maps\MapCamera.cs" />
@@ -123,6 +126,12 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopWords.cs" Link="Unity\Flow\ShopWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletLedger.cs" Link="Unity\Flow\WalletLedger.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\ShopLayout.cs" Link="Unity\Layout\ShopLayout.cs" />
+    <!-- Nor have the purchases for real money: what the player bought, how the game talks to the store, the course of a purchase, the scripted store of the tools, and their words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchasesMade.cs" Link="Unity\Purchases\PurchasesMade.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\StoreTalk.cs" Link="Unity\Purchases\StoreTalk.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\Checkout.cs" Link="Unity\Purchases\Checkout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\ScriptedStore.cs" Link="Unity\Purchases\ScriptedStore.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PurchaseWords.cs" Link="Unity\Flow\PurchaseWords.cs" />
     <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />
@@ -134,6 +143,14 @@
     <Compile Include="..\..\unity\Assets\Scripts\Flow\EntryWords.cs" Link="Unity\Flow\EntryWords.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\EntryLayout.cs" Link="Unity\Layout\EntryLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\CreditWords.cs" Link="Unity\Flow\CreditWords.cs" />
+    <!-- Nor have the play statistics: the gate that lets a note through only with the player's yes, the notes there are, the key they go through, and the question's words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayStatistics.cs" Link="Unity\Statistics\PlayStatistics.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayNote.cs" Link="Unity\Statistics\PlayNote.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\StatisticsKey.cs" Link="Unity\Statistics\StatisticsKey.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ConsentWords.cs" Link="Unity\Flow\ConsentWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\TextPages.cs" Link="Unity\Layout\TextPages.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\PackagePermissions.cs" Link="Unity\Editor\PackagePermissions.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Layout\LanguageCardLayout.cs" Link="Unity\Layout\LanguageCardLayout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Screens\ToggleLook.cs" Link="Unity\Screens\ToggleLook.cs" />

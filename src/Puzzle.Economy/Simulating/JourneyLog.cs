@@ -1,6 +1,7 @@
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
 using Puzzle.Economy.Measuring;
+using Puzzle.Economy.Settings;
 using Puzzle.Economy.Units;
 
 namespace Puzzle.Economy.Simulating;
@@ -72,6 +73,14 @@ public readonly record struct SessionLives(bool FullAtStart, int BackDuringIt, T
 /// <summary>A reward that was given: for a completed painting or for the day.</summary>
 public sealed record RewardGiven(CoinSource Source, PlayerTime At, Coins Coins, IReadOnlyList<BoosterKind> Boosters, Standing After);
 
+/// <summary>
+/// Something bought for real money: a coin pack or the starter pack. One bought because the coins fell short of the
+/// extra moves is told at the end of its attempt, before the attempt itself, and stands as bought before the moves
+/// were paid for.
+/// </summary>
+/// <param name="After">The player's standing with the product's coins and boosters on hand.</param>
+public sealed record PurchaseMade(StoreProduct Product, PurchaseOccasion Occasion, PlayerTime At, Standing After);
+
 /// <summary>A day of a player's journey that is over.</summary>
 public sealed record DayEnded(DayNumber Day, Standing Standing);
 
@@ -86,6 +95,8 @@ public interface IJourneyLog
     void SessionEnded(SessionEnded session);
 
     void RewardGiven(RewardGiven reward);
+
+    void PurchaseMade(PurchaseMade purchase);
 
     void DayEnded(DayEnded day);
 }

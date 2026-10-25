@@ -41,6 +41,9 @@ public sealed record EconomyReport
 
     public required IReadOnlyList<SpendingRow> Spending { get; init; }
 
+    /// <summary>What was bought for real money; every figure is 0 for free players.</summary>
+    public required IReadOnlyList<PurchaseRow> Purchases { get; init; }
+
     public required IReadOnlyList<BoosterRow> Boosters { get; init; }
 
     public required IReadOnlyList<HabitRow> Habit { get; init; }
@@ -73,6 +76,7 @@ public sealed record EconomyReport
         Lives = JourneyReports.Lives(run),
         Coins = JourneyReports.Coins(run),
         Spending = JourneyReports.Spending(run),
+        Purchases = JourneyReports.Purchases(run),
         Boosters = JourneyReports.Boosters(run),
         Habit = JourneyReports.Habit(run),
         Offers = OfferReport.Rows(run.Settings, measurement, run.Levels.Count),
@@ -121,6 +125,7 @@ public sealed record EconomyReport
         ["lives.csv"] = JourneyReports.LivesTable(Lives).ToText(),
         ["coins.csv"] = JourneyReports.CoinsTable(Coins).ToText(),
         ["spending.csv"] = JourneyReports.SpendingTable(Spending).ToText(),
+        ["purchases.csv"] = JourneyReports.PurchasesTable(Purchases).ToText(),
         ["boosters.csv"] = JourneyReports.BoostersTable(Boosters).ToText(),
         ["offers.csv"] = OfferReport.Table(Offers).ToText(),
         ["settings.csv"] = SettingsTable(SettingRows).ToText(),

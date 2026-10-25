@@ -8,7 +8,7 @@
 
 **Tür.** Swap match-3: oyuncu yan yana iki taşın yerini değiştirir, aynı renkten üç ya da daha fazla taş dizilince patlar (Royal Match ve Candy Crush'ın türü). Farkı tahtadadır: tahtalar büyüktür ve boyutu bölümden bölüme değişir (9x10'dan 11x13'e; Tasarım §2, §9).
 
-**Tema.** Genç bir ressamın sevdiği müze bir felakette hasar görmüş, tablolar parçalanıp dağılmıştır. Ressam bölüm kazandıkça parçaları toplar, tabloları yapboz gibi birleştirip yerlerine asar ve müzeyi oda oda yeniden açar. Tablolar telifsiz (kamu malı) gerçek eserlerdir; her odanın kendi dönemi vardır (Tasarım §18).
+**Tema.** Yaşlı bir usta ressamın ömrünü verdiği müze bir felakette hasar görmüş, tablolar parçalanıp dağılmıştır. Usta bölüm kazandıkça parçaları toplar, tabloları yapboz gibi birleştirip yerlerine asar ve müzeyi oda oda yeniden açar. Tablolar telifsiz (kamu malı) gerçek eserlerdir; her odanın kendi dönemi vardır (Tasarım §18).
 
 | Birim | Bölüm | Not |
 |---|---|---|
@@ -465,7 +465,7 @@ Proje sahibinin 2026-10-15'te belirlediği sıra (akşam güncellendi):
 4. **APK telefona:** proje sahibi oyunu kendi telefonunda elde dener; ardından [PHONE_TESTS.md](PHONE_TESTS.md) baştan sona koşulur. 16 Ekim'de 14. aşamaya kadarki her şeyle APK derlendi (283 MB, internet izni yok) ve proje sahibinin telefonuna kuruldu; indirme sayfası Tailscale Funnel ile herkese açık.
 5. **Arayüz iyileştirmeleri:** prototip telefonda denendikten sonraki ilk iş. GitHub'da `arayüz-iyileştirme` etiketli kayıtlar olarak tutuluyor; ilki #2 (renkler genelde mat ve düşük kontrastlı).
 6. **Bot deneyi:** oyunun bütün kurallarıyla oynayan, genel oyuncu kitlesini temsil eden bir bot nüfusu. Botların eğilimleri ölçülecek; sahte reklam yalnızca botun kararlarını ölçmek için var. Ayrıntıları proje sahibi verecek.
-7. **Avatar:** hikâyenin genç ressamı oyunun yüzü olacak. Çizimini proje sahibi kendisi yapıp verecek; oyunun istediği çizimler tasarım belgesinin 22. bölümünde. Ertelendi: 3D animasyon gerekecek.
+7. **Avatar:** keçe bereli yaşlı usta ressam (proje sahibinin seçtiği A adayı, Blender'de işlenmiş resimler, 2026-10-24). Salonda tezgâhın yanında, öğretici yazılarının yanında, kazanma kartında, tablo tamamlanınca ve oda onarılınca oyunda; künyesi Ayarlar'da (tasarım belgesi §22, §23). Hikâyenin yeni cümlesi proje sahibinin onayını bekliyor.
 
 Planlanan öteki adımlar:
 

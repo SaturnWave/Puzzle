@@ -12,7 +12,8 @@ namespace Puzzle.Core.Tests;
 /// layout 1 reads with as a first start has them; since layout 3 the tester mode among them, which a file of an
 /// earlier layout reads with off; since layout 4 the language the player chose, which a file of an earlier layout
 /// reads without, so the game speaks the phone's; since layout 5 the music's switch, which a file of an earlier layout
-/// reads with on. <c>DeviceDocument</c> is the Unity project's source file,
+/// reads with on; since layout 6 the player's answer to the play statistics, which a file of an earlier layout reads
+/// as not asked. <c>DeviceDocument</c> is the Unity project's source file,
 /// compiled into these tests; here System.Text.Json fills it, in the game Unity's reader does
 /// (unity/Assets/Editor/AttemptLogCheck.cs checks the real file with that one).
 /// </summary>
@@ -41,7 +42,9 @@ public class DeviceDocumentTests
 
         string written = JsonSerializer.Serialize(DeviceDocument.Of(id, settings), AsUnityMapsIt);
 
-        Assert.Equal("{\"version\":5,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true}}", written);
+        Assert.Equal(
+            "{\"version\":6,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true,\"statistics\":\"\"}}",
+            written);
         var read = Assert.IsType<DeviceReading.Sound>(Read(written));
         Assert.Equal((id, settings), (read.Device, read.Settings));
     }
@@ -101,12 +104,12 @@ public class DeviceDocumentTests
     public void A_later_layout_is_told_apart_and_its_id_and_settings_are_used_as_far_as_they_read()
     {
         var withItsId = Assert.IsType<DeviceReading.OfALaterGame>(
-            Read("{\"version\":6,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":true,\"language\":\"ko\",\"music\":false,\"hints\":true}}"));
-        var withoutOne = Assert.IsType<DeviceReading.OfALaterGame>(Read("{\"version\":6,\"id\":\"a later spelling\"}"));
+            Read("{\"version\":7,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":false,\"vibration\":true,\"testerMode\":true,\"language\":\"ko\",\"music\":false,\"statistics\":\"allowed\",\"hints\":true}}"));
+        var withoutOne = Assert.IsType<DeviceReading.OfALaterGame>(Read("{\"version\":7,\"id\":\"a later spelling\"}"));
 
-        Assert.Equal((6, new DeviceId(AnId)), (withItsId.Version, withItsId.Device));
+        Assert.Equal((7, new DeviceId(AnId)), (withItsId.Version, withItsId.Device));
         Assert.Equal(
-            new DeviceSettings(sound: false, vibration: true, testerMode: true, Language.Korean).With(DeviceSetting.Music, isOn: false),
+            new DeviceSettings(sound: false, vibration: true, testerMode: true, Language.Korean).With(DeviceSetting.Music, isOn: false).With(DeviceSetting.Statistics, isOn: true),
             withItsId.Settings);
         Assert.Null(withoutOne.Device);
     }
@@ -118,8 +121,36 @@ public class DeviceDocumentTests
 
         string written = JsonSerializer.Serialize(DeviceDocument.Of(new DeviceId(AnId), withoutMusic), AsUnityMapsIt);
 
-        Assert.EndsWith("\"language\":\"\",\"music\":false}}", written);
+        Assert.EndsWith("\"language\":\"\",\"music\":false,\"statistics\":\"\"}}", written);
         Assert.Equal(withoutMusic, Assert.IsType<DeviceReading.Sound>(Read(written)).Settings);
+    }
+
+    [Theory]
+    [InlineData(StatisticsChoice.NotAsked, "")]
+    [InlineData(StatisticsChoice.Allowed, "allowed")]
+    [InlineData(StatisticsChoice.Declined, "declined")]
+    public void The_answer_to_the_statistics_is_kept_as_a_word_after_the_music_and_reads_back(StatisticsChoice answer, string word)
+    {
+        DeviceSettings settings = DeviceSettings.Default.WithTheStatistics(answer);
+
+        string written = JsonSerializer.Serialize(DeviceDocument.Of(new DeviceId(AnId), settings), AsUnityMapsIt);
+
+        Assert.EndsWith("\"music\":true,\"statistics\":\"" + word + "\"}}", written);
+        Assert.Equal(answer, Assert.IsType<DeviceReading.Sound>(Read(written)).Settings.Statistics);
+    }
+
+    [Theory]
+    [InlineData("{\"version\":5,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true,\"statistics\":\"allowed\"}}")]
+    [InlineData("{\"version\":2,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"statistics\":\"allowed\"}}")]
+    [InlineData("{\"version\":6,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true,\"statistics\":\"yes\"}}")]
+    [InlineData("{\"version\":6,\"id\":\"" + AnId + "\",\"settings\":{\"sound\":true,\"vibration\":true,\"testerMode\":false,\"language\":\"\",\"music\":true}}")]
+    public void A_document_from_before_the_question_or_with_a_word_the_game_does_not_know_reads_as_not_asked(string json)
+    {
+        // Nothing but the player's own answer in this game's layout lets a note leave the phone; the question comes again.
+        var read = Assert.IsType<DeviceReading.Sound>(Read(json));
+
+        Assert.Equal(StatisticsChoice.NotAsked, read.Settings.Statistics);
+        Assert.False(read.Settings.IsOn(DeviceSetting.Statistics));
     }
 
     [Theory]

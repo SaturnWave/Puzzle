@@ -9,7 +9,7 @@ namespace Puzzle.Core.Tests;
 /// The tables of the languages that are not written in Latin letters are written in their own script: Russian in
 /// Cyrillic, Japanese in kana and Chinese characters, Chinese in its characters, Simplified in the mainland's forms
 /// and Traditional in Taiwan's. Latin letters stand only for what the game keeps as it is in every language (the
-/// names Unity and Android, "ID", a Roman numeral), and a line that says anything says it in the language's script.
+/// names Unity, Android, Aptabase, the stores and Apple's devices, "ID" and "IP", a Roman numeral), and a line that says anything says it in the language's script.
 /// A painter's name and a year are not the language's: they are left out.
 /// </summary>
 public partial class ScriptsOfTheTablesTests
@@ -23,6 +23,10 @@ public partial class ScriptsOfTheTablesTests
         "Unity",   // the engine the privacy text names
         "Android", // the system the privacy text names
         "SaturnWave", // the studio's name at the entry page's foot
+        "Aptabase", // the service of the play statistics, which the privacy card and the question name
+        "Google", "Play", "App", "Store", // the stores that take the payments, named as they name themselves
+        "Apple", "iPhone", "iPad", // the maker and the devices the privacy card names for the app identifier
+        "IP",      // the internet address the statistics do not keep, as every language writes it
     };
 
     /// <summary>The words a language says in Latin letters on purpose: Japanese "OK" on the button that closes a card, as Japanese interfaces do.</summary>

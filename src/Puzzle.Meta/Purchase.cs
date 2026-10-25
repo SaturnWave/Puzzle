@@ -18,9 +18,6 @@ namespace Puzzle.Meta
         /// <summary>The coins do not cover the price; <paramref name="Missing"/> is what the player lacks.</summary>
         public sealed record NotEnoughCoins(Coins Missing) : Purchase;
 
-        /// <summary>The thing is sold for real money, and this build sells nothing for money.</summary>
-        public sealed record NotOnSale : Purchase;
-
         /// <summary>
         /// The one place coins are taken for something: when they cover <paramref name="price"/>, the price leaves
         /// the wallet and <paramref name="received"/> puts what was bought into it; otherwise nothing is touched.
@@ -60,10 +57,13 @@ namespace Puzzle.Meta
         Simulated,
     }
 
-    /// <summary>Whether the game sells anything for real money. Closed set; this build knows one answer.</summary>
+    /// <summary>Whether the game sells anything for real money (the settings' build.realMoneyPurchases). Closed set.</summary>
     public enum RealMoneySales
     {
-        /// <summary>Nothing is sold for money: a coin pack is shown and cannot be bought.</summary>
+        /// <summary>A test build: nothing is sold for money; the store's coin packs are shown and cannot be bought.</summary>
         NotAvailable,
+
+        /// <summary>The store's products are sold through the platform's own store (Google Play, the App Store), which takes the money.</summary>
+        ThroughTheStore,
     }
 }

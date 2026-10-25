@@ -9,9 +9,11 @@ using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
 using Puzzle.Client.Play;
+using Puzzle.Client.Purchases;
 using Puzzle.Client.Screens;
 using Puzzle.Client.Sound;
 using Puzzle.Client.Stage;
+using Puzzle.Client.Statistics;
 using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
@@ -32,7 +34,9 @@ namespace Puzzle.Client
     /// way: the root holds the phone's speaker and vibrator (<see cref="SoundPlayer"/>), which the session plays its
     /// cues on; the Editor's sessions have none, and are silent. The root also holds the game's music
     /// (<see cref="MusicPlayer"/>), which no screen reaches: it follows only the player's switch, every frame, and
-    /// gives way to another app's music, which the root asks the device about (<see cref="OtherAudio"/>).
+    /// gives way to another app's music, which the root asks the device about (<see cref="OtherAudio"/>). The root
+    /// also chooses where the play statistics go (<see cref="StatisticsOfThisBuild"/>): the session asks the player
+    /// first, over the hall, and lets nothing out before a yes.
     /// </summary>
     /// <remarks>
     /// The screen may change while the game runs: a tablet or an open foldable turns with the device, a fold opens or
@@ -392,7 +396,8 @@ namespace Puzzle.Client
         /// <summary>
         /// The session on the progress file in the game's own data folder, kept by the economy's rules on the
         /// device's clock, with the attempt log in the same folder under the phone's id and the player's settings in
-        /// the device file beside it; its settings card offers a switch for each of the device's abilities. If that file is there but
+        /// the device file beside it; its settings card offers a switch for each of the device's abilities, and its
+        /// play statistics go where this build sends them (<see cref="StatisticsOfThisBuild"/>). If that file is there but
         /// cannot be read from the device, the player can still play: this run starts at the first level as a new
         /// player, keeps its progress in memory only, and leaves the file as it is. If a later version of the game wrote the file, this run goes on from where that file says the
         /// player stands, as far as this version can read it, and likewise leaves the file alone: the later game
@@ -404,8 +409,10 @@ namespace Puzzle.Client
         {
             var clock = new SystemWallClock();
             var attempts = new AttemptLogFile(Application.persistentDataPath, phone);
+            IStore sales = UnityStore.OfThisPlatform();
+            PlayStatistics statistics = StatisticsOfThisBuild();
             GameSession SessionOn(IProgressStore store) =>
-                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, screen, SessionOpening.InTheMuseumOutOfTheDark);
+                new GameSession(levels, art, paintings, rules, clock, store, attempts, settings, abilities, cues, sales, statistics, screen, SessionOpening.InTheMuseumOutOfTheDark);
 
             try
             {
@@ -422,6 +429,35 @@ namespace Puzzle.Client
                 Debug.LogError($"The saved progress cannot be read, so this run starts at the first level and does not save: {failure.Message}");
                 return SessionOn(new ProgressInMemory(PlayerProgress.NewPlayer(rules.StartingWallet)));
             }
+        }
+
+        /// <summary>
+        /// Where the play statistics the player allows go. In a built game whose settings file holds a key of
+        /// Aptabase's European region, to Aptabase (<see cref="AptabaseNotes"/>). With no key, with a key the game
+        /// refuses, and always in the Editor (whose play mode the checks run, a key or not), only to the device's log,
+        /// which says what would have gone: nothing leaves. The question is asked all the same, so that a build without
+        /// a key shows the player what one with a key will.
+        /// </summary>
+        private static PlayStatistics StatisticsOfThisBuild()
+        {
+            StatisticsKey key = AptabaseNotes.KeyOfThisBuild();
+            if (key is StatisticsKey.Refused refused)
+            {
+                Debug.LogError($"The play statistics' App Key is refused, so no note leaves the phone: {refused.Why}.");
+            }
+
+            if (Application.isEditor)
+            {
+                return PlayStatistics.Through(new NotesToTheLog(Debug.Log, $"the Editor sends nothing; the build has {key}"));
+            }
+
+            if (key is StatisticsKey.OfTheEu)
+            {
+                Debug.Log($"The play statistics go through {key} once the player allows them.");
+                return PlayStatistics.Through(new AptabaseNotes());
+            }
+
+            return PlayStatistics.Through(new NotesToTheLog(Debug.Log, $"this build has {key}"));
         }
 
         /// <summary>The game's music on the root, following the player's switch and giving way to another app's music; none from a catalogue built before the music, which is said once.</summary>
