@@ -220,10 +220,12 @@ public class GameWordsTests
         {
             ("Asking", PurchaseWords.Asking(pack, new StorePrice("com.example.coins.pouch", "₺44,99", 44.99m, "TRY"))),
             ("Pending", PurchaseWords.Of(new PurchaseState.Pending(pack))),
+            ("Unanswered", PurchaseWords.Of(new PurchaseState.Unanswered(pack))),
             ("Deferred", PurchaseWords.Of(new PurchaseState.Deferred(pack))),
-            ("Delivered pack", PurchaseWords.Of(new PurchaseState.Delivered(pack, pack.Contents))),
-            ("Delivered one coin", PurchaseWords.Of(new PurchaseState.Delivered(pack, new Reward(new Coins(1), Array.Empty<BoosterKind>())))),
-            ("Delivered starter", PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents))),
+            ("Delivered pack", PurchaseWords.Of(new PurchaseState.Delivered(pack, pack.Contents, DeliveryReason.Payment))),
+            ("Delivered one coin", PurchaseWords.Of(new PurchaseState.Delivered(pack, new Reward(new Coins(1), Array.Empty<BoosterKind>()), DeliveryReason.Payment))),
+            ("Delivered starter", PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents, DeliveryReason.Payment))),
+            ("Given back starter", PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents, DeliveryReason.Restore))),
             ("Restore failed", PurchaseWords.Of(new RestoreState.Ended(Array.Empty<StoreProduct>(), succeeded: false), starter)),
             ("Restore nothing", PurchaseWords.Of(new RestoreState.Ended(Array.Empty<StoreProduct>(), succeeded: true), starter)),
             ("Restore starter", PurchaseWords.Of(new RestoreState.Ended(new[] { starter }, succeeded: true), starter)),
@@ -272,6 +274,7 @@ public class GameWordsTests
             ("PurchaseWords.StarterOnce", PurchaseWords.StarterOnce),
             ("PurchaseWords.PriceComing", PurchaseWords.PriceComing), ("PurchaseWords.PackNotOnSale", PurchaseWords.PackNotOnSale),
             ("PurchaseWords.StoreUnreachable", PurchaseWords.StoreUnreachable), ("PurchaseWords.Restore", PurchaseWords.Restore),
+            ("PurchaseWords.StoreClosedForThisRun", PurchaseWords.StoreClosedForThisRun),
             ("PurchaseWords.Buy", PurchaseWords.Buy), ("PurchaseWords.Decline", PurchaseWords.Decline),
             ("WalletWords.Full", WalletWords.Full), ("WalletWords.LivesTitle", WalletWords.LivesTitle), ("WalletWords.AllLivesThere", WalletWords.AllLivesThere),
             ("WalletWords.PlayWhenALifeComes", WalletWords.PlayWhenALifeComes), ("WalletWords.TesterModePill", WalletWords.TesterModePill),
@@ -301,6 +304,7 @@ public class GameWordsTests
             ("CreditWords.Title", CreditWords.Title), ("CreditWords.InEnglish", CreditWords.InEnglish),
             ("CreditWords.Sections painter", CreditWords.Sections[0].Heading!), ("CreditWords.Sections paintings", CreditWords.Sections[2].Heading!),
             ("CreditWords.Sections typefaces", CreditWords.Sections[3].Heading!), ("CreditWords.Sections sounds", CreditWords.Sections[4].Heading!),
+            ("CreditWords.Sections software", CreditWords.Sections[5].Heading!),
             ("BoardWords.Level", BoardWords.Level), ("BoardWords.Moves", BoardWords.Moves), ("BoardWords.Goals", BoardWords.Goals),
             ("BoardWords.LevelNumbered", BoardWords.LevelNumbered(47)), ("BoardWords.PieceOf", BoardWords.PieceOf(reward)), ("BoardWords.OpensOn", BoardWords.OpensOn(12)),
             ("BoosterWords.EveryLevelWithout", BoosterWords.EveryLevelWithout), ("BoosterWords.CostsNoMove", BoosterWords.CostsNoMove),
@@ -320,6 +324,9 @@ public class GameWordsTests
             ("ResultWords.TakeTheMovesForAnAd", ResultWords.TakeTheMovesForAnAd(terms)), ("ResultWords.PriceOfTheMoves", ResultWords.PriceOfTheMoves(terms)),
             ("ResultWords.CoinsWon", ResultWords.CoinsWon(new Coins(45))),
             ("SettingsWords.BuildLine test build", SettingsWords.BuildLine(rules.Ads, RealMoneySales.NotAvailable)),
+            ("SettingsWords.BuildLine store build", SettingsWords.BuildLine(rules.Ads, RealMoneySales.ThroughTheStore)),
+            ("EntryWords.Version test build", EntryWords.Version("1.0", RealMoneySales.NotAvailable)),
+            ("EntryWords.Version store build", EntryWords.Version("1.0", RealMoneySales.ThroughTheStore)),
         };
 
         foreach (StoreProduct product in store.Products)

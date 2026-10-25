@@ -21,13 +21,20 @@ namespace Puzzle.Client.Purchases
 
         /// <summary>The payment waits for a parent's approval (Ask to Buy) or for cash at a shop; <see cref="ScriptedStore.MakeTheDeferredPayment"/> makes it.</summary>
         Defer,
+
+        /// <summary>
+        /// The store says nothing of the sheet: its answer is lost, or it is slow beyond the game's patience.
+        /// <see cref="ScriptedStore.MakeTheDeferredPayment"/> makes the payment later, as a store that took it after all.
+        /// </summary>
+        Silence,
     }
 
     /// <summary>
     /// A store the tests and the Editor's tools script, never the game's: it opens with the prices it is given, or
     /// is unreachable; answers each payment sheet as <see cref="NextAnswer"/> says; keeps every payment the game has
     /// not confirmed and tells of it again when it is opened anew, as Google Play and the App Store do for a game that
-    /// was closed between a payment and its confirmation; keeps the products it keeps (the starter pack) as the
+    /// was closed between a payment and its confirmation; may lose its connection for a while
+    /// (<see cref="IsDisconnected"/>); keeps the products it keeps (the starter pack) as the
     /// player's, refuses to sell them again, tells of them when it opens and gives them back on a restore. Opened
     /// anew, it forgets what it said and the game did not take: that game was closed. No Unity dependency.
     /// </summary>
@@ -71,6 +78,13 @@ namespace Puzzle.Client.Purchases
         /// </summary>
         public bool TellsWhatIsOwnedOnOpening { get; set; } = true;
 
+        /// <summary>
+        /// True while the store's connection is lost: a confirmation is not taken (the store says it is unreachable and
+        /// answers <see cref="StoreNews.NotConfirmed"/>, as UnityStore tells Google Play's "not connected") and the
+        /// payment goes on waiting; opening it finds it unreachable.
+        /// </summary>
+        public bool IsDisconnected { get; set; }
+
         /// <summary>How many times the game asked the store to open.</summary>
         public int TimesOpened { get; private set; }
 
@@ -95,7 +109,7 @@ namespace Puzzle.Client.Purchases
                 _keptIds.Add(listing.StoreId);
             }
 
-            if (_prices == null)
+            if (_prices == null || IsDisconnected)
             {
                 _news.Add(new StoreNews.Unreachable("the scripted store cannot be reached"));
                 return;
@@ -134,12 +148,15 @@ namespace Puzzle.Client.Purchases
                     _deferred = listing;
                     _news.Add(new StoreNews.Deferred(listing.StoreId));
                     break;
+                case ScriptedAnswer.Silence:
+                    _deferred = listing;
+                    break;
                 default:
                     throw new InvalidOperationException($"The scripted store has no answer {NextAnswer}.");
             }
         }
 
-        /// <summary>The payment that waited is made (the parent approved, the cash was paid): the store tells of it.</summary>
+        /// <summary>The payment that waited is made (the parent approved, the cash was paid, the silent store took it): the store tells of it.</summary>
         /// <exception cref="InvalidOperationException">No payment waits.</exception>
         public void MakeTheDeferredPayment()
         {
@@ -150,11 +167,19 @@ namespace Puzzle.Client.Purchases
 
         public void Confirm(StorePayment payment)
         {
-            if (!_unconfirmed.Remove(payment))
+            if (!_unconfirmed.Contains(payment))
             {
                 throw new InvalidOperationException($"The game confirmed the {payment}, which the store does not hold as waiting.");
             }
 
+            if (IsDisconnected)
+            {
+                _news.Add(new StoreNews.Unreachable("the scripted store lost its connection"));
+                _news.Add(new StoreNews.NotConfirmed(payment, "the scripted store is not connected"));
+                return;
+            }
+
+            _unconfirmed.Remove(payment);
             _confirmed.Add(payment);
         }
 
@@ -163,6 +188,9 @@ namespace Puzzle.Client.Purchases
             _news.AddRange(_owned.Where(payment => !_unconfirmed.Contains(payment)).Select(payment => new StoreNews.Owned(payment)));
             _news.Add(new StoreNews.RestoreEnded(succeeded: true));
         }
+
+        /// <summary>The store says something of its own accord, as a test has it: an answer to a sheet the game did not open, a lost connection.</summary>
+        public void Say(StoreNews news) => _news.Add(news ?? throw new ArgumentNullException(nameof(news)));
 
         public IReadOnlyList<StoreNews> TakeNews()
         {

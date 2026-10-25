@@ -444,6 +444,9 @@ namespace Puzzle.Client.Screens
         /// <summary>True while a pack's button in the shop can be pressed to buy it: the store gave its price; false otherwise, and on another page.</summary>
         public bool IsShopPackForSale(int pack) => _page is ShopPage shop && shop.IsPackForSale(pack);
 
+        /// <summary>The calm line the shop's coins' panel shows in the packs' buttons' place; nothing while it shows the buttons, and on another page.</summary>
+        public string? ShopStoreLine => (_page as ShopPage)?.StoreLineShown;
+
         /// <summary>True while the shop's set's button is lit; false while it is dimmed, and on another page.</summary>
         public bool IsShopSetLit(int set) => _page is ShopPage shop && shop.IsSetButtonLit(set);
 
@@ -838,7 +841,7 @@ namespace Puzzle.Client.Screens
 
             if (TopCard is NoticeCard { CanBeClosed: false })
             {
-                return; // the card of a payment the store is taking stands until the store answers
+                return; // the card of a payment the store is taking stands until the store answers, or has been silent a while
             }
 
             if (TopCard is ConsentCard)
@@ -1457,8 +1460,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// The card of where a purchase for money stands follows the purchase's course at every step: the card that
-        /// asks before paying, the card of the payment the store is taking (no answer: it goes when the store answers),
-        /// and the cards of what came of it, a restore's included. When the course moves on, the card that shows the
+        /// asks before paying, the card of the payment the store is taking (no answer: it goes when the store answers;
+        /// once the store has been silent a while, or was lost, the card that says no answer came, which can be
+        /// closed), and the cards of what came of it, a restore's included. When the course moves on, the card that shows the
         /// step before goes up, and the next comes down once it is gone, over a page with no other card in front: a
         /// payment approved while the settings card hangs waits for it to close. A purchase the player cancelled on the
         /// store's own sheet, which said so, has no card: the course is told so and goes back to idle. A card the player

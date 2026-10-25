@@ -204,6 +204,7 @@ App Store Connect → uygulama → **App Privacy**. Cevaplar taslağın `docs/re
 
 - **Tracking: hiçbir türde Yes yok.** App Tracking Transparency sorulmaz; `NSUserTrackingUsageDescription` Info.plist'ten silinir (§3.1).
 - **Ürün sayfasında görünecek:** "Data Linked to You": Purchases, Identifiers, Diagnostics. "Data Not Linked to You": Usage Data, Location.
+- **Oyunun içi aynı şeyi söylüyor (2026-10-25):** gizlilik kartının istatistik paragrafı ve izin sorusu artık Aptabase'in bağlantının IP adresinden yaklaşık konumu (ülke ve bölge) çıkardığını da söylüyor; etiketin Coarse Location satırı değişmedi. Metin taslak, onay sahipte (GAME_DESIGN §23, 2026-10-25).
 - **Privacy Policy URL:** sitedeki İngilizce politika (`<GIZLILIK_URL>`, sahibin adresi); yayımlanmadan etiket gönderilemez.
 - **Dayanak (2026-10-24, bu dal):**
   - IDFV: IAP'nin Swift eklentisi (`UnityStoreKitPlugin.swift`) `identifierForVendor`'ı okur, C# tarafı (`PlayerData.CreatePlayerIdentityAsync`) her olaya koyar.

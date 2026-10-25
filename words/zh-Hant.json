@@ -224,7 +224,7 @@
     {"id":"PrivacyParagraph3","text":"紀錄中沒有你的名字，也沒有你手機的任何資訊，只有分配給這支手機的一個隨機ID。遊戲絕不會把這個ID傳送到任何地方。"},
     {"id":"PrivacyParagraph4","text":"如果你的手機開啟了備份，Android可能會把這些檔案加入它自己的備份。"},
     {"id":"PrivacyParagraphUnity","text":"遊戲的購買功能來自Unity。每次嘗試購買時，Unity都會收到商品、價格、商店收據、你手機的型號和語言，在iPhone和iPad上還有Apple分配給你裝置的應用程式識別碼。Unity將其用於自己的財務紀錄、法律義務和防止詐騙。此項傳送無法關閉。"},
-    {"id":"PrivacyParagraphStatistics","text":"如果你允許，遊戲會向分析服務Aptabase傳送關於遊戲玩法的簡短紀錄：遊戲啟動、你玩的關卡、是否獲勝以及剩餘步數、你完成的畫作和展廳、打開商店以及你在商店購買的內容（不含付款資訊）。每筆紀錄包含時間和僅屬於該次工作階段的隨機編號，以及遊戲版本、你手機的作業系統和語言。Aptabase在歐盟境內統計這些紀錄，不保存你的IP位址。"},
+    {"id":"PrivacyParagraphStatistics","text":"如果你允許，遊戲會向分析服務Aptabase傳送關於遊戲玩法的簡短紀錄：遊戲啟動、你玩的關卡、是否獲勝以及剩餘步數、你完成的畫作和展廳、打開商店以及你在商店購買的內容（不含付款資訊）。每筆紀錄包含時間和僅屬於該次工作階段的隨機編號，以及遊戲版本、你手機的作業系統和語言。Aptabase在歐盟境內統計這些紀錄，會根據你連線的IP位址推斷大致位置（國家和地區），但不保存你的IP位址。"},
     {"id":"PrivacyParagraphStatisticsChoice","text":"紀錄中沒有你的名字、電子郵件、廣告ID或能辨識你手機的ID。即使你不允許，遊戲也照常運作。你可以隨時用設定中的「遊戲統計」開關更改選擇。"},
     {"id":"PrivacyParagraphNoServer","text":"只有這支手機知道你的金幣和進度。如果你解除安裝遊戲或更換手機，它們就會遺失；手機備份也許能找回，但遊戲無法保證。退款請向Google Play或Apple申請。"},
     {"id":"PrivacyDeleteTheRecords","text":"刪除紀錄"},
@@ -239,7 +239,7 @@
     {"id":"PrivacyFileLine","text":"{file} · 每次結束的嘗試記一行"},
     {"id":"PrivacyPageOf","text":"{page} / {pages}"},
     {"id":"ConsentQuestion","text":"為了改進遊戲，我們可以統計遊戲的玩法嗎？"},
-    {"id":"ConsentParagraph1","text":"如果你允許，遊戲會傳送簡短紀錄，內容包括你玩的關卡、結果、完成的畫作以及在商店購買的內容（不含付款資訊）。分析服務Aptabase在歐盟境內統計這些紀錄。"},
+    {"id":"ConsentParagraph1","text":"如果你允許，遊戲會傳送簡短紀錄，內容包括你玩的關卡、結果、完成的畫作以及在商店購買的內容（不含付款資訊）。分析服務Aptabase在歐盟境內統計這些紀錄，並根據你的連線推斷大致位置（國家和地區）。"},
     {"id":"ConsentParagraph2","text":"不會傳送你的名字、電子郵件、廣告ID或能辨識你手機的ID。這些紀錄絕不用於廣告，也不與任何人分享。"},
     {"id":"ConsentParagraph3","text":"即使你不允許，遊戲和購買也照常運作。你可以隨時在設定中更改選擇。"},
     {"id":"ConsentAllow","text":"允許"},
@@ -322,6 +322,11 @@
     {"id":"RestoreOnlyTheStarter","text":"金幣包無法恢復，只有{name}可以。"},
     {"id":"RestoreFailed","text":"商店暫時沒有回應。"},
     {"id":"RestoreTryLater","text":"請稍後再試。"},
-    {"id":"BuildStoreBuying","text":"透過商店購買"}
+    {"id":"BuildStoreBuying","text":"透過商店購買"},
+    {"id":"ShopStoreClosedForThisRun","text":"本次工作階段中商店已關閉"},
+    {"id":"PurchaseNoAnswerLine","text":"商店尚未回應。"},
+    {"id":"EntryVersionAlone","text":"版本{version}"},
+    {"id":"SettingsBuildLineStoreBuild","text":"本版本 · {ads}，{buying}"},
+    {"id":"CreditsSoftware","text":"軟體"}
   ]
 }

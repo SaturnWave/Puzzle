@@ -1,5 +1,6 @@
 using Puzzle.Client.Flow;
 using Puzzle.Client.Purchases;
+using Puzzle.Client.Words;
 using Puzzle.Meta;
 using Puzzle.Museum;
 using static Puzzle.Core.Tests.MetaSupport;
@@ -11,8 +12,10 @@ namespace Puzzle.Core.Tests;
 /// store, the Unity project's source files, compiled into these tests): the closed course of a purchase from the card
 /// that asks to the store's answer; each payment given once, also when the store tells of it again after the game was
 /// closed between the payment and its delivery, or between the delivery and the confirmation; a confirmation only once
-/// the progress that holds the payment is saved; the starter pack offered from its level and sold once; what a restore
-/// brings back; and a test build that never asks the store.
+/// the progress that holds the payment is saved; a confirmation the store did not take sent again once it opens anew;
+/// the starter pack offered from its level and sold once; what a restore brings back, and the starter pack the store
+/// gives back by itself, which is a restore and no payment; a sheet the store does not answer, whose card closes after
+/// a while; and a test build, and a run that cannot keep its progress, that never ask the store.
 /// </summary>
 public class PurchaseTests
 {
@@ -104,8 +107,9 @@ public class PurchaseTests
         var store = ScriptedStore.AtUsPrices(Catalogue, TestApplicationId, offersRestore: true);
         var checkout = new Checkout(Catalogue, RealMoneySales.NotAvailable, TestApplicationId, store);
 
-        checkout.Open(TimeSpan.Zero);
-        checkout.Step(new Keeper(OnLevelTwentyFive));
+        var keeper = new Keeper(OnLevelTwentyFive);
+        checkout.Open(TimeSpan.Zero, keeper);
+        checkout.Step(keeper);
 
         Assert.Equal(0, store.TimesOpened);
         Assert.IsType<StoreStatus.NotSold>(checkout.Status);
@@ -121,10 +125,11 @@ public class PurchaseTests
     {
         var store = new ScriptedStore([new StorePrice($"{TestApplicationId}.coins.small", "₺44,99", 44.99m, "TRY")], offersRestore: false);
         var checkout = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
+        var keeper = new Keeper(OnLevelTwentyFive);
 
-        checkout.Open(TimeSpan.Zero);
+        checkout.Open(TimeSpan.Zero, keeper);
         Assert.IsType<StoreStatus.Connecting>(checkout.Status);
-        checkout.Step(new Keeper(OnLevelTwentyFive));
+        checkout.Step(keeper);
 
         StoreView view = checkout.ViewFor(PurchasesMade.None, levelNumber: 25);
         Assert.IsType<StoreStatus.Open>(view.Status);
@@ -142,7 +147,7 @@ public class PurchaseTests
         var checkout = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
         var keeper = new Keeper(OnLevelTwentyFive);
 
-        checkout.Open(TimeSpan.Zero);
+        checkout.Open(TimeSpan.Zero, keeper);
         checkout.Step(keeper);
         Assert.IsType<StoreStatus.Unreachable>(checkout.Status);
         Assert.True(checkout.Ask(Small, PurchasesMade.None, levelNumber: 25));
@@ -153,6 +158,7 @@ public class PurchaseTests
         checkout.OpenAgainIfUnreachable(TimeSpan.FromSeconds(5));
         Assert.Equal(1, store.TimesOpened);
         checkout.OpenAgainIfUnreachable(Checkout.PatienceBeforeAskingAgain);
+        Assert.IsType<StoreStatus.Unreachable>(checkout.Status); // asked again, the shop goes on with its calm line: no "…" in between
         checkout.Step(keeper);
         Assert.Equal(2, store.TimesOpened);
         Assert.IsType<StoreStatus.Unreachable>(checkout.Status);
@@ -173,7 +179,7 @@ public class PurchaseTests
         Assert.Equal((Large, "$4.99"), (asking.Bought, asking.Price.Words));
         Assert.Equal(0, store.SheetsOpened);
 
-        Assert.True(checkout.Pay());
+        Assert.True(checkout.Pay(TimeSpan.Zero));
         Assert.IsType<PurchaseState.Pending>(checkout.State);
         Assert.Equal(1, store.SheetsOpened);
         checkout.Step(keeper);
@@ -192,7 +198,7 @@ public class PurchaseTests
     {
         (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
 
-        Assert.False(checkout.Pay());
+        Assert.False(checkout.Pay(TimeSpan.Zero));
         Assert.False(checkout.Dismiss());
         Assert.True(checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25));
         Assert.False(checkout.Ask(Large, keeper.Progress.Purchases, levelNumber: 25));
@@ -213,7 +219,7 @@ public class PurchaseTests
         store.NextAnswer = answer;
 
         checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
 
         if (answer == ScriptedAnswer.Cancel)
@@ -238,7 +244,7 @@ public class PurchaseTests
         store.NextAnswer = ScriptedAnswer.Defer;
 
         checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
         Assert.IsType<PurchaseState.Deferred>(checkout.State);
         Assert.Equal(OnLevelTwentyFive, keeper.Progress);
@@ -259,7 +265,7 @@ public class PurchaseTests
         keeper.SavesFail = true;
 
         checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
         Assert.IsType<PurchaseState.Delivered>(checkout.State);
         Assert.Equal(new Coins(600), keeper.Progress.Wallet.Coins);
@@ -278,12 +284,12 @@ public class PurchaseTests
     {
         (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
         checkout.Ask(Large, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
 
         // Closed before the store's news was taken: nothing was given or saved, the store holds the payment unconfirmed.
         var reopened = new Keeper(keeper.Saved);
         var afterTheRestart = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
-        afterTheRestart.Open(TimeSpan.Zero);
+        afterTheRestart.Open(TimeSpan.Zero, reopened);
         afterTheRestart.Step(reopened);
 
         Assert.Equal(new Coins(2600), reopened.Saved.Wallet.Coins);
@@ -298,14 +304,14 @@ public class PurchaseTests
         (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
         keeper.ClosesBeforeTheConfirmation = true;
         checkout.Ask(Large, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
         Assert.Empty(store.Confirmed);
         Assert.Equal(new Coins(2600), keeper.Saved.Wallet.Coins);
 
         var reopened = new Keeper(keeper.Saved);
         var afterTheRestart = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
-        afterTheRestart.Open(TimeSpan.Zero);
+        afterTheRestart.Open(TimeSpan.Zero, reopened);
         afterTheRestart.Step(reopened);
 
         Assert.Equal(new Coins(2600), reopened.Saved.Wallet.Coins);
@@ -326,7 +332,7 @@ public class PurchaseTests
         checkout.Dismiss();
 
         checkout.Ask(Starter, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
         Assert.Equal(new Coins(1600), keeper.Saved.Wallet.Coins);
         checkout.Dismiss();
@@ -345,7 +351,7 @@ public class PurchaseTests
         foreach (StoreProduct product in new[] { Starter, Small })
         {
             checkout.Ask(product, keeper.Progress.Purchases, levelNumber: 25);
-            checkout.Pay();
+            checkout.Pay(TimeSpan.Zero);
             checkout.Step(keeper);
             checkout.Dismiss();
         }
@@ -361,7 +367,7 @@ public class PurchaseTests
         // itself); a restore afterwards finds it given.
         var newInstall = new Keeper(OnLevelTwentyFive);
         var afterTheInstall = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
-        afterTheInstall.Open(TimeSpan.Zero);
+        afterTheInstall.Open(TimeSpan.Zero, newInstall);
         afterTheInstall.Step(newInstall);
         Assert.Equal(new Coins(1600), newInstall.Saved.Wallet.Coins);
         Assert.Equal(1, newInstall.Saved.Purchases.TimesBought("starter.kit"));
@@ -379,7 +385,7 @@ public class PurchaseTests
     {
         (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive, offersRestore: true);
         checkout.Ask(Starter, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
 
         var newInstall = new Keeper(OnLevelTwentyFive);
@@ -397,7 +403,7 @@ public class PurchaseTests
         (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
         store.NextAnswer = ScriptedAnswer.Defer;
         checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
-        checkout.Pay();
+        checkout.Pay(TimeSpan.Zero);
         checkout.Step(keeper);
         checkout.Dismiss();
 
@@ -423,7 +429,7 @@ public class PurchaseTests
 
         var keeper = new Keeper(OnLevelTwentyFive);
         var checkout = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
-        checkout.Open(TimeSpan.Zero);
+        checkout.Open(TimeSpan.Zero, keeper);
         checkout.Step(keeper);
 
         Assert.Equal(OnLevelTwentyFive, keeper.Progress);
@@ -431,20 +437,211 @@ public class PurchaseTests
         Assert.Single(store.Unconfirmed);
     }
 
+    [Fact]
+    public void A_run_that_cannot_keep_its_progress_sells_nothing_and_leaves_a_payment_of_an_earlier_run_for_one_that_can()
+    {
+        // An earlier run paid for the large pack and was closed before it took the store's news: the store holds the payment unconfirmed.
+        var store = ScriptedStore.AtUsPrices(Catalogue, TestApplicationId, offersRestore: true);
+        store.Buy(new StoreListing(Large, TestApplicationId));
+
+        // This run's progress file could not be read: what it saves is gone when the game closes.
+        var forThisRunOnly = new Keeper(OnLevelTwentyFive, ProgressKeeping.ForThisRunOnly);
+        var checkout = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
+        checkout.Open(TimeSpan.Zero, forThisRunOnly);
+        checkout.Step(forThisRunOnly);
+        checkout.OpenAgainIfUnreachable(Checkout.PatienceBeforeAskingAgain);
+        checkout.PassTime(Checkout.PatienceBeforeAskingAgain);
+        checkout.Step(forThisRunOnly);
+
+        Assert.IsType<StoreStatus.ClosedForThisRun>(checkout.Status);
+        Assert.Equal(0, store.TimesOpened);
+        Assert.False(checkout.OffersRestore);
+        Assert.False(checkout.RestorePurchases());
+        StoreView view = checkout.ViewFor(PurchasesMade.None, levelNumber: 25);
+        Assert.All(view.CoinPacks, pack => Assert.False(pack.CanBeBought));
+        Assert.Null(view.StarterPack);
+        Assert.True(checkout.Ask(Small, PurchasesMade.None, levelNumber: 25));
+        Assert.Equal(PurchaseFailure.StoreClosed, Assert.IsType<PurchaseState.Failed>(checkout.State).Why);
+        Assert.Equal(1, store.SheetsOpened); // the earlier run's sheet alone
+        Assert.Equal(OnLevelTwentyFive, forThisRunOnly.Progress);
+        Assert.Empty(store.Confirmed);
+        Assert.Single(store.Unconfirmed);
+
+        // A later run that can save gives the payment once and confirms it.
+        var canSave = new Keeper(OnLevelTwentyFive);
+        var later = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
+        later.Open(TimeSpan.Zero, canSave);
+        later.Step(canSave);
+        Assert.Equal(new Coins(2600), canSave.Saved.Wallet.Coins);
+        Assert.Single(store.Confirmed);
+        Assert.Empty(store.Unconfirmed);
+    }
+
+    [Fact]
+    public void A_keeper_whose_progress_is_gone_after_closing_never_confirms_a_payment_it_was_given()
+    {
+        // A store already open, and a keeper that then says it keeps nothing after closing: the payment is held, never confirmed.
+        (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
+        checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
+        checkout.Pay(TimeSpan.Zero);
+        keeper.Keeping = ProgressKeeping.ForThisRunOnly;
+        checkout.Step(keeper);
+
+        Assert.Empty(store.Confirmed);
+        Assert.Single(checkout.WaitingToBeConfirmed);
+    }
+
+    [Fact]
+    public void A_confirmation_the_store_did_not_take_is_sent_again_once_the_store_opens_anew()
+    {
+        (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
+        checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
+        checkout.Pay(TimeSpan.Zero);
+        store.IsDisconnected = true;
+        checkout.Step(keeper); // paid, given, saved; the confirmation goes to a store that lost its connection
+        checkout.Step(keeper); // its answer: unreachable, the confirmation not taken
+
+        Assert.IsType<StoreStatus.Unreachable>(checkout.Status);
+        Assert.Empty(store.Confirmed);
+        Assert.Single(checkout.WaitingToBeConfirmed);
+        Assert.Equal(new Coins(600), keeper.Saved.Wallet.Coins);
+
+        checkout.PassTime(TimeSpan.FromSeconds(5));
+        Assert.Equal(1, store.TimesOpened); // not pressed at once
+
+        store.IsDisconnected = false;
+        checkout.PassTime(Checkout.PatienceBeforeAskingAgain);
+        checkout.Step(keeper);
+        Assert.Equal(2, store.TimesOpened);
+        Assert.IsType<StoreStatus.Open>(checkout.Status);
+        Assert.Single(store.Confirmed);
+        Assert.Empty(store.Unconfirmed);
+        Assert.Empty(checkout.WaitingToBeConfirmed);
+        Assert.Equal(new Coins(600), keeper.Saved.Wallet.Coins);
+    }
+
+    [Fact]
+    public void A_sheet_the_store_does_not_answer_lets_its_card_close_after_a_while_and_a_payment_made_later_is_still_given()
+    {
+        (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
+        store.NextAnswer = ScriptedAnswer.Silence;
+        TimeSpan paid = TimeSpan.FromSeconds(10);
+        checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
+        checkout.Pay(paid);
+        checkout.Step(keeper);
+
+        checkout.PassTime(paid + Checkout.PatienceWithTheSheet - TimeSpan.FromSeconds(1));
+        Assert.IsType<PurchaseState.Pending>(checkout.State);
+        Assert.False(checkout.Dismiss());
+
+        checkout.PassTime(paid + Checkout.PatienceWithTheSheet);
+        Assert.Equal(Small, Assert.IsType<PurchaseState.Unanswered>(checkout.State).Bought);
+        Assert.True(checkout.Dismiss());
+        Assert.Same(PurchaseState.Idle, checkout.State);
+
+        store.MakeTheDeferredPayment();
+        checkout.Step(keeper);
+        Assert.Equal(new Coins(500), Assert.IsType<PurchaseState.Delivered>(checkout.State).What.Coins);
+        Assert.Equal(new Coins(600), keeper.Saved.Wallet.Coins);
+        Assert.Single(store.Confirmed);
+    }
+
+    [Fact]
+    public void A_cancel_or_refusal_that_names_no_product_of_the_game_answers_the_sheet_and_one_for_another_of_its_products_does_not()
+    {
+        (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
+        store.NextAnswer = ScriptedAnswer.Silence;
+        checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
+        checkout.Pay(TimeSpan.Zero);
+
+        // A refusal of a purchase of the large pack begun before the game was closed is no answer to this sheet.
+        store.Say(new StoreNews.Failed($"{TestApplicationId}.{Large.IdSuffix}", StoreRefusal.NotPaid, "a purchase begun before"));
+        checkout.Step(keeper);
+        Assert.IsType<PurchaseState.Pending>(checkout.State);
+
+        // A cancel whose product id the store mangled is.
+        store.Say(new StoreNews.Cancelled("com.mangled.id"));
+        checkout.Step(keeper);
+        Assert.Equal(Small, Assert.IsType<PurchaseState.Cancelled>(checkout.State).Bought);
+        Assert.Equal(OnLevelTwentyFive, keeper.Progress);
+    }
+
+    [Fact]
+    public void A_store_lost_while_its_sheet_is_up_says_no_answer_came_never_that_nothing_was_paid()
+    {
+        (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
+        store.NextAnswer = ScriptedAnswer.Silence;
+        checkout.Ask(Small, keeper.Progress.Purchases, levelNumber: 25);
+        checkout.Pay(TimeSpan.Zero);
+        store.Say(new StoreNews.Unreachable("the connection dropped"));
+        checkout.Step(keeper);
+
+        Assert.IsType<StoreStatus.Unreachable>(checkout.Status);
+        Assert.IsType<PurchaseState.Unanswered>(checkout.State);
+        using (TestWords.Speak(Language.Turkish))
+        {
+            PurchaseCardWords said = PurchaseWords.Of(checkout.State)!;
+            Assert.Equal(("Ödeme sürüyor", "Mağazadan henüz yanıt gelmedi.", "Ödeme bitince aldıkların gelir."), (said.Title, said.FirstLine, said.SecondLine));
+        }
+
+        // The store took it after all: given, and its card follows the unanswered one at once.
+        store.MakeTheDeferredPayment();
+        checkout.Step(keeper);
+        Assert.IsType<PurchaseState.Delivered>(checkout.State);
+        Assert.Equal(new Coins(600), keeper.Saved.Wallet.Coins);
+    }
+
+    [Fact]
+    public void A_starter_pack_the_store_gives_back_by_itself_is_a_restore_not_a_payment()
+    {
+        (Checkout checkout, ScriptedStore store, Keeper keeper) = OpenStore(OnLevelTwentyFive);
+        checkout.Ask(Starter, keeper.Progress.Purchases, levelNumber: 25);
+        checkout.Pay(TimeSpan.Zero);
+        checkout.Step(keeper);
+        Assert.Equal(DeliveryReason.Payment, Assert.IsType<PurchaseState.Delivered>(checkout.State).Reason);
+        Assert.Equal([DeliveryReason.Payment], keeper.Reasons);
+
+        // A new install on Google Play: the store tells of the starter pack the player owns when it opens.
+        var newInstall = new Keeper(OnLevelTwentyFive);
+        var afterTheInstall = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
+        afterTheInstall.Open(TimeSpan.Zero, newInstall);
+        afterTheInstall.Step(newInstall);
+
+        PurchaseState.Delivered back = Assert.IsType<PurchaseState.Delivered>(afterTheInstall.State);
+        Assert.Equal((Starter, DeliveryReason.Restore), (back.Bought, back.Reason));
+        Assert.Equal([DeliveryReason.Restore], newInstall.Reasons);
+        Assert.Equal(new Coins(1600), newInstall.Saved.Wallet.Coins);
+        using (TestWords.Speak(Language.Turkish))
+        {
+            PurchaseCardWords said = PurchaseWords.Of(back)!;
+            Assert.Equal(("Geri yükleme", "Çırak Çantası geri geldi.", "1.500 altın cüzdanında."), (said.Title, said.FirstLine, said.SecondLine));
+            Assert.Equal("Satın alındı", PurchaseWords.Of(new PurchaseState.Delivered(Starter, back.What, DeliveryReason.Payment))!.Title);
+        }
+    }
+
     private static (Checkout Checkout, ScriptedStore Store, Keeper Keeper) OpenStore(PlayerProgress progress, bool offersRestore = false)
     {
         var store = ScriptedStore.AtUsPrices(Catalogue, TestApplicationId, offersRestore);
         var checkout = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
         var keeper = new Keeper(progress);
-        checkout.Open(TimeSpan.Zero);
+        checkout.Open(TimeSpan.Zero, keeper);
         checkout.Step(keeper);
         return (checkout, store, keeper);
     }
 
-    /// <summary>The session's part: gives by the ledger, keeps the progress and saves it, or fails to; or is closed between its save and the next step.</summary>
-    private sealed class Keeper(PlayerProgress start) : IPurchaseKeeper
+    /// <summary>
+    /// The session's part: gives by the ledger, keeps the progress and saves it, or fails to; or is closed between its
+    /// save and the next step; or keeps what it saves for this run only. It lists why each product came.
+    /// </summary>
+    private sealed class Keeper(PlayerProgress start, ProgressKeeping keeping = ProgressKeeping.AfterClosing) : IPurchaseKeeper
     {
         private readonly WalletLedger _ledger = new(StoreRules);
+        private readonly List<DeliveryReason> _reasons = [];
+
+        public ProgressKeeping Keeping { get; set; } = keeping;
+
+        /// <summary>Why each product came, in the order the store handed them.</summary>
+        public IReadOnlyList<DeliveryReason> Reasons => _reasons;
 
         public PlayerProgress Progress { get; private set; } = start;
 
@@ -457,8 +654,9 @@ public class PurchaseTests
 
         public bool IsSaved => !ClosesBeforeTheConfirmation && Progress.Equals(Saved);
 
-        public Delivery Deliver(StoreProduct product, StorePayment payment)
+        public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason)
         {
+            _reasons.Add(reason);
             Delivery delivery = _ledger.Deliver(Progress, product, payment.TransactionId);
             Progress = delivery switch
             {

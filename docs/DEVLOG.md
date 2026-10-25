@@ -6,6 +6,21 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
+**v1 incelemesinin düzeltmeleri (2026-10-25)**
+- İnceleme çift teslim ve izinsiz giden veri bulmadı; on bulgu kapandı, her biri bir birim testiyle ya da Editor denetimiyle tutuluyor (ana dal).
+- Kaydı tutamayan açılış (ilerleme dosyası okunamıyor ya da daha yeni bir sürümün) artık satmıyor: ilerleme deposu kapanıştan sonra tutup tutmadığını söylüyor (`ProgressKeeping`), mağaza hiç sorulmuyor ("Mağaza bu oturumda kapalı"), önceki açılışın bekleyen ödemesi onaysız kalıyor ve kaydedebilen açılışta bir kez geliyor.
+- Onayı almayan mağaza: sipariş IAP "onaylandı" diyene kadar elde; alınmayan onay mağaza yeniden açılınca gidiyor, kopmuş mağaza 15 sn'de bir yeniden soruluyor.
+- "Ödeme sürüyor" kartı 30 sn cevapsız kalınca ya da bağlantı kopunca "Mağazadan henüz yanıt gelmedi." ve "Tamam"; sonradan gelen ödeme yine bir kez veriliyor. Bilinmeyen ürüne verilen vazgeçme ve ret sayfanın cevabı sayılıyor. Kopan bağlantı artık "Ödeme alınmadı" demiyor.
+- Google Play'in kendiliğinden geri verdiği Çırak Çantası "Geri yükleme" kartıyla geliyor; `purchase_complete` notu yalnız ödemede.
+- Ulaşılamayan mağaza yeniden sorulurken sakin satır yerinde kalıyor ("…"ya dönüp gelmiyor).
+- Gizlilik paragrafı ve soru Aptabase'in bağlantıdan ülke ve bölge çıkardığını söylüyor (13 dil, taslak).
+- Künye'ye "Yazılım": Aptabase SDK ve Json.NET'in MIT metni, IAP'nin bildirimlerindeki Google Play Billing Library ve StoreKit 2 (Apache 2.0); kayıt `unity/Packages/licences.json`, sürümleri `packages-lock.json`'la test ediliyor.
+- Mağazadan satan derleme "test sürümü" demiyor: giriş sayfası "Sürüm 1.0", ayarlar "Bu sürüm · …"; vekil derleme eskisi gibi.
+- Eskimiş yorumlar düzeldi (`UnityStore`'da INTERNET, `economy/default.json`'da Çırak Çantası'nın yeri). 5 yeni, 2 değişen yazı 13 dilde.
+- 5.861 test geçti (22'si yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `PurchaseCheck`, `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan), `ConsentCheck`, `AvatarCheck`, `RotationCheck` ve `EngineSmokeTest` hatasız. Resimlere 1080×2424 ve 2732×2048'de bakıldı. APK 290 MB, izinler tam beş. Telefona kurulmadı; telefon testleri T516–T519, açık A51.
+- iOS dalı: düzeltmeler `feature/ios`'a birleşti (çakışma yalnız belgelerde). 5.883 test geçti; `PurchaseCheck` (`-quit` olmadan) ve `RotationCheck` (84 değişiklik) hatasız. Xcode dışa aktarması (4,7 dk): StoreKit iki hedefe bağlı, Info.plist 28 anahtar, şifreleme `false`, izleme, kamera, mikrofon ve konum anahtarı yok, iOS 15.0. `IOS_BUILD.md` §4.1, etiketin konum satırını artık oyunun içinin de söylediğini yazıyor. Mac'te derlenmedi.
+- Sahipte: yeni yazıların son ifadesi ("Bu sürüm", "Sürüm 1.0", konum cümlesi, sakin satırlar); Apache metninin bütünü ve URP'nin FXAA bildirimi; T516–T519 (A51).
+
 **v1 iOS'ta (`feature/ios`)**
 - Bitti (iOS dalı): ana dal (satın almalar, rıza sorusu, ressam) `feature/ios`'a birleşti; iOS'a özgü kod yerinde. Tek çakışma `AndroidBuild.cs`: kimlikler iOS dalındaki gibi `GameIdentity`'den.
 - Satın alma iOS'ta IAP 5.4.4'ün StoreKit 2'siyle. IAP'nin Xcode adımı StoreKit'i uygulamaya ve UnityFramework'e bağlıyor; adım yalnız Editör'ün hedefi iOS'ken derlendiği için dışa aktarma artık `-buildTarget iOS` ile çalışıyor ve yeni StoreKit adımı bağ yoksa derlemeyi durduruyor (`IosStoreKitStep`, `XcodeProjectText`, 10 test). İlk sürümü bir de eski yetenek satırını arıyordu; Unity 6.6 o satırı yazmadığı için kaldırıldı.

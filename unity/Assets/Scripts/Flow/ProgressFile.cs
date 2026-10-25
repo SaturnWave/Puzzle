@@ -63,6 +63,9 @@ namespace Puzzle.Client.Flow
             _startingWallet = startingWallet ?? throw new ArgumentNullException(nameof(startingWallet));
         }
 
+        /// <summary>The file is in the game's own data folder, which survives a restart and an update.</summary>
+        public ProgressKeeping Keeping => ProgressKeeping.AfterClosing;
+
         /// <exception cref="ProgressOfALaterGameException">The file was written by a later version of the game; it is left as it is.</exception>
         /// <exception cref="IOException">The file is there but cannot be read.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not read the file.</exception>

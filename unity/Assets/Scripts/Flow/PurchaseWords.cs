@@ -46,6 +46,9 @@ namespace Puzzle.Client.Flow
         /// <summary>The coins' panel instead of its buttons while the store cannot be reached.</summary>
         public static string StoreUnreachable => Speech.Say(WordId.ShopStoreUnreachable);
 
+        /// <summary>The coins' panel instead of its buttons in a run that keeps no progress, which sells nothing.</summary>
+        public static string StoreClosedForThisRun => Speech.Say(WordId.ShopStoreClosedForThisRun);
+
         /// <summary>The shop's row that asks the App Store for the purchases back.</summary>
         public static string Restore => Speech.Say(WordId.ShopRestore);
 
@@ -71,12 +74,16 @@ namespace Puzzle.Client.Flow
 
         /// <summary>
         /// The card that tells where a purchase stands once its green button was pressed; nothing for a course that
-        /// shows no such card (idle, asking, or cancelled by the player on the store's own sheet, which said so).
+        /// shows no such card (idle, asking, or cancelled by the player on the store's own sheet, which said so). A
+        /// sheet the store has not answered says so and that what was bought comes once paid: never that nothing was
+        /// paid, which the game does not know.
         /// </summary>
         public static PurchaseCardWords? Of(PurchaseState state) => state switch
         {
             PurchaseState.Pending _ => new PurchaseCardWords(
                 Speech.Say(WordId.PurchasePendingTitle), Speech.Say(WordId.PurchasePendingLine), Speech.Say(WordId.PurchaseComesWhenPaid)),
+            PurchaseState.Unanswered _ => new PurchaseCardWords(
+                Speech.Say(WordId.PurchasePendingTitle), Speech.Say(WordId.PurchaseNoAnswerLine), Speech.Say(WordId.PurchaseComesWhenPaid)),
             PurchaseState.Deferred _ => new PurchaseCardWords(
                 Speech.Say(WordId.PurchaseDeferredTitle), Speech.Say(WordId.PurchaseDeferredLine), Speech.Say(WordId.PurchaseComesWhenPaid)),
             PurchaseState.Delivered delivered => Delivered(delivered),
@@ -108,13 +115,23 @@ namespace Puzzle.Client.Flow
                 : new PurchaseCardWords(title, Speech.Say(WordId.RestoreBroughtBack, ("name", NameOf(ended.BroughtBack[0]))), onlyTheStarter);
         }
 
-        /// <summary>The card of a purchase given: how many coins arrived, then thanks, or for boosters that came with them, where they are used.</summary>
+        /// <summary>
+        /// The card of a purchase given: how many coins arrived, then thanks, or for boosters that came with them, where
+        /// they are used. What the store gave back (the starter pack after a new install) is a restore's card instead:
+        /// it came back, and its coins are in the wallet; nothing was bought now.
+        /// </summary>
         private static PurchaseCardWords Delivered(PurchaseState.Delivered delivered)
         {
             Reward what = delivered.What;
             string coins = Speech.SayCounted(WordId.PurchaseCoinsArrived, what.Coins.Amount, ("coins", NumberWords.Amount(what.Coins.Amount)));
-            return new PurchaseCardWords(
-                Speech.Say(WordId.NoticeBoughtTitle), coins, what.Boosters.Count == 0 ? Speech.Say(WordId.PurchaseThanks) : ShopWords.HowToUse(what));
+            return delivered.Reason switch
+            {
+                DeliveryReason.Payment => new PurchaseCardWords(
+                    Speech.Say(WordId.NoticeBoughtTitle), coins, what.Boosters.Count == 0 ? Speech.Say(WordId.PurchaseThanks) : ShopWords.HowToUse(what)),
+                DeliveryReason.Restore => new PurchaseCardWords(
+                    Speech.Say(WordId.RestoreTitle), Speech.Say(WordId.RestoreBroughtBack, ("name", NameOf(delivered.Bought))), coins),
+                _ => throw new ArgumentOutOfRangeException(nameof(delivered), delivered.Reason, "A delivery came for a reason the cards have no words for."),
+            };
         }
 
         private static string WhyNot(PurchaseState.Failed failed) => failed.Why switch

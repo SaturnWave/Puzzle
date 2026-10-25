@@ -224,7 +224,7 @@
     {"id":"PrivacyParagraph3","text":"Catatan ini tidak berisi namamu atau info apa pun tentang ponselmu, hanya ID acak yang diberikan ke ponsel ini. Game tidak pernah mengirim ID ini ke mana pun."},
     {"id":"PrivacyParagraph4","text":"Jika cadangan ponselmu aktif, Android bisa menyertakan file-file ini ke cadangannya sendiri."},
     {"id":"PrivacyParagraphUnity","text":"Pustaka pembelian game ini milik Unity. Pada setiap percobaan pembelian, Unity menerima produk, harga, struk dari toko, model dan bahasa ponselmu, serta di iPhone dan iPad ID aplikasi yang diberikan Apple ke perangkatmu. Unity memakainya untuk catatan keuangannya, kewajiban hukumnya, dan mencegah penipuan. Ini tidak bisa dimatikan."},
-    {"id":"PrivacyParagraphStatistics","text":"Jika kamu izinkan, game mengirim catatan singkat tentang cara game dimainkan ke Aptabase, sebuah layanan analitik: game dibuka, level yang kamu mainkan, apakah kamu menang dan berapa langkah tersisa, lukisan dan ruangan yang kamu selesaikan, toko dibuka, dan apa yang kamu beli di sana (tanpa data pembayaran). Setiap catatan berisi waktunya dan nomor acak khusus sesi itu, beserta versi game serta sistem operasi dan bahasa ponselmu. Aptabase menghitungnya di Uni Eropa dan tidak menyimpan alamat IP-mu."},
+    {"id":"PrivacyParagraphStatistics","text":"Jika kamu izinkan, game mengirim catatan singkat tentang cara game dimainkan ke Aptabase, sebuah layanan analitik: game dibuka, level yang kamu mainkan, apakah kamu menang dan berapa langkah tersisa, lukisan dan ruangan yang kamu selesaikan, toko dibuka, dan apa yang kamu beli di sana (tanpa data pembayaran). Setiap catatan berisi waktunya dan nomor acak khusus sesi itu, beserta versi game serta sistem operasi dan bahasa ponselmu. Aptabase menghitungnya di Uni Eropa, memperkirakan lokasimu (negara dan wilayah) dari alamat IP koneksimu, dan tidak menyimpan alamat IP-mu."},
     {"id":"PrivacyParagraphStatisticsChoice","text":"Catatan itu tidak berisi namamu, email, ID iklan, atau ID yang mengenali ponselmu. Jika kamu menolak, game tetap berjalan sama. Kamu bisa mengubah pilihanmu kapan saja lewat sakelar Statistik game di Pengaturan."},
     {"id":"PrivacyParagraphNoServer","text":"Hanya ponsel ini yang tahu koin dan kemajuanmu. Jika kamu menghapus game atau ganti ponsel, semuanya hilang; cadangan ponselmu mungkin bisa mengembalikannya, tetapi game tidak bisa menjaminnya. Pengembalian dana diminta ke Google Play atau Apple."},
     {"id":"PrivacyDeleteTheRecords","text":"Hapus catatan"},
@@ -239,7 +239,7 @@
     {"id":"PrivacyFileLine","text":"{file} · satu baris per percobaan yang selesai"},
     {"id":"PrivacyPageOf","text":"{page} / {pages}"},
     {"id":"ConsentQuestion","text":"Bolehkah kami menghitung cara game ini dimainkan untuk membuatnya lebih baik?"},
-    {"id":"ConsentParagraph1","text":"Jika kamu izinkan, game mengirim catatan singkat tentang level yang kamu mainkan, hasilnya, lukisan yang kamu selesaikan, dan apa yang kamu beli di toko (tanpa data pembayaran). Aptabase, sebuah layanan analitik, menghitungnya di Uni Eropa."},
+    {"id":"ConsentParagraph1","text":"Jika kamu izinkan, game mengirim catatan singkat tentang level yang kamu mainkan, hasilnya, lukisan yang kamu selesaikan, dan apa yang kamu beli di toko (tanpa data pembayaran). Aptabase, sebuah layanan analitik, menghitungnya di Uni Eropa dan memperkirakan lokasimu (negara dan wilayah) dari koneksimu."},
     {"id":"ConsentParagraph2","text":"Nama, email, ID iklan, atau ID yang mengenali ponselmu tidak dikirim. Catatan itu tidak pernah dipakai untuk iklan dan tidak dibagikan kepada siapa pun."},
     {"id":"ConsentParagraph3","text":"Jika kamu menolak, game tetap berjalan sama, begitu juga pembelian. Kamu bisa mengubah pilihanmu kapan saja di Pengaturan."},
     {"id":"ConsentAllow","text":"Izinkan"},
@@ -322,6 +322,11 @@
     {"id":"RestoreOnlyTheStarter","text":"Paket koin tidak dipulihkan; hanya {name}."},
     {"id":"RestoreFailed","text":"Toko tidak merespons saat ini."},
     {"id":"RestoreTryLater","text":"Coba lagi nanti."},
-    {"id":"BuildStoreBuying","text":"pembelian lewat toko"}
+    {"id":"BuildStoreBuying","text":"pembelian lewat toko"},
+    {"id":"ShopStoreClosedForThisRun","text":"Toko tutup selama sesi ini"},
+    {"id":"PurchaseNoAnswerLine","text":"Belum ada jawaban dari toko."},
+    {"id":"EntryVersionAlone","text":"Versi {version}"},
+    {"id":"SettingsBuildLineStoreBuild","text":"Versi ini · {ads}, {buying}"},
+    {"id":"CreditsSoftware","text":"Perangkat lunak"}
   ]
 }

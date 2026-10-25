@@ -224,7 +224,7 @@
     {"id":"PrivacyParagraph3","text":"Les relevés ne contiennent ni votre nom ni rien sur votre téléphone, seulement un identifiant aléatoire attribué à ce téléphone. Le jeu n'envoie cet identifiant nulle part."},
     {"id":"PrivacyParagraph4","text":"Si la sauvegarde de votre téléphone est activée, Android peut ajouter ces fichiers à sa propre sauvegarde."},
     {"id":"PrivacyParagraphUnity","text":"La bibliothèque d'achat du jeu est celle d'Unity. À chaque tentative d'achat, Unity reçoit le produit, le prix, le reçu de la boutique, le modèle et la langue de votre téléphone et, sur iPhone et iPad, l'identifiant d'app qu'Apple donne à votre appareil. Unity les utilise pour sa comptabilité, ses obligations légales et contre la fraude. Cela ne peut pas être désactivé."},
-    {"id":"PrivacyParagraphStatistics","text":"Si vous l'autorisez, le jeu envoie à Aptabase, un service de mesure d'audience, de courtes notes sur la façon dont il est joué : l'ouverture du jeu, le niveau joué, si vous avez gagné et combien de coups restaient, le tableau et la salle terminés, l'ouverture de la boutique et ce que vous y avez acheté (sans données de paiement). Chaque note porte son heure et un numéro aléatoire propre à cette session, avec la version du jeu, le système d'exploitation et la langue de votre téléphone. Aptabase les compte dans l'Union européenne et ne conserve pas votre adresse IP."},
+    {"id":"PrivacyParagraphStatistics","text":"Si vous l'autorisez, le jeu envoie à Aptabase, un service de mesure d'audience, de courtes notes sur la façon dont il est joué : l'ouverture du jeu, le niveau joué, si vous avez gagné et combien de coups restaient, le tableau et la salle terminés, l'ouverture de la boutique et ce que vous y avez acheté (sans données de paiement). Chaque note porte son heure et un numéro aléatoire propre à cette session, avec la version du jeu, le système d'exploitation et la langue de votre téléphone. Aptabase les compte dans l'Union européenne, déduit de l'adresse IP de votre connexion votre position approximative (pays et région) et ne conserve pas votre adresse IP."},
     {"id":"PrivacyParagraphStatisticsChoice","text":"Les notes ne contiennent ni nom, ni adresse e-mail, ni identifiant publicitaire, ni identifiant qui reconnaisse votre téléphone. Si vous refusez, le jeu fonctionne tout pareil. Vous pouvez changer d'avis à tout moment avec l'interrupteur Statistiques du jeu des Paramètres."},
     {"id":"PrivacyParagraphNoServer","text":"Seul ce téléphone connaît vos pièces et votre progression. Si vous désinstallez le jeu ou changez de téléphone, elles sont perdues ; la sauvegarde de votre téléphone peut les ramener, mais le jeu ne peut pas le garantir. Les remboursements se demandent à Google Play ou à Apple."},
     {"id":"PrivacyDeleteTheRecords","text":"Effacer les relevés"},
@@ -239,7 +239,7 @@
     {"id":"PrivacyFileLine","text":"{file} · une ligne par essai terminé"},
     {"id":"PrivacyPageOf","text":"{page} / {pages}"},
     {"id":"ConsentQuestion","text":"Pouvons-nous compter comment le jeu est joué, pour l'améliorer ?"},
-    {"id":"ConsentParagraph1","text":"Si vous l'autorisez, le jeu envoie de courtes notes sur les niveaux joués, leur issue, les tableaux terminés et ce que vous achetez dans la boutique (sans données de paiement). Aptabase, un service de mesure d'audience, les compte dans l'Union européenne."},
+    {"id":"ConsentParagraph1","text":"Si vous l'autorisez, le jeu envoie de courtes notes sur les niveaux joués, leur issue, les tableaux terminés et ce que vous achetez dans la boutique (sans données de paiement). Aptabase, un service de mesure d'audience, les compte dans l'Union européenne et déduit de votre connexion votre position approximative (pays et région)."},
     {"id":"ConsentParagraph2","text":"Aucun nom, aucune adresse e-mail, aucun identifiant publicitaire ni identifiant qui reconnaisse votre téléphone n'est envoyé. Les notes ne servent jamais à la publicité et ne sont partagées avec personne."},
     {"id":"ConsentParagraph3","text":"Si vous refusez, le jeu fonctionne tout pareil, les achats aussi. Vous pouvez changer d'avis à tout moment dans les Paramètres."},
     {"id":"ConsentAllow","text":"Autoriser"},
@@ -322,6 +322,11 @@
     {"id":"RestoreOnlyTheStarter","text":"Les packs de pièces ne reviennent pas ; seul le {name} revient."},
     {"id":"RestoreFailed","text":"La boutique ne répond pas pour l'instant."},
     {"id":"RestoreTryLater","text":"Réessayez un peu plus tard."},
-    {"id":"BuildStoreBuying","text":"achats via la boutique"}
+    {"id":"BuildStoreBuying","text":"achats via la boutique"},
+    {"id":"ShopStoreClosedForThisRun","text":"La boutique est fermée pour cette session"},
+    {"id":"PurchaseNoAnswerLine","text":"La boutique n'a pas encore répondu."},
+    {"id":"EntryVersionAlone","text":"Version {version}"},
+    {"id":"SettingsBuildLineStoreBuild","text":"Cette version · {ads}, {buying}"},
+    {"id":"CreditsSoftware","text":"Logiciels"}
   ]
 }

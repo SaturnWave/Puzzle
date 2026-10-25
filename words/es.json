@@ -224,7 +224,7 @@
     {"id":"PrivacyParagraph3","text":"Los registros no contienen tu nombre ni datos de tu teléfono, solo un ID aleatorio asignado a este teléfono. El juego nunca envía este ID a ninguna parte."},
     {"id":"PrivacyParagraph4","text":"Si la copia de seguridad de tu teléfono está activada, Android puede incluir estos archivos en su propia copia."},
     {"id":"PrivacyParagraphUnity","text":"La biblioteca de compras del juego es de Unity. En cada intento de compra, Unity recibe el producto, el precio, el recibo de la tienda, el modelo y el idioma de tu teléfono y, en iPhone y iPad, el identificador de app que Apple da a tu dispositivo. Unity los usa para sus registros financieros, sus obligaciones legales y para evitar fraudes. Esto no se puede desactivar."},
-    {"id":"PrivacyParagraphStatistics","text":"Si lo permites, el juego envía a Aptabase, un servicio de análisis, notas breves sobre cómo se juega: la apertura del juego, el nivel que juegas, si ganaste y cuántos movimientos quedaban, el cuadro y la sala que completaste, la apertura de la tienda y lo que compraste en ella (sin datos de pago). Cada nota lleva su hora y un número aleatorio solo de esa sesión, junto con la versión del juego y el sistema operativo y el idioma de tu teléfono. Aptabase las cuenta en la Unión Europea y no guarda tu dirección IP."},
+    {"id":"PrivacyParagraphStatistics","text":"Si lo permites, el juego envía a Aptabase, un servicio de análisis, notas breves sobre cómo se juega: la apertura del juego, el nivel que juegas, si ganaste y cuántos movimientos quedaban, el cuadro y la sala que completaste, la apertura de la tienda y lo que compraste en ella (sin datos de pago). Cada nota lleva su hora y un número aleatorio solo de esa sesión, junto con la versión del juego y el sistema operativo y el idioma de tu teléfono. Aptabase las cuenta en la Unión Europea, deduce tu ubicación aproximada (país y región) a partir de la dirección IP de tu conexión y no guarda tu dirección IP."},
     {"id":"PrivacyParagraphStatisticsChoice","text":"Las notas no llevan tu nombre, tu correo, tu ID de publicidad ni ningún identificador que reconozca tu teléfono. Si dices que no, el juego funciona igual. Puedes cambiar tu decisión cuando quieras con el interruptor Estadísticas del juego de los Ajustes."},
     {"id":"PrivacyParagraphNoServer","text":"Solo este teléfono conoce tus monedas y tu progreso. Si desinstalas el juego o cambias de teléfono, se pierden; la copia de seguridad de tu teléfono puede recuperarlos, pero el juego no puede garantizarlo. Los reembolsos se piden a Google Play o a Apple."},
     {"id":"PrivacyDeleteTheRecords","text":"Borrar registros"},
@@ -239,7 +239,7 @@
     {"id":"PrivacyFileLine","text":"{file} · una línea por cada intento terminado"},
     {"id":"PrivacyPageOf","text":"{page} / {pages}"},
     {"id":"ConsentQuestion","text":"¿Podemos contar cómo se juega para mejorar el juego?"},
-    {"id":"ConsentParagraph1","text":"Si lo permites, el juego envía notas breves sobre los niveles que juegas, cómo terminan, los cuadros que completas y lo que compras en la tienda (sin datos de pago). Aptabase, un servicio de análisis, las cuenta en la Unión Europea."},
+    {"id":"ConsentParagraph1","text":"Si lo permites, el juego envía notas breves sobre los niveles que juegas, cómo terminan, los cuadros que completas y lo que compras en la tienda (sin datos de pago). Aptabase, un servicio de análisis, las cuenta en la Unión Europea y deduce tu ubicación aproximada (país y región) a partir de tu conexión."},
     {"id":"ConsentParagraph2","text":"No se envía tu nombre, tu correo, tu ID de publicidad ni ningún identificador que reconozca tu teléfono. Las notas nunca se usan para anuncios ni se comparten."},
     {"id":"ConsentParagraph3","text":"Si dices que no, el juego funciona igual, y las compras también. Puedes cambiar tu decisión en los Ajustes cuando quieras."},
     {"id":"ConsentAllow","text":"Permitir"},
@@ -322,6 +322,11 @@
     {"id":"RestoreOnlyTheStarter","text":"Los paquetes de monedas no se restauran; solo la {name}."},
     {"id":"RestoreFailed","text":"La tienda no responde ahora."},
     {"id":"RestoreTryLater","text":"Inténtalo de nuevo más tarde."},
-    {"id":"BuildStoreBuying","text":"compras en la tienda"}
+    {"id":"BuildStoreBuying","text":"compras en la tienda"},
+    {"id":"ShopStoreClosedForThisRun","text":"La tienda está cerrada en esta sesión"},
+    {"id":"PurchaseNoAnswerLine","text":"La tienda aún no ha respondido."},
+    {"id":"EntryVersionAlone","text":"Versión {version}"},
+    {"id":"SettingsBuildLineStoreBuild","text":"Esta versión · {ads}, {buying}"},
+    {"id":"CreditsSoftware","text":"Software"}
   ]
 }

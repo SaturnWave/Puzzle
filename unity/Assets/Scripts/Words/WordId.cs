@@ -972,5 +972,24 @@ namespace Puzzle.Client.Words
 
         /// <summary>Build line: things are sold for money through the phone's app store.</summary>
         BuildStoreBuying,
+
+        /// <summary>
+        /// Shop, in the coins' panel instead of the buttons: this run of the game cannot keep what it gives (its saved
+        /// progress could not be read, or a later version wrote it), so nothing is sold until the game is opened again.
+        /// Calm, no blame, short.
+        /// </summary>
+        ShopStoreClosedForThisRun,
+
+        /// <summary>Card of a payment the store has not answered (the connection was lost, or it has been silent a while), first line: no answer has come yet. Never "not paid": it may still be paid.</summary>
+        PurchaseNoAnswerLine,
+
+        /// <summary>Entry page, foot, right: the game's version alone, for a build that sells through the store. {version} is the version, "1.0".</summary>
+        EntryVersionAlone,
+
+        /// <summary>Settings card, under the foot: what kind of build this is, for a build that sells through the store (no test build). {ads} and {buying} as in the test build's line.</summary>
+        SettingsBuildLineStoreBuild,
+
+        /// <summary>Credits card, a heading: the software the game carries from others (the statistics library, the JSON reader, the store's libraries).</summary>
+        CreditsSoftware,
     }
 }
