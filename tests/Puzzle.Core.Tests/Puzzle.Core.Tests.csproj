@@ -176,6 +176,7 @@
     <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterShowcase.cs" Link="Unity\Play\BoosterShowcase.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
     <Compile Include="..\..\unity\Assets\Editor\InfoPlist.cs" Link="Unity\Editor\InfoPlist.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\XcodeProjectText.cs" Link="Unity\Editor\XcodeProjectText.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestGameCategory.cs" Link="Unity\Editor\ManifestGameCategory.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestOrientation.cs" Link="Unity\Editor\ManifestOrientation.cs" />
   </ItemGroup>

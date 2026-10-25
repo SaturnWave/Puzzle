@@ -6,6 +6,15 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
+**v1 iOS'ta (`feature/ios`)**
+- Bitti (iOS dalı): ana dal (satın almalar, rıza sorusu, ressam) `feature/ios`'a birleşti; iOS'a özgü kod yerinde. Tek çakışma `AndroidBuild.cs`: kimlikler iOS dalındaki gibi `GameIdentity`'den.
+- Satın alma iOS'ta IAP 5.4.4'ün StoreKit 2'siyle. IAP'nin Xcode adımı StoreKit'i uygulamaya ve UnityFramework'e bağlıyor; adım yalnız Editör'ün hedefi iOS'ken derlendiği için dışa aktarma artık `-buildTarget iOS` ile çalışıyor ve yeni StoreKit adımı bağ yoksa derlemeyi durduruyor (`IosStoreKitStep`, `XcodeProjectText`, 10 test). İlk sürümü bir de eski yetenek satırını arıyordu; Unity 6.6 o satırı yazmadığı için kaldırıldı.
+- Info.plist'e anahtar eklenmedi. Reklam kimliği okunmuyor (IAP onu yalnız Unity'nin rıza arabirimi reklam izni derse okur; oyun onu çağırmıyor); izleme sorusu yok. Gizlilik manifestleri Unity'nin birleştirmesiyle: gerekçeli API'ler var, toplanan veri türü yok.
+- App Store'un gizlilik etiketi `IOS_BUILD.md` §4.1'de: bağlı Purchase History, Device ID (IDFV), Other Diagnostic Data (Unity); bağlı değil Product Interaction, Coarse Location (Aptabase, izinle); izleme yok.
+- Aile Paylaşımı kapalı (sahibin App Store Connect ayarı, §19). Sunucu yok: Apple'ın iadesi altını geri almaz; silip kurunca yalnız Çırak Çantası gelir (çoğu zaman açılışta, gerekirse geri yükleme satırıyla).
+- 5.861 test geçti (10 yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ConsentCheck`, `PurchaseCheck`, `RotationCheck`, `PlayModeCheck`, `MusicCheck` (son ikisi ve `PurchaseCheck` `-quit` olmadan) ve `AvatarCheck` hatasız. Mağaza, izin, ressam ve geri yükleme 12,9" ve 10. nesil iPad'de dik ve yan bakıldı; kart ve satın alma yürüyüşleri 12,9" iki yönde geçti. Xcode projesi 2,6 dakikada dışa aktarıldı; Info.plist'e bakıldı, StoreKit iki hedefte bağlı. Mac'te derlenmedi, iPad'e kurulmadı (iPad bağlı değildi).
+- Sahipte: Paid Applications sözleşmesi, beş ürün (Family Sharing kapalı), sandbox hesabı, App Privacy formu, gizlilik politikasının adresi; gizlilik kartının iOS cümlesi (4. paragraf "Android" diyor). Telefon testleri T510–T515 (F27), açık A50.
+
 **Ressam oyunda (avatar A)**
 - Bitti (ana dal): keçe bereli yaşlı usta ressamın son seti (`out/avatar-final`) `art/avatar`'a (kaynak, lisans kaydı, işleyicinin künye notu) ve İngilizce adlarla `unity/Assets/Art/Avatar/Resources/Painter`'a girdi. Ayakta resimler metreyle ölçülüp ayaklarından döner; telefonda ASTC, mipmap yok.
 - Resimler ekranla yüklenip ekranla bırakılıyor (`PainterGallery`, `PictureShelf`). `AvatarCheck` yeni: her ekranda tam olarak gösterdiği resim, kalkınca hiçbiri (22 sayım).

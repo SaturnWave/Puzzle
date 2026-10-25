@@ -962,6 +962,8 @@ Taş renkleri tablonun renklerinden üretilmez; renk körlüğüne uygun sabit s
 - **Test modu:** v1 derlemesi parayla sattığı için test modu yok (2026-10-17 kuralı değişmedi). Telefon testleri için test modu gerekirse `build.realMoneyPurchases: "notAvailable"` ile ayrı bir test derlemesi yapılır.
 - **Ürünler mağazada yokken** (bugünkü test APK'sı: Play Console'da ürün yok) mağaza "Mağaza şu anda açılamıyor" der; oyun altınla ve reklamla aynen sürer.
 
+**Karar (2026-10-24, iOS): App Store'da Aile Paylaşımı yok.** Çırak Çantası App Store Connect'te Family Sharing kapalı açılır (proje sahibinin mağaza ayarı; Apple'da açılan paylaşım geri kapatılamaz). Altın paketleri tüketildiği için zaten paylaşılmaz. Böylece "oyuncu başına bir kez" App Store'da da oyuncunun kendi Apple hesabı demektir: geri yükleme yalnız o hesabın aldığı Çırak Çantası'nı getirir. Ayrıntı `IOS_BUILD.md` §2 madde 8 ve §3.1.2.
+
 **Karar (2026-10-24): v1'de oyun istatistikleri yalnız oyuncunun izniyle; telefondan neyin çıktığı açıkça yazılır.** Sahibin v1 kararları; metinlerin kaynağı `docs/research/privacy-v1.md` (taslak). Uygulama: §23, "Oyun istatistikleri ve rıza".
 
 - **Hizmet:** Aptabase, Avrupa Birliği bölgesi (Almanya). Başka izleyici, reklam kimliği, hesap yok. Oyunun rastgele cihaz kimliği notlara girmez.
@@ -1628,6 +1630,15 @@ Bu kararlarla 10. aşama başladı.
 - **Denetim (`AvatarCheck`, `-quit` ile):** 1080×2424'te yeni oyuncunun ve 47. bölümdeki oyuncunun salonu (mağazaya geçip dönerek), onarılan oda, üç bakışıyla rehber kartı, kazanma kartı ve düğmeyle tamamlanan ilk tablo; her adımdan sonra bellekteki ressam resimleri sayılır: ekranın gösterdiği tam olarak o, ekran kalkınca hiçbiri. 22 sayımın hepsi geçti.
 - **İlk içe aktarma:** yeni bir doku işleyicisi Unity'nin bütün dokuları bir kez yeniden içe aktarmasına yol açtı (yaklaşık 25 dakika). iOS modülü kurulu olduğu için Unity bu sırada 254 dokunun `.meta` dosyasına varsayılan (geçersiz kılınmamış) bir iOS bölümü yazdı; ayrı bir işlemede.
 - **Doğrulama:** 5.839 test (334 yeni), ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `AvatarCheck`, `RotationCheck` (84 değişiklik), `PlayModeCheck` ve `MusicCheck` (`-quit` olmadan) hatasız; telefonda bütün kart yürüyüşleri (künye kartının sayfaları dahil) geçti. Resimler 1080×2424, 2076×2152, 2152×2076, 2732×2048, 2048×2732 ve 2560×1600'de bakıldı.
+
+**v1 iOS'ta (2026-10-24, `feature/ios`).** Satın almalar, rıza sorusu ve ressam iOS dalına birleşti; ayrıntı `docs/IOS_BUILD.md` §3.1.2 ve §4.1.
+
+- **Birleştirme:** iOS'a özgü kod yerinde (Xcode dışa aktarması ve yalnız onun yön ayarları, Info.plist adımı, Taptic, telefonun dili, başka uygulamanın sesi, titreşim anahtarının kuralı). Android derlemesi şirket, ürün ve uygulama kimliğini iOS dalındaki gibi `GameIdentity`'den alıyor; paketin beklenen alıcı izni de ondan.
+- **StoreKit:** satın alma iOS'ta IAP 5.4.4'ün StoreKit 2'siyle. IAP'nin Xcode adımı StoreKit'i uygulamaya ve UnityFramework'e bağlar; adım yalnız Editör'ün hedefi iOS'ken derlendiği için dışa aktarma `-buildTarget iOS` ile çalışır ve yeni StoreKit adımı (`IosStoreKitStep`, okuma `XcodeProjectText`, Unity'siz, 10 test) iki bağdan biri yoksa derlemeyi durdurur. Info.plist'e anahtar eklenmedi.
+- **Geri yükleme:** "Satın alımları geri yükle" iPhone ve iPad'de (§19); Çırak Çantası çoğu zaman açılışta kendiliğinden gelir, satır yedek yoldur. Aile Paylaşımı kapalı (§19).
+- **Gizlilik etiketi:** App Store'un App Privacy cevapları `IOS_BUILD.md` §4.1'de (bağlı: Purchase History, Device ID, Other Diagnostic Data; bağlı değil: Product Interaction, Coarse Location; izleme yok). Reklam kimliği okunmuyor; IDFV Unity'nin satın alma olaylarıyla gidiyor.
+- **Bilinen:** gizlilik kartının 4. paragrafı iOS'ta da Android yedeğini söylüyor (onaylı metin; iOS cümlesi sahibin kararında). Telefon testleri T510–T515 (F27), açık A50.
+- **Doğrulama:** 5.861 test (10 yeni), ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ConsentCheck`, `PurchaseCheck` (`-quit` olmadan; Windows Editör'ünde sahte mağazanın geri yüklemesi reddedildi, beklenen), `RotationCheck` (84 değişiklik), `PlayModeCheck`, `MusicCheck` (`-quit` olmadan) ve `AvatarCheck` (22 sayım) hatasız. Salon, mağaza, izin sorusu, ayarlar, gizlilik, onarılan oda ve tamamlanan tablo 12,9" ve 10. nesil iPad'de dik ve yan görüntülendi (140 resim, kesik yazı yok); bütün kart yürüyüşleri, satın almalar ve geri yükleme satırı dahil, 12,9" dik ve yanda geçti. Oyunun kodu bu dalda değişmedi; telefondaki satın alma yürüyüşü (1080×2424) geçti. Xcode projesi 2,6 dakikada dışa aktarıldı; Mac'te derlenmedi, iPad'e kurulmadı.
 
 ## 24. Bölüm bankası ve derleyici
 

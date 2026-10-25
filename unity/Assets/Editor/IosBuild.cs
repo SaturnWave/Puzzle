@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using UnityEditor;
@@ -10,13 +11,16 @@ namespace Puzzle.Client.EditorTools
 {
     /// <summary>
     /// Exports the game's Xcode project from the command line.
-    /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.IosBuild.Run
+    /// usage: Unity.exe -batchmode -quit -buildTarget iOS -projectPath unity -executeMethod Puzzle.Client.EditorTools.IosBuild.Run
     /// The project lands in unity/Build/iOS/, with the scene and the content of the Android package: what the Editor
     /// derives is brought up to date first, for the reason AndroidBuild gives. Unity exports it on Windows too; it is
     /// archived, signed and sent to TestFlight on a Mac with Xcode (docs/IOS_BUILD.md). The export needs Unity's iOS
     /// Build Support module, which only the owner installs: without it the tool stops before it changes anything, and
     /// says so. Nothing here needs that module's Xcode library (UnityEditor.iOS.Xcode): the Info.plist step edits the
-    /// list as XML (<see cref="InfoPlist"/>), so this file compiles on an Editor without the module.
+    /// list as XML (<see cref="InfoPlist"/>) and the StoreKit step reads the project as text
+    /// (<see cref="XcodeProjectText"/>), so this file compiles on an Editor without the module. "-buildTarget iOS"
+    /// opens the Editor on the iOS target, so that the build steps compiled for it alone, Unity IAP's among them, are
+    /// there when the project is written; an export without them stops at the StoreKit step (<see cref="IosStoreKitStep"/>).
     /// </summary>
     public static class IosBuild
     {
@@ -80,10 +84,14 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// What the app's Info.plist says beyond what Unity writes, one line each, in the order they are written
-        /// (<see cref="IosInfoPlistStep"/>). The game uses no encryption beyond Apple's own (it makes no network call
-        /// at all; the Android build withdraws the internet), so App Store Connect asks no export question of a build.
-        /// It tracks no one and uses no camera, microphone or location: no purpose string for them is left, whatever a
-        /// setting or a library would write. A purchase, ad or reporting library changes this list, and the privacy text.
+        /// (<see cref="IosInfoPlistStep"/>). The game uses no encryption beyond Apple's own: what it sends, the store's
+        /// talk, Unity IAP's purchase events and, with the player's consent, the play statistics, goes over HTTPS
+        /// through UnityWebRequest and StoreKit, which use iOS's own TLS, so App Store Connect asks no export question of
+        /// a build. It tracks no one and uses no camera, microphone or location: no purpose string for them is left,
+        /// whatever a setting or a library would write. Unity IAP 5.4.4 asks for no key here (StoreKit needs none; its
+        /// framework goes into the Xcode project, <see cref="IosStoreKitStep"/>), nor does Aptabase; IAP
+        /// reads the advertising identifier only for an ads consent given through Unity's own consent call, which the
+        /// game never makes, so no tracking question is asked. An ad library changes this list, and the privacy text.
         /// The screen's turning, as the owner decided on 2026-10-24 (Scripts/Layout/ScreenClass.cs): an iPhone stands
         /// upright only; an iPad turns all four ways and asks for no full screen, so it runs in a window beside other
         /// apps and in Stage Manager. Apple requires the four ways of every iPad app that does not take the whole screen
@@ -195,6 +203,36 @@ namespace Puzzle.Client.EditorTools
             string plist = Path.Combine(report.summary.outputPath, "Info.plist");
             File.WriteAllText(plist, InfoPlist.Apply(File.ReadAllText(plist), IosBuild.InfoPlistLines));
             Debug.Log($"iOS build: the Info.plist says {string.Join<PlistLine>(", ", IosBuild.InfoPlistLines)}.");
+        }
+    }
+
+    /// <summary>
+    /// The build's StoreKit step: once Unity and Unity IAP have written the Xcode project of an iOS build, the project
+    /// must link StoreKit into the app and into UnityFramework (<see cref="StoreKitInTheProject"/>). IAP writes the
+    /// link in a step of its own that it compiles only while the Editor's active target is iOS; a project without it
+    /// would build and install, and sell nothing. It stops the build here, by name, after IAP's step has had its turn.
+    /// </summary>
+    public sealed class IosStoreKitStep : IPostprocessBuildWithReport
+    {
+        /// <summary>After Unity IAP's own step (AppleCapabilities, order 0), which writes what this one reads.</summary>
+        public int callbackOrder => 100;
+
+        public void OnPostprocessBuild(BuildReport report)
+        {
+            if (report.summary.platform != BuildTarget.iOS)
+            {
+                return;
+            }
+
+            string pbxproj = Path.Combine(report.summary.outputPath, "Unity-iPhone.xcodeproj", "project.pbxproj");
+            IReadOnlyList<string> missing = StoreKitInTheProject.Missing(XcodeProjectText.Read(File.ReadAllText(pbxproj)));
+            if (missing.Count > 0)
+            {
+                throw new BuildFailedException(
+                    $"iOS build: the Xcode project cannot sell: {string.Join("; ", missing)}. Export with -buildTarget iOS, so that Unity IAP's build step is there (docs/IOS_BUILD.md §3.1).");
+            }
+
+            Debug.Log($"iOS build: {StoreKitInTheProject.AppTarget} and {StoreKitInTheProject.FrameworkTarget} link {StoreKitInTheProject.Framework}.");
         }
     }
 }
