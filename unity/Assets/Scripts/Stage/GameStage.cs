@@ -595,6 +595,9 @@ namespace Puzzle.Client.Stage
         /// <summary>What the tutorial's pill says now; <see cref="PillWords.None"/> while no step is seen.</summary>
         public PillWords WhatTheLessonSays => _lessonPill.Words;
 
+        /// <summary>True while the step's pill and the painter beside it are drawn faint, for a finger that aims on the board.</summary>
+        public bool IsTheLessonFaint => _lessonPill.IsFaint;
+
         /// <summary>The steps of the tutorial that may still come on this board, in their order; none on a board without them.</summary>
         public IReadOnlyList<TutorialStep> LessonsToCome => _tutorial?.MayStillCome ?? (IReadOnlyList<TutorialStep>)Array.Empty<TutorialStep>();
 
@@ -2384,6 +2387,7 @@ namespace Puzzle.Client.Stage
             }
 
             _discs.Guide(DiscRingedFor(lesson, isArmed));
+            _lessonPill.LetTheBoardShowThrough(_pointer.AimedAt != null); // as the shelf's own pill does, so the aimed cell shows through the painter and his words
             float seenFor = _clock - _lessonSeenSince;
             _spotlight.Show(Easing.Out(Mathf.Clamp01(seenFor / LessonComesIn)));
             bool isTheBoardUntouched = IsSettled && !_pointer.IsPressing && _pointer.Selected == null;
@@ -2543,6 +2547,7 @@ namespace Puzzle.Client.Stage
             _spotlight.Show(0f);
             _guideMark.Hide();
             _discs.Guide(null);
+            _lessonPill.LetTheBoardShowThrough(false);
             if (!(_lessonPill.Words is PillWords.Silent))
             {
                 _lessonPill.Show(PillWords.None);

@@ -87,6 +87,9 @@ namespace Puzzle.Client
         private ISettingsStore? _settings;
         private ScreenShape _fittedTo;
 
+        /// <summary>When the system bars a swipe may have brought out are put away again (<see cref="SystemBars"/>), in unscaled seconds; nothing while none is due.</summary>
+        private float? _barsAwayAt;
+
         /// <summary>The kind of screen the rule of turning was last applied for; nothing before that, and in the Editor and on a desktop.</summary>
         private ScreenClass? _turnsAs;
 
@@ -178,6 +181,18 @@ namespace Puzzle.Client
                 _fittedTo = screen;
                 SayTheScreen(screen);
                 LetTheScreenTurnAsTheDeviceAllows();
+                PutTheBarsAwaySoon(); // bars a swipe brought out change the safe area
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                PutTheBarsAwaySoon(); // Android's back gesture from the side brings the bars out with it
+            }
+
+            if (_barsAwayAt is float due && Time.unscaledTime >= due)
+            {
+                _barsAwayAt = null;
+                SystemBars.HideAgain();
             }
 
             float step = Mathf.Min(Time.deltaTime, LongestStepSeconds);
@@ -333,12 +348,16 @@ namespace Puzzle.Client
             if (hasFocus)
             {
                 _music?.ComeBack();
+                PutTheBarsAwaySoon(); // the shade's swipe may have brought them out
             }
             else
             {
                 LetGoOfTheFinger();
             }
         }
+
+        /// <summary>The system bars are put away <see cref="SystemBars.SecondsShown"/> from now; one already due waits that long again.</summary>
+        private void PutTheBarsAwaySoon() => _barsAwayAt = Time.unscaledTime + SystemBars.SecondsShown;
 
         private void OnDestroy()
         {

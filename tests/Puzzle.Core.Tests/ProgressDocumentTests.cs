@@ -171,18 +171,46 @@ public class ProgressDocumentTests
         Assert.Equal(PurchasesMade.None, SoundProgressOf(DocumentWithTheTutorial).Purchases);
     }
 
+    /// <summary>
+    /// A line of the purchases no game could have written is set aside on its own: the levels, the pieces, the wallet
+    /// and the tutorial read as they were (the 26 October phone run lost them all to one "times":0), and what the line
+    /// surely says stays: a product's line under 1 still counts as bought once, a product named twice as its larger
+    /// count, and every payment's id there is kept once.
+    /// </summary>
     [Theory]
-    [InlineData("""{"bought":[{"product":"coins.pouch","times":0}],"transactions":[]}""")]
-    [InlineData("""{"bought":[{"product":"","times":1}],"transactions":[]}""")]
-    [InlineData("""{"bought":[{"product":"coins.pouch","times":1},{"product":"coins.pouch","times":2}],"transactions":[]}""")]
-    [InlineData("""{"bought":[],"transactions":["GPA.1","GPA.1"]}""")]
-    [InlineData("""{"bought":[],"transactions":[""]}""")]
-    [InlineData("""{"bought":[null],"transactions":[]}""")]
-    public void Purchases_no_game_could_have_written_make_the_document_damaged(string purchases)
+    [InlineData("""{"bought":[{"product":"coins.pouch","times":0}],"transactions":["GPA.1"]}""", "coins.pouch:1", "GPA.1", 1)]
+    [InlineData("""{"bought":[{"product":"coins.pouch","times":-2},{"product":"starter.apprentice_kit","times":1}],"transactions":["GPA.1","GPA.2"]}""", "coins.pouch:1 starter.apprentice_kit:1", "GPA.1 GPA.2", 1)]
+    [InlineData("""{"bought":[{"product":"","times":1}],"transactions":[]}""", "", "", 1)]
+    [InlineData("""{"bought":[{"product":"coins.pouch","times":1},{"product":"coins.pouch","times":2}],"transactions":[]}""", "coins.pouch:2", "", 1)]
+    [InlineData("""{"bought":[],"transactions":["GPA.1","GPA.1"]}""", "", "GPA.1", 1)]
+    [InlineData("""{"bought":[],"transactions":["","GPA.2"]}""", "", "GPA.2", 1)]
+    [InlineData("""{"bought":[null,{"product":"coins.pouch","times":3}],"transactions":["GPA.1"]}""", "coins.pouch:3", "GPA.1", 1)]
+    public void A_purchase_line_no_game_could_have_written_is_set_aside_and_the_rest_of_the_progress_reads(string purchases, string bought, string payments, int setAside)
     {
         string document = DocumentWithPurchases.Replace("""purchases":{"bought":[],"transactions":[]}""", $"purchases\":{purchases}", StringComparison.Ordinal);
 
-        Assert.IsType<ProgressReading.Damaged>(Read(document));
+        var sound = Assert.IsType<ProgressReading.Sound>(Read(document));
+
+        PlayerProgress asWritten = SoundProgressOf(DocumentWithPurchases);
+        Assert.Equal(asWritten, sound.Progress.WithPurchases(PurchasesMade.None));
+        Assert.Equal(bought, string.Join(" ", sound.Progress.Purchases.Bought.Select(entry => $"{entry.Product}:{entry.Times}")));
+        Assert.Equal(payments, string.Join(" ", sound.Progress.Purchases.Transactions));
+        Assert.Equal(setAside, sound.SetAside.Count);
+        Assert.Empty(Assert.IsType<ProgressReading.Sound>(Read(Written(sound.Progress))).SetAside); // the next save writes it as a game writes it
+    }
+
+    [Fact]
+    public void Of_more_payments_ids_than_the_record_keeps_the_oldest_are_set_aside_and_a_block_a_game_wrote_sets_nothing_aside()
+    {
+        string ids = string.Join(",", Enumerable.Range(1, PurchasesMade.TransactionsKept + 2).Select(n => $"\"GPA.{n}\""));
+        string document = DocumentWithPurchases.Replace("""purchases":{"bought":[],"transactions":[]}""", $"purchases\":{{\"bought\":[],\"transactions\":[{ids}]}}", StringComparison.Ordinal);
+
+        var sound = Assert.IsType<ProgressReading.Sound>(Read(document));
+
+        Assert.Equal(PurchasesMade.TransactionsKept, sound.Progress.Purchases.Transactions.Count);
+        Assert.Equal("GPA.3", sound.Progress.Purchases.Transactions[0]);
+        Assert.Equal(2, sound.SetAside.Count);
+        Assert.Empty(Assert.IsType<ProgressReading.Sound>(Read(DocumentWithPurchases)).SetAside);
     }
 
     [Fact]

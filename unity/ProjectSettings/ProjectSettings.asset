@@ -73,7 +73,7 @@ PlayerSettings:
   androidRenderOutsideSafeArea: 1
   androidUseSwappy: 1
   androidRequestedVisibleInsets: 0
-  androidSystemBarsBehavior: 2
+  androidSystemBarsBehavior: 1
   androidDisplayOptions: 1
   androidBlitType: 0
   androidResizeableActivity: 1

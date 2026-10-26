@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Puzzle.Meta;
 using UnityEngine;
@@ -38,7 +39,9 @@ namespace Puzzle.Client.Flow
     /// be read as progress is not written over: it is moved aside under another name and reported, and the player
     /// starts at the first level as a new player. A file that a later version of the game wrote is something else:
     /// it is sound, only this game does not know all of it. It is left exactly where and as it is, and
-    /// <see cref="Load"/> says so (<see cref="ProgressOfALaterGameException"/>) instead of answering. A file of an
+    /// <see cref="Load"/> says so (<see cref="ProgressOfALaterGameException"/>) instead of answering. A file whose
+    /// purchases hold a line no game writes is read without that line (<see cref="PurchasesDocument.Read"/>), and is
+    /// copied beside the progress as it was, for support, before the next save writes it anew. A file of an
     /// earlier layout is read as it stands (one from before the wallet gives its player a new player's wallet) and
     /// written in this game's layout at the next save.
     /// </remarks>
@@ -48,6 +51,9 @@ namespace Puzzle.Client.Flow
 
         private const string NewFileSuffix = ".new";
         private const string DamagedFileSuffix = ".damaged";
+
+        /// <summary>The file as it was read when lines of its purchases were set aside, kept for support beside the progress.</summary>
+        private const string SetAsideFileSuffix = ".purchases-set-aside";
 
         private readonly string _path;
         private readonly Wallet _startingWallet;
@@ -76,9 +82,15 @@ namespace Puzzle.Client.Flow
                 return PlayerProgress.NewPlayer(_startingWallet);
             }
 
-            switch (Read(File.ReadAllText(_path)))
+            string text = File.ReadAllText(_path);
+            switch (Read(text))
             {
                 case ProgressReading.Sound sound:
+                    if (sound.SetAside.Count > 0)
+                    {
+                        KeepTheFileAsRead(text, sound.SetAside);
+                    }
+
                     return sound.Progress;
                 case ProgressReading.OfALaterGame later:
                     throw new ProgressOfALaterGameException(_path, later.Version, later.Understood);
@@ -100,6 +112,17 @@ namespace Puzzle.Client.Flow
             {
                 File.Move(newFile, _path);
             }
+        }
+
+        /// <summary>
+        /// Lines of the purchases were set aside and the rest of the progress read: the file as it was is copied beside
+        /// it (the next save writes the progress without those lines), and the log says which lines and why.
+        /// </summary>
+        private void KeepTheFileAsRead(string text, IReadOnlyList<string> setAside)
+        {
+            string aside = _path + SetAsideFileSuffix;
+            File.WriteAllText(aside, text);
+            Debug.LogWarning($"The saved purchases had {setAside.Count} line(s) no game writes, set aside: {string.Join("; ", setAside)}. The rest of the progress was read; the file as it was is kept as {aside}.");
         }
 
         /// <summary>The file is not a progress document: it is kept under another name, and the player starts at the first level as a new player.</summary>

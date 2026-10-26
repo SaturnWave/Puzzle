@@ -109,7 +109,7 @@ Ağ dinlemesi yapılamadı. Onun yerine paketin bütün çalışma kodunda ağa 
 | **Satın alma olayları** | **`prd.insights.analytics.unity3d.com/v1/ingest/producer`** | **Evet, her satın almada.** Çekirdeğe, proje kimliğine ve rızaya bağlı değil; kapatma ayarı yok | FACT (paket kaynağı: `Stores/Data/Insights/PurchaseEventEmitter.cs`; `PurchaseServiceFactory` onu her zaman ekliyor) |
 | Oturum olayları | aynı adres | Hayır. Unity Authentication paketi ister | FACT (paket kaynağı) |
 | Ürün eşleme, web mağazası, doğrudan ödeme (D2C), sunucuda fiş doğrulama | `iap.services.api.unity.com`, `webshop.services.api.unity.com`, `transaction-verifier.services.api.unity.com` | Hayır. Oturum belirteci, proje kimliği ya da ayrı bir derleme tanımı ister | FACT (paket kaynağı) |
-| Google'ın ödeme kütüphanesinin kendi kayıtları (`datatransport`) | Google | Android'de INTERNET silinmişse hayır | ESTIMATE |
+| Google'ın ödeme kütüphanesinin kendi kayıtları (`datatransport`) | Google | Android'de INTERNET silinmişse hayır. **2026-10-26:** INTERNET'li v1 APK'sında yaklaşık 16 dakikada bir çıktığı görüldü (T186); derleme taşıyıcının arka ucunu paketten çıkarıyor, artık çıkmıyor (GAME_DESIGN §23) | FACT; arka ucun çıkarılması telefonda yeniden denenecek |
 
 **Satın alma olayı ne zaman gider:** satın alma başlayınca, ödenince, başarısız olunca ve oyun ürünü teslim edince. Her birinde ayrı bir istek. FACT (paket kaynağı)
 

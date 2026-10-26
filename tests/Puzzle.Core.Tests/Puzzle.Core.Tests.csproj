@@ -177,6 +177,8 @@
     <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestGameCategory.cs" Link="Unity\Editor\ManifestGameCategory.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestOrientation.cs" Link="Unity\Editor\ManifestOrientation.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestLoggingBackend.cs" Link="Unity\Editor\ManifestLoggingBackend.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestSystemBars.cs" Link="Unity\Editor\ManifestSystemBars.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

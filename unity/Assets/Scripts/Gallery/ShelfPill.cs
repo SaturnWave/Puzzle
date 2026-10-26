@@ -128,6 +128,9 @@ namespace Puzzle.Client.Gallery
         /// <summary>What the pill says now; <see cref="PillWords.None"/> while it is out of sight.</summary>
         public PillWords Words => _words;
 
+        /// <summary>True while the pill is drawn faint for a finger that aims on the board (<see cref="LetTheBoardShowThrough"/>).</summary>
+        public bool IsFaint => _isFaint;
+
         public static ShelfPill Create(Transform parent, ArtCatalogue art) => new ShelfPill(parent, art, "Shelf pill", DrawOrder.ShelfPill, DrawOrder.ShelfPillLettering);
 
         /// <summary>The pill that says the tutorial's steps, over the dark of its spotlight, with the painter beside it.</summary>
@@ -240,7 +243,8 @@ namespace Puzzle.Client.Gallery
 
         /// <summary>
         /// Draws the pill faint while a finger aims on the board, and whole again after: on a screen with little wall
-        /// under the board the pill stands over the lowest cells, and the cell that is aimed at may be one of them.
+        /// under the board the pill stands over the lowest cells, and the cell that is aimed at may be one of them. The
+        /// painter beside a step's pill fades with it, and so do both halves of a sentence split over two lines.
         /// </summary>
         public void LetTheBoardShowThrough(bool isFaint)
         {
@@ -255,6 +259,7 @@ namespace Puzzle.Client.Gallery
             _portrait?.Fade(strength);
             Lettering.DrawIn(_first, WithStrength(Lettering.Ink, strength));
             Lettering.DrawIn(_second, WithStrength(Lettering.Ink, strength));
+            Lettering.DrawIn(_secondHalf, WithStrength(Lettering.Ink, strength));
             Lettering.DrawIn(_aside, WithStrength(Lettering.SoftInk, strength));
         }
 

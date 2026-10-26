@@ -382,7 +382,7 @@ namespace Puzzle.Client.Maps
             {
                 line.fontSize = smaller;
                 lineHeight = line.GetPreferredValues("Ag").y;
-                if (line.GetPreferredValues(words, width, 0f).y <= (mostLines + 0.1f) * lineHeight)
+                if (line.GetPreferredValues(LineBreaks.ReadyForWrapping(words), width, 0f).y <= (mostLines + 0.1f) * lineHeight)
                 {
                     break;
                 }
