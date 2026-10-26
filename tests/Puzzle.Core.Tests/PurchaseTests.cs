@@ -112,7 +112,7 @@ public class PurchaseTests
         var saved = new PurchasesDocument { bought = [new BoughtDocument { product = Starter.IdSuffix, times = 0 }], transactions = ["GPA.1"] };
         var ledger = new WalletLedger(StoreRules);
 
-        PurchasesReading reading = saved.Read();
+        PurchasesReading reading = saved.Read(keepsTheLedger: true);
         PlayerProgress progress = OnLevelTwentyFive.WithPurchases(reading.Made);
 
         Assert.Single(reading.SetAside);
@@ -136,7 +136,7 @@ public class PurchaseTests
         };
         var ledger = new WalletLedger(StoreRules);
 
-        PurchasesReading reading = saved.Read();
+        PurchasesReading reading = saved.Read(keepsTheLedger: true);
         PlayerProgress progress = OnLevelTwentyFive.WithPurchases(reading.Made);
 
         Assert.Equal(4, reading.SetAside.Count);

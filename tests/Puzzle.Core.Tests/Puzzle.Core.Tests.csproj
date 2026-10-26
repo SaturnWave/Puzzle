@@ -132,6 +132,18 @@
     <Compile Include="..\..\unity\Assets\Scripts\Purchases\Checkout.cs" Link="Unity\Purchases\Checkout.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Purchases\ScriptedStore.cs" Link="Unity\Purchases\ScriptedStore.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\PurchaseWords.cs" Link="Unity\Flow\PurchaseWords.cs" />
+    <!-- Nor has the sync with the cloud: the server's numbers of the payments and its ledger, the save's envelope, the merge, the budget, the state on the phone, the cloud's seam with its fake, and the sync itself. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\LedgerNumbers.cs" Link="Unity\Purchases\LedgerNumbers.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchaseLedger.cs" Link="Unity\Purchases\PurchaseLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\DocumentJson.cs" Link="Unity\Cloud\DocumentJson.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudEnvelope.cs" Link="Unity\Cloud\CloudEnvelope.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\ProgressMerge.cs" Link="Unity\Cloud\ProgressMerge.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\SyncPolicy.cs" Link="Unity\Cloud\SyncPolicy.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudState.cs" Link="Unity\Cloud\CloudState.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudStateFile.cs" Link="Unity\Cloud\CloudStateFile.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSaveService.cs" Link="Unity\Cloud\CloudSaveService.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakeCloudSave.cs" Link="Unity\Cloud\FakeCloudSave.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSync.cs" Link="Unity\Cloud\CloudSync.cs" />
     <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />

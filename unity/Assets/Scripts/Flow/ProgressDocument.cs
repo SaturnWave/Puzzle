@@ -12,13 +12,13 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// The saved progress as the file writes it:
-    /// <c>{"version":6,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...},"tutorial":["goal","match"],"purchases":{...}}</c>
+    /// <c>{"version":7,"levelsWon":39,"attemptsOnLevel":2,"placed":[{"painting":4,"pieces":[0,1,2]}],"wallet":{...},"tutorial":["goal","match"],"purchases":{...}}</c>
     /// (the wallet's block is <see cref="WalletDocument"/>, the purchases' <see cref="PurchasesDocument"/>; the
     /// tutorial's steps seen are named as <see cref="TutorialSteps.NameOf"/> names them, in the order of the
     /// enumeration). The fields are public and named as the document names them, because that is how Unity's JSON
     /// reader maps a document. A line of the purchases' block that no game could have written is set aside on its
     /// own and the rest of the progress is read (<see cref="PurchasesDocument.Read"/>); anything else no game could
-    /// have written makes the whole document damaged. Five earlier layouts are still read. Layout 1,
+    /// have written makes the whole document damaged. Six earlier layouts are still read. Layout 1,
     /// written before the game had a museum, has no <c>placed</c>: it reads as progress with no jigsaw piece in place
     /// yet, so the pieces of every level won before then wait on their trays. Layouts 1 and 2 have no wallet: their
     /// player holds what the rules give a new player, with every life; the gifts of the boosters used during play
@@ -29,16 +29,18 @@ namespace Puzzle.Client.Flow
     /// obstacle's level being the first that has it), the jigsaw's first piece once a piece is in place and the first
     /// painting once one is whole, and nothing else (<see cref="TutorialPlan.OfAnOlderSave"/>). Layouts 1 to 5 keep no
     /// purchases: they were written before the game sold anything for money, so their player has bought nothing.
+    /// Layouts 1 to 6 keep no ledger numbers (<see cref="PurchasesMade.LedgerDelivered"/>, docs/research/server-v1.md
+    /// §3.7): they were written before the game had a server, so none of their payments was numbered.
     /// Unity's reader makes 0 of a number a document does not have, and an empty list of a list it does not have, so
-    /// whether the wallet, the gifts, the tutorial and the purchases are there is decided by the layout's number,
-    /// never by a zero or an empty list.
+    /// whether the wallet, the gifts, the tutorial, the purchases and the ledger numbers are there is decided by the
+    /// layout's number, never by a zero or an empty list.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     [Serializable]
     public sealed class ProgressDocument
     {
         /// <summary>The layout this code writes. A file of a later layout is not guessed at.</summary>
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         /// <summary>The oldest layout a player can have on a device; this code reads it as it reads its own.</summary>
         private const int FirstVersion = 1;
@@ -54,6 +56,9 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The first layout that keeps what the player bought for real money.</summary>
         private const int FirstVersionWithPurchases = 6;
+
+        /// <summary>The first layout that keeps the server's ledger numbers of the payments delivered.</summary>
+        private const int FirstVersionWithTheLedger = 7;
 
         public int version;
         public int levelsWon;
@@ -114,7 +119,9 @@ namespace Puzzle.Client.Flow
             Wallet? wallet = document.version < FirstVersionWithAWallet
                 ? startingWallet
                 : document.wallet?.PossibleWallet(givenAllInTheWelcomeGift: document.version < FirstVersionWithUnlockGifts);
-            PurchasesReading? purchases = document.version < FirstVersionWithPurchases ? PurchasesReading.Nothing : document.purchases?.Read();
+            PurchasesReading? purchases = document.version < FirstVersionWithPurchases
+                ? PurchasesReading.Nothing
+                : document.purchases?.Read(keepsTheLedger: document.version >= FirstVersionWithTheLedger);
             if (document.version > CurrentVersion)
             {
                 // Later layouts are expected to add to this one, so what this game knows is looked for in them too:
@@ -325,9 +332,10 @@ namespace Puzzle.Client.Flow
 
     /// <summary>
     /// What the player bought for real money, as the file writes it (<see cref="PurchasesMade"/>):
-    /// <c>{"bought":[{"product":"coins.pouch","times":2},{"product":"starter.apprentice_kit","times":1}],"transactions":["GPA.3301-...","GPA.3302-..."]}</c>.
+    /// <c>{"bought":[{"product":"coins.pouch","times":2},{"product":"starter.apprentice_kit","times":1}],"transactions":["GPA.3301-...","GPA.3302-..."],"ledgerDelivered":"1-2"}</c>.
     /// A product is named by the end of its id in the stores; the payments' ids are the latest delivered, the oldest
-    /// first.
+    /// first; the ledger numbers are the server's numbers of the payments delivered, as runs (<see cref="LedgerNumbers.Text"/>),
+    /// in the file since layout 7.
     /// </summary>
     [Serializable]
     public sealed class PurchasesDocument
@@ -335,11 +343,15 @@ namespace Puzzle.Client.Flow
         public BoughtDocument[] bought = Array.Empty<BoughtDocument>();
         public string[] transactions = Array.Empty<string>();
 
+        /// <summary>The ledger numbers of the payments delivered, "1-12,14"; empty for none. In the file since layout 7.</summary>
+        public string ledgerDelivered = string.Empty;
+
         /// <summary>The block that keeps what was bought.</summary>
         public static PurchasesDocument Of(PurchasesMade purchases) => new PurchasesDocument
         {
             bought = purchases.Bought.Select(entry => new BoughtDocument { product = entry.Product, times = entry.Times }).ToArray(),
             transactions = purchases.Transactions.ToArray(),
+            ledgerDelivered = purchases.LedgerDelivered.Text,
         };
 
         /// <summary>
@@ -355,12 +367,23 @@ namespace Puzzle.Client.Flow
         /// says the product was bought once at least, and counts as once: the starter pack it names stays sold out,
         /// never sold a second time on a guess. A product named twice counts as the more of its two counts, for the
         /// same reason. A line with no product (or no line at all) says nothing that can be kept.</item>
+        /// <item>Every ledger number that reads is kept, for the same reason as a payment's id: a part of the runs no
+        /// game writes is set aside on its own (<see cref="LedgerNumbers.Read"/>).</item>
         /// </list>
         /// </summary>
-        public PurchasesReading Read()
+        /// <param name="keepsTheLedger">True for a block of a layout that keeps the ledger numbers (7 on); an earlier one's are none, whatever a hand wrote there.</param>
+        public PurchasesReading Read(bool keepsTheLedger)
         {
             var setAside = new List<string>();
-            var made = new PurchasesMade(TimesBought(setAside), PaymentsDelivered(setAside));
+            LedgerNumbers numbers = LedgerNumbers.None;
+            if (keepsTheLedger)
+            {
+                LedgerNumbersReading ledger = LedgerNumbers.Read(ledgerDelivered);
+                numbers = ledger.Numbers;
+                setAside.AddRange(ledger.SetAside);
+            }
+
+            var made = new PurchasesMade(TimesBought(setAside), PaymentsDelivered(setAside), numbers);
             return new PurchasesReading(made, setAside);
         }
 

@@ -4,6 +4,19 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-26 · Oturum 34 — v1 sunucu
+
+**Aşama 1: eşitleme çekirdeği (`feature/bombs-colors-director-webui`)**
+- Sahibin kararları planın §10.2'sine işlendi: bütün öneriler tamam; bağlanma önerisi ilk kazanılan bölümden sonra (karar 2), silmeden sonra kalan iz 36 ay (karar 5). Planın §5.3, §5.6, §6.2 ve §6.5'i buna göre.
+- Bitti (Unity'siz, sahte bulutla testli; paket yok, bulut projesi bağlı değil, oyuna henüz bağlanmadı): `CloudEnvelope` (buluttaki `save`: zarf, son 16 yazmanın kimliği, 16 KB'tan sıkıştırma), `ProgressMerge` (üç yollu birleştirme), `SyncPolicy` ve `SyncSettings` (bütçe, Remote Config'in dört anahtarı, geri çekilme, kapılar), `CloudState` ve `CloudStateFile` (`cloud.json`), `ICloudSave` ve `FakeCloudSave`, `CloudSync`, `PurchaseLedger` (sunucunun defteri), `LedgerNumbers`. İlerleme dosyası 7. düzen: `ledgerDelivered`.
+- Birleştirme planın tablosunu izliyor; bir kez verilen kazancın (numaralı ödeme, booster açılış hediyesi, günün hediyesi, tablo ödülü) iki tarafta da alınınca bir kez sayılması ve ödül sayılarının "en büyüğü" yerine verilen ödül sayısı olması bu aşamada kesinleşti (plan §3.5 notu). Defterin adlandıramadığı çift teslimde birleştirme yapılmıyor.
+- Cevabı kaybolan yazma (zaman aşımı) iki kez sayılmıyor: her yazma gönderilmeden `cloud.json`'a yazılıyor, sonraki okuma onu kaydın `writes` listesinde buluyor; başka telefon üstüne yazmış olsa da.
+- Bütçe varsayılanı planın sıkı kuralı: okuma 12 saatte bir, yükleme en az 60 dakika arayla; Remote Config sınırlar içinde açar. Bozuk `cloud.json` anahtarı kapalı başlatıyor.
+- Ölçüm: 1000. bölüm oyuncusu 21.411 bayt JSON, bulutta sıkıştırılmış 12.534 bayt.
+- `ProgressFileCheck` 7. düzene güncellendi (6. düzenden beri eskiydi).
+- 5.984 test geçti (101'i yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ProgressFileCheck` (`-quit` ile), `PurchaseCheck` ("PASSED") ve `PlayModeCheck` ("game errors: False", ikisi `-quit` olmadan, sonuç satırları okundu) hatasız; yeni betikler Unity'nin derleyicisinde temiz. Telefon testleri T530–T539 (F28). Push yok, telefon ve Mac'e dokunulmadı.
+- Sahipte: bulut projesini açıp proje kimliğini göndermek (plan §9 A1–A2); bütçe varsayılanının (60 dk / 12 sa) uygun olduğunu onaylamak; T530–T539 sonraki aşamalardan sonra.
+
 ## 2026-10-26 · Oturum 33 — Telefon turu düzeltmeleri
 
 **26 Ekim otomatik telefon turunun bulguları kapandı (sahibin "evet başla, hepsini düzelt"i)**

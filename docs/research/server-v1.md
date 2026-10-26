@@ -1,6 +1,6 @@
 # Sunucu v1: Görünmez Hesap, Bulut Kaydı ve Satın Alma Doğrulaması (Plan)
 
-**Tarih:** 2026-10-26. **Durum:** plan; kod, Unity projesi ve öteki belgeler değişmedi. Hesap açılmadı, hiçbir yere giriş yapılmadı.
+**Tarih:** 2026-10-26. **Durum:** plan, sahibin kararları §10.2'de (2026-10-26). **Aşama 1 (eşitleme çekirdeği) yapıldı (2026-10-26):** Unity'siz kod ve sahte bulutla testler; ayrıntı `GAME_DESIGN.md` §23, kesinleşen kurallar §3.2–§3.5'teki "Aşama 1" notlarında. Hesap açılmadı, hiçbir yere giriş yapılmadı; bulut projesi henüz bağlı değil.
 
 **Dayandığı kararlar (proje sahibi, 2026-10-26):** v1'e hafif bir sunucu; tam koruma v2'de. v1'de görünmez oyuncu hesabı, ilerlemenin ve cüzdanın bulut kaydı, satın alma fişlerinin sunucuda doğrulanması, yeni telefonda ya da yeniden kurulumda geri yükleme. Oyun internetsiz oynanmaya devam eder. Geri yükleme Google Play Games (Android) ve Game Center (iOS) ile; e-posta ve parola yok. Barındırma **Unity Gaming Services (UGS)**, yalnız ücretsiz katman: ücretli plan yok, kart yok. v2'de cüzdan sunucuda olacak ve kazanılan bölümler deneme kayıtlarının motorla yeniden oynatılmasıyla doğrulanacak; v1 buna uyacak biçimde kurulur.
 
@@ -191,9 +191,12 @@ Hesap (ESTIMATE): okuma = günlük × 2 × 30; yazma = günlük × 3 × 30; art�
   "revision": 42,
   "writtenAtUtc": "2026-11-03T18:22:05Z",
   "writer": "c1f0…",           // eşitlemeye özel rastgele kurulum kimliği; deneme kayıtlarının kimliği DEĞİL
+  "writes": ["…", "…"],        // Aşama 1: kaydın geldiği son 16 yazmanın rastgele kimliği, kendisininki sonda
   "progress": { … }            // ProgressDocument, 7. düzen; ≥16 KB olursa "progressGz": "<base64>"
 }
 ```
+
+**Aşama 1'in kesinleştirdikleri (2026-10-26):** `writes` eklendi: cevabı kaybolan bir yazma (zaman aşımı, oyunun kapanması) sonraki okumada kendi kimliğini kayıtta ya da üstüne yazılmış bir kayıtta bulur; taban o yazmanın içeriği olur, hiçbir şey iki kez sayılmaz (§3.3). Ölçüm: bütün parçaları yerleştirmiş 1000. bölüm oyuncusu (64 ödeme kimliği, 200 defter numarası) 21.411 bayt JSON; buluttaki kayıt sıkıştırılınca 12.534 bayt. Ödeme belirteçleri rastgele olduğu için az sıkışıyor; satın alması olmayan oyuncunun kaydı 16 KB'ın altında kalır, sıkıştırılmaz.
 
 - **Boyut:** bugün ≈3–10 KB (ESTIMATE; Aşama 1'in testi gerçek bir 1000. bölüm oyuncusuyla ölçer ve 16 KB'ı aşan belgeyi sıkıştırır). Sınır 5 MiB [U14].
 - **`envelope`:** zarfın biçimi. **`progressLayout`:** `ProgressDocument`'in düzeni (bugün 6; bu iş 7 yapar: `ledgerDelivered` eklenir, eklemeli değişiklik).
@@ -224,6 +227,7 @@ Hesap (ESTIMATE): okuma = günlük × 2 × 30; yazma = günlük × 3 × 30; art�
 - **Doğrulama kuyruğu:** sunucuya ulaşılamadığı için telefonda kabul edilmiş ödemeler (§4.8).
 - Son okuma ve son yazma zamanı, geri çekilme durumu, "bulut kaydı açık mı".
 - `progress.json` gibi iki adımda yazılır (yeni dosya + yer değiştirme). Bozuksa taban yok sayılır ve ilk eşitleme "yeniden kurulum" kuralıyla yapılır (§3.6).
+- **Aşama 1 (2026-10-26):** "Bulut kaydı" anahtarı bu dosyada. Bozuk dosya kenara alınır (`cloud.json.damaged`) ve durum **anahtar kapalı** başlar: oyuncunun "kapalı"sı kazara "açık"a dönmesin (karar 1, §6.2.3). Oyuncu anahtarı açınca ilk eşitleme "yeniden kurulum" kuralıyla yapılır. "Verilerimi sil"den sonra dosya silinmez, anahtar kapalı ve hesapsız yazılır. Her yazma, gönderilmeden önce kimliği ve içeriğiyle bu dosyaya yazılır (cevapsız yazma). Doğrulama kuyruğu Aşama 4'te eklenir (henüz hiçbir oyuncuda bu dosya yok, alan eklemek serbest).
 
 ### 3.4 İnternetsiz önce: ne zaman okunur, ne zaman yüklenir
 
@@ -241,6 +245,8 @@ Hesap (ESTIMATE): okuma = günlük × 2 × 30; yazma = günlük × 3 × 30; art�
 **Yükleme:** `save` taban writeLock'uyla yazılır. Cloud Save "değişmiş" derse: oku → birleştir → bir kez daha yaz. İkinci kez de reddedilirse sıradaki tetikleyiciye kalır (sonsuz deneme yok).
 
 **İlk `save`:** hesap açılır açılmaz değil, **ilk bölüm kazanılınca** yazılır. Kurup hemen bırakanlar depolama harcamaz. ESTIMATE
+
+**Aşama 1'in bütçesi (2026-10-26):** varsayılanlar §2.4'ün sıkı kuralı: soğuk açılışta okuma **12 saatte bir**, bütçeli yükleme (arka plan, uzun oturum, soğuk açılıştan sonraki yükleme) **en az 60 dakika** arayla; satın alma, tablo/oda ve hesap değişimi bütçe dışı. Remote Config ikisini sınırlar içinde değiştirir (yükleme 5 dk–24 sa, okuma 1 sa–7 gün; sınırın dışındaki değer en yakın sınıra çekilir), böylece yanlış yazılmış bir değer ne aylık bütçeyi bir günde harcar ne eşitlemeyi durdurur. Tablodaki 6 saat / 15 dakika Remote Config'le açılabilir. Geri çekilme: ağ yokken adım yok (buluta bir şey gitmedi, sonraki tetikleyici yine dener); öteki her hatada 1, 5, 30 dk, 2, 6, 24 sa. Yeni giriş (hesap bağlandı ya da değişti) geri çekilmeyi beklemez. Okunamayan ya da daha yeni bir oyunun kaydında yazma durur; okuma yalnız soğuk açılışta bütçeyle sürer, kayıt okunur olunca durma kalkar.
 
 ### 3.5 Birleştirme kuralları (üç yollu)
 
@@ -265,6 +271,14 @@ Hesap (ESTIMATE): okuma = günlük × 2 × 30; yazma = günlük × 3 × 30; art�
 **Satın alma düşümü örneği:** A bir kese alır (+1.000, defter 5), yükleyemeden B açılır, defterde 5'i görür, `save`'de yoksa teslim eder (§3.7) ve yükler. A sonra eşitlerken yerelin farkında +1.000 var ama bulutun `ledgerDelivered` kümesinde 5 zaten var: A'nın farkından 1.000 düşülür. Sonuç tek kese.
 
 **Testler (Aşama 1, Unity'siz):** her alan için tablo testleri; özellik testleri: birleştirme sonrası altın ≤ taban + iki tarafın kazancı (hiç altın yaratılmaz); aynı belge iki kez birleştirilince değişmez; teslim numaraları kaybolmaz.
+
+**Aşama 1'in kesinleştirdikleri (2026-10-26):**
+- **Bir kez verilen kazanç bir kez sayılır.** Kuralların bir kez verdiği ve iki tarafın da tabandan sonra aldığı her kazancın içeriği yerelin farkından düşülür: aynı defter numaralı ödeme (tablodaki kural), booster'ın açılış hediyesi (hoş geldin hediyesinin oynanışa dağılmış parçası; silip kurmada iki kez gelmesin), aynı günün günlük hediyesi, iki tarafta da tamamlanan tablonun ödülü.
+- **Tablo ve günlük ödül sayıları** "en büyüğü" yerine verilen ödül sayısı: taban + iki tarafın tabandan sonraki ödülleri − iki tarafta da verilenler, en az iki taraftan büyüğü. İki telefonda iki ayrı tablo tamamlanınca iki ödül sayılır (en büyüğü bir sayar, sıradaki ödül bir öncekini tekrarlardı). Son günlük hediyenin günü ikisinden geç olanı.
+- **Ürün sayısı** iki tarafta da teslim edilen ödeme bir kez sayılarak, yerelin, bulutun ve birleşen defter numaralarındaki o ürünün sayısından az değil. Ödeme kimlikleri: önce bulutunkiler, sonra yerelin yenileri, son 64'ü.
+- **Defter adlandıramıyorsa birleştirme yok.** İki tarafta da teslim edilen bir numara defterde yoksa ya da ürünü katalogda yoksa birleştirme yapılmaz, hiçbir şey yazılmaz (`Unaccounted`); sonraki tetikleyici yeniden dener. Tahmin altın yaratır ya da kaybettirirdi.
+- **Aynı belge iki tarafta** (yazma gitti, cevabı gelmedi): yerel aynen kalır, iki kez sayılmaz.
+- **Bilinen sınırlar:** (1) `cloud.json` kaybolur, `progress.json` kalır ve oyuncu anahtarı yeniden açarsa taban "yeni oyuncu"dur; buluttaki kayıt bu telefonun ilerlemesini zaten içeriyorsa bölüm ve reklam altınları iki kez sayılabilir (numaralı ödemeler, açılış hediyeleri, günlük hediye ve tablo ödülleri yine bir kez). (2) Aynı ödemeyi iki telefon doğrulanmadan teslim ederse (Google onaylanmamış ödemeyi ikinci telefona bildirir ve iki telefon da UGS'ye ulaşamaz) bir kez fazla sayılır. (3) Cloud Save'de "yalnız yoksa yaz" yok: iki telefonun ilk `save`'i aynı anda yazılırsa biri ötekini ezer; okuma hemen öncesinde yapıldığı için pencere birkaç saniye.
 
 ### 3.6 Çakışma durumları
 
@@ -418,7 +432,7 @@ PGS'nin kurulumu Google tarafında web istemci kimliği (Game server kimlik bilg
 - "Google Play Games'e bağlan" (iOS'ta "Game Center'a bağlan") → kimlik alınır → `LinkWithGooglePlayGamesAsync(code)` / `LinkWithAppleGameCenterAsync(...)`. FACT [U11][U12]
 - **`AccountAlreadyLinked`:** o kimlik başka bir Unity hesabına bağlı. §3.6'daki kart; "Evet" → `SignInWith…` o hesaba geçer, yerel ilerleme onunla birleşir. Eski anonim hesabın defteri boşsa geçmeden önce `DeleteMyData` + `DeleteAccountAsync` ile silinir; satın alması varsa bırakılır (altını zaten birleşen yerel ilerlemededir). ESTIMATE
 - Bağlantıyı kaldırma (`Unlink…`) v1'de yok; hesap ancak silinir. ESTIMATE (öneri)
-- **Ne zaman önerilir (karar 2):** anonim oyuncuya ilk satın almadan sonra ya da 20. bölümde bir kez, sakin bir kartla: "Kaydın yalnız bu telefonda. Telefon değiştirince geri getirmek için Google Play Games'e bağlan." Mağaza ve kaybetme kartında değil. ESTIMATE
+- **Ne zaman önerilir (karar 2, sahip 2026-10-26):** anonim oyuncuya **ilk kazanılan bölümden sonra** bir kez, sakin bir kartla: "Kaydın yalnız bu telefonda. Telefon değiştirince geri getirmek için Google Play Games'e bağlan." 20. bölümde ya da ilk satın almadan sonra değil. Mağaza ve kaybetme kartında değil.
 
 ### 5.4 Oyuncu reddederse ya da PGS/GC yoksa
 
@@ -441,7 +455,7 @@ PGS'nin kurulumu Google tarafında web istemci kimliği (Game server kimlik bilg
 
 **Oyun içi yol (Ayarlar → "Verilerimi sil"):**
 1. Kart: "Buluttaki hesabın ve kaydın silinir. Bu telefondaki ilerlemeyi de silmek ister misin?" Düğmeler: "Yalnız buluttakini sil", "Her şeyi sil", "Vazgeç". Silme internet ister; yoksa "İnternet bağlantısı gerekiyor".
-2. `DeleteMyData` (Cloud Code): `save` ve `purchases` silinir; registry kayıtlarından oyuncu kimliği silinir, belirteç özeti, ürün, tarih ve durum **[12 ay]** sahtekârlık önleme için kalır (karar 5, uzman okuması).
+2. `DeleteMyData` (Cloud Code): `save` ve `purchases` silinir; registry kayıtlarından oyuncu kimliği silinir, belirteç özeti, ürün, tarih ve durum **36 ay** sahtekârlık önleme için kalır (karar 5, sahip 2026-10-26; uzman okuması).
 3. İstemci `AuthenticationService.Instance.DeleteAccountAsync()`; `cloud.json` silinir; "Bulut kaydı" kapanır (oyuncu isterse yeniden açar, yeni hesap açılır).
 4. "Her şeyi sil": ilerleme yeni oyuncuya döner, deneme kayıtları silinir (bugünkü "Kayıtları sil" yolu). Çırak Çantası mağazanın malı olduğu için Google Play'de yeniden gelir.
 5. Google Play Games ve Game Center'ın kendi verisi Google'ın ve Apple'ın; oyuncu onları kendi profilinden siler [G5].
@@ -480,7 +494,7 @@ Unity'nin verinin yerini seçtirmediği, Cloud Save ve Authentication'ın hangi 
 4. **Apple 5.1.1(ii):** kullanıcı verisi toplamadan önce izin ister [A10]; bu kural istatistik için uygulanıyor. Hizmetin kendisi için gereken veri (kayıt, satın alma) için Apple'ın tutumu uzmana ve inceleme deneyimine kalır. ESTIMATE
 5. **Unity'nin rolü:** UGS için büyük olasılıkla bizim adımıza işleyen (DPA), IAP'nin satış verisi için kendini bağımsız sorumlu sayıyor (privacy-v1 §6.1). UGS DPA'sı ve alt işleyen listesi okunmalı. ESTIMATE
 6. **KVKK md. 9 (yurt dışına aktarım):** oyuncu kimliği ve kaydı Unity'nin (ABD/AB) sunucularına gider; düzenli aktarım için standart sözleşme ve Kurul'a 5 iş günü içinde bildirim konusu privacy-v1 §6.2.3'teki soruyla birlikte sorulmalı. ESTIMATE
-7. **Silme ve saklama:** registry'de oyuncu kimliksiz tutulan özetlerin süresi (öneri 12 ay) ve politikada yazılması [G8]. ESTIMATE
+7. **Silme ve saklama:** registry'de oyuncu kimliksiz tutulan özetlerin süresi (sahibin kararı 36 ay, 2026-10-26) ve politikada yazılması [G8]. ESTIMATE
 8. **Yaş:** değişmez (privacy-v1 §6.1.4).
 
 ### 6.3 Google Play Data safety'de değişenler (öneri)
@@ -520,7 +534,7 @@ privacy-v1 §3.2'deki sekiz paragraftan **1. ve 8.** değişir, **üç yeni para
 >
 > **Satın almaların doğrulanması (yeni).** Bir satın almanın gerçek olduğunu anlamak için oyun, mağazanın verdiği satın alma kaydını (ürün, sipariş kimliği, mağazanın imzalı kaydı) Unity'deki sunucu kodumuza gönderir. Sunucu bunu Google Play'e ya da Apple'a sorar ve sonucu hesabında saklar. İade edilen satın almalar bu listede işaretlenir.
 >
-> **8 (yeni hâli).** Oyunu silersen ya da telefon değiştirirsen ilerlemen ve altının bulut kaydından geri gelir; Google Play Games ya da Game Center'a bağlı değilsen bu yalnız aynı telefonda ya da telefonunun yedeğiyle olur. Ayarlar'daki "Verilerimi sil" ile buluttaki hesabını ve kaydını istediğin zaman silebilirsin; telefondaki ilerlemeyi de silip silmeyeceğini sen seçersin. Sahtekârlığı önlemek için satın almaların kimliksiz bir izi [12 ay] saklanır. Satın alma iadesini Google Play'den ya da Apple'dan istersin.
+> **8 (yeni hâli).** Oyunu silersen ya da telefon değiştirirsen ilerlemen ve altının bulut kaydından geri gelir; Google Play Games ya da Game Center'a bağlı değilsen bu yalnız aynı telefonda ya da telefonunun yedeğiyle olur. Ayarlar'daki "Verilerimi sil" ile buluttaki hesabını ve kaydını istediğin zaman silebilirsin; telefondaki ilerlemeyi de silip silmeyeceğini sen seçersin. Sahtekârlığı önlemek için satın almaların kimliksiz bir izi 36 ay saklanır. Satın alma iadesini Google Play'den ya da Apple'dan istersin.
 
 **Değişecek öteki yazılar:** Ayarlar'daki gizlilik satırı ("Telefondan yalnızca satın almalar çıkar" → ör. "İlerlemen bulutta da saklanır; istatistikler yalnız izinle"); geri yükleme kartındaki "Altın paketleri geri gelmez; yalnız Çırak Çantası gelir." → "Altının bulut kaydınla geri gelir."; §19'daki "Silip kurma, yeni telefon" ve "İade" maddeleri; mağaza sayfası ve destek metni. ESTIMATE
 
@@ -583,7 +597,7 @@ S küçük (bir oturum), M orta (birkaç oturum), L büyük. Bağlı proje olmad
 |---|---|---|---|---|---|
 | 0 | **Ağ ve boyut denemesi** (iap-spike gibi atılacak bir kopyada) | Paketleri ekle; APK boyutu, birleşik manifest (INTERNET, `AD_ID` yok mu, `datatransport` silme kuralıyla çakışma, PGS eklentisinin EDM4U'su ile IAP'nin Gradle çözücüsü), IAP 5.4.4 ve UGS çekirdeğinin kaynakta ağa çıkan yolları | S | Kod okuma ve derleme: evet | — |
 | 0b | | Bağlı projede gerçek trafik: Android logcat ve vekil, iPad'de Mac'teki ağ dinleyiciyle; gizlilik beyanının girdisi | S | Hayır | A1–A3, cihaz |
-| 1 | **Eşitleme çekirdeği** (Unity'siz, testli) | `CloudEnvelope`, `ProgressLayout 7` (`ledgerDelivered`), `ProgressMerge` (§3.5 tablosu ve özellik testleri), `SyncPolicy` (bütçe, geri çekilme), `ICloudSave` + `FakeCloudSave` (writeLock, 409, kapalı hizmet, ağ yok) | M | Evet | — |
+| 1 | **Eşitleme çekirdeği** (Unity'siz, testli) | `CloudEnvelope`, `ProgressLayout 7` (`ledgerDelivered`), `ProgressMerge` (§3.5 tablosu ve özellik testleri), `SyncPolicy` (bütçe, geri çekilme), `ICloudSave` + `FakeCloudSave` (writeLock, 409, kapalı hizmet, ağ yok) | M | Evet | — **Yapıldı 2026-10-26:** ayrıca `CloudSync` (okuma, birleştirme, yazma, cevapsız yazma), `CloudStateFile` (`cloud.json`), `PurchaseLedger` (defterin okunuşu); paketsiz, oyuna henüz bağlı değil |
 | 2 | **Kimlik katmanı** | `IPlayerIdentity` (kapalı küme: yok, anonim, PGS, GC), akışlar (§5), `FakeIdentity`; Unity uyarlayıcıları: `UgsIdentity` (Authentication 3.8.1), `PlayGamesSignIn` (eklenti v2.3.0), `GameCenterSignIn` (Apple.GameKit) | M | Arabirim, sahte ve derleme: evet | Gerçek giriş: A, B4, C2, cihaz |
 | 3 | **Cloud Code modülü** | `MuseumPuzzle.Server`: `ValidatePurchase`, `CheckRefunds`, `DeleteMyData`, `PollGoogleVoided` + Scheduler tanımı; `GooglePlayVerifier` (RS256 JWT, products/productsv2, voided), `AppStoreVerifier` (x5c → Apple Root CA G3, ES256, JWT, Get Transaction Info, Refund History), registry ve defter; birim testleri kayıtlı örnek cevaplarla (Apple'ın kütüphanelerinin örnek imzalı verileri dahil); yerel Cloud Code sunucusuyla deneme | **L** | Kod ve testler: evet | Dağıtım: A1–A6; gerçek doğrulama: B6, C3 |
 | 4 | **İstemcide satın alma doğrulaması** | `Checkout`'a "doğrulanıyor" adımı, `UnityStore`'da hesap iliştirme (`SetObfuscatedAccountId`, `SetAppAccountToken`), `WalletLedger.Deliver`'a seq, doğrulama kuyruğu, defterden geri yükleme; `ScriptedStore` + `FakeCloudCode` ile `GameWalk` yürüyüşleri | M | Evet | — |
@@ -683,16 +697,28 @@ Hiçbir adım kart istemez. **Bir sayfa ödeme bilgisi isterse durun ve bize yaz
 
 ### 10.2 Sahibin kararları
 
+**Karar verildi (proje sahibi, 2026-10-26):** "Bütün öneriler tamam", iki ayrımla: bağlanma önerisi ilk kazanılan bölümden sonra (karar 2), silmeden sonra kalan iz 36 ay (karar 5). Aşağıda her sorunun altında karar.
+
 1. **"Bulut kaydı" anahtarı** Ayarlar'da olsun mu (öneri: evet, varsayılan açık; kapalıyken UGS hiç başlamaz)?
+   **Karar:** evet; Ayarlar'da "Bulut kaydı" anahtarı, varsayılan açık; kapalıyken UGS hiç başlamaz (`SyncPolicy.MayStartServices`). Anahtar `cloud.json`'da; bozuk dosya anahtarı kapalı başlatır (§3.3).
 2. **Bağlanma önerisi** ne zaman (öneri: ilk satın almadan sonra ya da 20. bölümde, bir kez)?
+   **Karar (öneriden farklı):** Google Play Games / Game Center'a bağlanma önerisi bir kez, **ilk kazanılan bölümden sonra**; 20. bölümde ya da ilk satın almadan sonra değil (§5.3).
 3. **İade politikası v1:** yalnız işaretle (öneri) mi, yoksa altını cüzdanda olduğu kadar düş mü?
+   **Karar:** v1'de iadeler yalnız işaretlenir; altın geri alınmaz.
 4. **Sahte satın alma (`Invalid`):** teslim etme (öneri) — onay mı?
+   **Karar:** `Invalid` satın alma teslim edilmez (ve mağazaya onaylanmaz).
 5. **Silmeden sonra saklanan iz:** belirteç özeti, ürün, tarih, durum; süre (öneri 12 ay; uzman).
+   **Karar (öneriden farklı):** iz (belirteç özeti, ürün, tarih, durum) **36 ay** saklanır (§5.6, §6.2.7, §6.5; uzman okuması yine gerekli).
 6. **Remote Config** v1'e girsin mi (öneri: evet, dört anahtar: `cloud_sync_enabled`, `cloud_upload_min_minutes`, `cloud_read_min_hours`, `purchase_validation_enabled`)?
+   **Karar:** evet, bu dört anahtarla (`RemoteConfigKeys`; sınırları §3.4'teki Aşama 1 notunda).
 7. **iOS alt sınırı 15.6** (öneri: evet).
+   **Karar:** evet, iOS en düşük 15.6.
 8. **Modülü kim yükler:** siz Editor'dan (öneri) mi, bizim için ayrı bir hizmet hesabı mı?
+   **Karar:** proje sahibi Cloud Code modülünü Editor'ın Deployment penceresinden yükler.
 9. **Data safety'de hesap açma cevabı** ve "User IDs: Required / Users can choose".
+   **Karar:** §6.3'teki önerilen cevaplar.
 10. **Yükleme anahtarını** kim oluşturur (siz ya da sizin izninizle biz)?
+    **Karar:** Android yükleme anahtarını proje sahibi oluşturur.
 
 ### 10.3 Açık sorular (araştırılacak)
 
@@ -768,4 +794,4 @@ Bütün web sayfalarına **2026-10-26**'da bakıldı. "Güncelleme" sütunu sayf
 | L7 | Motor ve istemci: `Puzzle.Core/Recording` (`AttemptRecord`, `AttemptReplay`), `Randomness/Rng.cs`, `unity/Assets/Generated/Engine/*.dll`, `Flow/ProgressFile.cs`, `Flow/PlayerProgress.cs`, `Flow/ProgressDocument.cs`, `Purchases/PurchasesMade.cs`, `Flow/WalletLedger.cs` | depo | — |
 | L8 | Ürün kimlikleri ve kalıcı uygulama kimliği | `GAME_DESIGN.md` §19 | 2026-10-25 |
 
-**Bu belgede yapılmayanlar:** kod, Unity projesi, paketler ve öteki belgeler değişmedi; Unity, git ve telefon çalıştırılmadı; PDF üretilmedi (bu dosya `tools/docs-pdf/build.py`'nin listesine Aşama 8'de eklenmeli); hiçbir hesaba girilmedi; UGS'nin, IAP'nin ve PGS'nin ağ trafiği ölçülmedi (Aşama 0b).
+**Bu belgede yapılmayanlar (plan yazılırken):** kod, Unity projesi, paketler ve öteki belgeler değişmedi; Unity, git ve telefon çalıştırılmadı; PDF üretilmedi (bu dosya `tools/docs-pdf/build.py`'nin listesine Aşama 8'de eklenmeli); hiçbir hesaba girilmedi; UGS'nin, IAP'nin ve PGS'nin ağ trafiği ölçülmedi (Aşama 0b). Aşama 1 (2026-10-26) kod ve testler ekledi; paket eklemedi, hiçbir hesaba girmedi.
