@@ -16,7 +16,9 @@ namespace Puzzle.Client.Flow
     /// (the wallet's block is <see cref="WalletDocument"/>, the purchases' <see cref="PurchasesDocument"/>; the
     /// tutorial's steps seen are named as <see cref="TutorialSteps.NameOf"/> names them, in the order of the
     /// enumeration). The fields are public and named as the document names them, because that is how Unity's JSON
-    /// reader maps a document. Five earlier layouts are still read. Layout 1,
+    /// reader maps a document. A line of the purchases' block that no game could have written is set aside on its
+    /// own and the rest of the progress is read (<see cref="PurchasesDocument.Read"/>); anything else no game could
+    /// have written makes the whole document damaged. Five earlier layouts are still read. Layout 1,
     /// written before the game had a museum, has no <c>placed</c>: it reads as progress with no jigsaw piece in place
     /// yet, so the pieces of every level won before then wait on their trays. Layouts 1 and 2 have no wallet: their
     /// player holds what the rules give a new player, with every life; the gifts of the boosters used during play
@@ -112,7 +114,7 @@ namespace Puzzle.Client.Flow
             Wallet? wallet = document.version < FirstVersionWithAWallet
                 ? startingWallet
                 : document.wallet?.PossibleWallet(givenAllInTheWelcomeGift: document.version < FirstVersionWithUnlockGifts);
-            PurchasesMade? purchases = document.version < FirstVersionWithPurchases ? PurchasesMade.None : document.purchases?.PossiblePurchases();
+            PurchasesReading? purchases = document.version < FirstVersionWithPurchases ? PurchasesReading.Nothing : document.purchases?.Read();
             if (document.version > CurrentVersion)
             {
                 // Later layouts are expected to add to this one, so what this game knows is looked for in them too:
@@ -121,7 +123,7 @@ namespace Puzzle.Client.Flow
                 PlayerProgress? understood = !hasCounts ? null
                     : new PlayerProgress(
                         document.levelsWon, document.attemptsOnLevel, placed ?? PlacedPieces.None, wallet ?? startingWallet, TutorialOfALaterGame(document),
-                        purchases ?? PurchasesMade.None);
+                        purchases?.Made ?? PurchasesMade.None);
                 return new ProgressReading.OfALaterGame(document.version, understood);
             }
 
@@ -129,7 +131,7 @@ namespace Puzzle.Client.Flow
                 : document.version < FirstVersionWithTheTutorial ? TutorialPlan.OfAnOlderSave(new MuseumProgress(document.levelsWon, placed))
                 : PossibleTutorialOf(document);
             return placed != null && wallet != null && tutorial != null && purchases != null
-                ? new ProgressReading.Sound(new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed, wallet, tutorial, purchases))
+                ? new ProgressReading.Sound(new PlayerProgress(document.levelsWon, document.attemptsOnLevel, placed, wallet, tutorial, purchases.Made), purchases.SetAside)
                 : (ProgressReading)new ProgressReading.Damaged();
         }
 
@@ -340,24 +342,100 @@ namespace Puzzle.Client.Flow
             transactions = purchases.Transactions.ToArray(),
         };
 
-        /// <summary>What the block holds; nothing when no record can be so: a product with no name or named twice, a count under 1, a payment's id empty or named twice, more ids than are kept.</summary>
-        public PurchasesMade? PossiblePurchases()
+        /// <summary>
+        /// What the block holds, line by line. A line no game could have written is set aside on its own, with a
+        /// word on why, and the rest is read, so that one bad line (written by hand, or come back from a backup) does
+        /// not cost the player their levels, pieces and wallet. What a line surely says is kept even then, because
+        /// money hangs on it:
+        /// <list type="bullet">
+        /// <item>Every payment's id that is there is kept: an id the record holds is what keeps a payment the store
+        /// tells of again from being given twice. An empty id names no payment, and is set aside; an id named twice is
+        /// kept once; of more ids than the record keeps, the oldest are set aside, as the record lets them go itself.</item>
+        /// <item>A product's line is written only once the product was given, so a line whose count is under 1 still
+        /// says the product was bought once at least, and counts as once: the starter pack it names stays sold out,
+        /// never sold a second time on a guess. A product named twice counts as the more of its two counts, for the
+        /// same reason. A line with no product (or no line at all) says nothing that can be kept.</item>
+        /// </list>
+        /// </summary>
+        public PurchasesReading Read()
         {
-            if (ProgressDocument.ListOrNone(bought).Any(entry => entry == null))
+            var setAside = new List<string>();
+            var made = new PurchasesMade(TimesBought(setAside), PaymentsDelivered(setAside));
+            return new PurchasesReading(made, setAside);
+        }
+
+        /// <summary>How many times each product was bought, as far as the lines say it surely; the lines set aside go to the list.</summary>
+        private IEnumerable<(string Product, int Times)> TimesBought(List<string> setAside)
+        {
+            var times = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            foreach (BoughtDocument? entry in ProgressDocument.ListOrNone(bought))
             {
-                return null;
+                if (entry == null || string.IsNullOrEmpty(entry.product))
+                {
+                    setAside.Add($"a bought line with no product ({(entry == null ? "no line" : $"×{entry.times}")})");
+                    continue;
+                }
+
+                int count = entry.times;
+                if (count < 1)
+                {
+                    setAside.Add($"{entry.product} ×{entry.times}: a count under 1, counted as bought once");
+                    count = 1;
+                }
+
+                if (times.TryGetValue(entry.product, out int before))
+                {
+                    setAside.Add($"{entry.product} named again (×{before} and ×{count}): counted as ×{Math.Max(before, count)}");
+                    count = Math.Max(before, count);
+                }
+
+                times[entry.product] = count;
             }
 
-            try
-            {
-                return new PurchasesMade(
-                    ProgressDocument.ListOrNone(bought).Select(entry => (entry.product ?? string.Empty, entry.times)), ProgressDocument.ListOrNone(transactions));
-            }
-            catch (ArgumentException)
-            {
-                return null; // the record's own checks refuse what the game cannot have written
-            }
+            return times.Select(entry => (entry.Key, entry.Value));
         }
+
+        /// <summary>The payments' ids, each once, the latest that the record keeps; the ids set aside go to the list.</summary>
+        private IEnumerable<string> PaymentsDelivered(List<string> setAside)
+        {
+            var ids = new List<string>();
+            foreach (string? id in ProgressDocument.ListOrNone(transactions))
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    setAside.Add("an empty payment's id");
+                }
+                else if (ids.Contains(id, StringComparer.Ordinal))
+                {
+                    setAside.Add($"the payment {id} named again: kept once");
+                }
+                else
+                {
+                    ids.Add(id);
+                }
+            }
+
+            int beyondTheKept = Math.Max(0, ids.Count - PurchasesMade.TransactionsKept);
+            setAside.AddRange(ids.Take(beyondTheKept).Select(id => $"the payment {id}, older than the {PurchasesMade.TransactionsKept} kept"));
+            return ids.Skip(beyondTheKept);
+        }
+    }
+
+    /// <summary>What a purchases' block was read as: the record it holds, and the lines set aside on the way, each with a word on why (none for a block a game wrote).</summary>
+    public sealed class PurchasesReading
+    {
+        public PurchasesReading(PurchasesMade made, IReadOnlyList<string> setAside)
+        {
+            Made = made ?? throw new ArgumentNullException(nameof(made));
+            SetAside = setAside ?? throw new ArgumentNullException(nameof(setAside));
+        }
+
+        /// <summary>The reading of a layout that kept no purchases: nothing bought, nothing set aside.</summary>
+        public static PurchasesReading Nothing { get; } = new PurchasesReading(PurchasesMade.None, Array.Empty<string>());
+
+        public PurchasesMade Made { get; }
+
+        public IReadOnlyList<string> SetAside { get; }
     }
 
     /// <summary>How many times one product was bought, as the file writes it.</summary>
@@ -390,12 +468,17 @@ namespace Puzzle.Client.Flow
         /// <summary>A progress document of a layout this game reads as its own.</summary>
         public sealed class Sound : ProgressReading
         {
-            public Sound(PlayerProgress progress)
+            /// <param name="setAside">The lines of its purchases' block that were set aside, each with a word on why; none for a document a game wrote.</param>
+            public Sound(PlayerProgress progress, IReadOnlyList<string> setAside)
             {
                 Progress = progress;
+                SetAside = setAside;
             }
 
             public PlayerProgress Progress { get; }
+
+            /// <summary>The lines of the purchases' block no game could have written, set aside while the rest was read.</summary>
+            public IReadOnlyList<string> SetAside { get; }
         }
 
         /// <summary>A progress document of a later layout, with what this game can read of it, if anything.</summary>

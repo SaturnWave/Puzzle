@@ -4,6 +4,21 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-26 · Oturum 33 — Telefon turu düzeltmeleri
+
+**26 Ekim otomatik telefon turunun bulguları kapandı (sahibin "evet başla, hepsini düzelt"i)**
+- Google'a giden trafik (T186): kaynak Google Play ödeme kütüphanesinin kendi kullanım kayıtları. Billing 9.0.0 bunları Google'ın kayıt taşıyıcısıyla (`datatransport`, CCT arka ucu) `firebaselogging.googleapis.com`'a gönderiyordu, satın alma olmasa da. Kanıt: oyunun sürecinde açık `com.google.android.datatransport.events` veritabanı (meminfo), birleşik manifestteki taşıyıcı servisleri, kütüphanenin kodu (`javap`). Ayrıntı GAME_DESIGN §23.
+- Çözüm: manifest adımı taşıyıcının arka uç kaydını (`backend:…CctBackendFactory`) `tools:node="remove"` ile çıkarıyor (`ManifestLoggingBackend`). Derleme APK'yı `aapt dump xmltree` ile denetliyor. Ödeme taşıyıcıdan geçmiyor; Billing'in kaydedicisi hatayı yutuyor. Ayar satırı, gizlilik kartı ve Data safety cevapları değişmedi. iOS'ta bu kütüphane yok.
+- Tek geri hareketi (T235, A42/2): sistem çubukları `Default` davranışıyla gizleniyor; çubuklar kaydırmayla çıkarsa oyun onları 2 sn sonra yeniden gizliyor (`SystemBars`). Manifest adımı değeri denetliyor (`ManifestSystemBars`). Yerleşim değişmedi.
+- Rehberli spatula adımında parmak nişan alırken rehber kartı ve büst soluklaşıyor (T503); booster yürüyüşü bunu denetliyor ve resmediyor.
+- Satın alma bloğundaki tek geçersiz satır artık bütün ilerlemeyi silmiyor: satır kenara alınıyor, dosyanın o anki hâli `progress.json.purchases-set-aside` olarak saklanıyor. Ödeme kimlikleri korunuyor (iki kez teslim yok); sayısı okunmayan ürün satırı bir kez alınmış sayılıyor (Çırak Çantası tahminle yeniden satılmıyor).
+- Japonca ve Çincede açılış işareti ("（", "“") artık satır sonunda kalmıyor: TextMesh Pro'nun harf listesi tam genişlik biçimleri saymıyor; oyun işareti ardındaki harfle `<nobr>` içinde tutuyor (`LineBreaks.ReadyForWrapping`).
+- T420: +61 MB'ın dağılımı ölçüldü: grafik belleği +51, Unity'nin kendi belleği +8,6. 40–50 MB ölçümsüz bir tahmindi; beklenen değer en çok yaklaşık 65 MB'a düzeltildi. Daha azı bir şeyden vazgeçmek demek, karar sahibin (A52).
+- Test metinleri: T84'e `--levels levels/generated`; T23, T52, T108, T121, T160, T161, T181 bu derlemeye göre. Yeni testler T520–T522, açık A52.
+- 5.883 test geçti (22'si yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `CollectionMemoryCheck`, `PurchaseCheck`, `PlayModeCheck` ve `MusicCheck` (son üçü `-quit` olmadan, sonuç satırları okundu), `ConsentCheck`, `AvatarCheck`, `RotationCheck`, `EngineSmokeTest` hatasız. Japonca gizlilik kartı, rehberli nişan anı ve salon 1080×2424 ve 2732×2048'de bakıldı. APK 290 MB; `aapt`: paket `com.saturnwave.museumpuzzle`, izinler tam beş, dik, oyun kategorisi, çubuklar `Default`, `CctBackendFactory` kaydı yok. Kopyası `D:/puzzle-cache/apk-share/museumpuzzle-2026-10-26.apk`. Telefon bağlı değildi; telefonda yeniden denemeler sonraya kaldı (A52).
+- `feature/ios`: ana dal birleştirildi. Android'e özgü düzeltmeler (`ManifestLoggingBackend`, `ManifestSystemBars`, `SystemBars`) iOS'ta çalışmıyor. iOS'ta Google'ın ödeme kütüphanesi ve kayıt taşıyıcısı yok (dışa aktarılan Xcode projesinde de yok); App Store etiketi (`IOS_BUILD.md` §4.1) değişmedi. 5.905 test geçti; `RotationCheck` (84 değişiklik) ve `PurchaseCheck` (PASSED) hatasız; Xcode projesi dışa aktarıldı (9,2 dk), StoreKit adımı geçti.
+- Sahipte: T420 için daha az bellek isteniyorsa iki yoldan biri (A52); APK'yı telefonda denemek (T186'yı 35 dakika, T235/T412/T522'yi gerçek başparmakla, T503, T520, T521); Play Console'da ürünler açılınca T186'yı satın almayla yeniden. Telefon bu oturumda bağlı değildi.
+
 ## 2026-10-24 · Oturum 31 — v1: satın alma
 
 **Kalıcı uygulama kimliği (2026-10-25)**

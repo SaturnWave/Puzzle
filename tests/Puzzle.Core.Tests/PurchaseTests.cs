@@ -101,6 +101,51 @@ public class PurchaseTests
         Assert.True(soldOut.Progress.Purchases.HasSeen("GPA.2"));
     }
 
+    /// <summary>
+    /// A saved starter pack's line whose count no game writes ("times":0) is set aside, and the money it stands for
+    /// is kept: the pack stays sold out, so the shop never sells it again; the store's telling of the payment again
+    /// (on every start, for a pack the store keeps) gives nothing a second time, and a second payment gives nothing.
+    /// </summary>
+    [Fact]
+    public void A_starter_pack_line_set_aside_keeps_the_pack_sold_out_and_its_payment_given_once()
+    {
+        var saved = new PurchasesDocument { bought = [new BoughtDocument { product = Starter.IdSuffix, times = 0 }], transactions = ["GPA.1"] };
+        var ledger = new WalletLedger(StoreRules);
+
+        PurchasesReading reading = saved.Read();
+        PlayerProgress progress = OnLevelTwentyFive.WithPurchases(reading.Made);
+
+        Assert.Single(reading.SetAside);
+        Assert.False(Catalogue.StarterPack.IsOfferedTo(levelNumber: 25, reading.Made.TimesBought(Starter.IdSuffix)));
+        Assert.IsType<Delivery.AlreadyGiven>(ledger.Deliver(progress, Starter, "GPA.1"));
+        Delivery.SoldOut soldOut = Assert.IsType<Delivery.SoldOut>(ledger.Deliver(progress, Starter, "GPA.2"));
+        Assert.Equal(progress.Wallet, soldOut.Progress.Wallet);
+    }
+
+    /// <summary>
+    /// The payments' ids are kept whatever else of the block is set aside (an empty id, an id twice, a line of no
+    /// product), so a payment the store tells of again, as it does with one not yet confirmed, is given once only.
+    /// </summary>
+    [Fact]
+    public void A_payment_whose_line_is_set_aside_is_never_given_twice()
+    {
+        var saved = new PurchasesDocument
+        {
+            bought = [new BoughtDocument { product = Large.IdSuffix, times = -1 }, new BoughtDocument { product = string.Empty, times = 1 }],
+            transactions = [string.Empty, "GPA.1", "GPA.1"],
+        };
+        var ledger = new WalletLedger(StoreRules);
+
+        PurchasesReading reading = saved.Read();
+        PlayerProgress progress = OnLevelTwentyFive.WithPurchases(reading.Made);
+
+        Assert.Equal(4, reading.SetAside.Count);
+        Assert.Equal(["GPA.1"], reading.Made.Transactions);
+        Assert.IsType<Delivery.AlreadyGiven>(ledger.Deliver(progress, Large, "GPA.1"));
+        Delivery.Given next = Assert.IsType<Delivery.Given>(ledger.Deliver(progress, Large, "GPA.2"));
+        Assert.Equal(2, next.Progress.Purchases.TimesBought(Large.IdSuffix));
+    }
+
     [Fact]
     public void A_test_build_never_asks_the_store_and_its_packs_cannot_be_bought()
     {

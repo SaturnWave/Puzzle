@@ -22,8 +22,8 @@ namespace Puzzle.Client.EditorTools
     /// 16, 20), a player who has seen every other step is asked for it by hand: the disc is lit and ringed, a touch on
     /// another disc or a swipe on the board does nothing, and no hint shows however long the board is left; the disc
     /// arms it (the shuffle is used at once), the target is lit with its aim, an aim elsewhere is refused, and the aim
-    /// on the target (a brush's anywhere on its row or column) uses it, free: the player's stock is as it was, the step
-    /// is kept. After the first of them (the spatula) its disc is lit once more with the long press's sentence, which a
+    /// on the target (a brush's anywhere on its row or column), with the step's pill and the painter faint while the
+    /// finger aims, uses it, free: the player's stock is as it was, the step is kept. After the first of them (the spatula) its disc is lit once more with the long press's sentence, which a
     /// touch ends. The free use begins no attempt: leaving right after it costs nothing and writes no record; after a
     /// move of the player's own (on the row brush's level) the record names it as guided. Then a long press on each
     /// of the four discs on level 40 brings the card that plays the booster on its tiny board, arms nothing and is taken
@@ -126,8 +126,14 @@ namespace Puzzle.Client.EditorTools
                     stage.Game.BoostersUsed.Count == usedBefore && stage.ArmedBooster == booster && stage.LessonShown is Lesson.Booster,
                     $"an aim off the target used {name}, or put it down");
 
-                Tap(session, stage.PixelOf(OnTheTarget(lesson.Use, stage.Game.Board.Shape)), "the target");
+                // The finger aims on the target before it lifts: the step's pill and the painter fade while it does (T503).
+                session.PointerDown(PixelOrFail(stage.PixelOf(OnTheTarget(lesson.Use, stage.Game.Board.Shape)), "the target"));
+                reel.Advance(session, 0.1f);
+                ThroughTheCard.Require(stage.IsTheLessonFaint, $"while a finger aimed {name} at its target, the step's pill and the painter were drawn whole");
+                reel.Shoot(session, $"{name}-aiming");
+                session.PointerUp();
                 reel.Advance(session, 0.25f);
+                ThroughTheCard.Require(!stage.IsTheLessonFaint, $"once the finger lifted from {name}'s target, the step's pill stayed faint");
                 reel.Shoot(session, $"{name}-used");
             }
 

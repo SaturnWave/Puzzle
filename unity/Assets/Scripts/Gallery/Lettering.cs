@@ -173,18 +173,20 @@ namespace Puzzle.Client.Gallery
         }
 
         /// <summary>
-        /// Says words that may take more than one line: broken between words to fit a width, every line from the left
-        /// edge of that width, the block's top edge at a height. <paramref name="left"/> and <paramref name="top"/>
-        /// are in the points of what the words stand on.
+        /// Says words that may take more than one line: broken between words to fit a width (between the letters of
+        /// Chinese and Japanese, never after an opening mark: <see cref="LineBreaks.ReadyForWrapping"/>), every line
+        /// from the left edge of that width, the block's top edge at a height. <paramref name="left"/> and
+        /// <paramref name="top"/> are in the points of what the words stand on.
         /// </summary>
         /// <returns>How high the block of lines is, at the line's type size.</returns>
         public static float SayInLines(TextMeshPro line, string words, float width, float left, float top)
         {
+            string wrapped = LineBreaks.ReadyForWrapping(words);
             line.textWrappingMode = TextWrappingModes.Normal;
             line.alignment = TextAlignmentOptions.TopLeft;
-            float height = line.GetPreferredValues(words, width, 0f).y;
+            float height = line.GetPreferredValues(wrapped, width, 0f).y;
             line.rectTransform.sizeDelta = new Vector2(width, height);
-            Say(line, words);
+            Say(line, wrapped);
             line.transform.localPosition = new Vector3(left + width / 2f, top - height / 2f, 0f);
             return height;
         }

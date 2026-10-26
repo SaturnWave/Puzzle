@@ -157,6 +157,36 @@ public partial class LetteringTests
         Assert.Equal(mayBreak, LineBreaks.MayBreakBetween(before, after));
     }
 
+    /// <summary>
+    /// A paragraph TextMesh Pro wraps keeps an opening mark on its line with the Chinese or Japanese letter after it,
+    /// where TextMesh Pro's own rule would let the line end on the mark: its letters leave out the full-width forms and
+    /// the plain marks. A mark of its own letters ("「") it keeps by itself, a closing mark never begins a line already,
+    /// and Korean and the languages with spaces come back as they were.
+    /// </summary>
+    [Theory]
+    [InlineData("購入したもの（支払い情報なし）です", "購入したもの<nobr>（支</nobr>払い情報なし）です")]
+    [InlineData("点击“设置”开关", "点击<nobr>“设</nobr>置”开关")]
+    [InlineData("Google Play（日本）", "Google Play<nobr>（日</nobr>本）")]
+    [InlineData("(“漢字", "(<nobr>“漢</nobr>字")]
+    [InlineData("點選「設定」", "點選「設定」")]
+    [InlineData("（。", "（。")]
+    [InlineData("구매한 것(결제 정보 없음)", "구매한 것(결제 정보 없음)")]
+    [InlineData("Achats (sans paiement) « oui »", "Achats (sans paiement) « oui »")]
+    [InlineData("", "")]
+    public void An_opening_mark_before_a_Chinese_or_Japanese_letter_is_kept_with_it_on_one_line(string words, string ready)
+    {
+        Assert.Equal(ready, LineBreaks.ReadyForWrapping(words));
+    }
+
+    /// <summary>Every line of every table, made ready for wrapping, says what it said: only no-break tags come in, and the Japanese privacy card's "（" stays with its word.</summary>
+    [Fact]
+    public void Lines_made_ready_for_wrapping_say_what_they_said()
+    {
+        Assert.All(TablesWordsByLanguage(), language =>
+            Assert.All(language.Value, words => Assert.Equal(words, LineBreaks.ReadyForWrapping(words).Replace("<nobr>", string.Empty).Replace("</nobr>", string.Empty))));
+        Assert.Contains(TablesWordsByLanguage()[Language.Japanese], words => LineBreaks.ReadyForWrapping(words).Contains("<nobr>（支</nobr>", StringComparison.Ordinal));
+    }
+
     /// <summary>The game breaks a line where TextMesh Pro would: its lists of marks are the ones of TextMesh Pro's settings, word for word.</summary>
     [Fact]
     public void The_marks_a_line_never_ends_on_or_begins_with_are_text_mesh_pros_own()
