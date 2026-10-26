@@ -233,6 +233,10 @@ namespace Puzzle.Client.Cloud
         /// <exception cref="System.IO.IOException">The state's file could not be written; the switch is turned for this run.</exception>
         public void SwitchTo(bool isOn) => Keep(State.SwitchedTo(isOn));
 
+        /// <summary>The offer to link the account to Google Play Games or Game Center was made: it is kept, and not made again.</summary>
+        /// <exception cref="System.IO.IOException">The state's file could not be written; the offer is not made again this run.</exception>
+        public void KeepTheLinkOffered() => Keep(State.WithTheLinkOffered());
+
         /// <summary>
         /// The player's cloud data was deleted ("Delete my data", §5.6): nothing of the account is kept, the switch is
         /// off, and a new writer id stands for the installation if the player turns it on again (a new account).

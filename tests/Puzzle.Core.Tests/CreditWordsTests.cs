@@ -124,6 +124,13 @@ public class CreditWordsTests
             {
                 Assert.Equal(commit.GetString(), pinned.GetProperty("hash").GetString());
             }
+            else if (package.TryGetProperty("embedded", out JsonElement embedded) && embedded.GetBoolean())
+            {
+                // A package kept in the repository: the lock names its folder, its own package.json its version.
+                Assert.Equal("embedded", pinned.GetProperty("source").GetString());
+                using JsonDocument own = JsonDocument.Parse(File.ReadAllText(RepoFiles.RepositoryFile($"unity/Packages/{name}/package.json")));
+                Assert.Equal(package.GetProperty("version").GetString(), own.RootElement.GetProperty("version").GetString());
+            }
             else
             {
                 Assert.Equal(package.GetProperty("version").GetString(), pinned.GetProperty("version").GetString());

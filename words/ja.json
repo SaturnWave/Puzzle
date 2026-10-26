@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"ストアからまだ応答がありません。"},
     {"id":"EntryVersionAlone","text":"バージョン {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"このバージョン · {ads}、{buying}"},
-    {"id":"CreditsSoftware","text":"ソフトウェア"}
+    {"id":"CreditsSoftware","text":"ソフトウェア"},
+    {"id":"AccountOfferTitle","text":"データを守ろう"},
+    {"id":"AccountOfferLine","text":"今のところ、データはこのスマートフォンにだけあります。"},
+    {"id":"AccountOfferPlatformLine","text":"機種変更しても{platform}で戻せます。"},
+    {"id":"AccountLinkButton","text":"連携する"},
+    {"id":"AccountNotNowButton","text":"あとで"},
+    {"id":"AccountLinkedTitle","text":"連携しました"},
+    {"id":"AccountLinkedLine","text":"データは{platform}のアカウントにあります。"},
+    {"id":"AccountLinkedNewPhoneLine","text":"新しいスマートフォンでも続きから遊べます。"},
+    {"id":"AccountNotLinkedTitle","text":"連携できませんでした"},
+    {"id":"AccountPlatformMissingLine","text":"このスマートフォンでは{platform}を使えません。"},
+    {"id":"AccountUnreachableLine","text":"今は接続できません。"},
+    {"id":"AccountSafeLine","text":"進行状況はこのスマートフォンに残っています。"},
+    {"id":"AccountOtherSaveTitle","text":"別のデータがあります"},
+    {"id":"AccountOtherSaveLine","text":"{platform}のアカウントにデータがあります。"},
+    {"id":"AccountOtherSaveMergeLine","text":"切り替えると、このスマートフォンの進行状況が加わります。"},
+    {"id":"AccountSwitchButton","text":"切り替える"},
+    {"id":"AccountStayButton","text":"キャンセル"},
+    {"id":"AccountSaveBackTitle","text":"データが戻りました"},
+    {"id":"AccountSaveBackLine","text":"レベル{level} · コイン：{coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"続きから遊べます。"},
+    {"id":"AccountNotSwitchedTitle","text":"切り替えできませんでした"}
   ]
 }

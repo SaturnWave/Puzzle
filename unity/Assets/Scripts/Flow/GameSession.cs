@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
+using Puzzle.Client.Cloud;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Jigsaws;
 using Puzzle.Client.Layout;
@@ -153,6 +154,18 @@ namespace Puzzle.Client.Flow
     /// whose card led to the jigsaw: it steps aside, out of sight, and comes back with its card when the player
     /// returns.
     /// </para>
+    /// <para>
+    /// The game's root opens the session to the cloud once it is open (<see cref="OpenToTheCloud"/>; the Editor's tools
+    /// keep it closed). The cloud's sync holds the session's progress (<see cref="ProgressForTheCloud"/>): it reads it,
+    /// with the jigsaw's pieces in place, and gives back the progress merged with the cloud's, which the session takes as
+    /// its own and saves at once. Where the stage in front shows what the merged progress no longer is (another level,
+    /// other pieces, another step of the tutorial: a new phone that got its save back, a switch to another account), the
+    /// stage is taken down at the next step and the hall opens on the merged progress, out of the dark; an attempt open
+    /// then is cut short as when the game is closed in a level, with no life and no record. The museum hangs the offer to
+    /// link the account when the cloud says it is due (once, after the first won level), hands the answers of its cards
+    /// to the cloud, and is told what the cloud has to say, while it is the stage in front. A painting or a room completed
+    /// and a payment delivered ask the cloud for an upload once the step is done.
+    /// </para>
     /// </remarks>
     public sealed class GameSession : IDisposable, ITouchable
     {
@@ -213,6 +226,15 @@ namespace Puzzle.Client.Flow
 
         /// <summary>The room whose fifth painting became whole on the open jigsaw; nothing otherwise. The hall shows it restored when the jigsaw is left.</summary>
         private RoomNumber? _restoredJustNow;
+
+        /// <summary>The cloud the session asks of and hears from; none until the game's root opens the session to it.</summary>
+        private ICloudDesk _cloud = NoCloudDesk.Instance;
+
+        /// <summary>True from the cloud's progress taken while the stage in front showed the progress before it, until the next step takes that stage down.</summary>
+        private bool _isTheStageBehindTheProgress;
+
+        /// <summary>The upload a moment of this step asks the cloud for, once the step is done; nothing while none is due.</summary>
+        private SyncTrigger? _uploadDue;
 
         /// <summary>
         /// A session whose settings are kept in memory as a first start has them, with the switches this build honours,
@@ -382,6 +404,16 @@ namespace Puzzle.Client.Flow
         /// <summary>True while the store does not hold the progress, because the last save failed.</summary>
         public bool HasUnsavedProgress => !_progress.Equals(_saved);
 
+        /// <summary>The session's progress as the cloud's sync holds it: read with the jigsaw's pieces in place, and replaced by the merged progress, which is saved at once.</summary>
+        public IProgressHolder ProgressForTheCloud => new HolderForTheCloud(this);
+
+        /// <summary>
+        /// The session asks this cloud from now on (the offer to link, the answers of the account's cards, the uploads
+        /// its moments ask for) and tells the museum what it has to say. The game's root opens it once the cloud is made
+        /// on the session's progress (<see cref="ProgressForTheCloud"/>).
+        /// </summary>
+        public void OpenToTheCloud(ICloudDesk cloud) => _cloud = cloud ?? throw new ArgumentNullException(nameof(cloud));
+
         /// <summary>
         /// Lays the stage out for a screen, and every later stage too; call again whenever the screen changes. A finger
         /// that is down when the screen changes (the device turned, a fold opened) is let go first, as when the device
@@ -407,17 +439,21 @@ namespace Puzzle.Client.Flow
         public void Advance(float deltaSeconds)
         {
             _running += TimeSpan.FromSeconds(deltaSeconds);
+            CatchTheStageUpWithTheProgress();
             TellTheStageTheWallet();
             _front.Advance(deltaSeconds);
             KeepWhatHappened();
             DoWhatTheStageAskedFor();
             DoWhatWasAskedOfThePhone();
             DoWhatWasAskedOfTheStore();
+            DoWhatWasAskedOfTheAccount();
             KeepWhatWasPlaced();
             KeepTheTutorialStepsDone();
             PlayWhatSounded();
             FollowThePlayer();
             NoteTheShopOpened();
+            TellTheMuseumTheCloudsNews();
+            AskForTheUploadDue();
         }
 
         /// <summary>Plays a move on the board's stage, as <see cref="GameStage.TryPlay"/> does, and keeps what it means for the progress.</summary>
@@ -447,6 +483,7 @@ namespace Puzzle.Client.Flow
             DoWhatTheStageAskedFor();
             DoWhatWasAskedOfThePhone();
             DoWhatWasAskedOfTheStore();
+            DoWhatWasAskedOfTheAccount();
         }
 
         /// <summary>
@@ -663,6 +700,11 @@ namespace Puzzle.Client.Flow
                 visit, _paintings, _art, door, _coinsLastShown is Coins shown ? wallet.WithCoins(shown) : wallet, ShopNow, DeviceNow, brief, opening,
                 TutorialPlan.IntroducesTheStartBoosters(_progress.Tutorial, _progress.AttemptsOnLevel), _effectArt, asksAboutTheStatistics);
             museum.Fit(_screen); // at once: the first frame is drawn before the next step of the clock
+            if (_cloud.OfferTheLink(_progress.LevelsWon) is SignInPlatform platform)
+            {
+                museum.OfferTheLink(platform);
+            }
+
             _rewardOfTheBoard = null;
             _startOfTheBoard = null;
             return museum;
@@ -1088,6 +1130,7 @@ namespace Puzzle.Client.Flow
             if (isNewlyPlaced && !before.Museum.IsComplete(painting) && _progress.Museum.IsComplete(painting))
             {
                 Note(new PlayNote.PaintingCompleted(painting.Value, painting.Room.Value));
+                _uploadDue ??= SyncTrigger.PaintingOrRoomCompleted; // a room completed completes a painting too
             }
 
             if (isNewlyPlaced && !IsRestored(painting.Room, before) && IsRestored(painting.Room, _progress))
@@ -1098,6 +1141,84 @@ namespace Puzzle.Client.Flow
         }
 
         private bool IsRestored(RoomNumber room, PlayerProgress progress) => RoomWall.Of(room, progress.Museum, _paintings.Catalogue).IsRestored;
+
+        /// <summary>What the museum's account cards asked since the last step, handed to the cloud, which answers with news.</summary>
+        private void DoWhatWasAskedOfTheAccount()
+        {
+            if (!(Museum is MuseumStage museum))
+            {
+                return;
+            }
+
+            foreach (AccountRequest request in museum.TakeWhatWasAskedOfTheAccount())
+            {
+                _cloud.Ask(request);
+            }
+        }
+
+        /// <summary>What the cloud has to tell, told to the museum while it is the stage in front; it waits in the cloud meanwhile.</summary>
+        private void TellTheMuseumTheCloudsNews()
+        {
+            if (!(Museum is MuseumStage museum))
+            {
+                return;
+            }
+
+            foreach (AccountNews news in _cloud.TakeNews())
+            {
+                museum.Hear(news, LevelNumberNow, _progress.Wallet.Coins);
+            }
+        }
+
+        /// <summary>The upload a moment of this step asked for (a painting or a room completed, a payment delivered), asked of the cloud once the step is done.</summary>
+        private void AskForTheUploadDue()
+        {
+            if (_uploadDue is SyncTrigger trigger)
+            {
+                _uploadDue = null;
+                _cloud.AskForAnUpload(trigger);
+            }
+        }
+
+        /// <summary>
+        /// The cloud's sync merged the cloud's progress into the session's: it is the session's own from now on, and saved
+        /// at once. When the stage in front shows what it no longer is, the next step takes the stage down.
+        /// </summary>
+        private void TakeTheCloudsProgress(PlayerProgress merged)
+        {
+            PlayerProgress before = _progress;
+            _progress = merged;
+            SaveProgress();
+            bool showsOtherwise = before.LevelsWon != merged.LevelsWon || before.AttemptsOnLevel != merged.AttemptsOnLevel
+                || !before.Museum.Placed.Equals(merged.Museum.Placed) || !before.Tutorial.Equals(merged.Tutorial);
+            _isTheStageBehindTheProgress |= showsOtherwise;
+            Debug.Log($"The cloud's progress was taken: \"{before}\" is \"{merged}\" now{(showsOtherwise ? "; the hall opens on it" : string.Empty)}.");
+        }
+
+        /// <summary>
+        /// The stage in front shows a progress the cloud's replaced: it is taken down, and the hall opens on the progress
+        /// out of the dark. A board's attempt open then is cut short, as when the game is closed in a level: no life, no
+        /// record. A board that stood aside for its jigsaw goes with it.
+        /// </summary>
+        private void CatchTheStageUpWithTheProgress()
+        {
+            if (!_isTheStageBehindTheProgress)
+            {
+                return;
+            }
+
+            _isTheStageBehindTheProgress = false;
+            if (_startOfTheBoard is AttemptStart cut)
+            {
+                Debug.Log($"The attempt at level {cut.Level} is cut short by the cloud's progress: no life is lost and no record is written.");
+            }
+
+            (_wayBack as WayBack.ToTheCard)?.Board.Dispose();
+            _wayBack = null;
+            _restoredJustNow = null;
+            ChangeTheStage(() => OpenTheMuseum(StageOpening.OutOfTheDark, MuseumDoor.Home));
+            _paintings.LetGoOfUnusedPictures();
+        }
 
         /// <summary>Where the way back from a jigsaw leads. A closed set (private constructor).</summary>
         private abstract class WayBack
@@ -1155,6 +1276,7 @@ namespace Puzzle.Client.Flow
                 {
                     case Delivery.Given given:
                         _session._progress = given.Progress;
+                        _session._uploadDue ??= SyncTrigger.PurchaseDelivered;
                         Debug.Log($"The store's {payment} ({reason}) gave {given.What}.");
                         if (reason == DeliveryReason.Payment)
                         {
@@ -1175,6 +1297,36 @@ namespace Puzzle.Client.Flow
                 _session.SaveProgress();
                 return delivery;
             }
+        }
+
+        /// <summary>
+        /// The session as the cloud's sync holds its progress: the progress with the jigsaw's pieces in place, whether its
+        /// store keeps it after the game closes, whether the tester mode holds (whose unlimited coins are never the
+        /// cloud's), and the merged progress taken as the session's own.
+        /// </summary>
+        private sealed class HolderForTheCloud : IProgressHolder
+        {
+            private readonly GameSession _session;
+
+            public HolderForTheCloud(GameSession session)
+            {
+                _session = session;
+            }
+
+            public PlayerProgress Current
+            {
+                get
+                {
+                    _session.TakeInThePiecesInPlace();
+                    return _session._progress;
+                }
+            }
+
+            public ProgressKeeping Keeping => _session._store.Keeping;
+
+            public bool IsTesterMode => _session.HandlingNow == WalletHandling.Unlimited;
+
+            public void Adopt(PlayerProgress progress) => _session.TakeTheCloudsProgress(progress ?? throw new ArgumentNullException(nameof(progress)));
         }
     }
 }

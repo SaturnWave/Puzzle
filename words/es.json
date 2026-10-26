@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"La tienda aún no ha respondido."},
     {"id":"EntryVersionAlone","text":"Versión {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Esta versión · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Software"}
+    {"id":"CreditsSoftware","text":"Software"},
+    {"id":"AccountOfferTitle","text":"Guarda tu partida"},
+    {"id":"AccountOfferLine","text":"Por ahora, tu partida solo está en este teléfono."},
+    {"id":"AccountOfferPlatformLine","text":"Si cambias de teléfono, {platform} la recupera."},
+    {"id":"AccountLinkButton","text":"Vincular"},
+    {"id":"AccountNotNowButton","text":"Ahora no"},
+    {"id":"AccountLinkedTitle","text":"Cuenta vinculada"},
+    {"id":"AccountLinkedLine","text":"Tu partida está en tu cuenta de {platform}."},
+    {"id":"AccountLinkedNewPhoneLine","text":"En un teléfono nuevo, sigues donde lo dejaste."},
+    {"id":"AccountNotLinkedTitle","text":"No se pudo vincular"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} no está disponible en este teléfono."},
+    {"id":"AccountUnreachableLine","text":"No hay conexión ahora mismo."},
+    {"id":"AccountSafeLine","text":"Tu progreso está a salvo en este teléfono."},
+    {"id":"AccountOtherSaveTitle","text":"Hay otra partida"},
+    {"id":"AccountOtherSaveLine","text":"Tu cuenta de {platform} tiene una partida."},
+    {"id":"AccountOtherSaveMergeLine","text":"Si cambias, el progreso de este teléfono se le suma."},
+    {"id":"AccountSwitchButton","text":"Cambiar"},
+    {"id":"AccountStayButton","text":"Cancelar"},
+    {"id":"AccountSaveBackTitle","text":"Tu partida ha vuelto"},
+    {"id":"AccountSaveBackLine","text":"Nivel {level} · Monedas: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Sigues donde lo dejaste."},
+    {"id":"AccountNotSwitchedTitle","text":"No se pudo cambiar"}
   ]
 }

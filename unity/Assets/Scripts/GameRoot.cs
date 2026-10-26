@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using Puzzle.Client.Art;
 using Puzzle.Client.Canvases;
+using Puzzle.Client.Cloud;
 using Puzzle.Client.Engine;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Layout;
@@ -36,7 +37,10 @@ namespace Puzzle.Client
     /// (<see cref="MusicPlayer"/>), which no screen reaches: it follows only the player's switch, every frame, and
     /// gives way to another app's music, which the root asks the device about (<see cref="OtherAudio"/>). The root
     /// also chooses where the play statistics go (<see cref="StatisticsOfThisBuild"/>): the session asks the player
-    /// first, over the hall, and lets nothing out before a yes.
+    /// first, over the hall, and lets nothing out before a yes. And it holds the game's cloud save (Cloud/CloudSaving),
+    /// made on the session's progress as the session opens and started in the background at once: with the player's
+    /// "Bulut kaydı" switch on and a Unity Cloud project linked, Unity's services start, the player signs in and the
+    /// progress syncs; otherwise nothing of the cloud starts, and the game plays exactly as without it.
     /// </summary>
     /// <remarks>
     /// The screen may change while the game runs: a tablet or an open foldable turns with the device, a fold opens or
@@ -81,6 +85,9 @@ namespace Puzzle.Client
         [SerializeField] private ArtCatalogue? _art;
 
         private GameSession? _session;
+
+        /// <summary>The game's cloud save; nothing before the session is open, or when cloud.json could not be read this run.</summary>
+        private CloudSaving? _cloud;
         private SoundPlayer? _sounds;
         private IOtherAudio? _otherAudio;
         private MusicPlayer? _music;
@@ -331,6 +338,7 @@ namespace Puzzle.Client
                 _music?.PutAway();
                 _session?.SaveProgress();
                 _session?.WriteWaitingRecords();
+                _cloud?.AskForAnUpload(SyncTrigger.Background); // as the sync's budget says: at most hourly
             }
             else
             {
@@ -402,6 +410,7 @@ namespace Puzzle.Client
                     cues,
                     _fittedTo);
                 _session.Front.Camera.enabled = false;
+                _cloud = StartTheCloud(_session, rules);
             }
 
             // The entry page's foot says "test sürümü" for a build that sells nothing for money, which the economy's marks say.
@@ -489,6 +498,30 @@ namespace Puzzle.Client
             }
 
             return PlayStatistics.Through(new NotesToTheLog(Debug.Log, $"this build has {key}"));
+        }
+
+        /// <summary>
+        /// The game's cloud save on the session's progress, opened to the session and started in the background: it
+        /// starts Unity's services only with the player's switch on and a Unity Cloud project linked
+        /// (Cloud/CloudOfThisBuild), and the game never waits for it. A cloud.json that cannot be read leaves the run
+        /// without the cloud, which the log says; the game plays on as without it.
+        /// </summary>
+        private static CloudSaving? StartTheCloud(GameSession session, EconomyRules rules)
+        {
+            CloudSaving cloud;
+            try
+            {
+                cloud = CloudOfThisBuild.Make(session.ProgressForTheCloud, rules, Debug.Log, Debug.LogException);
+            }
+            catch (Exception failure) when (failure is IOException || failure is UnauthorizedAccessException)
+            {
+                Debug.LogError($"Cloud save: {CloudStateFile.FileName} cannot be read, so this run has no cloud save and plays on this phone alone: {failure.Message}");
+                return null;
+            }
+
+            session.OpenToTheCloud(cloud);
+            cloud.ReportTheFaultOf(cloud.StartAsync(System.Threading.CancellationToken.None));
+            return cloud;
         }
 
         /// <summary>The game's music on the root, following the player's switch and giving way to another app's music; none from a catalogue built before the music, which is said once.</summary>

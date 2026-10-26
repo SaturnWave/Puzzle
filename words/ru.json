@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"Магазин пока не ответил."},
     {"id":"EntryVersionAlone","text":"Версия {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Эта версия · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Программы"}
+    {"id":"CreditsSoftware","text":"Программы"},
+    {"id":"AccountOfferTitle","text":"Сохраните прогресс"},
+    {"id":"AccountOfferLine","text":"Пока ваш прогресс есть только на этом телефоне."},
+    {"id":"AccountOfferPlatformLine","text":"При смене телефона {platform} вернёт его."},
+    {"id":"AccountLinkButton","text":"Связать"},
+    {"id":"AccountNotNowButton","text":"Не сейчас"},
+    {"id":"AccountLinkedTitle","text":"Аккаунт связан"},
+    {"id":"AccountLinkedLine","text":"Ваш прогресс в аккаунте {platform}."},
+    {"id":"AccountLinkedNewPhoneLine","text":"На новом телефоне вы продолжите с того же места."},
+    {"id":"AccountNotLinkedTitle","text":"Не удалось связать"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} недоступен на этом телефоне."},
+    {"id":"AccountUnreachableLine","text":"Сейчас нет подключения."},
+    {"id":"AccountSafeLine","text":"Ваш прогресс в безопасности на этом телефоне."},
+    {"id":"AccountOtherSaveTitle","text":"Найден другой прогресс"},
+    {"id":"AccountOtherSaveLine","text":"В аккаунте {platform} есть прогресс."},
+    {"id":"AccountOtherSaveMergeLine","text":"При переходе прогресс этого телефона добавится к нему."},
+    {"id":"AccountSwitchButton","text":"Перейти"},
+    {"id":"AccountStayButton","text":"Отмена"},
+    {"id":"AccountSaveBackTitle","text":"Прогресс вернулся"},
+    {"id":"AccountSaveBackLine","text":"Уровень {level} · Монеты: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Продолжайте с того же места."},
+    {"id":"AccountNotSwitchedTitle","text":"Не удалось перейти"}
   ]
 }

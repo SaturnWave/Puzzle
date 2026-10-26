@@ -22,8 +22,8 @@ Son ikisini bir oyuncu çağırırsa modül reddeder. Modülün Cloud Save'de tu
 | # | Ne | Nerede | Not |
 |---|---|---|---|
 | 1 | Bulut projesi açık ve Editor'a bağlı, `development` ortamı var | Plan §9 A1–A3 | |
-| 2 | Unity'de **Cloud Code** paketi `com.unity.services.cloudcode` 2.10.4 | Planın paket listesi (§2.3) | İstemci aşamalarında eklenir |
-| 3 | Unity'de **Deployment** paketi `com.unity.services.deployment` | Package Manager → **+** → *Add package by name* → `com.unity.services.deployment` | **Planın paket listesinde yok.** Deployment penceresi bu paketle gelir. Yalnız Editor'da çalışır, oyuna girmez. Paket kaydındaki son sürüm 1.7.2 (2026-03-04). Siz ekleyin ya da "ekle" deyin, biz ekleyip sürümünü sabitleyelim |
+| 2 | Unity'de **Cloud Code** paketi `com.unity.services.cloudcode` 2.10.4 | Planın paket listesi (§2.3) | Projede (Aşama 2, 2026-10-26) |
+| 3 | Unity'de **Deployment** paketi `com.unity.services.deployment` | Projede: Unity In-App Purchasing 5.4.4 getiriyor (`packages-lock.json`: 1.7.2) | Eklenecek bir şey yok (Aşama 2'de görüldü, 2026-10-26). Deployment penceresi bu paketle gelir; yalnız Editor'da çalışır, oyuna girmez |
 | 4 | .NET SDK | Bu bilgisayarda 10.0.400 kurulu | Unity → **Edit → Preferences → Cloud Code → .NET path**: `C:\Program Files\dotnet\dotnet.exe`. Modül .NET 9'u hedefler; ilk derlemede gerekli paketler NuGet'ten kendiliğinden iner |
 | 5 | Dört sır | Plan §9 A5 (Dashboard → proje → **Development → Secrets**) | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_IAP_PRIVATE_KEY`, `APPLE_IAP_KEY_ID`, `APPLE_ISSUER_ID`; her birinde "erişebilecek hizmet: Cloud Code". Sırlar girilmeden de modül yüklenir; o zaman satın almalara "şu an karar yok" der ve oyun bugünkü gibi davranır |
 

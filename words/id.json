@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"Belum ada jawaban dari toko."},
     {"id":"EntryVersionAlone","text":"Versi {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Versi ini · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Perangkat lunak"}
+    {"id":"CreditsSoftware","text":"Perangkat lunak"},
+    {"id":"AccountOfferTitle","text":"Simpan progresmu"},
+    {"id":"AccountOfferLine","text":"Untuk sekarang, progresmu hanya ada di ponsel ini."},
+    {"id":"AccountOfferPlatformLine","text":"Jika ganti ponsel, {platform} mengembalikannya."},
+    {"id":"AccountLinkButton","text":"Tautkan"},
+    {"id":"AccountNotNowButton","text":"Nanti saja"},
+    {"id":"AccountLinkedTitle","text":"Akun tertaut"},
+    {"id":"AccountLinkedLine","text":"Progresmu ada di akun {platform}-mu."},
+    {"id":"AccountLinkedNewPhoneLine","text":"Di ponsel baru, kamu lanjut dari tempat terakhir."},
+    {"id":"AccountNotLinkedTitle","text":"Gagal menautkan"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} tidak tersedia di ponsel ini."},
+    {"id":"AccountUnreachableLine","text":"Tidak bisa terhubung sekarang."},
+    {"id":"AccountSafeLine","text":"Progresmu aman di ponsel ini."},
+    {"id":"AccountOtherSaveTitle","text":"Ada progres lain"},
+    {"id":"AccountOtherSaveLine","text":"Akun {platform}-mu punya progres."},
+    {"id":"AccountOtherSaveMergeLine","text":"Jika beralih, progres ponsel ini ditambahkan ke sana."},
+    {"id":"AccountSwitchButton","text":"Beralih"},
+    {"id":"AccountStayButton","text":"Batal"},
+    {"id":"AccountSaveBackTitle","text":"Progresmu kembali"},
+    {"id":"AccountSaveBackLine","text":"Level {level} · Koin: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Kamu lanjut dari tempat terakhir."},
+    {"id":"AccountNotSwitchedTitle","text":"Gagal beralih"}
   ]
 }

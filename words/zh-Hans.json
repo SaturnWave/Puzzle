@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"商店尚未响应。"},
     {"id":"EntryVersionAlone","text":"版本{version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"本版本 · {ads}，{buying}"},
-    {"id":"CreditsSoftware","text":"软件"}
+    {"id":"CreditsSoftware","text":"软件"},
+    {"id":"AccountOfferTitle","text":"保护你的进度"},
+    {"id":"AccountOfferLine","text":"目前，你的进度只保存在这部手机上。"},
+    {"id":"AccountOfferPlatformLine","text":"换手机时，{platform}会帮你找回。"},
+    {"id":"AccountLinkButton","text":"关联"},
+    {"id":"AccountNotNowButton","text":"以后再说"},
+    {"id":"AccountLinkedTitle","text":"账号已关联"},
+    {"id":"AccountLinkedLine","text":"你的进度已在{platform}账号中。"},
+    {"id":"AccountLinkedNewPhoneLine","text":"在新手机上也能从上次的位置继续。"},
+    {"id":"AccountNotLinkedTitle","text":"无法关联"},
+    {"id":"AccountPlatformMissingLine","text":"这部手机上无法使用{platform}。"},
+    {"id":"AccountUnreachableLine","text":"暂时无法连接。"},
+    {"id":"AccountSafeLine","text":"你的进度在这部手机上很安全。"},
+    {"id":"AccountOtherSaveTitle","text":"发现其他进度"},
+    {"id":"AccountOtherSaveLine","text":"你的{platform}账号中已有进度。"},
+    {"id":"AccountOtherSaveMergeLine","text":"切换后，这部手机的进度会合并进去。"},
+    {"id":"AccountSwitchButton","text":"切换"},
+    {"id":"AccountStayButton","text":"取消"},
+    {"id":"AccountSaveBackTitle","text":"进度已恢复"},
+    {"id":"AccountSaveBackLine","text":"第{level}关 · 金币：{coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"从上次的位置继续吧。"},
+    {"id":"AccountNotSwitchedTitle","text":"无法切换"}
   ]
 }

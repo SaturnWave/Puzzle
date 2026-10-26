@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"Vom Store kam noch keine Antwort."},
     {"id":"EntryVersionAlone","text":"Version {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Diese Version · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Software"}
+    {"id":"CreditsSoftware","text":"Software"},
+    {"id":"AccountOfferTitle","text":"Spielstand sichern"},
+    {"id":"AccountOfferLine","text":"Dein Spielstand ist bisher nur auf diesem Handy."},
+    {"id":"AccountOfferPlatformLine","text":"Bei einem neuen Handy holt {platform} ihn zurück."},
+    {"id":"AccountLinkButton","text":"Verbinden"},
+    {"id":"AccountNotNowButton","text":"Nicht jetzt"},
+    {"id":"AccountLinkedTitle","text":"Konto verbunden"},
+    {"id":"AccountLinkedLine","text":"Dein Spielstand ist in deinem {platform}-Konto."},
+    {"id":"AccountLinkedNewPhoneLine","text":"Auf einem neuen Handy spielst du dort weiter, wo du warst."},
+    {"id":"AccountNotLinkedTitle","text":"Verbinden fehlgeschlagen"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} ist auf diesem Handy nicht verfügbar."},
+    {"id":"AccountUnreachableLine","text":"Gerade keine Verbindung möglich."},
+    {"id":"AccountSafeLine","text":"Dein Fortschritt ist auf diesem Handy sicher."},
+    {"id":"AccountOtherSaveTitle","text":"Anderer Spielstand gefunden"},
+    {"id":"AccountOtherSaveLine","text":"Dein {platform}-Konto hat einen Spielstand."},
+    {"id":"AccountOtherSaveMergeLine","text":"Beim Wechsel kommt der Fortschritt dieses Handys dazu."},
+    {"id":"AccountSwitchButton","text":"Wechseln"},
+    {"id":"AccountStayButton","text":"Abbrechen"},
+    {"id":"AccountSaveBackTitle","text":"Spielstand ist zurück"},
+    {"id":"AccountSaveBackLine","text":"Level {level} · Münzen: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Du spielst dort weiter, wo du warst."},
+    {"id":"AccountNotSwitchedTitle","text":"Wechsel fehlgeschlagen"}
   ]
 }

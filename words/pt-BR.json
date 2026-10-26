@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"A loja ainda não respondeu."},
     {"id":"EntryVersionAlone","text":"Versão {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Esta versão · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Software"}
+    {"id":"CreditsSoftware","text":"Software"},
+    {"id":"AccountOfferTitle","text":"Proteja seu progresso"},
+    {"id":"AccountOfferLine","text":"Por enquanto, seu progresso está só neste celular."},
+    {"id":"AccountOfferPlatformLine","text":"Se trocar de celular, o {platform} o traz de volta."},
+    {"id":"AccountLinkButton","text":"Vincular"},
+    {"id":"AccountNotNowButton","text":"Agora não"},
+    {"id":"AccountLinkedTitle","text":"Conta vinculada"},
+    {"id":"AccountLinkedLine","text":"Seu progresso está na sua conta do {platform}."},
+    {"id":"AccountLinkedNewPhoneLine","text":"Em um celular novo, você continua de onde parou."},
+    {"id":"AccountNotLinkedTitle","text":"Não foi possível vincular"},
+    {"id":"AccountPlatformMissingLine","text":"O {platform} não está disponível neste celular."},
+    {"id":"AccountUnreachableLine","text":"Não dá para conectar agora."},
+    {"id":"AccountSafeLine","text":"Seu progresso está seguro neste celular."},
+    {"id":"AccountOtherSaveTitle","text":"Há outro progresso"},
+    {"id":"AccountOtherSaveLine","text":"Sua conta do {platform} tem um progresso."},
+    {"id":"AccountOtherSaveMergeLine","text":"Se trocar, o progresso deste celular é somado a ele."},
+    {"id":"AccountSwitchButton","text":"Trocar"},
+    {"id":"AccountStayButton","text":"Cancelar"},
+    {"id":"AccountSaveBackTitle","text":"Seu progresso voltou"},
+    {"id":"AccountSaveBackLine","text":"Fase {level} · Moedas: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Você continua de onde parou."},
+    {"id":"AccountNotSwitchedTitle","text":"Não foi possível trocar"}
   ]
 }

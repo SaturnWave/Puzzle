@@ -144,6 +144,11 @@
     <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSaveService.cs" Link="Unity\Cloud\CloudSaveService.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakeCloudSave.cs" Link="Unity\Cloud\FakeCloudSave.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSync.cs" Link="Unity\Cloud\CloudSync.cs" />
+    <!-- Nor has the player's identity in the cloud: the platform's sign-in and Unity's accounts as seams with their fakes, and the game's cloud save that runs them with the sync. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\PlayerIdentity.cs" Link="Unity\Cloud\PlayerIdentity.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakeAccounts.cs" Link="Unity\Cloud\FakeAccounts.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSaving.cs" Link="Unity\Cloud\CloudSaving.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AccountWords.cs" Link="Unity\Flow\AccountWords.cs" />
     <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />
@@ -190,6 +195,8 @@
     <Compile Include="..\..\unity\Assets\Editor\ManifestGameCategory.cs" Link="Unity\Editor\ManifestGameCategory.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestOrientation.cs" Link="Unity\Editor\ManifestOrientation.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestLoggingBackend.cs" Link="Unity\Editor\ManifestLoggingBackend.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestPlayGamesStart.cs" Link="Unity\Editor\ManifestPlayGamesStart.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\PlayGamesDependency.cs" Link="Unity\Editor\PlayGamesDependency.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestSystemBars.cs" Link="Unity\Editor\ManifestSystemBars.cs" />
   </ItemGroup>
   <ItemGroup>

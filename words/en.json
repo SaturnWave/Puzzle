@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"No answer from the store yet."},
     {"id":"EntryVersionAlone","text":"Version {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"This version · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Software"}
+    {"id":"CreditsSoftware","text":"Software"},
+    {"id":"AccountOfferTitle","text":"Keep your save"},
+    {"id":"AccountOfferLine","text":"For now, your save is only on this phone."},
+    {"id":"AccountOfferPlatformLine","text":"If you change phones, {platform} brings it back."},
+    {"id":"AccountLinkButton","text":"Link"},
+    {"id":"AccountNotNowButton","text":"Not now"},
+    {"id":"AccountLinkedTitle","text":"Account linked"},
+    {"id":"AccountLinkedLine","text":"Your save is in your {platform} account."},
+    {"id":"AccountLinkedNewPhoneLine","text":"On a new phone, you pick up where you left off."},
+    {"id":"AccountNotLinkedTitle","text":"Couldn't link"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} isn't available on this phone."},
+    {"id":"AccountUnreachableLine","text":"Can't connect right now."},
+    {"id":"AccountSafeLine","text":"Your progress is safe on this phone."},
+    {"id":"AccountOtherSaveTitle","text":"Another save found"},
+    {"id":"AccountOtherSaveLine","text":"Your {platform} account has a save."},
+    {"id":"AccountOtherSaveMergeLine","text":"If you switch, this phone's progress is added to it."},
+    {"id":"AccountSwitchButton","text":"Switch"},
+    {"id":"AccountStayButton","text":"Cancel"},
+    {"id":"AccountSaveBackTitle","text":"Your save is back"},
+    {"id":"AccountSaveBackLine","text":"Level {level} · Coins: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Pick up where you left off."},
+    {"id":"AccountNotSwitchedTitle","text":"Couldn't switch"}
   ]
 }

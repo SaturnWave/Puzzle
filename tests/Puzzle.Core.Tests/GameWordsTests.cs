@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using Puzzle.Client.Cloud;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
 using Puzzle.Client.Purchases;
@@ -341,6 +342,29 @@ public class GameWordsTests
             said.Add(($"PurchaseWords {what} first line", card.FirstLine));
             said.Add(($"PurchaseWords {what} second line", card.SecondLine));
         }
+
+        var accountCards = new List<(string What, AccountCardWords Words)>
+        {
+            ("Offer Play Games", AccountWords.Offer(SignInPlatform.PlayGames)),
+            ("Offer Game Center", AccountWords.Offer(SignInPlatform.GameCenter)),
+            ("Linked", AccountWords.Of(new AccountNews.Linked(SignInPlatform.PlayGames), 47, new Coins(4200))),
+            ("Not on this phone", AccountWords.Of(new AccountNews.NotLinked(SignInPlatform.GameCenter, LinkFailure.NotOnThisPhone), 47, new Coins(4200))),
+            ("Unreachable", AccountWords.Of(new AccountNews.NotLinked(SignInPlatform.PlayGames, LinkFailure.Unreachable), 47, new Coins(4200))),
+            ("Other save", AccountWords.Of(new AccountNews.OtherSaveFound(SignInPlatform.PlayGames), 47, new Coins(4200))),
+            ("Save came back", AccountWords.Of(new AccountNews.SaveCameBack(), 312, new Coins(4200))),
+            ("Not switched", AccountWords.Of(new AccountNews.NotSwitched(), 47, new Coins(4200))),
+        };
+        foreach ((string what, AccountCardWords card) in accountCards)
+        {
+            said.Add(($"AccountWords {what} title", card.Title));
+            said.Add(($"AccountWords {what} first line", card.FirstLine));
+            said.Add(($"AccountWords {what} second line", card.SecondLine));
+        }
+
+        said.Add(("AccountWords.Link", AccountWords.Link));
+        said.Add(("AccountWords.NotNow", AccountWords.NotNow));
+        said.Add(("AccountWords.Switch", AccountWords.Switch));
+        said.Add(("AccountWords.Stay", AccountWords.Stay));
 
         foreach (DeviceSetting setting in Enum.GetValues<DeviceSetting>())
         {

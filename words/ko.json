@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"스토어에서 아직 응답이 없어요."},
     {"id":"EntryVersionAlone","text":"버전 {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"이 버전 · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"소프트웨어"}
+    {"id":"CreditsSoftware","text":"소프트웨어"},
+    {"id":"AccountOfferTitle","text":"저장 데이터 지키기"},
+    {"id":"AccountOfferLine","text":"지금은 저장 데이터가 이 휴대폰에만 있어요."},
+    {"id":"AccountOfferPlatformLine","text":"휴대폰을 바꿔도 {platform}로 되찾을 수 있어요."},
+    {"id":"AccountLinkButton","text":"연결"},
+    {"id":"AccountNotNowButton","text":"나중에"},
+    {"id":"AccountLinkedTitle","text":"계정 연결 완료"},
+    {"id":"AccountLinkedLine","text":"저장 데이터가 {platform} 계정에 있어요."},
+    {"id":"AccountLinkedNewPhoneLine","text":"새 휴대폰에서도 하던 곳부터 이어서 할 수 있어요."},
+    {"id":"AccountNotLinkedTitle","text":"연결하지 못했어요"},
+    {"id":"AccountPlatformMissingLine","text":"이 휴대폰에서는 {platform}를 쓸 수 없어요."},
+    {"id":"AccountUnreachableLine","text":"지금은 연결할 수 없어요."},
+    {"id":"AccountSafeLine","text":"진행 상황은 이 휴대폰에 안전하게 있어요."},
+    {"id":"AccountOtherSaveTitle","text":"다른 저장 데이터가 있어요"},
+    {"id":"AccountOtherSaveLine","text":"{platform} 계정에 저장 데이터가 있어요."},
+    {"id":"AccountOtherSaveMergeLine","text":"전환하면 이 휴대폰의 진행 상황이 더해져요."},
+    {"id":"AccountSwitchButton","text":"전환"},
+    {"id":"AccountStayButton","text":"취소"},
+    {"id":"AccountSaveBackTitle","text":"저장 데이터가 돌아왔어요"},
+    {"id":"AccountSaveBackLine","text":"레벨 {level} · 코인: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"하던 곳부터 이어서 해요."},
+    {"id":"AccountNotSwitchedTitle","text":"전환하지 못했어요"}
   ]
 }

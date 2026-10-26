@@ -50,7 +50,8 @@ namespace Puzzle.Client.Flow
     /// The software the game carries from its packages is named with its licences: the Aptabase SDK and Json.NET are
     /// MIT, whose notice must go with every copy, so their copyright lines are shown with the MIT text whole; the parts
     /// of Unity In-App Purchasing that its notices list under the Apache License 2.0 are named with their copyright
-    /// lines and the licence's address. The music is the owner's own and is not listed.
+    /// lines and the licence's address, and so is Google's Play Games plugin; websocket-sharp, which Unity's services
+    /// bring, is MIT, its copyright line among the MIT notice's. The music is the owner's own and is not listed.
     /// </remarks>
     public static class CreditWords
     {
@@ -104,6 +105,8 @@ namespace Puzzle.Client.Flow
             "Aptabase SDK for Unity 0.3.1 (https://github.com/aptabase/aptabase-unity), MIT License.",
             "Json.NET (Newtonsoft.Json, https://www.newtonsoft.com/json), in Unity's package com.unity.nuget.newtonsoft-json 3.2.2, MIT License.",
             "In Unity In-App Purchasing 5.4.4, as its notices list them: Google Play Billing Library 9.0.0, Copyright (c) 2023 Google, LLC; Apple StoreKit 2, Copyright (c) 2023 Apple Computer, Inc.; under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0).",
+            "websocket-sharp (https://github.com/sta/websocket-sharp), in Unity's package com.unity.services.wire 1.6.0, MIT License.",
+            "Google Play Games plugin for Unity 2.3.0 (https://github.com/playgameservices/play-games-plugin-for-unity), Copyright (C) 2014 Google Inc., under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0).",
         };
 
         /// <summary>The MIT License of the software above, whole: its copyright lines, then its text, a paragraph a line.</summary>
@@ -115,6 +118,7 @@ namespace Puzzle.Client.Flow
             "Copyright (c) 2016 SaladLab",
             "Copyright (c) 2019 Kalle Jillheden (jilleJr)",
             "Copyright (c) 2019 Mike Wuetherick",
+            "Copyright (c) 2010-2021 sta.blockhead",
             "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
             "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.",
             "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",

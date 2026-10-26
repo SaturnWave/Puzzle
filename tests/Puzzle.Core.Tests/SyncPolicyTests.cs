@@ -175,4 +175,19 @@ public sealed class SyncPolicyTests : IDisposable
         Assert.True(read.IsSwitchedOn);
         Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.Background, read, SyncSettings.Default, Noon));
     }
+
+    [Fact]
+    public void The_offer_to_link_is_kept_across_accounts_and_runs_and_a_file_from_before_it_reads_as_not_made()
+    {
+        StateFile().Save(CloudState.New("w").WithTheLinkOffered().ForPlayer(Player).ForPlayer(new CloudPlayerId("player-2")));
+        bool keptAcrossAccounts = StateFile().Load().State.LinkOffered;
+        string path = Path.Combine(_folder, CloudStateFile.FileName);
+        File.WriteAllText(path, File.ReadAllText(path).Replace(",\"linkOffered\":true", string.Empty, StringComparison.Ordinal));
+
+        CloudState before = StateFile().Load().State;
+
+        Assert.True(keptAcrossAccounts);
+        Assert.False(before.LinkOffered);
+        Assert.False(CloudState.Forgotten("w").LinkOffered);
+    }
 }

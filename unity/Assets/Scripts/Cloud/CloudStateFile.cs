@@ -129,7 +129,8 @@ namespace Puzzle.Client.Cloud
     /// <summary>
     /// The sync's state as cloud.json writes it:
     /// <c>{"version":1,"switchedOn":true,"writer":"…","player":"…","synced":{"known":true,"saved":true,"progress":{…},"writeLock":"…","revision":42,"writes":["…"]},
-    /// "lastReadUnixSeconds":…,"lastWriteUnixSeconds":0,"pending":{"id":"","progress":{…},"revision":0,"writes":[]},"failures":0,"retryAtUnixSeconds":0,"halt":"","haltWhy":"","haltLayout":0}</c>.
+    /// "lastReadUnixSeconds":…,"lastWriteUnixSeconds":0,"pending":{"id":"","progress":{…},"revision":0,"writes":[]},"failures":0,"retryAtUnixSeconds":0,"halt":"","haltWhy":"","haltLayout":0,
+    /// "linkOffered":false}</c>. A file written before <c>linkOffered</c> (Stage 2 of the server plan, 2026-10-26) reads it as false.
     /// An instant is whole seconds since 1970 (UTC), 0 for none; an empty text is none. Unity's reader writes every
     /// block whether it holds anything or not, so a block says so itself (<c>known</c>, <c>saved</c>, an empty id).
     /// </summary>
@@ -154,6 +155,7 @@ namespace Puzzle.Client.Cloud
         public string halt = string.Empty;
         public string haltWhy = string.Empty;
         public int haltLayout;
+        public bool linkOffered;
 
         public static CloudStateDocument Of(CloudState state) => new CloudStateDocument
         {
@@ -176,6 +178,7 @@ namespace Puzzle.Client.Cloud
             },
             haltWhy = state.Halt is CloudHalt.DamagedSave damaged ? damaged.Why : string.Empty,
             haltLayout = state.Halt is CloudHalt.LaterGame later ? later.ProgressLayout : 0,
+            linkOffered = state.LinkOffered,
         };
 
         /// <summary>
@@ -202,7 +205,7 @@ namespace Puzzle.Client.Cloud
             };
             return CloudState.Restored(
                 document.switchedOn, document.writer, player, synced, InstantOf(document.lastReadUnixSeconds), InstantOf(document.lastWriteUnixSeconds),
-                pending, document.failures, InstantOf(document.retryAtUnixSeconds), halt);
+                pending, document.failures, InstantOf(document.retryAtUnixSeconds), halt, document.linkOffered);
         }
 
         internal static long SecondsOf(DateTimeOffset? instant) => instant?.ToUnixTimeSeconds() ?? 0;

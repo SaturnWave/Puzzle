@@ -153,6 +153,16 @@ namespace Puzzle.Client.Screens
         {
         }
 
+        /// <summary>The green "Bağlan" of the offer to link the account: the account is linked to Google Play Games or Game Center.</summary>
+        public sealed class LinkTheAccount : MuseumPress
+        {
+        }
+
+        /// <summary>The green "Ona geç" of the question of the platform player's own save: the phone goes over to that save.</summary>
+        public sealed class SwitchTheAccount : MuseumPress
+        {
+        }
+
         /// <summary>The shop's row that asks the store for the player's purchases back (the App Store's restore).</summary>
         public sealed class RestorePurchases : MuseumPress
         {

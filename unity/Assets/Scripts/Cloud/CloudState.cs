@@ -149,7 +149,8 @@ namespace Puzzle.Client.Cloud
             PendingWrite? pending,
             int failures,
             DateTimeOffset? retryAt,
-            CloudHalt? halt)
+            CloudHalt? halt,
+            bool linkOffered)
         {
             IsSwitchedOn = isSwitchedOn;
             Writer = string.IsNullOrEmpty(writer) ? throw new ArgumentException("An installation has a writer id.", nameof(writer)) : writer;
@@ -161,6 +162,7 @@ namespace Puzzle.Client.Cloud
             Failures = failures;
             RetryAt = retryAt;
             Halt = halt;
+            LinkOffered = linkOffered;
         }
 
         /// <summary>
@@ -195,23 +197,34 @@ namespace Puzzle.Client.Cloud
         /// <summary>Why the sync stopped for the account; nothing while it goes on.</summary>
         public CloudHalt? Halt { get; }
 
+        /// <summary>
+        /// True once the installation offered to link the account to Google Play Games or Game Center (the owner's
+        /// decision 2, 2026-10-26: once, after the first won level). Kept whatever account the phone signs in to; a
+        /// forgotten state ("Delete my data", a damaged cloud.json) offers again, to the new account.
+        /// </summary>
+        public bool LinkOffered { get; }
+
         /// <summary>A new installation's state: the switch on, a new writer id, no account yet.</summary>
-        public static CloudState New(string writer) => new CloudState(true, writer, null, null, null, null, null, 0, null, null);
+        public static CloudState New(string writer) => new CloudState(true, writer, null, null, null, null, null, 0, null, null, linkOffered: false);
 
         /// <summary>
         /// The state after the player's cloud data was deleted ("Delete my data", §5.6), or after cloud.json was found
         /// damaged: the switch off, a new writer id, nothing of any account. The player turns the switch on to sync again.
         /// </summary>
-        public static CloudState Forgotten(string writer) => new CloudState(false, writer, null, null, null, null, null, 0, null, null);
+        public static CloudState Forgotten(string writer) => new CloudState(false, writer, null, null, null, null, null, 0, null, null, linkOffered: false);
 
         /// <summary>The state as cloud.json keeps it, every part given.</summary>
         public static CloudState Restored(
             bool isSwitchedOn, string writer, CloudPlayerId? player, CloudBase? syncedBase, DateTimeOffset? lastRead, DateTimeOffset? lastWrite,
-            PendingWrite? pending, int failures, DateTimeOffset? retryAt, CloudHalt? halt) =>
-            new CloudState(isSwitchedOn, writer, player, player.HasValue ? syncedBase : null, lastRead, lastWrite, player.HasValue ? pending : null, Math.Max(0, failures), retryAt, halt);
+            PendingWrite? pending, int failures, DateTimeOffset? retryAt, CloudHalt? halt, bool linkOffered = false) =>
+            new CloudState(
+                isSwitchedOn, writer, player, player.HasValue ? syncedBase : null, lastRead, lastWrite, player.HasValue ? pending : null, Math.Max(0, failures), retryAt, halt, linkOffered);
+
+        /// <summary>The offer to link the account was made: it is not made again.</summary>
+        public CloudState WithTheLinkOffered() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, linkOffered: true);
 
         /// <summary>The player turned the switch.</summary>
-        public CloudState SwitchedTo(bool isOn) => new CloudState(isOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt);
+        public CloudState SwitchedTo(bool isOn) => new CloudState(isOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, LinkOffered);
 
         /// <summary>
         /// The state for the account signed in now: this one when it is the account already synced, else a state with
@@ -219,26 +232,26 @@ namespace Puzzle.Client.Cloud
         /// new player as the base, §3.6).
         /// </summary>
         public CloudState ForPlayer(CloudPlayerId player) =>
-            Player == player ? this : new CloudState(IsSwitchedOn, Writer, player, null, null, null, null, 0, null, null);
+            Player == player ? this : new CloudState(IsSwitchedOn, Writer, player, null, null, null, null, 0, null, null, LinkOffered);
 
         /// <summary>The cloud was read: its save is the base now, and the cloud answered.</summary>
-        public CloudState AfterRead(CloudBase read, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, read, at, LastWrite, null, 0, null, null);
+        public CloudState AfterRead(CloudBase read, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, read, at, LastWrite, null, 0, null, null, LinkOffered);
 
         /// <summary>The save was written: what was written is the base now.</summary>
-        public CloudState AfterWrite(CloudBase written, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, written, LastRead, at, null, 0, null, Halt);
+        public CloudState AfterWrite(CloudBase written, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, written, LastRead, at, null, 0, null, Halt, LinkOffered);
 
         /// <summary>A write is about to be sent.</summary>
-        public CloudState Sending(PendingWrite write) => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, write, Failures, RetryAt, Halt);
+        public CloudState Sending(PendingWrite write) => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, write, Failures, RetryAt, Halt, LinkOffered);
 
         /// <summary>The cloud refused the write for a lock that was old: it is known not to have landed.</summary>
-        public CloudState NotWritten() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, null, 0, null, Halt);
+        public CloudState NotWritten() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, null, 0, null, Halt, LinkOffered);
 
         /// <summary>The cloud could not be reached; the next try waits until <paramref name="retryAt"/>, or not at all for nothing (no network).</summary>
         public CloudState AfterFailure(DateTimeOffset? retryAt) =>
-            new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures + 1, retryAt, Halt);
+            new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures + 1, retryAt, Halt, LinkOffered);
 
         /// <summary>The sync stops for this account: nothing is written over the cloud's save.</summary>
-        public CloudState Halted(CloudHalt halt, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, Base, at, LastWrite, null, 0, null, halt ?? throw new ArgumentNullException(nameof(halt)));
+        public CloudState Halted(CloudHalt halt, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, Base, at, LastWrite, null, 0, null, halt ?? throw new ArgumentNullException(nameof(halt)), LinkOffered);
     }
 
     /// <summary>Random ids for the sync: 128 bits from the system's source of secure randomness, as 32 lowercase hexadecimal digits.</summary>

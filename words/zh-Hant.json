@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"商店尚未回應。"},
     {"id":"EntryVersionAlone","text":"版本{version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"本版本 · {ads}，{buying}"},
-    {"id":"CreditsSoftware","text":"軟體"}
+    {"id":"CreditsSoftware","text":"軟體"},
+    {"id":"AccountOfferTitle","text":"保護你的進度"},
+    {"id":"AccountOfferLine","text":"目前，你的進度只存在這支手機上。"},
+    {"id":"AccountOfferPlatformLine","text":"換手機時，{platform}會幫你找回。"},
+    {"id":"AccountLinkButton","text":"連結"},
+    {"id":"AccountNotNowButton","text":"以後再說"},
+    {"id":"AccountLinkedTitle","text":"帳號已連結"},
+    {"id":"AccountLinkedLine","text":"你的進度已在{platform}帳號中。"},
+    {"id":"AccountLinkedNewPhoneLine","text":"在新手機上也能從上次的地方繼續。"},
+    {"id":"AccountNotLinkedTitle","text":"無法連結"},
+    {"id":"AccountPlatformMissingLine","text":"這支手機上無法使用{platform}。"},
+    {"id":"AccountUnreachableLine","text":"暫時無法連線。"},
+    {"id":"AccountSafeLine","text":"你的進度在這支手機上很安全。"},
+    {"id":"AccountOtherSaveTitle","text":"發現其他進度"},
+    {"id":"AccountOtherSaveLine","text":"你的{platform}帳號中已有進度。"},
+    {"id":"AccountOtherSaveMergeLine","text":"切換後，這支手機的進度會合併進去。"},
+    {"id":"AccountSwitchButton","text":"切換"},
+    {"id":"AccountStayButton","text":"取消"},
+    {"id":"AccountSaveBackTitle","text":"進度已恢復"},
+    {"id":"AccountSaveBackLine","text":"第{level}關 · 金幣：{coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"從上次的地方繼續吧。"},
+    {"id":"AccountNotSwitchedTitle","text":"無法切換"}
   ]
 }

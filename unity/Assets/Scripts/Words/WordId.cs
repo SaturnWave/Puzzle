@@ -991,5 +991,68 @@ namespace Puzzle.Client.Words
 
         /// <summary>Credits card, a heading: the software the game carries from others (the statistics library, the JSON reader, the store's libraries).</summary>
         CreditsSoftware,
+
+        /// <summary>The card offered once after the first won level, its nameplate: keep the save (link the account to the platform).</summary>
+        AccountOfferTitle,
+
+        /// <summary>That card, first line: the save is on this phone only, for now.</summary>
+        AccountOfferLine,
+
+        /// <summary>That card, second line: a new phone gets the save back through {platform} ("Google Play Games", "Game Center": a name).</summary>
+        AccountOfferPlatformLine,
+
+        /// <summary>That card, green button: link.</summary>
+        AccountLinkButton,
+
+        /// <summary>That card, blue button: not now.</summary>
+        AccountNotNowButton,
+
+        /// <summary>The card after the link, its nameplate: account linked.</summary>
+        AccountLinkedTitle,
+
+        /// <summary>That card, first line: the save is in the {platform} account.</summary>
+        AccountLinkedLine,
+
+        /// <summary>That card, second line: a new phone goes on where the player left off.</summary>
+        AccountLinkedNewPhoneLine,
+
+        /// <summary>The card when the link did not come about, its nameplate.</summary>
+        AccountNotLinkedTitle,
+
+        /// <summary>That card, first line: {platform} is not available on this phone.</summary>
+        AccountPlatformMissingLine,
+
+        /// <summary>First line of the cards when the platform or the services could not be reached: cannot connect now.</summary>
+        AccountUnreachableLine,
+
+        /// <summary>Second line of those cards: the progress is safe on this phone.</summary>
+        AccountSafeLine,
+
+        /// <summary>The card when the platform's account has a save of its own, its nameplate.</summary>
+        AccountOtherSaveTitle,
+
+        /// <summary>That card, first line: the {platform} account has a save.</summary>
+        AccountOtherSaveLine,
+
+        /// <summary>That card, second line: going over adds this phone's progress to it.</summary>
+        AccountOtherSaveMergeLine,
+
+        /// <summary>That card, green button: go over to that save.</summary>
+        AccountSwitchButton,
+
+        /// <summary>That card, blue button: stay.</summary>
+        AccountStayButton,
+
+        /// <summary>The card when the save came back from the cloud, its nameplate.</summary>
+        AccountSaveBackTitle,
+
+        /// <summary>That card, first line: the level stood on ({level}) and the coins ({coins}), in a label form.</summary>
+        AccountSaveBackLine,
+
+        /// <summary>That card, second line: the player goes on where they left off.</summary>
+        AccountSaveBackGoOnLine,
+
+        /// <summary>The card when going over to the other save failed, its nameplate.</summary>
+        AccountNotSwitchedTitle,
     }
 }

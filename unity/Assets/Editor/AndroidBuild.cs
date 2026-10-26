@@ -22,8 +22,10 @@ namespace Puzzle.Client.EditorTools
     /// package with a catalogue older than those lists would stop at the first drawing added since. The manifest is
     /// given the build's permissions on the way (<see cref="AndroidManifestStep"/>), from a manifest Unity has written
     /// anew, and the package that comes out must ask for exactly the permissions of <see cref="MergedPermissions"/>,
-    /// as Android's own tool reads them from it (<see cref="PackagePermissions"/>), and must register no backend for
-    /// Google's logging transport (<see cref="ManifestLoggingBackend"/>).
+    /// as Android's own tool reads them from it (<see cref="PackagePermissions"/>), must register no backend for
+    /// Google's logging transport (<see cref="ManifestLoggingBackend"/>), and must not start Play Games with the game's
+    /// process (<see cref="ManifestPlayGamesStart"/>). The Unity library's build.gradle is given the Play Games library the
+    /// game's Play Games plugin needs (<see cref="PlayGamesDependency"/>).
     /// </summary>
     public static class AndroidBuild
     {
@@ -82,8 +84,11 @@ namespace Puzzle.Client.EditorTools
                 IReadOnlyList<string> asked = PackagePermissions.AskedIn(WhatAaptSays(summary.outputPath, "permissions"));
                 PackagePermissions.Require(asked.ToArray(), MergedPermissions);
                 Debug.Log($"Android build: the package asks for exactly {string.Join(", ", asked)}.");
-                ManifestLoggingBackend.RequireWithdrawnFrom(WhatAaptSays(summary.outputPath, "xmltree", "AndroidManifest.xml"));
+                string manifest = WhatAaptSays(summary.outputPath, "xmltree", "AndroidManifest.xml");
+                ManifestLoggingBackend.RequireWithdrawnFrom(manifest);
                 Debug.Log($"Android build: the package registers no backend for Google's logging transport ({ManifestLoggingBackend.CctBackend} withdrawn).");
+                ManifestPlayGamesStart.RequireWithdrawnFrom(manifest);
+                Debug.Log($"Android build: the package does not start Play Games with the game ({ManifestPlayGamesStart.InitProvider} withdrawn).");
             }
             catch (Exception failure) when (failure is InvalidOperationException || failure is IOException || failure is System.ComponentModel.Win32Exception)
             {
@@ -204,13 +209,15 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// The build's manifest step: once Unity has made the Gradle project of an Android build (this tool's, or any
     /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>)
-    /// and withdraws the backend of Google's logging transport (<see cref="ManifestLoggingBackend"/>), and it must say
+    /// and withdraws the backend of Google's logging transport (<see cref="ManifestLoggingBackend"/>) and Play Games'
+    /// start-up provider (<see cref="ManifestPlayGamesStart"/>), and it must say
     /// that the application is a game (<see cref="ManifestGameCategory"/>), open Unity's activity upright
     /// (<see cref="ManifestOrientation"/>) and hide the system bars with Android's default behaviour
     /// (<see cref="ManifestSystemBars"/>). A manifest that cannot be read or written, one of another category, one
     /// that opens another way or one that hides the bars another way stops the build: a package without them would
     /// fail on the phone, turn on a tablet as Android wants rather than as the game does, show a phone the game
-    /// sideways, or spend the first back gesture on the bars.
+    /// sideways, or spend the first back gesture on the bars. The Unity library's build.gradle is then given the Play
+    /// Games library (<see cref="PlayGamesDependency"/>).
     /// </summary>
     public sealed class AndroidManifestStep : IPostGenerateGradleAndroidProject
     {
@@ -220,13 +227,16 @@ namespace Puzzle.Client.EditorTools
         public void OnPostGenerateGradleAndroidProject(string path)
         {
             string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
-            string written = ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions));
+            string written = ManifestPlayGamesStart.Withdraw(ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions)));
             ManifestGameCategory.Require(written);
             ManifestOrientation.Require(written);
             ManifestSystemBars.Require(written);
             File.WriteAllText(manifest, written);
             Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game that opens {ManifestOrientation.Upright}, "
-                + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend}.");
+                + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend} and {ManifestPlayGamesStart.InitProvider}.");
+            string gradle = Path.Combine(path, "build.gradle");
+            File.WriteAllText(gradle, PlayGamesDependency.Into(File.ReadAllText(gradle)));
+            Debug.Log($"Android build: the Unity library depends on {PlayGamesDependency.Library} for the Play Games plugin.");
         }
     }
 }

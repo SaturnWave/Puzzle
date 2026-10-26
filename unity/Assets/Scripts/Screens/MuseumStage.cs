@@ -5,6 +5,7 @@ using System.Linq;
 using Puzzle.Client.Art;
 using Puzzle.Client.Avatar;
 using Puzzle.Client.Canvases;
+using Puzzle.Client.Cloud;
 using Puzzle.Client.Collections;
 using Puzzle.Client.Flow;
 using Puzzle.Client.Gallery;
@@ -201,6 +202,16 @@ namespace Puzzle.Client.Screens
         /// <summary>What presses asked of the store that the stage's owner has not taken yet, in the order they were made.</summary>
         private readonly List<StoreRequest> _askedOfTheStore = new List<StoreRequest>();
 
+        /// <summary>What presses asked of the player's account in the cloud that the stage's owner has not taken yet, in the order they were made.</summary>
+        private readonly List<AccountRequest> _askedOfTheAccount = new List<AccountRequest>();
+
+        /// <summary>
+        /// The cards about the player's account that wait to come down, in the order they came: the offer to link, and
+        /// what the cloud has to tell. Each comes down over a page with no card in front, once the player has the page
+        /// (<see cref="FollowTheAccount"/>), and is built then, in the language spoken then.
+        /// </summary>
+        private readonly Queue<(AccountCardWords Words, NoticeAnswers Answers, GalleryArt Mark)> _accountCardsDue = new Queue<(AccountCardWords, NoticeAnswers, GalleryArt)>();
+
         /// <summary>
         /// The card that shows where a purchase for money stands, with what it shows: a state of the purchase's course,
         /// or the end of a restore. Nothing while no such card hangs, or once it is on its way up.
@@ -300,7 +311,7 @@ namespace Puzzle.Client.Screens
         public Destination Showing { get; private set; }
 
         /// <summary>True when no page is turning or being dragged, no card is on its way, no ad is being shown, and the room is neither lighting up nor going dark.</summary>
-        public bool IsSettled => IsStill && !_swipe.IsDragging && !IsAPurchaseCardDue;
+        public bool IsSettled => IsStill && !_swipe.IsDragging && !IsAPurchaseCardDue && !IsAnAccountCardDue;
 
         /// <summary>
         /// What the player has left the museum for, once they pressed what leads there and the room has gone dark:
@@ -416,6 +427,17 @@ namespace Puzzle.Client.Screens
         public Vector2? NoticeBuyPixel => TopCard is NoticeCard { BuyButtonMiddle: Vector2 buy } ? PixelOnTheCard(buy) : null;
 
         public Vector2? NoticeDeclinePixel => TopCard is NoticeCard { DeclineButtonMiddle: Vector2 decline } ? PixelOnTheCard(decline) : null;
+
+        /// <summary>
+        /// The pixels in the middle of the green answer and the blue one of the notice card in front that is answered two
+        /// ways (the account's offer and question, the card before paying); nothing while none is down in front.
+        /// </summary>
+        public Vector2? NoticeGreenAnswerPixel => TopCard is NoticeCard { GreenAnswerMiddle: Vector2 green } ? PixelOnTheCard(green) : null;
+
+        public Vector2? NoticeBlueAnswerPixel => TopCard is NoticeCard { BlueAnswerMiddle: Vector2 blue } ? PixelOnTheCard(blue) : null;
+
+        /// <summary>How the notice card in front is answered; nothing while none is in front.</summary>
+        public NoticeAnswers? NoticeAnswersShown => (TopCard as NoticeCard)?.Answers;
 
         /// <summary>The pixel in the middle of the round button of the notice card in front; nothing while none is, or while it has none.</summary>
         public Vector2? NoticeClosePixel => TopCard is NoticeCard { CanBeClosed: true } notice ? PixelOnTheCard(notice.Card.CloseButtonMiddle) : null;
@@ -700,6 +722,7 @@ namespace Puzzle.Client.Screens
             (_leaving as IShopPage)?.Tell(shop);
             (_pageBeside?.Page as IShopPage)?.Tell(shop);
             FollowTheStore();
+            FollowTheAccount();
         }
 
         /// <summary>
@@ -740,6 +763,40 @@ namespace Puzzle.Client.Screens
             _askedOfThePhone.Clear();
             return taken;
         }
+
+        /// <summary>What presses asked of the player's account since the owner last took it, in order: the owner hands it to the cloud, whose news comes back through <see cref="Hear(AccountNews, int, Coins)"/>.</summary>
+        public IReadOnlyList<AccountRequest> TakeWhatWasAskedOfTheAccount()
+        {
+            if (_askedOfTheAccount.Count == 0)
+            {
+                return Array.Empty<AccountRequest>();
+            }
+
+            AccountRequest[] taken = _askedOfTheAccount.ToArray();
+            _askedOfTheAccount.Clear();
+            return taken;
+        }
+
+        /// <summary>
+        /// The offer to link the account to the platform, made once after the first won level (the owner's decision 2):
+        /// its card comes down once the page is the player's, its green "Bağlan" asks for the link, its blue "Şimdi değil",
+        /// its round button and the way back close it.
+        /// </summary>
+        public void OfferTheLink(SignInPlatform platform) =>
+            _accountCardsDue.Enqueue((AccountWords.Offer(platform), NoticeAnswers.LinkOrNotNow, GalleryArt.IconShield));
+
+        /// <summary>
+        /// What the cloud has to tell of the account: a card that says it comes down once the page is the player's. The
+        /// card of the platform player's own save asks whether to go over to it ("Ona geç", "Vazgeç"); the card of a save
+        /// that came back names the level the player stands on and the coins.
+        /// </summary>
+        /// <param name="levelNumber">The level the player stands on now, counted from 1.</param>
+        /// <param name="coins">The coins in the wallet now.</param>
+        public void Hear(AccountNews news, int levelNumber, Coins coins) =>
+            _accountCardsDue.Enqueue((
+                AccountWords.Of(news, levelNumber, coins),
+                news is AccountNews.OtherSaveFound ? NoticeAnswers.SwitchOrStay : NoticeAnswers.Done,
+                news is AccountNews.SaveCameBack ? GalleryArt.IconMuseum : GalleryArt.IconShield));
 
         /// <summary>What presses asked of the store since the owner last took it, in order: the owner hands it to the purchase's course and tells the stage where it stands after it.</summary>
         public IReadOnlyList<StoreRequest> TakeWhatWasAskedOfTheStore()
@@ -1060,6 +1117,15 @@ namespace Puzzle.Client.Screens
                     break;
                 case MuseumPress.BuyFromTheStore buy:
                     _askedOfTheStore.Add(new StoreRequest.Ask(buy.Product));
+                    break;
+                case MuseumPress.LinkTheAccount _ when TopCard is NoticeCard { Answers: NoticeAnswers.LinkOrNotNow }:
+                    // The card goes up at once: what the link came to comes as news, on a card of its own.
+                    _askedOfTheAccount.Add(new AccountRequest.Link());
+                    TakeTheCardInFrontUp();
+                    break;
+                case MuseumPress.SwitchTheAccount _ when TopCard is NoticeCard { Answers: NoticeAnswers.SwitchOrStay }:
+                    _askedOfTheAccount.Add(new AccountRequest.SwitchToTheLinked());
+                    TakeTheCardInFrontUp();
                     break;
                 case MuseumPress.PayInTheStore _ when TopCard is NoticeCard { Answers: NoticeAnswers.BuyOrDecline }:
                     // The card stays until the course moves on: then it goes up, and the card of the payment comes down.
@@ -1496,6 +1562,24 @@ namespace Puzzle.Client.Screens
                 Hang(card, roomIsDark: false);
             }
         }
+
+        /// <summary>
+        /// The next card about the player's account comes down when one is due, no card hangs and the page is the
+        /// player's: a link asked for while the settings card hangs tells of it once that card is closed.
+        /// </summary>
+        private void FollowTheAccount()
+        {
+            if (_accountCardsDue.Count == 0 || _cards.Count > 0 || !ListensToThePlayer || _swipe.IsDragging)
+            {
+                return;
+            }
+
+            (AccountCardWords words, NoticeAnswers answers, GalleryArt mark) = _accountCardsDue.Dequeue();
+            Hang(NoticeCard.Create(_root.transform, _art, words.Title, new NoticeExhibit.Mark(mark, NoticeMarkSize), words.FirstLine, words.SecondLine, raisedBy: 0, answers), roomIsDark: false);
+        }
+
+        /// <summary>True while a card about the account is due and has not come down yet: the museum is not settled until it hangs.</summary>
+        private bool IsAnAccountCardDue => _accountCardsDue.Count > 0 && _cards.Count == 0 && !_isLeaving && PlayerLeftFor == null;
 
         /// <summary>True while a card of a purchase is due and has not come down yet: the museum is not settled until it hangs.</summary>
         private bool IsAPurchaseCardDue => _purchaseCard == null && _cards.Count == 0 && !_isLeaving && PlayerLeftFor == null && DuePurchaseCard(_shop.Store) != null;

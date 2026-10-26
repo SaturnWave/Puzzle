@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"La boutique n'a pas encore répondu."},
     {"id":"EntryVersionAlone","text":"Version {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Cette version · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Logiciels"}
+    {"id":"CreditsSoftware","text":"Logiciels"},
+    {"id":"AccountOfferTitle","text":"Garder ta partie"},
+    {"id":"AccountOfferLine","text":"Pour l'instant, ta partie n'est que sur ce téléphone."},
+    {"id":"AccountOfferPlatformLine","text":"Si tu changes de téléphone, {platform} la ramène."},
+    {"id":"AccountLinkButton","text":"Associer"},
+    {"id":"AccountNotNowButton","text":"Plus tard"},
+    {"id":"AccountLinkedTitle","text":"Compte associé"},
+    {"id":"AccountLinkedLine","text":"Ta partie est dans ton compte {platform}."},
+    {"id":"AccountLinkedNewPhoneLine","text":"Sur un nouveau téléphone, tu reprends là où tu en étais."},
+    {"id":"AccountNotLinkedTitle","text":"Association impossible"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} n'est pas disponible sur ce téléphone."},
+    {"id":"AccountUnreachableLine","text":"Connexion impossible pour le moment."},
+    {"id":"AccountSafeLine","text":"Ta progression est en sécurité sur ce téléphone."},
+    {"id":"AccountOtherSaveTitle","text":"Une autre partie existe"},
+    {"id":"AccountOtherSaveLine","text":"Ton compte {platform} a une partie."},
+    {"id":"AccountOtherSaveMergeLine","text":"Si tu changes, la progression de ce téléphone s'y ajoute."},
+    {"id":"AccountSwitchButton","text":"Changer"},
+    {"id":"AccountStayButton","text":"Annuler"},
+    {"id":"AccountSaveBackTitle","text":"Ta partie est revenue"},
+    {"id":"AccountSaveBackLine","text":"Niveau {level} · Pièces : {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Tu reprends là où tu en étais."},
+    {"id":"AccountNotSwitchedTitle","text":"Changement impossible"}
   ]
 }

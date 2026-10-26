@@ -69,6 +69,18 @@ namespace Puzzle.Client.Screens
         /// </summary>
         BuyOrDecline,
 
+        /// <summary>
+        /// The offer to link the account (docs/research/server-v1.md §5.3): the blue "Şimdi değil" closes the card, the
+        /// green "Bağlan" links the account (<see cref="MuseumPress.LinkTheAccount"/>). The round button closes it too.
+        /// </summary>
+        LinkOrNotNow,
+
+        /// <summary>
+        /// The question of the platform player's own save (§3.6): the blue "Vazgeç" closes the card, the green "Ona geç"
+        /// goes over to that save (<see cref="MuseumPress.SwitchTheAccount"/>). The round button closes it too.
+        /// </summary>
+        SwitchOrStay,
+
         /// <summary>No answer and no round button: the card stands while something outside the game (the store's payment) runs, and goes when it ends.</summary>
         None,
     }
@@ -120,15 +132,17 @@ namespace Puzzle.Client.Screens
         private const float ButtonDown = 256f;
         private const float ButtonLabelSize = 28f;
 
-        /// <summary>The two answers of a card that asks before paying: small buttons as wide as the room allows, with their middles this far apart, labelled as the quit card's.</summary>
+        /// <summary>The two answers of a card answered two ways (before paying, the account's): small buttons as wide as the room allows, with their middles this far apart, labelled as the quit card's.</summary>
         private const float AnswerWidth = 128f;
         private const float AnswersApart = 140f;
         private const float AnswerLabelSize = 16f;
 
         private readonly HangingCard<MuseumPress> _card;
         private readonly PushButton? _done;
-        private readonly SmallButton? _buy;
-        private readonly SmallButton? _decline;
+
+        /// <summary>The green answer and the blue one of a card answered two ways; nothing on another card.</summary>
+        private readonly SmallButton? _green;
+        private readonly SmallButton? _blue;
 
         private NoticeCard(
             Transform parent, ArtCatalogue art, string title, NoticeExhibit exhibit, string firstLine, string? secondLine, int raisedBy, NoticeAnswers answers)
@@ -164,15 +178,13 @@ namespace Puzzle.Client.Screens
                     _card.Listen(_done, new MuseumPress.CloseTheCard());
                     break;
                 case NoticeAnswers.BuyOrDecline:
-                    Vector3 answersAt = _card.At(ButtonDown);
-                    _decline = new SmallButton(
-                        "Decline", _card.Content, art, SmallButtonColour.Blue, PurchaseWords.Decline, AnswerWidth, AnswerLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
-                    _decline.Place(answersAt + new Vector3(-AnswersApart / 2f, 0f, 0f));
-                    _buy = new SmallButton(
-                        "Buy", _card.Content, art, SmallButtonColour.Green, PurchaseWords.Buy, AnswerWidth, AnswerLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
-                    _buy.Place(answersAt + new Vector3(AnswersApart / 2f, 0f, 0f));
-                    _card.Listen(_decline, new MuseumPress.CloseTheCard());
-                    _card.Listen(_buy, new MuseumPress.PayInTheStore());
+                    (_blue, _green) = TwoAnswers(art, raisedBy, PurchaseWords.Decline, PurchaseWords.Buy, new MuseumPress.PayInTheStore());
+                    break;
+                case NoticeAnswers.LinkOrNotNow:
+                    (_blue, _green) = TwoAnswers(art, raisedBy, AccountWords.NotNow, AccountWords.Link, new MuseumPress.LinkTheAccount());
+                    break;
+                case NoticeAnswers.SwitchOrStay:
+                    (_blue, _green) = TwoAnswers(art, raisedBy, AccountWords.Stay, AccountWords.Switch, new MuseumPress.SwitchTheAccount());
                     break;
                 case NoticeAnswers.None:
                     break;
@@ -197,9 +209,14 @@ namespace Puzzle.Client.Screens
         public Vector2? DoneButtonMiddle => _done != null ? _card.InTheLayout(_done.Middle) : (Vector2?)null;
 
         /// <summary>The middles of the green "Satın al" and the blue "Vazgeç" of a card that asks before paying; nothing on another card.</summary>
-        public Vector2? BuyButtonMiddle => _buy != null ? _card.InTheLayout(_buy.Middle) : (Vector2?)null;
+        public Vector2? BuyButtonMiddle => Answers == NoticeAnswers.BuyOrDecline ? GreenAnswerMiddle : null;
 
-        public Vector2? DeclineButtonMiddle => _decline != null ? _card.InTheLayout(_decline.Middle) : (Vector2?)null;
+        public Vector2? DeclineButtonMiddle => Answers == NoticeAnswers.BuyOrDecline ? BlueAnswerMiddle : null;
+
+        /// <summary>The middles of the green answer and the blue one of a card answered two ways ("Satın al", "Bağlan", "Ona geç"; "Vazgeç", "Şimdi değil"); nothing on a card answered otherwise.</summary>
+        public Vector2? GreenAnswerMiddle => _green != null ? _card.InTheLayout(_green.Middle) : (Vector2?)null;
+
+        public Vector2? BlueAnswerMiddle => _blue != null ? _card.InTheLayout(_blue.Middle) : (Vector2?)null;
 
         /// <summary>Builds the card, answered by "Tamam", out of sight above the screen. Place it before the first picture.</summary>
         /// <param name="secondLine">A smaller line under the first; nothing for a card of one line, which stands in the middle of the two places.</param>
@@ -218,6 +235,21 @@ namespace Puzzle.Client.Screens
         }
 
         public void Dispose() => _card.Dispose();
+
+        /// <summary>The two answers side by side where "Tamam" stands, as the quit card has them: the blue one closes the card, the green one presses what it says.</summary>
+        private (SmallButton Blue, SmallButton Green) TwoAnswers(ArtCatalogue art, int raisedBy, string blueLabel, string greenLabel, MuseumPress greenPress)
+        {
+            Vector3 answersAt = _card.At(ButtonDown);
+            var blue = new SmallButton(
+                "Blue answer", _card.Content, art, SmallButtonColour.Blue, blueLabel, AnswerWidth, AnswerLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
+            blue.Place(answersAt + new Vector3(-AnswersApart / 2f, 0f, 0f));
+            var green = new SmallButton(
+                "Green answer", _card.Content, art, SmallButtonColour.Green, greenLabel, AnswerWidth, AnswerLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
+            green.Place(answersAt + new Vector3(AnswersApart / 2f, 0f, 0f));
+            _card.Listen(blue, new MuseumPress.CloseTheCard());
+            _card.Listen(green, greenPress);
+            return (blue, green);
+        }
 
         private void Show(NoticeExhibit exhibit, ArtCatalogue art, int raisedBy)
         {

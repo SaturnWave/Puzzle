@@ -327,6 +327,27 @@
     {"id":"PurchaseNoAnswerLine","text":"Lo store non ha ancora risposto."},
     {"id":"EntryVersionAlone","text":"Versione {version}"},
     {"id":"SettingsBuildLineStoreBuild","text":"Questa versione · {ads}, {buying}"},
-    {"id":"CreditsSoftware","text":"Software"}
+    {"id":"CreditsSoftware","text":"Software"},
+    {"id":"AccountOfferTitle","text":"Proteggi i tuoi progressi"},
+    {"id":"AccountOfferLine","text":"Per ora, i tuoi progressi sono solo su questo telefono."},
+    {"id":"AccountOfferPlatformLine","text":"Se cambi telefono, {platform} li riporta."},
+    {"id":"AccountLinkButton","text":"Collega"},
+    {"id":"AccountNotNowButton","text":"Non ora"},
+    {"id":"AccountLinkedTitle","text":"Account collegato"},
+    {"id":"AccountLinkedLine","text":"I tuoi progressi sono nel tuo account {platform}."},
+    {"id":"AccountLinkedNewPhoneLine","text":"Su un nuovo telefono riprendi da dove eri rimasto."},
+    {"id":"AccountNotLinkedTitle","text":"Collegamento non riuscito"},
+    {"id":"AccountPlatformMissingLine","text":"{platform} non è disponibile su questo telefono."},
+    {"id":"AccountUnreachableLine","text":"Impossibile connettersi ora."},
+    {"id":"AccountSafeLine","text":"I tuoi progressi sono al sicuro su questo telefono."},
+    {"id":"AccountOtherSaveTitle","text":"Ci sono altri progressi"},
+    {"id":"AccountOtherSaveLine","text":"Il tuo account {platform} ha dei progressi."},
+    {"id":"AccountOtherSaveMergeLine","text":"Se passi a quelli, i progressi di questo telefono si aggiungono."},
+    {"id":"AccountSwitchButton","text":"Passa"},
+    {"id":"AccountStayButton","text":"Annulla"},
+    {"id":"AccountSaveBackTitle","text":"I tuoi progressi sono tornati"},
+    {"id":"AccountSaveBackLine","text":"Livello {level} · Monete: {coins}"},
+    {"id":"AccountSaveBackGoOnLine","text":"Riprendi da dove eri rimasto."},
+    {"id":"AccountNotSwitchedTitle","text":"Passaggio non riuscito"}
   ]
 }
