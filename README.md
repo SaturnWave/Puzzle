@@ -13,6 +13,7 @@ iOS ve Android için swap match-3 oyunu (Unity + C#). Yaşlı bir usta ressam ha
 | [docs/DEVLOG.md](docs/DEVLOG.md) | Proje günlüğü, en yeni oturum en üstte |
 | [docs/PUBLIC_TEST.md](docs/PUBLIC_TEST.md) | Web test sunucusu: çalıştırma, internete ve yerel ağa açma, hesaplar |
 | [docs/PHONE_TESTS.md](docs/PHONE_TESTS.md) | Bilinen açıklar ve telefon testleri |
+| [docs/CLOUD_CODE_DEPLOY.md](docs/CLOUD_CODE_DEPLOY.md) | v1 sunucunun Cloud Code modülünü (`server/CloudCode`) yükleme: sahibin adımları |
 | [research.md](research.md), [docs/research/](docs/research/) | Araştırmalar |
 | [docs/pdf/](docs/pdf/) | Belgelerin PDF baskıları (`py tools/docs-pdf/build.py` ile Markdown'dan üretilir) |
 

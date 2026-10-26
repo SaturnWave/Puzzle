@@ -1,3 +1,4 @@
+using System.IO;
 using Puzzle.Client.Purchases;
 using static Puzzle.Core.Tests.CloudSupport;
 
@@ -91,6 +92,20 @@ public class LedgerTests
         Assert.Equal((LedgerState.Voided, true, "coins.large"), (voided.State, voided.IsTest, voided.Product));
         Assert.Equal(new DateTimeOffset(2026, 11, 2, 10, 2, 11, TimeSpan.Zero), voided.At);
         Assert.Null(reading.Ledger.Find(new LedgerNumber(3)));
+    }
+
+    /// <summary>The server's side of the contract: the ledger as its Cloud Code module writes it (server/CloudCode, whose tests pin the same file).</summary>
+    [Fact]
+    public void The_game_reads_every_line_of_the_ledger_the_server_writes()
+    {
+        PurchaseLedgerReading reading = PurchaseLedger.Read(Json.Read<PurchaseLedgerDocument>(File.ReadAllText(RepoFiles.CloudCodeFixturePath("ledger.json"))));
+
+        Assert.Empty(reading.SetAside);
+        Assert.Equal(
+            new[] { (1L, "coins.pouch", LedgerState.Valid, false), (2L, "starter.apprentice_kit", LedgerState.Refunded, true), (3L, "coins.bag", LedgerState.Voided, true) },
+            reading.Ledger.Entries.Select(entry => (entry.Number.Value, entry.Product, entry.State, entry.IsTest)));
+        Assert.Equal("GPA.3312-4405-6102-77801", reading.Ledger.Entries[0].Order);
+        Assert.Equal(new DateTimeOffset(2026, 11, 3, 18, 22, 5, TimeSpan.Zero), reading.Ledger.Entries[0].At);
     }
 
     [Fact]

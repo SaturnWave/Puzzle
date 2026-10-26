@@ -139,6 +139,12 @@ internal static class RepoFiles
     /// </summary>
     public static string EconomyPackPath => Find("tests", "fixtures", "economy-pack.json");
 
+    /// <summary>
+    /// A document of the game's server pinned for both sides (tests/fixtures/cloud-code): the server's module
+    /// (server/CloudCode) writes it, the game reads it.
+    /// </summary>
+    public static string CloudCodeFixturePath(string name) => Find("tests", "fixtures", "cloud-code", name);
+
     /// <exception cref="FileNotFoundException">No directory above the test binaries holds the file.</exception>
     private static string Find(params string[] parts)
     {

@@ -17,6 +17,16 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - 5.984 test geçti (101'i yeni); ekonomi denetimi temiz (100. bölüm 8. gün). Unity'de `ProgressFileCheck` (`-quit` ile), `PurchaseCheck` ("PASSED") ve `PlayModeCheck` ("game errors: False", ikisi `-quit` olmadan, sonuç satırları okundu) hatasız; yeni betikler Unity'nin derleyicisinde temiz. Telefon testleri T530–T539 (F28). Push yok, telefon ve Mac'e dokunulmadı.
 - Sahipte: bulut projesini açıp proje kimliğini göndermek (plan §9 A1–A2); bütçe varsayılanının (60 dk / 12 sa) uygun olduğunu onaylamak; T530–T539 sonraki aşamalardan sonra.
 
+**Aşama 3: Cloud Code modülü (`feature/bombs-colors-director-webui`)**
+- `server/CloudCode`: modül `MuseumPuzzleServer` (.NET 9; NuGet Cloud Code Core 0.0.9, Apis 0.0.27, şablonun günlük paketi) ve testleri. Uçlar `ValidatePurchase`, `CheckRefunds`, `DeleteMyData`, `PollGoogleVoided`, `ForgetOldTraces`. Yüklenmedi, oyun çağırmıyor; hiçbir hesaba girilmedi, sır yok.
+- Google: JWT (RS256) → erişim belirteci → `purchases.productsv2`; test işareti `testPurchaseContext.fopType`; günlük iptal listesi. Apple: x5c zinciri gömülü Apple Root CA – G3'e, Apple'ın işaret uzantıları, ES256; Get Transaction Info; iade geçmişi 20 saatte bir.
+- Defter writeLock'la, aynı ödeme tek kayıt; fiş kaydı (`rcpt-<özet>`, Private) alan oyuncuları tutuyor; altın paketi bir oyuncunun, Çırak Çantası her hesapta bir kez. Doğrulanmadan teslim edilmiş ama mağazanın reddettiği ödeme defterde `invalid`.
+- Silme: oyuncu kimliği fiş kayıtlarından çıkıyor, iz 36 ay (`forgotten-<gün>` listesiyle, günlük görev siliyor), Player Data bütün sınıflarda siliniyor.
+- Oyuncuyu mağazaya tanıtma kuralı tek dosyada, oyun ve sunucu birlikte derliyor (`Purchases/StoreAccount.cs`: Google'a SHA-256, Apple'a UUIDv5). Defterin ve cevapların düzeni `tests/fixtures/cloud-code`'da iki taraf için sabit.
+- Modülün adı noktasız (Unity'nin kuralı); `Assets/CloudCode/MuseumPuzzleServer.ccmr` çözümü gösteriyor. Pencerenin komutuyla denendi: 2,4 MB. Zamanlanmış görevler Editor'dan yüklenmiyor: Dashboard adımları ve `.sched`/`.tr` dosyaları. Sahibin adımları yeni `docs/CLOUD_CODE_DEPLOY.md`'de (PDF'i de).
+- 83 modül testi (sahte Cloud Save, sahte sırlar, betikli ağ; Apple'ın gerçek zinciri dahil), oyunun 5.985 testi (1'i yeni), ekonomi denetimi temiz (100. bölüm 8. gün); Unity'de `ProgressFileCheck` hatasız. Telefon testleri T550–T558 (F30), Aşama 7'de. Push yok.
+- Sahipte: Deployment paketinin (`com.unity.services.deployment`, planın listesinde yok) eklenmesine karar; sırlar (A5) ve modülün yüklenmesi (A6, `docs/CLOUD_CODE_DEPLOY.md`), bulut projesi bağlandıktan sonra.
+
 ## 2026-10-26 · Oturum 33 — Telefon turu düzeltmeleri
 
 **26 Ekim otomatik telefon turunun bulguları kapandı (sahibin "evet başla, hepsini düzelt"i)**

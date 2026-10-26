@@ -72,6 +72,7 @@ DOCUMENTS = (
     Document(Path("docs/DEVLOG.md"), "Proje Günlüğü"),
     Document(Path("docs/PUBLIC_TEST.md"), "Kullanım Kılavuzu"),
     Document(Path("docs/PHONE_TESTS.md"), "Test Planı"),
+    Document(Path("docs/CLOUD_CODE_DEPLOY.md"), "Kurulum Kılavuzu"),
     Document(Path("docs/research/in-level-boosters.md"), "Araştırma Notu"),
     Document(Path("docs/next-game/BLOCK_PUZZLE_PROMPT.md"), "Başlangıç Metni"),
     Document(Path("docs/music/MUSIC_BRIEF.md"), "Müzik İstekleri"),

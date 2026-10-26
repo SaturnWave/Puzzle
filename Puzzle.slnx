@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/server/">
+    <Project Path="server/CloudCode/MuseumPuzzleServer.Tests/MuseumPuzzleServer.Tests.csproj" />
+    <Project Path="server/CloudCode/MuseumPuzzleServer/MuseumPuzzleServer.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Puzzle.Bank/Puzzle.Bank.csproj" />
     <Project Path="src/Puzzle.Bot/Puzzle.Bot.csproj" />

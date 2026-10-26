@@ -1,0 +1,74 @@
+{
+  "about": "The software and data the Cloud Code module MuseumPuzzleServer carries (the output Unity's Deployment window uploads, server/CloudCode/DEPLOY.md), as the NuGet packages' own licence files and nuspecs give them (read from the NuGet cache on 2026-10-26). None of it is in the game's builds: the game's own record is unity/Packages/licences.json. The module runs on Unity's servers and is shown to no player, so nothing here asks for a notice on the credits card; the record is for the owner and the legal reading (docs/research/server-v1.md section 6.2). Packages used only by the tests (xunit, the test SDK, coverlet) are not in the module and are not listed.",
+  "packages": [
+    {
+      "package": "Com.Unity.Services.CloudCode.Core",
+      "version": "0.0.9",
+      "page": "https://www.nuget.org/packages/Com.Unity.Services.CloudCode.Core/0.0.9",
+      "licence": "Unity Terms of Service (https://unity.com/legal)",
+      "copyright": ["Copyright (c) 2023 Unity Technologies"],
+      "from": "LICENSE.md, THIRD-PARTY-NOTICES.txt",
+      "inTheModule": "the function attribute, the execution context and the setup interface (Endpoints/PurchaseModule.cs)"
+    },
+    {
+      "package": "Com.Unity.Services.CloudCode.Apis",
+      "version": "0.0.27",
+      "page": "https://www.nuget.org/packages/Com.Unity.Services.CloudCode.Apis/0.0.27",
+      "licence": "Unity Terms of Service (https://unity.com/legal)",
+      "copyright": ["Copyright (c) 2025 Unity Technologies"],
+      "from": "LICENSE.md, THIRD-PARTY-NOTICES.txt",
+      "inTheModule": "the game API client: Cloud Save and the Secret Manager (Platform/UgsServerStore.cs, Platform/UgsSecrets.cs)"
+    },
+    {
+      "package": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "7.0.1",
+      "page": "https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/7.0.1",
+      "licence": "MIT License",
+      "copyright": ["Copyright (c) Microsoft Corporation. All rights reserved."],
+      "from": "nuspec",
+      "inTheModule": "ILogger<T>, which Cloud Code injects (the version Cloud Code 2.10.4's module template names)"
+    },
+    {
+      "package": "Newtonsoft.Json",
+      "version": "13.0.3",
+      "page": "https://www.newtonsoft.com/json",
+      "licence": "MIT License",
+      "copyright": ["Copyright (c) James Newton-King 2008"],
+      "from": "nuspec (a dependency of both Cloud Code packages)",
+      "inTheModule": "Cloud Code's writer of the endpoints' answers and of Cloud Save's values (Endpoints/ModuleReplies.cs, Platform/UgsServerStore.cs)"
+    },
+    {
+      "package": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "page": "https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2",
+      "licence": "MIT License",
+      "copyright": ["Copyright (c) Microsoft Corporation. All rights reserved."],
+      "from": "nuspec (a dependency of Com.Unity.Services.CloudCode.Core)",
+      "inTheModule": "the module's setup registers its shared parts with it (Endpoints/PurchaseModule.cs)"
+    },
+    {
+      "package": "System.Private.Uri, System.Runtime",
+      "version": "4.3.2, 4.3.1",
+      "licence": "Microsoft .NET Library License (http://go.microsoft.com/fwlink/?LinkId=329770)",
+      "from": "nuspec (dependencies of the Cloud Code packages)",
+      "inTheModule": "nothing: .NET 9 carries its own, and the publish output holds neither"
+    }
+  ],
+  "data": [
+    {
+      "component": "Apple Root CA - G3 (certificate)",
+      "file": "server/CloudCode/MuseumPuzzleServer/AppStore/AppleRootCA-G3.cer",
+      "from": "https://www.apple.com/certificateauthority/AppleRootCA-G3.cer, downloaded 2026-10-26; SHA-256 63343abfb89a6a03ebb57e9b3f5fa7be7c4f5c756f3017b3a8c488c3653e9179, the fingerprint Apple publishes",
+      "terms": "Apple's public root certificate, published for relying parties to verify Apple's signatures (Apple PKI)",
+      "inTheModule": "the root every App Store signature must lead to (AppStore/SignedTransactions.cs)"
+    },
+    {
+      "component": "Apple's real App Store certificate chain and its test moment",
+      "file": "server/CloudCode/MuseumPuzzleServer.Tests/AppleRealChain.cs",
+      "from": "https://github.com/apple/app-store-server-library-python, tests/test_x509_verification.py, read 2026-10-26",
+      "licence": "MIT License",
+      "copyright": ["Copyright 2023 Apple Inc."],
+      "inTheModule": "nothing: the tests only"
+    }
+  ]
+}
