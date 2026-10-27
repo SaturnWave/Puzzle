@@ -50,7 +50,8 @@ namespace Puzzle.Client
     /// the background, the session and its stage stay in memory as they are, and the first frame after coming back
     /// is no longer than any other (<see cref="LongestStepSeconds"/>). What is done on the way out is to let go of
     /// a finger that was down, to hold the music where it is (it fades in from there on the way back, unless another
-    /// app's music plays by then), and to save progress and attempt records that could not be saved before. If the
+    /// app's music plays by then), to save progress and attempt records that could not be saved before, and to ask the
+    /// cloud for the way out's upload, whose request is sent before Unity stops (<see cref="MainThreadQueue"/>). If the
     /// device closes the game while it is away, the attempt in progress is gone: the game comes back in the museum, and
     /// the level starts again with its next board. The entry page is shown at a cold start only: a game brought back
     /// from the background comes back where it was.
@@ -338,7 +339,13 @@ namespace Puzzle.Client
                 _music?.PutAway();
                 _session?.SaveProgress();
                 _session?.WriteWaitingRecords();
-                _cloud?.AskForAnUpload(SyncTrigger.Background); // as the sync's budget says: at most hourly
+                if (_cloud is CloudSaving cloud)
+                {
+                    // A won level the cloud lacks goes at once, anything else as the budget says (at most hourly); the
+                    // upload's request leaves before Unity stops its loop, in the seconds Android leaves the game (T530).
+                    cloud.AskForAnUpload(SyncTrigger.Background);
+                    MainThreadQueue.RunWhatWaits(Debug.Log, Debug.LogException);
+                }
             }
             else
             {

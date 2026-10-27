@@ -10,7 +10,8 @@ namespace Puzzle.Client.Cloud
     /// The game's cloud save as this build has it (docs/research/server-v1.md §3–§5): the sync's state in cloud.json beside
     /// the progress file, Unity's services in the environment of the build ("development" for a test build, which sells
     /// nothing for money, "production" otherwise, §3.1), Cloud Save, Remote Config, the game's Cloud Code module (which
-    /// verifies the payments of the build's store and deletes the player's data), and the platform's sign-in of the
+    /// verifies the payments of the build's store and deletes the player's data, a deletion given 10 seconds:
+    /// <see cref="ModuleWithADeadline"/>), and the platform's sign-in of the
     /// build: Google Play Games on Android where the build is set up for it, Game Center on iOS once Apple's plugin is in
     /// (PUZZLE_APPLE_GAMEKIT), none elsewhere. A build with no Unity Cloud project linked, and the Editor, start no
     /// services: the Editor's checks run the cloud on fakes (CloudCheck), and its play mode plays as a phone with the
@@ -38,7 +39,7 @@ namespace Puzzle.Client.Cloud
 
             return new CloudSaving(
                 sync, new UgsAccounts(EnvironmentOf(rules), log), PlatformSignInOfThisBuild(log), new UgsRemoteSettings(log),
-                new UgsServerModule(UgsServerModule.StoreOfThisPlatform(), log), holder, HasACloudProject(log), log, fault);
+                new ModuleWithADeadline(new UgsServerModule(UgsServerModule.StoreOfThisPlatform(), log), ModuleWithADeadline.GameDeadline), holder, HasACloudProject(log), log, fault);
         }
 
         /// <summary>The UGS environment a build talks to: a test build's is "development", a store build's "production".</summary>

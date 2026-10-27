@@ -23,8 +23,9 @@ namespace Puzzle.Client.EditorTools
     /// given the build's permissions on the way (<see cref="AndroidManifestStep"/>), from a manifest Unity has written
     /// anew, and the package that comes out must ask for exactly the permissions of <see cref="MergedPermissions"/>,
     /// as Android's own tool reads them from it (<see cref="PackagePermissions"/>), must register no backend for
-    /// Google's logging transport (<see cref="ManifestLoggingBackend"/>), and must not start Play Games with the game's
-    /// process (<see cref="ManifestPlayGamesStart"/>). The Unity library's build.gradle is given the Play Games library the
+    /// Google's logging transport (<see cref="ManifestLoggingBackend"/>), must not start Play Games with the game's
+    /// process (<see cref="ManifestPlayGamesStart"/>), and must keep Android's backup to its rules
+    /// (<see cref="ManifestBackupRules"/>). The Unity library's build.gradle is given the Play Games library the
     /// game's Play Games plugin needs (<see cref="PlayGamesDependency"/>).
     /// </summary>
     public static class AndroidBuild
@@ -47,7 +48,7 @@ namespace Puzzle.Client.EditorTools
         /// The game's permanent package name, the same as its iOS bundle id (decided 2026-10-25): the stores know the game and
         /// its products by it (com.saturnwave.museumpuzzle.coins.pouch), so it stays when the name is decided.
         /// </summary>
-        private const string PackageId = "com.saturnwave.museumpuzzle";
+        internal const string PackageId = "com.saturnwave.museumpuzzle";
 
         public static void Run()
         {
@@ -89,6 +90,8 @@ namespace Puzzle.Client.EditorTools
                 Debug.Log($"Android build: the package registers no backend for Google's logging transport ({ManifestLoggingBackend.CctBackend} withdrawn).");
                 ManifestPlayGamesStart.RequireWithdrawnFrom(manifest);
                 Debug.Log($"Android build: the package does not start Play Games with the game ({ManifestPlayGamesStart.InitProvider} withdrawn).");
+                ManifestBackupRules.RequireIn(manifest);
+                Debug.Log($"Android build: Android's backup keeps {ManifestBackupRules.PlayerPrefsFile(PackageId)} and {string.Join(", ", ManifestBackupRules.GameFiles)}, nothing else.");
             }
             catch (Exception failure) when (failure is InvalidOperationException || failure is IOException || failure is System.ComponentModel.Win32Exception)
             {
@@ -105,8 +108,8 @@ namespace Puzzle.Client.EditorTools
         /// order they are written (<see cref="AndroidManifestStep"/>). The internet permission was taken out on
         /// 2026-10-16, while the game sent nothing; v1 asks for it again (the owner's decision, 2026-10-24): the play
         /// statistics, once the player allows them, go to Aptabase over it, and Unity's purchase library sends its
-        /// purchase events over it (Flow/PrivacyWords.cs says both). The application's backup flag is not this step's;
-        /// it stays on by the earlier decision.
+        /// purchase events over it (Flow/PrivacyWords.cs says both). The application's backup stays on by the earlier
+        /// decision (A29), ruled by <see cref="ManifestBackupRules"/>.
         /// </summary>
         internal static readonly PermissionLine[] Permissions =
         {
@@ -216,8 +219,9 @@ namespace Puzzle.Client.EditorTools
     /// (<see cref="ManifestSystemBars"/>). A manifest that cannot be read or written, one of another category, one
     /// that opens another way or one that hides the bars another way stops the build: a package without them would
     /// fail on the phone, turn on a tablet as Android wants rather than as the game does, show a phone the game
-    /// sideways, or spend the first back gesture on the bars. The Unity library's build.gradle is then given the Play
-    /// Games library (<see cref="PlayGamesDependency"/>).
+    /// sideways, or spend the first back gesture on the bars. The application is given Android's backup rules, whose two
+    /// files are written into the library's resources (<see cref="ManifestBackupRules"/>). The Unity library's
+    /// build.gradle is then given the Play Games library (<see cref="PlayGamesDependency"/>).
     /// </summary>
     public sealed class AndroidManifestStep : IPostGenerateGradleAndroidProject
     {
@@ -227,16 +231,27 @@ namespace Puzzle.Client.EditorTools
         public void OnPostGenerateGradleAndroidProject(string path)
         {
             string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
-            string written = ManifestPlayGamesStart.Withdraw(ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions)));
+            string written = ManifestBackupRules.Apply(
+                ManifestPlayGamesStart.Withdraw(ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions))));
             ManifestGameCategory.Require(written);
             ManifestOrientation.Require(written);
             ManifestSystemBars.Require(written);
             File.WriteAllText(manifest, written);
+            WriteTheBackupRules(Path.Combine(path, "src", "main", "res", "xml"));
             Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game that opens {ManifestOrientation.Upright}, "
                 + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend} and {ManifestPlayGamesStart.InitProvider}.");
             string gradle = Path.Combine(path, "build.gradle");
             File.WriteAllText(gradle, PlayGamesDependency.Into(File.ReadAllText(gradle)));
             Debug.Log($"Android build: the Unity library depends on {PlayGamesDependency.Library} for the Play Games plugin.");
+        }
+
+        /// <summary>The backup rules' two files in the library's resources, which the application names (<see cref="ManifestBackupRules.Apply"/>).</summary>
+        private static void WriteTheBackupRules(string folder)
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder, ManifestBackupRules.FullBackupContentResource + ".xml"), ManifestBackupRules.FullBackupContent(AndroidBuild.PackageId));
+            File.WriteAllText(Path.Combine(folder, ManifestBackupRules.DataExtractionRulesResource + ".xml"), ManifestBackupRules.DataExtractionRules(AndroidBuild.PackageId));
+            Debug.Log($"Android build: the backup rules are written to {folder}.");
         }
     }
 }

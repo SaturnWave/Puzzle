@@ -180,6 +180,17 @@ namespace Puzzle.Client.Cloud
     /// within the budget, and stop the halt once the save reads again. No save is written for a player who has won no
     /// level. The switch, Remote Config, a run that cannot keep its progress and the tester mode keep the sync off.
     /// </para>
+    /// <para>
+    /// The sync follows the session the game is in (2026-10-27, T530): a session begins with the sync, as the game
+    /// starts, and again after each way out (<see cref="SyncTrigger.Background"/>). The session's first won level the
+    /// cloud lacks uploads at once, the later ones on the way out (<see cref="SyncPolicy.LetsAWinGoAtOnce"/>).
+    /// </para>
+    /// <para>
+    /// A cloud.json and a progress file that Android's backup brought back are as old as the backup, while the
+    /// installation they came from went on and wrote the save later: the save's last write is then this installation's
+    /// own (its writer id came back with the file) and newer than the base the file knows. What the progress file holds
+    /// is in that write already, so it is the base of the merge, and nothing it earned is counted twice.
+    /// </para>
     /// Nothing here is Unity's: the cloud, the state's file, the progress and the clock come in through seams, and the
     /// tests run every case with <see cref="FakeCloudSave"/>.
     /// This file has no Unity dependency, so the repository's tests compile it too.
@@ -199,6 +210,9 @@ namespace Puzzle.Client.Cloud
         private bool _isRunning;
         private SyncTrigger? _runNext;
         private CloudPlayerId _runNextFor;
+
+        /// <summary>How many levels the phone had won with the session's first won level; nothing before the session's first win.</summary>
+        private int? _sessionsFirstWin;
 
         /// <param name="appVersion">The game's version ("1.1.0"), written into each save for support.</param>
         /// <param name="newId">Where the random ids of the writes come from (<see cref="RandomIds.New"/>).</param>
@@ -259,6 +273,7 @@ namespace Puzzle.Client.Cloud
         /// <exception cref="UnauthorizedAccessException">The game may not write the state's file.</exception>
         public async Task<SyncOutcome> SyncAsync(CloudPlayerId player, SyncTrigger trigger, CancellationToken cancel)
         {
+            FollowTheSession(trigger);
             if (_isRunning)
             {
                 _runNext = _runNext is SyncTrigger waiting && Weight(waiting) >= Weight(trigger) ? waiting : trigger;
@@ -281,6 +296,23 @@ namespace Puzzle.Client.Cloud
             finally
             {
                 _isRunning = false;
+            }
+        }
+
+        /// <summary>
+        /// The way out ends the session, so the next won level is the next session's first; a won level asked for while
+        /// the session has none yet is its first. Noted as the trigger is asked for, before it runs or waits behind
+        /// another, so a sync of the session before that runs late counts for the session it was asked in.
+        /// </summary>
+        private void FollowTheSession(SyncTrigger trigger)
+        {
+            if (trigger == SyncTrigger.Background)
+            {
+                _sessionsFirstWin = null;
+            }
+            else if (trigger == SyncTrigger.LevelWon)
+            {
+                _sessionsFirstWin ??= _holder.Current.LevelsWon;
             }
         }
 
@@ -362,14 +394,28 @@ namespace Puzzle.Client.Cloud
 
         /// <summary>
         /// The cloud's save merged into the game's progress. The base is the save as last synced; when a write whose
-        /// answer was lost is among the save's writes, it landed, and what it wrote is the base instead.
+        /// answer was lost is among the save's writes, it landed, and what it wrote is the base instead. When the save's
+        /// last write is this installation's own and newer than both, the state is older than the installation's own
+        /// writes (Android's backup brought it back): the game's progress, which that write went on from, is the base.
         /// </summary>
         private ReadStep Merged(CloudSave cloud, CloudWriteLock writeLock, PurchaseLedger ledger, DateTimeOffset now, List<string> notes)
         {
-            PlayerProgress mergeBase = State.Pending is PendingWrite pending && cloud.Writes.Contains(pending.Id, StringComparer.Ordinal)
-                ? pending.Progress
-                : (State.Base ?? CloudBase.NoSave(_startingWallet)).Progress;
             PlayerProgress local = _holder.Current;
+            PlayerProgress mergeBase;
+            if (IsAWriteOfThisInstallationTheStateMissed(cloud))
+            {
+                mergeBase = local;
+                notes.Add($"the save's revision {cloud.Revision} is this installation's own write, which its state does not know: the state came back from a backup, and the phone's progress is the base");
+            }
+            else if (State.Pending is PendingWrite pending && cloud.Writes.Contains(pending.Id, StringComparer.Ordinal))
+            {
+                mergeBase = pending.Progress;
+            }
+            else
+            {
+                mergeBase = (State.Base ?? CloudBase.NoSave(_startingWallet)).Progress;
+            }
+
             switch (_merge.Merge(mergeBase, local, cloud.Progress, ledger))
             {
                 case MergeOutcome.Merged merged:
@@ -407,7 +453,7 @@ namespace Puzzle.Client.Cloud
                     return new SyncOutcome.Done(read, adopted, UploadResult.NoLevelWonYet, null, notes);
                 }
 
-                if (attempt == 1 && SyncPolicy.UploadWaitsUntil(trigger, State, Settings, now) is DateTimeOffset until)
+                if (attempt == 1 && SyncPolicy.UploadWaitsUntil(trigger, WinsOf(current, synced.Progress), State, Settings, now) is DateTimeOffset until)
                 {
                     return new SyncOutcome.Done(read, adopted, UploadResult.WaitsForTheBudget, until, notes);
                 }
@@ -441,6 +487,25 @@ namespace Puzzle.Client.Cloud
                         throw new InvalidOperationException("A write ended in a way the sync does not know.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Whether the save's last write is this installation's (its writer id) and one the state, which has synced the
+        /// account before, does not know: neither its base's nor its unanswered write. A state kept as the sync writes it
+        /// knows every write of its installation, so only a state older than the installation's own writes (a cloud.json
+        /// Android's backup brought back) misses one.
+        /// </summary>
+        private bool IsAWriteOfThisInstallationTheStateMissed(CloudSave cloud)
+        {
+            if (!(State.Base is CloudBase synced) || cloud.Writes.Count == 0 || !string.Equals(cloud.Writer, State.Writer, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            string last = cloud.Writes[cloud.Writes.Count - 1];
+            bool isTheBases = synced.Writes.Contains(last, StringComparer.Ordinal);
+            bool isTheUnanswered = State.Pending is PendingWrite pending && string.Equals(pending.Id, last, StringComparison.Ordinal);
+            return !isTheBases && !isTheUnanswered;
         }
 
         /// <summary>
@@ -484,6 +549,18 @@ namespace Puzzle.Client.Cloud
             return reading.Ledger;
         }
 
+        /// <summary>Whether the cloud's progress lacks a level the game's has won, and whether it holds a win of this session already.</summary>
+        private WinsInTheCloud WinsOf(PlayerProgress current, PlayerProgress inTheCloud)
+        {
+            if (current.LevelsWon <= inTheCloud.LevelsWon)
+            {
+                return WinsInTheCloud.AllThere;
+            }
+
+            bool holdsTheSessionsFirst = _sessionsFirstWin is int first && inTheCloud.LevelsWon >= first;
+            return holdsTheSessionsFirst ? WinsInTheCloud.LacksALaterOne : WinsInTheCloud.LacksTheSessionsFirst;
+        }
+
         /// <summary>The cloud did not answer: the failure is counted, and the next try backs off.</summary>
         private SyncOutcome.Unreachable Failure(CloudFailure failure, DateTimeOffset now)
         {
@@ -501,11 +578,22 @@ namespace Puzzle.Client.Cloud
 
         /// <summary>
         /// How much a trigger asks of a sync, so that of two waiting the one that asks more runs: a new sign-in most, then
-        /// an upload outside the budget (a payment must not wait for the budget behind the start's read, which the sync
-        /// that ran has as good as done), then the start, then the budget's uploads.
+        /// an upload outside the budget and a won level (a payment must not wait for the budget behind the start's read,
+        /// which the sync that ran has as good as done), then the start and the way out, which send the wins the cloud
+        /// lacks at once, then a long session's tick.
         /// </summary>
-        private static int Weight(SyncTrigger trigger) =>
-            trigger == SyncTrigger.AccountChanged ? 3 : trigger.IsOutsideTheBudget() ? 2 : trigger == SyncTrigger.ColdStart ? 1 : 0;
+        private static int Weight(SyncTrigger trigger) => trigger switch
+        {
+            SyncTrigger.AccountChanged => 3,
+            SyncTrigger.SwitchedOn => 3,
+            SyncTrigger.PurchaseDelivered => 2,
+            SyncTrigger.PaintingOrRoomCompleted => 2,
+            SyncTrigger.LevelWon => 2,
+            SyncTrigger.ColdStart => 1,
+            SyncTrigger.Background => 1,
+            SyncTrigger.LongSession => 0,
+            _ => throw new ArgumentOutOfRangeException(nameof(trigger), trigger, "A trigger the sync does not know."),
+        };
 
         /// <summary>How finding the ledger for a merge went: the ledger, or ended with an outcome (the cloud did not answer).</summary>
         private sealed class LedgerStep

@@ -101,6 +101,7 @@
 | **Secret Manager** | Evet | Google hizmet hesabı ve Apple anahtarı. Ücretsiz | FACT [U19][U21] |
 | **Remote Config** | Önerilir (isteğe bağlı) | Eşitleme sıklığını ve bulut kaydını uygulama güncellemesi olmadan kısmak (ücretsiz katman yaklaşınca, ya da birleştirmede hata çıkarsa kapatmak). Ücretsiz | FACT (ücret [U1]) / ESTIMATE (gereklilik) |
 | Economy | Hayır | Yeni projelere kapalı (2026-09-08); Apple tarafı eski "receipt" yolunu kullanıyor, StoreKit 2'nin JWS'ini anmıyor | FACT [U4][U5] |
+| Wire (Cloud Code'un bağımlılığı, 1.6.0) | **Hayır, kapatıldı (2026-10-27)** | Cloud Code'un oyuncu ve proje mesajı aboneliği için girişte `wss://wire.unity3d.com` websocket'i açıyor; oyun abone olmuyor (modülün uçları HTTPS). Hizmetler başlayınca, girişten önce kapatılıyor (§5.10) | FACT (paket kodu, 27 Ekim telefon turu) |
 | Analytics, Leaderboards, Cloud Save Files | Hayır | İstatistik Aptabase'te kalır; Files v2'de deneme kayıtları için düşünülebilir | ESTIMATE |
 
 ### 2.3 Paketler ve sürümler
@@ -166,6 +167,24 @@ Hesap (ESTIMATE): okuma = günlük × 2 × 30; yazma = günlük × 3 × 30; art�
 | 100 bin, Remote Config'le okuma 24 saatte bir | ≈1,2 milyon (**%120**) | ≈618.000 (%62) |
 
 Sonuç (ESTIMATE): Aşama 2'nin iki katına çıkardığı okuma geri indi; 100 bin aylık oyuncuda varsayılan bütçe sınırın içinde ama dar, okuma aralığı Remote Config'le 24 saate açılınca rahat. Yazma hesabı (§2.4 tablosu) değişmedi: yazma sınırı okumadan önce dolar (≈55 bin aylık oyuncu, varsayılan kuralla).
+
+**Kazanılan bölümün bütçesi (2026-10-27, T530):** 27 Ekim telefon turu, Android'in arka plana alınan oyunu yaklaşık 5 saniye sonra ağdan kestiğini ve Unity'nin döngüsünü hemen durdurduğunu gösterdi: bütçeli arka plan yüklemesi bağlantısını bile açamadı, ancak oyun yeniden açılınca gitti (§5.10). Kural: bir **oturumun** (açılıştan ya da arka plandan dönüşten çıkışa) bulutta olmayan **ilk kazancı kazanma anında**, oturumun öteki kazançları **çıkışta** (arka plana alınırken) bütçe dışı yüklenir; çıkışın gönderemediği kazanç sonraki açılışta bütçe dışı gider. Kazanç olmayan değişiklikler (canlar, harcanan booster, reklam altını, öğretici adımı) eskisi gibi 60 dakikalık bütçeyle. Remote Config'in beşinci anahtarı `cloud_win_uploads_at_once` (varsayılan açık) kuralı kapatır: kazançlar da bütçeyi bekler (Aşama 1'in davranışı). FACT (kod, `SyncPolicy.LetsAWinGoAtOnce`, testler) / ESTIMATE (aşağıdaki hesap)
+
+Hesap (ESTIMATE): günlük oyuncu 3 oturum (§25, yukarıdaki varsayım), günde ≈12 kazanç (100. bölüm 8. gün), oturum başına ≈4; oturumların ≈%90'ında kazanç var. Kural her oturuma en çok **bir** yazma ekler: oturumun ilk kazancının kendi yazması. Oturumun kalan kazançları ve kazanç olmayan değişiklikleri zaten bir yazmayla gidiyordu (eskiden sonraki açılışta bütçeyle, şimdi çıkışta); oturumlar bir saatten sık açılırsa o yazma eskiden bir sonrakine katılırdı, şimdi ayrı gider (≈+0,3).
+
+| Günlük oyuncu başına yazma | Aşama 1 (60 dk) | 2026-10-27 kuralı |
+|---|---|---|
+| Oturumun ilk kazancı (kazanma anında) | — | ≈2,7 (3 oturum × %90) |
+| Çıkışın ve bütçenin yazmaları, tablo, oda, satın alma | ≈1,2 | ≈1,5 |
+| **Toplam** | **≈1,2** | **≈4,2** |
+
+| Ayda yazma | 10 bin aylık oyuncu (2.000 günlük) | 50 bin (10.000) | 100 bin (20.000) | Ücretsiz sınır |
+|---|---|---|---|---|
+| Aşama 1 kuralı | ≈72.000 (%7) | ≈360.000 (%36) | ≈720.000 (%72) | 1.000.000 |
+| 2026-10-27 kuralı | ≈252.000 (%25) | ≈1,26 milyon (**%126**) | ≈2,52 milyon (**%252**) | 1.000.000 |
+| 2026-10-27 kuralı, `cloud_win_uploads_at_once` kapalı | Aşama 1'inki | | | |
+
+Sonuç (ESTIMATE): yazma sınırı artık okumadan önce, **≈40 bin aylık oyuncuda** dolar (1.000.000 / (0,2 × 4,2 × 30)); Aşama 1 kuralıyla ≈139 bindi. Okuma değişmedi (≈1,53/günlük oyuncu; anahtarın yeniden açılması bir okuma, seyrek). Yayının ilk aylarında (birkaç bin aylık oyuncu) bütçe %10'un altında. Unity'nin %75 e-postası gelince sahip `cloud_win_uploads_at_once`'ı kapatır: kazanç yine en geç sonraki açılışta ya da bütçe dolunca çıkışta gider, ama oyundan kazanır kazanmaz çıkan ve bir daha açmayan oyuncunun son kazancı bulutta olmayabilir (27 Ekim'deki durum). Kazanç başına yazma (≈12/gün, 100 bin oyuncuda ≈7 milyon) bilerek seçilmedi.
 
 ### 2.5 Neden UGS, neden kendi Cloud Code'umuz
 
@@ -251,7 +270,9 @@ Sonuç (ESTIMATE): Aşama 2'nin iki katına çıkardığı okuma geri indi; 100 
 | Olay | Ne yapılır | Bütçe (varsayılan; Remote Config'le değişir) |
 |---|---|---|
 | Soğuk açılış | Oturum aç (§5), `save` ve `purchases`'ı oku, birleştir (§3.5) | Son okumadan 6 saat geçmediyse ve hesap değişmediyse okuma atlanır |
-| Uygulama arka plana geçer / kapanır | Yerel belge tabandan farklıysa yükle | Son yüklemeden en az 15 dakika |
+| Uygulama arka plana geçer / kapanır | Yerel belge tabandan farklıysa yükle | Son yüklemeden en az 15 dakika; **2026-10-27:** bulutta olmayan kazanç varsa bütçe dışı, istek Unity duraksamadan gönderilir |
+| Bölüm kazanıldı (2026-10-27) | Oturumun bulutta olmayan ilk kazancıysa hemen yükle | Bütçe dışı; oturumun sonraki kazançları çıkışta |
+| "Bulut kaydı" yeniden açıldı (2026-10-27) | Oturum aç, oku, birleştir, yükle | Bütçe ve geri çekilme dışı |
 | Satın alma teslim edildi | Hemen yükle | Bütçe dışı |
 | Tablo ya da oda tamamlandı | Hemen yükle | Bütçe dışı |
 | Hesap bağlandı ya da değişti | Oku, birleştir, yükle | Bütçe dışı |
@@ -300,7 +321,7 @@ Sonuç (ESTIMATE): Aşama 2'nin iki katına çıkardığı okuma geri indi; 100 
 | Durum | Ne olur |
 |---|---|
 | **İki telefon, aynı hesap** | §3.5'in üç yollu birleştirmesi; writeLock çakışmayı yakalar |
-| **Silip kurma** (aynı telefon) | Yeni kurulumun tabanı yok; taban "yeni oyuncu" sayılır. Hesap PGS/GC'ye bağlıysa aynı hesaba girilir, bulut alınır; ilk açılışta oynanan bölümler (hoş geldin hediyesi farktan düşerek) üstüne eklenir. Bağlı değilse: Android'in yedeği (Auto Backup) Unity'nin oturum belirtecini (PlayerPrefs) geri getirdiyse aynı anonim hesap; getirmediyse yeni anonim hesap ve eski kayıt bulunamaz (Ayarlar'da açıkça yazılır). ESTIMATE (belirtecin yedeğe girdiği Aşama 7'de denenir) |
+| **Silip kurma** (aynı telefon) | Yeni kurulumun tabanı yok; taban "yeni oyuncu" sayılır. Hesap PGS/GC'ye bağlıysa aynı hesaba girilir, bulut alınır; ilk açılışta oynanan bölümler (hoş geldin hediyesi farktan düşerek) üstüne eklenir. Bağlı değilse: Android'in yedeği (Auto Backup) Unity'nin oturum belirtecini (PlayerPrefs) geri getirdiyse aynı anonim hesap; getirmediyse yeni anonim hesap ve eski kayıt bulunamaz (Ayarlar'da açıkça yazılır). ESTIMATE (belirtecin yedeğe girdiği Aşama 7'de denenir). **2026-10-27:** `adb` ile silip kurmada yedek geri gelmedi, yeni anonim hesap açıldı (FACT, T566); derleme yedeğin kurallarını açıkça yazıyor ve yedekten dönen eski `cloud.json` iki kez saydırmıyor (§5.10); Google Play'den geri yükleme sahibin denemesi (T575) |
 | **Yeni telefon, PGS/GC bağlı** | İlk açılışta PGS v2 kendiliğinden girer (ya da Game Center) → aynı Unity hesabı → bulut alınır, "Kaydın geri geldi: 312. bölüm, 4.200 altın" kartı |
 | **Yeni telefon, eski telefonda bağlı değildi** | Kayıt bulunamaz; eski telefonun yedeğinden geri yüklendiyse yerel dosya zaten gelir (bugünkü gibi) |
 | **Telefonun yedeği iki telefona açıldı** | İki telefon aynı anonim hesapta; §3.5 birleştirir |
@@ -495,7 +516,7 @@ PGS'nin kurulumu Google tarafında web istemci kimliği (Game server kimlik bilg
 |---|---|---|
 | PGS/GC'ye bağlıydı | Aynı Google/Apple hesabı, PGS/GC açık | Kendiliğinden geri gelir (§5.1 madde 3) |
 | Bağlıydı | PGS/GC kapalı ya da reddedildi | Anonim başlar; Ayarlar'dan "Bağlan" → `AccountAlreadyLinked` → geçiş kartı |
-| Bağlı değildi | — | Yalnız telefonun yedeğiyle (Android Auto Backup, iCloud yedeği) |
+| Bağlı değildi | — | Yalnız telefonun yedeğiyle (Android Auto Backup, iCloud yedeği). **2026-10-27:** Android'de yedek oyunun dört dosyasını ve Unity'nin oturumunu taşır (§5.10); yedek yoksa ya da alınmamışsa oyun baştan başlar, eski kayıt bulunamaz. Oyundaki metinler bunu söylüyor |
 | Android'den iPhone'a ya da tersi | — | Geri gelmez (v1 dışı; v2'de tek kullanımlık aktarım kodu düşünülebilir) |
 
 ### 5.6 Hesap ve veri silme
@@ -550,6 +571,22 @@ Kod: `Screens/AccountCard.cs` (yeni kart), `Screens/SettingsCard.cs` ve `Layout/
 - **Gizlilik:** §6.5'in metni oyunda: 1. ve son paragraf değişti, üç yeni paragraf (bulut kaydı, Google Play Games ve Game Center, satın almaların doğrulanması); 2. paragraftaki "Hesap ... yoktur" da kalktı ("Reklam ağı yoktur."). Kart yedi sayfa. Ayarlar'ın gizlilik satırı: bulut kaydı açıkken "Satın almalar ve bulut kaydın çıkar" (istatistik izniyle "Satın almalar, bulut kaydın ve kimliksiz istatistikler çıkar"); kapalıyken eskisi.
 - **Kelimeler:** 45 yeni, 3 değişen, 13 dil; Türkçe kaynak (notlarıyla), öteki diller makine çevirisi, taslak; hepsi sahibin onayını bekliyor.
 
+### 5.10 27 Ekim telefon turunun düzeltmeleri (2026-10-27, Android)
+
+Tur: `out/phone-test/bugs-2026-10-27.md` ve `results-2026-10-27-cloud.json` (47 test: 16 geçti, 4 kaldı, 27 sahibin). Kod: `Cloud/SyncPolicy.cs`, `Cloud/CloudSync.cs`, `Cloud/CloudSaving.cs`, `Cloud/ServerModule.cs`, `Cloud/Ugs/MainThreadQueue.cs`, `Cloud/Ugs/Wire/WireSwitch.cs` (kendi küçük derlemesi `Puzzle.Client.WireSwitch`), `Cloud/Ugs/UgsAccounts.cs`, `GameRoot.cs`, `Flow/GameSession.cs`, `Screens/MuseumStage.cs`, `Editor/ManifestBackupRules.cs`, `Assets/link.xml`. FACT (kod, testler, `CloudCheck`) / ESTIMATE (telefonda, aşağıdaki yeniden denetim).
+
+- **T530, kazanılan bölüm hemen buluta:** neden: Android arka plana alınan oyunu ≈5 sn sonra ağdan kesiyor (`Destroyed live tcp sockets`, `background-default` ağ kuralı), Unity döngüsünü hemen durduruyor, Cloud Save 3.4.2 ise isteğini Unity'nin ana iş parçacığı kuyruğunda kuruyor (`Task.Factory.StartNew(…, ThreadHelper.TaskScheduler)`): arka plan yüklemesi oyun dönene kadar bağlantı bile açmadı. Düzeltme: (1) bölüm kazanılınca (altını ve hediyeleri verildiği adımda) `SyncTrigger.LevelWon`; oturumun bulutta olmayan ilk kazancı bütçe dışı gider, oyun öndeyken; (2) çıkış (`Background`) bulutta olmayan kazanç varsa bütçe dışı; (3) çıkışın gönderemediği kazanç sonraki açılışta (`ColdStart`) bütçe dışı; (4) `GameRoot.OnApplicationPause(true)` yüklemeyi istedikten sonra Unity'nin ana iş parçacığı kuyruğunu üç kez çalıştırıyor (`MainThreadQueue`: Unity'nin iç `UnitySynchronizationContext`'inin açık `Exec`'i, yansımayla; bulunamazsa günlük söyler ve yükleme eskisi gibi dönüşte gider): istek Android'in bıraktığı saniyelerde ağa çıkar, cevabı dönüşte alınır; oyun bu arada kapanırsa cevapsız yazma sonraki okumada bulunur (§3.3). Oturumu `CloudSync` izliyor (çıkış oturumu bitirir). Bütçe §2.4.
+- **T562, anahtar açılınca hemen:** `SyncTrigger.SwitchedOn`: yeni giriş gibi önce okur, bütçe ve geri çekilme dışı yükler; kapalıyken oynananlar anahtar açılır açılmaz bulutta (27 Ekim'de 60 dakikalık bütçeye takılmıştı).
+- **T569, Künye Destek'e döner:** Künye'nin "Tamam"ı, X'i ve geri tuşu kartı Destek kartına geri çeviriyor (aynı yerde, aynı karanlığın önünde); Destek'in "Tamam"ı Ayarlar'a.
+- **T186a, IAP 5.4.4'ün giriş olayı:** paket kaynağı (`com.unity.purchasing@215c35b51cf4`): `IapCoreInitializeCallback.Initialize`, UGS başlarken (`UnityServices.InitializeAsync` içinde) `ConnectionsSettingsClient.EnsureFetched` (POST `https://insights.unity3d.com/v1/get-connections-settings`: proje kimliği, Unity kurulum kimliği, platform, uygulama, Unity ve SDK sürümü) çağırıyor ve `IAP_UNITY_AUTH_ENABLED` derlendiğinde (paketin `versionDefines`'ı: Authentication 3.0.0 ve üstü projede varsa) `AuthenticationService.SignedIn`'e `SessionEventEmitter.SendAuthenticationCompleteEvent`'i bağlıyor (POST `https://prd.insights.analytics.unity3d.com/v1/ingest/producer`, protobuf). Belgelenmiş bir kapatma ayarı yok; Unity'nin rıza durumu (`EndUserConsent`) yalnız reklam ve Firebase kimliklerini açıp kapatıyor, olayın gidişini değil; abonelik `InitializeAsync` içinde kurulduğu için başlatma sırasıyla kaçırılamıyor; oyuncu kimliğini oyun vermiyor, Authentication veriyor. **Paketi yamamadan kapatılamaz;** metinler değişti (13 dil, taslak, sahibin onayına): gizlilik kartının Unity paragrafı gidenleri ve ne zaman gittiğini sayıyor, Ayarlar'ın satırı "giriş bilgisi"ni anıyor, Data safety önerisi §6.3'te. Olayın içeriği (koddan; telefonda TLS): Unity kurulum kimliği, oyuncu kimliği, analiz kimliği, oturum kimliği, proje ve ortam kimliği, IAP ve Unity sürümü, sistem dili ve yerel ayar listesi, cihaz modeli, açılış zamanı, işletim sistemi sürümü, toplam depolama, paket adı, uygulama sürümü, kurulum zamanı ve biçimi (mağaza mı), rıza durumları (belirtilmemiş); APK'da `AD_ID` izni yok, reklam kimliği gitmiyor. "Bulut kaydı" kapalıyken UGS başlamadığı için ikisi de gitmiyor (FACT, 27 Ekim). iOS'ta da aynı paket: App Store etiketi `feature/ios`'ta, iOS aşamasına not (§6.4).
+- **T186b, Wire kapatıldı:** `com.unity.services.wire` 1.6.0 (Cloud Code 2.10.4'ün bağımlılığı) girişte `PlayerIdChanged` ile `wss://wire.unity3d.com/v2/ws`'e bağlanıyor; yalnız Cloud Code'un oyuncu/proje mesajı aboneliği için. Oyun abone olmuyor; Cloud Save, Remote Config ve Authentication Wire kullanmıyor. Wire'ın açık bir ayarı yok; istemcisinin kendi `Disable`'ı (bağlantıyı kapatır, yeniden kurmaz) hizmetler başladıktan sonra, girişten önce çağrılıyor (`WireSwitch`: hizmetlerin kayıtlı `IWire` bileşeni üzerinden; sınıf Wire'a özel olduğu için açık yöntemi yansımayla; `link.xml` budamaya karşı tutuyor). Bulunamazsa günlük söyler, Wire eskisi gibi kalır.
+- **T566, silip kurma ve yedek:** Unity Authentication 3.8.1 oturumu PlayerPrefs'te tutuyor (`<proje>.<profil>.unity.services.authentication.session_token`; Android'de `shared_prefs/com.saturnwave.museumpuzzle.v2.playerprefs.xml`). Android'in Auto Backup'ı varsayılan olarak bütün veriyi yedekliyordu (shared_prefs, oyunun dış dosya klasörü dahil); Google Play'den yeniden kurulumda ve yedekten kurulan telefonda aynı anonim hesap gelmeli. `adb install` geri yükleme yapmaz: 27 Ekim'deki yeni hesap bundan (FACT). Derleme yedeğin kurallarını artık açıkça yazıyor (`ManifestBackupRules`; Android 12 ve sonrası `dataExtractionRules`, 11 ve öncesi `fullBackupContent`; Google'ın bulut yedeği ve telefondan telefona aktarım aynı): yalnız Unity'nin PlayerPrefs dosyası ve oyunun dört dosyası (`progress.json`, `cloud.json`, `device.json`, `attempts.jsonl`). Kütüphanelerin öteki dosyaları ve veritabanları (eski derlemelerin `datatransport` veritabanı, Remote Config'in önbelleği), kenara alınmış ve yarım yazılmış dosyalar geri gelmez. `progress.json` ve `cloud.json` birlikte gelir: taban ve yerel aynı andan.
+- **Eski yedeğin tabanı (yeni kural):** yedekten dönen `cloud.json` kurulumun yedekten sonraki yazmalarını bilmez; eskiden birleştirme yedekteki kazançları ikinci kez sayardı (bulut zaten içeriyordu). Kaydın son yazması bu kurulumun yazar kimliğiyle ve durumun bilmediği bir yazmaysa (ne tabanın ne cevapsız yazmanın) birleştirmenin tabanı telefonun ilerlemesidir: hiçbir şey iki kez sayılmaz (`CloudSync.Merged`, test `A_state_the_backup_brought_back_counts_nothing_twice`). Bilinen sınır: yedek iki telefona açılır ve ikisi de yazarsa son yazan öteki telefonsa bu kural işlemez, §3.5'in birleştirmesi geçerli.
+- **Metinler (13 dil, taslak):** ilerleme yalnız iki yoldan geri gelir: hesap Google Play Games'e ya da Game Center'a bağlıysa bulut kaydından, değilse telefonun yedeğinden; ikisi de yoksa oyun baştan başlar ve eski kayıt bulunamaz (gizlilik kartının bulut, platform, yedek ve son paragrafları; hesap kartının satırı). "Aynı telefonda" kalktı.
+- **Verilerimi sil'in süresi:** modül silmeye en çok 10 saniye verilir (`ModuleWithADeadline`); dolunca kart yine sakin "Şu an silinemiyor; biraz sonra yine dene. / Hiçbir şey silinmedi." der. 27 Ekim'de Cloud Code yüklenmemiş modül için 17 saniye bekletmişti. Modülün kendi sınırı 15 sn; geç gelen bir cevap duyulmaz, yeniden "Sil" tamamlar.
+- **Remote Config'in beşinci anahtarı:** `cloud_win_uploads_at_once` (bool; yoksa açık). §9 A8.
+- **Sahibe not (dokunulmadı):** turda `production`'da üç anonim test oyuncusu açıldı: `FHtsNKmNaK6IwcUNjzqXEpBPzDgu`, `iNsm2xQTWhhkK7R0nYuppMYg7jlw`, `UYXufGjHuTqwyDC2wUqX8mklE2bq` (Dashboard → Player Management'tan silinebilir). Telefonun Play Store'u `BAD_AUTHENTICATION` yazıyor: satın alma testlerinden ve Google yedeğinin denenmesinden (T575) önce telefondaki Google hesabına bakılmalı.
+
 
 ### 6.1 Telefondan yeni çıkanlar
 
@@ -560,6 +597,8 @@ Kod: `Screens/AccountCard.cs` (yeni kart), `Screens/SettingsCard.cs` ve `Layout/
 | İlerleme, cüzdan, satın alma sayıları ve son ödeme kimlikleri (`save`) | Unity Cloud Save | §3.4'teki kurallarla | ESTIMATE (tasarım) |
 | Satın alma belirteci / JWS, ürün, sipariş kimliği | Cloud Code'umuz → Google / Apple | Her satın almada | ESTIMATE (tasarım) |
 | IAP 5.4.4'ün UGS başlayınca açılan yolları: oturum olayı (oyuncu kimliği ve cihaz bilgisi), teşhis ölçümleri, bağlantı ayarları | Unity | Açılışta, oturumda | FACT (paket kaynağı [L5]); **ne gittiği Aşama 0'da ölçülecek** |
+| **Ölçüldü (2026-10-27, §5.10):** IAP'nin bağlantı ayarları isteği (proje ve Unity kurulum kimliği, platform, sürümler) ve her girişte giriş olayı (oyuncu kimliği, Unity'nin kurulum, analiz ve oturum kimlikleri, cihaz modeli, sistem sürümü, dil ve yerel ayarlar, depolama, açılış zamanı, uygulama sürümü, kurulum zamanı ve biçimi) | Unity (`insights.unity3d.com`, `prd.insights.analytics.unity3d.com`; 34.8.90.77) | Bulut kaydı açıkken her UGS başlangıcında ve her girişte; kapatılamaz | FACT (paket kodu, telefonda bağlantı zamanları) |
+| Wire websocket'i | Unity (`wire.unity3d.com`, 34.111.7.46) | **Artık hiç** (2026-10-27'de kapatıldı; öncesinde girişlerin yarısında, oyun öndeyken açık) | FACT |
 | UGS çekirdeğinin kendi teşhis kayıtları | Unity | Belirsiz | REPORTED: paketin değişiklik günlüğü teşhis gönderimini anıyor, kapatma ayarı bulunamadı [U24] |
 | PGS SDK'sının kendi analiz ve teşhis verisi | Google | Kendiliğinden | FACT [G5] |
 
@@ -585,8 +624,8 @@ Unity'nin verinin yerini seçtirmediği, Cloud Save ve Authentication'ın hangi 
 | Personal info > **User IDs** | No | **Yes**, Shared: No, Required (anahtar konursa "Users can choose" tartışılır), App functionality; Account management; Fraud prevention | Unity oyuncu kimliği, PGS kimliği |
 | App activity > **Other actions** (oyun ilerlemesi, cüzdan) | No | **Yes**, Shared: No, Required, App functionality | Bulut kaydı. Tür seçimi ESTIMATE |
 | Financial info > Purchase history | Yes (Unity) | Yes; amaçlara Account management eklenir; kaynak: Unity olayları + sunucumuz | Defter, registry |
-| Device or other IDs | Yes | Aşama 0'ın ölçümüne göre (IAP oturum olayı) | |
-| App info and performance > Diagnostics | Yes | Aşama 0'a göre; PGS SDK'nın teşhisi Google'ın kendi beyanında [G5] | |
+| Device or other IDs | Yes | **Yes** (2026-10-27): Unity'nin kurulum, analiz ve oturum kimlikleri, IAP'nin giriş olayıyla her girişte; Collected, Shared: Unity'nin bağımsız sorumluluğuna göre (aşağıdaki açık soru), Required (bulut kaydı açıkken; kapatılınca gitmez), Analytics; Fraud prevention | §5.10; reklam kimliği yok |
+| App info and performance > Diagnostics | Yes | **Yes** (2026-10-27): cihaz modeli, sistem sürümü, dil ve yerel ayarlar, depolama, açılış zamanı; satın alma olaylarıyla ve her girişte; PGS SDK'nın teşhisi Google'ın kendi beyanında [G5] | §5.10 |
 | Encrypted in transit | Yes | Yes (UGS, Google, Apple `https://`) | |
 
 ### 6.4 App Store gizlilik etiketinde değişenler (öneri)
@@ -601,6 +640,8 @@ Unity'nin verinin yerini seçtirmediği, Cloud Save ve Authentication'ın hangi 
 
 Uygulamanın `PrivacyInfo.xcprivacy`'si aynı türleri yazar; Apple.GameKit'in kendi manifesti Aşama 6'da okunur. ESTIMATE
 
+**iOS aşamasına not (2026-10-27):** IAP 5.4.4'ün giriş olayı iOS'ta da gider (aynı paket; iOS'ta IDFV de eklenir, reklam izni yoksa IDFA yok). App Store etiketinin metni `feature/ios` dalında (`IOS_BUILD.md` §4.1): "Identifiers > Device ID" ve "Diagnostics" satırları her girişi de saymalı; gizlilik kartının 13 dildeki yeni metni o dala birleşmeyle gelir. Wire'ın kapatılması (§5.10) iOS'ta da geçerli.
+
 ### 6.5 Yeni gizlilik metni taslağı (oyun içi, Türkçe; sahibin onayına)
 
 privacy-v1 §3.2'deki sekiz paragraftan **1. ve 8.** değişir, **üç yeni paragraf** eklenir; 2–7 aynı kalır (3. paragrafa Aşama 0'ın sonucuna göre bir cümle eklenebilir).
@@ -614,6 +655,8 @@ privacy-v1 §3.2'deki sekiz paragraftan **1. ve 8.** değişir, **üç yeni para
 > **Satın almaların doğrulanması (yeni).** Bir satın almanın gerçek olduğunu anlamak için oyun, mağazanın verdiği satın alma kaydını (ürün, sipariş kimliği, mağazanın imzalı kaydı) Unity'deki sunucu kodumuza gönderir. Sunucu bunu Google Play'e ya da Apple'a sorar ve sonucu hesabında saklar. İade edilen satın almalar bu listede işaretlenir.
 >
 > **8 (yeni hâli).** Oyunu silersen ya da telefon değiştirirsen ilerlemen ve altının bulut kaydından geri gelir; Google Play Games ya da Game Center'a bağlı değilsen bu yalnız aynı telefonda ya da telefonunun yedeğiyle olur. Ayarlar'daki "Verilerimi sil" ile buluttaki hesabını ve kaydını istediğin zaman silebilirsin; telefondaki ilerlemeyi de silip silmeyeceğini sen seçersin. Sahtekârlığı önlemek için satın almaların kimliksiz bir izi 36 ay saklanır. Satın alma iadesini Google Play'den ya da Apple'dan istersin.
+
+**2026-10-27'de değişti (telefon turu, §5.10; taslak, sahibin onayına):** bulut paragrafının "Böylece oyunu yeniden kurduğunda ..." cümlesi ve 8. paragrafın ilk cümlesi artık ilerlemenin yalnız iki yoldan geri geldiğini söylüyor (Google Play Games ya da Game Center bağlıysa bulut kaydından, değilse telefonun yedeğinden; ikisi de yoksa oyun baştan başlar); platform paragrafının son cümlesi hesaba bu telefondan ya da onun yedeğinden kurulan telefondan girildiğini, yedek paragrafı oyunun hesabının oturumunun da yedeğe girdiğini, Unity paragrafı IAP 5.4.4'ün her girişteki olayını (gidenler ve ne zaman) söylüyor; ayarlar ve deneme kayıtları "bulut kaydına girmez". Oyundaki metin `words/tr.json`'da.
 
 **Değişecek öteki yazılar:** Ayarlar'daki gizlilik satırı ("Telefondan yalnızca satın almalar çıkar" → ör. "İlerlemen bulutta da saklanır; istatistikler yalnız izinle"); geri yükleme kartındaki "Altın paketleri geri gelmez; yalnız Çırak Çantası gelir." → "Altının bulut kaydınla geri gelir."; §19'daki "Silip kurma, yeni telefon" ve "İade" maddeleri; mağaza sayfası ve destek metni. ESTIMATE
 
@@ -710,7 +753,8 @@ Hiçbir adım kart istemez. **Bir sayfa ödeme bilgisi isterse durun ve bize yaz
 | A5 | Sırları ekleyin | Dashboard → proje → **Development → Secrets → Add secret**, her biri için "erişebilecek hizmet: **Cloud Code**": `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (B6'daki JSON dosyasının tamamı), `APPLE_IAP_PRIVATE_KEY` (C3'teki `.p8`'in metni), `APPLE_IAP_KEY_ID`, `APPLE_ISSUER_ID`. Sonra indirdiğiniz JSON ve `.p8` dosyalarını güvenli bir yere taşıyın; masaüstünde bırakmayın | A1, B6, C3 |
 | A6 | Modülü yükleyin | Aşama 3 bitince Editor'da **Services → Deployment** penceresi → modül ve zamanlanmış görev → önce `development`'a **Deploy**, testten sonra `production`'a. (İsterseniz bizim yükleyebilmemiz için ayrı bir hizmet hesabı açılır; bu ayrı bir karar). **Adım adım: `docs/CLOUD_CODE_DEPLOY.md`** (Deployment paketi gerekir; zamanlanmış görevler Dashboard → Triggers'tan) | A2, Aşama 3 |
 | A7 | Kullanımı izleyin | Dashboard → **Service Usage**; Unity'nin %75/%100 e-postalarını bize iletin | A1 |
-| A8 | (İsteğe bağlı) Remote Config | Dashboard → **Remote Config** → anahtarları biz dosya olarak hazırlarız, Deployment penceresinden yüklenir | A2 |
+| A8 | (İsteğe bağlı) Remote Config | Dashboard → **Remote Config** → anahtarları biz dosya olarak hazırlarız, Deployment penceresinden yüklenir. **2026-10-27:** beşinci anahtar `cloud_win_uploads_at_once` (bool, varsayılan `true`); yazma kotası yaklaşınca `false` (§2.4) | A2 |
+| A9 | (2026-10-27) Turun test oyuncuları | Dashboard → proje → `production` → **Player Management**: `FHtsNKmNaK6IwcUNjzqXEpBPzDgu`, `iNsm2xQTWhhkK7R0nYuppMYg7jlw`, `UYXufGjHuTqwyDC2wUqX8mklE2bq` (27 Ekim telefon turunun anonim hesapları; isterseniz silin) | — |
 
 ### B. Google Play
 
@@ -765,7 +809,7 @@ Hiçbir adım kart istemez. **Bir sayfa ödeme bilgisi isterse durun ve bize yaz
 | # | Risk | Etki | Önlem |
 |---|---|---|---|
 | 1 | Ücretsiz sınır aşılınca bütün UGS kapanır, 30 günde oyuncular için de [U2] | Bulut kaydı ve doğrulama durur | Yerel önce tasarım (§3.8), bütçe (§2.4), Remote Config, %75 e-postasına tepki |
-| 2 | IAP 5.4.4 UGS başlayınca oturum olayı, teşhis vb. gönderir [L5] | Gizlilik metni ve beyanlar değişir | Aşama 0b ölçümü; metin ondan sonra kesinleşir |
+| 2 | IAP 5.4.4 UGS başlayınca oturum olayı, teşhis vb. gönderir [L5] | Gizlilik metni ve beyanlar değişir | Aşama 0b ölçümü; metin ondan sonra kesinleşir. **2026-10-27:** ölçüldü, kapatılamıyor; metin ve beyan önerisi değişti (§5.10) |
 | 3 | Birleştirmede hata altın çoğaltır ya da kaybettirir | Ekonomi, güven | Özellik testleri, Editor denetimi, iki telefon testi, Remote Config'le kapatma |
 | 4 | UGS'yi engelleyen hileci satın almayı telefonda doğrulatır | Gelir kaybı (bugünkü durum) | v1'de kabul; v2'de sunucu cüzdanı |
 | 5 | Verinin yeri (Cloud Save, Authentication) yazılı değil [U26] | KVKK md. 9, GDPR aktarım | Unity'nin DPA'sı ve alt işleyen listesi; uzman |
@@ -777,6 +821,9 @@ Hiçbir adım kart istemez. **Bir sayfa ödeme bilgisi isterse durun ve bize yaz
 | 11 | PGS v2 her açılışta "Hoş geldin" şeridi gösterir; Game Center ilk açılışta giriş sayfası açar | Görünüş | Sahibin telefonda bakması (T testleri) |
 | 12 | Hesap silme isteği e-postayla gelirse oyuncu kodu bilinmeyebilir | Destek yükü | Kod Ayarlar'da; kendiliğinden temizlik süresi politikada |
 | 13 | Unity UGS'nin belgelenmemiş "kapatıldı" hata kodu | Yanlış sınıflandırma | Bütün hatalar aynı geri çekilmeye girer |
+| 14 | Çıkıştaki kuyruk çalıştırması ve Wire'ın kapatılması Unity'nin iç adlarına yansımayla dayanıyor (`UnitySynchronizationContext.Exec`, Wire'ın `Client.Disable`) | Unity ya da Wire yükseltilince sessizce eski davranış (yükleme dönüşte, Wire açık) | Sürümler sabit; `link.xml`; bulunamazsa günlükte bir satır; telefon testleri T571, T574 her yükseltmede |
+| 15 | Kazanç kuralı yazma kotasını ≈3,5 katına çıkarır (§2.4) | ≈40 bin aylık oyuncuda ücretsiz sınır | `cloud_win_uploads_at_once` Remote Config'le kapatılır; %75 e-postası |
+| 16 | Yedekten dönen eski `cloud.json` (§5.10) | İki telefona açılan yedekte kazanç iki kez sayılabilir | Son yazma bu kurulumunsa taban telefonun ilerlemesi; geri kalan durum §3.5'in bilinen sınırı |
 
 ### 10.2 Sahibin kararları
 

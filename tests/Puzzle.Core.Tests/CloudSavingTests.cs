@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Puzzle.Client.Cloud;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Purchases;
 
 namespace Puzzle.Core.Tests;
 
@@ -185,8 +186,12 @@ public sealed class CloudSavingTests
         Assert.Null(phone.Cloud.OfferTheLink(levelsWon: 5));
     }
 
+    /// <summary>
+    /// The switch off signs out and nothing is sent; on again, the same account is signed in to and what was played while
+    /// the switch was off goes at once, ten minutes after the start's upload, the hour's budget notwithstanding (T562).
+    /// </summary>
     [Fact]
-    public async Task The_switch_turned_off_signs_out_and_stops_the_sync_and_on_again_finds_the_same_account()
+    public async Task The_switch_turned_off_signs_out_and_stops_the_sync_and_on_again_finds_the_same_account_and_uploads_at_once()
     {
         var services = new FakeUnityServices();
         var phone = new Phone(services, NoPlatform(), CloudSupport.NewPlayer().Won(1));
@@ -195,45 +200,98 @@ public sealed class CloudSavingTests
         int writes = services.CloudOf(player).Writes;
 
         await phone.Cloud.TurnTheSwitchAsync(isOn: false, CancellationToken.None);
-        phone.Progress.Play(progress => progress.Won(1));
-        phone.Clock.Passes(TimeSpan.FromHours(2)); // past the budget of the start's upload
+        phone.Progress.Play(progress => progress.WithTutorialStepSeen(TutorialStep.Chain).WithCoins(900));
+        phone.Clock.Passes(TimeSpan.FromMinutes(10)); // well within the budget of the start's upload
         await phone.Cloud.UploadAsync(SyncTrigger.PaintingOrRoomCompleted, CancellationToken.None);
-        bool isOffAfterward = phone.Accounts.SignedIn == null && !phone.States.Load().State.IsSwitchedOn;
+        bool isOffAfterward = phone.Accounts.SignedIn == null && !phone.States.Load().State.IsSwitchedOn && services.CloudOf(player).Writes == writes;
         await phone.Cloud.TurnTheSwitchAsync(isOn: true, CancellationToken.None);
 
         Assert.True(isOffAfterward);
         Assert.Equal(player, phone.Cloud.Account.Player);
-        Assert.True(services.CloudOf(player).Writes > writes, "on again, the start's sync uploads what was won meanwhile");
+        Assert.Equal(UploadResult.Written, Assert.IsType<SyncOutcome.Done>(phone.Cloud.LastSync).Upload);
+        Assert.Equal(phone.Progress.Current, CloudSupport.ProgressIn(services.CloudOf(player).Save));
+    }
+
+    /// <summary>
+    /// A module that does not answer "Verilerimi sil" within its deadline (Cloud Code took 17 seconds to say an undeployed
+    /// module was not there, 27 October): the card hears that nothing could be deleted now, and the account, its save and
+    /// the switch stay as they were.
+    /// </summary>
+    [Fact]
+    public async Task A_deletion_the_module_does_not_answer_in_time_deletes_nothing_and_says_so_calmly()
+    {
+        var services = new FakeUnityServices();
+        var phone = new Phone(services, NoPlatform(), CloudSupport.NewPlayer().Won(1), module: new ModuleWithADeadline(new SilentModule(), TimeSpan.FromMilliseconds(50)));
+        await phone.Cloud.StartAsync(CancellationToken.None);
+        CloudPlayerId player = phone.Cloud.Account.Player!.Value;
+
+        phone.Cloud.Ask(new AccountRequest.DeleteTheCloudData());
+        await phone.Answered();
+
+        var notDeleted = Assert.IsType<AccountNews.CloudDataNotDeleted>(Assert.Single(phone.Cloud.TakeNews()));
+        Assert.Equal(DeletionFailure.Unavailable, notDeleted.Why);
+        Assert.Contains(player, services.Accounts);
+        Assert.True(phone.Cloud.IsSwitchedOn);
+        Assert.NotNull(services.CloudOf(player).Save);
+    }
+
+    [Fact]
+    public async Task A_module_that_answers_in_time_is_heard_through_its_deadline()
+    {
+        var services = new FakeUnityServices();
+        var server = new FakePurchaseServer(services, CloudSupport.Json);
+        var phone = new Phone(services, NoPlatform(), CloudSupport.NewPlayer().Won(1), server: server);
+        await phone.Cloud.StartAsync(CancellationToken.None);
+        var punctual = new ModuleWithADeadline(server.Phone(phone.Accounts), ModuleWithADeadline.GameDeadline);
+
+        Assert.Equal(DataDeletion.Deleted, await punctual.DeleteMyDataAsync(CancellationToken.None));
+        Assert.Equal(TimeSpan.FromSeconds(10), ModuleWithADeadline.GameDeadline);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ModuleWithADeadline(server.Phone(phone.Accounts), TimeSpan.Zero));
     }
 
     private static FakePlatformSignIn NoPlatform() => new FakePlatformSignIn(SignInPlatform.None, player: null, isSignedIn: false);
+
+    /// <summary>A module that never answers a deletion: Cloud Code holding the call.</summary>
+    private sealed class SilentModule : IServerModule
+    {
+        public Task<ServerVerdict> ValidatePurchaseAsync(PaymentQuestion question, CancellationToken cancel) =>
+            Task.FromResult<ServerVerdict>(new ServerVerdict.Unavailable("silent"));
+
+        public Task<DataDeletion> DeleteMyDataAsync(CancellationToken cancel) => new TaskCompletionSource<DataDeletion>().Task;
+    }
 
     /// <summary>A phone of the player: its progress, its cloud.json in memory, its view of Unity's services and its cloud save.</summary>
     private sealed class Phone
     {
         private readonly FakePlatformSignIn _platform;
         private readonly bool _hasACloudProject;
+        private readonly IServerModule? _module;
         private int _writes;
 
-        public Phone(FakeUnityServices services, FakePlatformSignIn platform, PlayerProgress start, bool switchedOn = true, bool hasACloudProject = true, FakePurchaseServer? server = null)
+        /// <param name="module">The module the phone asks; the shared server's, as this phone's account calls it, when none is given.</param>
+        public Phone(
+            FakeUnityServices services, FakePlatformSignIn platform, PlayerProgress start, bool switchedOn = true, bool hasACloudProject = true, FakePurchaseServer? server = null,
+            IServerModule? module = null)
             : this(
                 services.Phone(), platform, new HeldProgress(start), new CloudStateInMemory(switchedOn ? CloudState.New("writer") : CloudState.Forgotten("writer")),
-                new MovableClock(CloudSupport.Noon), hasACloudProject, server ?? new FakePurchaseServer(services, CloudSupport.Json))
+                new MovableClock(CloudSupport.Noon), hasACloudProject, server ?? new FakePurchaseServer(services, CloudSupport.Json), module)
         {
         }
 
         private Phone(
-            FakePhoneAccounts accounts, FakePlatformSignIn platform, HeldProgress progress, CloudStateInMemory states, MovableClock clock, bool hasACloudProject, FakePurchaseServer server)
+            FakePhoneAccounts accounts, FakePlatformSignIn platform, HeldProgress progress, CloudStateInMemory states, MovableClock clock, bool hasACloudProject, FakePurchaseServer server,
+            IServerModule? module)
         {
             _platform = platform;
             _hasACloudProject = hasACloudProject;
+            _module = module;
             Server = server;
             Accounts = accounts;
             Progress = progress;
             States = states;
             Clock = clock;
             var sync = new CloudSync(accounts, states, progress, CloudSupport.Rules, CloudSupport.Json, clock, "1.1.0", () => $"write-{++_writes}");
-            Cloud = new CloudSaving(sync, accounts, platform, NoRemoteSettings.Instance, Server.Phone(accounts), progress, hasACloudProject, _ => { }, failure => throw failure);
+            Cloud = new CloudSaving(sync, accounts, platform, NoRemoteSettings.Instance, module ?? Server.Phone(accounts), progress, hasACloudProject, _ => { }, failure => throw failure);
         }
 
         public FakePhoneAccounts Accounts { get; }
@@ -250,7 +308,7 @@ public sealed class CloudSavingTests
         public CloudSaving Cloud { get; }
 
         /// <summary>The game closed and opened again on this phone: the same files, the same session.</summary>
-        public Phone OpenedAgain() => new Phone(Accounts, _platform, Progress, States, Clock, _hasACloudProject, Server);
+        public Phone OpenedAgain() => new Phone(Accounts, _platform, Progress, States, Clock, _hasACloudProject, Server, _module);
 
         public Task Answered() => Cloud.Answering ?? Task.CompletedTask;
     }

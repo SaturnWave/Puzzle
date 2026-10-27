@@ -122,6 +122,14 @@ namespace Puzzle.Client.EditorTools
         WayBack,
 
         /// <summary>
+        /// The walk of the settings alone, whatever the state (GameWalk.Settings.cs, which <c>-screenWalk</c> runs among
+        /// every card walk): the gear on each page with the wallet row, the privacy card's records deleted after a
+        /// question, the support card, the credits and their way back to the support card (T569), the sound's and the
+        /// music's switches kept, on one sheet.
+        /// </summary>
+        SettingsWalk,
+
+        /// <summary>
         /// The entry page the game opens on (EntryTR), whatever the state: while its bar fills, once it is ready, and
         /// with the card the way back brings down, walked by touches on the way (<see cref="EntryShots"/>).
         /// </summary>
@@ -508,10 +516,18 @@ namespace Puzzle.Client.EditorTools
             ShotPage.Boosters => GameWalk.RunTheBoosterIntroWalk(screen, studio),
             ShotPage.WorldMap => GameWalk.RunTheWorldMapWalk(screen, studio),
             ShotPage.WayBack => GameWalk.RunTheWayBackWalk(screen, studio),
+            ShotPage.SettingsWalk => WalkTheSettings(screen, studio),
             ShotPage.Entry => EntryShots.Shoot(screen, studio),
             ShotPage.Purchases => GameWalk.RunThePurchaseWalks(screen, studio),
             _ => throw new ArgumentOutOfRangeException(nameof(page), page, "A page the picture command does not know."),
         };
+
+        /// <summary>The walk of the settings on one screen; its pictures go onto its own sheet, which counts as none of the pages' pictures.</summary>
+        private static int WalkTheSettings(ScreenShape screen, Studio studio)
+        {
+            GameWalk.RunTheSettingsWalk(screen, studio);
+            return 0;
+        }
 
         /// <summary>The sheets of the shared controls on one screen: each sheet on each ground, one picture each.</summary>
         /// <returns>How many pictures were taken.</returns>

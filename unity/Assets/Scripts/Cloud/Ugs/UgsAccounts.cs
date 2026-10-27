@@ -13,9 +13,13 @@ namespace Puzzle.Client.Cloud
     /// Unity's services and their Authentication 3.8.1 (com.unity.services.authentication, pinned) as the identity needs
     /// them (docs/research/server-v1.md §5): the services start in the environment of this build, the player signs in to
     /// the account whose session the phone keeps or to a new one, to the account of a Google Play Games or Game Center
-    /// player, links one to the account, and signs out. Unity keeps the session in the PlayerPrefs; the game keeps nothing
-    /// of it. Nothing is asked of Unity before <see cref="StartAsync"/>, which the game calls only with the player's switch
-    /// on and a cloud project (<see cref="CloudSaving"/>).
+    /// player, links one to the account, and signs out. Unity keeps the session in the PlayerPrefs (the key
+    /// "&lt;project id&gt;.&lt;profile&gt;.unity.services.authentication.session_token" of
+    /// shared_prefs/com.saturnwave.museumpuzzle.v2.playerprefs.xml on Android), which Android's backup carries
+    /// (Editor/ManifestBackupRules.cs); the game keeps nothing of it. Nothing is asked of Unity before
+    /// <see cref="StartAsync"/>, which the game calls only with the player's switch on and a cloud project
+    /// (<see cref="CloudSaving"/>); once the services have started, Wire is turned off before the sign-in
+    /// (<see cref="WireSwitch"/>).
     /// <para>
     /// Every exception of the services ends here as a <see cref="CloudFailure"/> (§3.8): the network's
     /// (<see cref="CommonErrorCodes.TransportError"/>) as no network, a timeout or a service down as unavailable, a refused
@@ -124,6 +128,7 @@ namespace Puzzle.Client.Cloud
             {
                 await UnityServices.InitializeAsync(new InitializationOptions().SetEnvironmentName(_environment));
                 _log($"Unity's services started in the environment \"{_environment}\".");
+                WireSwitch.TurnOff(_log); // before the sign-in, at which Wire would open its websocket
                 return null;
             }
             catch (ServicesInitializationException failure)

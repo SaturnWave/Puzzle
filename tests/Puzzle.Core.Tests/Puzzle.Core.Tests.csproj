@@ -204,6 +204,7 @@
     <Compile Include="..\..\unity\Assets\Editor\ManifestPlayGamesStart.cs" Link="Unity\Editor\ManifestPlayGamesStart.cs" />
     <Compile Include="..\..\unity\Assets\Editor\PlayGamesDependency.cs" Link="Unity\Editor\PlayGamesDependency.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestSystemBars.cs" Link="Unity\Editor\ManifestSystemBars.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestBackupRules.cs" Link="Unity\Editor\ManifestBackupRules.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

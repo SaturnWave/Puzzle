@@ -185,7 +185,7 @@ namespace Puzzle.Client.Cloud
         /// <summary>What the account has to tell since this was asked last, in order, each once.</summary>
         IReadOnlyList<AccountNews> TakeNews();
 
-        /// <summary>A moment of the game asks for an upload (a painting or a room completed, a payment delivered): it is done in the background, as the sync's budget says.</summary>
+        /// <summary>A moment of the game asks for an upload (a won level, a painting or a room completed, a payment delivered): it is done in the background, as the sync's budget says.</summary>
         void AskForAnUpload(SyncTrigger trigger);
 
         /// <summary>The server the purchase's course asks about each payment (docs/research/server-v1.md §4): the account's own, or none.</summary>
@@ -221,7 +221,7 @@ namespace Puzzle.Client.Cloud
         }
     }
 
-    /// <summary>What Remote Config says of the sync (the four keys, <see cref="RemoteConfigKeys"/>). It is a seam: the game's adapter fetches it, the tests have none.</summary>
+    /// <summary>What Remote Config says of the sync (its keys, <see cref="RemoteConfigKeys"/>). It is a seam: the game's adapter fetches it, the tests have none.</summary>
     public interface IRemoteSettings
     {
         /// <summary>The settings Remote Config gives; nothing when it could not be fetched, and the sync keeps what it has.</summary>
@@ -252,8 +252,8 @@ namespace Puzzle.Client.Cloud
     /// <item>Otherwise, as the game starts, the services start, the player signs in (<see cref="PlayerIdentity"/>), Remote
     /// Config is read, and the sync runs for the start (<see cref="CloudSync"/>): a new phone signed in to the account of
     /// its platform gets the save back, and the museum is told so.</item>
-    /// <item>The game's other moments ask for uploads (the background, a painting or a room completed, a payment); the
-    /// sync's budget decides what goes.</item>
+    /// <item>The game's other moments ask for uploads (a won level, the background, a painting or a room completed, a
+    /// payment); the sync's budget decides what goes, and a won level the cloud lacks goes at once (T530).</item>
     /// <item>The purchase's course asks it about each payment (<see cref="IPurchaseServer"/>): it asks the Cloud Code
     /// module as the player signed in, once a start under way has signed in, and tries a start that could not reach Unity
     /// again first. A verified payment leaves the ledger copy stale, so the next merge reads the ledger.</item>
@@ -261,7 +261,7 @@ namespace Puzzle.Client.Cloud
     /// when the platform's player has an account of their own, asks whether to go over to it; going over merges this
     /// phone's progress into that account's save. The account left behind is not deleted.</item>
     /// <item>Turning the switch off signs out and stops every sync at once; turning it on starts the services, if this
-    /// run had not started them.</item>
+    /// run had not started them, signs in and uploads what was played meanwhile at once (T562).</item>
     /// <item>"Verilerimi sil" (§5.6) signs in to the account the phone keeps if it must (the switch off included: the
     /// player asked for it), has the module delete the data, then deletes the account and forgets it: the switch is off
     /// after it. Nothing is forgotten on the phone unless the module said the data is deleted.</item>
@@ -367,9 +367,12 @@ namespace Puzzle.Client.Cloud
         /// Starts the services, signs in and syncs for the game's start, unless the switch or the build keeps the services
         /// off. A run that signed in already does nothing.
         /// </summary>
-        public Task StartAsync(CancellationToken cancel)
+        public Task StartAsync(CancellationToken cancel) => Start(SyncTrigger.ColdStart, cancel);
+
+        /// <summary>Starts the services and signs in as <see cref="StartAsync"/> does, then syncs for this trigger: the game's start, or the switch turned on.</summary>
+        private Task Start(SyncTrigger forTheSync, CancellationToken cancel)
         {
-            Task start = StartTheCloudAsync(cancel);
+            Task start = StartTheCloudAsync(forTheSync, cancel);
             _start = start;
             return start;
         }
@@ -386,7 +389,9 @@ namespace Puzzle.Client.Cloud
         /// <summary>
         /// The player turned the "Bulut kaydı" switch: kept at once, or for this run when cloud.json cannot be written
         /// (which the log says). Off signs out (no token is refreshed, nothing is sent from now on; the session stays on
-        /// the phone, so on again finds the same account). On starts the services and signs in, as at the game's start.
+        /// the phone, so on again finds the same account). On starts the services and signs in, as at the game's start,
+        /// and uploads what was played while the switch was off at once, the budget notwithstanding (T562,
+        /// <see cref="SyncTrigger.SwitchedOn"/>).
         /// </summary>
         public async Task TurnTheSwitchAsync(bool isOn, CancellationToken cancel)
         {
@@ -401,7 +406,7 @@ namespace Puzzle.Client.Cloud
 
             if (isOn)
             {
-                await StartAsync(cancel);
+                await Start(SyncTrigger.SwitchedOn, cancel);
                 return;
             }
 
@@ -488,7 +493,7 @@ namespace Puzzle.Client.Cloud
             return taken;
         }
 
-        private async Task StartTheCloudAsync(CancellationToken cancel)
+        private async Task StartTheCloudAsync(SyncTrigger forTheSync, CancellationToken cancel)
         {
             if (WhyOff() is ServicesOff off)
             {
@@ -523,7 +528,7 @@ namespace Puzzle.Client.Cloud
                 _log($"Cloud save: Remote Config says the sync {settings}.");
             }
 
-            await SyncTellingWhenTheSaveCameBackAsync(player, SyncTrigger.ColdStart, cancel);
+            await SyncTellingWhenTheSaveCameBackAsync(player, forTheSync, cancel);
         }
 
         /// <summary>The module's verdict on a payment, given as an answer whatever comes of asking: a fault of the game's own code still answers (no verdict) before it is reported.</summary>

@@ -1022,6 +1022,11 @@ namespace Puzzle.Client.Flow
             {
                 _progress = _ledger.Apply(_progress, each, now, handling);
                 hasEnded |= each.EndsTheAttempt;
+                if (each is AttemptEvent.Won)
+                {
+                    // The win is the player's for good with its coins and gifts: it goes to the cloud while the game is in front (T530).
+                    _uploadDue ??= SyncTrigger.LevelWon;
+                }
             }
 
             SaveProgress();
@@ -1216,7 +1221,7 @@ namespace Puzzle.Client.Flow
             Debug.Log("This phone's progress and attempt records were deleted at the player's wish; the game starts over.");
         }
 
-        /// <summary>The upload a moment of this step asked for (a painting or a room completed, a payment delivered), asked of the cloud once the step is done.</summary>
+        /// <summary>The upload a moment of this step asked for (a level won, a painting or a room completed, a payment delivered), asked of the cloud once the step is done.</summary>
         private void AskForTheUploadDue()
         {
             if (_uploadDue is SyncTrigger trigger)

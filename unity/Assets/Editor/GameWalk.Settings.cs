@@ -241,7 +241,8 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// The credits card comes in front of the settings card from the support card's "Künye", in that card's place;
-        /// its arrows turn every page of its text and back to the first; its "Tamam" leads back to the settings card.
+        /// its arrows turn every page of its text and back to the first; its "Tamam" leads back to the support card, and
+        /// so does the way back from it (T569); the support card's "Tamam" then leads back to the settings card.
         /// </summary>
         /// <returns>How many pages the credits take.</returns>
         private static int ReadTheCredits(Reel reel)
@@ -272,7 +273,16 @@ namespace Puzzle.Client.EditorTools
 
             Press(session, MuseumOf(session).CreditsDonePixel, "the credits card's Tamam", reel, pressedShot: null);
             reel.Settle();
-            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Settings, "the credits card's Tamam did not lead back to the settings card");
+            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Support, "the credits card's Tamam did not lead back to the support card");
+            reel.Shoot("credits-back-to-support");
+            Press(session, MuseumOf(session).CreditsButtonPixel, "the support card's Künye, again", reel, pressedShot: null);
+            reel.Settle();
+            session.GoBack();
+            reel.Settle();
+            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Support, "the way back from the credits card did not lead back to the support card");
+            Press(session, MuseumOf(session).SupportDonePixel, "the support card's Tamam", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Settings, "the support card's Tamam after the credits did not lead back to the settings card");
             return pages;
         }
     }

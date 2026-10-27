@@ -41,6 +41,9 @@ namespace Puzzle.Client.EditorTools
     /// account and its save in the cloud, turns the switch off and asks about this phone's progress, "Kalsın" keeping it;
     /// a deletion the module cannot make changes nothing and says so; deleting this phone's progress too starts the game
     /// over, and a card says so.</item>
+    /// <item>A won level reaches the cloud while the game is in front (T530, 2026-10-27): the session's first at the win,
+    /// before any way out; a later one of the session on the way out; the next session's first at its win again. The
+    /// switch turned on again uploads what was won while it was off at once (T562).</item>
     /// </list>
     /// The levels' goals are cut to almost nothing (EarlyWin), so the expert bot wins each in a few moves, and the
     /// players have seen the tutorial. The cards are photographed into out/unity/shots/cloud and onto a sheet.
@@ -78,6 +81,8 @@ namespace Puzzle.Client.EditorTools
                     CheckTheAccountCard(bench),
                     CheckADeletionThatCannotBeMade(bench),
                     CheckDeletingEverything(bench),
+                    CheckThatAWonLevelReachesTheCloudAtOnce(bench),
+                    CheckThatTheSwitchTurnedOnUploadsAtOnce(bench),
                 };
                 StoryStudio.WriteSheet(bench.Sheet, "cloud-sheet.png");
                 Debug.Log($"Cloud check: passed. {string.Join(" ", findings)}");
@@ -320,6 +325,63 @@ namespace Puzzle.Client.EditorTools
             return "Everything deleted: the game starts over.";
         }
 
+        /// <summary>
+        /// T530: the game's own session asks for the upload as a level is won, and the session's first win is in the cloud
+        /// before the game goes to the background; the session's second waits for the way out, which sends it; the next
+        /// session's first goes at its win again. The check's clock stands still, so every upload after the first falls
+        /// within the hour's budget: only the rule of the wins lets them go.
+        /// </summary>
+        private static string CheckThatAWonLevelReachesTheCloudAtOnce(Bench bench)
+        {
+            var services = new FakeUnityServices();
+            using PhoneOfThePlayer phone = bench.NewPhone(services, NoPlatformSignIn.Instance);
+            CloudPlayerId player = phone.Cloud.Account.Player ?? throw new InvalidOperationException("the phone signed in to no account");
+
+            bench.WinTheLevel(phone.Session);
+            Require(LevelsWonIn(services.CloudOf(player)) == 1, $"the session's first won level is not in the cloud before the way out ({LevelsWonIn(services.CloudOf(player))} levels there)");
+            bench.WinTheLevel(phone.Session);
+            Require(LevelsWonIn(services.CloudOf(player)) == 1, "the session's second won level went at once; it waits for the way out");
+            phone.Cloud.AskForAnUpload(SyncTrigger.Background); // the way out, as GameRoot asks it when Android pauses the game
+            Require(LevelsWonIn(services.CloudOf(player)) == 2, "the way out did not send the won level the cloud lacked");
+            bench.WinTheLevel(phone.Session);
+            Require(LevelsWonIn(services.CloudOf(player)) == 3, "the next session's first won level did not go at its win");
+            return $"Won levels: the session's first at the win, the second on the way out, the next session's first at the win ({services.CloudOf(player).Writes} writes).";
+        }
+
+        /// <summary>T562: a level won while the switch was off is in the cloud as soon as the switch is on again, within the hour of the last upload.</summary>
+        private static string CheckThatTheSwitchTurnedOnUploadsAtOnce(Bench bench)
+        {
+            var services = new FakeUnityServices();
+            using PhoneOfThePlayer phone = bench.NewPhone(services, NoPlatformSignIn.Instance);
+            CloudPlayerId player = phone.Cloud.Account.Player ?? throw new InvalidOperationException("the phone signed in to no account");
+            bench.WinTheLevel(phone.Session);
+            OpenTheAccountCard(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountSwitchPixel, "the account card's Bulut kaydı switch");
+            Settle(phone);
+            Require(!phone.Cloud.IsSwitchedOn, "the account card's switch did not turn the cloud save off");
+            CloseTheCards(phone);
+
+            bench.WinTheLevel(phone.Session);
+            Require(LevelsWonIn(services.CloudOf(player)) == 1, "a level won with the switch off reached the cloud");
+            OpenTheAccountCard(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountSwitchPixel, "the account card's Bulut kaydı switch, again");
+            Settle(phone);
+            Require(
+                phone.Cloud.IsSwitchedOn && phone.Cloud.Account.Player == player && LevelsWonIn(services.CloudOf(player)) == 2,
+                $"the switch on again left the cloud {phone.Cloud.Account} with {LevelsWonIn(services.CloudOf(player))} levels in its save, not {player}'s 2");
+            return "Switch on again: the level won while it was off went at once.";
+        }
+
+        /// <summary>From the settings' cards back to the hall: the way back takes each card up.</summary>
+        private static void CloseTheCards(PhoneOfThePlayer phone)
+        {
+            while (phone.Museum.ShowsTheSettings)
+            {
+                phone.Session.GoBack();
+                Settle(phone);
+            }
+        }
+
         /// <summary>From the hall to the settings card and its account card, at rest.</summary>
         private static void OpenTheAccountCard(PhoneOfThePlayer phone)
         {
@@ -343,6 +405,12 @@ namespace Puzzle.Client.EditorTools
             Require(museum.NoticeShown == words.Title, $"{when} the card in front is \"{museum.NoticeShown}\", not \"{words.Title}\"");
             Require(museum.NoticeAnswersShown == answers, $"{when} the card \"{words.Title}\" is answered {museum.NoticeAnswersShown}, not {answers}");
         }
+
+        private static int LevelsWonIn(FakeCloudSave cloud) =>
+            cloud.Save == null ? 0
+            : CloudEnvelope.Read(cloud.Save.Text, new UnityDocumentJson(), StoryStudio.Economy.StartingWallet) is CloudSaveReading.Sound sound
+                ? sound.Save.Progress.LevelsWon
+                : throw new InvalidOperationException("the account's save does not read");
 
         private static long CoinsIn(FakeCloudSave cloud) =>
             CloudEnvelope.Read((cloud.Save ?? throw new InvalidOperationException("the account has no save")).Text, new UnityDocumentJson(), StoryStudio.Economy.StartingWallet) is CloudSaveReading.Sound sound

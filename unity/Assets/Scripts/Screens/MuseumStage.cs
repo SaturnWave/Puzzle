@@ -945,7 +945,7 @@ namespace Puzzle.Client.Screens
             {
                 StopShowingTheStartBoosters(); // cut short: the step comes again on the next card
                 AskOnClosingThePurchaseCard();
-                TakeTheCardInFrontUp();
+                CloseTheCardInFront();
             }
             else if (_page.TryGoBack())
             {
@@ -1126,7 +1126,7 @@ namespace Puzzle.Client.Screens
                     break;
                 case MuseumPress.CloseTheCard _ when _cards.Count > 0:
                     AskOnClosingThePurchaseCard();
-                    TakeTheCardInFrontUp();
+                    CloseTheCardInFront();
                     break;
                 case MuseumPress.ChooseStartBooster choose when StartCard is LevelStartCard start:
                     Choose(choose.Booster, start);
@@ -1486,7 +1486,8 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// The card in front gives its place to another at once, in front of the same card behind and over the same dark:
-        /// the support card's "Künye" brings the credits there, as no card stands in front of a card in front.
+        /// the support card's "Künye" brings the credits there, as no card stands in front of a card in front, and the
+        /// credits closed bring the support card back (<see cref="CloseTheCardInFront"/>).
         /// </summary>
         private void SwapTheCardInFront(IMuseumCard next)
         {
@@ -1503,6 +1504,21 @@ namespace Puzzle.Client.Screens
             _presses.Clear();
             _sounded.Add(SoundCue.CardDown);
             _timeline.Add(0f, Tempo.CardComesDown, next.Card.ComeDown);
+        }
+
+        /// <summary>
+        /// The player closed the card in front (its "Tamam", its round button, the way back): the credits give their place
+        /// back to the support card they were opened from (T569; docs/research/server-v1.md §5.9), any other card goes up.
+        /// </summary>
+        private void CloseTheCardInFront()
+        {
+            if (TopCard is CreditsCard)
+            {
+                SwapTheCardInFront(SupportCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard));
+                return;
+            }
+
+            TakeTheCardInFrontUp();
         }
 
         /// <summary>The card in front goes up, the dark behind it lifts, and once it is gone the card behind it, or the page, is the player's again.</summary>

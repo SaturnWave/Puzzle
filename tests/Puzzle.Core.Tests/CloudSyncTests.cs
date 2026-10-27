@@ -210,7 +210,10 @@ public class CloudSyncTests
         Assert.Equal(UploadResult.Written, UploadOf(await phone.SyncsAsync(SyncTrigger.AccountChanged)));
     }
 
-    /// <summary>At most an upload an hour for the background and a read every 12 hours at the start; a payment, a painting and a sign-in upload at once.</summary>
+    /// <summary>
+    /// At most an upload an hour for the background and a read every 12 hours at the start; a payment, a painting and a
+    /// sign-in upload at once. What the background waits with here is no won level, which would go at once (T530).
+    /// </summary>
     [Fact]
     public async Task The_budget_spaces_uploads_an_hour_and_reads_12_hours_apart_but_a_payment_goes_at_once()
     {
@@ -219,7 +222,7 @@ public class CloudSyncTests
         int reads = _cloud.Reads;
 
         _clock.Passes(TimeSpan.FromMinutes(30));
-        phone.Progress.Play(progress => progress.Won(1));
+        phone.Progress.Play(progress => progress.WithTutorialStepSeen(TutorialStep.Chain));
         var waits = Assert.IsType<SyncOutcome.Done>(await phone.SyncsAsync(SyncTrigger.Background));
         Assert.Equal((UploadResult.WaitsForTheBudget, Noon + TimeSpan.FromHours(1)), (waits.Upload, waits.UploadWaitsUntil!.Value));
 
@@ -241,10 +244,130 @@ public class CloudSyncTests
         phone.Sync.Settings = SyncSettings.FromRemote(syncs: null, uploadMinMinutes: 15, readMinHours: null, validatesPurchases: null);
         await phone.SyncsAsync(SyncTrigger.ColdStart);
 
-        _clock.Passes(TimeSpan.FromMinutes(16));
-        phone.Progress.Play(progress => progress.Won(1));
+        _clock.Passes(TimeSpan.FromMinutes(14));
+        phone.Progress.Play(progress => progress.WithTutorialStepSeen(TutorialStep.Chain));
+        Assert.Equal(UploadResult.WaitsForTheBudget, UploadOf(await phone.SyncsAsync(SyncTrigger.Background)));
+        _clock.Passes(TimeSpan.FromMinutes(2));
 
         Assert.Equal(UploadResult.Written, UploadOf(await phone.SyncsAsync(SyncTrigger.Background)));
+    }
+
+    /// <summary>
+    /// T530 (2026-10-27): Android stops a game it puts away within seconds, so a won level must not wait for the hourly
+    /// budget. The session's first win goes at the win; a later one waits for the way out, which sends it; after the
+    /// way out the next win is the next session's first and goes at once again; a way out with no win to send keeps to
+    /// the budget.
+    /// </summary>
+    [Fact]
+    public async Task A_won_level_goes_at_once_the_sessions_first_at_the_win_and_the_others_on_the_way_out()
+    {
+        Device phone = Phone(NewPlayer().Won(3));
+        await phone.SyncsAsync(SyncTrigger.ColdStart);
+
+        _clock.Passes(TimeSpan.FromMinutes(5));
+        phone.Progress.Play(progress => progress.Won(1));
+        Assert.Equal(UploadResult.Written, UploadOf(await phone.SyncsAsync(SyncTrigger.LevelWon)));
+        Assert.Equal(4, ProgressIn(_cloud.Save).LevelsWon);
+
+        _clock.Passes(TimeSpan.FromMinutes(3));
+        phone.Progress.Play(progress => progress.Won(1));
+        Assert.Equal(UploadResult.WaitsForTheBudget, UploadOf(await phone.SyncsAsync(SyncTrigger.LevelWon)));
+        Assert.Equal(4, ProgressIn(_cloud.Save).LevelsWon);
+
+        _clock.Passes(TimeSpan.FromMinutes(1));
+        Assert.Equal(UploadResult.Written, UploadOf(await phone.SyncsAsync(SyncTrigger.Background)));
+        Assert.Equal(5, ProgressIn(_cloud.Save).LevelsWon);
+
+        _clock.Passes(TimeSpan.FromMinutes(10));
+        phone.Progress.Play(progress => progress.Won(1));
+        Assert.Equal(UploadResult.Written, UploadOf(await phone.SyncsAsync(SyncTrigger.LevelWon)));
+        Assert.Equal(6, ProgressIn(_cloud.Save).LevelsWon);
+
+        phone.Progress.Play(progress => progress.WithTutorialStepSeen(TutorialStep.Chain));
+        Assert.Equal(UploadResult.WaitsForTheBudget, UploadOf(await phone.SyncsAsync(SyncTrigger.Background)));
+        Assert.Equal(4, _cloud.Writes); // the start's, the two first wins and a way out; none for the tutorial's step
+    }
+
+    [Fact]
+    public async Task Remote_config_can_let_the_won_levels_wait_for_the_budget_as_before()
+    {
+        Device phone = Phone(NewPlayer().Won(3));
+        phone.Sync.Settings = SyncSettings.FromRemote(syncs: null, uploadMinMinutes: null, readMinHours: null, validatesPurchases: null, winsGoAtOnce: false);
+        await phone.SyncsAsync(SyncTrigger.ColdStart);
+
+        _clock.Passes(TimeSpan.FromMinutes(5));
+        phone.Progress.Play(progress => progress.Won(1));
+
+        Assert.Equal(UploadResult.WaitsForTheBudget, UploadOf(await phone.SyncsAsync(SyncTrigger.LevelWon)));
+        Assert.Equal(UploadResult.WaitsForTheBudget, UploadOf(await phone.SyncsAsync(SyncTrigger.Background)));
+        Assert.Equal(3, ProgressIn(_cloud.Save).LevelsWon);
+    }
+
+    /// <summary>The way out had no network: the game was closed with a win the cloud lacks, and the next start sends it at once, within the hour.</summary>
+    [Fact]
+    public async Task A_win_the_way_out_could_not_send_goes_at_the_next_start()
+    {
+        Device phone = Phone(NewPlayer().Won(3));
+        await phone.SyncsAsync(SyncTrigger.ColdStart);
+        _clock.Passes(TimeSpan.FromMinutes(5));
+        phone.Progress.Play(progress => progress.Won(1));
+        await phone.SyncsAsync(SyncTrigger.LevelWon);
+        phone.Progress.Play(progress => progress.Won(1));
+        _cloud.GoesDown(CloudFailure.NoNetwork);
+        Assert.IsType<SyncOutcome.Unreachable>(await phone.SyncsAsync(SyncTrigger.Background));
+
+        _clock.Passes(TimeSpan.FromMinutes(10));
+        _cloud.ComesBack();
+        var openedAgain = new Device(_cloud, _clock, phone.Progress.Current, "phone-again", phone.Sync.State);
+
+        Assert.Equal(UploadResult.Written, UploadOf(await openedAgain.SyncsAsync(SyncTrigger.ColdStart)));
+        Assert.Equal(5, ProgressIn(_cloud.Save).LevelsWon);
+    }
+
+    /// <summary>T562 (2026-10-27): what was played while the switch was off goes at once when it is turned on again, the hour's budget notwithstanding.</summary>
+    [Fact]
+    public async Task The_switch_turned_on_again_uploads_what_was_played_while_it_was_off_at_once()
+    {
+        Device phone = Phone(NewPlayer().Won(3));
+        await phone.SyncsAsync(SyncTrigger.ColdStart);
+        phone.Sync.SwitchTo(isOn: false);
+        _clock.Passes(TimeSpan.FromMinutes(10));
+        phone.Progress.Play(progress => progress.WithTutorialStepSeen(TutorialStep.Chain).WithCoins(900));
+        Assert.IsType<SyncOutcome.Off>(await phone.SyncsAsync(SyncTrigger.Background));
+
+        phone.Sync.SwitchTo(isOn: true);
+        var on = Assert.IsType<SyncOutcome.Done>(await phone.SyncsAsync(SyncTrigger.SwitchedOn));
+
+        Assert.Equal((true, UploadResult.Written), (on.Read, on.Upload));
+        Assert.Equal(phone.Progress.Current, ProgressIn(_cloud.Save));
+    }
+
+    /// <summary>
+    /// Android's backup brought the phone's files back as they were a day before, while the installation went on and
+    /// uploaded what it won after them: the save's last write is the installation's own, so the phone's progress is the
+    /// merge's base, and the two wins the file held, which the save holds too, are not counted twice.
+    /// </summary>
+    [Fact]
+    public async Task A_state_the_backup_brought_back_counts_nothing_twice()
+    {
+        Device phone = Phone(NewPlayer().Won(3).WithCoins(1000));
+        await phone.SyncsAsync(SyncTrigger.ColdStart);
+        _clock.Passes(TimeSpan.FromHours(1));
+        phone.Progress.Play(progress => progress.Won(2));
+        CloudState backedUpState = phone.Sync.State;
+        PlayerProgress backedUpProgress = phone.Progress.Current;
+        await phone.SyncsAsync(SyncTrigger.Background);
+        _clock.Passes(TimeSpan.FromHours(1));
+        phone.Progress.Play(progress => progress.Won(1));
+        await phone.SyncsAsync(SyncTrigger.LevelWon);
+
+        _clock.Passes(TimeSpan.FromHours(13));
+        var restored = new Device(_cloud, _clock, backedUpProgress, "restored", backedUpState);
+        var outcome = Assert.IsType<SyncOutcome.Done>(await restored.SyncsAsync(SyncTrigger.ColdStart));
+
+        Assert.True(outcome.Read && outcome.Adopted);
+        Assert.Equal((6, 1000L + (3 * 25)), (restored.Progress.Current.LevelsWon, restored.Progress.Current.Wallet.Coins.Amount));
+        Assert.Equal(1000L + (3 * 25), ProgressIn(_cloud.Save).Wallet.Coins.Amount);
     }
 
     /// <summary>A write lands and its answer is lost: the phone plays on, and the next sync finds its own write in the save and counts nothing twice.</summary>
