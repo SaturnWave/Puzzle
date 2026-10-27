@@ -861,8 +861,8 @@ PlayerSettings:
   cloudProjectId: 7d6f602c-bfa3-4cff-8ebc-75d604203cf5
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 18968516000168
+  projectName: Museum Puzzle
+  organizationId: arcanthedeveloper
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

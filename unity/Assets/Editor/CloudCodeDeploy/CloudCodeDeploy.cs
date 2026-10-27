@@ -39,6 +39,9 @@ namespace Puzzle.Client.EditorTools
         /// <summary>How long the Deployment window may take to find the project's deployable files once opened.</summary>
         private static readonly TimeSpan PatienceForTheWindow = TimeSpan.FromSeconds(60);
 
+        /// <summary>How long the Editor may take, once started, to sign its Unity user in from the Hub's session.</summary>
+        private static readonly TimeSpan PatienceForTheSignIn = TimeSpan.FromMinutes(2);
+
         private static Task<bool>? _deployment;
         private static DateTime _deadline;
         private static string _environment = string.Empty;
@@ -51,23 +54,31 @@ namespace Puzzle.Client.EditorTools
                 return;
             }
 
-            if (string.IsNullOrEmpty(CloudProjectSettings.projectId))
-            {
-                Finish(passed: false, "no Unity Cloud project is linked, or the Editor is not signed in to Unity");
-                return;
-            }
-
+            // The Editor signs its user in a while after the method runs: the deployment starts once it has.
             _environment = environment;
-            Say($"project {CloudProjectSettings.projectId}, environment \"{environment}\", Editor user {(string.IsNullOrEmpty(CloudProjectSettings.userName) ? "NOT signed in" : "signed in")}");
-            _deadline = DateTime.UtcNow + Patience;
-            _deployment = DeployAsync();
+            _deadline = DateTime.UtcNow + PatienceForTheSignIn;
+            Say($"environment \"{environment}\"; waiting for the Editor's Unity sign-in (at most {PatienceForTheSignIn.TotalMinutes:F0} min)");
             EditorApplication.update += Watch;
         }
+
+        private static bool IsSignedIn => !string.IsNullOrEmpty(CloudProjectSettings.userId) && !string.IsNullOrEmpty(CloudProjectSettings.projectId);
 
         private static void Watch()
         {
             if (_deployment == null)
             {
+                if (IsSignedIn)
+                {
+                    Say($"project {CloudProjectSettings.projectId}, the Editor's user signed in");
+                    _deadline = DateTime.UtcNow + Patience;
+                    _deployment = DeployAsync();
+                }
+                else if (DateTime.UtcNow > _deadline)
+                {
+                    EditorApplication.update -= Watch;
+                    Finish(passed: false, $"the Editor did not sign in to Unity within {PatienceForTheSignIn.TotalMinutes:F0} min (is the Hub signed in?), or no Unity Cloud project is linked");
+                }
+
                 return;
             }
 

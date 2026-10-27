@@ -43,7 +43,9 @@ Hiçbir sayfa kart ya da ödeme bilgisi istemez. İsterse durun ve bize yazın.
 Unity.exe -projectPath unity -executeMethod Puzzle.Client.EditorTools.CloudCodeDeploy.Run -deployEnvironment development -logFile out/unity/cloud-code-deploy.log
 ```
 
-Kaydın son satırı `Cloud Code deploy: PASSED` ya da `FAILED` ve nedeni. Hub'da oturum yoksa satır "the Editor is not signed in to Unity" der. Unity'nin panelinde modül yükleme düğmesi yok (yalnız Editor ve UGS komut satırı aracı); komut satırı aracı bir hizmet hesabı anahtarı ister, o yol kullanılmıyor.
+Kaydın son satırı `Cloud Code deploy: PASSED` ya da `FAILED` ve nedeni. Araç, Editor'ın oturumu Hub'dan alması için en çok 2 dakika bekler; Hub'da oturum yoksa satır "the Editor did not sign in to Unity" der. Unity'nin yükleme isteği 10 saniyede cevap alamazsa (`Curl error 28`, "status code 0") yükleme yeniden denenir; 27 Ekim'de ikinci deneme geçti.
+
+**2026-10-27:** modül `development`'a ve `production`'a bu araçla yüklendi; panelde Cloud Code → Modules'ta `MuseumPuzzleServer` görünüyor, canlı yoklama (`LiveCloudProbe`) `production`'da modülün cevap verdiğini gördü. 4. bölümün günlük görevleri henüz kurulmadı. Unity'nin panelinde modül yükleme düğmesi yok (yalnız Editor ve UGS komut satırı aracı); komut satırı aracı bir hizmet hesabı anahtarı ister, o yol kullanılmıyor.
 
 ## 4. Günlük görevler (Dashboard'dan)
 
