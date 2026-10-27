@@ -1,0 +1,19 @@
+{
+    "name": "Puzzle.Client.EditorTools.CloudCodeDeploy",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Services.DeploymentApi",
+        "Unity.Services.Core.Environments.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

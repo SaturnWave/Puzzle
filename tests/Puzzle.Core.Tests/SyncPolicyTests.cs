@@ -24,7 +24,23 @@ public sealed class SyncPolicyTests : IDisposable
         }
     }
 
-    private CloudStateFile StateFile() => new(_folder, Json, Rules.StartingWallet, () => "fresh-writer");
+    private string MarkFolder => Path.Combine(_folder, "cache");
+
+    private CloudStateFile StateFile() => new(_folder, MarkFolder, Json, Rules.StartingWallet, () => "fresh-writer");
+
+    [Fact]
+    public void A_state_without_the_installations_mark_may_be_from_a_backup_and_a_save_marks_it()
+    {
+        CloudStateOrigin none = StateFile().Load().Origin;
+        StateFile().Save(CloudState.New("w").ForPlayer(Player));
+        CloudStateOrigin kept = StateFile().Load().Origin;
+        File.Delete(Path.Combine(MarkFolder, CloudStateFile.MarkName)); // a new phone: the backup brings cloud.json, never the cache
+        CloudStateOrigin restored = StateFile().Load().Origin;
+
+        Assert.Equal(
+            (CloudStateOrigin.NoneKept, CloudStateOrigin.KeptByThisInstallation, CloudStateOrigin.MayBeFromABackup),
+            (none, kept, restored));
+    }
 
     [Fact]
     public void By_default_the_game_syncs_and_verifies_uploads_at_most_hourly_with_the_wins_at_once_and_reads_every_12_hours()

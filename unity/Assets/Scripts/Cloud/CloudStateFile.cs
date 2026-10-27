@@ -23,19 +23,42 @@ namespace Puzzle.Client.Cloud
         void Save(CloudState state);
     }
 
-    /// <summary>What loading the sync's state came to: the state, and whether the file was damaged (moved aside; the state is then a forgotten one, the switch off).</summary>
+    /// <summary>
+    /// Where a loaded state comes from, as far as the phone can tell (2026-10-27): Android's backup brings cloud.json back
+    /// to a new installation, as old as the backup, while the installation it came from may have gone on writing the
+    /// save. A closed set.
+    /// </summary>
+    public enum CloudStateOrigin
+    {
+        /// <summary>No state was kept: a new installation, or a damaged file set aside.</summary>
+        NoneKept,
+
+        /// <summary>The state this installation kept: its mark, which no backup carries, is there.</summary>
+        KeptByThisInstallation,
+
+        /// <summary>
+        /// A state without this installation's mark: brought back by a backup, or kept by a build before the mark, or
+        /// its mark cleared with the cache. It may be older than writes its writer id made in the save since.
+        /// </summary>
+        MayBeFromABackup,
+    }
+
+    /// <summary>What loading the sync's state came to: the state, whether the file was damaged (moved aside; the state is then a forgotten one, the switch off), and where it comes from.</summary>
     public sealed class CloudStateLoad
     {
-        public CloudStateLoad(CloudState state, bool wasDamaged)
+        public CloudStateLoad(CloudState state, bool wasDamaged, CloudStateOrigin origin)
         {
             State = state ?? throw new ArgumentNullException(nameof(state));
             WasDamaged = wasDamaged;
+            Origin = origin;
         }
 
         public CloudState State { get; }
 
         /// <summary>True when the file did not read: it was kept under another name for support, and the state starts over with the switch off.</summary>
         public bool WasDamaged { get; }
+
+        public CloudStateOrigin Origin { get; }
     }
 
     /// <summary>
@@ -45,26 +68,37 @@ namespace Puzzle.Client.Cloud
     /// switch off</b>: the player's "off" must never turn into an "on" by accident, and an "on" lost so is turned on
     /// again with one touch (§6.2). The progress the state keeps (the base, a write not answered) is read as the
     /// progress file reads it; one that does not read is dropped, and the next sync reads the cloud before it writes.
+    /// <para>
+    /// Each save also leaves the installation's mark in a folder no backup carries (the cache), so a state loaded
+    /// without it is told apart as one that may have come back from a backup (<see cref="CloudStateOrigin"/>). The mark
+    /// is written before the state, so a save that fails leaves the state as it was.
+    /// </para>
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class CloudStateFile : ICloudStateStore
     {
         public const string FileName = "cloud.json";
 
+        /// <summary>The installation's mark: an empty file in the cache.</summary>
+        public const string MarkName = "cloud-installation.mark";
+
         private const string NewFileSuffix = ".new";
         private const string DamagedFileSuffix = ".damaged";
 
         private readonly string _path;
+        private readonly string _markPath;
         private readonly IDocumentJson _json;
         private readonly Wallet _startingWallet;
         private readonly Func<string> _newId;
 
         /// <param name="folder">The folder the file lies in: the progress file's.</param>
+        /// <param name="markFolder">The folder of the installation's mark: one no backup carries (Application.temporaryCachePath).</param>
         /// <param name="startingWallet">What the rules give a new player: the wallet of a kept progress of a layout before the wallet.</param>
         /// <param name="newId">Where a new installation's writer id comes from (<see cref="RandomIds.New"/>).</param>
-        public CloudStateFile(string folder, IDocumentJson json, Wallet startingWallet, Func<string> newId)
+        public CloudStateFile(string folder, string markFolder, IDocumentJson json, Wallet startingWallet, Func<string> newId)
         {
             _path = Path.Combine(folder ?? throw new ArgumentNullException(nameof(folder)), FileName);
+            _markPath = Path.Combine(markFolder ?? throw new ArgumentNullException(nameof(markFolder)), MarkName);
             _json = json ?? throw new ArgumentNullException(nameof(json));
             _startingWallet = startingWallet ?? throw new ArgumentNullException(nameof(startingWallet));
             _newId = newId ?? throw new ArgumentNullException(nameof(newId));
@@ -74,23 +108,29 @@ namespace Puzzle.Client.Cloud
         {
             if (!File.Exists(_path))
             {
-                return new CloudStateLoad(CloudState.New(_newId()), wasDamaged: false);
+                return new CloudStateLoad(CloudState.New(_newId()), wasDamaged: false, CloudStateOrigin.NoneKept);
             }
 
             CloudState? state = CloudStateDocument.Read(_json.Read<CloudStateDocument>(File.ReadAllText(_path)), _json, _startingWallet);
             if (state != null)
             {
-                return new CloudStateLoad(state, wasDamaged: false);
+                return new CloudStateLoad(state, wasDamaged: false, File.Exists(_markPath) ? CloudStateOrigin.KeptByThisInstallation : CloudStateOrigin.MayBeFromABackup);
             }
 
             string aside = _path + DamagedFileSuffix;
             File.Delete(aside);
             File.Move(_path, aside);
-            return new CloudStateLoad(CloudState.Forgotten(_newId()), wasDamaged: true);
+            return new CloudStateLoad(CloudState.Forgotten(_newId()), wasDamaged: true, CloudStateOrigin.NoneKept);
         }
 
         public void Save(CloudState state)
         {
+            if (!File.Exists(_markPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_markPath) ?? ".");
+                File.WriteAllText(_markPath, string.Empty);
+            }
+
             string newFile = _path + NewFileSuffix;
             Directory.CreateDirectory(Path.GetDirectoryName(_path) ?? ".");
             File.WriteAllText(newFile, _json.Write(CloudStateDocument.Of(state)));
@@ -109,19 +149,23 @@ namespace Puzzle.Client.Cloud
     public sealed class CloudStateInMemory : ICloudStateStore
     {
         private CloudState _kept;
+        private CloudStateOrigin _origin;
 
-        public CloudStateInMemory(CloudState start)
+        /// <param name="origin">Where the start's state is told to come from: this installation's own unless a test says otherwise; a save makes it this installation's, as the file's mark does.</param>
+        public CloudStateInMemory(CloudState start, CloudStateOrigin origin = CloudStateOrigin.KeptByThisInstallation)
         {
             _kept = start ?? throw new ArgumentNullException(nameof(start));
+            _origin = origin;
         }
 
         public int TimesSaved { get; private set; }
 
-        public CloudStateLoad Load() => new CloudStateLoad(_kept, wasDamaged: false);
+        public CloudStateLoad Load() => new CloudStateLoad(_kept, wasDamaged: false, _origin);
 
         public void Save(CloudState state)
         {
             _kept = state ?? throw new ArgumentNullException(nameof(state));
+            _origin = CloudStateOrigin.KeptByThisInstallation;
             TimesSaved++;
         }
     }

@@ -150,10 +150,12 @@ internal sealed class Device
 {
     private int _writes;
 
-    public Device(FakeCloudSave cloud, MovableClock clock, PlayerProgress start, string writer = "device-writer", CloudState? state = null)
+    public Device(
+        FakeCloudSave cloud, MovableClock clock, PlayerProgress start, string writer = "device-writer", CloudState? state = null,
+        CloudStateOrigin origin = CloudStateOrigin.KeptByThisInstallation)
     {
         Progress = new HeldProgress(start);
-        States = new CloudStateInMemory(state ?? CloudState.New(writer));
+        States = new CloudStateInMemory(state ?? CloudState.New(writer), origin);
         Sync = new CloudSync(cloud, States, Progress, CloudSupport.Rules, CloudSupport.Json, clock, "1.1.0", () => $"{writer}-write-{++_writes}");
     }
 

@@ -362,11 +362,34 @@ public class CloudSyncTests
         await phone.SyncsAsync(SyncTrigger.LevelWon);
 
         _clock.Passes(TimeSpan.FromHours(13));
-        var restored = new Device(_cloud, _clock, backedUpProgress, "restored", backedUpState);
+        var restored = new Device(_cloud, _clock, backedUpProgress, "restored", backedUpState, CloudStateOrigin.MayBeFromABackup);
         var outcome = Assert.IsType<SyncOutcome.Done>(await restored.SyncsAsync(SyncTrigger.ColdStart));
 
         Assert.True(outcome.Read && outcome.Adopted);
         Assert.Equal((6, 1000L + (3 * 25)), (restored.Progress.Current.LevelsWon, restored.Progress.Current.Wallet.Coins.Amount));
+        Assert.Equal(1000L + (3 * 25), ProgressIn(_cloud.Save).Wallet.Coins.Amount);
+    }
+
+    /// <summary>
+    /// A second phone set up from the first one's backup shares its writer id, and the first plays on: once the second
+    /// has synced, the first phone's later write is another phone's, and what the second earned meanwhile is kept.
+    /// </summary>
+    [Fact]
+    public async Task A_phone_set_up_from_a_backup_keeps_its_wins_when_the_old_phone_plays_on()
+    {
+        Device oldPhone = Phone(NewPlayer().Won(3).WithCoins(1000));
+        await oldPhone.SyncsAsync(SyncTrigger.ColdStart);
+        var newPhone = new Device(_cloud, _clock, oldPhone.Progress.Current, "new-phone", oldPhone.Sync.State, CloudStateOrigin.MayBeFromABackup);
+        _clock.Passes(TimeSpan.FromHours(13));
+        await newPhone.SyncsAsync(SyncTrigger.ColdStart);
+
+        newPhone.Progress.Play(progress => progress.Won(1)); // +25 on the new phone, not yet in the cloud
+        oldPhone.Progress.Play(progress => progress.Won(2)); // +50 on the old one, which writes first
+        await oldPhone.SyncsAsync(SyncTrigger.PaintingOrRoomCompleted);
+        _clock.Passes(TimeSpan.FromMinutes(2));
+        Assert.Equal(UploadResult.Written, UploadOf(await newPhone.SyncsAsync(SyncTrigger.PaintingOrRoomCompleted)));
+
+        Assert.Equal(1000L + (3 * 25), newPhone.Progress.Current.Wallet.Coins.Amount);
         Assert.Equal(1000L + (3 * 25), ProgressIn(_cloud.Save).Wallet.Coins.Amount);
     }
 

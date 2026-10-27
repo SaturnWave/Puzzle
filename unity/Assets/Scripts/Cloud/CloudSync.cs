@@ -189,7 +189,10 @@ namespace Puzzle.Client.Cloud
     /// A cloud.json and a progress file that Android's backup brought back are as old as the backup, while the
     /// installation they came from went on and wrote the save later: the save's last write is then this installation's
     /// own (its writer id came back with the file) and newer than the base the file knows. What the progress file holds
-    /// is in that write already, so it is the base of the merge, and nothing it earned is counted twice.
+    /// is in that write already, so it is the base of the merge, and nothing it earned is counted twice. Only a state
+    /// loaded without the installation's mark (<see cref="CloudStateOrigin.MayBeFromABackup"/>) is read so, until its
+    /// first sync: a second phone set up from a backup while the first plays on shares its writer id, and the first
+    /// phone's later writes must not wipe what the second earned.
     /// </para>
     /// Nothing here is Unity's: the cloud, the state's file, the progress and the clock come in through seams, and the
     /// tests run every case with <see cref="FakeCloudSave"/>.
@@ -214,6 +217,13 @@ namespace Puzzle.Client.Cloud
         /// <summary>How many levels the phone had won with the session's first won level; nothing before the session's first win.</summary>
         private int? _sessionsFirstWin;
 
+        /// <summary>
+        /// Whether the state loaded may have come back from a backup (<see cref="CloudStateOrigin.MayBeFromABackup"/>),
+        /// until the state is the cloud's as read or written: only then can a write of its writer id it does not know be
+        /// the installation's own, later than the backup.
+        /// </summary>
+        private bool _stateMayBeFromABackup;
+
         /// <param name="appVersion">The game's version ("1.1.0"), written into each save for support.</param>
         /// <param name="newId">Where the random ids of the writes come from (<see cref="RandomIds.New"/>).</param>
         /// <exception cref="System.IO.IOException">The state's file is there but cannot be read.</exception>
@@ -232,6 +242,7 @@ namespace Puzzle.Client.Cloud
             CloudStateLoad load = _store.Load();
             State = load.State;
             StateWasDamaged = load.WasDamaged;
+            _stateMayBeFromABackup = load.Origin == CloudStateOrigin.MayBeFromABackup;
         }
 
         /// <summary>The sync's state as it stands: the switch, the account, the last read and write, the backing off.</summary>
@@ -369,7 +380,7 @@ namespace Puzzle.Client.Cloud
             if (!(((CloudRead.Found)read).Item is CloudItem saved))
             {
                 // Never written, or deleted: the phone's progress stands, and the next write starts the save anew.
-                Keep(State.AfterRead(CloudBase.NoSave(_startingWallet), now));
+                KeepSynced(State.AfterRead(CloudBase.NoSave(_startingWallet), now));
                 return ReadStep.Going(adopted: false);
             }
 
@@ -426,7 +437,7 @@ namespace Puzzle.Client.Cloud
                         _holder.Adopt(merged.Progress);
                     }
 
-                    Keep(State.AfterRead(CloudBase.Of(cloud, writeLock), now));
+                    KeepSynced(State.AfterRead(CloudBase.Of(cloud, writeLock), now));
                     return ReadStep.Going(adopts);
                 case MergeOutcome.Unaccounted unaccounted:
                     return ReadStep.Ending(new SyncOutcome.Unaccounted(unaccounted.Payments));
@@ -465,7 +476,7 @@ namespace Puzzle.Client.Cloud
                 switch (answer)
                 {
                     case CloudWrite.Written written:
-                        Keep(State.AfterWrite(new CloudBase(current, written.WriteLock, save.Revision, save.Writes), now));
+                        KeepSynced(State.AfterWrite(new CloudBase(current, written.WriteLock, save.Revision, save.Writes), now));
                         return new SyncOutcome.Done(read, adopted, UploadResult.Written, null, notes);
                     case CloudWrite.Failed failed:
                         return Failure(failed.Failure, now);
@@ -493,11 +504,13 @@ namespace Puzzle.Client.Cloud
         /// Whether the save's last write is this installation's (its writer id) and one the state, which has synced the
         /// account before, does not know: neither its base's nor its unanswered write. A state kept as the sync writes it
         /// knows every write of its installation, so only a state older than the installation's own writes (a cloud.json
-        /// Android's backup brought back) misses one.
+        /// Android's backup brought back) misses one; it is asked only of a state loaded without this installation's mark
+        /// and not yet synced. A second phone set up from the first one's backup carries the same writer id: once it has
+        /// synced, a write of that id it does not know is the first phone's, and merges as any other phone's does.
         /// </summary>
         private bool IsAWriteOfThisInstallationTheStateMissed(CloudSave cloud)
         {
-            if (!(State.Base is CloudBase synced) || cloud.Writes.Count == 0 || !string.Equals(cloud.Writer, State.Writer, StringComparison.Ordinal))
+            if (!_stateMayBeFromABackup || !(State.Base is CloudBase synced) || cloud.Writes.Count == 0 || !string.Equals(cloud.Writer, State.Writer, StringComparison.Ordinal))
             {
                 return false;
             }
@@ -574,6 +587,13 @@ namespace Puzzle.Client.Cloud
         {
             State = state;
             _store.Save(state);
+        }
+
+        /// <summary>Keeps a state that is the cloud's as just read or written: from now on it is this installation's own, whatever it was loaded as.</summary>
+        private void KeepSynced(CloudState state)
+        {
+            Keep(state);
+            _stateMayBeFromABackup = false;
         }
 
         /// <summary>

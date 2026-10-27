@@ -37,6 +37,14 @@ Hiçbir sayfa kart ya da ödeme bilgisi istemez. İsterse durun ve bize yazın.
 4. Listede **MuseumPuzzleServer**'ı işaretleyin → **Deploy Selected**. Pencere modülü derler (`dotnet publish … -c Release -r linux-x64`), `MuseumPuzzleServer.ccm` olarak paketler (bizim denememizde 2,4 MB açık, sınır 10 MB) ve yükler. Yeşil tik başarı demek.
 5. Dashboard → proje → **Cloud Code → Modules → MuseumPuzzleServer**: beş fonksiyon görünmeli: `ValidatePurchase`, `CheckRefunds`, `DeleteMyData`, `PollGoogleVoided`, `ForgetOldTraces`.
 
+**Ekransız yükleme (2026-10-27):** aynı yükleme bir komutla da yapılır; Claude bunu sizin yerinize çalıştırabilir. Tek koşul, bu bilgisayardaki Unity Hub'da Unity hesabınızın açık olması: yükleme Editor'ın oturumuyla yapılır, başka anahtar ya da parola gerekmez. Komut Editor'ı penceresiyle açar, ortamı seçer, Deployment penceresini açıp modülü yükler, sonucu kayda yazar ve Editor'ı kapatır (`unity/Assets/Editor/CloudCodeDeploy`):
+
+```
+Unity.exe -projectPath unity -executeMethod Puzzle.Client.EditorTools.CloudCodeDeploy.Run -deployEnvironment development -logFile out/unity/cloud-code-deploy.log
+```
+
+Kaydın son satırı `Cloud Code deploy: PASSED` ya da `FAILED` ve nedeni. Hub'da oturum yoksa satır "the Editor is not signed in to Unity" der. Unity'nin panelinde modül yükleme düğmesi yok (yalnız Editor ve UGS komut satırı aracı); komut satırı aracı bir hizmet hesabı anahtarı ister, o yol kullanılmıyor.
+
 ## 4. Günlük görevler (Dashboard'dan)
 
 Deployment penceresi zamanlayıcıyı yüklemiyor (Unity'nin bunun için Editor paketi yok). Dashboard → proje → **Triggers**:

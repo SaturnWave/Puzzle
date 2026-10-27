@@ -30,7 +30,7 @@ namespace Puzzle.Client.Cloud
         public static CloudSaving Make(IProgressHolder holder, EconomyRules rules, Action<string> log, Action<Exception> fault)
         {
             var json = new UnityDocumentJson();
-            var state = new CloudStateFile(Application.persistentDataPath, json, rules.StartingWallet, RandomIds.New);
+            var state = new CloudStateFile(Application.persistentDataPath, Application.temporaryCachePath, json, rules.StartingWallet, RandomIds.New);
             var sync = new CloudSync(new UgsCloudSave(log), state, holder, rules, json, new SystemWallClock(), Application.version, RandomIds.New);
             if (sync.StateWasDamaged)
             {
