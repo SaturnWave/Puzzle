@@ -148,6 +148,12 @@
     <Compile Include="..\..\unity\Assets\Scripts\Cloud\PlayerIdentity.cs" Link="Unity\Cloud\PlayerIdentity.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakeAccounts.cs" Link="Unity\Cloud\FakeAccounts.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSaving.cs" Link="Unity\Cloud\CloudSaving.cs" />
+    <!-- Nor has the game's server as the client asks it: the purchase course's seam, the module's seam and the fake server, the settings' view of the account, and the store's names of a player. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchaseServer.cs" Link="Unity\Purchases\PurchaseServer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\StoreAccount.cs" Link="Unity\Purchases\StoreAccount.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\ServerModule.cs" Link="Unity\Cloud\ServerModule.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakePurchaseServer.cs" Link="Unity\Cloud\FakePurchaseServer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\AccountView.cs" Link="Unity\Cloud\AccountView.cs" />
     <Compile Include="..\..\unity\Assets\Scripts\Flow\AccountWords.cs" Link="Unity\Flow\AccountWords.cs" />
     <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
     <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />

@@ -215,10 +215,13 @@ namespace Puzzle.Client.Flow
         /// store tells of again finds itself given (<see cref="Delivery.AlreadyGiven"/>). The starter pack bought as
         /// often as it is sold gives nothing more (<see cref="Delivery.SoldOut"/>). Nothing here takes a life or
         /// touches a level: what is bought for money never changes difficulty. The tester mode plays no part: a
-        /// build that sells for money has none.
+        /// build that sells for money has none. A payment the game's server verified comes with the number its ledger
+        /// gave it (docs/research/server-v1.md §3.7): the number goes into the progress in the same change, and a number
+        /// the progress holds already (the payment given on another phone of the player and merged in) gives nothing more.
         /// </summary>
+        /// <param name="number">The server's ledger number of the payment; nothing for a payment given unverified, on the phone.</param>
         /// <exception cref="ArgumentException">The product is not the store's: what a payment gives comes from the settings, never from a caller.</exception>
-        public Delivery Deliver(PlayerProgress progress, StoreProduct product, string transactionId)
+        public Delivery Deliver(PlayerProgress progress, StoreProduct product, string transactionId, LedgerNumber? number = null)
         {
             StoreCatalogue store = _rules.Shop.Store;
             if (!store.Products.Contains(product))
@@ -227,7 +230,8 @@ namespace Puzzle.Client.Flow
             }
 
             PurchasesMade made = progress.Purchases;
-            if (made.HasSeen(transactionId))
+            bool isGivenAlready = made.HasSeen(transactionId) || (number is LedgerNumber numbered && made.LedgerDelivered.Contains(numbered));
+            if (isGivenAlready)
             {
                 return new Delivery.AlreadyGiven();
             }
@@ -239,7 +243,9 @@ namespace Puzzle.Client.Flow
             }
 
             Reward what = product.Contents;
-            return new Delivery.Given(progress.WithWallet(what.AddedTo(progress.Wallet)).WithPurchases(made.WithDelivered(product.IdSuffix, transactionId)), what);
+            PurchasesMade delivered = made.WithDelivered(product.IdSuffix, transactionId);
+            return new Delivery.Given(
+                progress.WithWallet(what.AddedTo(progress.Wallet)).WithPurchases(number is LedgerNumber entered ? delivered.WithLedgerNumber(entered) : delivered), what);
         }
 
         /// <summary>What completing a painting will give the player, for its jigsaw to show; nothing for a painting that is whole already.</summary>

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Puzzle.Client.Cloud;
 using Puzzle.Client.Words;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Recording;
@@ -12,9 +13,10 @@ namespace Puzzle.Client.Flow
     /// <summary>
     /// What the settings card and the cards it opens show of the phone and of this build: the player's settings and
     /// which of them the build honours, the phone's id, the game's version and its levels', the attempt records kept
-    /// and where, the build's marks, which also say whether the build has the tester mode, and the language the game
-    /// speaks among those it offers. Whoever owns the museum makes it, and makes it anew when the player has changed
-    /// something of it (a setting, the records deleted, the language). No Unity dependency.
+    /// and where, the build's marks, which also say whether the build has the tester mode, the language the game
+    /// speaks among those it offers, and the account and its cloud save. Whoever owns the museum makes it, and makes it
+    /// anew when the player has changed something of it (a setting, the records deleted, the language) and when the
+    /// cloud's view changed. No Unity dependency.
     /// </summary>
     public sealed class DeviceView
     {
@@ -27,11 +29,14 @@ namespace Puzzle.Client.Flow
         /// <param name="realMoney">What this build sells for money, from its marks.</param>
         /// <param name="speaking">The language the game speaks: the player's choice or the phone's, among those offered.</param>
         /// <param name="offered">The languages the language card offers, those whose tables are complete, in the card's order.</param>
+        /// <param name="account">The account and its cloud save as the cloud shows them; nothing for a session without a cloud (the Editor's tools).</param>
         /// <exception cref="ArgumentException">The game speaks a language it does not offer.</exception>
         public DeviceView(
             DeviceSettings settings, IReadOnlyList<DeviceSetting> honoured, DeviceId device, string gameVersion, ContentVersion content,
-            int? recordsKept, string? recordsFile, AdSource ads, RealMoneySales realMoney, Language speaking, IReadOnlyList<LanguageOffer> offered)
+            int? recordsKept, string? recordsFile, AdSource ads, RealMoneySales realMoney, Language speaking, IReadOnlyList<LanguageOffer> offered,
+            AccountView? account = null)
         {
+            Account = account ?? AccountView.NoCloud;
             Offered = offered ?? throw new ArgumentNullException(nameof(offered));
             if (!offered.Any(offer => offer.Language == speaking))
             {
@@ -51,6 +56,12 @@ namespace Puzzle.Client.Flow
         }
 
         public DeviceSettings Settings { get; }
+
+        /// <summary>The account and its cloud save, as the settings' account row and the account card show them.</summary>
+        public AccountView Account { get; }
+
+        /// <summary>True while the cloud save sends the progress: a build with the cloud, its switch on.</summary>
+        public bool SendsTheCloudSave => Account.HasTheSwitch && Account.IsSwitchedOn;
 
         /// <summary>The language the game speaks, which the settings row names and the language card marks.</summary>
         public Language Speaking { get; }

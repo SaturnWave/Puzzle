@@ -282,6 +282,12 @@ namespace Puzzle.Client.Cloud
         /// meanwhile. A sign-in to another account replaces the session.
         /// </summary>
         void SignOutKeepingTheSession();
+
+        /// <summary>
+        /// Deletes the account signed in, for good, and forgets its session on the phone (docs/research/server-v1.md §5.6:
+        /// only after the server deleted its data, which deleting the account does not). Nothing when it is deleted, else why not.
+        /// </summary>
+        Task<CloudFailure?> DeleteAccountAsync(CancellationToken cancel);
     }
 
     /// <summary>Why Unity's services do not run at all. A closed set.</summary>

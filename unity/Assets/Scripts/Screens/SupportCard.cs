@@ -12,8 +12,9 @@ namespace Puzzle.Client.Screens
     /// <summary>
     /// The card the settings card's row "Destek" opens, in front of it: what a tester tells when they report a
     /// problem. The player's id, the game's version and the version of its levels, each on a row of its own, and
-    /// where the attempt records lie on the phone; under them, a line that says to tell the id and the version, and
-    /// the green "Tamam". Closed by "Tamam", by its round button and by the way back. It shows no address to write
+    /// where the attempt records lie on the phone; under them, a line that says to tell the id and the version, the
+    /// blue "Künye", which opens the credits card in its place (it had a row of its own on the settings card until the
+    /// account took that place, 2026-10-27), and the green "Tamam". Closed by "Tamam", by its round button and by the way back. It shows no address to write
     /// to: the owner has given none yet, and the card shows one only once there is one.
     /// <para>
     /// In a test build with the tester mode off (<see cref="TesterMode"/>), the version row is also a hidden door:
@@ -47,12 +48,10 @@ namespace Puzzle.Client.Screens
         private const float PathTop = 208f;
         private const float PathSize = 11.5f;
 
-        /// <summary>The line that says what to tell, and the green "Tamam", as the cards that tell something have it.</summary>
+        /// <summary>The line that says what to tell, and under it the blue "Künye" and the green "Tamam" side by side, as the question's answers.</summary>
         private const float WhatToTellDown = 260f;
         private const float WhatToTellSize = 12.5f;
-        private const float ButtonWidth = 180f;
         private const float ButtonDown = 318f;
-        private const float ButtonLabelSize = 28f;
 
         /// <summary>The question in the place of that line, the line under it, and its two answers side by side, as the privacy card's.</summary>
         private const float QuestionDown = 254f;
@@ -65,7 +64,8 @@ namespace Puzzle.Client.Screens
         private readonly HangingCard<MuseumPress> _card;
         private readonly PaintedShape _hairlines;
         private readonly TextMeshPro _whatToTell;
-        private readonly PushButton _done;
+        private readonly SmallButton _credits;
+        private readonly SmallButton _done;
         private readonly TextMeshPro _question;
         private readonly TextMeshPro _questionLine;
         private readonly SmallButton _leaveOff;
@@ -120,8 +120,13 @@ namespace Puzzle.Client.Screens
             Lettering.SayWithin(_whatToTell, SettingsWords.WhatToTell, WhatToTellSize, room);
             _whatToTell.transform.localPosition = _card.At(WhatToTellDown);
 
-            _done = new PushButton("Done", _card.Content, art, ButtonLook.Green, MuseumWords.Done, ButtonWidth, ButtonLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
-            _done.Place(_card.At(ButtonDown));
+            Vector3 buttons = _card.At(ButtonDown);
+            _credits = new SmallButton(
+                "Credits", _card.Content, art, SmallButtonColour.Blue, CreditWords.Title, AnswerWidth, AnswerLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
+            _credits.Place(buttons + new Vector3(-AnswersApart / 2f, 0f, 0f));
+            _done = new SmallButton(
+                "Done", _card.Content, art, SmallButtonColour.Green, MuseumWords.Done, AnswerWidth, AnswerLabelSize, DrawOrder.CardArt + raisedBy, DrawOrder.CardLettering + raisedBy);
+            _done.Place(buttons + new Vector3(AnswersApart / 2f, 0f, 0f));
 
             _question = Write("Question", art, LetteringStyle.Label, QuestionSize, Lettering.Ink, raisedBy);
             Lettering.SayWithin(_question, SettingsWords.TesterModeQuestion, QuestionSize, room);
@@ -147,6 +152,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>The middle of "Tamam", in the layout's points: where a finger presses it. Nothing while the question is asked.</summary>
         public Vector2? DoneButtonMiddle => AsksAboutTheTesterMode ? (Vector2?)null : _card.InTheLayout(_done.Middle);
+
+        /// <summary>The middle of "Künye", in the layout's points; nothing while the question is asked.</summary>
+        public Vector2? CreditsButtonMiddle => AsksAboutTheTesterMode ? (Vector2?)null : _card.InTheLayout(_credits.Middle);
 
         /// <summary>The middle of the version row, in the layout's points; nothing where it opens no door, or while the question is asked.</summary>
         public Vector2? VersionRowMiddle => _versionRow != null && !AsksAboutTheTesterMode ? _card.InTheLayout(_versionRow.Middle) : (Vector2?)null;
@@ -196,6 +204,7 @@ namespace Puzzle.Client.Screens
             bool asks = AsksAboutTheTesterMode;
             _whatToTell.gameObject.SetActive(!asks);
             _done.Show(!asks);
+            _credits.Show(!asks);
             _question.gameObject.SetActive(asks);
             _questionLine.gameObject.SetActive(asks);
             _leaveOff.Show(asks);
@@ -210,6 +219,7 @@ namespace Puzzle.Client.Screens
             }
 
             _card.Listen(_done, new MuseumPress.CloseTheCard());
+            _card.Listen(_credits, new MuseumPress.OpenTheCredits());
             if (_versionRow != null)
             {
                 _card.Listen(_versionRow, new MuseumPress.TapTheVersion());

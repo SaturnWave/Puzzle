@@ -186,11 +186,13 @@ internal sealed class GatedCloud : ICloudSave
         gate.SetResult(true);
     }
 
-    public async Task<CloudRead> ReadAsync(CancellationToken cancel)
+    public async Task<CloudRead> ReadSaveAsync(CancellationToken cancel)
     {
         await _gate.Task;
-        return await _cloud.ReadAsync(cancel);
+        return await _cloud.ReadSaveAsync(cancel);
     }
+
+    public Task<CloudRead> ReadLedgerAsync(CancellationToken cancel) => _cloud.ReadLedgerAsync(cancel);
 
     public Task<CloudWrite> WriteSaveAsync(string text, CloudWriteLock? expected, CancellationToken cancel) => _cloud.WriteSaveAsync(text, expected, cancel);
 }

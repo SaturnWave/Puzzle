@@ -226,6 +226,9 @@ namespace Puzzle.Client.Cloud
         /// <summary>True when cloud.json did not read at the start: it was set aside, and the switch is off until the player turns it on.</summary>
         public bool StateWasDamaged { get; }
 
+        /// <summary>The time on the sync's clock now: what the settings tell the last sync by.</summary>
+        public DateTimeOffset Now => _clock.Now;
+
         /// <summary>What Remote Config says, or the defaults until it has said anything.</summary>
         public SyncSettings Settings { get; set; } = SyncSettings.Default;
 
@@ -236,6 +239,10 @@ namespace Puzzle.Client.Cloud
         /// <summary>The offer to link the account to Google Play Games or Game Center was made: it is kept, and not made again.</summary>
         /// <exception cref="System.IO.IOException">The state's file could not be written; the offer is not made again this run.</exception>
         public void KeepTheLinkOffered() => Keep(State.WithTheLinkOffered());
+
+        /// <summary>The game's server verified a payment on this phone, so it wrote the ledger: the next merge reads the ledger anew.</summary>
+        /// <exception cref="System.IO.IOException">The state's file could not be written; the copy is known stale for this run.</exception>
+        public void KnowTheLedgerChanged() => Keep(State.WithTheLedgerStale());
 
         /// <summary>
         /// The player's cloud data was deleted ("Delete my data", §5.6): nothing of the account is kept, the switch is
@@ -318,29 +325,28 @@ namespace Puzzle.Client.Cloud
             return await UploadAsync(trigger, now, reads, adopted, notes, cancel);
         }
 
-        /// <summary>Reads the save and the ledger, and merges the cloud's progress into the game's.</summary>
+        /// <summary>Reads the save, and the ledger when it can have changed, and merges the cloud's progress into the game's.</summary>
         private async Task<ReadStep> ReadAndMergeAsync(DateTimeOffset now, List<string> notes, CancellationToken cancel)
         {
-            CloudRead read = await _cloud.ReadAsync(cancel);
+            CloudRead read = await _cloud.ReadSaveAsync(cancel);
             if (read is CloudRead.Failed failed)
             {
                 return ReadStep.Ending(Failure(failed.Failure, now));
             }
 
-            var found = (CloudRead.Found)read;
-            PurchaseLedger ledger = LedgerOf(found.Purchases, notes);
-            if (found.Save == null)
+            if (!(((CloudRead.Found)read).Item is CloudItem saved))
             {
                 // Never written, or deleted: the phone's progress stands, and the next write starts the save anew.
                 Keep(State.AfterRead(CloudBase.NoSave(_startingWallet), now));
                 return ReadStep.Going(adopted: false);
             }
 
-            switch (CloudEnvelope.Read(found.Save.Text, _json, _startingWallet))
+            switch (CloudEnvelope.Read(saved.Text, _json, _startingWallet))
             {
                 case CloudSaveReading.Sound sound:
                     notes.AddRange(sound.SetAside.Select(line => $"set aside in the cloud's save: {line}"));
-                    return Merged(sound.Save, found.Save.WriteLock, ledger, now, notes);
+                    LedgerStep ledger = await LedgerForTheMergeAsync(sound.Save.Progress, now, notes, cancel);
+                    return ledger.Ended is SyncOutcome ended ? ReadStep.Ending(ended) : Merged(sound.Save, saved.WriteLock, ledger.Ledger, now, notes);
                 case CloudSaveReading.OfALaterGame later:
                     CloudHalt halt = new CloudHalt.LaterGame(Math.Max(later.ProgressLayout, ProgressDocument.CurrentVersion + 1));
                     Keep(State.Halted(halt, now));
@@ -437,16 +443,44 @@ namespace Puzzle.Client.Cloud
             }
         }
 
-        /// <summary>The ledger the read found, its lines that do not read noted and set aside; none when the player has no ledger.</summary>
-        private PurchaseLedger LedgerOf(CloudItem? item, List<string> notes)
+        /// <summary>
+        /// The ledger the merge names payments by: the copy this phone keeps, or the cloud's, read when it can have changed
+        /// (<see cref="SyncPolicy.ReadsTheLedger"/>) and kept as the copy from then on.
+        /// </summary>
+        private async Task<LedgerStep> LedgerForTheMergeAsync(PlayerProgress cloud, DateTimeOffset now, List<string> notes, CancellationToken cancel)
         {
-            if (item == null)
+            if (State.Ledger is LedgerCopy kept)
+            {
+                PurchaseLedger copy = LedgerOf(kept.Text, notes: null);
+                LedgerNumbers named = _holder.Current.Purchases.LedgerDelivered.Union(cloud.Purchases.LedgerDelivered);
+                bool lacksOne = named.Count > copy.Entries.Count || named.Numbers.Any(number => copy.Find(number) == null);
+                if (!SyncPolicy.ReadsTheLedger(kept, lacksOne, copyHasPayments: copy.Entries.Count > 0, now))
+                {
+                    return LedgerStep.Going(LedgerOf(kept.Text, notes));
+                }
+            }
+
+            CloudRead read = await _cloud.ReadLedgerAsync(cancel);
+            if (read is CloudRead.Failed failed)
+            {
+                return LedgerStep.Ending(Failure(failed.Failure, now));
+            }
+
+            string? text = ((CloudRead.Found)read).Item?.Text;
+            Keep(State.WithLedger(new LedgerCopy(text, now, isStale: false)));
+            return LedgerStep.Going(LedgerOf(text, notes));
+        }
+
+        /// <summary>A ledger the server wrote, its lines that do not read noted (when notes are kept) and set aside; none when the player has no ledger.</summary>
+        private PurchaseLedger LedgerOf(string? text, List<string>? notes)
+        {
+            if (text == null)
             {
                 return PurchaseLedger.None;
             }
 
-            PurchaseLedgerReading reading = PurchaseLedger.Read(_json.Read<PurchaseLedgerDocument>(item.Text));
-            notes.AddRange(reading.SetAside.Select(line => $"set aside in the ledger: {line}"));
+            PurchaseLedgerReading reading = PurchaseLedger.Read(_json.Read<PurchaseLedgerDocument>(text));
+            notes?.AddRange(reading.SetAside.Select(line => $"set aside in the ledger: {line}"));
             return reading.Ledger;
         }
 
@@ -472,6 +506,24 @@ namespace Puzzle.Client.Cloud
         /// </summary>
         private static int Weight(SyncTrigger trigger) =>
             trigger == SyncTrigger.AccountChanged ? 3 : trigger.IsOutsideTheBudget() ? 2 : trigger == SyncTrigger.ColdStart ? 1 : 0;
+
+        /// <summary>How finding the ledger for a merge went: the ledger, or ended with an outcome (the cloud did not answer).</summary>
+        private sealed class LedgerStep
+        {
+            private LedgerStep(SyncOutcome? ended, PurchaseLedger ledger)
+            {
+                Ended = ended;
+                Ledger = ledger;
+            }
+
+            public SyncOutcome? Ended { get; }
+
+            public PurchaseLedger Ledger { get; }
+
+            public static LedgerStep Ending(SyncOutcome outcome) => new LedgerStep(outcome, PurchaseLedger.None);
+
+            public static LedgerStep Going(PurchaseLedger ledger) => new LedgerStep(null, ledger);
+        }
 
         /// <summary>How a read went: on to the upload (and whether the game's progress changed), or ended with an outcome.</summary>
         private sealed class ReadStep

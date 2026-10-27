@@ -1054,5 +1054,140 @@ namespace Puzzle.Client.Words
 
         /// <summary>The card when going over to the other save failed, its nameplate.</summary>
         AccountNotSwitchedTitle,
+
+        /// <summary>Card while the game's server asks the store whether the payment is real (a few seconds): its nameplate: verifying.</summary>
+        PurchaseVerifyingTitle,
+
+        /// <summary>That card, first line: the payment is being verified with the store.</summary>
+        PurchaseVerifyingLine,
+
+        /// <summary>That card, second line: what was bought arrives once the payment is verified.</summary>
+        PurchaseComesWhenVerified,
+
+        /// <summary>The same card when the server has not answered in ten seconds or cannot be reached now (no network, the server not set up yet), first line: verification is taking a little longer. Calm: nothing is wrong, nothing is lost.</summary>
+        PurchaseVerifyLaterLine,
+
+        /// <summary>That card, second line: the payment is not lost; what was bought arrives once verified (the store keeps the payment waiting and refunds it if it is never verified).</summary>
+        PurchaseSafeLine,
+
+        /// <summary>Card when the server found the payment not real (not from the store, another player's, refunded), first line: the purchase could not be verified.</summary>
+        PurchaseNotVerified,
+
+        /// <summary>That card, second line: if money was taken, the store gives it back (Google Play refunds an unconfirmed payment within three days).</summary>
+        PurchaseStoreRefunds,
+
+        /// <summary>Settings row that opens the account card: the player's account and the cloud save (the copy of the progress on the game's servers).</summary>
+        SettingsAccount,
+
+        /// <summary>Smaller line under the privacy row while the cloud save is on and the play statistics are off: the purchases and the cloud save leave the phone.</summary>
+        SettingsPrivacyLineWithCloud,
+
+        /// <summary>The same line while the cloud save is on and the player allows the play statistics.</summary>
+        SettingsPrivacyLineWithCloudAndStatistics,
+
+        /// <summary>Smaller line under the settings' account row, and the account card's account value, while the player turned the cloud save off: nothing is sent.</summary>
+        AccountStateOff,
+
+        /// <summary>The same line in a build that has no cloud save (a test build on a computer).</summary>
+        AccountStateNoCloud,
+
+        /// <summary>The same line while the game signs in to the player's account.</summary>
+        AccountStateStarting,
+
+        /// <summary>The same line, and the last sync's value, when the account's servers cannot be reached now (no network); the progress is safe on the phone.</summary>
+        AccountStateUnreachable,
+
+        /// <summary>The same line for an account of this phone only, not linked to Google Play Games or Game Center.</summary>
+        AccountStateThisPhone,
+
+        /// <summary>The same line for an account linked to {platform} ("Google Play Games", "Game Center": a name, never translated).</summary>
+        AccountStateLinked,
+
+        /// <summary>The account card's nameplate (opened by the settings' account row), and its first row's label: the player's account.</summary>
+        AccountCardTitle,
+
+        /// <summary>Account card, the row with the switch: the cloud save (on: progress and wallet are kept on the game's servers too; off: nothing is sent).</summary>
+        AccountRowCloudSave,
+
+        /// <summary>Account card, row label: when the save was last synced with the cloud.</summary>
+        AccountRowLastSync,
+
+        /// <summary>Account card, row label: the player code (the account's id), which support and the deletion page on the game's site ask for.</summary>
+        AccountRowPlayerCode,
+
+        /// <summary>Account card, small line under the rows: the cloud save keeps the progress and the wallet on Unity's servers too.</summary>
+        AccountCardLine,
+
+        /// <summary>Value of the last sync row before the first sync.</summary>
+        AccountSyncNever,
+
+        /// <summary>Value of that row within a minute of the sync.</summary>
+        AccountSyncJustNow,
+
+        /// <summary>Value of that row: {count} minutes ago.</summary>
+        AccountSyncMinutesAgo,
+
+        /// <summary>Value of that row: {count} hours ago.</summary>
+        AccountSyncHoursAgo,
+
+        /// <summary>Value of that row: {count} days ago.</summary>
+        AccountSyncDaysAgo,
+
+        /// <summary>Account card, the player code's value for a moment after a touch on its row copied it.</summary>
+        AccountCodeCopied,
+
+        /// <summary>Account card, blue button: delete my data (the account and its save in the cloud; a question comes first). Also the nameplate of the cards about the deletion.</summary>
+        AccountDeleteMyData,
+
+        /// <summary>Account card, the question after that button: delete the account and its save in the cloud?</summary>
+        AccountDeleteQuestion,
+
+        /// <summary>Under that question: an anonymous trace of the purchases is kept for 36 months (to prevent fraud).</summary>
+        AccountDeleteTraceLine,
+
+        /// <summary>Account card while the deletion runs.</summary>
+        AccountDeleting,
+
+        /// <summary>Account card after the deletion: the data in the cloud is deleted.</summary>
+        AccountCloudDeleted,
+
+        /// <summary>Account card after the deletion when there was nothing in the cloud (the cloud save was never on).</summary>
+        AccountNothingInTheCloud,
+
+        /// <summary>Account card, the second question: delete the progress on this phone too?</summary>
+        AccountForgetProgressQuestion,
+
+        /// <summary>Under that question: if it is deleted, the game starts over.</summary>
+        AccountForgetProgressLine,
+
+        /// <summary>Account card, blue answer to that question: keep the progress on this phone.</summary>
+        AccountKeepProgress,
+
+        /// <summary>Account card when the deletion found no network, first line.</summary>
+        AccountNeedsNetwork,
+
+        /// <summary>Account card when the servers could not be reached or refused, first line: cannot delete now; try again a little later.</summary>
+        AccountCannotDeleteNow,
+
+        /// <summary>Second line of those two: nothing was deleted.</summary>
+        AccountNothingDeleted,
+
+        /// <summary>Card after the player deleted the data in the cloud and on this phone, its nameplate: everything is deleted.</summary>
+        AccountEverythingDeletedTitle,
+
+        /// <summary>That card, first line: the game starts over.</summary>
+        AccountEverythingDeletedLine,
+
+        /// <summary>Second line of the cards after a deletion: the cloud save is off now; it can be turned on again in the settings (a new account is opened then).</summary>
+        AccountSwitchOffAfterDeletion,
+
+        /// <summary>Privacy card, the paragraph on the cloud save and the invisible account.</summary>
+        PrivacyParagraphCloud,
+
+        /// <summary>Privacy card, the paragraph on Google Play Games and Game Center.</summary>
+        PrivacyParagraphPlatform,
+
+        /// <summary>Privacy card, the paragraph on the verification of purchases.</summary>
+        PrivacyParagraphVerification,
     }
 }

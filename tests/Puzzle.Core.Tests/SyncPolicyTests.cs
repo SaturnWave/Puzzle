@@ -1,6 +1,7 @@
 using System.IO;
 using Puzzle.Client.Cloud;
 using Puzzle.Client.Flow;
+using Puzzle.Client.Purchases;
 using Puzzle.Meta;
 using static Puzzle.Core.Tests.CloudSupport;
 
@@ -189,5 +190,35 @@ public sealed class SyncPolicyTests : IDisposable
         Assert.True(keptAcrossAccounts);
         Assert.False(before.LinkOffered);
         Assert.False(CloudState.Forgotten("w").LinkOffered);
+    }
+
+    [Fact]
+    public void The_ledger_is_read_only_when_it_can_have_changed()
+    {
+        var fresh = new LedgerCopy("{}", Noon, isStale: false);
+
+        Assert.True(SyncPolicy.ReadsTheLedger(copy: null, namesAPaymentTheCopyLacks: false, copyHasPayments: false, Noon)); // never read for the account
+        Assert.True(SyncPolicy.ReadsTheLedger(fresh.Stale(), namesAPaymentTheCopyLacks: false, copyHasPayments: false, Noon)); // a payment verified since
+        Assert.True(SyncPolicy.ReadsTheLedger(fresh, namesAPaymentTheCopyLacks: true, copyHasPayments: false, Noon)); // one verified on another phone
+        Assert.False(SyncPolicy.ReadsTheLedger(fresh, namesAPaymentTheCopyLacks: false, copyHasPayments: false, Noon.AddDays(30))); // no payment: never again
+        Assert.False(SyncPolicy.ReadsTheLedger(fresh, namesAPaymentTheCopyLacks: false, copyHasPayments: true, Noon.AddHours(23)));
+        Assert.True(SyncPolicy.ReadsTheLedger(fresh, namesAPaymentTheCopyLacks: false, copyHasPayments: true, Noon.AddDays(1))); // a day: refunds may be marked
+        Assert.True(SyncPolicy.ReadsTheLedger(fresh, namesAPaymentTheCopyLacks: false, copyHasPayments: true, Noon.AddHours(-1))); // the clock went back
+    }
+
+    [Fact]
+    public void The_ledgers_copy_reads_back_goes_with_its_account_and_a_file_from_before_it_reads_as_never_read()
+    {
+        var copy = new LedgerCopy(LedgerText((1, Small, "GPA.1")), Noon, isStale: true);
+        StateFile().Save(CloudState.New("w").ForPlayer(Player).WithLedger(copy));
+        LedgerCopy? read = StateFile().Load().State.Ledger;
+        string path = Path.Combine(_folder, CloudStateFile.FileName);
+        string text = File.ReadAllText(path);
+        File.WriteAllText(path, text.Substring(0, text.IndexOf(",\"ledger\"", StringComparison.Ordinal)) + "}");
+
+        Assert.Equal((copy.Text, copy.ReadAt, true), (read?.Text, read?.ReadAt, read?.IsStale ?? false));
+        Assert.Null(StateFile().Load().State.Ledger);
+        Assert.Null(CloudState.New("w").ForPlayer(Player).WithLedger(copy).ForPlayer(new CloudPlayerId("player-2")).Ledger);
+        Assert.Same(copy, CloudState.New("w").ForPlayer(Player).WithLedger(copy).AfterRead(CloudBase.NoSave(Rules.StartingWallet), Noon).Ledger);
     }
 }

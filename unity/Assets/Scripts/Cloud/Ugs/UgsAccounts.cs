@@ -42,7 +42,18 @@ namespace Puzzle.Client.Cloud
 
         public bool HasASessionOnThisPhone => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.SessionTokenExists;
 
-        public Task<CloudFailure?> StartAsync(CancellationToken cancel) => _starting ??= StartOnceAsync();
+        public Task<CloudFailure?> StartAsync(CancellationToken cancel)
+        {
+            // A start that runs, or that started the services, is the one start; one that failed (no network as the game
+            // opened) is tried anew, as a payment's verification or a deletion asks it.
+            bool hasFailed = _starting != null && _starting.IsCompleted && (_starting.IsFaulted || _starting.Result != null);
+            if (_starting == null || hasFailed)
+            {
+                _starting = StartOnceAsync();
+            }
+
+            return _starting;
+        }
 
         public Task<AccountAnswer> SignInAnonymouslyAsync(CancellationToken cancel) => SignInAsync(() => AuthenticationService.Instance.SignInAnonymouslyAsync(), "anonymously");
 
@@ -89,6 +100,21 @@ namespace Puzzle.Client.Cloud
             if (UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn)
             {
                 AuthenticationService.Instance.SignOut(clearCredentials: false);
+            }
+        }
+
+        public async Task<CloudFailure?> DeleteAccountAsync(CancellationToken cancel)
+        {
+            try
+            {
+                // Authentication 3.8.1 signs out and clears the phone's session once the account is deleted.
+                await AuthenticationService.Instance.DeleteAccountAsync();
+                return null;
+            }
+            catch (RequestFailedException failure)
+            {
+                _log($"Unity's Authentication did not delete the account: {failure.ErrorCode} {failure.Message}");
+                return FailureOf(failure);
             }
         }
 

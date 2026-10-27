@@ -211,6 +211,8 @@ public sealed class IdentityTests
         public Task<LinkAnswer> LinkWithAsync(PlatformCredential credential, CancellationToken cancel) => _phone.LinkWithAsync(credential, cancel);
 
         public void SignOutKeepingTheSession() => _phone.SignOutKeepingTheSession();
+
+        public Task<CloudFailure?> DeleteAccountAsync(CancellationToken cancel) => _phone.DeleteAccountAsync(cancel);
     }
 
     /// <summary>A phone's services on a project with no Play Games provider: Unity refuses the platform's credential.</summary>
@@ -236,5 +238,7 @@ public sealed class IdentityTests
             Task.FromResult<LinkAnswer>(new LinkAnswer.Failed(CloudFailure.Refused));
 
         public void SignOutKeepingTheSession() => _phone.SignOutKeepingTheSession();
+
+        public Task<CloudFailure?> DeleteAccountAsync(CancellationToken cancel) => _phone.DeleteAccountAsync(cancel);
     }
 }

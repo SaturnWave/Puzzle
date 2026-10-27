@@ -470,7 +470,7 @@ public class PurchaseTests
         // A payment the store took for a product this game no longer sells.
         var store = ScriptedStore.AtUsPrices(Catalogue, TestApplicationId, offersRestore: false);
         StoreProduct retired = Rules(pack => pack.store.coinPacks[0].productIdSuffix = "coins.retired").Shop.Store.CoinPacks[0];
-        store.Buy(new StoreListing(retired, TestApplicationId));
+        store.Buy(new StoreListing(retired, TestApplicationId), buyer: null);
 
         var keeper = new Keeper(OnLevelTwentyFive);
         var checkout = new Checkout(Catalogue, RealMoneySales.ThroughTheStore, TestApplicationId, store);
@@ -487,7 +487,7 @@ public class PurchaseTests
     {
         // An earlier run paid for the large pack and was closed before it took the store's news: the store holds the payment unconfirmed.
         var store = ScriptedStore.AtUsPrices(Catalogue, TestApplicationId, offersRestore: true);
-        store.Buy(new StoreListing(Large, TestApplicationId));
+        store.Buy(new StoreListing(Large, TestApplicationId), buyer: null);
 
         // This run's progress file could not be read: what it saves is gone when the game closes.
         var forThisRunOnly = new Keeper(OnLevelTwentyFive, ProgressKeeping.ForThisRunOnly);
@@ -699,10 +699,12 @@ public class PurchaseTests
 
         public bool IsSaved => !ClosesBeforeTheConfirmation && Progress.Equals(Saved);
 
-        public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason)
+        public bool HasGiven(StorePayment payment) => Progress.Purchases.HasSeen(payment.TransactionId);
+
+        public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason, LedgerNumber? number)
         {
             _reasons.Add(reason);
-            Delivery delivery = _ledger.Deliver(Progress, product, payment.TransactionId);
+            Delivery delivery = _ledger.Deliver(Progress, product, payment.TransactionId, number);
             Progress = delivery switch
             {
                 Delivery.Given given => given.Progress,

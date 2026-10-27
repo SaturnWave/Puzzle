@@ -158,6 +158,9 @@ namespace Puzzle.Client.Screens
         /// <summary>How large the mark of a card that tells what a request came to is drawn.</summary>
         private const float NoticeMarkSize = 100f;
 
+        /// <summary>The player code's row says it was copied for this long, then shows the code again.</summary>
+        private const float CodeCopiedFor = 1.2f;
+
         private readonly GameObject _root;
         private readonly ArtCatalogue _art;
         private readonly PaintingGallery _paintings;
@@ -489,6 +492,7 @@ namespace Puzzle.Client.Screens
             SupportCard _ => SettingsCardKind.Support,
             LanguageCard _ => SettingsCardKind.Language,
             CreditsCard _ => SettingsCardKind.Credits,
+            AccountCard _ => SettingsCardKind.Account,
             _ => null,
         };
 
@@ -512,7 +516,27 @@ namespace Puzzle.Client.Screens
 
         public Vector2? SupportRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.SupportRowMiddle) : null;
 
-        public Vector2? CreditsRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.CreditsRowMiddle) : null;
+        public Vector2? AccountRowPixel => TopCard is SettingsCard settings ? PixelOnTheCard(settings.AccountRowMiddle) : null;
+
+        /// <summary>The pixel in the middle of the support card's "Künye", which opens the credits card in its place; nothing while that card is not down in front.</summary>
+        public Vector2? CreditsButtonPixel => TopCard is SupportCard support && support.CreditsButtonMiddle is Vector2 credits ? PixelOnTheCard(credits) : null;
+
+        /// <summary>The pixels of the account card's presses: its switch, "Bağlan", the player code's row, the answers under the rows, and "Tamam" after a deletion; nothing while not in sight.</summary>
+        public Vector2? AccountSwitchPixel => TopCard is AccountCard account && account.SwitchMiddle is Vector2 at ? PixelOnTheCard(at) : null;
+
+        public Vector2? AccountLinkPixel => TopCard is AccountCard account && account.LinkMiddle is Vector2 at ? PixelOnTheCard(at) : null;
+
+        public Vector2? AccountCodePixel => TopCard is AccountCard account && account.CodeRowMiddle is Vector2 at ? PixelOnTheCard(at) : null;
+
+        public Vector2? AccountLeftAnswerPixel => TopCard is AccountCard account && account.LeftAnswerMiddle is Vector2 at ? PixelOnTheCard(at) : null;
+
+        public Vector2? AccountRightAnswerPixel => TopCard is AccountCard account && account.RightAnswerMiddle is Vector2 at ? PixelOnTheCard(at) : null;
+
+        public Vector2? AccountDonePixel => TopCard is AccountCard account && account.DoneMiddle is Vector2 at ? PixelOnTheCard(at) : null;
+
+        /// <summary>What the account card asks, says under its rows and shows in them, and its switch; nothing while it does not hang.</summary>
+        public (AccountCardAsks Asks, string Says, (string Account, string LastSync, string Code) Shows, bool SwitchOn)? AccountShown =>
+            _cards.Find(card => card is AccountCard) is AccountCard account ? (account.Asks, account.Says, account.Shows, account.ShowsTheSwitchOn) : default;
 
         public Vector2? SwitchPixel(DeviceSetting setting) =>
             TopCard is SettingsCard settings && settings.Switches.Contains(setting) ? PixelOnTheCard(settings.SwitchMiddle(setting)) : null;
@@ -792,11 +816,20 @@ namespace Puzzle.Client.Screens
         /// </summary>
         /// <param name="levelNumber">The level the player stands on now, counted from 1.</param>
         /// <param name="coins">The coins in the wallet now.</param>
-        public void Hear(AccountNews news, int levelNumber, Coins coins) =>
+        public void Hear(AccountNews news, int levelNumber, Coins coins)
+        {
+            bool isTheDeletions = news is AccountNews.CloudDataDeleted || news is AccountNews.CloudDataNotDeleted;
+            if (isTheDeletions && _cards.Find(card => card is AccountCard) is AccountCard account)
+            {
+                account.Hear(news); // the account card that asked shows what came of it
+                return;
+            }
+
             _accountCardsDue.Enqueue((
                 AccountWords.Of(news, levelNumber, coins),
                 news is AccountNews.OtherSaveFound ? NoticeAnswers.SwitchOrStay : NoticeAnswers.Done,
                 news is AccountNews.SaveCameBack ? GalleryArt.IconMuseum : GalleryArt.IconShield));
+        }
 
         /// <summary>What presses asked of the store since the owner last took it, in order: the owner hands it to the purchase's course and tells the stage where it stands after it.</summary>
         public IReadOnlyList<StoreRequest> TakeWhatWasAskedOfTheStore()
@@ -861,6 +894,7 @@ namespace Puzzle.Client.Screens
                     PrivacyCard _ => PrivacyCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
                     SupportCard _ => SupportCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
                     CreditsCard _ => CreditsCard.Create(_root.transform, _art, (int)DrawOrder.OverACard),
+                    AccountCard _ => AccountCard.Create(_root.transform, _art, device, (int)DrawOrder.OverACard),
                     _ => throw new InvalidOperationException($"A {card.GetType().Name} hangs, and no language is chosen on it."),
                 };
                 card.Dispose();
@@ -1152,8 +1186,46 @@ namespace Puzzle.Client.Screens
                 case MuseumPress.OpenTheSupport _ when TopCard is SettingsCard:
                     Hang(SupportCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
                     break;
-                case MuseumPress.OpenTheCredits _ when TopCard is SettingsCard:
-                    Hang(CreditsCard.Create(_root.transform, _art, (int)DrawOrder.OverACard), roomIsDark: false);
+                case MuseumPress.OpenTheCredits _ when TopCard is SupportCard:
+                    // The credits come down in the support card's place, in front of the settings card.
+                    SwapTheCardInFront(CreditsCard.Create(_root.transform, _art, (int)DrawOrder.OverACard));
+                    break;
+                case MuseumPress.OpenTheAccount _ when TopCard is SettingsCard:
+                    Hang(AccountCard.Create(_root.transform, _art, _device, (int)DrawOrder.OverACard), roomIsDark: false);
+                    break;
+                case MuseumPress.FlipTheCloudSave _ when TopCard is AccountCard account:
+                    // The switch slides at once; the cloud keeps it and starts or stops, and the stage's owner tells the account after it.
+                    bool cloudSaveIsOn = account.FlipTheSwitch();
+                    _askedOfTheAccount.Add(new AccountRequest.TurnTheSwitch(cloudSaveIsOn));
+                    _timeline.Add(0f, Tempo.SwitchSlides, account.Slide);
+                    break;
+                case MuseumPress.LinkFromTheAccountCard _ when TopCard is AccountCard:
+                    // What the link came to comes as news, on a card of its own once the settings' cards are closed.
+                    _askedOfTheAccount.Add(new AccountRequest.Link());
+                    break;
+                case MuseumPress.CopyThePlayerCode _ when TopCard is AccountCard account && _device.Account.KnownPlayer is CloudPlayerId player:
+                    GUIUtility.systemCopyBuffer = player.Value;
+                    account.ShowCopied();
+                    _timeline.At(CodeCopiedFor, account.ShowTheCode);
+                    break;
+                case MuseumPress.AskToDeleteMyData _ when TopCard is AccountCard account:
+                    account.Ask(AccountCardAsks.AboutTheCloud);
+                    break;
+                case MuseumPress.KeepMyData _ when TopCard is AccountCard { Asks: AccountCardAsks.AboutThePhone } account:
+                    account.TellTheCloudSaveIsOff();
+                    break;
+                case MuseumPress.KeepMyData _ when TopCard is AccountCard account:
+                    account.Ask(AccountCardAsks.Nothing);
+                    break;
+                case MuseumPress.DeleteMyData _ when TopCard is AccountCard account:
+                    // The card says it deletes; what came of it comes as news (Hear), which the card shows.
+                    account.Ask(AccountCardAsks.Deleting);
+                    _askedOfTheAccount.Add(new AccountRequest.DeleteTheCloudData());
+                    break;
+                case MuseumPress.ForgetThisPhone _ when TopCard is AccountCard account:
+                    // The owner starts the game over on a new player's progress; the hall opens anew on it, and a card says so.
+                    account.Ask(AccountCardAsks.Deleting);
+                    _askedOfThePhone.Add(new DeviceRequest.ForgetTheProgress());
                     break;
                 case MuseumPress.TurnTheCreditsPage turn when TopCard is CreditsCard credits:
                     credits.TurnThePage(turn.IsForward);
@@ -1412,6 +1484,27 @@ namespace Puzzle.Client.Screens
             _timeline.Add(Tempo.CardAfterDark, Tempo.CardComesDown, card.Card.ComeDown);
         }
 
+        /// <summary>
+        /// The card in front gives its place to another at once, in front of the same card behind and over the same dark:
+        /// the support card's "Künye" brings the credits there, as no card stands in front of a card in front.
+        /// </summary>
+        private void SwapTheCardInFront(IMuseumCard next)
+        {
+            IMuseumCard front = TopCard ?? throw new InvalidOperationException("No card hangs to give its place.");
+            front.Card.FingerGone();
+            _cards.Remove(front);
+            front.Dispose();
+            _cards.Add(next);
+            if (_screen is ScreenShape screen)
+            {
+                Place(next, PageLayout.Of(screen));
+            }
+
+            _presses.Clear();
+            _sounded.Add(SoundCue.CardDown);
+            _timeline.Add(0f, Tempo.CardComesDown, next.Card.ComeDown);
+        }
+
         /// <summary>The card in front goes up, the dark behind it lifts, and once it is gone the card behind it, or the page, is the player's again.</summary>
         private void TakeTheCardInFrontUp()
         {
@@ -1627,7 +1720,7 @@ namespace Puzzle.Client.Screens
                         : GoodsOf(state.Product ?? throw new InvalidOperationException($"A purchase that stands at {state} is of no product."));
                     return NoticeCard.Create(
                         _root.transform, _art, said.Title, exhibit, said.FirstLine, said.SecondLine, raisedBy: 0,
-                        state is PurchaseState.Pending ? NoticeAnswers.None : NoticeAnswers.Done);
+                        state is PurchaseState.Pending || state is PurchaseState.Verifying ? NoticeAnswers.None : NoticeAnswers.Done);
                 case RestoreState restore:
                     PurchaseCardWords back = PurchaseWords.Of(restore, store.StarterPackProduct) ?? throw new InvalidOperationException($"A restore that stands at {restore} has no card.");
                     return NoticeCard.Create(

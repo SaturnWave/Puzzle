@@ -96,11 +96,12 @@ public class SettingsLayoutTests
     }
 
     [Fact]
-    public void With_the_designs_three_switches_the_card_is_as_high_as_the_canvas_draws_it_with_the_builds_line_and_the_credits_row()
+    public void With_the_designs_three_switches_the_card_is_as_high_as_the_canvas_draws_it_with_the_builds_line_and_the_account_row()
     {
         SettingsLayout card = SettingsLayout.For(3);
 
-        // SettingsTR: a body of 430 whose foot is one line; the build's line adds a band of 17, the credits' row (2026-10-24) a row and its hairline.
+        // SettingsTR: a body of 430 whose foot is one line; the build's line adds a band of 17, the account's row (2026-10-27, in the
+        // credits' place of 2026-10-24: they open from the support card) a row and its hairline.
         Assert.Equal(430f + SettingsLayout.BuildLineBand + SettingsLayout.RowHeight + SettingsLayout.Hairline, card.BodyHeight, precision: 3);
         Assert.Equal(37f + 3 * 52f + 2 * 1.5f + 17f / 2f, card.DividerMiddle!.Value, precision: 3);
         Assert.Equal(213f + 26f, card.RowOf(SettingsRowKind.Language).Middle, precision: 3);
@@ -113,7 +114,7 @@ public class SettingsLayoutTests
         SettingsLayout three = SettingsLayout.For(3);
 
         Assert.Null(none.DividerMiddle);
-        Assert.Equal(new[] { SettingsRowKind.Language, SettingsRowKind.Privacy, SettingsRowKind.Support, SettingsRowKind.Credits }, none.Rows.Select(row => row.Kind));
+        Assert.Equal(new[] { SettingsRowKind.Language, SettingsRowKind.Account, SettingsRowKind.Privacy, SettingsRowKind.Support }, none.Rows.Select(row => row.Kind));
         Assert.Equal(SettingsLayout.RowsDown, none.Rows[0].Down, precision: 3);
         Assert.Equal(three.BodyHeight - 3 * SettingsLayout.RowHeight - 2 * SettingsLayout.Hairline - SettingsLayout.DividerBand, none.BodyHeight, precision: 3);
     }

@@ -28,8 +28,14 @@ namespace Puzzle.Client.Cloud
         /// <summary>Why the cloud is out of reach; nothing while it answers.</summary>
         public CloudFailure? Down { get; private set; }
 
-        /// <summary>The reads that reached the cloud: what the free tier counts.</summary>
-        public int Reads { get; private set; }
+        /// <summary>The reads that reached the cloud, of the save and of the ledger: what the free tier counts.</summary>
+        public int Reads => SaveReads + LedgerReads;
+
+        /// <summary>The reads of the save that reached the cloud.</summary>
+        public int SaveReads { get; private set; }
+
+        /// <summary>The reads of the ledger that reached the cloud.</summary>
+        public int LedgerReads { get; private set; }
 
         /// <summary>The writes that reached the cloud, written or refused: what the free tier counts.</summary>
         public int Writes { get; private set; }
@@ -55,7 +61,7 @@ namespace Puzzle.Client.Cloud
             Purchases = null;
         }
 
-        public Task<CloudRead> ReadAsync(CancellationToken cancel)
+        public Task<CloudRead> ReadSaveAsync(CancellationToken cancel)
         {
             cancel.ThrowIfCancellationRequested();
             if (Down is CloudFailure failure)
@@ -63,8 +69,20 @@ namespace Puzzle.Client.Cloud
                 return Task.FromResult<CloudRead>(new CloudRead.Failed(failure));
             }
 
-            Reads++;
-            return Task.FromResult<CloudRead>(new CloudRead.Found(Save, Purchases));
+            SaveReads++;
+            return Task.FromResult<CloudRead>(new CloudRead.Found(Save));
+        }
+
+        public Task<CloudRead> ReadLedgerAsync(CancellationToken cancel)
+        {
+            cancel.ThrowIfCancellationRequested();
+            if (Down is CloudFailure failure)
+            {
+                return Task.FromResult<CloudRead>(new CloudRead.Failed(failure));
+            }
+
+            LedgerReads++;
+            return Task.FromResult<CloudRead>(new CloudRead.Found(Purchases));
         }
 
         public Task<CloudWrite> WriteSaveAsync(string text, CloudWriteLock? expected, CancellationToken cancel)

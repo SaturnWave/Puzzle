@@ -23,7 +23,11 @@ namespace Puzzle.Client.EditorTools
     /// session over a scripted store, on the phone: every pack bought and given once, a cancel, a refusal, a payment
     /// that waits and is then made, the starter pack bought and a second one refused, a game closed between a payment
     /// and its delivery and one closed between the save and the confirmation, each payment given once, a restore, and
-    /// a store that cannot be reached or has not answered. Then, in play mode (Unity IAP registers its stores only
+    /// a store that cannot be reached or has not answered; and the walks of the game's server (GameWalk.Verification.cs,
+    /// Stage 4 of docs/research/server-v1.md) over Unity's services and the Cloud Code module in memory: a payment the
+    /// server verifies, given once with its ledger number; one it finds not real, neither given nor confirmed; one it
+    /// cannot verify yet (the module not deployed), waiting unconfirmed and given once it can; and two phones of one
+    /// player, the second confirming the first's payment without giving it again. Then, in play mode (Unity IAP registers its stores only
     /// while a game runs), the game's adapter over Unity In-App Purchasing 5.4.4 and Unity's fake store, without Unity
     /// Gaming Services: the store opens with a price for every product, each pack and the starter pack are bought
     /// through it, given once and confirmed once saved, a sheet cancelled gives nothing, a second starter pack is
@@ -81,6 +85,7 @@ namespace Puzzle.Client.EditorTools
 
                 var studio = new Studio(art, LevelPack.LoadPacked(), PaintingGallery.OfThePackedMuseum(), string.Empty);
                 GameWalk.RunThePurchaseWalks(new ScreenShape(1080, 2424), studio, breaksTheSave ? GameWalk.Saving.SavedNowhere : GameWalk.Saving.AsTheGameSavesIt);
+                GameWalk.RunTheVerificationWalks(new ScreenShape(1080, 2424), studio);
             }
             catch (InvalidOperationException failure)
             {
@@ -88,7 +93,7 @@ namespace Puzzle.Client.EditorTools
                 return;
             }
 
-            SessionState.SetString(WalkedKey, "the purchase walks over the scripted store passed");
+            SessionState.SetString(WalkedKey, "the purchase walks over the scripted store and the verification walks over the server in memory (verified, forged, out of reach then verified, two phones) passed");
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             SessionState.SetBool(IsRunningKey, true);
             EditorApplication.EnterPlaymode();
@@ -301,9 +306,11 @@ namespace Puzzle.Client.EditorTools
 
             public ProgressKeeping Keeping => ProgressKeeping.AfterClosing;
 
-            public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason)
+            public bool HasGiven(StorePayment payment) => Saved.Purchases.HasSeen(payment.TransactionId);
+
+            public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason, LedgerNumber? number)
             {
-                Delivery delivery = _ledger.Deliver(Saved, product, payment.TransactionId);
+                Delivery delivery = _ledger.Deliver(Saved, product, payment.TransactionId, number);
                 switch (delivery)
                 {
                     case Delivery.Given given:

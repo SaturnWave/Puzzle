@@ -164,7 +164,7 @@ namespace Puzzle.Client.EditorTools
             // Paid, and the game closed before it took the store's news: nothing given, nothing saved.
             using (GameSession closed = SessionOverAStore(studio, kept, store, screen))
             {
-                store.Buy(new StoreListing(chest, Application.identifier));
+                store.Buy(new StoreListing(chest, Application.identifier), buyer: null);
             }
 
             using (GameSession reopened = SessionOverAStore(studio, kept, store, screen))
@@ -387,7 +387,7 @@ namespace Puzzle.Client.EditorTools
         {
             StoreCatalogue catalogue = StoryStudio.Economy.Shop.Store;
             var store = ScriptedStore.AtUsPrices(catalogue, Application.identifier, offersRestore: false);
-            store.Buy(new StoreListing(catalogue.CoinPacks[1], Application.identifier)); // an earlier run's payment, never taken
+            store.Buy(new StoreListing(catalogue.CoinPacks[1], Application.identifier), buyer: null); // an earlier run's payment, never taken
             var forThisRunOnly = ProgressInMemory.ForThisRunOnly(before);
             using GameSession session = SessionOverAStore(studio, forThisRunOnly, store, screen);
             var reel = new Reel(session, screen, $"walk-purchase-unsaved-{screen}{studio.FileNameEnding}", studio.Paintings.Catalogue);
@@ -500,7 +500,7 @@ namespace Puzzle.Client.EditorTools
 
             public void Open(IReadOnlyList<StoreListing> listings) => _store.Open(listings);
 
-            public void Buy(StoreListing listing) => _store.Buy(listing);
+            public void Buy(StoreListing listing, StoreBuyer? buyer) => _store.Buy(listing, buyer);
 
             public void Confirm(StorePayment payment)
             {
@@ -521,7 +521,7 @@ namespace Puzzle.Client.EditorTools
             {
             }
 
-            public void Buy(StoreListing listing)
+            public void Buy(StoreListing listing, StoreBuyer? buyer)
             {
             }
 

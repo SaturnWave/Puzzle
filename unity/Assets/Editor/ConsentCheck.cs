@@ -157,12 +157,12 @@ namespace Puzzle.Client.EditorTools
 
             Press(session, MuseumOf(session).GearPixel, "the wallet row's gear");
             Require(MuseumOf(session).SwitchesShown.Contains((DeviceSetting.Statistics, true)), $"the settings card shows [{string.Join(", ", MuseumOf(session).SwitchesShown)}], not the statistics on");
-            Require(MuseumOf(session).PrivacyLineShown == SettingsWords.PrivacyLine(settings.Settings), "the privacy row's line does not say that statistics leave the phone too");
+            Require(MuseumOf(session).PrivacyLineShown == SettingsWords.PrivacyLine(settings.Settings, cloudSaveIsOn: false), "the privacy row's line does not say that statistics leave the phone too");
             string pages = TurnThePrivacyPages(session);
 
             Press(session, MuseumOf(session).SwitchPixel(DeviceSetting.Statistics), "the statistics' switch");
             Require(settings.Settings.Statistics == StatisticsChoice.Declined, $"the switch turned off kept {settings.Settings.Statistics}");
-            Require(MuseumOf(session).PrivacyLineShown == SettingsWords.PrivacyLine(settings.Settings), "the privacy row's line did not turn back to the purchases alone");
+            Require(MuseumOf(session).PrivacyLineShown == SettingsWords.PrivacyLine(settings.Settings, cloudSaveIsOn: false), "the privacy row's line did not turn back to the purchases alone");
             Press(session, MuseumOf(session).CardClosePixel, "the settings card's round button");
             Press(session, MuseumOf(session).PixelOf(Destination.Shop), "the bar's place for the shop");
             Press(session, MuseumOf(session).PixelOf(Destination.Home), "the bar's place for the hall");

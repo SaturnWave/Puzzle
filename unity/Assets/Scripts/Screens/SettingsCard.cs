@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Puzzle.Client.Screens
 {
-    /// <summary>The settings card and the four cards it opens in front of it, as the tools ask which of them is in front. A closed set.</summary>
+    /// <summary>The settings card and the cards it and the support card open in front of it, as the tools ask which of them is in front. A closed set.</summary>
     public enum SettingsCardKind
     {
         Settings,
@@ -19,6 +19,7 @@ namespace Puzzle.Client.Screens
         Support,
         Language,
         Credits,
+        Account,
     }
 
     /// <summary>
@@ -26,15 +27,16 @@ namespace Puzzle.Client.Screens
     /// "Ayarlar", a row with a switch for every setting the build honours (and the tester mode's while it holds, with
     /// the coin for its mark: the canvas draws no such row), a gilt rule under them, then the rows that open the
     /// language card (with the name of the language the game speaks, in its own words, before its chevron), the
-    /// privacy card, the support card and the credits card (which the canvas does not draw), each with its teal disc
-    /// and mark; at its foot the player's id and the game's version, and under them what kind of build this is. It is
+    /// account card (the account and its cloud save, which the canvas does not draw), the privacy card and the support
+    /// card (whose "Künye" opens the credits card), each with its teal disc and mark; at its foot the player's id and the
+    /// game's version, and under them what kind of build this is. It is
     /// opened by the gear of the wallet row and closed by its round button and by the way back; the four cards it opens
     /// hang in front of it. Where everything stands is <see cref="SettingsLayout"/>'s, in the canvas' points.
     /// </summary>
     /// <remarks>
     /// A switch slides when its row is pressed, and its owner keeps the setting at once; the card shows the settings
     /// it is told (<see cref="Tell(DeviceView)"/>), the privacy row's smaller line too, which says what leaves the
-    /// phone as the statistics' switch stands. A whole row is what a finger presses, as large as the canvas
+    /// phone as the statistics' switch and the cloud save's stand. A whole row is what a finger presses, as large as the canvas
     /// draws it, not only its switch or chevron. The rows are those of the phone as the card came down: the tester
     /// mode's row turned off stays, off, until the card is opened again.
     /// </remarks>
@@ -96,7 +98,7 @@ namespace Puzzle.Client.Screens
 
         public Vector2 SupportRowMiddle => _card.InTheLayout(RowMiddle(_layout.RowOf(SettingsRowKind.Support)));
 
-        public Vector2 CreditsRowMiddle => _card.InTheLayout(RowMiddle(_layout.RowOf(SettingsRowKind.Credits)));
+        public Vector2 AccountRowMiddle => _card.InTheLayout(RowMiddle(_layout.RowOf(SettingsRowKind.Account)));
 
         /// <summary>The settings whose switches the card shows, in its order.</summary>
         public IReadOnlyCollection<DeviceSetting> Switches => _switches.Keys;
@@ -144,7 +146,7 @@ namespace Puzzle.Client.Screens
 
             if (_privacyLine is (TextMeshPro line, float down))
             {
-                SayThePrivacyLine(line, down, device.Settings);
+                SayThePrivacyLine(line, down, device);
             }
         }
 
@@ -181,17 +183,17 @@ namespace Puzzle.Client.Screens
                     Lettering.SayUpToRight(value, device.SpeakingName, SettingsLayout.ValueRight(hasAChevron: true), middle.y);
                     _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenTheLanguages());
                     break;
+                case SettingsRowKind.Account:
+                    AddDiscAndName(row, GalleryArt.IconLock, SettingsWords.Account, art);
+                    _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenTheAccount());
+                    break;
                 case SettingsRowKind.Privacy:
-                    AddPrivacyRow(row, device.Settings, art);
+                    AddPrivacyRow(row, device, art);
                     _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenThePrivacy());
                     break;
                 case SettingsRowKind.Support:
                     AddDiscAndName(row, GalleryArt.IconHelp, SettingsWords.Support, art);
                     _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenTheSupport());
-                    break;
-                case SettingsRowKind.Credits:
-                    AddDiscAndName(row, GalleryArt.IconCollection, CreditWords.Title, art);
-                    _card.Listen(new RowButton(row, AddChevron(middle.y, art)), new MuseumPress.OpenTheCredits());
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(row), row.Kind, "A row the settings card does not know.");
@@ -199,7 +201,7 @@ namespace Puzzle.Client.Screens
         }
 
         /// <summary>The privacy row: its disc, its name, and the smaller line under the name, the two centred together on the row.</summary>
-        private void AddPrivacyRow(SettingsRowPlace row, DeviceSettings settings, ArtCatalogue art)
+        private void AddPrivacyRow(SettingsRowPlace row, DeviceView device, ArtCatalogue art)
         {
             float together = SettingsLayout.NameSize + SettingsLayout.SmallLineGap + SettingsLayout.SmallSize;
             float nameDown = row.Middle - together / 2f + SettingsLayout.NameSize / 2f;
@@ -208,17 +210,17 @@ namespace Puzzle.Client.Screens
             AddName(nameDown, PrivacyWords.Title, art);
             TextMeshPro line = Lettering.Write("Smaller line", _card.Content, art, LetteringStyle.Soft, SettingsLayout.SmallSize, Lettering.SoftInk, DrawOrder.CardLettering);
             _privacyLine = (line, lineDown);
-            SayThePrivacyLine(line, lineDown, settings);
+            SayThePrivacyLine(line, lineDown, device);
         }
 
         /// <summary>
-        /// The privacy row's smaller line as the settings stand, from the name's left edge, set smaller where a language's
-        /// words would reach the chevron.
+        /// The privacy row's smaller line as the settings and the cloud save stand, from the name's left edge, set smaller
+        /// where a language's words would reach the chevron.
         /// </summary>
-        private void SayThePrivacyLine(TextMeshPro line, float down, DeviceSettings settings)
+        private void SayThePrivacyLine(TextMeshPro line, float down, DeviceView device)
         {
             float room = SettingsLayout.ValueRight(hasAChevron: true) - SettingsLayout.NameLeft;
-            Lettering.SayWithin(line, SettingsWords.PrivacyLine(settings), SettingsLayout.SmallSize, room);
+            Lettering.SayWithin(line, SettingsWords.PrivacyLine(device.Settings, device.SendsTheCloudSave), SettingsLayout.SmallSize, room);
             line.transform.localPosition = new Vector3(SettingsLayout.NameLeft + Lettering.WidthOf(line, line.text) / 2f, _card.At(down).y, 0f);
         }
 

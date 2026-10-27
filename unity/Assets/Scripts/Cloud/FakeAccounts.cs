@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,6 +73,16 @@ namespace Puzzle.Client.Cloud
             }
 
             return player;
+        }
+
+        /// <summary>The account is deleted with its links; its cloud goes with it (the server deleted its data before).</summary>
+        internal void Delete(CloudPlayerId player)
+        {
+            _clouds.Remove(player);
+            foreach ((SignInPlatform Platform, string Id) link in _links.Where(link => link.Value == player).Select(link => link.Key).ToArray())
+            {
+                _links.Remove(link);
+            }
         }
 
         internal Task<CloudFailure?> Started()
@@ -178,8 +189,29 @@ namespace Puzzle.Client.Cloud
 
         public void SignOutKeepingTheSession() => SignedIn = null;
 
-        public Task<CloudRead> ReadAsync(CancellationToken cancel) =>
-            SignedIn is CloudPlayerId player ? _services.CloudOf(player).ReadAsync(cancel) : Task.FromResult<CloudRead>(new CloudRead.Failed(CloudFailure.Blocked));
+        public Task<CloudFailure?> DeleteAccountAsync(CancellationToken cancel)
+        {
+            if (_services.Down is CloudFailure failure)
+            {
+                return Task.FromResult<CloudFailure?>(failure);
+            }
+
+            if (!(SignedIn is CloudPlayerId player))
+            {
+                return Task.FromResult<CloudFailure?>(CloudFailure.Refused);
+            }
+
+            _services.Delete(player);
+            _session = null;
+            SignedIn = null;
+            return Task.FromResult<CloudFailure?>(null);
+        }
+
+        public Task<CloudRead> ReadSaveAsync(CancellationToken cancel) =>
+            SignedIn is CloudPlayerId player ? _services.CloudOf(player).ReadSaveAsync(cancel) : Task.FromResult<CloudRead>(new CloudRead.Failed(CloudFailure.Blocked));
+
+        public Task<CloudRead> ReadLedgerAsync(CancellationToken cancel) =>
+            SignedIn is CloudPlayerId player ? _services.CloudOf(player).ReadLedgerAsync(cancel) : Task.FromResult<CloudRead>(new CloudRead.Failed(CloudFailure.Blocked));
 
         public Task<CloudWrite> WriteSaveAsync(string text, CloudWriteLock? expected, CancellationToken cancel) =>
             SignedIn is CloudPlayerId player ? _services.CloudOf(player).WriteSaveAsync(text, expected, cancel) : Task.FromResult<CloudWrite>(new CloudWrite.Failed(CloudFailure.Blocked));

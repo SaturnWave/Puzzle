@@ -81,6 +81,12 @@ namespace Puzzle.Client.Purchases
 
         /// <summary>A payment for the product waits already; it is delivered when the store says it is made.</summary>
         AlreadyWaiting,
+
+        /// <summary>
+        /// The game's server asked the store and found the payment not real (not the store's, another player's, or
+        /// refunded): nothing is given and nothing confirmed, so the store gives back any money it took.
+        /// </summary>
+        NotVerified,
     }
 
     /// <summary>Why the store hands the game a product to give. A closed set.</summary>
@@ -106,7 +112,9 @@ namespace Puzzle.Client.Purchases
     /// was lost while the sheet was up, or has been silent a while) is <see cref="Unanswered"/>, whose card can be
     /// closed. A payment the store makes later (a deferred one approved, an unanswered one made, one told of again after
     /// the game was closed) is <see cref="Delivered"/> from wherever the course stands, once the player has closed the
-    /// card in front.
+    /// card in front. Where the game's server verifies payments, a payment the store took is <see cref="Verifying"/>
+    /// while the server is asked, and <see cref="Unverified"/> (a card that can be closed) when the server has not
+    /// answered in a while or cannot be reached: the payment waits, unconfirmed, and is given once verified.
     /// </summary>
     public abstract class PurchaseState
     {
@@ -183,6 +191,40 @@ namespace Puzzle.Client.Purchases
             public override StoreProduct? Product => Bought;
 
             public override string ToString() => $"unanswered: {Bought.Name}";
+        }
+
+        /// <summary>The store took the payment, and the game's server is asking the store whether it is real. Its card has no answer: the server's is awaited.</summary>
+        public sealed class Verifying : PurchaseState
+        {
+            public Verifying(StoreProduct product)
+            {
+                Bought = product ?? throw new ArgumentNullException(nameof(product));
+            }
+
+            public StoreProduct Bought { get; }
+
+            public override StoreProduct? Product => Bought;
+
+            public override string ToString() => $"verifying: {Bought.Name}";
+        }
+
+        /// <summary>
+        /// The store took the payment, and the game's server has not said yet whether it is real: it did not answer in
+        /// <see cref="Checkout.PatienceWithTheServer"/>, or cannot be reached. Nothing is lost: the payment waits with the
+        /// store, unconfirmed, and is given once the server verifies it. Its card can be closed.
+        /// </summary>
+        public sealed class Unverified : PurchaseState
+        {
+            public Unverified(StoreProduct product)
+            {
+                Bought = product ?? throw new ArgumentNullException(nameof(product));
+            }
+
+            public StoreProduct Bought { get; }
+
+            public override StoreProduct? Product => Bought;
+
+            public override string ToString() => $"unverified: {Bought.Name}";
         }
 
         /// <summary>In the player's wallet: what came, and whether it was paid for now or given back by the store.</summary>
@@ -311,7 +353,11 @@ namespace Puzzle.Client.Purchases
         /// Gives the product to the player by the rules (WalletLedger.Deliver), keeps the progress after it and saves it
         /// at once. A payment is noted as a purchase made; what the store gives back is not one.
         /// </summary>
-        Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason);
+        /// <param name="number">The number the game's server gave the payment in the player's ledger; nothing for one given on the phone unverified.</param>
+        Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason, LedgerNumber? number);
+
+        /// <summary>True when the progress holds the payment given already (or counted as sold out): the server need not be asked about it.</summary>
+        bool HasGiven(StorePayment payment);
 
         /// <summary>True while the saved progress is the one held, so every payment given is in it.</summary>
         bool IsSaved { get; }
@@ -393,10 +439,16 @@ namespace Puzzle.Client.Purchases
     /// when the game closes, and a payment of an earlier run that it confirmed would be lost for good.
     /// </para>
     /// <para>
-    /// There is no server: the payment is believed as the store hands it to the game on the device, and nothing takes
-    /// coins back. A refund the store gives leaves the coins with the player; a player who deletes the game or changes
-    /// phones keeps nothing bought before but the starter pack, which the store gives back (by itself on Google Play,
-    /// by the restore row on the App Store) and which the card then says came back, not that it was bought.
+    /// Where the game's server verifies payments (<see cref="IPurchaseServer.Verifies"/>, given by
+    /// <see cref="VerifyWith"/>), a payment the store took, or a product it gives back, is given only once the server
+    /// says it is real (docs/research/server-v1.md §4.8): with the number the server's ledger gave it, so a payment two
+    /// phones of the player both hear of is in the merged progress once. Until then it waits unconfirmed with the store,
+    /// which tells of it again: a server that cannot be reached (no network, the module not deployed) is asked again a
+    /// while later and at each opening of the store, and the payment is given once verified, never twice; one the server
+    /// finds not real is neither given nor confirmed, so the store gives back the money (Google within three days). A
+    /// refund the server marks in its ledger later only marks it (the owner's decision 3): the coins stay. Where no
+    /// server verifies (the switch off, a build without a cloud project, the Editor's tools), the payment is believed as
+    /// the store hands it to the game on the device, as before the server.
     /// </para>
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
@@ -411,6 +463,12 @@ namespace Puzzle.Client.Purchases
         /// </summary>
         public static readonly TimeSpan PatienceWithTheSheet = TimeSpan.FromSeconds(30);
 
+        /// <summary>A payment the server has not given its verdict on in this long lets its card close (§4.8: ten seconds), and goes on waiting.</summary>
+        public static readonly TimeSpan PatienceWithTheServer = TimeSpan.FromSeconds(10);
+
+        /// <summary>A server that could not give a verdict is asked again after these times in a row (the session's time), the last again and again; and at each opening of the store.</summary>
+        private static readonly TimeSpan[] AskTheServerAgainAfter = { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(30) };
+
         /// <summary>Payments delivered while a card stood in front wait to be shown; beyond this many the oldest card is skipped (its coins are given all the same).</summary>
         private const int DeliveredCardsKept = 8;
 
@@ -424,10 +482,24 @@ namespace Puzzle.Client.Purchases
         private readonly List<StorePayment> _toConfirmAgain = new List<StorePayment>();
         private readonly Queue<PurchaseState.Delivered> _deliveredMeanwhile = new Queue<PurchaseState.Delivered>();
         private readonly List<StoreProduct> _restored = new List<StoreProduct>();
+
+        /// <summary>The payments that wait for the server's verdict, by the store's id of each: neither given nor confirmed yet.</summary>
+        private readonly Dictionary<string, AtTheServer> _atTheServer = new Dictionary<string, AtTheServer>(StringComparer.Ordinal);
+
+        /// <summary>The payments the server found not real in this run, by the store's id: the store tells of them again, and they are left alone.</summary>
+        private readonly HashSet<string> _refusedByTheServer = new HashSet<string>(StringComparer.Ordinal);
+
+        private IPurchaseServer _server = NoPurchaseServer.Instance;
         private TimeSpan? _askedAt;
 
         /// <summary>When the store's payment sheet was opened last: a <see cref="PurchaseState.Pending"/> course waits from here. Nothing before the first sheet.</summary>
         private TimeSpan? _sheetOpenedAt;
+
+        /// <summary>The session's time as last told: what a payment's wait for the server is counted by.</summary>
+        private TimeSpan _now;
+
+        /// <summary>When the course began to wait for the server's verdict on the payment it shows: a <see cref="PurchaseState.Verifying"/> course waits from here.</summary>
+        private TimeSpan _verifyingSince;
 
         /// <param name="applicationId">The game's application id, which the products' ids in the stores begin with.</param>
         public Checkout(StoreCatalogue catalogue, RealMoneySales sales, string applicationId, IStore store)
@@ -455,6 +527,15 @@ namespace Puzzle.Client.Purchases
 
         /// <summary>Payments given whose confirmation waits for the progress to be saved, or for the store to take it.</summary>
         public IReadOnlyList<StorePayment> WaitingToBeConfirmed => _toConfirm.Concat(_toConfirmAgain).ToArray();
+
+        /// <summary>Payments the store took that wait for the server's verdict: neither given nor confirmed yet.</summary>
+        public IReadOnlyList<StorePayment> WaitingForTheServer => _atTheServer.Values.Select(waiting => waiting.Payment).ToArray();
+
+        /// <summary>
+        /// The server that verifies payments from now on (the game's cloud, once it is made on the session's progress).
+        /// Payments that waited for no server before are given as they come, as ever.
+        /// </summary>
+        public void VerifyWith(IPurchaseServer server) => _server = server ?? throw new ArgumentNullException(nameof(server));
 
         /// <summary>Every product as the store knows it.</summary>
         public IReadOnlyList<StoreListing> Listings => _listings;
@@ -499,19 +580,35 @@ namespace Puzzle.Client.Purchases
         /// for <see cref="PatienceWithTheSheet"/> becomes <see cref="PurchaseState.Unanswered"/>, whose card can be
         /// closed; and while a confirmation the store did not take waits on a store that was lost, the store is asked
         /// again a while later, so that the confirmation goes to it once it opens. A store that is open and refused a
-        /// confirmation all the same is not pressed: the confirmation goes again at its next opening.
+        /// confirmation all the same is not pressed: the confirmation goes again at its next opening. A payment the server
+        /// has not given its verdict on for <see cref="PatienceWithTheServer"/> becomes <see cref="PurchaseState.Unverified"/>,
+        /// and one the server could not give a verdict on is asked about again once its time has come.
         /// </summary>
         /// <param name="now">How long the session has run, as <see cref="Open"/> was told.</param>
         public void PassTime(TimeSpan now)
         {
+            _now = now;
             if (State is PurchaseState.Pending pending && _sheetOpenedAt is TimeSpan opened && now - opened >= PatienceWithTheSheet)
             {
                 State = new PurchaseState.Unanswered(pending.Bought);
             }
 
+            if (State is PurchaseState.Verifying verifying && now - _verifyingSince >= PatienceWithTheServer)
+            {
+                State = new PurchaseState.Unverified(verifying.Bought);
+            }
+
             if (_toConfirmAgain.Count > 0 && Status is StoreStatus.Unreachable && IsTimeToAskAgain(now))
             {
                 AskTheStore(now);
+            }
+
+            if (_server.Verifies)
+            {
+                foreach (AtTheServer due in _atTheServer.Values.Where(waiting => !waiting.IsAsked && waiting.AskAgainAt <= now).ToArray())
+                {
+                    AskTheServer(due);
+                }
             }
         }
 
@@ -551,7 +648,7 @@ namespace Puzzle.Client.Purchases
 
             State = new PurchaseState.Pending(asking.Bought);
             _sheetOpenedAt = now;
-            _store.Buy(ListingOf(asking.Bought));
+            _store.Buy(ListingOf(asking.Bought), _server.Buyer);
             return true;
         }
 
@@ -574,7 +671,7 @@ namespace Puzzle.Client.Purchases
         public bool Dismiss()
         {
             bool hasEnded = State is PurchaseState.Delivered || State is PurchaseState.Cancelled || State is PurchaseState.Failed || State is PurchaseState.Deferred
-                || State is PurchaseState.Unanswered;
+                || State is PurchaseState.Unanswered || State is PurchaseState.Unverified;
             if (!hasEnded)
             {
                 return false;
@@ -611,9 +708,11 @@ namespace Puzzle.Client.Purchases
         }
 
         /// <summary>
-        /// Takes what the store said since the last step: its prices, the payments it took (given through the keeper),
-        /// and its answers to the course; then confirms to the store the payments the saved progress holds. A run whose
-        /// store is closed takes nothing from the store, and one whose progress is not kept after closing confirms
+        /// Takes what the store said since the last step: its prices, the payments it took (given through the keeper, or
+        /// sent to the server first), and its answers to the course; then the server's verdicts (a payment it verified
+        /// given with its number); then confirms to the store the payments the saved progress holds. Payments that waited
+        /// for a server that no longer verifies (the player turned the switch off) are given as before the server. A run
+        /// whose store is closed takes nothing from the store, and one whose progress is not kept after closing confirms
         /// nothing.
         /// </summary>
         public void Step(IPurchaseKeeper keeper)
@@ -626,6 +725,20 @@ namespace Puzzle.Client.Purchases
             foreach (StoreNews news in _store.TakeNews())
             {
                 Take(news, keeper);
+            }
+
+            foreach (ServerAnswer answer in _server.TakeAnswers())
+            {
+                Hear(answer, keeper);
+            }
+
+            if (!_server.Verifies && _atTheServer.Count > 0)
+            {
+                foreach (AtTheServer waiting in _atTheServer.Values.ToArray())
+                {
+                    _atTheServer.Remove(waiting.Payment.TransactionId);
+                    Give(waiting.Payment, waiting.Listing, keeper, waiting.Reason, number: null);
+                }
             }
 
             bool holdsThePayments = keeper.IsSaved && keeper.Keeping == ProgressKeeping.AfterClosing;
@@ -681,10 +794,10 @@ namespace Puzzle.Client.Purchases
 
                     break;
                 case StoreNews.Paid paid:
-                    Give(paid.Payment, keeper, DeliveryReason.Payment);
+                    Receive(paid.Payment, keeper, DeliveryReason.Payment);
                     break;
                 case StoreNews.Owned owned:
-                    Give(owned.Payment, keeper, DeliveryReason.Restore);
+                    Receive(owned.Payment, keeper, DeliveryReason.Restore);
                     break;
                 case StoreNews.NotConfirmed notConfirmed:
                     Queue(notConfirmed.Payment, _toConfirmAgain);
@@ -712,18 +825,123 @@ namespace Puzzle.Client.Purchases
         }
 
         /// <summary>
-        /// A product, given through the keeper once; one for a product the game does not sell is left alone and never
-        /// confirmed, so the store gives the money back. A payment the store will tell of again until it is confirmed
-        /// waits for the save; a product the store gives back needs no confirmation.
+        /// A payment the store took, or a product it gives back: one for a product the game does not sell is left alone
+        /// and never confirmed, so the store gives the money back; one the progress holds already is given (as given
+        /// already) and confirmed; one the server found not real in this run is left alone again. Otherwise, where the
+        /// server verifies, it is asked (once at a time) and the payment waits for its verdict, the course showing it
+        /// verified while the sheet's card waited for it; where none verifies, it is given at once.
         /// </summary>
-        private void Give(StorePayment payment, IPurchaseKeeper keeper, DeliveryReason reason)
+        private void Receive(StorePayment payment, IPurchaseKeeper keeper, DeliveryReason reason)
         {
             if (!(_listings.FirstOrDefault(listing => listing.StoreId == payment.StoreId) is StoreListing listing))
             {
                 return;
             }
 
-            Delivery delivery = keeper.Deliver(listing.Product, payment, reason);
+            if (!_server.Verifies || keeper.HasGiven(payment))
+            {
+                Give(payment, listing, keeper, reason, number: null);
+                return;
+            }
+
+            if (_refusedByTheServer.Contains(payment.TransactionId))
+            {
+                return;
+            }
+
+            if (!_atTheServer.TryGetValue(payment.TransactionId, out AtTheServer? waiting))
+            {
+                waiting = new AtTheServer(payment, listing, reason);
+                _atTheServer.Add(payment.TransactionId, waiting);
+            }
+
+            if (!waiting.IsAsked)
+            {
+                AskTheServer(waiting); // the store's telling again is a good moment to ask a server that could not answer
+            }
+
+            if (IsWaitingForThePaymentOf(listing.Product))
+            {
+                State = new PurchaseState.Verifying(listing.Product);
+                _verifyingSince = _now;
+            }
+        }
+
+        /// <summary>
+        /// The server's verdict on a payment that waits for it: verified, given with its ledger number (once: a number
+        /// or a payment the progress holds is given no second time); made later at the store, shown as waiting; not real,
+        /// left unconfirmed and shown as not verified; no verdict, asked again later, its card closable meanwhile.
+        /// </summary>
+        private void Hear(ServerAnswer answer, IPurchaseKeeper keeper)
+        {
+            if (!_atTheServer.TryGetValue(answer.Payment.TransactionId, out AtTheServer? waiting))
+            {
+                return; // given meanwhile, as the server stopped verifying
+            }
+
+            StoreProduct product = waiting.Listing.Product;
+            switch (answer.Verdict)
+            {
+                case ServerVerdict.Valid valid:
+                    _atTheServer.Remove(waiting.Payment.TransactionId);
+                    Give(waiting.Payment, waiting.Listing, keeper, waiting.Reason, valid.Number);
+                    break;
+                case ServerVerdict.AlreadyValidated known:
+                    _atTheServer.Remove(waiting.Payment.TransactionId);
+                    Give(waiting.Payment, waiting.Listing, keeper, waiting.Reason, known.Number);
+                    break;
+                case ServerVerdict.Pending _:
+                    _atTheServer.Remove(waiting.Payment.TransactionId);
+                    if (IsShowingTheVerificationOf(product))
+                    {
+                        State = new PurchaseState.Deferred(product);
+                    }
+
+                    break;
+                case ServerVerdict.Invalid _:
+                    _atTheServer.Remove(waiting.Payment.TransactionId);
+                    _refusedByTheServer.Add(waiting.Payment.TransactionId);
+                    if (IsShowingTheVerificationOf(product))
+                    {
+                        State = new PurchaseState.Failed(product, PurchaseFailure.NotVerified);
+                    }
+
+                    break;
+                case ServerVerdict.Unavailable _:
+                    waiting.NoVerdict(_now);
+                    if (State is PurchaseState.Verifying verifying && verifying.Bought == product)
+                    {
+                        State = new PurchaseState.Unverified(product);
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"The server said something the course does not know: {answer}.");
+            }
+        }
+
+        private void AskTheServer(AtTheServer waiting)
+        {
+            waiting.IsAsked = true;
+            _server.Ask(new PaymentQuestion(waiting.Payment, waiting.Listing.Product));
+        }
+
+        /// <summary>True while the course waits for the store's answer on this product's sheet, or for its approval: the payment the store tells of now is that one.</summary>
+        private bool IsWaitingForThePaymentOf(StoreProduct product) =>
+            (State is PurchaseState.Pending || State is PurchaseState.Unanswered || State is PurchaseState.Deferred) && State.Product == product;
+
+        /// <summary>True while the course shows the server's verification of this product's payment.</summary>
+        private bool IsShowingTheVerificationOf(StoreProduct product) =>
+            (State is PurchaseState.Verifying || State is PurchaseState.Unverified) && State.Product == product;
+
+        /// <summary>
+        /// A product, given through the keeper once, with the server's number for it when it verified it. A payment the
+        /// store will tell of again until it is confirmed waits for the save; a product the store gives back needs no
+        /// confirmation.
+        /// </summary>
+        private void Give(StorePayment payment, StoreListing listing, IPurchaseKeeper keeper, DeliveryReason reason, LedgerNumber? number)
+        {
+            Delivery delivery = keeper.Deliver(listing.Product, payment, reason, number);
             if (reason == DeliveryReason.Payment)
             {
                 Queue(payment, _toConfirm);
@@ -737,8 +955,11 @@ namespace Puzzle.Client.Purchases
                 case Delivery.Given given:
                     ShowDelivered(new PurchaseState.Delivered(listing.Product, given.What, reason));
                     break;
-                case Delivery.SoldOut _ when IsAwaitingTheSheetFor(payment.StoreId):
+                case Delivery.SoldOut _ when IsAwaitingTheSheetFor(payment.StoreId) || IsShowingTheVerificationOf(listing.Product):
                     State = new PurchaseState.Failed(listing.Product, PurchaseFailure.SoldOut);
+                    break;
+                case Delivery.AlreadyGiven _ when IsShowingTheVerificationOf(listing.Product):
+                    State = DeliveredMeanwhileOrIdle(); // the merged progress held it already: nothing more to wait for
                     break;
                 case Delivery.SoldOut _:
                 case Delivery.AlreadyGiven _:
@@ -771,7 +992,7 @@ namespace Puzzle.Client.Purchases
         /// <summary>A payment given is shown now when the course waited for it or for nothing, and after the card in front otherwise.</summary>
         private void ShowDelivered(PurchaseState.Delivered delivered)
         {
-            bool waitedForIt = (State is PurchaseState.Pending || State is PurchaseState.Unanswered || State is PurchaseState.Deferred) && State.Product == delivered.Bought;
+            bool waitedForIt = IsWaitingForThePaymentOf(delivered.Bought) || IsShowingTheVerificationOf(delivered.Bought);
             if (State is PurchaseState.Nothing || waitedForIt)
             {
                 State = delivered;
@@ -815,5 +1036,38 @@ namespace Puzzle.Client.Purchases
             StoreRefusal.NotForSale => PurchaseFailure.NotOnSale,
             _ => throw new ArgumentOutOfRangeException(nameof(why), why, "The store refused in a way the course does not know."),
         };
+
+        /// <summary>A payment that waits for the server's verdict: whether the server is being asked now, and when to ask it again after no verdict.</summary>
+        private sealed class AtTheServer
+        {
+            private int _noVerdicts;
+
+            public AtTheServer(StorePayment payment, StoreListing listing, DeliveryReason reason)
+            {
+                Payment = payment;
+                Listing = listing;
+                Reason = reason;
+            }
+
+            public StorePayment Payment { get; }
+
+            public StoreListing Listing { get; }
+
+            public DeliveryReason Reason { get; }
+
+            /// <summary>True from a question until its verdict: one question at a time.</summary>
+            public bool IsAsked { get; set; }
+
+            /// <summary>The session's time from which the server is asked again; at once for a payment never asked.</summary>
+            public TimeSpan AskAgainAt { get; private set; } = TimeSpan.MinValue;
+
+            /// <summary>The server gave no verdict: it is asked again a while later, the wait growing with each such answer in a row.</summary>
+            public void NoVerdict(TimeSpan now)
+            {
+                IsAsked = false;
+                AskAgainAt = now + AskTheServerAgainAfter[Math.Min(_noVerdicts, AskTheServerAgainAfter.Length - 1)];
+                _noVerdicts++;
+            }
+        }
     }
 }

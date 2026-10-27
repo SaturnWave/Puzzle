@@ -131,10 +131,39 @@ namespace Puzzle.Client.Cloud
     }
 
     /// <summary>
+    /// The player's ledger of verified payments (the Cloud Save item "purchases") as this phone last read it, kept so
+    /// that a sync reads it only when it can have changed (docs/research/server-v1.md §2.4): a read of the ledger is a
+    /// read of the free tier's of its own, beside the save's. A value that never changes.
+    /// </summary>
+    public sealed class LedgerCopy
+    {
+        /// <param name="text">The ledger as the server wrote it; nothing when the player had none (no verified payment yet).</param>
+        /// <param name="isStale">True when it can have changed since it was read (a payment verified on this phone since).</param>
+        public LedgerCopy(string? text, DateTimeOffset readAt, bool isStale)
+        {
+            Text = string.IsNullOrEmpty(text) ? null : text;
+            ReadAt = readAt;
+            IsStale = isStale;
+        }
+
+        /// <summary>The ledger as the server wrote it; nothing when the player had none when it was read.</summary>
+        public string? Text { get; }
+
+        public DateTimeOffset ReadAt { get; }
+
+        /// <summary>True when the server may have written the ledger since it was read: the next sync that merges reads it again.</summary>
+        public bool IsStale { get; }
+
+        /// <summary>The copy, known to be behind the server's ledger now.</summary>
+        public LedgerCopy Stale() => new LedgerCopy(Text, ReadAt, isStale: true);
+    }
+
+    /// <summary>
     /// What the phone keeps about its sync with the cloud (cloud.json, docs/research/server-v1.md §3.3): the player's
     /// "Cloud save" switch, the installation's random writer id, the account it syncs with, the base of the next merge,
-    /// when it last read and wrote, a write not yet answered, how it backs off after failures, and why it stopped, if it
-    /// did. A value that never changes; every step gives another.
+    /// when it last read and wrote, a write not yet answered, how it backs off after failures, why it stopped, if it
+    /// did, and the account's ledger of verified payments as last read. A value that never changes; every step gives
+    /// another.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class CloudState
@@ -150,7 +179,8 @@ namespace Puzzle.Client.Cloud
             int failures,
             DateTimeOffset? retryAt,
             CloudHalt? halt,
-            bool linkOffered)
+            bool linkOffered,
+            LedgerCopy? ledger)
         {
             IsSwitchedOn = isSwitchedOn;
             Writer = string.IsNullOrEmpty(writer) ? throw new ArgumentException("An installation has a writer id.", nameof(writer)) : writer;
@@ -163,6 +193,7 @@ namespace Puzzle.Client.Cloud
             RetryAt = retryAt;
             Halt = halt;
             LinkOffered = linkOffered;
+            Ledger = ledger;
         }
 
         /// <summary>
@@ -204,54 +235,70 @@ namespace Puzzle.Client.Cloud
         /// </summary>
         public bool LinkOffered { get; }
 
+        /// <summary>The account's ledger of verified payments as last read; nothing while it was never read for the account.</summary>
+        public LedgerCopy? Ledger { get; }
+
+        /// <summary>When the cloud last answered a read or a write; nothing before it ever did for the account.</summary>
+        public DateTimeOffset? LastSynced => LastRead is DateTimeOffset read && LastWrite is DateTimeOffset written ? (read > written ? read : written) : LastRead ?? LastWrite;
+
         /// <summary>A new installation's state: the switch on, a new writer id, no account yet.</summary>
-        public static CloudState New(string writer) => new CloudState(true, writer, null, null, null, null, null, 0, null, null, linkOffered: false);
+        public static CloudState New(string writer) => new CloudState(true, writer, null, null, null, null, null, 0, null, null, linkOffered: false, ledger: null);
 
         /// <summary>
         /// The state after the player's cloud data was deleted ("Delete my data", §5.6), or after cloud.json was found
         /// damaged: the switch off, a new writer id, nothing of any account. The player turns the switch on to sync again.
         /// </summary>
-        public static CloudState Forgotten(string writer) => new CloudState(false, writer, null, null, null, null, null, 0, null, null, linkOffered: false);
+        public static CloudState Forgotten(string writer) => new CloudState(false, writer, null, null, null, null, null, 0, null, null, linkOffered: false, ledger: null);
 
         /// <summary>The state as cloud.json keeps it, every part given.</summary>
         public static CloudState Restored(
             bool isSwitchedOn, string writer, CloudPlayerId? player, CloudBase? syncedBase, DateTimeOffset? lastRead, DateTimeOffset? lastWrite,
-            PendingWrite? pending, int failures, DateTimeOffset? retryAt, CloudHalt? halt, bool linkOffered = false) =>
+            PendingWrite? pending, int failures, DateTimeOffset? retryAt, CloudHalt? halt, bool linkOffered = false, LedgerCopy? ledger = null) =>
             new CloudState(
-                isSwitchedOn, writer, player, player.HasValue ? syncedBase : null, lastRead, lastWrite, player.HasValue ? pending : null, Math.Max(0, failures), retryAt, halt, linkOffered);
+                isSwitchedOn, writer, player, player.HasValue ? syncedBase : null, lastRead, lastWrite, player.HasValue ? pending : null, Math.Max(0, failures), retryAt, halt, linkOffered,
+                player.HasValue ? ledger : null);
 
         /// <summary>The offer to link the account was made: it is not made again.</summary>
-        public CloudState WithTheLinkOffered() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, linkOffered: true);
+        public CloudState WithTheLinkOffered() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, linkOffered: true, Ledger);
 
         /// <summary>The player turned the switch.</summary>
-        public CloudState SwitchedTo(bool isOn) => new CloudState(isOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, LinkOffered);
+        public CloudState SwitchedTo(bool isOn) => new CloudState(isOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, LinkOffered, Ledger);
 
         /// <summary>
         /// The state for the account signed in now: this one when it is the account already synced, else a state with
         /// nothing of the other account (its base is not this account's, so the next sync reads first and merges with a
-        /// new player as the base, §3.6).
+        /// new player as the base, §3.6; its ledger is not this account's either).
         /// </summary>
         public CloudState ForPlayer(CloudPlayerId player) =>
-            Player == player ? this : new CloudState(IsSwitchedOn, Writer, player, null, null, null, null, 0, null, null, LinkOffered);
+            Player == player ? this : new CloudState(IsSwitchedOn, Writer, player, null, null, null, null, 0, null, null, LinkOffered, ledger: null);
 
         /// <summary>The cloud was read: its save is the base now, and the cloud answered.</summary>
-        public CloudState AfterRead(CloudBase read, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, read, at, LastWrite, null, 0, null, null, LinkOffered);
+        public CloudState AfterRead(CloudBase read, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, read, at, LastWrite, null, 0, null, null, LinkOffered, Ledger);
+
+        /// <summary>The ledger was read: this is the copy now.</summary>
+        public CloudState WithLedger(LedgerCopy ledger) =>
+            new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, LinkOffered, ledger ?? throw new ArgumentNullException(nameof(ledger)));
+
+        /// <summary>A payment was verified on this phone: the server wrote the ledger, so the copy is behind it (none stays none: the next merge reads it anyway).</summary>
+        public CloudState WithTheLedgerStale() =>
+            Ledger == null || Ledger.IsStale ? this : new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures, RetryAt, Halt, LinkOffered, Ledger.Stale());
 
         /// <summary>The save was written: what was written is the base now.</summary>
-        public CloudState AfterWrite(CloudBase written, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, written, LastRead, at, null, 0, null, Halt, LinkOffered);
+        public CloudState AfterWrite(CloudBase written, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, written, LastRead, at, null, 0, null, Halt, LinkOffered, Ledger);
 
         /// <summary>A write is about to be sent.</summary>
-        public CloudState Sending(PendingWrite write) => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, write, Failures, RetryAt, Halt, LinkOffered);
+        public CloudState Sending(PendingWrite write) => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, write, Failures, RetryAt, Halt, LinkOffered, Ledger);
 
         /// <summary>The cloud refused the write for a lock that was old: it is known not to have landed.</summary>
-        public CloudState NotWritten() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, null, 0, null, Halt, LinkOffered);
+        public CloudState NotWritten() => new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, null, 0, null, Halt, LinkOffered, Ledger);
 
         /// <summary>The cloud could not be reached; the next try waits until <paramref name="retryAt"/>, or not at all for nothing (no network).</summary>
         public CloudState AfterFailure(DateTimeOffset? retryAt) =>
-            new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures + 1, retryAt, Halt, LinkOffered);
+            new CloudState(IsSwitchedOn, Writer, Player, Base, LastRead, LastWrite, Pending, Failures + 1, retryAt, Halt, LinkOffered, Ledger);
 
         /// <summary>The sync stops for this account: nothing is written over the cloud's save.</summary>
-        public CloudState Halted(CloudHalt halt, DateTimeOffset at) => new CloudState(IsSwitchedOn, Writer, Player, Base, at, LastWrite, null, 0, null, halt ?? throw new ArgumentNullException(nameof(halt)), LinkOffered);
+        public CloudState Halted(CloudHalt halt, DateTimeOffset at) =>
+            new CloudState(IsSwitchedOn, Writer, Player, Base, at, LastWrite, null, 0, null, halt ?? throw new ArgumentNullException(nameof(halt)), LinkOffered, Ledger);
     }
 
     /// <summary>Random ids for the sync: 128 bits from the system's source of secure randomness, as 32 lowercase hexadecimal digits.</summary>

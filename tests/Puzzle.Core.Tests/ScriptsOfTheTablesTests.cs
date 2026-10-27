@@ -27,6 +27,8 @@ public partial class ScriptsOfTheTablesTests
         "Google", "Play", "App", "Store", // the stores that take the payments, named as they name themselves
         "Apple", "iPhone", "iPad", // the maker and the devices the privacy card names for the app identifier
         "IP",      // the internet address the statistics do not keep, as every language writes it
+        "Games", "Game", "Center", // Google Play Games and Game Center, which link the account (the privacy card, 2026-10-27)
+        "Gaming", "Services", // Unity Gaming Services, which keeps the cloud save, as the privacy card names it
     };
 
     /// <summary>The words a language says in Latin letters on purpose: Japanese "OK" on the button that closes a card, as Japanese interfaces do.</summary>

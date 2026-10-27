@@ -25,6 +25,12 @@ namespace Puzzle.Client.Purchases
     /// starter pack come through OnPurchasesFetched as what the player owns, and so does an App Store restore.
     /// </para>
     /// <para>
+    /// For the game's server (docs/research/server-v1.md §4.1) each payment carries its proof (Google Play's purchase
+    /// token, the App Store's signed transaction), and a payment sheet names its player to the store first: Google
+    /// Play's obfuscated account id, the App Store's app account token (Purchases/StoreAccount), when an account is
+    /// signed in.
+    /// </para>
+    /// <para>
     /// IAP 5.4.4 itself reports every purchase step (receipt, product, price, device model, language, and the IDFV on
     /// iOS) to Unity's analytics endpoint, with no switch to turn it off; the game does not patch that out
     /// (docs/research/iap-and-analytics.md §3.4). On Android the package asks for com.android.vending.BILLING and
@@ -94,12 +100,17 @@ namespace Puzzle.Client.Purchases
             _ = controller.Connect();
         }
 
-        public void Buy(StoreListing listing)
+        public void Buy(StoreListing listing, StoreBuyer? buyer)
         {
             if (_controller == null)
             {
                 Tell(new StoreNews.Failed(listing.StoreId, StoreRefusal.NotPaid, "the store was never opened"));
                 return;
+            }
+
+            if (buyer != null)
+            {
+                NameTheBuyer(buyer);
             }
 
             _controller.PurchaseProduct(listing.StoreId);
@@ -167,6 +178,17 @@ namespace Puzzle.Client.Purchases
             }
         }
 
+        /// <summary>
+        /// Names the player to the store for the next payment: Google Play keeps the obfuscated account id with every
+        /// payment made after it is set; the App Store's token is set the same way. Unity's fake store has neither.
+        /// </summary>
+        private static void NameTheBuyer(StoreBuyer buyer)
+        {
+            IStoreService store = UnityIAPServices.DefaultStore();
+            store.Google?.SetObfuscatedAccountId(buyer.GooglePlayAccount);
+            store.Apple?.SetAppAccountToken(Guid.Parse(buyer.AppStoreAccountToken));
+        }
+
         private StoreController Listened(StoreController controller)
         {
             controller.OnStoreConnected += FetchTheProducts;
@@ -223,7 +245,7 @@ namespace Puzzle.Client.Purchases
                 string storeId = StoreIdOf(order);
                 if (_listings.Any(listing => listing.StoreId == storeId && listing.IsKeptByTheStore))
                 {
-                    Tell(new StoreNews.Owned(new StorePayment(storeId, TransactionIdOf(order, storeId))));
+                    Tell(new StoreNews.Owned(new StorePayment(storeId, TransactionIdOf(order, storeId), ProofOf(order))));
                 }
             }
 
@@ -244,7 +266,7 @@ namespace Puzzle.Client.Purchases
         private void Paid(PendingOrder order)
         {
             string storeId = StoreIdOf(order);
-            var payment = new StorePayment(storeId, TransactionIdOf(order, storeId));
+            var payment = new StorePayment(storeId, TransactionIdOf(order, storeId), ProofOf(order));
             lock (_gate)
             {
                 // A payment told of again is still pending with the store: no confirmation of it is on its way.
@@ -353,6 +375,13 @@ namespace Puzzle.Client.Purchases
 
         /// <summary>The store id of what an order is for; the game buys one product at a time, so an order holds one.</summary>
         private static string StoreIdOf(Order order) => order.CartOrdered?.Items()?.FirstOrDefault()?.Product?.definition?.id ?? string.Empty;
+
+        /// <summary>What the game's server asks the store about: Google Play's purchase token, the App Store's signed transaction; nothing from Unity's fake store.</summary>
+        private static string? ProofOf(Order order)
+        {
+            string? token = order.Info?.Google?.PurchaseToken;
+            return !string.IsNullOrEmpty(token) ? token : order.Info?.Apple?.jwsRepresentation;
+        }
 
         /// <summary>The store's id of the payment; one the store gives none is named after the product, which is then one the store keeps.</summary>
         private static string TransactionIdOf(Order order, string storeId) =>

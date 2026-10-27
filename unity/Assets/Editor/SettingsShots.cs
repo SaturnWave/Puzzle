@@ -112,8 +112,9 @@ namespace Puzzle.Client.EditorTools
         {
             using GameSession session = SessionInTheHall(state, screen, studio, StoryStudio.AttemptsKeptInMemory());
             MuseumStage museum = OpenTheSettings(session);
-            Press(session, museum.CreditsRowPixel, "the settings card's credits row");
-            Require(museum.SettingsCardInFront == SettingsCardKind.Credits, "the credits row did not bring the credits card");
+            Press(session, museum.SupportRowPixel, "the settings card's support row");
+            Press(session, museum.CreditsButtonPixel, "the support card's Künye");
+            Require(museum.SettingsCardInFront == SettingsCardKind.Credits, "the support card's Künye did not bring the credits card");
             int pages = museum.CreditsPageShown?.Pages ?? 0;
             for (int page = 1; page <= pages; page++)
             {

@@ -240,16 +240,18 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>
-        /// The credits card comes in front of the settings card from its row "Künye"; its arrows turn every page of
-        /// its text and back to the first; its "Tamam" leads back to the settings card.
+        /// The credits card comes in front of the settings card from the support card's "Künye", in that card's place;
+        /// its arrows turn every page of its text and back to the first; its "Tamam" leads back to the settings card.
         /// </summary>
         /// <returns>How many pages the credits take.</returns>
         private static int ReadTheCredits(Reel reel)
         {
             GameSession session = reel.Session;
-            Press(session, MuseumOf(session).CreditsRowPixel, "the settings card's credits row", reel, pressedShot: null);
+            Press(session, MuseumOf(session).SupportRowPixel, "the settings card's support row", reel, pressedShot: null);
             reel.Settle();
-            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Credits, "the credits row did not bring the credits card");
+            Press(session, MuseumOf(session).CreditsButtonPixel, "the support card's Künye", reel, pressedShot: null);
+            reel.Settle();
+            ThroughTheCard.Require(MuseumOf(session).SettingsCardInFront == SettingsCardKind.Credits, "the support card's Künye did not bring the credits card");
             (int page, int pages) = MuseumOf(session).CreditsPageShown ?? (0, 0);
             ThroughTheCard.Require(page == 1 && pages >= 1, $"the credits card opened on page {page} of {pages}");
             reel.Shoot("credits-1");

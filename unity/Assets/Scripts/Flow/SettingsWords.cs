@@ -27,13 +27,21 @@ namespace Puzzle.Client.Flow
         public static string Privacy => PrivacyWords.Title;
 
         /// <summary>
-        /// The privacy row's smaller line: what leaves the phone as the player has set it. Only the purchases, while
-        /// the play statistics are not allowed (not asked yet, or declined); the purchases and statistics without an
-        /// id, once they are.
+        /// The privacy row's smaller line: what leaves the phone as the player has set it. The purchases always; the
+        /// cloud save while its switch is on (in a build that has one); the statistics without an id once the player
+        /// allows them (not while they are not asked yet, or declined).
         /// </summary>
-        public static string PrivacyLine(DeviceSettings settings) => settings.IsOn(DeviceSetting.Statistics)
-            ? Speech.Say(WordId.SettingsPrivacyLineWithStatistics)
-            : Speech.Say(WordId.SettingsPrivacyLine);
+        /// <param name="cloudSaveIsOn">Whether the "Bulut kaydı" switch is on in a build with the cloud save.</param>
+        public static string PrivacyLine(DeviceSettings settings, bool cloudSaveIsOn) => (cloudSaveIsOn, settings.IsOn(DeviceSetting.Statistics)) switch
+        {
+            (true, true) => Speech.Say(WordId.SettingsPrivacyLineWithCloudAndStatistics),
+            (true, false) => Speech.Say(WordId.SettingsPrivacyLineWithCloud),
+            (false, true) => Speech.Say(WordId.SettingsPrivacyLineWithStatistics),
+            (false, false) => Speech.Say(WordId.SettingsPrivacyLine),
+        };
+
+        /// <summary>The row that opens the account card: the account and the cloud save.</summary>
+        public static string Account => Speech.Say(WordId.SettingsAccount);
 
         /// <summary>The row that opens the support card, and that card's nameplate.</summary>
         public static string Support => Speech.Say(WordId.SettingsSupport);

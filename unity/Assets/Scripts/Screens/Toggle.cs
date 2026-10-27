@@ -53,6 +53,9 @@ namespace Puzzle.Client.Screens
         /// <summary>Puts the middle of the switch's button at a place of what it stands on.</summary>
         public void Place(Vector2 middle) => _root.localPosition = new Vector3(middle.x, middle.y, 0f);
 
+        /// <summary>Shows the switch, or takes it out of sight (a card whose build has no such setting).</summary>
+        public void ShowInSight(bool isInSight) => _root.gameObject.SetActive(isInSight);
+
         /// <summary>Puts the switch in a state at once, its knob at rest.</summary>
         public void Set(bool isOn)
         {

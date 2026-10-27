@@ -215,26 +215,31 @@ public sealed class CloudSavingTests
         private readonly bool _hasACloudProject;
         private int _writes;
 
-        public Phone(FakeUnityServices services, FakePlatformSignIn platform, PlayerProgress start, bool switchedOn = true, bool hasACloudProject = true)
+        public Phone(FakeUnityServices services, FakePlatformSignIn platform, PlayerProgress start, bool switchedOn = true, bool hasACloudProject = true, FakePurchaseServer? server = null)
             : this(
                 services.Phone(), platform, new HeldProgress(start), new CloudStateInMemory(switchedOn ? CloudState.New("writer") : CloudState.Forgotten("writer")),
-                new MovableClock(CloudSupport.Noon), hasACloudProject)
+                new MovableClock(CloudSupport.Noon), hasACloudProject, server ?? new FakePurchaseServer(services, CloudSupport.Json))
         {
         }
 
-        private Phone(FakePhoneAccounts accounts, FakePlatformSignIn platform, HeldProgress progress, CloudStateInMemory states, MovableClock clock, bool hasACloudProject)
+        private Phone(
+            FakePhoneAccounts accounts, FakePlatformSignIn platform, HeldProgress progress, CloudStateInMemory states, MovableClock clock, bool hasACloudProject, FakePurchaseServer server)
         {
             _platform = platform;
             _hasACloudProject = hasACloudProject;
+            Server = server;
             Accounts = accounts;
             Progress = progress;
             States = states;
             Clock = clock;
             var sync = new CloudSync(accounts, states, progress, CloudSupport.Rules, CloudSupport.Json, clock, "1.1.0", () => $"write-{++_writes}");
-            Cloud = new CloudSaving(sync, accounts, platform, NoRemoteSettings.Instance, progress, hasACloudProject, _ => { }, failure => throw failure);
+            Cloud = new CloudSaving(sync, accounts, platform, NoRemoteSettings.Instance, Server.Phone(accounts), progress, hasACloudProject, _ => { }, failure => throw failure);
         }
 
         public FakePhoneAccounts Accounts { get; }
+
+        /// <summary>The game's server the phone asks, shared by every phone of the test that is given it.</summary>
+        public FakePurchaseServer Server { get; }
 
         public HeldProgress Progress { get; }
 
@@ -245,7 +250,7 @@ public sealed class CloudSavingTests
         public CloudSaving Cloud { get; }
 
         /// <summary>The game closed and opened again on this phone: the same files, the same session.</summary>
-        public Phone OpenedAgain() => new Phone(Accounts, _platform, Progress, States, Clock, _hasACloudProject);
+        public Phone OpenedAgain() => new Phone(Accounts, _platform, Progress, States, Clock, _hasACloudProject, Server);
 
         public Task Answered() => Cloud.Answering ?? Task.CompletedTask;
     }

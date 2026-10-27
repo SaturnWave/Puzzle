@@ -36,6 +36,11 @@ namespace Puzzle.Client.EditorTools
     /// <item>"Şimdi değil" is not asked again; a platform player with a save of their own is asked about it, and "Ona geç"
     /// goes over to it with this phone's progress added; a phone without Play Games is offered nothing; services out of
     /// reach leave the game as it was.</item>
+    /// <item>The settings' account card (Stage 5): the account, the switch, the last sync and the player code; the switch
+    /// turned off signs out and stops the sync, on again finds the same account; "Verilerimi sil" asks, deletes the
+    /// account and its save in the cloud, turns the switch off and asks about this phone's progress, "Kalsın" keeping it;
+    /// a deletion the module cannot make changes nothing and says so; deleting this phone's progress too starts the game
+    /// over, and a card says so.</item>
     /// </list>
     /// The levels' goals are cut to almost nothing (EarlyWin), so the expert bot wins each in a few moves, and the
     /// players have seen the tutorial. The cards are photographed into out/unity/shots/cloud and onto a sheet.
@@ -70,6 +75,9 @@ namespace Puzzle.Client.EditorTools
                     CheckGoingOverToThePlatformPlayersSave(bench),
                     CheckAPhoneWithoutThePlatform(bench),
                     CheckServicesOutOfReach(bench),
+                    CheckTheAccountCard(bench),
+                    CheckADeletionThatCannotBeMade(bench),
+                    CheckDeletingEverything(bench),
                 };
                 StoryStudio.WriteSheet(bench.Sheet, "cloud-sheet.png");
                 Debug.Log($"Cloud check: passed. {string.Join(" ", findings)}");
@@ -214,6 +222,121 @@ namespace Puzzle.Client.EditorTools
             return "Out of reach: the game as before.";
         }
 
+        /// <summary>
+        /// The account card from the settings: where the account stands, the switch, the last sync and the code; the switch
+        /// off and on; then "Verilerimi sil", "Sil" and "Kalsın": the account and its save are gone from the cloud, the
+        /// switch is off, this phone's progress is kept.
+        /// </summary>
+        private static string CheckTheAccountCard(Bench bench)
+        {
+            var services = new FakeUnityServices();
+            using PhoneOfThePlayer phone = bench.NewPhone(services, NoPlatformSignIn.Instance);
+            bench.WinTheLevel(phone.Session);
+            CloudPlayerId player = phone.Cloud.Account.Player ?? throw new InvalidOperationException("the phone signed in to no account");
+            OpenTheAccountCard(phone);
+            var (asks, _, shows, switchOn) = phone.Museum.AccountShown ?? throw new InvalidOperationException("the account card does not hang");
+            Require(
+                asks == AccountCardAsks.Nothing && switchOn && shows.Account == AccountWords.StateOf(phone.Cloud.View) && shows.Code == phone.Cloud.View.PlayerCode
+                && shows.LastSync == AccountWords.LastSyncOf(phone.Cloud.View),
+                $"the account card shows {shows} with the switch {(switchOn ? "on" : "off")}, not this phone's account {player} as the cloud tells it");
+            bench.Shoot(phone, "account-card.png");
+
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountSwitchPixel, "the account card's Bulut kaydı switch");
+            Settle(phone);
+            Require(
+                !phone.Cloud.IsSwitchedOn && phone.Cloud.Account is Account.Off && phone.Museum.AccountShown?.Shows.Account == AccountWords.StateOf(phone.Cloud.View),
+                $"the switch turned off left the cloud {phone.Cloud.Account} and the card showing {phone.Museum.AccountShown?.Shows}");
+            int writes = services.CloudOf(player).Writes;
+            phone.Session.SaveProgress();
+            phone.Cloud.AskForAnUpload(SyncTrigger.PaintingOrRoomCompleted);
+            Require(services.CloudOf(player).Writes == writes, "with the switch off an upload still reached the cloud");
+            bench.Shoot(phone, "account-switch-off.png");
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountSwitchPixel, "the account card's Bulut kaydı switch, again");
+            Settle(phone);
+            Require(phone.Cloud.IsSwitchedOn && phone.Cloud.Account.Player == player, $"the switch on again left the cloud {phone.Cloud.Account}, not on {player}");
+
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountLeftAnswerPixel, "the account card's Verilerimi sil");
+            Settle(phone);
+            Require(phone.Museum.AccountShown?.Asks == AccountCardAsks.AboutTheCloud, $"Verilerimi sil made the card ask {phone.Museum.AccountShown?.Asks}");
+            bench.Shoot(phone, "account-delete-question.png");
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountRightAnswerPixel, "the question's Sil");
+            Settle(phone);
+            Require(phone.Museum.AccountShown?.Asks == AccountCardAsks.AboutThePhone, $"after Sil the card asks {phone.Museum.AccountShown?.Asks}, not about this phone's progress");
+            Require(
+                !services.Accounts.Contains(player) && !phone.Cloud.IsSwitchedOn && phone.Cloud.Account is Account.Off,
+                $"after Sil the account {(services.Accounts.Contains(player) ? "is still there" : "is gone")} and the cloud is {phone.Cloud.Account}");
+            bench.Shoot(phone, "account-phone-question.png");
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountLeftAnswerPixel, "the second question's Kalsın");
+            Settle(phone);
+            Require(
+                phone.Museum.AccountShown?.Asks == AccountCardAsks.Tells && phone.Session.Progress.LevelsWon == 1,
+                $"Kalsın left the card at {phone.Museum.AccountShown?.Asks} and the progress at {phone.Session.Progress.LevelsWon} levels won");
+            bench.Shoot(phone, "account-deleted-kept.png");
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountDonePixel, "the card's Tamam");
+            Settle(phone);
+            Require(phone.Museum.AccountShown?.Asks == AccountCardAsks.Nothing, "Tamam after the deletion did not bring the card back to its rows");
+            return $"Account card: {player} shown, switched off and on, deleted from the cloud with this phone's progress kept.";
+        }
+
+        /// <summary>The module not deployed: "Sil" says nothing could be deleted, and the account, its save and the switch stay as they were.</summary>
+        private static string CheckADeletionThatCannotBeMade(Bench bench)
+        {
+            var services = new FakeUnityServices();
+            using PhoneOfThePlayer phone = bench.NewPhone(services, NoPlatformSignIn.Instance, outage: FakeServerOutage.NotDeployed);
+            CloudPlayerId player = phone.Cloud.Account.Player ?? throw new InvalidOperationException("the phone signed in to no account");
+            OpenTheAccountCard(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountLeftAnswerPixel, "the account card's Verilerimi sil");
+            Settle(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountRightAnswerPixel, "the question's Sil");
+            Settle(phone);
+            string says = phone.Museum.AccountShown?.Says ?? string.Empty;
+            Require(
+                phone.Museum.AccountShown?.Asks == AccountCardAsks.Tells && says.Contains(AccountWords.NotDeleted(DeletionFailure.Unavailable).NothingDeleted),
+                $"a deletion the module could not make left the card at {phone.Museum.AccountShown?.Asks} saying \"{says}\"");
+            Require(services.Accounts.Contains(player) && phone.Cloud.IsSwitchedOn && phone.Cloud.Account.Player == player, "a deletion the module could not make changed the account or the switch");
+            bench.Shoot(phone, "account-not-deleted.png");
+            return "Not deployed: nothing deleted, and said so.";
+        }
+
+        /// <summary>"Sil" twice: the cloud's data and then this phone's progress; the hall opens anew on a new player, and a card says the game starts over.</summary>
+        private static string CheckDeletingEverything(Bench bench)
+        {
+            var services = new FakeUnityServices();
+            using PhoneOfThePlayer phone = bench.NewPhone(services, NoPlatformSignIn.Instance);
+            bench.WinTheLevel(phone.Session);
+            OpenTheAccountCard(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountLeftAnswerPixel, "the account card's Verilerimi sil");
+            Settle(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountRightAnswerPixel, "the question's Sil");
+            Settle(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountRightAnswerPixel, "the second question's Sil");
+            ThroughTheCard.WaitFor(phone.Session, () => phone.Session.Museum?.NoticeShown != null, "deleting this phone's progress brought no card");
+            Settle(phone);
+            RequireTheCard(phone, AccountWords.Of(new AccountNews.StartedAnew(), 1, phone.Session.Progress.Wallet.Coins), NoticeAnswers.Done, "after deleting everything");
+            Require(
+                phone.Session.Progress.LevelsWon == 0 && phone.Session.Progress.Wallet.Equals(StoryStudio.Economy.StartingWallet) && services.Accounts.Count == 0,
+                $"after deleting everything the phone holds {phone.Session.Progress} and the cloud {services.Accounts.Count} accounts");
+            bench.Shoot(phone, "everything-deleted.png");
+            return "Everything deleted: the game starts over.";
+        }
+
+        /// <summary>From the hall to the settings card and its account card, at rest.</summary>
+        private static void OpenTheAccountCard(PhoneOfThePlayer phone)
+        {
+            ThroughTheCard.Press(phone.Session, phone.Museum.GearPixel, "the wallet row's gear");
+            Settle(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountRowPixel, "the settings card's account row");
+            Settle(phone);
+            Require(phone.Museum.SettingsCardInFront == SettingsCardKind.Account, $"the account row brought {phone.Museum.SettingsCardInFront} in front");
+        }
+
+        /// <summary>A step at least, as the game takes one every frame (news told, the account shown anew), then on until the museum is at rest.</summary>
+        private static void Settle(PhoneOfThePlayer phone)
+        {
+            phone.Session.Advance(StoryStudio.FrameSeconds);
+            StoryStudio.AdvanceUntilSettled(phone.Session);
+        }
+
         private static void RequireTheCard(PhoneOfThePlayer phone, AccountCardWords words, NoticeAnswers answers, string when)
         {
             MuseumStage museum = phone.Museum;
@@ -253,7 +376,7 @@ namespace Puzzle.Client.EditorTools
             public ContactSheet Sheet { get; }
 
             /// <summary>A phone of a new player who has seen the tutorial, at the hall, on its cloud of these services, started and at rest.</summary>
-            public PhoneOfThePlayer NewPhone(FakeUnityServices services, IPlatformSignIn platform, bool switchedOn = true)
+            public PhoneOfThePlayer NewPhone(FakeUnityServices services, IPlatformSignIn platform, bool switchedOn = true, FakeServerOutage? outage = null)
             {
                 // A scene of its own that is never saved: nothing of an earlier phone is left in the next.
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -268,7 +391,8 @@ namespace Puzzle.Client.EditorTools
                 var states = new CloudStateInMemory(switchedOn ? CloudState.New(RandomIds.New()) : CloudState.Forgotten(RandomIds.New()));
                 var sync = new CloudSync(accounts, states, session.ProgressForTheCloud, rules, new UnityDocumentJson(), StoryStudio.Clock, "1.1.0", RandomIds.New);
                 var cloud = new CloudSaving(
-                    sync, accounts, platform, NoRemoteSettings.Instance, session.ProgressForTheCloud, hasACloudProject: true, Debug.Log,
+                    sync, accounts, platform, NoRemoteSettings.Instance, ServerOf(services, outage).Phone(accounts), session.ProgressForTheCloud,
+                    hasACloudProject: true, Debug.Log,
                     failure => throw new InvalidOperationException($"the cloud's background work failed: {failure.Message}", failure));
                 session.OpenToTheCloud(cloud);
                 Task start = cloud.StartAsync(CancellationToken.None);
@@ -291,6 +415,17 @@ namespace Puzzle.Client.EditorTools
                 ThroughTheCard.Press(session, session.Stage.ResultButtonPixel, "the won card's Devam");
                 ThroughTheCard.WaitFor(session, () => session.Museum != null, "the won card's Devam opened no museum");
                 StoryStudio.AdvanceUntilSettled(session);
+            }
+
+            private static FakePurchaseServer ServerOf(FakeUnityServices services, FakeServerOutage? outage)
+            {
+                var server = new FakePurchaseServer(services, new UnityDocumentJson());
+                if (outage is FakeServerOutage down)
+                {
+                    server.GoesOut(down);
+                }
+
+                return server;
             }
 
             public void Shoot(PhoneOfThePlayer phone, string file) => StoryStudio.Shoot(phone.Session, Phone, Sheet, "cloud/" + file);

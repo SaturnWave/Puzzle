@@ -382,4 +382,41 @@ public class CloudSyncTests
         Assert.NotEqual(writer, phone.Sync.State.Writer);
         Assert.IsType<SyncOutcome.Off>(await phone.SyncsAsync(SyncTrigger.ColdStart));
     }
+
+    /// <summary>
+    /// Stage 4's budget of reads (docs/research/server-v1.md §2.4): the ledger is a read of its own, made when it can have
+    /// changed. A phone that merges a save naming a payment verified on another phone reads it then; a payer's phone
+    /// reads it once a day at most; a phone without payments reads it once.
+    /// </summary>
+    [Fact]
+    public async Task The_ledger_is_read_when_another_phone_was_paid_on_and_once_a_day_for_a_payer()
+    {
+        Device phoneA = Phone(NewPlayer().Won(3), "phone-a");
+        Device phoneB = Phone(NewPlayer().Won(3), "phone-b");
+        await phoneA.SyncsAsync(SyncTrigger.ColdStart);
+        await phoneB.SyncsAsync(SyncTrigger.ColdStart);
+        _clock.Passes(TimeSpan.FromHours(13));
+        await phoneB.SyncsAsync(SyncTrigger.ColdStart);
+        int ledgerReads = _cloud.LedgerReads;
+
+        // Phone A is paid on: the server enters #1, phone A gives it and uploads.
+        _cloud.LedgerWrittenByTheServer(LedgerText((1, Small, "GPA.1")));
+        phoneA.Progress.Play(progress => progress.Bought(Small, "GPA.1", number: 1));
+        phoneA.Sync.KnowTheLedgerChanged();
+        await phoneA.SyncsAsync(SyncTrigger.PurchaseDelivered);
+
+        // Phone B opens: the save names #1, which its copy lacks, so the merge reads the ledger.
+        _clock.Passes(TimeSpan.FromHours(13));
+        await phoneB.SyncsAsync(SyncTrigger.ColdStart);
+        Assert.Equal(ledgerReads + 1, _cloud.LedgerReads);
+        Assert.Contains("coins.small", phoneB.Sync.State.Ledger?.Text ?? string.Empty, StringComparison.Ordinal);
+
+        // Twelve hours on, a payer's copy is still fresh; a day on, it is read again.
+        _clock.Passes(TimeSpan.FromHours(13));
+        await phoneB.SyncsAsync(SyncTrigger.ColdStart);
+        Assert.Equal(ledgerReads + 1, _cloud.LedgerReads);
+        _clock.Passes(TimeSpan.FromHours(13));
+        await phoneB.SyncsAsync(SyncTrigger.ColdStart);
+        Assert.Equal(ledgerReads + 2, _cloud.LedgerReads);
+    }
 }

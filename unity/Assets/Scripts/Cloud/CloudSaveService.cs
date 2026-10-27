@@ -74,27 +74,22 @@ namespace Puzzle.Client.Cloud
         Refused,
     }
 
-    /// <summary>What reading the player's items came to. A closed set: the private constructor keeps every kind inside this class.</summary>
+    /// <summary>What reading one of the player's items came to. A closed set: the private constructor keeps every kind inside this class.</summary>
     public abstract class CloudRead
     {
         private CloudRead()
         {
         }
 
-        /// <summary>The cloud answered: the save and the ledger of verified payments, each nothing when the player has none yet.</summary>
+        /// <summary>The cloud answered: the item asked for, nothing when the player has none yet (no save written, no verified payment).</summary>
         public sealed class Found : CloudRead
         {
-            public Found(CloudItem? save, CloudItem? purchases)
+            public Found(CloudItem? item)
             {
-                Save = save;
-                Purchases = purchases;
+                Item = item;
             }
 
-            /// <summary>The Player Data item "save" (default class); nothing for a player who never saved.</summary>
-            public CloudItem? Save { get; }
-
-            /// <summary>The Player Data item "purchases" (protected class, written by the server only); nothing for a player with no verified payment.</summary>
-            public CloudItem? Purchases { get; }
+            public CloudItem? Item { get; }
         }
 
         public sealed class Failed : CloudRead
@@ -148,7 +143,8 @@ namespace Puzzle.Client.Cloud
 
     /// <summary>
     /// The player's items in the cloud (Unity's Cloud Save, docs/research/server-v1.md §3.1–§3.2), as the sync
-    /// needs them: one read of the save and the ledger, one write of the save. It is a seam: the game's adapter
+    /// needs them: a read of the save, a read of the ledger, each one of the free tier's reads (Cloud Save reads one
+    /// access class a call), and one write of the save. It is a seam: the game's adapter
     /// talks to Unity's Cloud Save once the player is signed in, the tests and the Editor's checks use a cloud in
     /// memory (<see cref="FakeCloudSave"/>). An adapter turns every exception of the service into a
     /// <see cref="CloudFailure"/> at this edge: nothing of the service's own errors goes further, and none reaches a
@@ -157,8 +153,11 @@ namespace Puzzle.Client.Cloud
     /// </summary>
     public interface ICloudSave
     {
-        /// <summary>The save and the ledger of verified payments, with their write locks.</summary>
-        Task<CloudRead> ReadAsync(CancellationToken cancel);
+        /// <summary>The Player Data item "save" (default class), with its write lock.</summary>
+        Task<CloudRead> ReadSaveAsync(CancellationToken cancel);
+
+        /// <summary>The Player Data item "purchases" (protected class, written by the server only): the ledger of verified payments.</summary>
+        Task<CloudRead> ReadLedgerAsync(CancellationToken cancel);
 
         /// <summary>
         /// Writes the save if the cloud's item still has <paramref name="expected"/> as its lock. With no lock (the cloud

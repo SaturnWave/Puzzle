@@ -236,6 +236,12 @@ namespace Puzzle.Client.Flow
         /// <summary>The upload a moment of this step asks the cloud for, once the step is done; nothing while none is due.</summary>
         private SyncTrigger? _uploadDue;
 
+        /// <summary>The revision of the cloud's view the museum was last told: a newer one is told at the next step.</summary>
+        private int _accountRevisionTold = -1;
+
+        /// <summary>True from the player's deletion of this phone's progress until the museum opened anew on it has been told so.</summary>
+        private bool _isStartedAnew;
+
         /// <summary>
         /// A session whose settings are kept in memory as a first start has them, with the switches this build honours,
         /// and that sounds nothing: the Editor's tools', which must not touch a phone's device file and play whole games
@@ -412,7 +418,11 @@ namespace Puzzle.Client.Flow
         /// its moments ask for) and tells the museum what it has to say. The game's root opens it once the cloud is made
         /// on the session's progress (<see cref="ProgressForTheCloud"/>).
         /// </summary>
-        public void OpenToTheCloud(ICloudDesk cloud) => _cloud = cloud ?? throw new ArgumentNullException(nameof(cloud));
+        public void OpenToTheCloud(ICloudDesk cloud)
+        {
+            _cloud = cloud ?? throw new ArgumentNullException(nameof(cloud));
+            _checkout.VerifyWith(cloud.PurchaseServer);
+        }
 
         /// <summary>
         /// Lays the stage out for a screen, and every later stage too; call again whenever the screen changes. A finger
@@ -582,7 +592,7 @@ namespace Puzzle.Client.Flow
         /// <summary>The phone as the settings card shows it now: the settings kept, the records there are, this build's versions and marks.</summary>
         private DeviceView DeviceNow => new DeviceView(
             _settings.Settings, _abilities.Settings, _attempts.Device, Application.version, _content,
-            RecordsKeptNow(), _attempts.FilePath, _rules.Ads, _rules.Shop.RealMoney, Speech.Language, WordsPack.Offered);
+            RecordsKeptNow(), _attempts.FilePath, _rules.Ads, _rules.Shop.RealMoney, Speech.Language, WordsPack.Offered, _cloud.View);
 
         /// <summary>Tells the museum or the board, whichever is the stage that is seen, of the wallet as it is at this step.</summary>
         private void TellTheStageTheWallet()
@@ -938,6 +948,9 @@ namespace Puzzle.Client.Flow
                     _attempts.DeleteAll();
                     Debug.Log("The attempt records on this phone were deleted at the player's wish.");
                     break;
+                case DeviceRequest.ForgetTheProgress _:
+                    ForgetThisPhonesProgress();
+                    break;
                 case DeviceRequest.ChooseALanguage choose:
                     // Spoken first: a device file that cannot be written leaves the language chosen for this run.
                     WordsPack.Speak(choose.Language);
@@ -1156,7 +1169,11 @@ namespace Puzzle.Client.Flow
             }
         }
 
-        /// <summary>What the cloud has to tell, told to the museum while it is the stage in front; it waits in the cloud meanwhile.</summary>
+        /// <summary>
+        /// What the cloud has to tell, told to the museum while it is the stage in front (it waits in the cloud
+        /// meanwhile), and the account as the cloud shows it now, whenever that changed (signed in, synced, switched).
+        /// A museum opened anew after this phone's progress was deleted is told so first.
+        /// </summary>
         private void TellTheMuseumTheCloudsNews()
         {
             if (!(Museum is MuseumStage museum))
@@ -1164,10 +1181,39 @@ namespace Puzzle.Client.Flow
                 return;
             }
 
+            if (_isStartedAnew && !_isTheStageBehindTheProgress)
+            {
+                _isStartedAnew = false;
+                museum.Hear(new AccountNews.StartedAnew(), LevelNumberNow, _progress.Wallet.Coins);
+            }
+
             foreach (AccountNews news in _cloud.TakeNews())
             {
                 museum.Hear(news, LevelNumberNow, _progress.Wallet.Coins);
             }
+
+            if (_cloud.View.Revision != _accountRevisionTold)
+            {
+                _accountRevisionTold = _cloud.View.Revision;
+                museum.Tell(DeviceNow);
+            }
+        }
+
+        /// <summary>
+        /// "Verilerimi sil" after the cloud's data (docs/research/server-v1.md §5.6 "Her şeyi sil"): every attempt record is
+        /// deleted and the progress goes back to a new player's, saved at once; the hall opens anew on it out of the dark,
+        /// and a card says the game starts over. The cloud save is off by then, so nothing of it is synced.
+        /// </summary>
+        /// <exception cref="IOException">The attempt log could not be deleted: the progress is kept as it was.</exception>
+        /// <exception cref="UnauthorizedAccessException">The game may not delete the attempt log.</exception>
+        private void ForgetThisPhonesProgress()
+        {
+            _attempts.DeleteAll();
+            _progress = PlayerProgress.NewPlayer(_rules.StartingWallet);
+            SaveProgress();
+            _isTheStageBehindTheProgress = true;
+            _isStartedAnew = true;
+            Debug.Log("This phone's progress and attempt records were deleted at the player's wish; the game starts over.");
         }
 
         /// <summary>The upload a moment of this step asked for (a painting or a room completed, a payment delivered), asked of the cloud once the step is done.</summary>
@@ -1269,15 +1315,17 @@ namespace Puzzle.Client.Flow
 
             public bool IsSaved => !_session.HasUnsavedProgress;
 
-            public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason)
+            public bool HasGiven(StorePayment payment) => _session._progress.Purchases.HasSeen(payment.TransactionId);
+
+            public Delivery Deliver(StoreProduct product, StorePayment payment, DeliveryReason reason, LedgerNumber? number)
             {
-                Delivery delivery = _session._walletLedger.Deliver(_session._progress, product, payment.TransactionId);
+                Delivery delivery = _session._walletLedger.Deliver(_session._progress, product, payment.TransactionId, number);
                 switch (delivery)
                 {
                     case Delivery.Given given:
                         _session._progress = given.Progress;
                         _session._uploadDue ??= SyncTrigger.PurchaseDelivered;
-                        Debug.Log($"The store's {payment} ({reason}) gave {given.What}.");
+                        Debug.Log($"The store's {payment} ({reason}) gave {given.What}{(number is LedgerNumber verified ? $", verified as #{verified}" : ", unverified")}.");
                         if (reason == DeliveryReason.Payment)
                         {
                             _session.Note(new PlayNote.PurchaseCompleted(product.IdSuffix));

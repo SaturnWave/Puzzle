@@ -223,6 +223,8 @@ public class GameWordsTests
             ("Pending", PurchaseWords.Of(new PurchaseState.Pending(pack))),
             ("Unanswered", PurchaseWords.Of(new PurchaseState.Unanswered(pack))),
             ("Deferred", PurchaseWords.Of(new PurchaseState.Deferred(pack))),
+            ("Verifying", PurchaseWords.Of(new PurchaseState.Verifying(pack))),
+            ("Unverified", PurchaseWords.Of(new PurchaseState.Unverified(pack))),
             ("Delivered pack", PurchaseWords.Of(new PurchaseState.Delivered(pack, pack.Contents, DeliveryReason.Payment))),
             ("Delivered one coin", PurchaseWords.Of(new PurchaseState.Delivered(pack, new Reward(new Coins(1), Array.Empty<BoosterKind>()), DeliveryReason.Payment))),
             ("Delivered starter", PurchaseWords.Of(new PurchaseState.Delivered(starter, starter.Contents, DeliveryReason.Payment))),
@@ -284,8 +286,11 @@ public class GameWordsTests
             ("WalletWords.LivesOfMost", WalletWords.LivesOfMost(wallet)), ("WalletWords.LivesOfMost unlimited", WalletWords.LivesOfMost(unlimited)),
             ("WalletWords.NextLife", WalletWords.NextLife(new TimeSpan(0, 12, 34))), ("WalletWords.FullAfter", WalletWords.FullAfter(new TimeSpan(1, 42, 0))),
             ("SettingsWords.Title", SettingsWords.Title), ("SettingsWords.Language", SettingsWords.Language), ("SettingsWords.Privacy", SettingsWords.Privacy),
-            ("SettingsWords.PrivacyLine", SettingsWords.PrivacyLine(DeviceSettings.Default)),
-            ("SettingsWords.PrivacyLine statistics", SettingsWords.PrivacyLine(DeviceSettings.Default.With(DeviceSetting.Statistics, isOn: true))),
+            ("SettingsWords.PrivacyLine", SettingsWords.PrivacyLine(DeviceSettings.Default, cloudSaveIsOn: false)),
+            ("SettingsWords.PrivacyLine statistics", SettingsWords.PrivacyLine(DeviceSettings.Default.With(DeviceSetting.Statistics, isOn: true), cloudSaveIsOn: false)),
+            ("SettingsWords.PrivacyLine cloud", SettingsWords.PrivacyLine(DeviceSettings.Default, cloudSaveIsOn: true)),
+            ("SettingsWords.PrivacyLine cloud statistics", SettingsWords.PrivacyLine(DeviceSettings.Default.With(DeviceSetting.Statistics, isOn: true), cloudSaveIsOn: true)),
+            ("SettingsWords.Account", SettingsWords.Account),
             ("PrivacyWords.PageOf", PrivacyWords.PageOf(2, 3)),
             ("ConsentWords.Title", ConsentWords.Title), ("ConsentWords.Question", ConsentWords.Question),
             ("ConsentWords.Allow", ConsentWords.Allow), ("ConsentWords.Decline", ConsentWords.Decline),
@@ -353,6 +358,11 @@ public class GameWordsTests
             ("Other save", AccountWords.Of(new AccountNews.OtherSaveFound(SignInPlatform.PlayGames), 47, new Coins(4200))),
             ("Save came back", AccountWords.Of(new AccountNews.SaveCameBack(), 312, new Coins(4200))),
             ("Not switched", AccountWords.Of(new AccountNews.NotSwitched(), 47, new Coins(4200))),
+            ("Cloud data deleted", AccountWords.Of(new AccountNews.CloudDataDeleted(thereWereNone: false), 47, new Coins(4200))),
+            ("Nothing in the cloud", AccountWords.Of(new AccountNews.CloudDataDeleted(thereWereNone: true), 47, new Coins(4200))),
+            ("Not deleted, no network", AccountWords.Of(new AccountNews.CloudDataNotDeleted(DeletionFailure.NoNetwork), 47, new Coins(4200))),
+            ("Not deleted", AccountWords.Of(new AccountNews.CloudDataNotDeleted(DeletionFailure.Unavailable), 47, new Coins(4200))),
+            ("Started anew", AccountWords.Of(new AccountNews.StartedAnew(), 1, new Coins(200))),
         };
         foreach ((string what, AccountCardWords card) in accountCards)
         {
@@ -365,6 +375,10 @@ public class GameWordsTests
         said.Add(("AccountWords.NotNow", AccountWords.NotNow));
         said.Add(("AccountWords.Switch", AccountWords.Switch));
         said.Add(("AccountWords.Stay", AccountWords.Stay));
+        foreach ((string what, string words) in AccountCardSays())
+        {
+            said.Add((what, words));
+        }
 
         foreach (DeviceSetting setting in Enum.GetValues<DeviceSetting>())
         {
@@ -454,5 +468,48 @@ public class GameWordsTests
         }
 
         return said;
+    }
+
+    /// <summary>What the settings' account row and the account card say, for every account and every last sync it tells.</summary>
+    private static IEnumerable<(string What, string Said)> AccountCardSays()
+    {
+        var player = new CloudPlayerId("S1CylpiB5AS3kxFoXWQR7hk9HKBW");
+        DateTimeOffset synced = Now;
+        AccountView ViewOf(Account account, DateTimeOffset? lastSynced = null, bool failed = false, TimeSpan? since = null) =>
+            new(account, player, isSwitchedOn: !(account is Account.Off), lastSynced, failed, SignInPlatform.PlayGames, revision: 1, (lastSynced ?? synced) + (since ?? TimeSpan.Zero));
+
+        (string What, AccountView View)[] views =
+        [
+            ("off", ViewOf(new Account.Off(ServicesOff.SwitchedOff))),
+            ("no cloud", AccountView.NoCloud),
+            ("starting", ViewOf(new Account.Starting())),
+            ("unreachable", ViewOf(new Account.Unreachable(CloudFailure.NoNetwork), synced, failed: true)),
+            ("this phone", ViewOf(new Account.Anonymous(player), synced)),
+            ("linked", ViewOf(new Account.Linked(player, SignInPlatform.PlayGames), synced, since: TimeSpan.FromMinutes(5))),
+            ("an hour", ViewOf(new Account.Anonymous(player), synced, since: TimeSpan.FromHours(1))),
+            ("three hours", ViewOf(new Account.Anonymous(player), synced, since: TimeSpan.FromHours(3))),
+            ("a day", ViewOf(new Account.Anonymous(player), synced, since: TimeSpan.FromDays(1))),
+            ("five days", ViewOf(new Account.Anonymous(player), synced, since: TimeSpan.FromDays(5))),
+            ("a minute", ViewOf(new Account.Anonymous(player), synced, since: TimeSpan.FromMinutes(1))),
+        ];
+        foreach ((string what, AccountView view) in views)
+        {
+            yield return ($"AccountWords.StateOf {what}", AccountWords.StateOf(view));
+            yield return ($"AccountWords.LastSyncOf {what}", AccountWords.LastSyncOf(view));
+        }
+
+        yield return ("AccountWords.CardTitle", AccountWords.CardTitle);
+        yield return ("AccountWords.CloudSaveRow", AccountWords.CloudSaveRow);
+        yield return ("AccountWords.LastSyncRow", AccountWords.LastSyncRow);
+        yield return ("AccountWords.PlayerCodeRow", AccountWords.PlayerCodeRow);
+        yield return ("AccountWords.CardLine", AccountWords.CardLine);
+        yield return ("AccountWords.CodeCopied", AccountWords.CodeCopied);
+        yield return ("AccountWords.DeleteMyData", AccountWords.DeleteMyData);
+        yield return ("AccountWords.DeleteQuestion", AccountWords.DeleteQuestion);
+        yield return ("AccountWords.DeleteTraceLine", AccountWords.DeleteTraceLine);
+        yield return ("AccountWords.Deleting", AccountWords.Deleting);
+        yield return ("AccountWords.ForgetProgressQuestion", AccountWords.ForgetProgressQuestion);
+        yield return ("AccountWords.ForgetProgressLine", AccountWords.ForgetProgressLine);
+        yield return ("AccountWords.KeepProgress", AccountWords.KeepProgress);
     }
 }

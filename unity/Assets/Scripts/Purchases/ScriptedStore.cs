@@ -36,7 +36,9 @@ namespace Puzzle.Client.Purchases
     /// was closed between a payment and its confirmation; may lose its connection for a while
     /// (<see cref="IsDisconnected"/>); keeps the products it keeps (the starter pack) as the
     /// player's, refuses to sell them again, tells of them when it opens and gives them back on a restore. Opened
-    /// anew, it forgets what it said and the game did not take: that game was closed. No Unity dependency.
+    /// anew, it forgets what it said and the game did not take: that game was closed. Each payment carries a proof of
+    /// its own, as Google Play's purchase token, for a server to be asked about; the store keeps the buyer each sheet
+    /// named. Several phones of one store account share one. No Unity dependency.
     /// </summary>
     public sealed class ScriptedStore : IStore
     {
@@ -91,6 +93,9 @@ namespace Puzzle.Client.Purchases
         /// <summary>How many payment sheets were opened.</summary>
         public int SheetsOpened { get; private set; }
 
+        /// <summary>The player the last payment sheet named to the store; nothing when it named none.</summary>
+        public StoreBuyer? LastBuyer { get; private set; }
+
         /// <summary>Payments taken that the game has not confirmed: the store tells of them again when it opens.</summary>
         public IReadOnlyList<StorePayment> Unconfirmed => _unconfirmed;
 
@@ -124,9 +129,10 @@ namespace Puzzle.Client.Purchases
             _news.AddRange(_unconfirmed.Select(payment => new StoreNews.Paid(payment)));
         }
 
-        public void Buy(StoreListing listing)
+        public void Buy(StoreListing listing, StoreBuyer? buyer)
         {
             SheetsOpened++;
+            LastBuyer = buyer;
             if (listing.IsKeptByTheStore && _owned.Any(payment => payment.StoreId == listing.StoreId))
             {
                 _news.Add(new StoreNews.Failed(listing.StoreId, StoreRefusal.NotForSale, "the player owns it already"));
@@ -199,10 +205,14 @@ namespace Puzzle.Client.Purchases
             return taken;
         }
 
+        /// <summary>The proof the store gives the payment with this id, as a purchase token is given.</summary>
+        public static string ProofOf(string transactionId) => "token-" + transactionId;
+
         private void TakeThePayment(string storeId)
         {
             _payments++;
-            var payment = new StorePayment(storeId, string.Format(CultureInfo.InvariantCulture, "SCRIPTED.{0:0000}", _payments));
+            string id = string.Format(CultureInfo.InvariantCulture, "SCRIPTED.{0:0000}", _payments);
+            var payment = new StorePayment(storeId, id, ProofOf(id));
             _unconfirmed.Add(payment);
             if (_keptIds.Contains(storeId))
             {

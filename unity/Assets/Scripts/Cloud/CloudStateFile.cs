@@ -130,7 +130,9 @@ namespace Puzzle.Client.Cloud
     /// The sync's state as cloud.json writes it:
     /// <c>{"version":1,"switchedOn":true,"writer":"…","player":"…","synced":{"known":true,"saved":true,"progress":{…},"writeLock":"…","revision":42,"writes":["…"]},
     /// "lastReadUnixSeconds":…,"lastWriteUnixSeconds":0,"pending":{"id":"","progress":{…},"revision":0,"writes":[]},"failures":0,"retryAtUnixSeconds":0,"halt":"","haltWhy":"","haltLayout":0,
-    /// "linkOffered":false}</c>. A file written before <c>linkOffered</c> (Stage 2 of the server plan, 2026-10-26) reads it as false.
+    /// "linkOffered":false,"ledger":{"known":true,"text":"{…}","readAtUnixSeconds":…,"stale":false}}</c>. A file written before
+    /// <c>linkOffered</c> (Stage 2 of the server plan, 2026-10-26) reads it as false, and one written before <c>ledger</c>
+    /// (Stage 4, 2026-10-27) as a ledger never read: the next merge reads it.
     /// An instant is whole seconds since 1970 (UTC), 0 for none; an empty text is none. Unity's reader writes every
     /// block whether it holds anything or not, so a block says so itself (<c>known</c>, <c>saved</c>, an empty id).
     /// </summary>
@@ -156,6 +158,7 @@ namespace Puzzle.Client.Cloud
         public string haltWhy = string.Empty;
         public int haltLayout;
         public bool linkOffered;
+        public LedgerDocument ledger = new LedgerDocument();
 
         public static CloudStateDocument Of(CloudState state) => new CloudStateDocument
         {
@@ -179,6 +182,7 @@ namespace Puzzle.Client.Cloud
             haltWhy = state.Halt is CloudHalt.DamagedSave damaged ? damaged.Why : string.Empty,
             haltLayout = state.Halt is CloudHalt.LaterGame later ? later.ProgressLayout : 0,
             linkOffered = state.LinkOffered,
+            ledger = LedgerDocument.Of(state.Ledger),
         };
 
         /// <summary>
@@ -205,7 +209,7 @@ namespace Puzzle.Client.Cloud
             };
             return CloudState.Restored(
                 document.switchedOn, document.writer, player, synced, InstantOf(document.lastReadUnixSeconds), InstantOf(document.lastWriteUnixSeconds),
-                pending, document.failures, InstantOf(document.retryAtUnixSeconds), halt, document.linkOffered);
+                pending, document.failures, InstantOf(document.retryAtUnixSeconds), halt, document.linkOffered, document.ledger?.Copy());
         }
 
         internal static long SecondsOf(DateTimeOffset? instant) => instant?.ToUnixTimeSeconds() ?? 0;
@@ -265,6 +269,28 @@ namespace Puzzle.Client.Cloud
                 ? new CloudBase(read, new CloudWriteLock(writeLock), Math.Max(0, revision), CloudStateDocument.IdsOf(writes))
                 : null;
         }
+    }
+
+    /// <summary>The ledger as last read, as cloud.json writes it; not <c>known</c> for one never read, an empty text for a player who had none.</summary>
+    [Serializable]
+    public sealed class LedgerDocument
+    {
+        public bool known;
+        public string text = string.Empty;
+        public long readAtUnixSeconds;
+        public bool stale;
+
+        public static LedgerDocument Of(LedgerCopy? copy) => copy == null ? new LedgerDocument() : new LedgerDocument
+        {
+            known = true,
+            text = copy.Text ?? string.Empty,
+            readAtUnixSeconds = CloudStateDocument.SecondsOf(copy.ReadAt),
+            stale = copy.IsStale,
+        };
+
+        /// <summary>The copy the block holds; nothing for one never read, or one without the time it was read.</summary>
+        public LedgerCopy? Copy() =>
+            known && CloudStateDocument.InstantOf(readAtUnixSeconds) is DateTimeOffset readAt ? new LedgerCopy(text, readAt, stale) : null;
     }
 
     /// <summary>A write not answered, as cloud.json writes it; an empty id for none.</summary>

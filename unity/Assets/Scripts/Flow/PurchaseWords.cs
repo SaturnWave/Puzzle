@@ -76,7 +76,8 @@ namespace Puzzle.Client.Flow
         /// The card that tells where a purchase stands once its green button was pressed; nothing for a course that
         /// shows no such card (idle, asking, or cancelled by the player on the store's own sheet, which said so). A
         /// sheet the store has not answered says so and that what was bought comes once paid: never that nothing was
-        /// paid, which the game does not know.
+        /// paid, which the game does not know. A payment the game's server is verifying says so, and one it has not
+        /// verified in a while says calmly that nothing is lost; one it found not real says the store gives back any money.
         /// </summary>
         public static PurchaseCardWords? Of(PurchaseState state) => state switch
         {
@@ -84,11 +85,15 @@ namespace Puzzle.Client.Flow
                 Speech.Say(WordId.PurchasePendingTitle), Speech.Say(WordId.PurchasePendingLine), Speech.Say(WordId.PurchaseComesWhenPaid)),
             PurchaseState.Unanswered _ => new PurchaseCardWords(
                 Speech.Say(WordId.PurchasePendingTitle), Speech.Say(WordId.PurchaseNoAnswerLine), Speech.Say(WordId.PurchaseComesWhenPaid)),
+            PurchaseState.Verifying _ => new PurchaseCardWords(
+                Speech.Say(WordId.PurchaseVerifyingTitle), Speech.Say(WordId.PurchaseVerifyingLine), Speech.Say(WordId.PurchaseComesWhenVerified)),
+            PurchaseState.Unverified _ => new PurchaseCardWords(
+                Speech.Say(WordId.PurchaseVerifyingTitle), Speech.Say(WordId.PurchaseVerifyLaterLine), Speech.Say(WordId.PurchaseSafeLine)),
             PurchaseState.Deferred _ => new PurchaseCardWords(
                 Speech.Say(WordId.PurchaseDeferredTitle), Speech.Say(WordId.PurchaseDeferredLine), Speech.Say(WordId.PurchaseComesWhenPaid)),
             PurchaseState.Delivered delivered => Delivered(delivered),
             PurchaseState.Failed failed => new PurchaseCardWords(
-                Speech.Say(WordId.PurchaseFailedTitle), WhyNot(failed), failed.Why == PurchaseFailure.AlreadyWaiting ? Speech.Say(WordId.PurchaseComesWhenPaid) : Speech.Say(WordId.PurchaseNothingPaid)),
+                Speech.Say(WordId.PurchaseFailedTitle), WhyNot(failed), SecondLineOf(failed.Why)),
             PurchaseState.Nothing _ => null,
             PurchaseState.Asking _ => null,
             PurchaseState.Cancelled _ => null,
@@ -134,6 +139,14 @@ namespace Puzzle.Client.Flow
             };
         }
 
+        /// <summary>What a card of nothing bought says under why: a payment that waits comes once paid; one the server found not real is given back by the store; otherwise nothing was paid.</summary>
+        private static string SecondLineOf(PurchaseFailure why) => why switch
+        {
+            PurchaseFailure.AlreadyWaiting => Speech.Say(WordId.PurchaseComesWhenPaid),
+            PurchaseFailure.NotVerified => Speech.Say(WordId.PurchaseStoreRefunds),
+            _ => Speech.Say(WordId.PurchaseNothingPaid),
+        };
+
         private static string WhyNot(PurchaseState.Failed failed) => failed.Why switch
         {
             PurchaseFailure.StoreClosed => Speech.Say(WordId.PurchaseStoreClosed),
@@ -141,6 +154,7 @@ namespace Puzzle.Client.Flow
             PurchaseFailure.SoldOut => Speech.Say(WordId.PurchaseSoldOut, ("name", NameOf(failed.Bought))),
             PurchaseFailure.NotPaid => Speech.Say(WordId.PurchaseNotPaid),
             PurchaseFailure.AlreadyWaiting => Speech.Say(WordId.PurchaseAlreadyWaiting),
+            PurchaseFailure.NotVerified => Speech.Say(WordId.PurchaseNotVerified),
             _ => throw new ArgumentOutOfRangeException(nameof(failed), failed.Why, "A purchase failed in a way the cards have no words for."),
         };
     }

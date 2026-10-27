@@ -73,22 +73,60 @@ namespace Puzzle.Client.Purchases
     /// A payment the store has taken for a product, which the game delivers and, once its progress is saved with it,
     /// confirms to the store. Until then the store keeps it as waiting and tells of it again (Google refunds one left
     /// unconfirmed for three days). Its id is the store's for the payment; a store that gives none (Unity's fake store
-    /// gives a product it keeps none) is given one by its adapter, so every payment has an id.
+    /// gives a product it keeps none) is given one by its adapter, so every payment has an id. Its proof is what the
+    /// game's server asks the store about (docs/research/server-v1.md §4.1): Google Play's purchase token, or the App
+    /// Store's signed transaction.
     /// </summary>
     public sealed class StorePayment
     {
+        /// <summary>A payment with no proof: a store that gives none (Unity's fake store, the tests' scripted store).</summary>
         /// <exception cref="ArgumentException">No store id or no payment id.</exception>
         public StorePayment(string storeId, string transactionId)
+            : this(storeId, transactionId, proof: null)
+        {
+        }
+
+        /// <param name="proof">Google Play's purchase token or the App Store's signed transaction; nothing when the store gave none.</param>
+        /// <exception cref="ArgumentException">No store id or no payment id.</exception>
+        public StorePayment(string storeId, string transactionId, string? proof)
         {
             StoreId = string.IsNullOrEmpty(storeId) ? throw new ArgumentException("A payment is for a product.", nameof(storeId)) : storeId;
             TransactionId = string.IsNullOrEmpty(transactionId) ? throw new ArgumentException("A payment has an id.", nameof(transactionId)) : transactionId;
+            Proof = string.IsNullOrEmpty(proof) ? null : proof;
         }
 
         public string StoreId { get; }
 
         public string TransactionId { get; }
 
+        /// <summary>What the store gives to show the payment is its own, for the game's server to ask it about; nothing when the store gave none.</summary>
+        public string? Proof { get; }
+
         public override string ToString() => $"payment {TransactionId} for {StoreId}";
+    }
+
+    /// <summary>
+    /// The player a payment sheet is opened for, as the store is told it, so that the store writes it into the receipt
+    /// and the game's server can tell whose payment the receipt is (Purchases/StoreAccount: never the Unity id itself).
+    /// </summary>
+    public sealed class StoreBuyer
+    {
+        /// <param name="playerId">The player's Unity player id.</param>
+        /// <exception cref="ArgumentException">No player id.</exception>
+        public StoreBuyer(string playerId)
+        {
+            PlayerId = string.IsNullOrEmpty(playerId) ? throw new ArgumentException("A buyer is a player of the game.", nameof(playerId)) : playerId;
+        }
+
+        public string PlayerId { get; }
+
+        /// <summary>The obfuscated account id Google Play keeps with the payment.</summary>
+        public string GooglePlayAccount => StoreAccount.GooglePlayAccountOf(PlayerId);
+
+        /// <summary>The app account token the App Store keeps with the payment.</summary>
+        public string AppStoreAccountToken => StoreAccount.AppStoreAccountTokenOf(PlayerId);
+
+        public override string ToString() => $"buyer {PlayerId}";
     }
 
     /// <summary>What the store said. A closed set (private constructor).</summary>
@@ -264,8 +302,9 @@ namespace Puzzle.Client.Purchases
         /// <summary>Connects and asks for the products and for what the player owns or has paid for unconfirmed; news follows.</summary>
         void Open(IReadOnlyList<StoreListing> listings);
 
-        /// <summary>Opens the store's own payment sheet for the product; news follows.</summary>
-        void Buy(StoreListing listing);
+        /// <summary>Opens the store's own payment sheet for the product, naming the player to the store when one is signed in; news follows.</summary>
+        /// <param name="buyer">The player the payment is for; nothing while no account is signed in (the receipt then names no player).</param>
+        void Buy(StoreListing listing, StoreBuyer? buyer);
 
         /// <summary>
         /// Tells the store the payment is delivered and saved, so it stops telling of it (and Google does not refund it).

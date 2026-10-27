@@ -141,6 +141,9 @@ namespace Puzzle.Client.Cloud
     /// </summary>
     public static class SyncPolicy
     {
+        /// <summary>A player with payments has the ledger read again once this long has passed: the server's daily look at refunds may have marked one.</summary>
+        public static readonly TimeSpan LedgerReadEvery = TimeSpan.FromDays(1);
+
         private static readonly TimeSpan[] Backoff =
         {
             TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(30), TimeSpan.FromHours(2), TimeSpan.FromHours(6), TimeSpan.FromHours(24),
@@ -201,6 +204,24 @@ namespace Puzzle.Client.Cloud
             }
 
             return state.Base == null || state.Pending != null || startsAndMayRead;
+        }
+
+        /// <summary>
+        /// Whether a merge reads the ledger of verified payments (the protected item "purchases", a read of the free tier's
+        /// of its own) rather than the copy this phone keeps: only when it can have changed (Stage 4, docs/research/server-v1.md
+        /// §2.4). That is when no copy was read for the account; when a payment was verified on this phone since (the copy is
+        /// stale); when the progress names a payment the copy does not (one verified on another phone of the player); and once a
+        /// day for a player with payments, whose refunds the server marks (or when the clock went back before the copy). A
+        /// player with no payment, the most of them, reads it once.
+        /// </summary>
+        public static bool ReadsTheLedger(LedgerCopy? copy, bool namesAPaymentTheCopyLacks, bool copyHasPayments, DateTimeOffset now)
+        {
+            if (copy == null || copy.IsStale || namesAPaymentTheCopyLacks)
+            {
+                return true;
+            }
+
+            return copyHasPayments && IsDue(copy.ReadAt, LedgerReadEvery, now);
         }
 
         /// <summary>When an upload for this trigger may go: nothing for now, else the instant the budget allows it.</summary>

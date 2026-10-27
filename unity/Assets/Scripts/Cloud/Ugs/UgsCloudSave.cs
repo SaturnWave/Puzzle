@@ -18,9 +18,9 @@ namespace Puzzle.Client.Cloud
     /// writes with the write lock of its last read, and "purchases" in the protected class, which only the server writes
     /// and the game reads. Cloud Save keeps them under the account signed in; nothing is asked before the sign-in.
     /// <para>
-    /// A read is two of the free tier's reads: Cloud Save reads one access class a call (§2.4 counted one; the 12-hour
-    /// budget of the start's read, Stage 1, leaves room for it). Each item is a string: the save's envelope as
-    /// Cloud/CloudEnvelope writes it, the ledger as the server writes it.
+    /// Each item is read by a call of its own, one of the free tier's reads each (Cloud Save reads one access class a
+    /// call): the sync reads the ledger only when it can have changed (Stage 4, docs/research/server-v1.md §2.4). Each
+    /// item is a string: the save's envelope as Cloud/CloudEnvelope writes it, the ledger as the server writes it.
     /// </para>
     /// <para>
     /// Every exception of the service ends here as a <see cref="CloudFailure"/>: a write lock that is old (409) as the
@@ -43,23 +43,25 @@ namespace Puzzle.Client.Cloud
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
-        public async Task<CloudRead> ReadAsync(CancellationToken cancel)
+        public Task<CloudRead> ReadSaveAsync(CancellationToken cancel) => ReadAsync(SaveKey, new DefaultReadAccessClassOptions());
+
+        public Task<CloudRead> ReadLedgerAsync(CancellationToken cancel) => ReadAsync(PurchasesKey, new ProtectedReadAccessClassOptions());
+
+        private async Task<CloudRead> ReadAsync(string key, ReadAccessClassOptions accessClass)
         {
             try
             {
-                IPlayerDataService player = CloudSaveService.Instance.Data.Player;
-                Dictionary<string, Item> saved = await player.LoadAsync(new HashSet<string> { SaveKey }, new LoadOptions(new DefaultReadAccessClassOptions()));
-                Dictionary<string, Item> ledger = await player.LoadAsync(new HashSet<string> { PurchasesKey }, new LoadOptions(new ProtectedReadAccessClassOptions()));
-                return new CloudRead.Found(ItemOf(saved, SaveKey), ItemOf(ledger, PurchasesKey));
+                Dictionary<string, Item> answer = await CloudSaveService.Instance.Data.Player.LoadAsync(new HashSet<string> { key }, new LoadOptions(accessClass));
+                return new CloudRead.Found(ItemOf(answer, key));
             }
             catch (CloudSaveException failure)
             {
-                _log($"Cloud Save did not read: {failure.Reason} {failure.ErrorCode} {failure.Message}");
+                _log($"Cloud Save did not read \"{key}\": {failure.Reason} {failure.ErrorCode} {failure.Message}");
                 return new CloudRead.Failed(FailureOf(failure));
             }
             catch (RequestFailedException failure)
             {
-                _log($"Cloud Save did not read: {failure.ErrorCode} {failure.Message}");
+                _log($"Cloud Save did not read \"{key}\": {failure.ErrorCode} {failure.Message}");
                 return new CloudRead.Failed(CloudFailure.Unavailable);
             }
         }

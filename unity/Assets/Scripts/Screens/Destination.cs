@@ -241,6 +241,46 @@ namespace Puzzle.Client.Screens
         {
         }
 
+        /// <summary>The settings card's row "Hesap ve bulut kaydı": the account card, in front of it.</summary>
+        public sealed class OpenTheAccount : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's "Bulut kaydı" switch: the cloud save is turned the other way.</summary>
+        public sealed class FlipTheCloudSave : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's green "Bağlan": an account of this phone is linked to the platform.</summary>
+        public sealed class LinkFromTheAccountCard : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's player code row: the code is copied for the player to paste.</summary>
+        public sealed class CopyThePlayerCode : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's "Verilerimi sil": the card asks whether to delete the account and its save in the cloud.</summary>
+        public sealed class AskToDeleteMyData : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's "Vazgeç" or "Kalsın": the question is taken back, nothing (more) is deleted.</summary>
+        public sealed class KeepMyData : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's "Sil" of its first question: the account and its save in the cloud are deleted.</summary>
+        public sealed class DeleteMyData : MuseumPress
+        {
+        }
+
+        /// <summary>The account card's "Sil" of its second question: the progress and the records on this phone are deleted too.</summary>
+        public sealed class ForgetThisPhone : MuseumPress
+        {
+        }
+
         /// <summary>The settings card's row "Künye": the credits card, in front of it.</summary>
         public sealed class OpenTheCredits : MuseumPress
         {
@@ -494,6 +534,15 @@ namespace Puzzle.Client.Screens
         public sealed class DeleteTheRecords : DeviceRequest
         {
             public override string ToString() => "delete the attempt records";
+        }
+
+        /// <summary>
+        /// "Verilerimi sil", after the cloud's data: the progress on the phone goes back to a new player's and every
+        /// attempt record is deleted (docs/research/server-v1.md §5.6 "Her şeyi sil"); the game starts over.
+        /// </summary>
+        public sealed class ForgetTheProgress : DeviceRequest
+        {
+            public override string ToString() => "forget the progress and the records on this phone";
         }
 
         /// <summary>The language the game speaks, chosen on the language card: kept in the device file and spoken at once.</summary>

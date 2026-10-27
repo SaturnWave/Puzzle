@@ -13,14 +13,14 @@ namespace Puzzle.Client.Layout
         /// <summary>"Dil", with the language the game speaks as a value and a chevron: it opens the language card.</summary>
         Language,
 
+        /// <summary>"Hesap ve bulut kaydı" with a chevron: it opens the account card (the v1 server, 2026-10-27).</summary>
+        Account,
+
         /// <summary>"Gizlilik ve veri" with its smaller line and a chevron: it opens the privacy card.</summary>
         Privacy,
 
-        /// <summary>"Destek" with a chevron: it opens the support card.</summary>
+        /// <summary>"Destek" with a chevron: it opens the support card, whose "Künye" opens the credits card.</summary>
         Support,
-
-        /// <summary>"Künye" with a chevron: it opens the credits card, who made the pictures, typefaces and sounds and under which licences.</summary>
-        Credits,
     }
 
     /// <summary>One row of the settings card: what it is, and where it lies, down from the card's top edge.</summary>
@@ -55,8 +55,11 @@ namespace Puzzle.Client.Layout
     /// The settings card, as the design canvas draws it (SettingsTR), in the canvas' own points: right of the middle
     /// of the card's body and down from its top edge. A body 362 wide with the brass nameplate "Ayarlar" on its top
     /// edge; under it the rows of the settings the build honours, each with its switch, then a gilt rule with a
-    /// diamond, then the rows that lead somewhere or say something: the language, privacy and data, support, and the
-    /// credits (which the canvas does not draw: they came with the painter's pictures, 2026-10-24). Rows are
+    /// diamond, then the rows that lead somewhere or say something: the language, the account and its cloud save (which
+    /// the canvas does not draw: the v1 server, 2026-10-27), privacy and data, and support. The credits (which the canvas
+    /// does not draw either: they came with the painter's pictures, 2026-10-24) had a row of their own here until the
+    /// account took its place, so that the card stays as high and a card in front of it as large on every screen; they
+    /// open from the support card now. Rows are
     /// parted by gilt hairlines; under the last one, the foot: the player's id and the game's version, and under them
     /// the line that says what kind of build this is. A build that honours no setting draws neither the switches nor
     /// the rule, and the card is that much shorter. A screen too small for the card draws all of it smaller
@@ -194,9 +197,9 @@ namespace Puzzle.Client.Layout
             }
 
             down = AddRow(rows, hairlines, SettingsRowKind.Language, 0, RowHeight, down, isFirstOfItsGroup: true);
+            down = AddRow(rows, hairlines, SettingsRowKind.Account, 0, RowHeight, down, isFirstOfItsGroup: false);
             down = AddRow(rows, hairlines, SettingsRowKind.Privacy, 0, TallRowHeight, down, isFirstOfItsGroup: false);
             down = AddRow(rows, hairlines, SettingsRowKind.Support, 0, RowHeight, down, isFirstOfItsGroup: false);
-            down = AddRow(rows, hairlines, SettingsRowKind.Credits, 0, RowHeight, down, isFirstOfItsGroup: false);
             hairlines.Add(down + Hairline / 2f);
             down += Hairline;
             return new SettingsLayout(rows, hairlines, divider, footMiddle: down + FootBand / 2f);
