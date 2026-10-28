@@ -27,10 +27,12 @@
 | 2 | Sahip | Anahtarı ve parolayı yedekle (3.2) | |
 | 3 | Sahip | İki ortam değişkenini koy (3.3) | Yapıldı, 2026-10-28 |
 | 4 | Claude | Paketi derle (4) | Yapıldı: `museumpuzzle-vc1-upload.aab` |
-| 5 | Sahip | Play Console'un "uygulamanı kur" görevleri (5.1) | |
+| 5 | Sahip | Play Console'un "uygulamanı kur" görevleri ve mağaza sayfası (5.1; cevaplar, metinler ve görseller 8. bölümde, sıra 8.1) | |
 | 6 | Sahip | Paketi kapalı teste yükle (5.2) | |
 | 7 | Claude | Yüklenen sürümü kayda yaz (6) | Yükleme kabul edilince |
 | 8 | Sahip, Claude | Telefon testleri F33 (T578–T583), `docs/PHONE_TESTS.md` | Bu gece |
+| 9 | Claude | Mağaza sayfası: 13 dilde metin, simge, tanıtım görseli, telefon ve tablet ekran görüntüleri, formların cevapları, ürünlerin listesi (8) | Yapıldı, 2026-10-28 |
+| 10 | Sahip | Ürünleri aç (8.7): paket yüklendikten ve ödeme profili kurulduktan sonra | |
 
 ## 3. Yükleme anahtarı
 
@@ -115,13 +117,13 @@ Play Console → Museum Puzzle → **Dashboard → Set up your app**. Kapalı te
 
 | Görev | Not |
 |---|---|
-| App access | Bütün oyun girişsiz açılıyor: "All functionality is available without special access" |
-| Ads | Bu paket gerçek reklam göstermiyor: **No**. LevelPlay gelince **Yes** olarak değişmeli |
-| Content rating | IARC anketi; oyun şiddetsiz bir bulmaca, uygulama içi satın alma var |
-| Target audience | Yaş grubu; çocukları hedeflemiyorsa 13+ seçmek Families kurallarından kaçınır (sizin kararınız) |
-| Data safety | `docs/GAME_DESIGN.md` §20 ve `docs/research/privacy-v1.md`: oyun kimliği rastgele, oyun istatistikleri izinle, satın almalar Google Play'den; reklam kimliği yok |
-| Privacy policy | Oyunların ortak sitesindeki gizlilik sayfasının adresi (games-site) |
-| Store listing | Kısa ve uzun açıklama, 512×512 simge, 1024×500 tanıtım görseli, en az iki telefon ekran görüntüsü |
+| App access | Bütün oyun girişsiz açılıyor: "All functionality is available without special access" (8.5) |
+| Ads | Bu paket gerçek reklam göstermiyor: **No**. LevelPlay'li paketten önce **Yes** olmalı (8.5) |
+| Content rating | IARC anketi, cevaplar 8.5'te: şiddet yok, uygulama içi satın alma var, rastgele ücretli ürün yok |
+| Target audience | 13–15, 16–17, 18+ (sahibin kararı, 2026-10-28; politika 13 yaş altına yönelik değil diyor); 8.5 |
+| Data safety | Yayımlanan politika ve sunucu planının §6.3'ü; satır satır 8.6'da |
+| Privacy policy | `https://saturn-wave-apps.vercel.app/games/museum-puzzle/privacy/en/` (2026-10-28'de yayımlandı) |
+| Store listing | Ad, kısa ve uzun açıklama (13 dil), 512×512 simge, 1024×500 tanıtım görseli, telefon ve tablet ekran görüntüleri: 8.2, 8.3 |
 
 ### 5.2 Paketi yüklemek
 
@@ -137,7 +139,7 @@ Play Console → Museum Puzzle → **Dashboard → Set up your app**. Kapalı te
 8. **Save → Go to overview → Send changes for review**. Kapalı test incelemesi genelde birkaç saat, ilk sürümde birkaç gün sürebilir.
 9. Onaydan sonra kanalın **Testers** sekmesindeki **"Join on the web"** bağlantısı test kullanıcılarına gönderilir. **14 günlük sayım**, en az 12 kullanıcı teste katılıp (opt-in) kalınca başlar; Play Console → Dashboard bunu gösterir.
 
-**Satın almalar:** ürünler (`com.saturnwave.museumpuzzle.coins.pouch`, `…coins.bag`, `…coins.chest`, `…coins.treasure`, `…starter.apprentice_kit`) Play Console'da ancak `BILLING` izinli bir paket yüklendikten sonra açılabilir: bu yüklemeden sonra **Monetize with Play → Products → In-app products**. Test kullanıcılarının gerçek para ödemeden satın alabilmesi için hesaplarını **Settings → License testing**'e ekleyin. Ürünler yokken oyunun mağazası "Mağaza şu anda açılamıyor" der (T470).
+**Satın almalar:** ürünler (`com.saturnwave.museumpuzzle.coins.pouch`, `…coins.bag`, `…coins.chest`, `…coins.treasure`, `…starter.apprentice_kit`) Play Console'da ancak `BILLING` izinli bir paket yüklendikten sonra açılabilir: bu yüklemeden sonra **Monetize with Play → Products → One-time products** (eski adı In-app products); ürünlerin adları, açıklamaları ve fiyatları 8.7'de. Test kullanıcılarının gerçek para ödemeden satın alabilmesi için hesaplarını **Settings → License testing**'e ekleyin. Ürünler yokken oyunun mağazası "Mağaza şu anda açılamıyor" der (T470).
 
 ## 6. versionCode ve sonraki yüklemeler
 
@@ -163,3 +165,186 @@ Play bir versionCode'u **bir kez** alır, sonra yalnız daha büyüğünü. Kod,
 | Play: "You uploaded an APK or Android App Bundle that was signed in debug mode" | `…-debug.aab` yüklenmiş; `…-upload.aab`'yi yükleyin |
 | Play: "Your Android App Bundle is signed with the wrong key" | Play'de kayıtlı yükleme anahtarından başka bir anahtar; doğru anahtar deposu yolunu (`PUZZLE_UPLOAD_KEYSTORE`) verin. Anahtar kaybolduysa App integrity'den yükleme anahtarı sıfırlama |
 | Telefonda Play "App not installed" | Telefonda kabloyla kurulmuş kopya var (başka imza); onu kaldırın (4. bölüm, son paragraf) |
+
+## 8. Mağaza sayfası, formlar ve ürünler
+
+**Hazırlayan:** Claude, 2026-10-28. Claude hiçbir hesaba girmedi, hiçbir şey yüklemedi; aşağıdakileri sahip Play Console'a yapıştırır ve yükler. Form ve alan adları Play Console'daki gibi İngilizce. **(yargı)** işaretli cevaplar bir karardır, gerekçesi yanında: başka karar verirseniz bize söyleyin; metinler, bu belge ve gerekiyorsa sitedeki politika birlikte değişir.
+
+### 8.1 Play Console'da sıra
+
+| # | Nerede | Ne | Bölüm |
+|---|---|---|---|
+| 1 | Grow users → Store presence → Store settings | Kategori, etiketler, iletişim | 8.4 |
+| 2 | Policy and programs → App content (ya da Dashboard → Set up your app) | Privacy policy, App access, Ads, Content rating, Target audience, Data safety, öteki beyanlar | 8.5, 8.6 |
+| 3 | Grow users → Store presence → Main store listing | Varsayılan dil **English (United States) – en-US**: ad, kısa ve uzun açıklama, simge, tanıtım görseli, telefon ve tablet ekran görüntüleri | 8.2, 8.3 |
+| 4 | Aynı sayfa → Manage translations → Add your own translations | Öteki 12 dil: ad ve açıklamalar; **Türkçe – tr-TR**'ye Türkçe görseller de (öteki diller İngilizce görselleri gösterir) | 8.2, 8.3 |
+| 5 | Test and release → Testing → Closed testing | Paketin yüklenmesi | 5.2 |
+| 6 | Setup → Payments profile, sonra Monetize with Play → Products → One-time products | Ödeme profili (yoksa ücretli ürün açılmaz), beş ürün | 8.7 |
+
+Menü adları Play Console'un sürümüne göre biraz değişebilir; Dashboard'daki "Set up your app" görevleri aynı formlara götürür.
+
+### 8.2 Metinler (13 dil)
+
+- **Kaynak:** `release/store-listing/<locale>.json` (depoda): `title` (App name), `shortDescription`, `fullDescription`; `review` (`source`: elle yazıldı; `machine`: makine çevirisi taslağı) ve `reviewNote`. **Kopyalamak için:** `D:\puzzle-cache\play\listing\text\<locale>.txt`, her alan başlığı ve uzunluğuyla (`py tools/store-listing/store-assets.py text` yeniden yazar).
+- İngilizce ve Türkçe elle yazıldı. Öteki 11 dil, oyunun kelime tablolarındaki gibi makine çevirisi taslağı: oyunun kendi sözcükleriyle (taş, fırça, palet, altın, can, ayarların adları) ve tabloların her dildeki adlarıyla. Kapalı test için yeter; yayından önce ana dili olan biri okumalı. Play Console'un kendi makine çevirisini seçmeyin.
+- Her söz oyunun bugün yaptığı bir şey (`docs/GAME_DESIGN.md`, `economy/default.json`, `words/*.json`, yayımlanan politika). Bilerek yazılmayanlar: reklam (bu paket göstermiyor), "çevrimdışı oyun" (yalnız politikadaki "bağlantı yokken bölümler aynen oynanır, kayıt sonra eşitlenir"), "ücretsiz", fiyatlar, sıralama sözleri, başka oyunların adları, ressamın yaşı (hikâye cümlesi onay bekliyor, GAME_DESIGN §18).
+- **Ad:** oyunun giriş sayfasındaki adı (`EntryTitle`). "Museum Puzzle" bir çalışma adı; Play'de ad sonra değişebilir, paket kimliği değişmez.
+- **(yargı)** Uzun açıklamanın sondan ikinci paragrafı oyundaki künyeyi gösterir (Ayarlar > Destek > Künye): tanıtım görselindeki ressamın başı Einar Rig'den (CC BY 4.0) yapıldı; lisans, atfın "ortama uygun makul bir biçimde" yapılmasını ister ve mağaza sayfasında görselin yanında atıf yeri yok. Satırı istemezseniz ressam tanıtım görselinden çıkar ya da atıf oyun sitesine konur.
+
+| Locale | Ad (30) | Kısa (80) | Uzun (4.000) | Durum |
+|---|---|---|---|---|
+| en-US | 13 | 79 | 3.172 | kaynak |
+| tr-TR | 12 | 77 | 3.013 | kaynak |
+| de-DE | 13 | 78 | 3.626 | makine |
+| fr-FR | 15 | 77 | 3.753 | makine |
+| es-ES | 15 | 69 | 3.504 | makine |
+| pt-BR | 22 | 79 | 3.428 | makine |
+| it-IT | 16 | 70 | 3.527 | makine |
+| ru-RU | 13 | 75 | 3.330 | makine |
+| ja-JP | 6 | 34 | 1.539 | makine |
+| ko-KR | 6 | 37 | 1.767 | makine |
+| zh-CN | 5 | 30 | 1.140 | makine |
+| zh-TW | 5 | 30 | 1.141 | makine |
+| id | 13 | 70 | 3.454 | makine |
+
+**Denetim:** `StoreListingTests` (`dotnet test tests/Puzzle.Core.Tests -c Debug`): 13 dosya, başka dosya yok; sınırlar (Play tam ve yarım genişlikte her karakteri bir sayar); ad, oyunun o dildeki adı; emoji, sembol ve büyük harfle yazılmış söz yok (yüzyılın Roma rakamı hariç); fiyat, para birimi, "ücretsiz", "en iyi", "#1" ve indirim sözleri her dilde yok; başka oyun adı yok; `review` İngilizce ve Türkçede `source`, ötekilerde `machine`.
+
+**Sürüm notları** (5.2'nin 6. adımı):
+
+```
+<en-US>
+First closed test of Museum Puzzle. Thank you for playing! Tell us what you think: saturnwave.apps@gmail.com
+</en-US>
+<tr-TR>
+Müze Yapbozu'nun ilk kapalı testi. Oynadığın için teşekkürler! Görüşlerini saturnwave.apps@gmail.com adresine yaz.
+</tr-TR>
+```
+
+### 8.3 Görseller
+
+Klasör `D:\puzzle-cache\play\listing\` (depo dışında). Hepsi Play'in kurallarından geçti (`py tools/store-listing/store-assets.py check`). Kurallar 2026-10-28'de Play Console Help'ten okundu: simge 512×512 32-bit PNG, en çok 1.024 KB; tanıtım görseli 1024×500 JPEG ya da saydamlıksız 24-bit PNG; ekran görüntüsü JPEG ya da 24-bit PNG, her kenarı 320–3.840 px, uzun kenarı kısanın en çok iki katı, türü başına 2–8 tane; Play'in öne çıkarmaları için oyunlarda en az üç 9:16 dikey görüntü (en az 1080×1920); tablette 16:9, 1.080–7.680 px.
+
+| Dosya | Play'deki yeri | Piksel | Bayt |
+|---|---|---|---|
+| `icon-512.png` | App icon (bütün diller) | 512×512, 32-bit | 235.246 |
+| `feature-graphic-en-US.png` | Feature graphic, en-US (öteki 11 dil de bunu gösterir) | 1024×500, 24-bit | 574.140 |
+| `feature-graphic-tr-TR.png` | Feature graphic, tr-TR | 1024×500, 24-bit | 572.560 |
+| `phone-en-US\01…08` | Phone screenshots, en-US (öteki 11 dil de) | 1080×1920 | 0,85–2,24 MB |
+| `phone-tr-TR\01…08` | Phone screenshots, tr-TR | 1080×1920 | 0,85–2,24 MB |
+| `tablet-en-US\01…06` | 7-inch **ve** 10-inch tablet screenshots, en-US (aynı altı dosya iki yere) | 2560×1440 | 1,26–2,77 MB |
+| `tablet-tr-TR\01…06` | Aynısı, tr-TR | 2560×1440 | 1,26–2,77 MB |
+
+- **Simge:** `art/icon/app-icon-1024.png` küçültüldü (krem zeminde palet ve fırça, sahibin seçimi); yeniden çizilmedi.
+- **Tanıtım görseli:** oyunun duvarı (damask), yaldızlı çerçevesi, tablo ışığı, taşları, Büyük Dalga (Hokusai, kamu malı), giriş sayfasının yaldızlı başlığı (Young Serif, OFL) ve alt yazısı (Gabarito, OFL), sahibin onayladığı ressamın sevinç pozu (`art/avatar`). Tablodan bir yapboz parçası kalkmış; yerinde oyundaki gibi krem boşluk. Elle çizilmiş insan, maskot yok. Başlık ve alt yazı kenarlardan uzak (Play bazı yerlerde kırpar).
+- **Telefon (dikey, 9:16), sıra:** 1 oyun (47. bölüm, yatay fırça bir sırayı boyuyor), 2 yapboz (parça yerine taşınıyor), 3 müzenin salonu (ressam, tablo 7/10), 4 koleksiyon (Post-empresyonizm odası), 5 yakından tablo (Van Gogh), 6 dünya haritası, 7 "Oda onarıldı!", 8 280. bölüm (sandıklar, vernik, başlangıç booster'ları tahtada).
+- **Tablet (yatay, 16:9):** salon, yapboz, 280. bölüm, koleksiyon, harita, "Oda onarıldı!". Oyun tablette döndüğü için yeni kod gerekmedi. BoosterShots booster'ı iş başında yalnız ilk ekranda çiziyor; tablette onun yerine 280. bölüm.
+- **Mağaza ekranı kullanılmadı (yargı):** Editor'da mağaza olmadığı için fiyatlar "…" görünüyor; ekranda "Reklam izle, 4 altın kazan" satırı da var, oysa form "reklam yok" diyor (8.5). İkisi birbirini yalanlamasın diye.
+- **Yeniden üretmek** (ekranlar değişince; Unity kapalıyken, sırayla, her biri 2–3 dk; `Unity.exe` = `"C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe"`):
+
+```
+Unity.exe -batchmode -quit -projectPath C:\Users\arcan\puzzle\unity -executeMethod Puzzle.Client.EditorTools.ScreenShots.Run -screens home,map,collection,viewer,jigsaw,restored,entrance -screenStates "96+94,99+97,100+100,279+458" -screenSizes 1080x1920,2560x1440 -jigsawMoments carried -language en -logFile out\unity\listing-shots-en.log
+Unity.exe ... (aynısı, -language en olmadan: Türkçe) -logFile out\unity\listing-shots-tr.log
+Unity.exe -batchmode -quit -projectPath C:\Users\arcan\puzzle\unity -executeMethod Puzzle.Client.EditorTools.BoosterShots.Run -boosterSizes 1080x1920,2560x1440 -language en -logFile out\unity\listing-boosters-en.log
+Unity.exe ... (aynısı, -language en olmadan) -logFile out\unity\listing-boosters-tr.log
+py tools/store-listing/store-assets.py all
+```
+
+### 8.4 Store settings
+
+| Alan | Değer |
+|---|---|
+| App or game | Game |
+| Category | Puzzle |
+| Tags (en çok 5) | Match 3, Jigsaw puzzle, Tile-matching, Casual, Single player **(yargı)**: konsolun listesinden; birebir yoksa en yakını. "Offline" seçmeyin: satın alma ve bulut kaydı bağlantı ister |
+| Email address | `saturnwave.apps@gmail.com` |
+| Phone number | Boş (isteğe bağlı) |
+| Website | `https://saturn-wave-apps.vercel.app/` |
+| External marketing | Açık (varsayılan) |
+
+### 8.5 App content
+
+| Form | Cevap | Not |
+|---|---|---|
+| Privacy policy | `https://saturn-wave-apps.vercel.app/games/museum-puzzle/privacy/en/` | Türkçesi `/tr/`; ikisi de 2026-10-28 |
+| App access | All functionality in my app is available without any access restrictions | Hesap, parola, davet yok; görünmez hesap kendiliğinden açılıyor |
+| Ads | No, my app does not contain ads | **(yargı, sahibin kararı)** Reklam ağı yok; "+5 hamle için reklam" ve mağazadaki "Reklam izle" 3 saniyelik bir canlandırma kartı açıyor, kartta reklam yok. LevelPlay'li paket yüklenmeden **önce** "Yes" olmalı; politika da reklamdan önce güncellenir ("Changes"). İnceleyen "Reklam izle"yi sorarsa: bu test paketinde reklam gösterilmiyor |
+| Advertising ID | Does your app use advertising ID? **No** | Paketin izinlerinde `AD_ID` yok; derleme denetliyor |
+| Content rating | Aşağıdaki tablo | |
+| Target audience and content | **13–15, 16–17, 18 and over**; 5 ve altı, 6–8, 9–12 işaretsiz | Sahibin kararı (politika: 13 yaş altına yönelik değil). Sonuç: oyun Families programına girmez ve onun kurallarına (aileye uygun reklam SDK'ları, çocuk verisi) bağlı olmaz; karşılığında mağaza sayfası çocuklara yönelik görünmemeli |
+| Appeal to children (sorulursa) | No | **(yargı)** Konu sanat tarihi, metin yetişkine yazıldı; renkli taşlar ve ressam var ama çocuk dili, çocuk karakteri yok |
+| News apps | No | |
+| Government apps | No | |
+| Financial features | My app doesn't provide any financial features | Oyun içi satın alma finansal özellik sayılmaz |
+| Health | My app does not have any health features | |
+| Data safety | 8.6 | |
+
+**Content rating (IARC anketi):** e-posta `saturnwave.apps@gmail.com`, kategori **Game**.
+
+| Konu | Cevap | Neden |
+|---|---|---|
+| Violence (şiddet, kan) | No | Taşlar patlar, kimse incinmez. Tablolarda asker ve tüfek var (ör. Washington Delaware'i Geçerken), çatışma ya da yara yok |
+| Fear, horror | No | |
+| Sexuality, nudity | No | 100 tablonun hepsine bakıldı: çıplaklık yok |
+| Language, crude humour | No | |
+| Controlled substances | **Alcohol and tobacco: depicted, not used or encouraged** **(yargı)** | 9. odadaki "Roma'da Bir Grup Danimarkalı Sanatçı" (Hansen) pipo içen adamları gösteriyor; natürmortlarda şarap şişesi ve kadehler (Cézanne, Heda), Moulin Rouge'da kadehli masa. Oyuncu kullanmıyor, özendirilmiyor. "No" da savunulabilir (sanat eserinin arka planı), ama eksik beyan derecenin sonradan düzeltilmesine yol açabilir; fazlası en çok bazı ülkelerde biraz daha yüksek bir derece (tahmin), hedef kitle zaten 13+ |
+| Gambling (simulated or real) | No | |
+| Random items for real money (loot box) | No | Hiçbir ürünün içi rastgele değil ve satın almadan önce görünüyor; günlük hediye ve tablo ödülü sıralı ve ücretsiz (`economy/default.json`) |
+| In-app purchases of digital goods | Yes | Altın paketleri ve Çırak Çantası, Google Play'den |
+| Users interact or exchange content | No | Sohbet, oyuncular arası içerik, arkadaş listesi yok; Google Play Games yalnız kaydı bağlamak için |
+| Shares the user's location | No | |
+| Unrestricted internet, web browser | No | |
+
+Beklenen derece (tahmin): IARC 3+ / PEGI 3 / ESRB Everyone, "In-Game Purchases" notuyla; tütün ve alkol beyanı bazı ülkelerde derecenin bir basamak yükselmesine yol açabilir.
+
+### 8.6 Data safety
+
+Cevaplar yayımlanan politikaya (2026-10-28) ve sunucu planının §6.3'üne (sahibin 9. kararı) dayanıyor: politikada olmayan bir veri formda yok, formdaki her veri politikada var. Bütün cevaplar Android paketi için.
+
+**Data collection and security**
+
+| Soru | Cevap |
+|---|---|
+| Does your app collect or share any of the required user data types? | Yes |
+| Is all of the user data collected by your app encrypted in transit? | Yes (Unity, Aptabase ve Google adresleri HTTPS) |
+| Account creation | Kullanıcı hesap açabiliyor: **OAuth** (Google Play Games'e bağlanma) ve **Other** ("An anonymous player account is created automatically; it can be linked to Google Play Games.") **(yargı)**: oyuncu bir şey yapmadan açılan görünmez hesap da Unity kimliği, bulutta kaydı ve silme yolu olan bir hesap; "hesap yok" demek politikayla çelişir |
+| Delete account URL | `https://saturn-wave-apps.vercel.app/games/museum-puzzle/privacy/en/` ("Deleting your data" bölümü) **(yargı)**: aşağıdaki nota bakın |
+| Can users request that some or all of their data is deleted without deleting their account? | No (oyundaki "Verilerimi sil" hesabı ve kaydı birlikte siler; istatistik notları kimliksiz, ayrılamaz) |
+
+**Silme sayfası notu:** Google, silme yolunun sayfada belirgin olmasını (ör. bir çapa bağlantısı) ve kullanıcıyı uygulamayı yeniden kurmaya göndermemesini istiyor. Sayfanın bölümleri çapasız ve e-postayla silme isteği oyunda görünen oyuncu kodunu istiyor; oyunu silmiş biri kodunu bilmeyebilir. Öneri (sitenin işi, bu işte yapılmadı): bölüme `#deleting-your-data` çapası ve kodu olmayan için başka bir yol (ör. Google Play sipariş numarasıyla istek); sonra URL çapalı verilir.
+
+**Data types** (tabloda olmayan türlerin hepsi "No")
+
+| Category › Type | Collected | Shared | Ephemeral | Required / optional | Purposes | Politikada |
+|---|---|---|---|---|---|---|
+| Location › Approximate location | Yes | No | No | Optional | Analytics | Aptabase, izinle: bağlantının IP'sinden ülke ve bölge, IP saklanmıyor ("Game statistics") |
+| Personal info › User IDs | Yes | No | No | Required **(yargı)** | App functionality; Account management; Fraud prevention, security, and compliance | Unity oyuncu kimliği, Google Play Games'in bu oyundaki kimliği ("Cloud save…", "Google Play Games…") |
+| Financial info › Purchase history | Yes | **Yes (yargı)** | No | Required | Toplama: App functionality; Analytics; Account management; Fraud prevention, security, and compliance. Paylaşma: Fraud prevention, security, and compliance | Satın alma kaydı ve doğrulaması, 36 aylık kimliksiz iz, Unity'nin satın alma kütüphanesi ("Purchases", "What Unity receives"); izinli notlarda alınan ürün |
+| App activity › App interactions | Yes | No | No | Optional | Analytics | Aptabase notları, izinle ("Game statistics") |
+| App activity › Other actions | Yes | No | No | Required **(yargı)** | App functionality | Bulut kaydındaki ilerleme ve cüzdan ("Cloud save…") |
+| App info and performance › Diagnostics | Yes | **Yes (yargı)** | No | Required | Toplama: App functionality; Analytics. Paylaşma: Analytics; Fraud prevention, security, and compliance | Unity'nin giriş olayı ve satın alma olayı: model, sistem sürümü, dil ve bölge, depolama, açılış zamanı, oyunun sürümü ve kurulumu ("What Unity receives") |
+| Device or other IDs | Yes | **Yes (yargı)** | No | Required | Toplama: App functionality; Analytics; Fraud prevention, security, and compliance. Paylaşma: Analytics; Fraud prevention, security, and compliance | Unity'nin kurulum, analiz ve oturum kimlikleri; reklam kimliği yok ("What Unity receives") |
+
+"No" olanlar: Name, Email address, User payment info (kartı Google Play alır, oyun görmez), Precise location, Crash logs, Other app performance data, Installed apps, Contacts, Photos and videos, Audio, Files, Calendar, Messages, Health, Web browsing ve ötekiler. Oyuncu bize e-posta yazarsa o e-posta uygulamanın topladığı veri değildir.
+
+**Yargıların gerekçesi**
+
+- **Unity'nin üç türü "Shared: Yes":** Unity satın alma verisi için kendini bağımsız veri sorumlusu sayıyor (sözleşmesi, 2026-06-30) ve politika "Unity bunları kendi mali kayıtları, yasal yükümlülükleri ve sahtekârlığı önlemek için kullanır" diyor: Play'in tanımında bu, hizmet sağlayıcı istisnasına girmiyor. Unity'nin kendi Data safety rehberi "Shared: No" diyor; fazla beyan güvenli taraf (privacy-v1 §5.2'nin önerisi). Diagnostics ve Device IDs aynı kütüphanenin olaylarıyla gittiği için aynı cevap.
+- **User IDs ve Other actions "Required":** Ayarlar'da "Bulut kaydı" anahtarı var, ama varsayılan açık ve hesap ilk açılışta, oyuncu bir şey seçmeden açılıyor; Play "optional"ı toplanıp toplanmayacağını kullanıcının seçebildiği veriye ayırıyor. "Users can choose" da savunulabilir.
+- **Google Play Games kütüphanesinin kendi verisi** (Google'ın sayfası: oyun hesabı kimliği, kütüphanenin analizi ve teşhisi, kendiliğinden): plan §6.3 bunu Google'ın kendi beyanına bıraktı (sahibin kararı). Kimlik "User IDs"te, teşhis "Diagnostics"te zaten var. Daha temkinli seçenek: "App interactions"ı "Required" yapmak; o zaman mağaza sayfası istatistikler zorunluymuş gibi okunur. Karar sizde.
+
+### 8.7 Uygulama içi ürünler (One-time products)
+
+Önce paket yüklenmiş (`BILLING` izni) ve **Setup → Payments profile** kurulmuş olmalı. Sonra **Monetize with Play → Products → One-time products → Create one-time product**, her ürün için: Product ID (birebir; sonradan değişmez, silinse de yeniden kullanılamaz), Name ve Description (varsayılan dil en-US, **Add translation** ile tr-TR), satın alma seçeneği "Buy", varsayılan fiyat USD, **Activate**.
+
+| Product ID | Name (en) | Description (en) | Name (tr) | Description (tr) | Fiyat |
+|---|---|---|---|---|---|
+| `com.saturnwave.museumpuzzle.coins.pouch` | Pouch of coins | 1,000 coins to spend on boosters, and on five more moves when a level's moves run out. | Altın kesesi | Booster'lara ve bir bölümün hamleleri bitince 5 hamle daha almaya harcanacak 1.000 altın. | $1.99 |
+| `com.saturnwave.museumpuzzle.coins.bag` | Bag of coins | 2,750 coins to spend on boosters, and on five more moves when a level's moves run out. | Altın torbası | Booster'lara ve bir bölümün hamleleri bitince 5 hamle daha almaya harcanacak 2.750 altın. | $4.99 |
+| `com.saturnwave.museumpuzzle.coins.chest` | Chest of coins | 6,000 coins to spend on boosters, and on five more moves when a level's moves run out. | Altın sandığı | Booster'lara ve bir bölümün hamleleri bitince 5 hamle daha almaya harcanacak 6.000 altın. | $9.99 |
+| `com.saturnwave.museumpuzzle.coins.treasure` | Treasure of coins | 13,000 coins to spend on boosters, and on five more moves when a level's moves run out. | Altın hazinesi | Booster'lara ve bir bölümün hamleleri bitince 5 hamle daha almaya harcanacak 13.000 altın. | $19.99 |
+| `com.saturnwave.museumpuzzle.starter.apprentice_kit` | Apprentice's Bag | 1,500 coins, with one brush and splash, one rainbow palette and one +3 moves to start levels with. Once per player. | Çırak Çantası | 1.500 altın; bölümlere başlamak için birer fırça + sıçrama, gökkuşağı paleti ve +3 hamle. Oyuncu başına bir kez. | $1.99 |
+
+- Adlar oyunun mağazasındaki adlar (`words`: `PackPouch`…, `StarterPackName`); içerikler `economy/default.json` → `store`; fiyatlar sahibin kararı (2026-10-24). Adlarda oyunun adı, "Google" ve "Play" yok (Google'ın ürün adı önerisi).
+- **Fiyatlar ülkelere:** varsayılan USD fiyatı girilince Play öteki ülkelerin fiyatlarını döviz kuruyla ve yerel fiyat alışkanlıklarıyla kendisi çevirir (Türkiye dahil, vergili); ülke ülke düzeltilebilir. Oyun fiyatı hiç kendisi yazmaz, mağazanın oyuncunun para birimindeki fiyatını gösterir.
+- **Tür:** Play Console'da "tüketilir / tüketilmez" ayarı yok, oyun karar verir. Altın paketlerini tüketir (her zaman yeniden alınabilir); Çırak Çantası'nı tüketmez (`NonConsumable`): Play onu oyuncunun malı olarak tutar, ikinci kez satın alınamaz, oyun yeniden kurulunca kendiliğinden geri gelir. Oyun da onu 20. bölümden önce ve bir kez alındıktan sonra satmaz. Çoklu adet (multi-quantity) kapalı kalsın.
+- Test: kapalı test kullanıcılarının hesaplarını **Settings → License testing**'e ekleyin; ödeme alınmaz (5.2'nin sonu).
