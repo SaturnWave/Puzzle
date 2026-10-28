@@ -24,15 +24,16 @@
 | # | Kim | Ne | Durum |
 |---|---|---|---|
 | 1 | Sahip | Yükleme anahtarını yap (3.1) | Yapıldı, 2026-10-28 |
-| 2 | Sahip | Anahtarı ve parolayı yedekle (3.2) | |
+| 2 | Sahip | Anahtarı ve parolayı yedekle (3.2) | Yapıldı, 2026-10-28: iki kopya, özetleri aynı |
 | 3 | Sahip | İki ortam değişkenini koy (3.3) | Yapıldı, 2026-10-28 |
 | 4 | Claude | Paketi derle (4) | Yapıldı: `museumpuzzle-vc1-upload.aab` |
-| 5 | Sahip | Play Console'un "uygulamanı kur" görevleri ve mağaza sayfası (5.1; cevaplar, metinler ve görseller 8. bölümde, sıra 8.1) | |
-| 6 | Sahip | Paketi kapalı teste yükle (5.2) | |
-| 7 | Claude | Yüklenen sürümü kayda yaz (6) | Yükleme kabul edilince |
+| 5 | Sahip | Play Console'un "uygulamanı kur" görevleri ve mağaza sayfası (5.1; cevaplar, metinler ve görseller 8. bölümde, sıra 8.1) | Yapıldı, 2026-10-28: uygulamayı sahip açtı; formları, mağaza sayfasını ve 12 çeviriyi Claude sahibin oturumu açık Chrome'undan girdi (8.8) |
+| 6 | Sahip | Paketi kapalı teste yükle (5.2) | Yapıldı, 2026-10-28: sahip uzaktan yükledi; Play işledi: 1 (1.0), API 26+, hedef SDK 36, arm64-v8a, yeni kurulumda 305 MB |
+| 7 | Claude | Yüklenen sürümü kayda yaz (6) | Yapıldı, 2026-10-28: `1 1.0 2026-10-28 closed` |
 | 8 | Sahip, Claude | Telefon testleri F33 (T578–T583), `docs/PHONE_TESTS.md` | Bu gece |
 | 9 | Claude | Mağaza sayfası: 13 dilde metin, simge, tanıtım görseli, telefon ve tablet ekran görüntüleri, formların cevapları, ürünlerin listesi (8) | Yapıldı, 2026-10-28 |
-| 10 | Sahip | Ürünleri aç (8.7): paket yüklendikten ve ödeme profili kurulduktan sonra | |
+| 10 | Sahip | Ürünleri aç (8.7): paket yüklendikten ve ödeme profili kurulduktan sonra | Paket yüklendi; ödeme profili bekleniyor |
+| 11 | Claude | Değişiklikleri incelemeye gönder (5.2, 8. adım) | Gönderildi, 2026-10-28: 28 değişiklik; önce Google'ın hızlı denetimleri, sonra inceleme. Onaya kadar test bağlantısı açılmaz |
 
 ## 3. Yükleme anahtarı
 
@@ -135,6 +136,8 @@ Play Console → Museum Puzzle → **Dashboard → Set up your app**. Kapalı te
 6. **Release notes**: `<tr-TR>` ve `<en-US>` için birkaç satır (ör. "İlk kapalı test sürümü").
 7. **Next**. Play'in uyarıları:
    - "This App Bundle contains native code, and you've not uploaded debug symbols": yalnız uyarı; çökme raporlarındaki yerel satırlar adsız kalır. İstenirse sonraki pakette Unity'nin sembol dosyası da üretilir (bize söyleyin).
+   - "There is no deobfuscation file associated with this App Bundle": yalnız uyarı; R8/ProGuard eşleme dosyası yok, Java tarafındaki çökme satırları olduğu gibi okunur.
+   - İlk yüklemede (2026-10-28) yalnız bu iki uyarı çıktı, hata çıkmadı.
    - Hata çıkarsa (imza, versionCode, izin) bize metniyle yazın.
 8. **Save → Go to overview → Send changes for review**. Kapalı test incelemesi genelde birkaç saat, ilk sürümde birkaç gün sürebilir.
 9. Onaydan sonra kanalın **Testers** sekmesindeki **"Join on the web"** bağlantısı test kullanıcılarına gönderilir. **14 günlük sayım**, en az 12 kullanıcı teste katılıp (opt-in) kalınca başlar; Play Console → Dashboard bunu gösterir.
@@ -168,7 +171,7 @@ Play bir versionCode'u **bir kez** alır, sonra yalnız daha büyüğünü. Kod,
 
 ## 8. Mağaza sayfası, formlar ve ürünler
 
-**Hazırlayan:** Claude, 2026-10-28. Claude hiçbir hesaba girmedi, hiçbir şey yüklemedi; aşağıdakileri sahip Play Console'a yapıştırır ve yükler. Form ve alan adları Play Console'daki gibi İngilizce. **(yargı)** işaretli cevaplar bir karardır, gerekçesi yanında: başka karar verirseniz bize söyleyin; metinler, bu belge ve gerekiyorsa sitedeki politika birlikte değişir.
+**Hazırlayan:** Claude, 2026-10-28. Bölüm sahibin elle girmesi için yazıldı; aynı gün cevapları, metinleri ve görselleri Claude sahibin oturumu açık Chrome'undan Play Console'a girdi (hiçbir hesaba kendisi girmedi; neyin nasıl girildiği 8.8'de), paketi sahip yükledi. Form ve alan adları Play Console'daki gibi İngilizce. **(yargı)** işaretli cevaplar bir karardır, gerekçesi yanında: başka karar verirseniz bize söyleyin; metinler, bu belge ve gerekiyorsa sitedeki politika birlikte değişir.
 
 ### 8.1 Play Console'da sıra
 
@@ -348,3 +351,16 @@ Cevaplar yayımlanan politikaya (2026-10-28) ve sunucu planının §6.3'üne (sa
 - **Fiyatlar ülkelere:** varsayılan USD fiyatı girilince Play öteki ülkelerin fiyatlarını döviz kuruyla ve yerel fiyat alışkanlıklarıyla kendisi çevirir (Türkiye dahil, vergili); ülke ülke düzeltilebilir. Oyun fiyatı hiç kendisi yazmaz, mağazanın oyuncunun para birimindeki fiyatını gösterir.
 - **Tür:** Play Console'da "tüketilir / tüketilmez" ayarı yok, oyun karar verir. Altın paketlerini tüketir (her zaman yeniden alınabilir); Çırak Çantası'nı tüketmez (`NonConsumable`): Play onu oyuncunun malı olarak tutar, ikinci kez satın alınamaz, oyun yeniden kurulunca kendiliğinden geri gelir. Oyun da onu 20. bölümden önce ve bir kez alındıktan sonra satmaz. Çoklu adet (multi-quantity) kapalı kalsın.
 - Test: kapalı test kullanıcılarının hesaplarını **Settings → License testing**'e ekleyin; ödeme alınmaz (5.2'nin sonu).
+
+### 8.8 Play Console'a girilenler (2026-10-28)
+
+Claude, sahibin oturumu açık Chrome'undan girdi (Claude in Chrome); formlar kaydedildikten sonra Play Console'dan geri okundu. Paketi sahip yükledi (Chrome'un dosya seçicisi; tarayıcı aracı bir seferde en çok 10 MB taşıyor, paket 306 MB).
+
+- **Kapalı test kanalı:** "Closed testing - Alpha"; test listesi "SketchPaint testers" (öteki üç oyunla ortak; iki adres eklendi, bir Hotmail adresi Google hesabı olmadığı için eklenemedi), geri bildirim adresi `saturnwave.apps@gmail.com`, 177 ülke ve "rest of world".
+- **Sürüm 1 (1.0):** sürüm notları en-US ve tr-TR'de; en-US: "First closed test: the museum, 20 rooms of public-domain paintings, cloud save and purchases. Ads are only a test stand-in." Play'in uyarıları 5.2'deki iki uyarı.
+- **App content:** 8.5 ve 8.6'daki cevaplar. İçerik derecelendirmesinin sonucu (tütün ve alkol cevabıyla, 8.5): PEGI 3, USK 0, ESRB E10+, ClassInd 14, Kore 15+, Tayvan PG 15.
+- **Mağaza sayfası:** en-US metni, simge, tanıtım görseli, 8 telefon görüntüsü; 7 inç ve 10 inç tablete aynı altı görüntü. 12 dilin metni `release/store-listing/<locale>.json`'dan birebir (girildikten sonra dil dil geri okundu). tr-TR'nin kendi tanıtım görseli, telefon ve tablet görüntüleri var; öteki 11 dil İngilizce görselleri devralıyor.
+- **Yapay zekâ beyanı (sahibin kararı):** "Don't label assets". Ekranlar oyunun gerçek görüntüleri, tablolar kamu malı eserler; arayüzün çizimleri Claude'un yazdığı SVG kodu, görüntü üreten bir model kullanılmadı. Google'ın yardım sayfası hangi kullanımın etiket istediğini tanımlamıyor; beyan varlık başına sonradan değiştirilebilir (Asset library → varlığın ayrıntıları).
+- **Google Play Games on PC:** gönderilen değişikliklerde Advanced settings → Form factors "opted-in" görünüyor. Claude açmadı; Play'in oyunlar için varsayılanı. Paket yalnız arm64-v8a. PC'de istenmezse aynı yerden kapatılır (sahibin kararı).
+- **İncelemeye gönderildi:** 28 değişiklik. Önce Google'ın hızlı denetimleri (en çok 14 dakika), sonra inceleme (Google'a göre genelde 7 güne kadar). Onaydan sonra test bağlantısı: `https://play.google.com/apps/testing/com.saturnwave.museumpuzzle` (yalnız listedeki Google hesaplarıyla açılır).
+- **Kalan:** ödeme profili ve beş ürün (8.7), lisans test kullanıcıları, LevelPlay'li paketten önce Ads formunda "Yes".

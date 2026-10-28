@@ -6,6 +6,15 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ## 2026-10-28 · Oturum 35 — Google Play'e ilk paket (kapalı test)
 
+**Gece: Play Console dolduruldu, paket yüklendi, kapalı test incelemeye gitti**
+- Sahibin "Yap"ı üzerine Claude, sahibin oturumu açık Windows Chrome'undan (Claude in Chrome) girdi: kapalı test kanalı (liste "SketchPaint testers", 178 ülke, geri bildirim adresi), App content'in bütün formları (`docs/PLAY_RELEASE.md` 8.5, 8.6; derecelendirme PEGI 3, ESRB E10+), Store settings, varsayılan mağaza sayfası (en-US metni, simge, tanıtım görseli, 8 telefon, 6+6 tablet) ve 12 dil. Dillerin metni sayfanın içinde `release/store-listing/*.json`'dan okunup yazıldı, sonra dil dil geri okundu: 13'ü de dosyalarla aynı. tr-TR'ye Türkçe tanıtım görseli, telefon ve tablet görüntüleri; öteki diller İngilizce görselleri devralıyor. Ayrıntı: PLAY_RELEASE 8.8.
+- Karar (sahip): mağaza görselleri için yapay zekâ beyanı "Don't label assets" (ekranlar gerçek oyun görüntüsü, tablolar kamu malı, arayüz Claude'un SVG kodu, görüntü üreten model yok).
+- Paket: tarayıcı aracı bir seferde en çok 10 MB taşıyor (paket 306 MB); sahip `museumpuzzle-vc1-upload.aab`'yi uzaktan kendisi yükledi. Play işledi: 1 (1.0), API 26+, hedef SDK 36, arm64-v8a, yeni kurulumda 305 MB, "Enhanced". Yalnız iki uyarı (yerel kodun sembolleri yok, R8 eşleme dosyası yok), hata yok. `release/google-play-uploads.txt`: `1 1.0 2026-10-28 closed`; sonraki paket versionCode 2.
+- İncelemeye gönderildi: 28 değişiklik. Kanal "Active, Release 1 (1.0) in review". Test bağlantısı Play'in onayından sonra açılır; Testers sekmesi o zamana kadar "the link will be shown here when you publish your app" diyor.
+- Bulgu: gönderilen değişikliklerde "Google Play Games on PC: opted-in" var; Claude açmadı, Play'in oyunlar için varsayılanı. Açık bırakıldı; karar sahibin.
+- CI: PR'ın denetimi yine başlamadı ("Actions budget is preventing further use"); kod hatası değil. Yerel karşılığı (Debug): 6.176 + 83 test geçti, 1.055/1.055 bölüm geçerli.
+- Sonraki: ödeme profili ve beş ürün (PLAY_RELEASE 8.7), lisans test kullanıcıları, LevelPlay; versionCode 2'de oyuncu kodu (bulut kodu) ve Unity'nin sembol dosyası.
+
 **Mağaza sayfası, görseller ve Play Console formları (`feature/bombs-colors-director-webui`)**
 - 13 dilde mağaza metni: `release/store-listing/<locale>.json`, Play'in yerel kodlarıyla (en-US, tr-TR, ko-KR, ja-JP, de-DE, fr-FR, es-ES, pt-BR, it-IT, ru-RU, zh-CN, zh-TW, id). İngilizce ve Türkçe elle yazıldı; öteki 11'i oyunun kendi sözcükleriyle makine çevirisi taslağı (`review: machine`, oyunun kelime tabloları gibi). Ad, oyunun giriş sayfasındaki adı; kısa açıklama en çok 79, uzun en çok 3.753 karakter (fr-FR; sınırlar 30 / 80 / 4.000). Söylenenlerin hepsi oyunun bugün yaptığı; reklam, "çevrimdışı", "ücretsiz", fiyat ve sıralama sözü yok. Uzun açıklama oyundaki künyeyi gösteriyor (tanıtım görselindeki ressam CC BY 4.0).
 - Yeni `StoreListingTests` (66 test): 13 dosya, Play'in sınırları, ad = oyunun o dildeki adı, emoji, sembol, büyük harfle söz, fiyat ve "ücretsiz / en iyi / #1" sözleri her dilde, başka oyun adları; bozuk bir metinle düştüğü görüldü.
