@@ -106,6 +106,9 @@ internal static class RepoFiles
     /// <summary>The record of the world map's sources and licence (art/map/sources.json), which <c>worldmap build</c> writes.</summary>
     public static string WorldMapRecordPath => Find("art", "map", "sources.json");
 
+    /// <summary>The folder of the Google Play store listing's words, one release/store-listing/&lt;Play locale&gt;.json a language.</summary>
+    public static string StoreListingFolder => Path.GetDirectoryName(Find("release", "store-listing", "en-US.json"))!;
+
     /// <summary>A file of the repository by its path from the repository's root, written with forward slashes as the music's record writes it.</summary>
     public static string RepositoryFile(string pathFromTheRoot) => Find(pathFromTheRoot.Split('/'));
 
