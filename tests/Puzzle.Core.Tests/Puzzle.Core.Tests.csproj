@@ -205,6 +205,12 @@
     <Compile Include="..\..\unity\Assets\Editor\PlayGamesDependency.cs" Link="Unity\Editor\PlayGamesDependency.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestSystemBars.cs" Link="Unity\Editor\ManifestSystemBars.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestBackupRules.cs" Link="Unity\Editor\ManifestBackupRules.cs" />
+    <!-- Nor has the Google Play bundle's build: the record of uploads and the next versionCode, the key it is signed with, its download sizes and its libraries' 16 KB alignment. -->
+    <Compile Include="..\..\unity\Assets\Editor\PlayUploads.cs" Link="Unity\Editor\PlayUploads.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\BundleSigning.cs" Link="Unity\Editor\BundleSigning.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\BundleDownloadSize.cs" Link="Unity\Editor\BundleDownloadSize.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\NativeLibraryAlignment.cs" Link="Unity\Editor\NativeLibraryAlignment.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestAssetDelivery.cs" Link="Unity\Editor\ManifestAssetDelivery.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

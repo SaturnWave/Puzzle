@@ -17,14 +17,15 @@ namespace Puzzle.Client.EditorTools
     /// Builds the Android package from the command line.
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.AndroidBuild.Run
     /// The package lands in unity/Build/Android/puzzle.apk, signed with Unity's debug key: good for installing on a
-    /// test phone, not for a store. What the Editor derives (the atlas, the art catalogue, the typefaces, the scene)
-    /// is brought up to date first: the game reads the catalogue by the order of its lists of drawings, and a
+    /// test phone, not for a store (the bundle for Google Play is <see cref="PlayBundle"/>'s). What the Editor derives
+    /// (the atlas, the art catalogue, the typefaces, the scene) is brought up to date first: the game reads the catalogue by the order of its lists of drawings, and a
     /// package with a catalogue older than those lists would stop at the first drawing added since. The manifest is
     /// given the build's permissions on the way (<see cref="AndroidManifestStep"/>), from a manifest Unity has written
     /// anew, and the package that comes out must ask for exactly the permissions of <see cref="MergedPermissions"/>,
     /// as Android's own tool reads them from it (<see cref="PackagePermissions"/>), must register no backend for
     /// Google's logging transport (<see cref="ManifestLoggingBackend"/>), must not start Play Games with the game's
-    /// process (<see cref="ManifestPlayGamesStart"/>), and must keep Android's backup to its rules
+    /// process (<see cref="ManifestPlayGamesStart"/>), must not declare Play Asset Delivery's foreground service
+    /// (<see cref="ManifestAssetDelivery"/>), and must keep Android's backup to its rules
     /// (<see cref="ManifestBackupRules"/>). The Unity library's build.gradle is given the Play Games library the
     /// game's Play Games plugin needs (<see cref="PlayGamesDependency"/>).
     /// </summary>
@@ -82,16 +83,7 @@ namespace Puzzle.Client.EditorTools
 
             try
             {
-                IReadOnlyList<string> asked = PackagePermissions.AskedIn(WhatAaptSays(summary.outputPath, "permissions"));
-                PackagePermissions.Require(asked.ToArray(), MergedPermissions);
-                Debug.Log($"Android build: the package asks for exactly {string.Join(", ", asked)}.");
-                string manifest = WhatAaptSays(summary.outputPath, "xmltree", "AndroidManifest.xml");
-                ManifestLoggingBackend.RequireWithdrawnFrom(manifest);
-                Debug.Log($"Android build: the package registers no backend for Google's logging transport ({ManifestLoggingBackend.CctBackend} withdrawn).");
-                ManifestPlayGamesStart.RequireWithdrawnFrom(manifest);
-                Debug.Log($"Android build: the package does not start Play Games with the game ({ManifestPlayGamesStart.InitProvider} withdrawn).");
-                ManifestBackupRules.RequireIn(manifest);
-                Debug.Log($"Android build: Android's backup keeps {ManifestBackupRules.PlayerPrefsFile(PackageId)} and {string.Join(", ", ManifestBackupRules.GameFiles)}, nothing else.");
+                CheckThePackage(summary.outputPath);
             }
             catch (Exception failure) when (failure is InvalidOperationException || failure is IOException || failure is System.ComponentModel.Win32Exception)
             {
@@ -109,12 +101,18 @@ namespace Puzzle.Client.EditorTools
         /// 2026-10-16, while the game sent nothing; v1 asks for it again (the owner's decision, 2026-10-24): the play
         /// statistics, once the player allows them, go to Aptabase over it, and Unity's purchase library sends its
         /// purchase events over it (Flow/PrivacyWords.cs says both). The application's backup stays on by the earlier
-        /// decision (A29), ruled by <see cref="ManifestBackupRules"/>.
+        /// decision (A29), ruled by <see cref="ManifestBackupRules"/>. The four withdrawn come with Play Asset Delivery's
+        /// library, which Unity gives the Google Play bundle alone, and go with its foreground service (<see cref="ManifestAssetDelivery"/>);
+        /// the test package never had them, so their lines change nothing of it.
         /// </summary>
         internal static readonly PermissionLine[] Permissions =
         {
             PermissionLine.Ask("android.permission.VIBRATE"), // the short ticks of play (Scripts/Sound/Haptics.cs)
             PermissionLine.Ask("android.permission.INTERNET"), // the play statistics (Scripts/Statistics) and the purchase library's events
+            PermissionLine.Withdraw("android.permission.FOREGROUND_SERVICE"), // Play Asset Delivery's foreground service, which unpacks downloaded packs
+            PermissionLine.Withdraw("android.permission.FOREGROUND_SERVICE_DATA_SYNC"), // the same service's type, dataSync
+            PermissionLine.Withdraw("android.permission.WAKE_LOCK"), // WorkManager, which Play Asset Delivery brings, while it runs work (it is given none)
+            PermissionLine.Withdraw("android.permission.RECEIVE_BOOT_COMPLETED"), // WorkManager's rescheduling after a restart
         };
 
         /// <summary>
@@ -132,8 +130,33 @@ namespace Puzzle.Client.EditorTools
             PackageId + PackagePermissions.UnitysReceiverSuffix,
         };
 
+        /// <summary>
+        /// Reads the built package back with Android's own tool: it asks for exactly <see cref="MergedPermissions"/>,
+        /// registers no backend for Google's logging transport, does not start Play Games with the game's process,
+        /// declares no foreground service of Play Asset Delivery, and keeps Android's backup to its rules. The Google
+        /// Play bundle's base APK is read the same way (<see cref="PlayBundle"/>).
+        /// </summary>
+        /// <param name="package">An APK: the test package, or the base APK bundletool makes of the bundle.</param>
+        /// <exception cref="InvalidOperationException">The package is not as the build means it, or aapt did not read it.</exception>
+        /// <exception cref="System.ComponentModel.Win32Exception">aapt could not be started.</exception>
+        internal static void CheckThePackage(string package)
+        {
+            IReadOnlyList<string> asked = PackagePermissions.AskedIn(WhatAaptSays(package, "permissions"));
+            PackagePermissions.Require(asked.ToArray(), MergedPermissions);
+            Debug.Log($"Android build: the package asks for exactly {string.Join(", ", asked)}.");
+            string manifest = WhatAaptSays(package, "xmltree", "AndroidManifest.xml");
+            ManifestLoggingBackend.RequireWithdrawnFrom(manifest);
+            Debug.Log($"Android build: the package registers no backend for Google's logging transport ({ManifestLoggingBackend.CctBackend} withdrawn).");
+            ManifestPlayGamesStart.RequireWithdrawnFrom(manifest);
+            Debug.Log($"Android build: the package does not start Play Games with the game ({ManifestPlayGamesStart.InitProvider} withdrawn).");
+            ManifestAssetDelivery.RequireWithdrawnFrom(manifest);
+            Debug.Log($"Android build: the package declares no foreground service of Play Asset Delivery ({ManifestAssetDelivery.ForegroundService} withdrawn).");
+            ManifestBackupRules.RequireIn(manifest);
+            Debug.Log($"Android build: Android's backup keeps {ManifestBackupRules.PlayerPrefsFile(PackageId)} and {string.Join(", ", ManifestBackupRules.GameFiles)}, nothing else.");
+        }
+
         /// <summary>The Unity library's manifest of the build before, taken away so that Unity writes it anew; nothing where there is none.</summary>
-        private static void TakeAwayTheKeptManifest()
+        internal static void TakeAwayTheKeptManifest()
         {
             if (File.Exists(KeptLibraryManifest))
             {
@@ -148,7 +171,7 @@ namespace Puzzle.Client.EditorTools
         /// </summary>
         /// <exception cref="InvalidOperationException">No aapt was found, or it did not read the package.</exception>
         /// <exception cref="System.ComponentModel.Win32Exception">aapt could not be started.</exception>
-        private static string WhatAaptSays(string package, string what, string? file = null)
+        internal static string WhatAaptSays(string package, string what, string? file = null)
         {
             string buildTools = Path.Combine(AndroidExternalToolsSettings.sdkRootPath, "build-tools");
             string? aapt = Directory.Exists(buildTools)
@@ -189,9 +212,10 @@ namespace Puzzle.Client.EditorTools
         /// hidden with Android's default behaviour, under which one back gesture from the screen's edge goes back
         /// (<see cref="ManifestSystemBars"/>, Scripts/Engine/SystemBars.cs). The project's
         /// committed settings say the same, the target too, so a build leaves them as they were; the manifest step stops
-        /// a package that would open another way (<see cref="ManifestOrientation"/>).
+        /// a package that would open another way (<see cref="ManifestOrientation"/>). The test package is one APK; the
+        /// Google Play bundle turns the bundle on for its own build alone (<see cref="PlayBundle"/>).
         /// </summary>
-        private static void ApplyPlayerSettings()
+        internal static void ApplyPlayerSettings()
         {
             PlayerSettings.companyName = CompanyName;
             PlayerSettings.productName = ProductName;
@@ -212,8 +236,9 @@ namespace Puzzle.Client.EditorTools
     /// <summary>
     /// The build's manifest step: once Unity has made the Gradle project of an Android build (this tool's, or any
     /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>)
-    /// and withdraws the backend of Google's logging transport (<see cref="ManifestLoggingBackend"/>) and Play Games'
-    /// start-up provider (<see cref="ManifestPlayGamesStart"/>), and it must say
+    /// and withdraws the backend of Google's logging transport (<see cref="ManifestLoggingBackend"/>), Play Games'
+    /// start-up provider (<see cref="ManifestPlayGamesStart"/>) and, in the Google Play bundle, Play Asset Delivery's
+    /// foreground service (<see cref="ManifestAssetDelivery"/>), and it must say
     /// that the application is a game (<see cref="ManifestGameCategory"/>), open Unity's activity upright
     /// (<see cref="ManifestOrientation"/>) and hide the system bars with Android's default behaviour
     /// (<see cref="ManifestSystemBars"/>). A manifest that cannot be read or written, one of another category, one
@@ -231,15 +256,16 @@ namespace Puzzle.Client.EditorTools
         public void OnPostGenerateGradleAndroidProject(string path)
         {
             string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
-            string written = ManifestBackupRules.Apply(
-                ManifestPlayGamesStart.Withdraw(ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions))));
+            string written = ManifestBackupRules.Apply(ManifestAssetDelivery.Withdraw(
+                ManifestPlayGamesStart.Withdraw(ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions)))));
             ManifestGameCategory.Require(written);
             ManifestOrientation.Require(written);
             ManifestSystemBars.Require(written);
             File.WriteAllText(manifest, written);
             WriteTheBackupRules(Path.Combine(path, "src", "main", "res", "xml"));
             Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game that opens {ManifestOrientation.Upright}, "
-                + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend} and {ManifestPlayGamesStart.InitProvider}.");
+                + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend}, {ManifestPlayGamesStart.InitProvider} "
+                + $"and {ManifestAssetDelivery.ForegroundService}.");
             string gradle = Path.Combine(path, "build.gradle");
             File.WriteAllText(gradle, PlayGamesDependency.Into(File.ReadAllText(gradle)));
             Debug.Log($"Android build: the Unity library depends on {PlayGamesDependency.Library} for the Play Games plugin.");

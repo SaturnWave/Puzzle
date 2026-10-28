@@ -1,0 +1,8 @@
+# Every bundle uploaded to Google Play for com.saturnwave.museumpuzzle, one line each, oldest first:
+#   versionCode versionName day track          for example: 1 1.0 2026-10-28 closed
+# The track is one of internal, closed, open, production; the day is written yyyy-MM-dd.
+#
+# Google Play takes a versionCode once and, after it, only a higher one; a code is used up as soon as Play Console
+# has taken the file, even when the release it went into is thrown away. The bundle build
+# (unity/Assets/Editor/PlayBundle.cs) builds one more than the last line's code, versionCode 1 while there is none.
+# Add the line, and commit it, as soon as Play Console has taken an upload (docs/PLAY_RELEASE.md).
