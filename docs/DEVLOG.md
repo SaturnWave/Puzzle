@@ -23,8 +23,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - UGS `production`'da başladı, bulut kaydı anonim hesapla eşitledi. Mağaza "unreachable" (ürünler henüz yok). PlayCore `onError(-2)`: kabloyla kurulumdan. Ekranlar: `out/phone-test/vc2/`.
 - Telefonda şimdi vc2'nin hata ayıklama anahtarlı kopyası var. Play'deki vc2 yayına girince önce bu kaldırılmalı (T583).
 
+**Hata kaydı ve yükleme kuralı (sahip: "Hata yapılan noktaları kaydet; sonraki geliştirme aşamalarında bu hata yaşanmamalı")**
+- Yeni `docs/LESSONS.md` (Hata Kaydı, PDF listesinde). Altı kural var: gönderilen şey denenir; kütüphanenin tanımladığı kanıtsız çıkarılmaz; denetim bir varsayımı kilitlemez; varsayım olgu gibi yazılmaz; "Bekliyor" kanıtlı değişiklik mağazaya gitmez; çökme okunabilir olur. H5 bu olay; H1–H4 daha önce geç fark edilen hatalar (`-quit`'li denetimler, tutulan Gradle manifesti, Play Billing'in kayıt trafiği, Unity'ye verilen parolalar).
+- `docs/PLAY_RELEASE.md` 10: her yüklemeden önce zorunlu sıra. Derle, APK setini telefonda kur ve soğuk aç, kaydı oku, oyna. Sonra Play'in dahili testinden kur ve aç. Ancak ondan sonra kapalı teste ya da üretime terfi ettir.
+- Depoya `CLAUDE.md`: bu kurallar her Claude oturumunda ve ajanında okunur.
+
 **Sonraki**
-- Sahip vc2'yi kapalı teste yükler. Claude kayda `2 1.0 2026-10-29 closed` yazar, sürüm notlarını girer ve incelemeye gönderir.
+- Sahip vc2'yi yükler (PLAY_RELEASE 10: önce dahili test). Claude Play'den kurulan kopyayı dener, kapalı teste terfi ettirir, sürüm notlarını girer, incelemeye gönderir ve kayda yazar.
 - Test kullanıcılarına not: ilk sürüm açılmıyor, güncelleme geliyor, testten çıkmayın.
 - Oyuncu kodu (bulut kodu) versionCode 3'e kaldı.
 

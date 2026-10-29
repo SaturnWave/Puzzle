@@ -35,8 +35,8 @@
 | 10 | Sahip | Ürünleri aç (8.7): paket yüklendikten ve ödeme profili kurulduktan sonra | Paket yüklendi; ödeme profili bekleniyor |
 | 11 | Claude | Değişiklikleri incelemeye gönder (5.2, 8. adım) | Gönderildi, 2026-10-28: 28 değişiklik. Google 29 Ekim'de onayladı; test bağlantısı açık |
 | 12 | Claude | versionCode 1'in açılış çökmesi: neden, düzeltme, versionCode 2 (9) | Yapıldı, 2026-10-29: `museumpuzzle-vc2-upload.aab`, telefonda açılıyor |
-| 13 | Sahip | versionCode 2'yi kapalı teste yükle (5.2; Create new release) | Bekliyor |
-| 14 | Claude | Kayda yaz (`2 1.0 2026-10-29 closed`), sürüm notları, incelemeye gönder | Yüklemeden sonra |
+| 13 | Sahip | versionCode 2'yi yükle (10: önce dahili test, sonra kapalı teste terfi) | Bekliyor |
+| 14 | Claude | Play'den kurup dene (10, 6. adım), kapalı teste terfi ettir, sürüm notları, incelemeye gönder, kayda yaz (`2 1.0 2026-10-29 …`) | Yüklemeden sonra |
 
 ## 3. Yükleme anahtarı
 
@@ -396,4 +396,24 @@ Play'in telefona kurduğu temel APK'nın manifesti (`aapt dump xmltree`): `Asset
 
 **Test kullanıcıları:** versionCode 1'i kuran herkes aynı çökmeyi görür. versionCode 2 onaylanınca Play güncellemeyi getirir. Teste katılım (opt-in) kalıcı; oyunu kaldırmak ya da yeniden katılmak gerekmez.
 
-**Ders:** her yüklemeden önce paketin APK seti telefonda açılır (4. bölüm, çıkanlar tablosu; T578, T579).
+**Ders:** her yüklemeden önce paketin APK seti telefonda açılır (10. bölüm; hata kaydı `docs/LESSONS.md` H5).
+
+## 10. Her yüklemeden önce (zorunlu)
+
+versionCode 1'in açılış çökmesinden (9) sonra konan sıra. Bir adım geçmezse paket yüklenmez; adımın kaydı DEVLOG'a ve `docs/PHONE_TESTS.md`'ye yazılır. Gerekçe ve öteki dersler: `docs/LESSONS.md`.
+
+1. **Paketi derle** (4). Son satır `Play bundle: succeeded, signed with the upload key …` olmalı. Kayıttaki bütün `Android build:` ve `Play bundle:` satırları okunur: izinler, Play Asset Delivery'nin iki servisi, sembol tabloları, 16 KB hizası, temel modülün boyutu.
+2. **Telefonu hazırla.** USB'yle bağlı, `adb devices` "device" diyor. Telefonda imzası başka bir kopya varsa (Play'den kurulan ya da test APK'sı) önce kaldırılır: `adb uninstall com.saturnwave.museumpuzzle`. İlerleme yalnız bulut kaydında kalır; kaldırmadan önce sahibe söylenir.
+3. **Paketin APK setini kur** (T578):
+   ```
+   java -jar D:\puzzle-cache\tools\bundletool-all-1.18.3.jar install-apks --apks=D:\puzzle-cache\play\museumpuzzle-vc<N>-upload.apks --adb=<adb.exe>
+   adb shell pm path com.saturnwave.museumpuzzle
+   ```
+   Üç parça çıkmalı: `base`, `UnityDataAssetPack`, `config.arm64_v8a`. `java` Unity'nin kendi Java'sı, `adb` Unity'nin SDK'sındaki.
+4. **Soğuk aç, kaydı oku** (T579). `adb logcat -c`, sonra `adb shell monkey -p com.saturnwave.museumpuzzle -c android.intent.category.LAUNCHER 1`. 20 saniye sonra `adb shell pidof com.saturnwave.museumpuzzle` bir sayı vermeli (oyun ayakta). `adb logcat -d` içinde oyunun sürecinde `FATAL`, `JNI DETECTED ERROR`, `Fatal signal` ya da `ANR` olmamalı. `adb shell dumpsys dropbox` içinde paket için yeni `data_app_native_crash` ya da `data_app_crash` olmamalı.
+5. **Oyna** (T579). Giriş sayfası ("Version …"), salon, 1. bölüm ve bir hamle, koleksiyon, harita. Sonra telefonu yeniden başlat ve oyunu yine aç. Ekranlar `out/phone-test/vc<N>/` altına.
+6. **Play üzerinden dene.** Paket önce **Internal testing** kanalına yüklenir; dahili test birkaç dakikada açılır, uzun inceleme beklemez. Telefondaki yan yüklenen kopya kaldırılır, oyun dahili test bağlantısından Play ile kurulur. Play'in imzası ve otomatik koruması (`com.pairip`) bu kopyaya eklenir. 4. ve 5. adımlar yinelenir (T583).
+7. **Terfi ettir.** Ancak bundan sonra aynı paket **Promote release** ile kapalı teste (ya da üretime) taşınır ve incelemeye gönderilir. İkinci yükleme yok.
+8. **Kayda yaz** (6): Play paketi kabul edince `release/google-play-uploads.txt` satırı eklenir ve depoya işlenir.
+
+Kütüphanenin tanımladığı bir bileşeni ya da izni manifestten çıkaran her değişiklikte, 1. adımdan önce kütüphanenin o bileşene dokunan kodu okunur (`javap -c`) ve sonuç belgeye yazılır (`docs/LESSONS.md` kural 2).
