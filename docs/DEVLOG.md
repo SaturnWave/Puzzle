@@ -29,7 +29,9 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - Depoya `CLAUDE.md`: bu kurallar her Claude oturumunda ve ajanında okunur.
 
 **Sonraki**
-- Sahip vc2'yi yükler (PLAY_RELEASE 10: önce dahili test). Claude Play'den kurulan kopyayı dener, kapalı teste terfi ettirir, sürüm notlarını girer, incelemeye gönderir ve kayda yazar.
+- **Yüklendi ve incelemede (gece):** sahip vc2'yi yükledi. Play işledi: 2 (1.0), yeni kurulumda 305 MB, desteklenen cihazlar aynı. Tek uyarı R8 eşleme dosyası; sembol uyarısı kalktı. Claude notları girdi ve incelemeye gönderdi. Kayıt: `2 1.0 2026-10-29 closed`; sonraki paket versionCode 3.
+- Sahip depoyu herkese açtı (ileride yine özel yapılacak). Herkese açık depoda GitHub Actions ücretsiz, CI yeniden çalışabilir.
+- Karar (sahip): vc2 kapalı teste doğrudan gider; dahili test adımı bu kez atlanır. Sahip yükler; Claude sürüm notlarını girer, incelemeye gönderir, kayda yazar ve onaydan hemen sonra Play'den kurulan kopyayı dener (T583). Sürüm notları: en "Fixes the game closing right after it starts. …", tr "Oyunun açılır açılmaz kapanması düzeltildi. …". versionCode 3'ten başlayarak PLAY_RELEASE 10 eksiksiz uygulanır.
 - Test kullanıcılarına not: ilk sürüm açılmıyor, güncelleme geliyor, testten çıkmayın.
 - Oyuncu kodu (bulut kodu) versionCode 3'e kaldı.
 

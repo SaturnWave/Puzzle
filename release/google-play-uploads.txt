@@ -7,3 +7,4 @@
 # (unity/Assets/Editor/PlayBundle.cs) builds one more than the last line's code, versionCode 1 while there is none.
 # Add the line, and commit it, as soon as Play Console has taken an upload (docs/PLAY_RELEASE.md).
 1 1.0 2026-10-28 closed
+2 1.0 2026-10-29 closed

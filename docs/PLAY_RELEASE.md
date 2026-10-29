@@ -35,8 +35,8 @@
 | 10 | Sahip | Ürünleri aç (8.7): paket yüklendikten ve ödeme profili kurulduktan sonra | Paket yüklendi; ödeme profili bekleniyor |
 | 11 | Claude | Değişiklikleri incelemeye gönder (5.2, 8. adım) | Gönderildi, 2026-10-28: 28 değişiklik. Google 29 Ekim'de onayladı; test bağlantısı açık |
 | 12 | Claude | versionCode 1'in açılış çökmesi: neden, düzeltme, versionCode 2 (9) | Yapıldı, 2026-10-29: `museumpuzzle-vc2-upload.aab`, telefonda açılıyor |
-| 13 | Sahip | versionCode 2'yi yükle (10: önce dahili test, sonra kapalı teste terfi) | Bekliyor |
-| 14 | Claude | Play'den kurup dene (10, 6. adım), kapalı teste terfi ettir, sürüm notları, incelemeye gönder, kayda yaz (`2 1.0 2026-10-29 …`) | Yüklemeden sonra |
+| 13 | Sahip | versionCode 2'yi kapalı teste yükle (Create new release; sahibin kararı, 2026-10-29: tek seferlik istisna, 10'un 6. adımı atlanıyor) | Yapıldı, 2026-10-29: Play işledi, 2 (1.0) |
+| 14 | Claude | Sürüm notları, incelemeye gönder, kayda yaz (`2 1.0 2026-10-29 closed`); onaydan hemen sonra Play'den kurup dene (T583) | Gönderildi ve kayda yazıldı, 2026-10-29; Play'den deneme onaydan sonra |
 
 ## 3. Yükleme anahtarı
 
@@ -155,7 +155,7 @@ Play bir versionCode'u **bir kez** alır, sonra yalnız daha büyüğünü. Kod,
 - Kayıt: `release/google-play-uploads.txt` (depoda). Her yükleme bir satır: `versionCode versionName gün kanal`, ör. `1 1.0 2026-10-28 closed`. Kanal: `internal`, `closed`, `open` ya da `production`.
 - Derleme versionCode'u kendisi seçer: **kayıttaki son satırın bir fazlası**; kayıt boşken 1. Kimse elle kod yazmaz; kayıttaki kodlar satır satır artmıyorsa ya da bir satır bu biçimde değilse derleme durur (`unity/Assets/Editor/PlayUploads.cs`, testleri `PlayUploadsTests`).
 - Yükleme kabul edilince satır eklenir ve depoya işlenir (Claude yapar; derlemenin kaydındaki satırı kopyalamak yeter). Eklenmeden yeniden derlenen paket aynı kodu alır: henüz yüklenmemiş bir paketi yeniden derlemek için doğru olan bu. Satır unutulursa Play ikinci yüklemeyi "Version code 1 has already been used" diye reddeder; zararsız: satır eklenir, paket yeniden derlenir.
-- **Bir sonraki yükleme:** kayıtta `1 …` satırı varken derleme **versionCode 2** üretir (29 Ekim'de derlendi, 9. bölüm). Play onu kabul edince `2 1.0 2026-10-29 closed` eklenir; ondan sonraki derleme versionCode 3.
+- **Bir sonraki yükleme:** kayıtta `2 1.0 2026-10-29 closed` var (9. bölüm); sonraki derleme **versionCode 3** üretir.
 - versionName `1.0` kalıyor: Unity'nin `bundleVersion`'ı; giriş sayfası "Sürüm 1.0" diye gösterir, bulut kaydı ve deneme kayıtları da bu sürümü yazar. Değiştirmek bir karar (ör. `1.0.1`): `unity/ProjectSettings` → `bundleVersion`; oyunun metinleri kendiliğinden yeni sürümü gösterir.
 - Test APK'sı (`AndroidBuild.Run`) versionCode 1'de, hata ayıklama anahtarıyla, tek dosya kalır: indirme sayfası için.
 
@@ -394,6 +394,8 @@ Play'in telefona kurduğu temel APK'nın manifesti (`aapt dump xmltree`): `Asset
 
 **Telefonda (versionCode 2, 29 Ekim 22:35):** Play'in kopyası kaldırıldı (imzası başka; içinde hiç açılmamış oyunun boş verisi vardı). APK seti `bundletool install-apks` ile kuruldu: `base`, `UnityDataAssetPack`, `config.arm64_v8a`. Oyun soğuk açıldı ve 20 saniye sonra süreç ayaktaydı; giriş sayfası "Version 1.0" gösterdi. Salon ve istatistik izni kartı geldi ("Don't allow" seçildi). 1. bölümün kartı ve tahtası, öğretici ve tablonun parça önizlemesi açıldı. Bir hamle oynandı: hedef 55'ten 52'ye, hamle 24'ten 23'e. Kayıtta çökme, `JNI DETECTED ERROR`, `FATAL` ya da `SecurityException` yok. UGS `production`'da başladı, bulut kaydı anonim hesapla eşitledi. Mağazanın "unreachable" demesi beklenen durum: Play Console'da ürünler yok. PlayCore'un `AssetPackServiceImpl : onError(-2)` satırı paketin Play'den değil kabloyla kurulmasından; oyun veriyi split APK'dan okuyor. Ekranlar: `out/phone-test/vc2/`.
 
+**Yükleme ve inceleme (29 Ekim gece):** sahip paketi kapalı testin yeni sürümüne yükledi. Play işledi: 2 (1.0), API 26+, hedef SDK 36, arm64-v8a, yeni kurulumda 305 MB. Desteklenen cihazlar değişmedi: 8.367 telefon, 4.733 tablet. Sürüm 1 bu sürüme dahil değil. Sürüm notları: en-US "Fixes the game closing right after it starts. …", tr-TR "Oyunun açılır açılmaz kapanması düzeltildi. …" (öncekiler sürüm 1'den kopyalandı). Play'in tek uyarısı R8 eşleme dosyasının olmaması; sembol uyarısı bu kez çıkmadı. Claude incelemeye gönderdi ("Changes in review"), kayda `2 1.0 2026-10-29 closed` yazıldı. Yönetimli yayın kapalı: onaylanınca sürüm kendiliğinden yayına çıkar.
+
 **Test kullanıcıları:** versionCode 1'i kuran herkes aynı çökmeyi görür. versionCode 2 onaylanınca Play güncellemeyi getirir. Teste katılım (opt-in) kalıcı; oyunu kaldırmak ya da yeniden katılmak gerekmez.
 
 **Ders:** her yüklemeden önce paketin APK seti telefonda açılır (10. bölüm; hata kaydı `docs/LESSONS.md` H5).
@@ -417,3 +419,5 @@ versionCode 1'in açılış çökmesinden (9) sonra konan sıra. Bir adım geçm
 8. **Kayda yaz** (6): Play paketi kabul edince `release/google-play-uploads.txt` satırı eklenir ve depoya işlenir.
 
 Kütüphanenin tanımladığı bir bileşeni ya da izni manifestten çıkaran her değişiklikte, 1. adımdan önce kütüphanenin o bileşene dokunan kodu okunur (`javap -c`) ve sonuç belgeye yazılır (`docs/LESSONS.md` kural 2).
+
+**İstisna (sahibin kararı, 2026-10-29):** versionCode 2 kapalı teste doğrudan gidiyor, 6. adım atlanıyor. Gerekçe: kapalı testteki herkes açılmayan versionCode 1'de; 1–5. adımlar geçti. Play'in işlediği kopya onaydan hemen sonra denenir (T583). versionCode 3'ten başlayarak liste eksiksiz uygulanır.
