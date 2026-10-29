@@ -4,6 +4,30 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-29 · Oturum 36 — versionCode 1 açılışta kapanıyordu; düzeltme ve versionCode 2
+
+**Kapalı test onaylandı, oyun açılmıyordu**
+- Google kapalı testi onayladı, bağlantı açıldı. Sahip: "oyunu indirdim fakat oyun hiç açılmıyor, açılıyor direkt kapanıyor". Telefon (Pixel 9 Pro Fold, Android 16) USB'yle bağlıydı. Oyun Play'den kurulmuştu (`installer=com.android.vending`, 12:33; `base`, `UnityDataAssetPack`, `config.arm64_v8a`, Play'in otomatik koruması `com.pairip` ile). 12:54–21:55 arası 11 yerel çökme, hepsi aynı.
+- Kayıt: Unity'nin ana iş parçacığında, pencere açılırken `JNI DETECTED ERROR IN APPLICATION: java_object == null in call to GetObjectClass` (`libunity.so`). Bekleyen Java hatası: `IllegalArgumentException: Component class …assetpacks.ExtractionForegroundService does not exist`, Play Asset Delivery 2.3.0'ın `setComponentEnabledSetting` çağrısından. Play'in kurduğu manifestte bu servis yok.
+- Neden: Unity'nin oynatıcısı açılışta kütüphaneden `AssetPackManager`'ı istiyor. Kütüphane önce iki servisini açıyor (bytecode `javap` ile okundu: `s.a()`, `internal.af.a`). 28 Ekim'de izinleri daraltmak için ön plan servisini manifestten çıkarmıştık (`tools:node="remove"`). Test APK'sında kütüphane yok, hata yalnız paketten kurulumda. Paket yüklenmeden önce telefonda açılmamıştı (F33'ün T578/T579'u bekliyordu). Ders: her yüklemeden önce paketin APK seti telefonda açılır.
+
+**Düzeltme (`feature/bombs-colors-director-webui`)**
+- `ManifestAssetDelivery.KeepWithoutItsType`: ön plan servisi kalıyor, yalnız türü siliniyor (`tools:remove="android:foregroundServiceType"`). Dört izin yine geri çekiliyor. Manifestte ön plan servis türü olmadığından Play Console beyan istemiyor. Kütüphane servisi yalnız Play'in kurulumdan sonra indirdiği bir parça için başlatıyor (`updateServiceState`); oyunun öyle parçası yok.
+- İşaret yalnız App Bundle ve binary split açıkken konuyor (`AndroidManifestStep.BringsPlayAssetDelivery`). Test APK'sında kütüphane yok; işaret orada sınıfsız bir servis tanımlardı.
+- Denetim ikiye ayrıldı (`BuiltPackage`). Paketin temel APK'sında iki servis (`AssetPackExtractionService`, `ExtractionForegroundService`) tanımlı ve hiçbir ön plan servis türü yok (`RequireKeptWithoutItsTypeIn`); versionCode 1 burada dururdu. Test APK'sında kütüphaneden hiçbir şey yok (`RequireAbsentFrom`). `ManifestAssetDeliveryTests` yeniden yazıldı (6 test; örnek dökümler telefondan alınan `aapt` çıktısının biçiminde).
+- Yerel kütüphanelerin sembol tabloları pakete giriyor (`UserBuildSettings.DebugSymbols`: `SymbolTable`, `IncludeInBundle`; yalnız paketin derlemesinde, sonra eski hâline). Derleme paketteki sembol dosyalarını kayda yazıyor. 28 Ekim'deki "sembol yok" uyarısı kalkmalı.
+- versionCode 2: `D:/puzzle-cache/play/museumpuzzle-vc2-upload.aab`, 331.463.587 bayt, SHA-256 `5bde01e4…7dba64`, yükleme anahtarıyla imzalı, derleme 12,9 dk. Temel modül 59,6 MB; altı kütüphane 16 KB hizalı ve altısının `.so.sym` dosyası pakette.
+
+**Telefonda (versionCode 2)**
+- Play'in vc1 kopyası kaldırıldı (imzası başka, içinde veri yok). APK seti `bundletool install-apks` ile kuruldu. Oyun soğuk açıldı ve 20 sn sonra ayaktaydı. Giriş sayfası "Version 1.0", salon, istatistik kartı ("Don't allow"), 1. bölümün kartı ve tahtası, öğretici; bir hamle oynandı (55→52, 24→23). Kayıtta çökme ya da JNI hatası yok.
+- UGS `production`'da başladı, bulut kaydı anonim hesapla eşitledi. Mağaza "unreachable" (ürünler henüz yok). PlayCore `onError(-2)`: kabloyla kurulumdan. Ekranlar: `out/phone-test/vc2/`.
+- Telefonda şimdi vc2'nin hata ayıklama anahtarlı kopyası var. Play'deki vc2 yayına girince önce bu kaldırılmalı (T583).
+
+**Sonraki**
+- Sahip vc2'yi kapalı teste yükler. Claude kayda `2 1.0 2026-10-29 closed` yazar, sürüm notlarını girer ve incelemeye gönderir.
+- Test kullanıcılarına not: ilk sürüm açılmıyor, güncelleme geliyor, testten çıkmayın.
+- Oyuncu kodu (bulut kodu) versionCode 3'e kaldı.
+
 ## 2026-10-28 · Oturum 35 — Google Play'e ilk paket (kapalı test)
 
 **Gece: Play Console dolduruldu, paket yüklendi, kapalı test incelemeye gitti**

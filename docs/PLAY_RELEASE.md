@@ -7,17 +7,17 @@
 | Ne | Değer |
 |---|---|
 | Paket kimliği | `com.saturnwave.museumpuzzle` (Play Console'daki "Museum Puzzle" kaydı, 2026-10-27) |
-| versionCode / versionName | 1 / 1.0 |
+| versionCode / versionName | 2 / 1.0 (29 Ekim). versionCode 1 / 1.0 (28 Ekim) Play'den kurulunca her açılışta kapanıyordu: 9. bölüm |
 | Derleme türü | Mağaza derlemesi: gerçek parayla satın alma Google Play'den (`economy/default.json` → `build.realMoneyPurchases: "store"`), reklamlar canlandırma (`"simulated"`), test modu **yok**. Giriş sayfası "Sürüm 1.0" der ("test sürümü" demez). Bulut kaydı UGS'nin `production` ortamına gider |
 | Hedef | Android 16 (API 36), en düşük Android 8.0 (API 26), yalnız 64-bit ARM (arm64-v8a), IL2CPP |
-| Dosya | `D:/puzzle-cache/play/museumpuzzle-vc1-upload.aab` (depo dışında; depoya girmez). 28 Ekim'deki paket: 306.397.933 bayt, SHA-256 `d6eb69ff…78eb9a` |
+| Dosya | `D:/puzzle-cache/play/museumpuzzle-vc2-upload.aab` (depo dışında; depoya girmez): 331.463.587 bayt, SHA-256 `5bde01e4…7dba64`; 25 MB'lık fark yerel kütüphanelerin sembol tabloları (telefona inmez). 28 Ekim'deki versionCode 1: `museumpuzzle-vc1-upload.aab`, 306.397.933 bayt, SHA-256 `d6eb69ff…78eb9a` |
 | Boyut | Paket dosyası 306,4 milyon bayt. Telefonun indirdiği (bundletool `get-size total`): temel modül 59,6 MB (Play'in sınırı 200 MB); temel modülle birlikte `UnityDataAssetPack` 305,1 MB, parçanın kendi payı ≈245,5 MB (aşağıda) |
 | İzinler | Tam beş: `VIBRATE`, `INTERNET`, `ACCESS_NETWORK_STATE`, `com.android.vending.BILLING` ve Unity'nin `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`'ı. Reklam kimliği (`AD_ID`) yok |
 | İmza | Sizin yükleme anahtarınız (`upload`), 3. bölüm. Unity paketi kendi hata ayıklama anahtarıyla derler; derleme o imzayı çıkarıp paketi Java'nın `jarsigner`'ıyla sizin anahtarınızla yeniden imzalar |
 
 **Neden iki parça:** test APK'sı 306 MB, Play ise paketin temel modülünün sıkıştırılmış indirmesini en çok 200 MB ile sınırlıyor. Büyük olan oyunun verisi (tablolar ve öteki resimler, sesler, Unity'nin sahne dosyaları; APK'da `assets/bin/Data`, sıkıştırılmış 272 MB); kod, Unity'nin kütüphaneleri ve ilk sahnenin dosyaları indirmede ≈60 MB. Paket derlenirken Unity'nin **Split Application Binary** ayarı açılır: Unity bu veriyi `UnityDataAssetPack` adlı bir **install-time asset pack**'e koyar. Play bu parçayı oyunla birlikte, aynı kurulumda indirir; oyuncu için tek uygulama, ayrı bir indirme yok. Ayar yalnız paketin derlemesinde açılır; test APK'sı bugünkü gibi tek dosya kalır.
 
-**Play Asset Delivery'nin fazlası:** asset pack'li bir paket için Unity, Google'ın Play Asset Delivery kütüphanesini (`com.google.android.play:asset-delivery` 2.3.0) ekliyor. Kütüphane, kurulumdan **sonra** indirilen paketleri (fast-follow, on-demand) açmak için `dataSync` türünde bir ön plan servisi ve bu işi yürüten WorkManager'ı (androidx.work 2.9.1) getiriyor; onlarla dört izin geliyordu: servis için `FOREGROUND_SERVICE` ve `FOREGROUND_SERVICE_DATA_SYNC` (Play Console bunun için ayrı bir beyan ve video ister), WorkManager için `WAKE_LOCK` ve `RECEIVE_BOOT_COMPLETED`. İlk derlemenin denetimi bunu yakaladı ve paketi durdurdu. Oyunun tek parçası kurulumla gelir, sonradan bir şey indirilmez ya da açılmaz. Manifest adımı artık ön plan servisini çıkarıyor ve dört izni geri çekiyor (`unity/Assets/Editor/ManifestAssetDelivery.cs`); paket test APK'sıyla aynı beş izni istiyor. Kütüphanenin geri kalanı olduğu gibi duruyor (Unity'nin oynatıcısı kütüphaneye paketini sorarsa onu bütün bulsun diye): WorkManager oyunla başlıyor ama ona iş verilmiyor, işsizken uyanık tutma ya da açılış izni gerekmiyor. Telefonda doğrulama: T579 (açılış, tablolar, `logcat`'te hata yok).
+**Play Asset Delivery'nin fazlası:** asset pack'li bir paket için Unity, Google'ın Play Asset Delivery kütüphanesini (`com.google.android.play:asset-delivery` 2.3.0) ekliyor. Kütüphane, kurulumdan **sonra** indirilen paketleri (fast-follow, on-demand) açmak için `dataSync` türünde bir ön plan servisi ve bu işi yürüten WorkManager'ı (androidx.work 2.9.1) getiriyor; onlarla dört izin geliyordu: servis için `FOREGROUND_SERVICE` ve `FOREGROUND_SERVICE_DATA_SYNC` (Play Console bunun için ayrı bir beyan ve video ister), WorkManager için `WAKE_LOCK` ve `RECEIVE_BOOT_COMPLETED`. İlk derlemenin denetimi bunu yakaladı ve paketi durdurdu. Oyunun tek parçası kurulumla gelir, sonradan bir şey indirilmez ya da açılmaz. Manifest adımı dört izni geri çekiyor; paket test APK'sıyla aynı beş izni istiyor. **Ön plan servisi manifestte kalmalı:** Unity'nin oynatıcısı açılışta kütüphaneden paketini soruyor, kütüphane de önce iki servisini (`AssetPackExtractionService`, `ExtractionForegroundService`) açıyor; manifestte olmayan bir servisi Android açmıyor ve oyun kapanıyor. versionCode 1'de servis çıkarılmıştı, oyun her açılışta kapandı (9. bölüm). versionCode 2'den beri manifest adımı servisi bırakıyor, yalnız türünü (`foregroundServiceType="dataSync"`) siliyor: manifestte hiçbir ön plan servis türü yok, Play Console beyan istemiyor (`unity/Assets/Editor/ManifestAssetDelivery.cs`). Servis yalnız Play sonradan indirdiği bir parçanın açılmasını istediğinde başlar; oyunun öyle bir parçası yok. WorkManager oyunla başlıyor ama ona iş verilmiyor, işsizken uyanık tutma ya da açılış izni gerekmiyor. Telefonda doğrulama: T579 (açılış, tablolar, `logcat`'te hata yok).
 
 ## 2. Sırayla yapılacaklar
 
@@ -30,10 +30,13 @@
 | 5 | Sahip | Play Console'un "uygulamanı kur" görevleri ve mağaza sayfası (5.1; cevaplar, metinler ve görseller 8. bölümde, sıra 8.1) | Yapıldı, 2026-10-28: uygulamayı sahip açtı; formları, mağaza sayfasını ve 12 çeviriyi Claude sahibin oturumu açık Chrome'undan girdi (8.8) |
 | 6 | Sahip | Paketi kapalı teste yükle (5.2) | Yapıldı, 2026-10-28: sahip uzaktan yükledi; Play işledi: 1 (1.0), API 26+, hedef SDK 36, arm64-v8a, yeni kurulumda 305 MB |
 | 7 | Claude | Yüklenen sürümü kayda yaz (6) | Yapıldı, 2026-10-28: `1 1.0 2026-10-28 closed` |
-| 8 | Sahip, Claude | Telefon testleri F33 (T578–T583), `docs/PHONE_TESTS.md` | Bu gece |
+| 8 | Sahip, Claude | Telefon testleri F33 (T578–T583), `docs/PHONE_TESTS.md` | versionCode 1 yüklenmeden önce yapılmadı (9). versionCode 2: T578 geçti, T579'un açılış ve oyun kısmı geçti (2026-10-29); gerisi bekliyor |
 | 9 | Claude | Mağaza sayfası: 13 dilde metin, simge, tanıtım görseli, telefon ve tablet ekran görüntüleri, formların cevapları, ürünlerin listesi (8) | Yapıldı, 2026-10-28 |
 | 10 | Sahip | Ürünleri aç (8.7): paket yüklendikten ve ödeme profili kurulduktan sonra | Paket yüklendi; ödeme profili bekleniyor |
-| 11 | Claude | Değişiklikleri incelemeye gönder (5.2, 8. adım) | Gönderildi, 2026-10-28: 28 değişiklik; önce Google'ın hızlı denetimleri, sonra inceleme. Onaya kadar test bağlantısı açılmaz |
+| 11 | Claude | Değişiklikleri incelemeye gönder (5.2, 8. adım) | Gönderildi, 2026-10-28: 28 değişiklik. Google 29 Ekim'de onayladı; test bağlantısı açık |
+| 12 | Claude | versionCode 1'in açılış çökmesi: neden, düzeltme, versionCode 2 (9) | Yapıldı, 2026-10-29: `museumpuzzle-vc2-upload.aab`, telefonda açılıyor |
+| 13 | Sahip | versionCode 2'yi kapalı teste yükle (5.2; Create new release) | Bekliyor |
+| 14 | Claude | Kayda yaz (`2 1.0 2026-10-29 closed`), sürüm notları, incelemeye gönder | Yüklemeden sonra |
 
 ## 3. Yükleme anahtarı
 
@@ -89,11 +92,12 @@ Kod: `unity/Assets/Editor/PlayBundle.cs`. Süre ≈15–20 dakika (28 Ekim: 18 d
 1. Editor'ın türettiği dosyaları günceller (test APK'sındaki gibi).
 2. Ekonomi ayarının mağaza derlemesi olduğuna bakar: satın alma `"store"` değilse durur.
 3. versionCode'u yükleme kaydından alır (6. bölüm), anahtarı seçer (3).
-4. Unity'nin ayarlarını **yalnız bu derleme için** değiştirir (App Bundle açık, Split Application Binary açık, versionCode, Unity'nin hata ayıklama anahtarı) ve derleme bitince, başarılı da olsa başarısız da olsa, eski hâllerine döndürür. `unity/ProjectSettings/ProjectSettings.asset` değişmez; anahtar ve parola oraya hiç girmez.
+4. Unity'nin ayarlarını **yalnız bu derleme için** değiştirir (App Bundle açık, Split Application Binary açık, versionCode, Unity'nin hata ayıklama anahtarı, yerel kütüphanelerin sembol tabloları pakete: `DebugSymbols` = `SymbolTable`, `IncludeInBundle`; versionCode 2'den beri) ve derleme bitince, başarılı da olsa başarısız da olsa, eski hâllerine döndürür. `unity/ProjectSettings/ProjectSettings.asset` değişmez; anahtar ve parola oraya hiç girmez.
 5. Anahtar varsa paketi yeniden imzalar: hata ayıklama anahtarının imza dosyaları `META-INF`'ten çıkar, `jarsigner` imzalar (SHA-256 ile RSA) ve kendi denetimiyle doğrular; `META-INF`'te yalnız `MANIFEST.MF`, `UPLOAD.SF` ve `UPLOAD.RSA` kalmalı.
 6. Paketi okur, Google'ın bundletool'uyla (sürüm 1.18.3, `D:\puzzle-cache\tools\bundletool-all-1.18.3.jar`, Unity'nin kendi Java'sıyla) Play'in yapacağı APK'ları yapar ve denetler:
    - Temel APK'nın paket kimliği, versionCode'u ve versionName'i.
-   - Test APK'sının bütün denetimleri Android'in kendi aracıyla (`aapt`): izinler tam beş; Google'ın kayıt arka ucu (`CctBackendFactory`) yok; Play Games açılışta başlamıyor (`PlayGamesInitProvider` yok); Play Asset Delivery'nin ön plan servisi (`ExtractionForegroundService`) yok; yedek açık ve iki kural dosyası adlı.
+   - Test APK'sının denetimleri Android'in kendi aracıyla (`aapt`): izinler tam beş; Google'ın kayıt arka ucu (`CctBackendFactory`) yok; Play Games açılışta başlamıyor (`PlayGamesInitProvider` yok); yedek açık ve iki kural dosyası adlı. Play Asset Delivery'de ikisi ayrılır: paketin temel APK'sında kütüphanenin açılışta açtığı iki servis (`AssetPackExtractionService`, `ExtractionForegroundService`) tanımlı olmalı ve hiçbir ön plan servis türü olmamalı; test APK'sında kütüphaneden hiçbir şey olmamalı.
+   - Paketteki sembol tabloları (`BUNDLE-METADATA/com.android.tools.build.debugsymbols/`) kayda yazılır; yoksa uyarı (durdurmaz).
    - Paketteki her yerel kütüphane (`.so`) 16 KB bellek sayfasında yüklenebiliyor: Play, Android 15 ve sonrasını hedefleyen uygulamalarda bunu istiyor. 28 Ekim'de altı kütüphane (`libunity`, `libil2cpp`, `libmain`, `libgame`, `libc++_shared`, `libswappywrapper`), her yüklenebilir parçası 16 KB hizalı. Kütüphaneler APK'larda sıkıştırılmış durur ve kurulumda açılır (`extractNativeLibs`), bundletool'un ayarı da 16 KB (`PAGE_ALIGNMENT_16K`); `zipalign -c -P 16` temel ABI parçasını geçiriyor.
    - Temel modülün indirmesi 200 MB'ın altında (bundletool `get-size total`; sınır 200 milyon bayt olarak okunuyor, ikisinin sıkısı).
 7. Son satır:
@@ -105,8 +109,8 @@ Kod: `unity/Assets/Editor/PlayBundle.cs`. Süre ≈15–20 dakika (28 Ekim: 18 d
 
 | Dosya | Ne için |
 |---|---|
-| `museumpuzzle-vc1-upload.aab` | Play Console'a yüklenen paket |
-| `museumpuzzle-vc1-upload.apks` | Aynı paketten bundletool'un her telefon türü için yaptığı APK seti, bundletool'un hata ayıklama anahtarıyla imzalı: telefona kablo ile kurmak için (`bundletool install-apks --apks=…`, `docs/PHONE_TESTS.md` F33). Play'e yüklenmez |
+| `museumpuzzle-vc<N>-upload.aab` | Play Console'a yüklenen paket (N = versionCode; 29 Ekim'den beri 2) |
+| `museumpuzzle-vc<N>-upload.apks` | Aynı paketten bundletool'un her telefon türü için yaptığı APK seti, bundletool'un hata ayıklama anahtarıyla imzalı: telefona kablo ile kurmak için (`bundletool install-apks --apks=…`, `docs/PHONE_TESTS.md` F33). Play'e yüklenmez. **Her yüklemeden önce telefonda açılır** (T578, T579): Play'in kuracağı parçalarla aynı parçalar, versionCode 1'i kapatan hata ancak böyle görünür (9) |
 
 **Telefonda dikkat:** kabloyla kurulan test APK'sı ve `.apks` hata ayıklama anahtarıyla imzalı; Play'den gelen ise Google'ın anahtarıyla. Android imzası başka olan uygulamayı üstüne kurmaz: telefonunuzda test APK'sı varken kapalı testten kurmak için önce onu kaldırın (`adb uninstall com.saturnwave.museumpuzzle` ya da Ayarlar → Uygulamalar). Telefondaki ilerleme yalnız bulut kaydında kalır (Bulut kaydı açıksa).
 
@@ -132,10 +136,10 @@ Play Console → Museum Puzzle → **Dashboard → Set up your app**. Kapalı te
 2. **Testers** sekmesi: test listesi (e-postalar ya da bir Google Grubu). Öteki üç oyunun ortak listesi ("SketchPaint testers", 30 adres) seçilebilir. **Countries / regions**: test edilecek ülkeler.
 3. **Releases → Create new release**.
 4. İlk yüklemede Play imzalamayı sorar: **"Use Google-generated key"** (önerilen). Yüklediğiniz paketin anahtarı kendiliğinden yükleme anahtarı olarak kaydedilir.
-5. **App bundles → Upload**: `D:\puzzle-cache\play\museumpuzzle-vc1-upload.aab`. Play paketi işler (birkaç dakika). Sürüm adı kendiliğinden "1 (1.0)".
+5. **App bundles → Upload**: `D:\puzzle-cache\play\museumpuzzle-vc<N>-upload.aab` (ilk yükleme vc1; 29 Ekim'den beri vc2). Play paketi işler (birkaç dakika). Sürüm adı kendiliğinden "N (1.0)".
 6. **Release notes**: `<tr-TR>` ve `<en-US>` için birkaç satır (ör. "İlk kapalı test sürümü").
 7. **Next**. Play'in uyarıları:
-   - "This App Bundle contains native code, and you've not uploaded debug symbols": yalnız uyarı; çökme raporlarındaki yerel satırlar adsız kalır. İstenirse sonraki pakette Unity'nin sembol dosyası da üretilir (bize söyleyin).
+   - "This App Bundle contains native code, and you've not uploaded debug symbols": yalnız uyarı; çökme raporlarındaki yerel satırlar adsız kalır. versionCode 1'de çıktı; versionCode 2'den beri sembol tabloları paketin içinde, uyarı çıkmamalı.
    - "There is no deobfuscation file associated with this App Bundle": yalnız uyarı; R8/ProGuard eşleme dosyası yok, Java tarafındaki çökme satırları olduğu gibi okunur.
    - İlk yüklemede (2026-10-28) yalnız bu iki uyarı çıktı, hata çıkmadı.
    - Hata çıkarsa (imza, versionCode, izin) bize metniyle yazın.
@@ -151,7 +155,7 @@ Play bir versionCode'u **bir kez** alır, sonra yalnız daha büyüğünü. Kod,
 - Kayıt: `release/google-play-uploads.txt` (depoda). Her yükleme bir satır: `versionCode versionName gün kanal`, ör. `1 1.0 2026-10-28 closed`. Kanal: `internal`, `closed`, `open` ya da `production`.
 - Derleme versionCode'u kendisi seçer: **kayıttaki son satırın bir fazlası**; kayıt boşken 1. Kimse elle kod yazmaz; kayıttaki kodlar satır satır artmıyorsa ya da bir satır bu biçimde değilse derleme durur (`unity/Assets/Editor/PlayUploads.cs`, testleri `PlayUploadsTests`).
 - Yükleme kabul edilince satır eklenir ve depoya işlenir (Claude yapar; derlemenin kaydındaki satırı kopyalamak yeter). Eklenmeden yeniden derlenen paket aynı kodu alır: henüz yüklenmemiş bir paketi yeniden derlemek için doğru olan bu. Satır unutulursa Play ikinci yüklemeyi "Version code 1 has already been used" diye reddeder; zararsız: satır eklenir, paket yeniden derlenir.
-- **Bir sonraki yükleme:** kayıtta `1 …` satırı varken derleme **versionCode 2** üretir.
+- **Bir sonraki yükleme:** kayıtta `1 …` satırı varken derleme **versionCode 2** üretir (29 Ekim'de derlendi, 9. bölüm). Play onu kabul edince `2 1.0 2026-10-29 closed` eklenir; ondan sonraki derleme versionCode 3.
 - versionName `1.0` kalıyor: Unity'nin `bundleVersion`'ı; giriş sayfası "Sürüm 1.0" diye gösterir, bulut kaydı ve deneme kayıtları da bu sürümü yazar. Değiştirmek bir karar (ör. `1.0.1`): `unity/ProjectSettings` → `bundleVersion`; oyunun metinleri kendiliğinden yeni sürümü gösterir.
 - Test APK'sı (`AndroidBuild.Run`) versionCode 1'de, hata ayıklama anahtarıyla, tek dosya kalır: indirme sayfası için.
 
@@ -364,3 +368,32 @@ Claude, sahibin oturumu açık Chrome'undan girdi (Claude in Chrome); formlar ka
 - **Google Play Games on PC:** gönderilen değişikliklerde Advanced settings → Form factors "opted-in" görünüyor. Claude açmadı; Play'in oyunlar için varsayılanı. Paket yalnız arm64-v8a. PC'de istenmezse aynı yerden kapatılır (sahibin kararı).
 - **İncelemeye gönderildi:** 28 değişiklik. Önce Google'ın hızlı denetimleri (en çok 14 dakika), sonra inceleme (Google'a göre genelde 7 güne kadar). Onaydan sonra test bağlantısı: `https://play.google.com/apps/testing/com.saturnwave.museumpuzzle` (yalnız listedeki Google hesaplarıyla açılır).
 - **Kalan:** ödeme profili ve beş ürün (8.7), lisans test kullanıcıları, LevelPlay'li paketten önce Ads formunda "Yes".
+
+## 9. versionCode 1 açılışta kapanıyordu (2026-10-29)
+
+**Belirti:** Google kapalı testi 29 Ekim'de onayladı, bağlantı açıldı. Sahip oyunu Play'den kurdu (12:33); oyun her açılışta bir iki saniye içinde kapandı. Telefonun kaydında 12:54 ile 21:55 arasında 11 yerel çökme var, hepsi aynı.
+
+**Kayıt** (telefon kabloyla bağlıydı, `adb logcat` ve `dumpsys dropbox` okundu): Unity'nin ana iş parçacığında, pencere açılırken (`APP_CMD_INIT_WINDOW`, bellek yöneticisinden hemen sonra), `JNI DETECTED ERROR IN APPLICATION: java_object == null in call to GetObjectClass` (`libunity.so`). Çökme anında bekleyen Java hatası:
+
+```
+java.lang.IllegalArgumentException: Component class com.google.android.play.core.assetpacks.ExtractionForegroundService does not exist in com.saturnwave.museumpuzzle
+  at android.app.ApplicationPackageManager.setComponentEnabledSetting(...)
+  at com.google.android.play.core.assetpacks.internal.af.a(...) (com.google.android.play:asset-delivery@@2.3.0)
+  at com.google.android.play.core.assetpacks.s.a() (com.google.android.play:asset-delivery@@2.3.0)
+```
+
+Play'in telefona kurduğu temel APK'nın manifesti (`aapt dump xmltree`): `AssetPackExtractionService` var, `ExtractionForegroundService` yok.
+
+**Neden:** Unity'nin oynatıcısı açılışta Play Asset Delivery kütüphanesinden `AssetPackManager`'ı istiyor. Kütüphane (2.3.0; bytecode'u `javap` ile okundu, `s.a()` ve `internal.af.a`) önce iki servisini, `AssetPackExtractionService` ile `ExtractionForegroundService`'i, `PackageManager.setComponentEnabledSetting` ile açıyor. Manifestte bulamadığı bir servis için Android `IllegalArgumentException` atıyor; Unity boş bir nesneyle devam edip duruyor. 28 Ekim'de izinleri daraltmak için ön plan servisini manifestten çıkarmıştık (`tools:node="remove"`, 1. bölüm). Test APK'sı tek dosya ve kütüphanesi yok; bu yüzden hata yalnız paketten kurulumda çıktı. Paket yüklenmeden önce telefonda açılmamıştı: F33'ün T578 ve T579'u bekliyordu.
+
+**Düzeltme (versionCode 2):**
+- Manifest adımı ön plan servisini bırakıyor, yalnız türünü (`foregroundServiceType="dataSync"`) siliyor (`tools:remove`). Dört izin yine geri çekiliyor. Manifestte hiçbir ön plan servis türü olmadığı için Play Console beyan istemiyor. Kütüphane servisi yalnız Play'in kurulumdan sonra indirdiği bir parçayı açarken başlatıyor (`updateServiceState`); oyunun öyle bir parçası yok.
+- İşaret yalnız paketin derlemesine konuyor (App Bundle ve binary split açıkken). Test APK'sında kütüphane yok; işaret orada sınıfı olmayan bir servis tanımlardı.
+- Derlemenin denetimi ikiye ayrıldı. Paketin temel APK'sında iki servis tanımlı olmalı ve hiçbir ön plan servis türü olmamalı; versionCode 1 bu denetimde dururdu. Test APK'sında kütüphaneden hiçbir şey olmamalı. Kod: `unity/Assets/Editor/ManifestAssetDelivery.cs`; testleri `ManifestAssetDeliveryTests`.
+- Aynı pakette sembol tabloları da var (4. bölüm): Play Console'un çökme raporları `libunity`'nin işlevlerini adlarıyla gösterecek.
+
+**Telefonda (versionCode 2, 29 Ekim 22:35):** Play'in kopyası kaldırıldı (imzası başka; içinde hiç açılmamış oyunun boş verisi vardı). APK seti `bundletool install-apks` ile kuruldu: `base`, `UnityDataAssetPack`, `config.arm64_v8a`. Oyun soğuk açıldı ve 20 saniye sonra süreç ayaktaydı; giriş sayfası "Version 1.0" gösterdi. Salon ve istatistik izni kartı geldi ("Don't allow" seçildi). 1. bölümün kartı ve tahtası, öğretici ve tablonun parça önizlemesi açıldı. Bir hamle oynandı: hedef 55'ten 52'ye, hamle 24'ten 23'e. Kayıtta çökme, `JNI DETECTED ERROR`, `FATAL` ya da `SecurityException` yok. UGS `production`'da başladı, bulut kaydı anonim hesapla eşitledi. Mağazanın "unreachable" demesi beklenen durum: Play Console'da ürünler yok. PlayCore'un `AssetPackServiceImpl : onError(-2)` satırı paketin Play'den değil kabloyla kurulmasından; oyun veriyi split APK'dan okuyor. Ekranlar: `out/phone-test/vc2/`.
+
+**Test kullanıcıları:** versionCode 1'i kuran herkes aynı çökmeyi görür. versionCode 2 onaylanınca Play güncellemeyi getirir. Teste katılım (opt-in) kalıcı; oyunu kaldırmak ya da yeniden katılmak gerekmez.
+
+**Ders:** her yüklemeden önce paketin APK seti telefonda açılır (4. bölüm, çıkanlar tablosu; T578, T579).

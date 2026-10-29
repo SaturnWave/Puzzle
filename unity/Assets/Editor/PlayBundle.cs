@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Puzzle.Client.Engine;
 using Puzzle.Meta;
 using Puzzle.Meta.Settings;
+using Unity.Android.Types;
 using UnityEditor;
 using UnityEditor.Android;
 using UnityEditor.Build.Reporting;
@@ -29,7 +30,9 @@ namespace Puzzle.Client.EditorTools
     /// D:/puzzle-cache/play/museumpuzzle-vc&lt;versionCode&gt;-&lt;upload|debug&gt;.aab, outside the repository. Google Play
     /// takes a bundle whose base module downloads in at most 200 MB, and the game's data is larger, so Unity's "Split
     /// Application Binary" is turned on for this build: Unity puts its data, the paintings among them, into the
-    /// install-time asset pack <see cref="AssetPack"/>, which Play installs together with the base.
+    /// install-time asset pack <see cref="AssetPack"/>, which Play installs together with the base. The native
+    /// libraries' symbol tables go into the bundle too (BUNDLE-METADATA, which no phone downloads), so that Play
+    /// Console names the functions of a native crash (versionCode 1 had none, 2026-10-28).
     /// </para>
     /// <para>
     /// The versionCode is the next one after the record of uploads (<see cref="PlayUploads"/>); the versionName is
@@ -47,7 +50,8 @@ namespace Puzzle.Client.EditorTools
     /// The bundle is then read back. bundletool (<see cref="BundletoolJar"/>, run with Unity's own Java) makes the APKs
     /// Play would make of it, next to it (museumpuzzle-vc&lt;versionCode&gt;-&lt;key&gt;.apks, signed with the debug key, for
     /// a phone: <c>bundletool install-apks</c>); its base APK must carry the package's name and versionCode and pass
-    /// the test package's checks with Android's own tool (<see cref="AndroidBuild.CheckThePackage"/>); every native
+    /// the package checks with Android's own tool as a bundle's base, Play Asset Delivery's services declared
+    /// (<see cref="AndroidBuild.CheckThePackage"/>, <see cref="ManifestAssetDelivery"/>); every native
     /// library in the bundle must load on 16 KB pages (<see cref="NativeLibraryAlignment"/>); and the base module's
     /// download must be within Play's limit (<see cref="BundleDownloadSize"/>). A bundle that fails is set aside under
     /// another name, out of the way of an upload.
@@ -66,6 +70,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>Where the base APK is taken out of the APK set to be read; Unity's Temp folder, gone when the Editor closes.</summary>
         private const string WorkFolder = "Temp/PlayBundle";
+
+        /// <summary>Where a bundle keeps its native libraries' symbol tables for Play Console, one folder an ABI.</summary>
+        private const string SymbolFolder = "BUNDLE-METADATA/com.android.tools.build.debugsymbols/";
 
         /// <summary>A native library in the bundle: lib/&lt;abi&gt;/&lt;name&gt;.so under one of its modules.</summary>
         private static readonly Regex NativeLibrary = new Regex(@"^[^/]+/lib/[^/]+/[^/]+\.so$", RegexOptions.CultureInvariant);
@@ -268,11 +275,20 @@ namespace Puzzle.Client.EditorTools
             }
 
             Debug.Log($"Play bundle: the base APK says \"{identity}\".");
-            AndroidBuild.CheckThePackage(baseApk);
+            AndroidBuild.CheckThePackage(baseApk, BuiltPackage.BundleBase);
 
             IReadOnlyDictionary<string, long> alignments = NativeLibraryAlignments(plan.BundlePath);
             NativeLibraryAlignment.Require(alignments);
             Debug.Log($"Play bundle: every native library loads on 16 KB pages: {string.Join(", ", alignments.Select(library => $"{library.Key} {library.Value / 1024} KB"))}.");
+            string[] symbols = SymbolFiles(plan.BundlePath);
+            if (symbols.Length == 0)
+            {
+                Debug.LogWarning($"Play bundle: the bundle carries no symbol tables under {SymbolFolder}: Play Console will name no function of a native crash.");
+            }
+            else
+            {
+                Debug.Log($"Play bundle: the bundle carries the symbol tables of {string.Join(", ", symbols)}, for Play Console's crash reports.");
+            }
 
             BundleDownloadSize baseModule = BundleDownloadSize.Parse(Bundletool($"get-size total --apks=\"{Path.GetFullPath(plan.ApkSetPath)}\" --modules=base"));
             if (!baseModule.IsWithinPlaysBaseLimit)
@@ -297,6 +313,14 @@ namespace Puzzle.Client.EditorTools
             ZipArchiveEntry entry = set.GetEntry(BaseApk) ?? throw new InvalidOperationException($"bundletool's APK set {apkSet} has no {BaseApk}");
             entry.ExtractToFile(taken, overwrite: true);
             return taken;
+        }
+
+        /// <summary>The files under <see cref="SymbolFolder"/>, by their names there: one symbol table a native library.</summary>
+        private static string[] SymbolFiles(string bundle)
+        {
+            using ZipArchive archive = ZipFile.OpenRead(bundle);
+            return archive.Entries.Where(entry => entry.FullName.StartsWith(SymbolFolder, StringComparison.Ordinal) && entry.Length > 0)
+                .Select(entry => entry.FullName.Substring(SymbolFolder.Length)).OrderBy(name => name, StringComparer.Ordinal).ToArray();
         }
 
         /// <summary>Every native library in the bundle, by its path there, with the smallest alignment of its loadable segments.</summary>
@@ -441,8 +465,9 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// The settings the bundle's build changes, for that build alone, and put back as they were when it ends,
-        /// whichever way it ends: the bundle and the binary split on, the versionCode, and Unity's debug key (no keystore
-        /// of the project's). ProjectSettings.asset keeps the test package's: one APK, versionCode 1, Unity's debug key.
+        /// whichever way it ends: the bundle and the binary split on, the versionCode, Unity's debug key (no keystore
+        /// of the project's), and the symbol tables in the bundle. ProjectSettings.asset keeps the test package's: one
+        /// APK, versionCode 1, Unity's debug key.
         /// </summary>
         private sealed class BundleSettings : IDisposable
         {
@@ -450,6 +475,8 @@ namespace Puzzle.Client.EditorTools
             private readonly bool _split = PlayerSettings.Android.splitApplicationBinary;
             private readonly int _versionCode = PlayerSettings.Android.bundleVersionCode;
             private readonly bool _customKeystore = PlayerSettings.Android.useCustomKeystore;
+            private readonly DebugSymbolLevel _symbols = UnityEditor.Android.UserBuildSettings.DebugSymbols.level;
+            private readonly DebugSymbolFormat _symbolsFormat = UnityEditor.Android.UserBuildSettings.DebugSymbols.format;
 
             private BundleSettings()
             {
@@ -463,11 +490,15 @@ namespace Puzzle.Client.EditorTools
                 PlayerSettings.Android.splitApplicationBinary = true;
                 PlayerSettings.Android.bundleVersionCode = versionCode;
                 PlayerSettings.Android.useCustomKeystore = false;
+                UnityEditor.Android.UserBuildSettings.DebugSymbols.level = DebugSymbolLevel.SymbolTable;
+                UnityEditor.Android.UserBuildSettings.DebugSymbols.format = DebugSymbolFormat.IncludeInBundle;
                 return kept;
             }
 
             public void Dispose()
             {
+                UnityEditor.Android.UserBuildSettings.DebugSymbols.format = _symbolsFormat;
+                UnityEditor.Android.UserBuildSettings.DebugSymbols.level = _symbols;
                 PlayerSettings.Android.useCustomKeystore = _customKeystore;
                 PlayerSettings.Android.bundleVersionCode = _versionCode;
                 PlayerSettings.Android.splitApplicationBinary = _split;
