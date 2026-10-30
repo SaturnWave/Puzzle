@@ -1,0 +1,17 @@
+{
+  // The default economy without the welcome gift: a new player starts with no coin and no booster. It is there to be
+  // set beside the default (puzzle economy compare): the balance policy (docs/GAME_DESIGN.md section 25) asks that
+  // the gift move the average player's day of level 100 by one day at most and leave the purse in its band.
+  "extends": "default.json",
+  "name": "no-welcome-gift",
+  "start": {
+    // Coins a new player starts with. [not the game's rule: the gift left out to compare]
+    "coins": 0,
+    // Boosters a new player starts with. [not the game's rule: the gift left out to compare]
+    "boosters": { "start-rocket-and-bomb": 0, "start-color-bomb": 0, "start-extra-moves": 0, "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
+  },
+  "boosterUnlocks": {
+    // What the boosters used during play bring as they open, the welcome gift's part for them. [not the game's rule: the gift left out to compare]
+    "gift": { "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
+  }
+}

@@ -21,14 +21,20 @@ namespace Puzzle.Bot
 
         public double RocketValue { get; init; } = 8;
 
-        public double BombValue { get; init; } = 12;
+        public double BombValue { get; init; } = 8;
+
+        public double BigBombValue { get; init; } = 14;
 
         public double SeekerValue { get; init; } = 9;
 
         public double ColorBombValue { get; init; } = 18;
 
-        /// <summary>Fraction of a special's value lost when it is used.</summary>
-        public double SpendFactor { get; init; } = 0.5;
+        /// <summary>
+        /// Fraction of a special's value lost when it is used. Measured over all 1000 generated levels (2026-10-02):
+        /// 0.25 gives the best win rate for both the expert and the average profile; 0.5 made the bots hoard specials
+        /// on levels with large collect targets, and 0 made them fire specials too early on item-drop levels.
+        /// </summary>
+        public double SpendFactor { get; init; } = 0.25;
 
         /// <summary>Per box hit point, jelly layer or chain hit point removed while that goal is open.</summary>
         public double PartialDamageWeight { get; init; } = 3;
@@ -41,6 +47,22 @@ namespace Puzzle.Bot
         /// <summary>Features of the position before the move, computed once and shared by every candidate.</summary>
         public Snapshot Capture(Game game) => new Snapshot(SpecialInventory(game.Board), ItemDepth(game));
 
+        /// <summary>
+        /// How promising a position is on its own: goal progress, finished goals, specials in stock and item depth.
+        /// Used by search-based players that compare positions rather than single moves.
+        /// </summary>
+        public double ValueOf(Game game)
+        {
+            double value = SpecialInventory(game.Board);
+            for (int i = 0; i < game.Goals.Count; i++)
+            {
+                GoalProgress progress = game.Goals[i];
+                value += GoalProgressWeight * progress.Fraction + (progress.IsComplete ? GoalCompletedBonus : 0);
+            }
+
+            return Wants<GoalSpec.DropItems>(game.Goals) ? value + ItemDescentWeight * ItemDepth(game) : value;
+        }
+
         public double Score(Game before, Snapshot beforeFeatures, Game after)
         {
             if (after.Status == GameStatus.Won)
@@ -51,7 +73,7 @@ namespace Puzzle.Bot
             PlayStats stats = after.LastMove;
             double score = GoalScore(before.Goals, after.Goals);
 
-            double created = stats.RocketsCreated * RocketValue + stats.BombsCreated * BombValue
+            double created = stats.RocketsCreated * RocketValue + stats.BombsCreated * BombValue + stats.BigBombsCreated * BigBombValue
                 + stats.SeekersCreated * SeekerValue + stats.ColorBombsCreated * ColorBombValue;
             double consumed = created - (SpecialInventory(after.Board) - beforeFeatures.SpecialInventory);
             score += created - SpendFactor * consumed;
@@ -112,6 +134,7 @@ namespace Puzzle.Bot
                         TileKind.RocketH => RocketValue,
                         TileKind.RocketV => RocketValue,
                         TileKind.Bomb => BombValue,
+                        TileKind.BigBomb => BigBombValue,
                         TileKind.Seeker => SeekerValue,
                         TileKind.ColorBomb => ColorBombValue,
                         _ => 0,

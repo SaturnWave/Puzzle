@@ -1,0 +1,25 @@
+<!-- The picture in the small hung frame of the free gift: a parcel in a red ribbon on velvet. It fills its whole
+     box, corners too; the frame is drawn over it. As the design canvas draws it (HomeTR): its symbol w-gift with
+     the paints it uses, written by tools/unity/extract-design-symbols.js. Change the canvas and run that again; do
+     not change this file by hand. One unit is one point where the symbol is drawn 100 points wide; the game draws
+     it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="f-verm" cx=".32" cy=".24" r=".95"><stop offset="0" stop-color="#FFA283"/><stop offset=".42" stop-color="#F4472F"/><stop offset="1" stop-color="#C7231B"/></radialGradient>
+<linearGradient id="f-verm-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFA283"/><stop offset=".4" stop-color="#F4472F"/><stop offset="1" stop-color="#C7231B"/></linearGradient>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+<radialGradient id="f-velvet" cx=".5" cy=".38" r=".75"><stop offset="0" stop-color="#2FA2A6"/><stop offset=".6" stop-color="#157880"/><stop offset="1" stop-color="#0C505A"/></radialGradient>
+</defs>
+<rect width="100" height="100" fill="url(#f-velvet)"/>
+<ellipse cx="50" cy="86" rx="32" ry="5" fill="#04242B" fill-opacity=".4"/>
+<rect x="22" y="50" width="56" height="36" rx="4" fill="#B8985A"/>
+<rect x="22" y="46" width="56" height="36" rx="4" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".5" stroke-width="1.2"/>
+<rect x="43" y="46" width="14" height="36" fill="url(#f-verm-l)"/>
+<rect x="17" y="35" width="66" height="15" rx="4" fill="#DDC694"/>
+<rect x="17" y="32" width="66" height="15" rx="4" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".5" stroke-width="1.2"/>
+<rect x="43" y="32" width="14" height="15" fill="url(#f-verm-l)"/>
+<path d="M50 32C40 32 30 28 31 20C32 13 43 14 50 28C57 14 68 13 69 20C70 28 60 32 50 32Z" fill="url(#f-verm)" stroke="#5E0A0C" stroke-opacity=".5" stroke-width="1.2" stroke-linejoin="round"/>
+<circle cx="50" cy="29.5" r="5" fill="#F4472F" stroke="#5E0A0C" stroke-opacity=".5" stroke-width="1.2"/>
+<path d="M22 37.5H38" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M80 15L81.84 20.16L87 22L81.84 23.84L80 29L78.16 23.84L73 22L78.16 20.16Z" fill="#FFF4C4"/><path d="M18 61L19.34 64.66L23 66L19.34 67.34L18 71L16.66 67.34L13 66L16.66 64.66Z" fill="#FFF4C4" fill-opacity=".85"/>
+</svg>

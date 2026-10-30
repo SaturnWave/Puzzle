@@ -1,0 +1,25 @@
+<!-- The museum's mark on the navigation bar: a small temple front, as the design canvas draws it (its symbol with the paints it uses). The picture is the
+     symbol's own 100 x 100 box; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<linearGradient id="f-gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".62" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+<linearGradient id="f-ivory-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3E4C0"/><stop offset="1" stop-color="#DDC694"/></linearGradient>
+<linearGradient id="f-ivory-h" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#FFF8E7"/><stop offset="1" stop-color="#DDC694"/></linearGradient>
+<linearGradient id="f-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34A5AA"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+</defs>
+<ellipse cx="50" cy="94" rx="44" ry="5.5" fill="url(#g-shadow)"/>
+<rect x="5" y="80" width="90" height="12" rx="3" fill="#B8985A"/>
+<rect x="5" y="78" width="90" height="10" rx="3" fill="url(#f-ivory-d)" stroke="#6E4B1E" stroke-opacity=".5" stroke-width="1.2"/>
+<rect x="11" y="72" width="78" height="8" rx="2" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".5" stroke-width="1.2"/>
+<rect x="15" y="40" width="70" height="33" fill="#0C4A53"/>
+<path d="M44 73V56A6 6 0 0 1 56 56V73Z" fill="#136871" stroke="#F6B93C" stroke-width="1.6"/>
+<rect x="17" y="41" width="10" height="31" fill="url(#f-ivory-h)" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="15" y="38" width="14" height="5" rx="1.5" fill="#FFF8E7" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="15" y="69" width="14" height="5" rx="1.5" fill="#F3E4C0" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><path d="M20.4 44V68M23.8 44V68" stroke="#DDC694" stroke-width="1"/><rect x="36" y="41" width="10" height="31" fill="url(#f-ivory-h)" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="34" y="38" width="14" height="5" rx="1.5" fill="#FFF8E7" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="34" y="69" width="14" height="5" rx="1.5" fill="#F3E4C0" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><path d="M39.4 44V68M42.8 44V68" stroke="#DDC694" stroke-width="1"/><rect x="54" y="41" width="10" height="31" fill="url(#f-ivory-h)" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="52" y="38" width="14" height="5" rx="1.5" fill="#FFF8E7" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="52" y="69" width="14" height="5" rx="1.5" fill="#F3E4C0" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><path d="M57.4 44V68M60.8 44V68" stroke="#DDC694" stroke-width="1"/><rect x="73" y="41" width="10" height="31" fill="url(#f-ivory-h)" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="71" y="38" width="14" height="5" rx="1.5" fill="#FFF8E7" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><rect x="71" y="69" width="14" height="5" rx="1.5" fill="#F3E4C0" stroke="#6E4B1E" stroke-opacity=".45" stroke-width="1"/><path d="M76.4 44V68M79.8 44V68" stroke="#DDC694" stroke-width="1"/>
+<rect x="10" y="30" width="80" height="9.5" rx="2" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".5" stroke-width="1.2"/>
+<path d="M50 5L93 30H7Z" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M50 13L78 28H22Z" fill="url(#f-teal)"/>
+<circle cx="50" cy="22.5" r="4.4" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1"/>
+<path d="M17 28.5L48 10.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+<path d="M14 34H86" stroke="#F6B93C" stroke-width="1.6"/>
+</svg>

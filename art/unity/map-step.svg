@@ -1,0 +1,5 @@
+<!-- The small round button of a painting's card on the world map that steps to the era's painting before or after (MapWorldTR): cream, 28 points across around (16, 16), in a brown line of 1.2. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 32 32">
+<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF4"/><stop offset="1" stop-color="#F0DFBB"/></linearGradient></defs>
+<circle cx="16" cy="16" r="15.2" fill="#8A5512" fill-opacity=".7"/><circle cx="16" cy="16" r="14" fill="url(#f)"/>
+</svg>

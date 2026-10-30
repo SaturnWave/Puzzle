@@ -1,0 +1,4 @@
+<!-- The dark chevron pointing up on the world map card's step buttons (MapWorldTR), in a box of 12 points, drawn 10 across; turned over it points down. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 12 12">
+<path d="M3 7.5L6 4.5l3 3" fill="none" stroke="#46260F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,12 @@
+level 1 seed 20261007: Won after 15 of 25 moves, boards b06df7d6164fd550
+level 1 seed 7: LostOutOfMoves after 25 of 25 moves, boards 4172a6c4ab72193f
+level 1 seed 123456789: LostOutOfMoves after 25 of 25 moves, boards 19f90e6fe56fd091
+level 2 seed 20261007: Won after 18 of 25 moves, boards 39617c9491f14f22
+level 2 seed 7: Won after 15 of 25 moves, boards c691742628feec7d
+level 2 seed 123456789: Won after 18 of 25 moves, boards ee5649a006d8a153
+level 3 seed 20261007: LostOutOfMoves after 30 of 30 moves, boards 11ce90ef30ca89c2
+level 3 seed 7: LostOutOfMoves after 30 of 30 moves, boards 5826f6ed55f7d3ea
+level 3 seed 123456789: LostOutOfMoves after 30 of 30 moves, boards 386aabdb79d62ed9
+level 4 seed 20261007: LostOutOfMoves after 32 of 32 moves, boards 2100cbf3fc12ed84
+level 4 seed 7: LostOutOfMoves after 32 of 32 moves, boards d0b003e0d767ef8a
+level 4 seed 123456789: LostOutOfMoves after 32 of 32 moves, boards 3f812017785d2747

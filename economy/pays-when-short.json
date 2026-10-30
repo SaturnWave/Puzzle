@@ -1,0 +1,14 @@
+{
+  // A paying player: the default economy, but whenever the player wants the +5 moves, no free ad is left today and
+  // the coins fall short of the price, they buy the smallest coin pack and pay the +5 with it. The first of the three
+  // paying players the research asked for (docs/research/monetization-and-retention.md section 3.6). Set it beside the
+  // default: puzzle economy compare economy/default.json economy/pays-when-short.json.
+  "extends": "default.json",
+  "name": "pays-when-short",
+  "player": {
+    "purchases": {
+      // The pouch, $1.99 for 1 000 coins: one +5 and 100 coins over. [a paying player to compare]
+      "packWhenShortForExtraMoves": "pouch"
+    }
+  }
+}

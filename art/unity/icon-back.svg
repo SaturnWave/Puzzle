@@ -1,0 +1,11 @@
+<!-- The ivory arrow to the left on the round button that leads back from a screen. As the design canvas draws it
+     (JigsawTR): its symbol i-back with the paints it uses, written by tools/unity/extract-design-symbols.js. Change
+     the canvas and run that again; do not change this file by hand. One unit is one point where the symbol is drawn
+     100 points wide; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+</defs>
+<path d="M80 50H27M49 25L24 50L49 75" transform="translate(0 4.5)" fill="none" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" stroke="#0C4A53"/>
+<path d="M80 50H27M49 25L24 50L49 75" fill="none" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" stroke="url(#f-ivory)"/>
+</svg>

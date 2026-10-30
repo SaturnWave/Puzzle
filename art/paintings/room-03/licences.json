@@ -1,0 +1,82 @@
+{
+  "room": "room-03",
+  "paintings": [
+    {
+      "file": "apple-tree-in-blossom.jpg",
+      "title": "Apple Tree in Blossom",
+      "titleTr": "Çiçek Açmış Elma Ağacı",
+      "artist": "Carl Fredrik Hill",
+      "year": "1877",
+      "width": 1908,
+      "height": 1548,
+      "museum": "Nationalmuseum",
+      "museumPage": "https://collection.nationalmuseum.se/en/collection/item/18868/",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Apple_Tree_in_Blossom_(Carl_Fredrik_Hill)_-_Nationalmuseum_-_18868.tif",
+      "crop": {
+        "left": 0.003,
+        "top": 0.004,
+        "right": 0.997,
+        "bottom": 0.997
+      },
+      "licence": "Public domain work; the museum's photograph carries the Public Domain Mark and may be used in any way (Nationalmuseum)"
+    },
+    {
+      "file": "breton-girl-in-the-hothouse.jpg",
+      "title": "Breton Girl Looking After Plants in the Hothouse",
+      "titleTr": "Serada Bitkilerle İlgilenen Bretonyalı Kız",
+      "artist": "Anna Petersen",
+      "year": "1884",
+      "width": 1522,
+      "height": 1920,
+      "museum": "Statens Museum for Kunst",
+      "museumPage": "https://open.smk.dk/artwork/image/KMS8289",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Anna_Petersen,_Bretagne-pige_ordner_planter_i_et_drivhus,_1884,_KMS8289,_Statens_Museum_for_Kunst.jpg",
+      "licence": "Public domain work; the museum has waived its rights in the photograph, which carries the Public Domain Mark (SMK Open)"
+    },
+    {
+      "file": "luxembourg-gardens.jpg",
+      "title": "The Luxembourg Gardens, Paris",
+      "titleTr": "Paris'te Luxembourg Bahçeleri",
+      "artist": "Albert Edelfelt",
+      "year": "1887",
+      "width": 1920,
+      "height": 1437,
+      "museum": "Finnish National Gallery",
+      "museumPage": "https://www.kansallisgalleria.fi/en/object/387173",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Albert_Edelfelt_(1854–1905)-_The_Luxembourg_Gardens,_Paris_-_Pariisin_Luxembourgin_puistossa_(29614654616).jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Finnish National Gallery open data)"
+    },
+    {
+      "file": "midsummer-dance.jpg",
+      "title": "Midsummer Dance",
+      "titleTr": "Yaz Dönümü Dansı",
+      "artist": "Anders Zorn",
+      "year": "1897",
+      "width": 1409,
+      "height": 1920,
+      "museum": "Nationalmuseum",
+      "museumPage": "https://collection.nationalmuseum.se/en/collection/item/18607/",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Midsummer_Dance_(Anders_Zorn)_-_Nationalmuseum_-_18607.tif",
+      "licence": "Public domain work; the museum's photograph carries the Public Domain Mark and may be used in any way (Nationalmuseum)"
+    },
+    {
+      "file": "breakfast-under-the-big-birch.jpg",
+      "title": "Breakfast under the Big Birch (from A Home)",
+      "titleTr": "Büyük Huş Ağacının Altında Kahvaltı",
+      "artist": "Carl Larsson",
+      "year": "1895",
+      "width": 1882,
+      "height": 1285,
+      "museum": "Nationalmuseum",
+      "museumPage": "https://collection.nationalmuseum.se/en/collection/item/24220/",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Breakfast_under_the_Big_Birch._From_A_Home_(26_watercolours)_(Carl_Larsson)_-_Nationalmuseum_-_24220.tif",
+      "crop": {
+        "left": 0.01,
+        "top": 0.01,
+        "right": 0.99,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph carries the Public Domain Mark and may be used in any way (Nationalmuseum)"
+    }
+  ]
+}

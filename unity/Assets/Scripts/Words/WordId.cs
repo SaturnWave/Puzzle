@@ -1,0 +1,1193 @@
+namespace Puzzle.Client.Words
+{
+    /// <summary>
+    /// The stable id of every piece of words the game says: the key of each table's entry (words/&lt;code&gt;.json).
+    /// A closed set. An id is never renamed once a table is translated: a new meaning gets a new id. The Turkish
+    /// table is the source and says, in each entry's note, where the words stand. No Unity dependency.
+    /// </summary>
+    public enum WordId
+    {
+        /// <summary>Navigation bar at the foot of the museum's pages: the shop.</summary>
+        NavShop,
+
+        /// <summary>Navigation bar: the museum's hall (the home page).</summary>
+        NavMuseum,
+
+        /// <summary>Navigation bar: the world map, where each painting was made or what place it shows.</summary>
+        NavMap,
+
+        /// <summary>Navigation bar: the collection of restored paintings.</summary>
+        NavCollection,
+
+        /// <summary>Green button that leads into a level (level card, leaving card).</summary>
+        Play,
+
+        /// <summary>Green button once every level is won: the last level again.</summary>
+        PlayAgain,
+
+        /// <summary>Green button that goes on (after a won level, after a restored room).</summary>
+        GoOn,
+
+        /// <summary>Green button after a lost level.</summary>
+        TryAgain,
+
+        /// <summary>Button that closes a card or leaves the jigsaw.</summary>
+        Done,
+
+        /// <summary>Green button that buys one booster for coins.</summary>
+        Buy,
+
+        /// <summary>Dimmed green button when the coins do not cover a price.</summary>
+        ButtonCoinsShort,
+
+        /// <summary>Underlined link under a dimmed button: to the shop.</summary>
+        ToTheShop,
+
+        /// <summary>Extra moves, on a start booster's disc and on the offer's green button: "+5 moves".</summary>
+        PlusMoves,
+
+        /// <summary>Hall's play button and the level card's nameplate: the level it opens.</summary>
+        PlayLevel,
+
+        /// <summary>Hall's small button that leads to the jigsaw of the painting in the frame.</summary>
+        HallToTheJigsaw,
+
+        /// <summary>Hall's gift frame while the daily gift waits.</summary>
+        HallGift,
+
+        /// <summary>Hall's note when every painting chosen so far is restored.</summary>
+        HallMorePaintingsToCome,
+
+        /// <summary>Hall's note when the whole museum is restored.</summary>
+        HallMuseumRestored,
+
+        /// <summary>Banner over a room whose fifth painting has just become whole.</summary>
+        HallRoomRestored,
+
+        /// <summary>Under the banner of a restored room: the next room by name.</summary>
+        HallNextRoom,
+
+        /// <summary>Line under the banner: the room's name and its paintings, all five restored.</summary>
+        HallRoomAndItsPaintings,
+
+        /// <summary>Nameplate of the card that the phone's back button or back gesture brings in the hall: whether to close the game. A question; its two answers follow.</summary>
+        HallQuitQuestion,
+
+        /// <summary>That card's green answer: the game closes.</summary>
+        HallQuitLeave,
+
+        /// <summary>That card's blue answer: the card goes up and the game stays open.</summary>
+        HallQuitStay,
+
+
+
+
+        /// <summary>Map: the pill of a room whose paintings are not chosen yet.</summary>
+        MapRoomToCome,
+
+        /// <summary>Map: how many of a room's paintings are restored.</summary>
+        MapRoomPaintingsWhole,
+
+        /// <summary>World map: the label over the pin of the painting the player restores now, with the level at hand.</summary>
+        MapYouAreHere,
+
+        /// <summary>World map's plaque, in the view of the whole world: its title.</summary>
+        MapWorldTitle,
+
+        /// <summary>World map's plaque, small capitals, in the view of the whole world: how many eras and paintings the museum has.</summary>
+        MapWorldSummary,
+
+        /// <summary>World map's plaque, small capitals, in an era's view: which room of the museum's it is, and the years its paintings span ("1867–1906").</summary>
+        MapEraLabel,
+
+        /// <summary>World map's plaque, small capitals, at the right of an era still ahead: the level it opens at. Turkish fills {levelIn} with the number and its suffix ("301'DE"); other languages use {level}.</summary>
+        MapEraOpensAt,
+
+        /// <summary>World map's legend at the top left, beside a gilt dot: the paintings restored.</summary>
+        MapLegendRestored,
+
+        /// <summary>World map's legend, beside a red dot: the painting the player restores now.</summary>
+        MapLegendHere,
+
+        /// <summary>World map's legend, beside a cream dot: the paintings still to come.</summary>
+        MapLegendAhead,
+
+        /// <summary>World map, small capitals in italics on the sea in the view of the whole world.</summary>
+        MapAtlanticOcean,
+
+        /// <summary>World map, small capitals in italics on the sea in the view of the whole world.</summary>
+        MapIndianOcean,
+
+        /// <summary>World map's compass rose: the one letter at its north point (Kuzey).</summary>
+        MapCompassNorth,
+
+        /// <summary>Painting's card on the world map, small capitals over its title: its room and its place in the room.</summary>
+        MapCardEyebrow,
+
+        /// <summary>Painting's card on the world map: the museum that holds the painting today, "Bugün: Chicago Sanat Enstitüsü, Chicago".</summary>
+        MapCardToday,
+
+        /// <summary>Painting's card on the world map, small capitals under a question mark where the picture of a painting still ahead would be.</summary>
+        MapCardVeiled,
+
+        /// <summary>Painting's card on the world map: the green pill of a painting restored.</summary>
+        MapStatusRestored,
+
+        /// <summary>Painting's card on the world map: the red pill of the painting being restored, its pieces the player holds once the level is won, of all, and that level.</summary>
+        MapStatusPieces,
+
+        /// <summary>Painting's card on the world map: the cream pill of a painting still ahead, the levels that open it. Turkish fills {lastIn} with the last level and its suffix ("270'te"); other languages use {last}.</summary>
+        MapStatusOpensAt,
+
+        /// <summary>Painting's card on the world map: the link of a restored painting to the collection.</summary>
+        MapSeeInTheCollection,
+
+        /// <summary>World map: what the round button with a globe does, said for a screen reader (no visible words).</summary>
+        MapShowTheWorld,
+
+        /// <summary>World map: what the round button with a target does (to the player's era and the card of the painting being restored), said for a screen reader.</summary>
+        MapGoToYourPlace,
+
+        /// <summary>Painting's card on the world map: the round button with an arrow up, to the era's painting before, said for a screen reader.</summary>
+        MapPreviousPainting,
+
+        /// <summary>Painting's card on the world map: the round button with an arrow down, to the era's next painting, said for a screen reader.</summary>
+        MapNextPainting,
+
+        /// <summary>Painting's card on the world map: the round button with a cross, said for a screen reader.</summary>
+        MapCloseTheCard,
+
+        /// <summary>World map: what a painting's pin says to a screen reader: its title, its place and how it stands ("Onarıldı", "Onarılıyor", the levels that open it).</summary>
+        MapPinLabel,
+
+        /// <summary>World map: how the pin of the painting being restored stands, said for a screen reader.</summary>
+        MapBeingRestored,
+
+        /// <summary>World map's strip of eras: what an era's medallion says to a screen reader: its room, its name, its years and how far it is restored or when it opens.</summary>
+        MapEraButtonLabel,
+
+        /// <summary>World map: the name of the strip of the twenty eras, said for a screen reader.</summary>
+        MapErasList,
+
+        /// <summary>The name of a room whose period is not decided yet.</summary>
+        RoomWithoutAName,
+
+        /// <summary>Small capitals: a room among the museum's rooms, "ROOM 1 / 20".</summary>
+        RoomOfRooms,
+
+        /// <summary>Hall's room plaque, small capitals: "4 / 5 RESTORED".</summary>
+        RoomPaintingsRestored,
+
+        /// <summary>A locked room: the level it opens at. Turkish fills {levelIn} with the number and its suffix ("51'de"); other languages use {level}.</summary>
+        RoomOpensAt,
+
+        /// <summary>Second line of the plate under a frame whose painting is not chosen yet (small capitals).</summary>
+        PlatePaintingToCome,
+
+        /// <summary>First line of a plate while no painting is chosen for the frame.</summary>
+        PaintingByNumber,
+
+        /// <summary>Second line of the plate under a covered frame: the levels that restore it (small capitals).</summary>
+        PlateLevels,
+
+        /// <summary>The collection's plaque: its title.</summary>
+        CollectionTitle,
+
+        /// <summary>Collection's plaque, small capitals: restored paintings of all.</summary>
+        CollectionPaintingsWhole,
+
+        /// <summary>Pill on a painting being restored: its pieces in place of all.</summary>
+        CollectionPiecesInPlace,
+
+        /// <summary>Line under a painting looked at by itself.</summary>
+        ViewerTouchToClose,
+
+        /// <summary>Label of the piece counter on the jigsaw (small capitals).</summary>
+        JigsawPieceLabel,
+
+        /// <summary>Label of a painting that is whole on the jigsaw (small capitals).</summary>
+        JigsawRestoredLabel,
+
+        /// <summary>Hint on the tray while one piece waits.</summary>
+        JigsawDragThePiece,
+
+        /// <summary>Hint on the tray while several pieces wait.</summary>
+        JigsawDragThePieces,
+
+        /// <summary>Hint on the tray while no piece waits.</summary>
+        JigsawNoPieceWaits,
+
+        /// <summary>The jigsaw's headline when the painting becomes whole.</summary>
+        JigsawPaintingRestored,
+
+        /// <summary>Jigsaw button that places every waiting piece.</summary>
+        JigsawPlaceThemAll,
+
+        /// <summary>The tray's words over the reward of a painting that has just become whole.</summary>
+        JigsawPaintingsReward,
+
+        /// <summary>Board plaque label over the level number (small capitals).</summary>
+        BoardLevel,
+
+        /// <summary>Label on the moves medallion (small capitals).</summary>
+        BoardMoves,
+
+        /// <summary>Board plaque label over the goals (small capitals).</summary>
+        BoardGoals,
+
+        /// <summary>Board plaque label over the goals where the level has no plaque of its own (small capitals).</summary>
+        BoardLevelNumbered,
+
+        /// <summary>Board plaque over the painting whose piece the level gives (small capitals).</summary>
+        BoardPieceOf,
+
+        /// <summary>Shelf line under the board on a first try: how to play. "taş" is a piece on the board (a tile), not a jigsaw piece.</summary>
+        ShelfHowToPlay,
+
+        /// <summary>Shelf line on a later try: which try, and that the board is dealt anew.</summary>
+        ShelfLaterAttempt,
+
+        /// <summary>Booster name: removes one tile or one layer (a painter's spatula).</summary>
+        BoosterHitCell,
+
+        /// <summary>Booster name: paints a whole row.</summary>
+        BoosterHitRow,
+
+        /// <summary>Booster name: paints a whole column.</summary>
+        BoosterHitColumn,
+
+        /// <summary>Booster name: deals the tiles anew.</summary>
+        BoosterShuffle,
+
+        /// <summary>What the spatula does, after its name on the pill (lower case).</summary>
+        BoosterHitCellDoes,
+
+        /// <summary>What the row brush does, after its name (lower case).</summary>
+        BoosterHitRowDoes,
+
+        /// <summary>What the column brush does, after its name (lower case).</summary>
+        BoosterHitColumnDoes,
+
+        /// <summary>What the shuffle does, after its name (lower case).</summary>
+        BoosterShuffleDoes,
+
+        /// <summary>What the spatula does, as a sentence of its own on the card that offers it.</summary>
+        BoosterHitCellOnTheCard,
+
+        /// <summary>What the row brush does, as a sentence on its card.</summary>
+        BoosterHitRowOnTheCard,
+
+        /// <summary>What the column brush does, as a sentence on its card.</summary>
+        BoosterHitColumnOnTheCard,
+
+        /// <summary>What the shuffle does, as a sentence on its card.</summary>
+        BoosterShuffleOnTheCard,
+
+        /// <summary>Second line of the armed spatula's pill: what to pick.</summary>
+        BoosterPickACell,
+
+        /// <summary>Second line of the armed row brush's pill.</summary>
+        BoosterPickARow,
+
+        /// <summary>Second line of the armed column brush's pill.</summary>
+        BoosterPickAColumn,
+
+        /// <summary>Why a spatula or brush did nothing (nothing was spent).</summary>
+        BoosterNothingToHit,
+
+        /// <summary>Why the shuffle did nothing (nothing was spent).</summary>
+        BoosterCannotShuffle,
+
+        /// <summary>Small last line beside the spatula when the booster intro asks for its target: the levels are made to be won without boosters.</summary>
+        BoosterEveryLevelWithout,
+
+        /// <summary>Smaller line of the card that offers a booster used during play.</summary>
+        BoosterCostsNoMove,
+
+        /// <summary>On the disc of a booster that is not open yet: the level it opens on.</summary>
+        BoosterOpensOn,
+
+        /// <summary>Level card: header over the goals (small capitals).</summary>
+        StartGoals,
+
+        /// <summary>Level card: header over the start boosters (small capitals).</summary>
+        StartChooseBoosters,
+
+        /// <summary>Level card: label over the moves (small capitals).</summary>
+        StartMoves,
+
+        /// <summary>Level card nameplate, second line: the jigsaw piece winning gives (small capitals). {pieces} is "7" or "7–8".</summary>
+        StartReward,
+
+        /// <summary>Start booster name under its disc, on two lines: a brush (rocket) and a splash (bomb).</summary>
+        StartRocketAndBomb,
+
+        /// <summary>Start booster name under its disc, on two lines: the rainbow palette (colour bomb).</summary>
+        StartColorBomb,
+
+        /// <summary>What the brush-and-splash start booster does, on the card that offers it.</summary>
+        StartRocketAndBombDoes,
+
+        /// <summary>What the rainbow palette start booster does.</summary>
+        StartColorBombDoes,
+
+        /// <summary>What the extra moves start booster does.</summary>
+        StartExtraMovesDoes,
+
+        /// <summary>Smaller line of the card that offers a start booster the player has none of.</summary>
+        GetMoreBuyToChoose,
+
+        /// <summary>Result card nameplate: the level is won.</summary>
+        ResultWonTitle,
+
+        /// <summary>Card that asks whether to leave the level.</summary>
+        ResultLeavingTitle,
+
+        /// <summary>Card nameplate: the moves ran out.</summary>
+        ResultOutOfMovesTitle,
+
+        /// <summary>Card nameplate: no move is possible on the board.</summary>
+        ResultNoMoveLeftTitle,
+
+        /// <summary>Offer of extra moves, over the goals that are left, when the game was close.</summary>
+        ResultSoClose,
+
+        /// <summary>Offer of extra moves, over the goals that are left.</summary>
+        ResultGoalsLeft,
+
+        /// <summary>Lost card: under the goals that were not reached.</summary>
+        ResultWhatIsLeft,
+
+        /// <summary>Lost card when the extra moves could not be given; nothing was paid.</summary>
+        ResultExtraMovesRefused,
+
+        /// <summary>Beside the heart: giving up costs a life.</summary>
+        ResultCostsALife,
+
+        /// <summary>Beside the heart: the loss took a life.</summary>
+        ResultCostALife,
+
+        /// <summary>Leaving card, beside the heart: leaving after a move costs a life.</summary>
+        ResultLeavingCostsALife,
+
+        /// <summary>Leaving card before any move: leaving costs nothing.</summary>
+        ResultLeavingCostsNothing,
+
+        /// <summary>Where a card would say a life goes, in the tester mode.</summary>
+        ResultNoLifeInTesterMode,
+
+        /// <summary>Offer card: the underlined way to give up.</summary>
+        ResultGiveUp,
+
+        /// <summary>Offer card's blue button: an ad pays for the extra moves.</summary>
+        ResultWatchAnAd,
+
+        /// <summary>Offer card's dimmed blue button: no free ad left today.</summary>
+        ResultNoAdLeftToday,
+
+        /// <summary>Result card button that leads back to the museum's hall.</summary>
+        ResultBackToTheMuseum,
+
+        /// <summary>Won card: what the level gave, before the figures "7 / 10": one piece.</summary>
+        ResultNewPiece,
+
+        /// <summary>Won card: several pieces, before the figures.</summary>
+        ResultNewPieces,
+
+        /// <summary>Won card's blue button to the jigsaw, on two lines: one piece waits.</summary>
+        ResultPlaceThePiece,
+
+        /// <summary>Won card's blue button to the jigsaw, on two lines: several pieces wait.</summary>
+        ResultPlaceThePieces,
+
+        /// <summary>Won card beside the coins: no move was left over.</summary>
+        ResultWonOnTheLastMove,
+
+        /// <summary>Won card beside the brush: the moves left over became brushes (rockets), on two lines.</summary>
+        ResultMovesLeftOver,
+
+        /// <summary>Won card that gave no piece: the level and the moves it took.</summary>
+        ResultLevelAndMoves,
+
+        /// <summary>Lost or leaving card: the level and which try this was.</summary>
+        ResultLevelAndAttempt,
+
+        /// <summary>The sign over the shop.</summary>
+        ShopTitle,
+
+        /// <summary>Shop section header (small capitals): coins.</summary>
+        ShopCoinsHeader,
+
+        /// <summary>Shop section header (small capitals): boosters.</summary>
+        ShopBoostersHeader,
+
+        /// <summary>Shop section header (small capitals): free coins.</summary>
+        ShopFreeHeader,
+
+        /// <summary>Free strip's small capitals: ads left today.</summary>
+        ShopFreeToday,
+
+        /// <summary>Free strip's small capitals: no ad left today.</summary>
+        ShopFreeNoneToday,
+
+        /// <summary>Button of a coin pack, which the test build does not sell.</summary>
+        ShopComingSoon,
+
+        /// <summary>Free strip's blue button: watch an ad.</summary>
+        ShopWatch,
+
+        /// <summary>Free strip's button once today's ads are used.</summary>
+        ShopTomorrowAgain,
+
+        /// <summary>Free strip's line.</summary>
+        ShopWatchForCoins,
+
+        /// <summary>Name of the starter booster set.</summary>
+        SetStarter,
+
+        /// <summary>Name of the master booster set.</summary>
+        SetMaster,
+
+        /// <summary>Under boosters a reward gave, when they are of several kinds.</summary>
+        BoostersCount,
+
+        /// <summary>Card a coin pack answers with: its nameplate.</summary>
+        NoticePacksTitle,
+
+        /// <summary>Coin pack card: the test build sells nothing for money.</summary>
+        NoticeNotOnSale,
+
+        /// <summary>Coin pack card: where coins come from.</summary>
+        NoticeWhereCoinsComeFrom,
+
+        /// <summary>Card of a set the coins do not cover: its nameplate.</summary>
+        NoticeCoinsShortTitle,
+
+        /// <summary>Card of a set the coins do not cover: how many more coins it needs.</summary>
+        NoticeCoinsShortFor,
+
+        /// <summary>Card of a set the coins do not cover: how to gather coins.</summary>
+        NoticeGatherCoins,
+
+        /// <summary>Card of a set that was bought: its nameplate.</summary>
+        NoticeBoughtTitle,
+
+        /// <summary>Card of a set that was bought.</summary>
+        NoticeInYourBag,
+
+        /// <summary>Where start boosters just received are used.</summary>
+        NoticeUseOnTheLevelCard,
+
+        /// <summary>Where boosters used during play just received are used.</summary>
+        NoticeUseFromTheShelf,
+
+        /// <summary>Card of the daily gift: its nameplate.</summary>
+        NoticeGiftTitle,
+
+        /// <summary>Card of the daily gift that was taken already today.</summary>
+        NoticeGiftTaken,
+
+        /// <summary>Card of the daily gift: the next one comes tomorrow.</summary>
+        NoticeNextGiftTomorrow,
+
+        /// <summary>Card of the daily gift: the next one comes in several days.</summary>
+        NoticeNextGiftInDays,
+
+        /// <summary>Card of a gift that is not due yet: "The next one in 5h 12m."</summary>
+        NoticeNextGiftIn,
+
+        /// <summary>Card of an ad for coins when none is left today: its nameplate.</summary>
+        NoticeNoAdTitle,
+
+        /// <summary>Card of an ad for coins when none is left today.</summary>
+        NoticeNoAdLeft,
+
+        /// <summary>Card of an ad for coins when none is left today: second line.</summary>
+        NoticeComeTomorrow,
+
+        /// <summary>Lives pill on the wallet row while every life is there.</summary>
+        LivesFull,
+
+        /// <summary>Lives card nameplate.</summary>
+        LivesTitle,
+
+        /// <summary>Lives card while every life is there.</summary>
+        LivesAllThere,
+
+        /// <summary>Lives card for a player without a life.</summary>
+        LivesPlayWhenALifeComes,
+
+        /// <summary>Lives card: when the next life is back, "Next life 12:34".</summary>
+        LivesNextLife,
+
+        /// <summary>Lives card: when every life is back, "Full lives in 1h 42m".</summary>
+        LivesFullAfter,
+
+        /// <summary>Lives pill in the tester mode.</summary>
+        TesterPill,
+
+        /// <summary>Lives card under the heart in the tester mode.</summary>
+        TesterUnlimitedLives,
+
+        /// <summary>Lives card in the tester mode.</summary>
+        TesterModeIsOn,
+
+        /// <summary>Lives card in the tester mode: a loss costs no life.</summary>
+        TesterNoLifeIsLost,
+
+        /// <summary>Support card after seven taps on the version: the question.</summary>
+        TesterQuestion,
+
+        /// <summary>Support card: the line under the question.</summary>
+        TesterTells,
+
+        /// <summary>Support card: the answer that turns the tester mode on.</summary>
+        TesterTurnOn,
+
+        /// <summary>Support card: the answer that leaves it off.</summary>
+        TesterLeaveOff,
+
+        /// <summary>A wait under an hour, "42 min".</summary>
+        DurationMinutes,
+
+        /// <summary>A wait of whole hours.</summary>
+        DurationHours,
+
+        /// <summary>A wait in hours and minutes, "1h 42m".</summary>
+        DurationHoursAndMinutes,
+
+        /// <summary>Seconds left on the stand-in ad's bar.</summary>
+        DurationSeconds,
+
+        /// <summary>Nameplate of the card that stands in for an ad in the test build.</summary>
+        AdTitle,
+
+        /// <summary>Second line of that nameplate (small capitals).</summary>
+        AdTestBuild,
+
+        /// <summary>Under the stand-in ad's alcove: no ad is shown.</summary>
+        AdNothingIsShown,
+
+        /// <summary>What the stand-in ad pays: extra moves.</summary>
+        AdPaysMoves,
+
+        /// <summary>What the stand-in ad pays: coins.</summary>
+        AdPaysCoins,
+
+        /// <summary>Settings card nameplate.</summary>
+        SettingsTitle,
+
+        /// <summary>Settings row that opens the language card, and that card's nameplate.</summary>
+        SettingsLanguage,
+
+        /// <summary>This language's name in itself, on the language card and the settings row. Never translated: each table has its own.</summary>
+        LanguageOwnName,
+
+        /// <summary>Settings row with a switch: the sounds of play.</summary>
+        SettingSound,
+
+        /// <summary>Settings row with a switch: the game's music.</summary>
+        SettingMusic,
+
+        /// <summary>Settings row with a switch: the phone's short buzz.</summary>
+        SettingVibration,
+
+        /// <summary>Settings row with a switch: the tester mode, while it is on.</summary>
+        SettingTesterMode,
+
+        /// <summary>Settings row with a switch: the play statistics, which the player allows or declines; also the nameplate of the question that asks for them.</summary>
+        SettingStatistics,
+
+        /// <summary>Smaller line under the privacy row while the play statistics are off: only purchases leave the phone (the store's, and Unity's events).</summary>
+        SettingsPrivacyLine,
+
+        /// <summary>Smaller line under the privacy row while the player allows the play statistics: purchases, and statistics without any ID, leave the phone.</summary>
+        SettingsPrivacyLineWithStatistics,
+
+        /// <summary>Settings row that opens the support card, and that card's nameplate.</summary>
+        SettingsSupport,
+
+        /// <summary>Settings row that opens the credits card, and that card's nameplate: who made the pictures, typefaces and sounds the game uses.</summary>
+        SettingsCredits,
+
+        /// <summary>Credits card, its first line: the licence lines under the headings stay in English, as their licences give them.</summary>
+        CreditsInEnglish,
+
+        /// <summary>Credits card, heading over the lines of the painter's pictures (the avatar).</summary>
+        CreditsPainter,
+
+        /// <summary>Credits card, heading over the line about the museum's paintings and their photographs.</summary>
+        CreditsPaintings,
+
+        /// <summary>Credits card, heading over the typefaces' copyright lines.</summary>
+        CreditsTypefaces,
+
+        /// <summary>Credits card, heading over the line about the sounds of play.</summary>
+        CreditsSounds,
+
+        /// <summary>Settings card's foot: the player's ID and the game's version.</summary>
+        SettingsFoot,
+
+        /// <summary>Under the foot: what kind of build this is.</summary>
+        SettingsBuildLine,
+
+        /// <summary>Build line: the ads are stand-ins.</summary>
+        BuildAdsSimulated,
+
+        /// <summary>Build line: nothing is sold for money.</summary>
+        BuildNoBuying,
+
+        /// <summary>Support card row: the player's ID.</summary>
+        SupportPlayerId,
+
+        /// <summary>Support card row: the game's version (seven taps here open the tester mode's question).</summary>
+        SupportGameVersion,
+
+        /// <summary>Support card row: the version of the levels.</summary>
+        SupportContentVersion,
+
+        /// <summary>Support card: the levels' version, "version 1".</summary>
+        SupportContentVersionValue,
+
+        /// <summary>Support card: label over the path of the attempt records.</summary>
+        SupportRecordsFile,
+
+        /// <summary>Support card: the records are kept in memory (the Editor's tools).</summary>
+        SupportRecordsInMemory,
+
+        /// <summary>Support card: what to tell when reporting a problem.</summary>
+        SupportWhatToTell,
+
+        /// <summary>Privacy card nameplate and the settings row that opens it.</summary>
+        PrivacyTitle,
+
+        /// <summary>Privacy card, paragraph 1: what stays on the phone only (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraph1,
+
+        /// <summary>Privacy card, paragraph 2: the stores take the payments; no accounts, no ad network (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraph2,
+
+        /// <summary>Privacy card, paragraph 3: the records' random ID, which the game never sends (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraph3,
+
+        /// <summary>Privacy card, paragraph 4 (approved text: keep every fact).</summary>
+        PrivacyParagraph4,
+
+        /// <summary>Privacy card, the paragraph on Unity's purchase events (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphUnity,
+
+        /// <summary>Privacy card, the paragraph on the play statistics: what the notes hold and where they go (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names; the list matches PlayNote.cs).</summary>
+        PrivacyParagraphStatistics,
+
+        /// <summary>Privacy card, after the statistics: what the notes never hold, and that the choice changes on the settings card (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphStatisticsChoice,
+
+        /// <summary>Privacy card, last paragraph: what having no server means for coins, progress and refunds (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        PrivacyParagraphNoServer,
+
+        /// <summary>Privacy card button that deletes the attempt records, after a question.</summary>
+        PrivacyDeleteTheRecords,
+
+        /// <summary>Privacy card question: the answer that keeps the records.</summary>
+        PrivacyKeep,
+
+        /// <summary>Privacy card question: the answer that deletes them.</summary>
+        PrivacyDelete,
+
+        /// <summary>Privacy card question.</summary>
+        PrivacyQuestion,
+
+        /// <summary>Privacy card, under the question: what deleting leaves alone.</summary>
+        PrivacyWhatStays,
+
+        /// <summary>Privacy card after the records were deleted.</summary>
+        PrivacyDeleted,
+
+        /// <summary>Privacy card when the records cannot be read to count them.</summary>
+        PrivacyCannotCount,
+
+        /// <summary>Privacy card: how many attempt records the phone keeps.</summary>
+        PrivacyRecordsKept,
+
+        /// <summary>Privacy card: the count when the records could not be read.</summary>
+        PrivacyRecordsUncounted,
+
+        /// <summary>Privacy card: the file's name and what a line of it is.</summary>
+        PrivacyFileLine,
+
+        /// <summary>Privacy card, between the two arrows that turn its pages: which page of how many is shown ("2 / 3").</summary>
+        PrivacyPageOf,
+
+        /// <summary>Statistics question card, after the entry page of the first start: the question, under the nameplate (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentQuestion,
+
+        /// <summary>Statistics question card, paragraph 1: what is counted, and by whom and where (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph1,
+
+        /// <summary>Statistics question card, paragraph 2: what is never sent and never done with the notes (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph2,
+
+        /// <summary>Statistics question card, paragraph 3: no is a full answer, and the choice changes in the settings (draft of 2026-10-24 for v1, waiting for the owner's approval: keep every fact; Aptabase, Unity, Google Play and App Store are names).</summary>
+        ConsentParagraph3,
+
+        /// <summary>Statistics question card: the answer that allows the notes. As large and as bright as the other answer.</summary>
+        ConsentAllow,
+
+        /// <summary>Statistics question card: the answer that declines them; the way back answers so too. As large and as bright as the other answer.</summary>
+        ConsentDecline,
+
+        /// <summary>Tutorial, level 1, before the first move, first line of the pill: the lit plaque shows the level's goal.</summary>
+        TutorialGoal,
+
+        /// <summary>Tutorial, the goal plaque, second line: what to do. "taş" is a piece on the board (a tile).</summary>
+        TutorialGoalMore,
+
+        /// <summary>Tutorial, level 1, first line while two lit tiles are shown by hand: the move to make.</summary>
+        TutorialMatch,
+
+        /// <summary>Tutorial, the shown match, second line: why the move works.</summary>
+        TutorialMatchMore,
+
+        /// <summary>Tutorial, level 1, after the first move, first line: the lit moves medallion counts down.</summary>
+        TutorialMoves,
+
+        /// <summary>Tutorial, the moves medallion, second line: the level is lost when the moves run out.</summary>
+        TutorialMovesMore,
+
+        /// <summary>Tutorial, level 2, first line while a four-in-a-line move is shown by hand.</summary>
+        TutorialFour,
+
+        /// <summary>Tutorial, the shown four, second line: four make a brush (the game's rocket), which paints a row or a column.</summary>
+        TutorialFourMore,
+
+        /// <summary>Tutorial, level 3, first line while a five-in-a-line move is shown by hand.</summary>
+        TutorialFive,
+
+        /// <summary>Tutorial, the shown five, second line: five make a palette (the game's colour bomb), which collects every tile of the colour it is swapped with.</summary>
+        TutorialFiveMore,
+
+        /// <summary>Tutorial, the first board with crates (the engine's boxes), first line under the lit crate.</summary>
+        TutorialBox,
+
+        /// <summary>Tutorial, the crate, second line: some crates take more than one hit.</summary>
+        TutorialBoxMore,
+
+        /// <summary>Tutorial, the first board with varnish on the floor (the engine's jelly), first line under the lit cell.</summary>
+        TutorialJelly,
+
+        /// <summary>Tutorial, the varnish, second line: a match on the cell wipes a layer away.</summary>
+        TutorialJellyMore,
+
+        /// <summary>Tutorial, the first board with taped tiles (the engine's chains), first line under the lit tile.</summary>
+        TutorialChain,
+
+        /// <summary>Tutorial, the tape, second line: a match or a hit tears the tape.</summary>
+        TutorialChainMore,
+
+        /// <summary>Tutorial, the first board with lost frame corners (the engine's items), first line under the lit corner.</summary>
+        TutorialItem,
+
+        /// <summary>Tutorial, the frame corner, second line: it falls as the tiles under it go.</summary>
+        TutorialItemMore,
+
+        /// <summary>Tutorial, the first jigsaw a piece waits on, first line: the lit piece and its lit place.</summary>
+        TutorialFirstPiece,
+
+        /// <summary>Tutorial, the first piece, second line: where the pieces come from.</summary>
+        TutorialFirstPieceMore,
+
+        /// <summary>Tutorial, the first painting made whole on its jigsaw, first line under the lit painting.</summary>
+        TutorialFirstPainting,
+
+        /// <summary>Tutorial, the first painting, second line: a room's five paintings restore it.</summary>
+        TutorialFirstPaintingMore,
+
+        /// <summary>Tutorial, the small last line of a step that is only looked at: a touch anywhere goes on.</summary>
+        TutorialTouchToGoOn,
+
+        /// <summary>Booster intro, the level the spatula opens on, first line while its lit disc waits to be touched ("disk" is the round button on the shelf).</summary>
+        TutorialBoosterHitCell,
+
+        /// <summary>Booster intro, the level the row brush opens on, first line while its lit disc waits to be touched.</summary>
+        TutorialBoosterHitRow,
+
+        /// <summary>Booster intro, the level the column brush opens on, first line while its lit disc waits to be touched.</summary>
+        TutorialBoosterHitColumn,
+
+        /// <summary>Booster intro, the level the shuffle opens on, first line while its lit disc waits to be touched (touching it deals the tiles anew).</summary>
+        TutorialBoosterShuffle,
+
+        /// <summary>Booster intro, first line once the spatula is picked up: touch the one lit tile on the board.</summary>
+        TutorialBoosterPickTheCell,
+
+        /// <summary>Booster intro, first line once the row brush is picked up: touch the lit row anywhere.</summary>
+        TutorialBoosterPickTheRow,
+
+        /// <summary>Booster intro, first line once the column brush is picked up: touch the lit column anywhere.</summary>
+        TutorialBoosterPickTheColumn,
+
+        /// <summary>Booster intro, small last line: this first use of the new booster costs nothing (the player's own stock is not touched).</summary>
+        TutorialBoosterFree,
+
+        /// <summary>Start boosters intro on the level card after a lost level, under the lit brush-and-splash disc: what choosing it does.</summary>
+        TutorialStartRocketAndBomb,
+
+        /// <summary>Start boosters intro, under the lit rainbow palette disc: what choosing it does.</summary>
+        TutorialStartColorBomb,
+
+        /// <summary>Start boosters intro, under the lit extra moves disc: what choosing it does. {moves} is the number of extra moves.</summary>
+        TutorialStartExtraMoves,
+
+        /// <summary>Small last line of the card a long press on a booster opens (it shows what the booster does): a touch anywhere closes it.</summary>
+        BoosterCardTouchToClose,
+
+        /// <summary>Booster intro, once, right after the first booster used by hand: its disc is lit and this one sentence says that holding (a long press on) any booster's round button shows again what it does. "basılı tutmak" = to press and hold.</summary>
+        TutorialLongPress,
+
+        /// <summary>Entry page shown as the game starts: the game's title under the palette. It is a working title (see EntryWorkingTitle); translate it as a short game title.</summary>
+        EntryTitle,
+
+        /// <summary>Entry page: the small badge under the title that says the title is only a working title, in small capitals.</summary>
+        EntryWorkingTitle,
+
+        /// <summary>Entry page: the line under the title, what the game is about. "onarmak" = to restore (a painting).</summary>
+        EntrySubtitle,
+
+        /// <summary>Entry page: the line under the bar that fills while the game starts. {percent} is a whole number from 0 to 100; Turkish writes the sign before it.</summary>
+        EntryLoading,
+
+        /// <summary>Entry page: the line that pulses once the bar is full; a touch anywhere opens the museum.</summary>
+        EntryTapToStart,
+
+        /// <summary>Entry page, foot, left: the studio's name. A name: the same in every language.</summary>
+        EntryStudio,
+
+        /// <summary>Entry page, foot, right: the game's version and that this is a test build. {version} is the version, "1.0".</summary>
+        EntryVersion,
+
+        /// <summary>Entry page: what the line under the bar says instead of the share when the game could not start (a file it needs could not be read). The player is to close the game and open it again; short, one line.</summary>
+        EntryCouldNotStart,
+
+        /// <summary>Name of the starter pack (coins and one start booster of each kind, sold once): "the apprentice's bag".</summary>
+        StarterPackName,
+
+        /// <summary>Shop, on the top edge of the starter pack's frame (small capitals): it is sold to a player only once.</summary>
+        ShopStarterOnce,
+
+        /// <summary>Shop: a pack's button while the store has not said its price yet. Keep the ellipsis.</summary>
+        ShopPriceComing,
+
+        /// <summary>Shop: the button of a coin pack the store does not sell now.</summary>
+        ShopPackNotOnSale,
+
+        /// <summary>Shop, in the coins' panel instead of the buttons: the phone's app store (Google Play, App Store) cannot be reached now. Calm, no blame.</summary>
+        ShopStoreUnreachable,
+
+        /// <summary>Shop, the link under the panels (iPhone and iPad only): asks the App Store for the player's purchases back (Apple's "Restore Purchases").</summary>
+        ShopRestore,
+
+        /// <summary>Name of the smallest coin pack: a pouch of coins.</summary>
+        PackPouch,
+
+        /// <summary>Name of the second coin pack: a bag of coins.</summary>
+        PackBag,
+
+        /// <summary>Name of the third coin pack: a chest of coins.</summary>
+        PackChest,
+
+        /// <summary>Name of the largest coin pack: a treasure of coins.</summary>
+        PackTreasure,
+
+        /// <summary>Card before paying, first line: asks whether to buy. {price} is the price as the store writes it in the player's currency ("₺89,99").</summary>
+        PurchaseAskQuestion,
+
+        /// <summary>Card before paying, second line: the phone's app store takes the payment, and Unity, whose purchase library the game uses, is told of the purchase too.</summary>
+        PurchaseAskStoreLine,
+
+        /// <summary>Card before paying: the green button that opens the store's payment sheet.</summary>
+        PurchaseBuy,
+
+        /// <summary>Card before paying: the blue button that closes it without paying.</summary>
+        PurchaseDecline,
+
+        /// <summary>Card while the store takes the payment: its nameplate.</summary>
+        PurchasePendingTitle,
+
+        /// <summary>Card while the store takes the payment, first line.</summary>
+        PurchasePendingLine,
+
+        /// <summary>Second line of the cards whose payment is not made yet: what was bought arrives once it is paid.</summary>
+        PurchaseComesWhenPaid,
+
+        /// <summary>Card after a payment, first line: the coins arrived. {coins} is the amount.</summary>
+        PurchaseCoinsArrived,
+
+        /// <summary>Card after a payment, second line under the coins.</summary>
+        PurchaseThanks,
+
+        /// <summary>Card when the payment waits for someone's approval (a parent's "Ask to Buy") or for cash at a shop: its nameplate.</summary>
+        PurchaseDeferredTitle,
+
+        /// <summary>Card when the payment waits for approval, first line.</summary>
+        PurchaseDeferredLine,
+
+        /// <summary>Card when a purchase came to nothing: its nameplate.</summary>
+        PurchaseFailedTitle,
+
+        /// <summary>Second line of the card when a purchase came to nothing: no money was taken.</summary>
+        PurchaseNothingPaid,
+
+        /// <summary>That card, first line: the store cannot be reached now.</summary>
+        PurchaseStoreClosed,
+
+        /// <summary>That card, first line: the store does not sell this product now.</summary>
+        PurchaseNotOnSale,
+
+        /// <summary>That card, first line: the starter pack is sold once and the player has it. {name} is its name.</summary>
+        PurchaseSoldOut,
+
+        /// <summary>That card, first line: the store did not take the payment.</summary>
+        PurchaseNotPaid,
+
+        /// <summary>That card, first line: a payment for this product is waiting already.</summary>
+        PurchaseAlreadyWaiting,
+
+        /// <summary>Card after asking the store for the purchases back: its nameplate.</summary>
+        RestoreTitle,
+
+        /// <summary>That card, first line: the starter pack came back. {name} is its name.</summary>
+        RestoreBroughtBack,
+
+        /// <summary>That card, first line: there was nothing to bring back.</summary>
+        RestoreNothing,
+
+        /// <summary>That card, second line: coin packs bought before are not restored, only the starter pack. {name} is its name.</summary>
+        RestoreOnlyTheStarter,
+
+        /// <summary>That card, first line: the store did not answer.</summary>
+        RestoreFailed,
+
+        /// <summary>That card, second line: try again later.</summary>
+        RestoreTryLater,
+
+        /// <summary>Build line: things are sold for money through the phone's app store.</summary>
+        BuildStoreBuying,
+
+        /// <summary>
+        /// Shop, in the coins' panel instead of the buttons: this run of the game cannot keep what it gives (its saved
+        /// progress could not be read, or a later version wrote it), so nothing is sold until the game is opened again.
+        /// Calm, no blame, short.
+        /// </summary>
+        ShopStoreClosedForThisRun,
+
+        /// <summary>Card of a payment the store has not answered (the connection was lost, or it has been silent a while), first line: no answer has come yet. Never "not paid": it may still be paid.</summary>
+        PurchaseNoAnswerLine,
+
+        /// <summary>Entry page, foot, right: the game's version alone, for a build that sells through the store. {version} is the version, "1.0".</summary>
+        EntryVersionAlone,
+
+        /// <summary>Settings card, under the foot: what kind of build this is, for a build that sells through the store (no test build). {ads} and {buying} as in the test build's line.</summary>
+        SettingsBuildLineStoreBuild,
+
+        /// <summary>Credits card, a heading: the software the game carries from others (the statistics library, the JSON reader, the store's libraries).</summary>
+        CreditsSoftware,
+
+        /// <summary>The card offered once after the first won level, its nameplate: keep the save (link the account to the platform).</summary>
+        AccountOfferTitle,
+
+        /// <summary>That card, first line: the save is on this phone only, for now.</summary>
+        AccountOfferLine,
+
+        /// <summary>That card, second line: a new phone gets the save back through {platform} ("Google Play Games", "Game Center": a name).</summary>
+        AccountOfferPlatformLine,
+
+        /// <summary>That card, green button: link.</summary>
+        AccountLinkButton,
+
+        /// <summary>That card, blue button: not now.</summary>
+        AccountNotNowButton,
+
+        /// <summary>The card after the link, its nameplate: account linked.</summary>
+        AccountLinkedTitle,
+
+        /// <summary>That card, first line: the save is in the {platform} account.</summary>
+        AccountLinkedLine,
+
+        /// <summary>That card, second line: a new phone goes on where the player left off.</summary>
+        AccountLinkedNewPhoneLine,
+
+        /// <summary>The card when the link did not come about, its nameplate.</summary>
+        AccountNotLinkedTitle,
+
+        /// <summary>That card, first line: {platform} is not available on this phone.</summary>
+        AccountPlatformMissingLine,
+
+        /// <summary>First line of the cards when the platform or the services could not be reached: cannot connect now.</summary>
+        AccountUnreachableLine,
+
+        /// <summary>Second line of those cards: the progress is safe on this phone.</summary>
+        AccountSafeLine,
+
+        /// <summary>The card when the platform's account has a save of its own, its nameplate.</summary>
+        AccountOtherSaveTitle,
+
+        /// <summary>That card, first line: the {platform} account has a save.</summary>
+        AccountOtherSaveLine,
+
+        /// <summary>That card, second line: going over adds this phone's progress to it.</summary>
+        AccountOtherSaveMergeLine,
+
+        /// <summary>That card, green button: go over to that save.</summary>
+        AccountSwitchButton,
+
+        /// <summary>That card, blue button: stay.</summary>
+        AccountStayButton,
+
+        /// <summary>The card when the save came back from the cloud, its nameplate.</summary>
+        AccountSaveBackTitle,
+
+        /// <summary>That card, first line: the level stood on ({level}) and the coins ({coins}), in a label form.</summary>
+        AccountSaveBackLine,
+
+        /// <summary>That card, second line: the player goes on where they left off.</summary>
+        AccountSaveBackGoOnLine,
+
+        /// <summary>The card when going over to the other save failed, its nameplate.</summary>
+        AccountNotSwitchedTitle,
+
+        /// <summary>Card while the game's server asks the store whether the payment is real (a few seconds): its nameplate: verifying.</summary>
+        PurchaseVerifyingTitle,
+
+        /// <summary>That card, first line: the payment is being verified with the store.</summary>
+        PurchaseVerifyingLine,
+
+        /// <summary>That card, second line: what was bought arrives once the payment is verified.</summary>
+        PurchaseComesWhenVerified,
+
+        /// <summary>The same card when the server has not answered in ten seconds or cannot be reached now (no network, the server not set up yet), first line: verification is taking a little longer. Calm: nothing is wrong, nothing is lost.</summary>
+        PurchaseVerifyLaterLine,
+
+        /// <summary>That card, second line: the payment is not lost; what was bought arrives once verified (the store keeps the payment waiting and refunds it if it is never verified).</summary>
+        PurchaseSafeLine,
+
+        /// <summary>Card when the server found the payment not real (not from the store, another player's, refunded), first line: the purchase could not be verified.</summary>
+        PurchaseNotVerified,
+
+        /// <summary>That card, second line: if money was taken, the store gives it back (Google Play refunds an unconfirmed payment within three days).</summary>
+        PurchaseStoreRefunds,
+
+        /// <summary>Settings row that opens the account card: the player's account and the cloud save (the copy of the progress on the game's servers).</summary>
+        SettingsAccount,
+
+        /// <summary>Smaller line under the privacy row while the cloud save is on and the play statistics are off: the purchases and the cloud save leave the phone.</summary>
+        SettingsPrivacyLineWithCloud,
+
+        /// <summary>The same line while the cloud save is on and the player allows the play statistics.</summary>
+        SettingsPrivacyLineWithCloudAndStatistics,
+
+        /// <summary>Smaller line under the settings' account row, and the account card's account value, while the player turned the cloud save off: nothing is sent.</summary>
+        AccountStateOff,
+
+        /// <summary>The same line in a build that has no cloud save (a test build on a computer).</summary>
+        AccountStateNoCloud,
+
+        /// <summary>The same line while the game signs in to the player's account.</summary>
+        AccountStateStarting,
+
+        /// <summary>The same line, and the last sync's value, when the account's servers cannot be reached now (no network); the progress is safe on the phone.</summary>
+        AccountStateUnreachable,
+
+        /// <summary>The same line for an account of this phone only, not linked to Google Play Games or Game Center.</summary>
+        AccountStateThisPhone,
+
+        /// <summary>The same line for an account linked to {platform} ("Google Play Games", "Game Center": a name, never translated).</summary>
+        AccountStateLinked,
+
+        /// <summary>The account card's nameplate (opened by the settings' account row), and its first row's label: the player's account.</summary>
+        AccountCardTitle,
+
+        /// <summary>Account card, the row with the switch: the cloud save (on: progress and wallet are kept on the game's servers too; off: nothing is sent).</summary>
+        AccountRowCloudSave,
+
+        /// <summary>Account card, row label: when the save was last synced with the cloud.</summary>
+        AccountRowLastSync,
+
+        /// <summary>Account card, row label: the player code (the account's id), which support and the deletion page on the game's site ask for.</summary>
+        AccountRowPlayerCode,
+
+        /// <summary>Account card, small line under the rows: the cloud save keeps the progress and the wallet on Unity's servers too.</summary>
+        AccountCardLine,
+
+        /// <summary>Value of the last sync row before the first sync.</summary>
+        AccountSyncNever,
+
+        /// <summary>Value of that row within a minute of the sync.</summary>
+        AccountSyncJustNow,
+
+        /// <summary>Value of that row: {count} minutes ago.</summary>
+        AccountSyncMinutesAgo,
+
+        /// <summary>Value of that row: {count} hours ago.</summary>
+        AccountSyncHoursAgo,
+
+        /// <summary>Value of that row: {count} days ago.</summary>
+        AccountSyncDaysAgo,
+
+        /// <summary>Account card, the player code's value for a moment after a touch on its row copied it.</summary>
+        AccountCodeCopied,
+
+        /// <summary>Account card, blue button: delete my data (the account and its save in the cloud; a question comes first). Also the nameplate of the cards about the deletion.</summary>
+        AccountDeleteMyData,
+
+        /// <summary>Account card, the question after that button: delete the account and its save in the cloud?</summary>
+        AccountDeleteQuestion,
+
+        /// <summary>Under that question: an anonymous trace of the purchases is kept for 36 months (to prevent fraud).</summary>
+        AccountDeleteTraceLine,
+
+        /// <summary>Account card while the deletion runs.</summary>
+        AccountDeleting,
+
+        /// <summary>Account card after the deletion: the data in the cloud is deleted.</summary>
+        AccountCloudDeleted,
+
+        /// <summary>Account card after the deletion when there was nothing in the cloud (the cloud save was never on).</summary>
+        AccountNothingInTheCloud,
+
+        /// <summary>Account card, the second question: delete the progress on this phone too?</summary>
+        AccountForgetProgressQuestion,
+
+        /// <summary>Under that question: if it is deleted, the game starts over.</summary>
+        AccountForgetProgressLine,
+
+        /// <summary>Account card, blue answer to that question: keep the progress on this phone.</summary>
+        AccountKeepProgress,
+
+        /// <summary>Account card when the deletion found no network, first line.</summary>
+        AccountNeedsNetwork,
+
+        /// <summary>Account card when the servers could not be reached or refused, first line: cannot delete now; try again a little later.</summary>
+        AccountCannotDeleteNow,
+
+        /// <summary>Second line of those two: nothing was deleted.</summary>
+        AccountNothingDeleted,
+
+        /// <summary>Card after the player deleted the data in the cloud and on this phone, its nameplate: everything is deleted.</summary>
+        AccountEverythingDeletedTitle,
+
+        /// <summary>That card, first line: the game starts over.</summary>
+        AccountEverythingDeletedLine,
+
+        /// <summary>Second line of the cards after a deletion: the cloud save is off now; it can be turned on again in the settings (a new account is opened then).</summary>
+        AccountSwitchOffAfterDeletion,
+
+        /// <summary>Privacy card, the paragraph on the cloud save and the invisible account.</summary>
+        PrivacyParagraphCloud,
+
+        /// <summary>Privacy card, the paragraph on Google Play Games and Game Center.</summary>
+        PrivacyParagraphPlatform,
+
+        /// <summary>Privacy card, the paragraph on the verification of purchases.</summary>
+        PrivacyParagraphVerification,
+    }
+}

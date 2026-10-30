@@ -19,6 +19,7 @@ namespace Puzzle.Bot.Simulation
             Totals = totals;
         }
 
+        /// <summary>The play seed of the game that was played.</summary>
         public ulong Seed { get; }
 
         public GameStatus FinalStatus { get; }
@@ -44,10 +45,15 @@ namespace Puzzle.Bot.Simulation
         /// result tells how many moves the bot needed rather than whether it fit the level's limit.
         /// </summary>
         /// <exception cref="LevelInitializationException">The level cannot produce a starting board.</exception>
-        public static RunResult Play(LevelDefinition level, IBotPolicy policy, ulong seed, int moveCap)
+        public static RunResult Play(LevelDefinition level, IBotPolicy policy, ulong seed, int moveCap) =>
+            Play(level, policy, GameSeedsOf(seed), Rng.Derive(seed, 2), moveCap);
+
+        /// <summary>Plays one game on explicit attempt seeds; <paramref name="botSeed"/> drives only the bot's own choices.</summary>
+        /// <exception cref="LevelInitializationException">The level cannot produce a starting board.</exception>
+        public static RunResult Play(LevelDefinition level, IBotPolicy policy, AttemptSeeds gameSeeds, ulong botSeed, int moveCap)
         {
-            Game game = Game.Start(level, Rng.Derive(seed, 1), new GameOptions { MoveLimitOverride = moveCap });
-            var rng = new Rng(Rng.Derive(seed, 2));
+            Game game = Game.Start(level, gameSeeds, new GameOptions { MoveLimitOverride = moveCap });
+            var rng = new Rng(botSeed);
             var legalMoves = new List<Move>();
             var progress = new List<float>(moveCap + 1) { (float)game.Goals.OverallProgress };
 
@@ -65,7 +71,13 @@ namespace Puzzle.Bot.Simulation
             }
 
             int? completedAt = game.Status == GameStatus.Won ? game.MovesUsed : (int?)null;
-            return new RunResult(seed, game.Status, game.MovesUsed, completedAt, progress.ToArray(), game.TotalStats);
+            return new RunResult(gameSeeds.Play, game.Status, game.MovesUsed, completedAt, progress.ToArray(), game.TotalStats);
         }
+
+        /// <summary>The exact game a run with this seed plays, so other tools (e.g. the solver) can study the same board.</summary>
+        public static Game StartGame(LevelDefinition level, ulong seed, int moveCap) =>
+            Game.Start(level, GameSeedsOf(seed), new GameOptions { MoveLimitOverride = moveCap });
+
+        private static AttemptSeeds GameSeedsOf(ulong runSeed) => AttemptSeeds.From(Rng.Derive(runSeed, 1));
     }
 }

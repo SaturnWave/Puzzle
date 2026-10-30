@@ -74,6 +74,19 @@ public class MatchFinderTests
         Assert.True(CountInRow(board, anchor) >= 3 && CountInColumn(board, anchor) >= 3);
     }
 
+    [Theory]
+    [InlineData("pppp|.p..|.p..")] // 4-line crossing a 3-line
+    [InlineData("ppp|pp.|p..")]    // L with an extra square cell
+    public void Crossing_shapes_of_six_or_more_make_a_big_bomb(string shape)
+    {
+        var finder = new MatchFinder(TestBoards.BoardOf(shape.Split('|')));
+
+        MatchGroup group = Assert.Single(finder.FindGroups(-1, -1));
+
+        Assert.Equal(6, group.Cells.Count);
+        Assert.Equal(TileKind.BigBomb, group.Special?.Kind);
+    }
+
     [Fact]
     public void Square_makes_a_seeker()
     {

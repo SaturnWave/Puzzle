@@ -1,0 +1,26 @@
+<!-- The collection's mark on the navigation bar: an album with a framed picture on its cover, as the design canvas
+     draws it (its symbol with the paints it uses). The picture is the symbol's own 100 x 100 box; the game draws it
+     at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<linearGradient id="f-gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".62" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<linearGradient id="f-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34A5AA"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+<linearGradient id="f-ivory-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3E4C0"/><stop offset="1" stop-color="#DDC694"/></linearGradient>
+<linearGradient id="f-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F8CF5"/><stop offset=".7" stop-color="#A9D4FF"/><stop offset="1" stop-color="#FFE9B8"/></linearGradient>
+</defs>
+<ellipse cx="52" cy="94" rx="38" ry="5" fill="url(#g-shadow)"/>
+<rect x="20" y="18" width="68" height="72" rx="6" fill="#B8985A"/>
+<rect x="20" y="15" width="68" height="71" rx="6" fill="url(#f-ivory-d)" stroke="#6E4B1E" stroke-opacity=".5" stroke-width="1.2"/>
+<path d="M84 22V80M80.5 22V80" stroke="#B8985A" stroke-opacity=".6" stroke-width="1"/>
+<rect x="12" y="13" width="68" height="74" rx="7" fill="#0C4A53"/>
+<rect x="12" y="9" width="68" height="74" rx="7" fill="url(#f-teal)" stroke="#062F37" stroke-opacity=".6" stroke-width="1.4"/>
+<path d="M12 16A7 7 0 0 1 19 9H24V83H19A7 7 0 0 1 12 76Z" fill="#0C4A53" fill-opacity=".45"/>
+<rect x="32" y="26" width="38" height="33" rx="2.5" fill="#9C5C0B"/>
+<rect x="32" y="24" width="38" height="33" rx="2.5" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.2"/>
+<rect x="37" y="29" width="28" height="23" rx="1" fill="url(#f-sky)"/>
+<circle cx="57.5" cy="36.5" r="4" fill="#FFE27A"/>
+<path d="M37 52V46C42 40 47 41 51 45C55 41 61 42 65 47V52Z" fill="#43BF4D"/>
+<path d="M33 68H69M38 74H64" stroke="#FFDB6E" stroke-width="3" stroke-linecap="round"/>
+<path d="M29 14.5H62" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

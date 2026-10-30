@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#131312" media="(prefers-color-scheme: dark)">
+  <title>Puzzle Test Lab</title>
+  <link rel="stylesheet" href="app.css?v=8">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#gem-blue"/></svg>
+      <h1>Puzzle Test Lab</h1>
+      <span class="tag">geliştirme aracı</span>
+    </div>
+    <div class="topbar-end">
+      <span id="status-line" class="status-line"></span>
+      <button id="owner-sign-out" class="btn" type="button" title="Laboratuvardan çık; yeniden girmek için yönetici anahtarı gerekir" hidden>Çıkış</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel controls" aria-label="Ayarlar">
+      <section class="panel-section">
+        <h2>Bölüm</h2>
+        <label class="field">Bölüm ara
+          <input id="level-filter" type="search" placeholder="ör. 42, Hard, jelly, samples" autocomplete="off">
+        </label>
+        <label class="field">Bölüm
+          <select id="level-select"></select>
+        </label>
+        <p id="level-info" class="level-info"></p>
+        <label class="field">Başlangıç tahtası
+          <select id="start-board-select">
+            <option value="level" selected>Bölüm ayarı</option>
+            <option value="varied">Her denemede farklı</option>
+            <option value="fixed">Hep aynı (sabit)</option>
+          </select>
+        </label>
+        <label class="field">Seed <span class="field-hint">boş = havuzdaki sıradaki deneme</span>
+          <input id="seed-input" type="number" min="0" max="4294967295" placeholder="havuzdan" inputmode="numeric">
+        </label>
+        <label class="field">
+          <span class="field-row">DDA yardımı <output id="assist-out" class="pill">0</output></span>
+          <input id="assist-input" type="range" min="0" max="100" step="10" value="0">
+        </label>
+      </section>
+
+      <section class="panel-section">
+        <h2>Bot</h2>
+        <label class="field">Oyuncu profili
+          <select id="bot-select"></select>
+        </label>
+        <label class="field">Animasyon hızı
+          <select id="speed-select">
+            <option value="2">Yavaş</option>
+            <option value="1" selected>Normal</option>
+            <option value="0.5">Hızlı</option>
+            <option value="0.15">Çok hızlı</option>
+          </select>
+        </label>
+      </section>
+    </aside>
+
+    <section class="board-area" aria-label="Oyun">
+      <div class="attempt-bar">
+        <div id="attempt-info" class="attempt-info"></div>
+        <button id="recording-chip" class="rec-chip" type="button" aria-expanded="false" aria-controls="recording-note" hidden></button>
+      </div>
+      <p id="recording-note" class="recording-note" hidden></p>
+      <div class="hud">
+        <div id="moves" class="moves"><span id="moves-left">–</span><small>hamle</small></div>
+        <div id="goals" class="goals"></div>
+      </div>
+      <div id="board-wrap" class="board-wrap">
+        <div id="board" class="board" aria-label="Oyun tahtası"></div>
+        <div id="banner" class="banner hidden"></div>
+      </div>
+      <div class="actions">
+        <button id="new-game" class="btn primary" type="button" title="Yeni desen, aynı kurallar ve aynı zorluk">Yeni deneme</button>
+        <button id="replay-seed" class="btn" type="button" title="Birebir aynı başlangıç ve aynı gelecek taşlar (test için)">Aynı seed</button>
+        <button id="hint-btn" class="btn" type="button">İpucu</button>
+        <button id="bot-step" class="btn" type="button">Bot 1 hamle</button>
+        <button id="autoplay-btn" class="btn" type="button">Bot oynasın ▶</button>
+      </div>
+      <p class="help">Sürükle ya da iki komşu taşa sırayla dokun · özel taşa dokunmak onu patlatır (1 hamle)</p>
+    </section>
+
+    <aside class="panel info" aria-label="Kayıtlar ve analiz">
+      <div class="tabs" role="tablist" aria-label="Panel">
+        <button id="tab-btn-recordings" class="tab" type="button" role="tab" aria-controls="tab-recordings" aria-selected="true">Kayıtlar</button>
+        <button id="tab-btn-analysis" class="tab" type="button" role="tab" aria-controls="tab-analysis" aria-selected="false" tabindex="-1">Analiz</button>
+        <button id="tab-btn-log" class="tab" type="button" role="tab" aria-controls="tab-log" aria-selected="false" tabindex="-1">Günlük</button>
+      </div>
+
+      <section id="tab-recordings" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-recordings">
+        <div class="panel-toolbar">
+          <div class="segmented" role="group" aria-label="Kimin denemeleri">
+            <button type="button" data-scope="device" aria-pressed="true">Bu cihaz</button>
+            <button type="button" data-scope="all" aria-pressed="false">Tüm cihazlar</button>
+          </div>
+          <button id="recordings-refresh" class="icon-btn" type="button" aria-label="Kayıtları yenile" title="Yenile">↻</button>
+        </div>
+        <div id="recordings-body" class="recordings-body" aria-live="polite">
+          <p class="muted">Yükleniyor…</p>
+        </div>
+
+        <div class="compare">
+          <h3>Bot karşılaştırması</h3>
+          <p class="muted small">Sayılan her denemenin oyununu (aynı seed, aynı hamle limiti) dört bot profili de oynar; kazanma oranı sana en yakın bot gösterilir.</p>
+          <div class="compare-controls">
+            <label class="field inline">Bot oyunu / deneme
+              <select id="compare-runs">
+                <option>10</option>
+                <option selected>20</option>
+                <option>30</option>
+              </select>
+            </label>
+            <button id="compare-btn" class="btn primary" type="button"><span class="spinner" aria-hidden="true"></span><span class="btn-label">Botlarla karşılaştır</span></button>
+          </div>
+          <p id="compare-status" class="busy-line" aria-live="polite" hidden></p>
+          <div id="compare-result" class="compare-result"></div>
+        </div>
+      </section>
+
+      <section id="tab-analysis" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-analysis" hidden>
+        <div class="tool">
+          <h3>Simülasyon</h3>
+          <div class="tool-controls">
+            <label class="field inline">Oyun sayısı
+              <select id="runs-select">
+                <option>100</option>
+                <option selected>300</option>
+                <option>1000</option>
+              </select>
+            </label>
+            <button id="simulate-btn" class="btn" type="button">Bölümü simüle et</button>
+          </div>
+          <div id="sim-result" class="tool-result muted">Seçili bot profili bu bölümü çok kez oynar. Henüz çalıştırılmadı.</div>
+        </div>
+        <div class="tool">
+          <h3>Çözücü</h3>
+          <div class="tool-controls">
+            <label class="field inline">Genişlik (beam)
+              <select id="beam-select">
+                <option>4</option>
+                <option selected>8</option>
+                <option>16</option>
+              </select>
+            </label>
+            <button id="solve-btn" class="btn" type="button">Mükemmel oyunu bul</button>
+          </div>
+          <div id="solve-result" class="tool-result muted">Şu anki konumdan, gelecek taşları bilerek en kısa kazanma yolunu arar. Henüz çalıştırılmadı.</div>
+        </div>
+      </section>
+
+      <section id="tab-log" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-log" hidden>
+        <h3>Son hamle</h3>
+        <div id="last-move" class="last-move muted">—</div>
+        <h3>Hamle günlüğü</h3>
+        <ol id="event-log" class="event-log"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script src="app.js?v=10" type="module"></script>
+</body>
+</html>

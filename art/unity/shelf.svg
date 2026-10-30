@@ -1,0 +1,26 @@
+<!-- The wooden shelf under the wall, as the web test page draws its .shelf. One unit is one point of the design.
+     The plank is 100 x 58 at (14, 6); the game stretches the middle of the picture sideways to the shelf's width,
+     so the grain is drawn level: stretched, it stays what it is. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="384" viewBox="0 0 128 96">
+<defs>
+<linearGradient id="wood" gradientUnits="userSpaceOnUse" x1="0" y1="6" x2="0" y2="64"><stop offset="0" stop-color="#9f6535"/><stop offset=".3" stop-color="#8e5730"/><stop offset="1" stop-color="#6f4022"/></linearGradient>
+<filter id="soft" x="-40%" y="-40%" width="180%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+<clipPath id="in-plank"><rect x="14" y="6" width="100" height="58" rx="22"/></clipPath>
+</defs>
+<!-- the drop on the wall, then the dark line around the plank -->
+<rect x="14" y="18" width="100" height="58" rx="22" fill="#031c22" fill-opacity=".4" filter="url(#soft)"/>
+<rect x="11.5" y="9.5" width="105" height="63" rx="24.5" fill="#04242b" fill-opacity=".4"/>
+<rect x="11.5" y="3.5" width="105" height="63" rx="24.5" fill="#4b2a0f"/>
+<g clip-path="url(#in-plank)">
+<rect x="14" y="6" width="100" height="58" fill="url(#wood)"/>
+<!-- the grain: a few darker strokes along the plank, each with a lighter one under it -->
+<path d="M14 20.5H114" stroke="#3b200e" stroke-opacity=".2" stroke-width="1.1"/>
+<path d="M14 21.8H114" stroke="#ffdeaa" stroke-opacity=".07" stroke-width="1"/>
+<path d="M14 35.5H114" stroke="#3b200e" stroke-opacity=".12" stroke-width="1.4"/>
+<path d="M14 47.5H114" stroke="#3b200e" stroke-opacity=".17" stroke-width="1"/>
+<path d="M14 48.8H114" stroke="#ffdeaa" stroke-opacity=".05" stroke-width="1"/>
+<!-- light along the top edge and the dark lip along the foot: each is the plank less the plank moved down or up -->
+<path fill="#ffdeaa" fill-opacity=".6" fill-rule="evenodd" d="M0 0H128V96H0Z M36 8.5H92A22 22 0 0 1 114 30.5V44.5A22 22 0 0 1 92 66.5H36A22 22 0 0 1 14 44.5V30.5A22 22 0 0 1 36 8.5Z"/>
+<path fill="#281206" fill-opacity=".5" fill-rule="evenodd" d="M0 0H128V96H0Z M36 1H92A22 22 0 0 1 114 23V37A22 22 0 0 1 92 59H36A22 22 0 0 1 14 37V23A22 22 0 0 1 36 1Z"/>
+</g>
+</svg>

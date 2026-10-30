@@ -1,0 +1,70 @@
+{
+  "room": "room-14",
+  "paintings": [
+    {
+      "file": "view-of-istanbul-from-pera.jpg",
+      "title": "View of Istanbul from the Dutch Embassy at Pera",
+      "titleTr": "Pera'daki Hollanda Elçiliği'nden İstanbul Görünümü",
+      "artist": "Jean Baptiste Vanmour",
+      "year": "y. 1720–37",
+      "width": 1920,
+      "height": 1226,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/SK-A-4084",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Gezicht_op_Istanbul_vanuit_de_Nederlandse_ambassade_in_Pera,_SK-A-4084.jpg",
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "interior-of-the-pantheon.jpg",
+      "title": "Interior of the Pantheon, Rome",
+      "titleTr": "Pantheon'un İçi, Roma",
+      "artist": "Giovanni Paolo Panini",
+      "year": "y. 1734",
+      "width": 1477,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/165",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Giovanni_Paolo_Panini,_Interior_of_the_Pantheon,_Rome,_c._1734,_NGA_165.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "campo-santi-giovanni-e-paolo.jpg",
+      "title": "The Campo di SS. Giovanni e Paolo, Venice",
+      "titleTr": "Santi Giovanni e Paolo Meydanı, Venedik",
+      "artist": "Bernardo Bellotto",
+      "year": "1743–47",
+      "width": 1920,
+      "height": 1192,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/1144-campo-di-ss-giovanni-e-paolo-venice",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Bernardo_Bellotto,_The_Campo_di_SS._Giovanni_e_Paolo,_Venice,_1743-1747,_NGA_1144.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "cannaregio-canal.jpg",
+      "title": "View on the Cannaregio Canal, Venice",
+      "titleTr": "Cannaregio Kanalı'ndan Görünüm, Venedik",
+      "artist": "Francesco Guardi",
+      "year": "y. 1775–80",
+      "width": 1920,
+      "height": 1235,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/254-view-cannaregio-canal-venice",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Francesco_Guardi,_View_on_the_Cannaregio_Canal,_Venice,_c._1775-1780,_NGA_254.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "square-of-saint-marks.jpg",
+      "title": "The Square of Saint Mark's, Venice",
+      "titleTr": "San Marco Meydanı, Venedik",
+      "artist": "Canaletto (Giovanni Antonio Canal)",
+      "year": "1742–44",
+      "width": 1920,
+      "height": 1421,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/32588-square-saint-marks-venice",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Canaletto,_The_Square_of_Saint_Mark's,_Venice,_1742-1744,_NGA_32588.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    }
+  ]
+}

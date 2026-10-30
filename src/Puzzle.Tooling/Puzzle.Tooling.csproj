@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Desktop-side helpers shared by the CLI, the web test UI and (Phase 2) the level generator. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Puzzle.Tooling</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+    <!-- The human-vs-bot comparison of recorded attempts simulates the bots. -->
+    <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
+    <!-- The world map's build projects its coastlines as the game projects its painting places. -->
+    <ProjectReference Include="..\Puzzle.Museum\Puzzle.Museum.csproj" />
+  </ItemGroup>
+</Project>

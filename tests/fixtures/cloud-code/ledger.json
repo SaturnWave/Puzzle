@@ -1,0 +1,36 @@
+{
+  "next": 4,
+  "items": [
+    {
+      "seq": 1,
+      "store": "GooglePlay",
+      "product": "coins.pouch",
+      "order": "GPA.3312-4405-6102-77801",
+      "at": "2026-11-03T18:22:05Z",
+      "state": "valid",
+      "test": false,
+      "receipt": "rcpt-2ff08629a92594c8bc754ca06ac3e927de5a5cf7"
+    },
+    {
+      "seq": 2,
+      "store": "AppleAppStore",
+      "product": "starter.apprentice_kit",
+      "order": "2000000912345678",
+      "at": "2026-11-03T18:27:05Z",
+      "state": "refunded",
+      "test": true,
+      "receipt": "rcpt-0127aba1c71ab6942d7507da095f07ab9ad7f739"
+    },
+    {
+      "seq": 3,
+      "store": "GooglePlay",
+      "product": "coins.bag",
+      "order": "",
+      "at": "2026-11-03T18:31:05Z",
+      "state": "voided",
+      "test": true,
+      "receipt": "rcpt-a7a92ba4c53c02304da8e04af3d8f85ef7a9e962"
+    }
+  ],
+  "refundsCheckedAt": "2026-11-03T19:22:05Z"
+}

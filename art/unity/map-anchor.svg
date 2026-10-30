@@ -1,0 +1,5 @@
+<!-- The exact place of a pin of the world map (MapWorldTR): a dark dot of 8 points in a cream ring of 2, around the middle of the picture. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 14 14">
+<defs></defs>
+<circle cx="7" cy="7" r="6" fill="#FFF4C4"/><circle cx="7" cy="7" r="4" fill="#5E3305"/>
+</svg>

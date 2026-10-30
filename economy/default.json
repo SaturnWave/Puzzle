@@ -1,0 +1,371 @@
+{
+  // The game's economy settings, which are the economy simulator's too: who plays, how they play, what the game
+  // gives and what things cost. The game reads lives, coins, rewards, extraMovesOffer, the booster prices, start,
+  // boosterUnlocks, startBoosters, hints, shop and build (tools/unity/sync-engine.js packs them for it); the simulator
+  // reads everything and simulates all but those last four. The store section, what v1 sells for real money, is
+  // simulated for a paying player and is the game's once it sells for money.
+  // Every field must be stated; the code holds no default. Each comment ends with where the value comes from:
+  //   [decided]     a product decision (docs/GAME_DESIGN.md section 19) or a fact of the engine
+  //   [assumed n]   starting assumption n, approved by the owner as a default
+  //   [proposed]    an assumption the simulator's design added, or an amount read from its reports and put in use;
+  //                 it waits for the owner's word
+  //   [placeholder] an amount or a price nobody has decided: read the reports, then change it
+  //   [recorded]    from the test server's recordings of people
+  //   [tool]        how the tool works; no claim about the game
+  // Nothing here reaches a level's move limit, its seeds or the engine's assist: what a player spends, in coins or in
+  // money, never changes difficulty (section 17). The default player is free; player.purchases makes one who pays.
+  // An amount of money is a whole number of US cents, never a fraction.
+  // A variant file states "extends": "default.json", a "name" of its own and only the fields it changes.
+  // An amount of coins is a whole number from 0 to 1 000 000.
+
+  // Names the folder the reports go to (letters, digits and '-'). [tool]
+  "name": "default",
+
+  "players": {
+    // How many players are simulated. The shares below must split it into whole players. [tool]
+    "count": 4000,
+    // Player i's own luck is derived from this seed and i; the same seed gives the same reports byte for byte. [tool]
+    "seed": 1,
+    // Percent of the players on each rung of the skill ladder; must sum to 100. A share of 0 leaves a rung out
+    // (how a variant file simulates one rung alone). [assumed 5]
+    "skillMixPercent": { "skill-45": 25, "skill-55": 50, "skill-65": 25 },
+    // The rung every report shows on its own as the average player. [decided]
+    "averageRung": "skill-55",
+    // Days a player is followed at most; nobody quits and no day is skipped. [tool]
+    "horizonDays": 365
+  },
+
+  "habit": {
+    // Times of day a session starts, in order. Three sessions a day. [assumed 2]
+    "sessionStarts": ["08:30", "13:00", "21:30"],
+    // Minutes after which no new attempt starts in a session (a session otherwise lasts until the lives are gone,
+    // and wins cost no life). An attempt under way is finished, so sessions run a little past this. The recorded
+    // sessions had a median of 5 attempts, about 10 minutes: the habit the owner chose to count with on 2026-10-13
+    // (the first assumption was 20). This one number sets the pace, and with it how often a day the +5 is wanted
+    // against the free ads of a day: see economy/sessions-6-minutes.json and economy/sessions-20-minutes.json.
+    // [assumed 2]
+    "sessionCeilingMinutes": 10,
+    // Milliseconds a player takes per move: 5.3 s in the recordings of two players. [recorded]
+    "millisecondsPerMove": 5300,
+    // Seconds between the end of one attempt and the first move of the next (result, finale, map, start). [proposed]
+    "secondsBetweenAttempts": 20,
+    // Seconds an ad for extra moves takes. [proposed]
+    "secondsPerAd": 30
+  },
+
+  "lives": {
+    // Lives a player can hold. Kept on 2026-10-13 in the knowledge that the average player then wins level 100 on
+    // day 8 and that lives end no session in this habit; what would slow the pace is in economy/one-life.json and
+    // economy/life-every-16-hours.json. [decided]
+    "max": 5,
+    // Minutes until one life comes back; a life is lost only on a lost attempt. [decided]
+    "minutesPerLife": 30
+  },
+
+  "coins": {
+    // Coins for every move left when a level is won (the finale turns each into a rocket). This sets the scale of
+    // every price. A skill-55 win leaves about 7 to 10 moves, so a win pays about 30 to 40 coins and the +5 costs
+    // about 25 wins. At 10 the average player earned several times what the +5 they wanted cost; at 4, with 80 a
+    // painting, the purse holds 4 to 7 times the price of a +5 at levels 100, 300 and 1000. [proposed 2026-10-13
+    // from the run explore-five-lives; was a placeholder of 10]
+    "perMoveLeftInFinale": 4,
+    // Coins for winning a level, whatever is left. No flat reward was decided. [placeholder]
+    "perLevelWon": 0
+  },
+
+  "rewards": {
+    // Given when a painting is completed (its tenth level won). Nothing is random: reward number n gives the next
+    // boosters of the rotation.
+    "paintingCompleted": {
+      // Coins with it: the part of the income that does not depend on how well a level was won, about a quarter
+      // of what the finale pays. [proposed 2026-10-13 from the run explore-five-lives; was a placeholder of 0]
+      "coins": 80,
+      // Boosters each time. [assumed 3]
+      "boostersEachTime": 1,
+      // The boosters given, in turn; here all seven in the engine's order. [assumed 3]
+      "boosterRotation": ["start-rocket-and-bomb", "start-color-bomb", "start-extra-moves", "hit-cell", "hit-row", "hit-column", "shuffle"]
+    },
+    // Given at the first session of a day.
+    "daily": {
+      // Coins with it; only reward boosters were approved. [placeholder]
+      "coins": 0,
+      // Given every this many days, from the first day on. [assumed 3]
+      "everyDays": 1,
+      // Boosters each time. [assumed 3]
+      "boostersEachTime": 1,
+      // The boosters given, in turn. [assumed 3]
+      "boosterRotation": ["start-rocket-and-bomb", "start-color-bomb", "start-extra-moves", "hit-cell", "hit-row", "hit-column", "shuffle"]
+    }
+  },
+
+  "extraMovesOffer": {
+    // Times a day the +5 moves cost an ad and no coins. [assumed 4]
+    "freeAdsPerDay": 3,
+    // Coins the +5 moves cost beyond the free ads: the unit the other amounts are stated in, about 25 average wins
+    // at 4 coins a move left. It must be above 4 moves' worth of coins, or the finale would pay the purchase back.
+    // [proposed 2026-10-13: kept at the placeholder's 900]
+    "priceCoins": 900
+  },
+
+  "prices": {
+    // Coins a booster costs. The three start boosters are priced so that a coin buys the same chance to win as it
+    // does in a +5 at 900 on the levels where they are bought (Hard and SuperHard, after four losses): there the
+    // +5, taken with 80 % of the goals done, adds 41 to 53 points of win chance, the color bomb 24 to 29, the +3
+    // moves about 11, the rocket and bomb 10 to 11 (offers.csv). The start-extra-moves price must be above 3
+    // moves' worth of coins. [proposed 2026-10-13 from offers.csv; were placeholders of 600, 1000 and 500]
+    // The four in-level boosters are not measured (no bot knows when to use one), so nothing says what they are
+    // worth. [placeholder]
+    "boosters": {
+      "start-rocket-and-bomb": 200,
+      "start-color-bomb": 500,
+      "start-extra-moves": 200,
+      "hit-cell": 400,
+      "hit-row": 700,
+      "hit-column": 700,
+      "shuffle": 300
+    },
+    // Coins a piece of the side collection costs. Nothing buys one in this version: balances are also shown as the
+    // pieces they would buy. Pieces of the main paintings are never sold. The owner decided on 2026-10-14 that these
+    // pieces are bought with coins earned by play, so they are where a strong player's coins go; the price waits for
+    // the size of the side collection. [placeholder]
+    "sideCollectionPiece": 300
+  },
+
+  // The welcome gift: what a new player is given before the first level, in the game and in the simulation alike.
+  "start": {
+    // Coins a new player starts with, the welcome gift: the price of the cheapest start booster, so the shop can
+    // sell something on the first visit, and well under the price of a +5, so the first +5 for coins is earned.
+    // The owner's number of 2026-10-14; the balance policy (docs/GAME_DESIGN.md section 25) holds it. [decided]
+    "coins": 200,
+    // Boosters a new player starts with: three of each start booster, so the first levels can be eased and every
+    // booster is met without coins (the owner's number of 2026-10-14). The welcome gift's three of each booster used
+    // during play come when that booster opens (boosterUnlocks.gift, the owner's decision of 2026-10-15), so none of
+    // them is here. Every booster is stated; 0 gives none. [decided]
+    "boosters": { "start-rocket-and-bomb": 3, "start-color-bomb": 3, "start-extra-moves": 3, "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 }
+  },
+
+  // The boosters used during play open one at a time (the owner's decision of 2026-10-15): before its level a
+  // booster's disc is locked, on its level it is shown once with a word on its first use, and its gift is given then,
+  // once for good. The levels are calibrated without boosters, so opening them changes no level's difficulty; it
+  // keeps the first levels' recordings free of boosters. A simulated player uses none before its level.
+  "boosterUnlocks": {
+    // The level each opens on: the spatula on 7, the brush across a row on 12, the brush down a column on 16, the
+    // palette shuffle on 20. Every booster used during play is stated, and no start booster. [decided]
+    "levels": { "hit-cell": 7, "hit-row": 12, "hit-column": 16, "shuffle": 20 },
+    // Boosters of its own kind each one brings as it opens: the welcome gift's three, given on its level instead of
+    // before the first. A save from before this rule that is past a level is given that gift once. [decided]
+    "gift": { "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
+  },
+
+  // FOR THE GAME ALONE, from here to "build". The simulator checks that these are well formed and simulates nothing
+  // with them: a simulated player takes one start booster per attempt (player.startBoosters.perAttempt), is shown
+  // no hint, never opens the shop and watches no ad for coins. Most amounts here are stand-ins for a test build.
+
+  "startBoosters": {
+    // Start boosters a player may take into one attempt, each kind once: 1 to 3. The game allows all three; the
+    // simulated player takes one, because two board boosters together are not measured. [proposed]
+    "perAttempt": 3
+  },
+
+  // The hint (issue #6, the owner's decisions of 2026-10-19): no button; when a board at rest has had no move and no
+  // touch for a while, the two pieces of a move glow and nudge towards each other until the board is touched. The
+  // move is the one a player model of the bot family plays on the board as the player sees it. The levels are
+  // calibrated without hints and the simulator shows none, so its reports are of players who follow no hint;
+  // "puzzle hints" measures what hints add (the simulated average player, skill-55, following every hint shown).
+  // "puzzle humans" compares the attempts the game showed hints in apart, beside bots that follow these hints.
+  "hints": {
+    // Seconds the board lies at rest, untouched, before a hint shows itself; every move and every touch starts the
+    // count again. The owner's 8 s of 2026-10-19 (the start was 5): the recordings have 5.3 s a move
+    // (habit.millisecondsPerMove), so at 5 s a player who thinks as long as usual was shown a hint before about half
+    // the moves and spent the attempt's hints in its first moves. [decided]
+    "idleSeconds": 8,
+    // Hints an attempt shows at most; 0 shows none. The owner's 2 to 3, decided at 3 on 2026-10-19. [decided]
+    "perAttempt": 3,
+    // Whose move a hint shows: random, a named profile (novice, casual, average, expert) or a rung of the ladder
+    // (skill-30 .. skill-100). Not the expert: the hint should help, not play the level. Measured on 2026-10-19
+    // ("puzzle hints", 500 levels, 10 000 attempts, every hint followed, so an upper bound): casual lifts the
+    // average player (skill-55) by 3.3 points when hints come at 5 s and 4.4 when they come where the player is stuck,
+    // and a struggling one (skill-45) by 4.8 and 7.1 (each +-1.2); novice adds -0.6 to +1.0 for the average player,
+    // average +6.3 to +7.5. The owner chose casual on 2026-10-19. [decided]
+    "bot": "casual"
+  },
+
+  "shop": {
+    // The packs of coins the shop shows are the store's (store.coinPacks), sold for real money.
+    // Sets of boosters for coins, in the order the shop shows them. Each costs what its boosters cost one by one
+    // under prices.boosters (200 + 500 + 200, and three times 400 + 700 + 700 + 300), so no discount is invented.
+    // A set's price does not follow when a single price changes. [placeholder]
+    "boosterSets": {
+      "starter": {
+        "priceCoins": 900,
+        "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 }
+      },
+      "master": {
+        "priceCoins": 6300,
+        "boosters": { "hit-cell": 3, "hit-row": 3, "hit-column": 3, "shuffle": 3 }
+      }
+    },
+    "adForCoins": {
+      // Coins one watched ad gives: what one move left pays in the finale. Three a day add about 3 % to what the
+      // average free player earns in a day (about 420 coins), so the ad is a small extra that moves no balance.
+      // The owner's number of 2026-10-14. [decided]
+      "coins": 4,
+      // Times a day an ad gives coins. [placeholder]
+      "perDay": 3
+    }
+  },
+
+  // What this build of the game can do. The game refuses any other word here, so a build cannot claim real ads
+  // or real purchases it does not have; the tester mode is offered only by a build whose ads are simulated and that
+  // sells nothing for money.
+  "build": {
+    // How an ad is shown: "simulated" is a card that stands in for one; nothing is advertised. [proposed]
+    "ads": "simulated",
+    // What is sold for real money: "store" sells the store section's products through the platform's own store
+    // (Google Play, the App Store), which takes the money; "notAvailable" shows its coin packs and sells none, as a
+    // test build did before v1. v1 sells (the owner's decision of 2026-10-24). [decided 2026-10-24]
+    "realMoneyPurchases": "store"
+  },
+
+  // What the game sells for real money in v1: the owner's products of 2026-10-24 (docs/research/monetization-and-
+  // retention.md section 3), with the amounts the simulator checked that day (docs/GAME_DESIGN.md section 25). The
+  // game's shop shows them and, as build.realMoneyPurchases says, sells them through the platform's store; the store's
+  // own price, in the player's currency, is what a player sees. The simulator buys a product only for a player whose
+  // player.purchases says so; the default player is free and buys nothing.
+  // A price is the price point of the US store in cents ($1.99 is 199): every other country takes the store's own
+  // equivalent, and the game shows a price as the store words it for the player, never this number. A product's id in
+  // both stores is the game's application id, a dot and its productIdSuffix: com.saturnwave.museumpuzzle.coins.pouch,
+  // under the permanent application id com.saturnwave.museumpuzzle [decided 2026-10-25]; the owner creates
+  // the products under these ids in Play Console and App Store Connect. Nothing is random: what a product gives is
+  // listed here and shown before it is bought, and nothing of it reaches a level.
+  // The pricing rules hold these numbers (EconomyBalancePolicyTests): coins per dollar never fall as a pack grows, and
+  // the largest gives at most 35 % more per dollar than the smallest; each pack buys a whole number of +5, more as it
+  // grows; the starter pack is worth at most 2.5 times what its price buys in coin packs, and is sold once; every price
+  // ends in .99, and none is above $19.99.
+  "store": {
+    // The coin packs, in the order the shop shows them: a pouch, a bag, a chest and a treasure of coins. In each, the
+    // productIdSuffix ends the product's id under the application id [decided 2026-10-25], priceUsdCents is the
+    // owner's price [decided 2026-10-24], and coins is the research's amount, kept because the simulator showed no
+    // reason to change it [proposed 2026-10-24].
+    "coinPacks": {
+      // One +5 and 100 coins over, as the leaders' smallest pack buys one +5: 503 coins a dollar.
+      "pouch": { "productIdSuffix": "coins.pouch", "priceUsdCents": 199, "coins": 1000 },
+      // Three +5 and 50 over: 551 coins a dollar, 10 % more than the pouch.
+      "bag": { "productIdSuffix": "coins.bag", "priceUsdCents": 499, "coins": 2750 },
+      // Six +5 and 600 over: 601 coins a dollar, 20 % more.
+      "chest": { "productIdSuffix": "coins.chest", "priceUsdCents": 999, "coins": 6000 },
+      // Fourteen +5 and 400 over: 650 coins a dollar, 29 % more; the rivals' largest packs give 24 to 33 % more.
+      "treasure": { "productIdSuffix": "coins.treasure", "priceUsdCents": 1999, "coins": 13000 }
+    },
+    // "Çırak Çantası", the apprentice's bag: the starter pack. In the shape of Gardenscapes' Hot Offer ($1.99 for 1 500
+    // coins and three boosters).
+    "starterPack": {
+      // The end of its product id: com.saturnwave.museumpuzzle.starter.apprentice_kit. [decided 2026-10-25]
+      "productIdSuffix": "starter.apprentice_kit",
+      // The owner's price. [decided 2026-10-24]
+      "priceUsdCents": 199,
+      // Coins in it: with its boosters it is worth 2 400 coins at the shop's prices, 2.4 times the pouch of the same
+      // price. [proposed 2026-10-24]
+      "coins": 1500,
+      // Boosters in it besides the coins, each kind at least once: the three start boosters, whose prices are measured,
+      // so its worth is known. [proposed 2026-10-24]
+      "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 },
+      // Times one player can buy it: once. [decided 2026-10-24]
+      "timesPerPlayer": 1,
+      // The shop offers it once the player has come to this level, the level the last booster opens on
+      // (boosterUnlocks.levels.shuffle), and keeps it in the coins' panel, in the first column, in the place of the
+      // pouch of the same price, until it is bought (docs/GAME_DESIGN.md section 19 says why it stands there and not in
+      // a panel of its own at the shop's head); no countdown. [decided 2026-10-24]
+      "fromLevel": 20
+    }
+  },
+
+  "player": {
+    "extraMoves": {
+      // The +5 is wanted when the moves run out with at least this percent of the goals done; 0 means always, any
+      // other value must be a measured mark. 80 is the near-miss line the level reports use. The player decides on
+      // what they see, never on whether the extra moves would win. On a level whose goals move in big steps (three
+      // items to drop) 80 percent is reached only with the win, so this player never takes the +5 there. [proposed]
+      "takeWhenGoalsDonePercent": 80,
+      // Whether the player watches an ad for it while a free one is left today. [proposed]
+      "watchesAds": true,
+      // Whether the player pays coins for it when no free ad is left and the coins cover it. [proposed]
+      "paysCoins": true
+    },
+    "startBoosters": {
+      // An owned start booster is used after this many losses on the level; null means never. [proposed]
+      "useAfterLossesOnLevel": 2,
+      // With none owned, one is bought after this many losses on the level; null means never. It needs
+      // useAfterLossesOnLevel stated and no larger: a player who buys a booster uses one they hold by then. [proposed]
+      "buyAfterLossesOnLevel": 4,
+      // The start boosters in the order the player reaches for them. [proposed]
+      "preference": ["start-color-bomb", "start-rocket-and-bomb", "start-extra-moves"],
+      // Start boosters per attempt; only 1 in this version (two board boosters together are not measured). [proposed]
+      "perAttempt": 1
+    },
+    "inLevelBoosters": {
+      // NOT MEASURED. No bot knows when to use an in-level booster, so none was played. A worth above 0 is a rule
+      // of thumb: the booster is read as this many more moves of the stored game. 0 means never used, no effect:
+      // the boosters are then only received and held. [proposed]
+      "assumedMovesWorth": { "hit-cell": 0, "hit-row": 0, "hit-column": 0, "shuffle": 0 },
+      // One is used when the moves run out with at least this percent of the goals done (0 or a measured mark). [proposed]
+      "useWhenGoalsDonePercent": 80,
+      // In-level boosters per attempt; only 1 in this version. [proposed]
+      "perAttempt": 1
+    },
+    // What the player buys for real money, from the store section. The default player is free and buys nothing; the
+    // paying players are the variants pays-when-short.json, buys-the-starter-pack.json and pays-monthly.json. A
+    // purchase never changes a game the player meets, only what they can pay for.
+    "purchases": {
+      // The coin pack the player buys when they want the +5, no free ad is left today and their coins fall short of
+      // it; null means never. It needs player.extraMoves.paysCoins and must pay for the +5 by itself. [proposed]
+      "packWhenShortForExtraMoves": null,
+      // Whether the player buys the starter pack the first time the shop offers it (store.starterPack.fromLevel). [proposed]
+      "buysTheStarterPack": false,
+      // A coin pack bought at the first session of day 1 and every scheduledEveryDays days after, whatever the purse
+      // holds; null means never. [proposed]
+      "scheduledPack": null,
+      // Days from one scheduled purchase to the next: 30, a month. Read only when scheduledPack names a pack. [proposed]
+      "scheduledEveryDays": 30
+    }
+  },
+
+  "measurement": {
+    // Moves every measured game is followed to; no game is read past it. [tool]
+    "moveCap": 150,
+    // Game j of a pool seed is played with bot repeat firstRepeat + j. It must lie outside the level bank's repeats
+    // (0..3999), so no economy game is one a limit or a seed pool was chosen from. [tool]
+    "firstRepeat": 10000,
+    // Percent of the goals whose first move is kept for every game; what the player rules above can wait for. [tool]
+    "progressMarksPercent": [50, 80, 90],
+    // Games on a plain board per pool position: the first seed is everyone's first attempt, each later one is met
+    // less often. The last number holds for every later position. Even numbers. [tool]
+    "plainGamesBySeedPosition": [64, 32, 16, 8],
+    // Games per pool seed on a board that starts with a booster's special. Even. [tool]
+    "boostedGamesPerSeed": 4,
+    // The first boards that are measured; a start booster a player can use needs its start here. [tool]
+    "boardStarts": ["plain", "start-rocket-and-bomb", "start-color-bomb"]
+  },
+
+  "report": {
+    // Levels whose arrival is reported. [tool]
+    "milestones": [100, 300, 1000],
+    // The pace the owner accepts for a free, average player: this level between these days. The first wish was
+    // day 10 to 14; with five lives and the 10-minute habit the simulator lands on day 8, and the owner took that
+    // on 2026-10-13 rather than fewer lives. The report says where the settings land against it; nothing is
+    // adjusted to meet it. [decided]
+    "paceTarget": { "level": 100, "fromDays": 7, "toDays": 9 },
+    // Days at whose end coin balances are listed. [tool]
+    "balanceAtDays": [1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90]
+  },
+
+  // What the recordings showed. Never used by the simulation; printed beside what the model implies. [recorded]
+  "observed": {
+    // People recorded so far.
+    "players": 2,
+    // The median length of a recorded attempt, in seconds.
+    "medianAttemptSeconds": 115,
+    // The median number of attempts in a recorded session.
+    "medianAttemptsPerSession": 5
+  }
+}

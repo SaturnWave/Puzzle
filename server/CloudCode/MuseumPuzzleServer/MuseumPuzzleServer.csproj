@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The game's Cloud Code module on Unity Gaming Services (docs/research/server-v1.md section 4): it verifies a
+       payment with Google Play or the App Store, keeps the player's ledger of verified payments and the registry of
+       receipts, marks refunds, and deletes a player's data on request. Unity's Deployment window deploys it: the
+       one publish profile under this folder (Properties/PublishProfiles) names this project the module's main
+       project, and the module is called as the project is, MuseumPuzzleServer (Unity's own generator refuses a dot
+       in a module's name). The window runs "dotnet publish" on the solution in Release for linux-x64 and uploads
+       the output as MuseumPuzzleServer.ccm; server/CloudCode/DEPLOY.md gives the owner's steps.
+       The target framework is the one Cloud Code 2.10.4's module template writes (Cloud Code runs .NET up to 9). -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>MuseumPuzzle.Server</RootNamespace>
+    <AssemblyName>MuseumPuzzleServer</AssemblyName>
+    <Configurations>Debug;Release</Configurations>
+    <!-- CA1848/CA1873: a call writes a handful of log lines; LoggerMessage delegates would double the logging code
+         for a gain nobody measured. -->
+    <NoWarn>$(NoWarn);CA1848;CA1873</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Unity's Cloud Code packages at the versions the plan names (section 2.3): the function attribute and the
+         execution context, and the game API client (Cloud Save, Secret Manager). -->
+    <PackageReference Include="Com.Unity.Services.CloudCode.Core" Version="0.0.9" />
+    <PackageReference Include="Com.Unity.Services.CloudCode.Apis" Version="0.0.27" />
+    <!-- ILogger<T>, which Cloud Code injects and writes to the module's log, at the version Cloud Code 2.10.4's
+         module template names. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- What the game sells and what each product is (Puzzle.Meta's StoreCatalogue), read from the pack of the
+         shipped economy settings that the game itself reads (tests/fixtures/economy-pack.json, which the
+         repository's tests hold to economy/default.json and to the pack script's output). -->
+    <ProjectReference Include="..\..\..\src\Puzzle.Meta\Puzzle.Meta.csproj" />
+    <EmbeddedResource Include="..\..\..\tests\fixtures\economy-pack.json" LogicalName="Economy.json" Link="Catalogue\Economy.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The one rule both sides follow to name the player to a store: the game attaches it to a payment, the
+         module checks it (docs/research/server-v1.md section 4.1). -->
+    <Compile Include="..\..\..\unity\Assets\Scripts\Purchases\StoreAccount.cs" Link="Shared\StoreAccount.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Apple Root CA - G3, the root every App Store signature chains to (apple.com/certificateauthority). -->
+    <EmbeddedResource Include="AppStore\AppleRootCA-G3.cer" LogicalName="AppleRootCA-G3.cer" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="MuseumPuzzleServer.Tests" />
+  </ItemGroup>
+</Project>

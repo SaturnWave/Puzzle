@@ -1,0 +1,12 @@
+{
+  // The default economy with five lives and one back every 16 hours: not the game's rule, but the other setting
+  // that slows the average player to the first wish (level 100 between day 10 and day 14). It leaves a fifth to a
+  // quarter of the sessions unable to start. The owner kept 30 minutes on 2026-10-13; this file keeps what that
+  // choice was made against. The coin amounts are the default's and are not tuned to this timer.
+  "extends": "default.json",
+  "name": "life-every-16-hours",
+  "lives": {
+    // Minutes until one life comes back. [not the game's rule: an alternative the owner set aside]
+    "minutesPerLife": 960
+  }
+}

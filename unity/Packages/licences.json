@@ -1,0 +1,103 @@
+{
+  "about": "The software the game carries from its Unity packages whose licences ask for a notice in every copy, as the packages' own licence files and third-party notices give them (read from unity/Library/PackageCache on 2026-10-25). The credits card (unity/Assets/Scripts/Flow/CreditWords.cs, the settings card's row \"Künye\") shows them word for word, \"©\" written \"(c)\"; tests/Puzzle.Core.Tests/CreditWordsTests.cs holds the card to this record and this record's versions to packages-lock.json beside it. Unity's own packages are under the Unity Companion License, which asks for no notice in a game; packages used only by the Editor (the test frameworks, the IDE bridges, Mono.Cecil, the services' deployment window and its Glob, the light baker's RadeonRays, Bullet and Sobol code in the render pipeline's core, the Authentication package's test mocks (moq4), the Cloud Code package's JavaScript bundler (rollup)) are not in the game and are not listed. Unity's services packages of the cloud save (Authentication 3.8.1, Cloud Save 3.4.2, Cloud Code 2.10.4, Remote Config 4.2.5 and its runtime 4.0.4, read 2026-10-26) carry no notice of their own beyond Json.NET's, which is listed, and websocket-sharp's, which is.",
+  "packages": [
+    {
+      "package": "com.aptabase",
+      "version": "0.3.1",
+      "pinnedAt": "138318625c09158ad6ff56e61f1cf41a1a1e3a75",
+      "component": "Aptabase SDK for Unity",
+      "page": "https://github.com/aptabase/aptabase-unity",
+      "licence": "MIT License",
+      "copyright": ["Copyright (c) 2023 Aptabase"],
+      "from": "LICENSE",
+      "inTheGame": "the play statistics' notes, sent only after the player's yes (Statistics/AptabaseNotes.cs)"
+    },
+    {
+      "package": "com.unity.nuget.newtonsoft-json",
+      "version": "3.2.2",
+      "component": "Json.NET (Newtonsoft.Json)",
+      "page": "https://www.newtonsoft.com/json",
+      "licence": "MIT License",
+      "packageLicence": "Unity Companion License (Unity's packaging of it)",
+      "copyright": [
+        "Copyright (c) 2007 James Newton-King",
+        "Copyright (c) 2016 SaladLab",
+        "Copyright (c) 2019 Kalle Jillheden (jilleJr)",
+        "Copyright (c) 2019 Mike Wuetherick"
+      ],
+      "from": "Third Party Notices.md: Newtonsoft.Json, Json.Net.Unity3D, Newtonsoft.Json-for-Unity, com.newtonsoft.json",
+      "inTheGame": "read and written by Unity In-App Purchasing and Unity's services core at run time"
+    },
+    {
+      "package": "com.unity.purchasing",
+      "version": "5.4.4",
+      "component": "Unity In-App Purchasing",
+      "licence": "Unity Companion License",
+      "notices": [
+        {
+          "component": "Google Play Billing Library 9.0.0",
+          "licence": "Apache License 2.0",
+          "copyright": "Copyright (c) 2023 Google, LLC",
+          "inTheGame": "the Android package (com.android.billingclient:billing:9.0.0, which the package's Android dependencies bring in)"
+        },
+        {
+          "component": "Apple StoreKit 2",
+          "licence": "Apache License 2.0",
+          "copyright": "Copyright (c) 2023 Apple Computer, Inc.",
+          "inTheGame": "the iOS build"
+        },
+        {
+          "component": "ASN.1-Editor",
+          "licence": "Public domain",
+          "copyright": "",
+          "inTheGame": "receipt reading; asks for no notice"
+        }
+      ],
+      "from": "Third Party Notices.md",
+      "licenceUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "openQuestion": "Unity's notice names the Apache License 2.0 but links Google's and Apple's own terms and quotes MIT wording; the card names the Apache licence and its address, not its whole text. Whether the whole Apache text must be shown is the owner's to decide."
+    },
+    {
+      "package": "com.unity.services.wire",
+      "version": "1.6.0",
+      "component": "websocket-sharp",
+      "page": "https://github.com/sta/websocket-sharp",
+      "licence": "MIT License",
+      "packageLicence": "Unity Companion License (Unity's package)",
+      "copyright": ["Copyright (c) 2010-2021 sta.blockhead"],
+      "from": "Third Party Notices.md: websocket-sharp (read 2026-10-26; the package's Plugins/websocket-sharp.dll is in every build but WebGL)",
+      "inTheGame": "Unity Cloud Code's live messages, which Cloud Code 2.10.4 brings with Unity's package com.unity.services.wire (resolved at 1.6.0 for this Editor; Cloud Code asks for 1.2.3 at least); the game does not use them. The package's unity-websocket-webgl (Apache License 2.0) is for WebGL only and is not in the game"
+    },
+    {
+      "package": "com.google.play.games",
+      "version": "2.3.0",
+      "embedded": true,
+      "component": "Google Play Games plugin for Unity",
+      "page": "https://github.com/playgameservices/play-games-plugin-for-unity",
+      "licence": "Apache License 2.0",
+      "copyright": ["Copyright (C) 2014 Google Inc."],
+      "from": "LICENSE of the repository at v2.3.0 (unity/Packages/com.google.play.games/LICENSE); the plugin from Google's release GooglePlayGamesPlugin-2.3.0.unitypackage (SHA-256 1b0ecc5e2fd5437e1c26863f63367f5c983452afc4eeae8a1e5dcaa07b9e7518), downloaded 2026-10-26",
+      "changes": "Embedded as a package: its package.json, Runtime and Proguard as Google ships them, the Runtime unchanged. Left out: the plugin's Editor folder (the setup window and upgrader, which need Google's External Dependency Manager and write into Assets), External Dependency Manager itself, and a stale 2.2.0 unitypackage inside the release; package.json without its dependency on External Dependency Manager. The Android library the plugin's Editor file names (play-services-games-v2 22.1.0) is declared by the game's build (Editor/PlayGamesDependency.cs); play-services-nearby, for Nearby Connections, is not.",
+      "inTheGame": "Android only: the sign-in with Google Play Games for the cloud save (Cloud/Ugs/PlayGamesSignIn.cs), set up by the owner's resources (plan Stage 6)",
+      "licenceUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "openQuestion": "As for In-App Purchasing's notices: the card names the Apache licence and its address, not its whole text. Whether the whole Apache text must be shown is the owner's to decide."
+    }
+  ],
+  "mitLicenceText": [
+    "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+    "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.",
+    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+  ],
+  "notListed": [
+    {
+      "component": "Google Play services for Play Games (com.google.android.gms:play-services-games-v2 22.1.0, with play-services-base 18.5.0, play-services-basement 18.9.0 and play-services-tasks 18.2.0), in the Android build",
+      "licence": "Android Software Development Kit License (https://developer.android.com/studio/terms.html); each library carries third_party_licenses.txt of the open-source code inside it (play-services-games-v2: 24 components, among them AndroidX, Dagger, Guava, Kotlin and Protocol Buffers, mostly under the Apache License 2.0)",
+      "why": "Google's own libraries under Google's terms; the notices of the open-source code inside them are what Google's oss-licenses plugin would show. Whether the credits card must list them (and those Google Play Billing carries) is open for the owner."
+    },
+    {
+      "component": "FXAA 3.11 (NVIDIA), in com.unity.render-pipelines.universal's post-processing shaders",
+      "licence": "NVIDIA's BSD-style FXAA3_11.h licence, which asks for its notice in binary copies",
+      "why": "not an MIT or Apache notice; whether the shader that holds it is in the build depends on the pipeline's post-processing. Open for the owner."
+    }
+  ]
+}

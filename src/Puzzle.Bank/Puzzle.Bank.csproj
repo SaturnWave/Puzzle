@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The level bank: candidate boards that belong to no level number, each stored outside the repository with the
+       games the skill ladder played on it, so a change of the difficulty policy is a look-up and not a regeneration. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Puzzle.Bank</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+    <ProjectReference Include="..\Puzzle.Bot\Puzzle.Bot.csproj" />
+    <ProjectReference Include="..\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+    <ProjectReference Include="..\Puzzle.Generator\Puzzle.Generator.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+  </ItemGroup>
+</Project>

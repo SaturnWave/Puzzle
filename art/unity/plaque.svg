@@ -1,0 +1,25 @@
+<!-- A cream plaque in a gilt rim, as the web test page draws its .plaque (gallery.css: the plaque's face, edge and
+     drop). One unit is one point of the design. The body is 100 x 84 at (14, 4); the game stretches the middle of
+     the picture sideways to the width a plaque needs, so nothing between x = 36 and x = 92 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="472" viewBox="0 0 128 118">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="88"><stop offset="0" stop-color="#fff4c4"/><stop offset=".22" stop-color="#ffdb6e"/><stop offset=".58" stop-color="#f6b93c"/><stop offset="1" stop-color="#d38d1a"/></linearGradient>
+<linearGradient id="face" gradientUnits="userSpaceOnUse" x1="0" y1="7" x2="0" y2="85"><stop offset="0" stop-color="#fffdf4"/><stop offset=".55" stop-color="#fbf0d6"/><stop offset="1" stop-color="#f0dfbb"/></linearGradient>
+<filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+<clipPath id="in-face"><rect x="17" y="7" width="94" height="78" rx="15"/></clipPath>
+<clipPath id="under-the-top-light"><rect x="17" y="10.5" width="94" height="78" rx="15"/></clipPath>
+</defs>
+<!-- the drop on the wall: a soft shadow far below, a hard one close under the rim -->
+<rect x="14" y="15" width="100" height="84" rx="18" fill="#042028" fill-opacity=".32" filter="url(#soft)"/>
+<rect x="12.5" y="7.5" width="103" height="87" rx="19.5" fill="#052830" fill-opacity=".42"/>
+<!-- the rim: a dark line around a band of gilt -->
+<rect x="12.5" y="2.5" width="103" height="87" rx="19.5" fill="#5e3305"/>
+<rect x="14" y="4" width="100" height="84" rx="18" fill="url(#gilt)"/>
+<!-- the face: white light along its top, a darker lip along its foot, cream between them, a thin brown line around -->
+<g clip-path="url(#in-face)">
+<rect x="17" y="7" width="94" height="78" fill="#fff"/>
+<rect x="17" y="10.5" width="94" height="78" rx="15" fill="#e3cc9c"/>
+<g clip-path="url(#under-the-top-light)"><rect x="17" y="4" width="94" height="78" rx="15" fill="url(#face)"/></g>
+<rect x="17" y="7" width="94" height="78" rx="15" fill="none" stroke="#8a5512" stroke-opacity=".6" stroke-width="2.4"/>
+</g>
+</svg>

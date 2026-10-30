@@ -13,17 +13,18 @@ namespace Puzzle.Core.Engine.Resolution
         private readonly Board _board;
         private readonly BoardShape _shape;
         private readonly ITileSource _source;
+        private readonly MatchFinder _matches;
         private readonly GoalTracker _goals;
         private readonly StatsCounter _stats;
         private readonly EventLog _events;
         private readonly ItemLedger _items;
-        private int _slideParity;
 
-        public Gravity(Board board, ITileSource source, GoalTracker goals, StatsCounter stats, EventLog events, ItemLedger items)
+        public Gravity(Board board, ITileSource source, MatchFinder matches, GoalTracker goals, StatsCounter stats, EventLog events, ItemLedger items)
         {
             _board = board;
             _shape = board.Shape;
             _source = source;
+            _matches = matches;
             _goals = goals;
             _stats = stats;
             _events = events;
@@ -40,13 +41,19 @@ namespace Puzzle.Core.Engine.Resolution
             while (CollectItems());
         }
 
+        /// <summary>
+        /// The preferred slide side alternates within one settle and always starts from the left, so the outcome
+        /// depends only on the board — a replica of the game settles exactly like the original.
+        /// </summary>
         private void Fill()
         {
-            do
+            bool leftFirst = true;
+            FallStraight();
+            while (SlideOneDiagonally(leftFirst))
             {
+                leftFirst = !leftFirst;
                 FallStraight();
             }
-            while (SlideOneDiagonally());
         }
 
         /// <summary>
@@ -76,7 +83,7 @@ namespace Puzzle.Core.Engine.Resolution
                     }
                     else if (_shape.HasSpawner(x))
                     {
-                        Spawn(target, x);
+                        Spawn(target);
                     }
                 }
             }
@@ -97,13 +104,10 @@ namespace Puzzle.Core.Engine.Resolution
 
         /// <summary>
         /// After straight falls, any remaining empty cell is sealed from above. Fill the deepest one from an
-        /// upper diagonal neighbor that is resting (would not fall straight anyway). Alternates the preferred
-        /// side each call so neither side is favored.
+        /// upper diagonal neighbor that is resting (would not fall straight anyway).
         /// </summary>
-        private bool SlideOneDiagonally()
+        private bool SlideOneDiagonally(bool leftFirst)
         {
-            bool leftFirst = _slideParity == 0;
-            _slideParity ^= 1;
             for (int y = _shape.Height - 1; y >= 0; y--)
             {
                 for (int k = 0; k < _shape.Width; k++)
@@ -185,9 +189,9 @@ namespace Puzzle.Core.Engine.Resolution
             }
         }
 
-        private void Spawn(int target, int column)
+        private void Spawn(int target)
         {
-            Tile tile = _source.Next(column);
+            Tile tile = _source.Next(new SpawnContext(_board, _matches, _goals, _items, target));
             _board.Set(target, tile);
             if (_events.IsEnabled)
             {

@@ -19,7 +19,216 @@
     <Using Include="System.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Nor have the languages the game speaks, its tables of words and the one way its screens say anything. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Words\Language.cs" Link="Unity\Words\Language.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\WordId.cs" Link="Unity\Words\WordId.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\WordTable.cs" Link="Unity\Words\WordTable.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\CaptionTable.cs" Link="Unity\Words\CaptionTable.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\Template.cs" Link="Unity\Words\Template.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\Speech.cs" Link="Unity\Words\Speech.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Words\LanguageOffer.cs" Link="Unity\Words\LanguageOffer.cs" />
+    <!-- The Unity project's engine trace has no Unity dependency; the tests pin what it prints on this runtime. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Engine\EngineTrace.cs" Link="Unity\EngineTrace.cs" />
+    <!-- Nor have the game's screen layout and its stage clock: where a board lies, and how animations take their time. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenView.cs" Link="Unity\ScreenView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenLayout.cs" Link="Unity\ScreenLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ScreenClass.cs" Link="Unity\ScreenClass.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Stage\Tween.cs" Link="Unity\Tween.cs" />
+    <!-- Nor have the outline the gilt frame is drawn along and the rule that hangs the wall lamps. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Boards\BoardOutline.cs" Link="Unity\BoardOutline.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\SconcePlace.cs" Link="Unity\SconcePlace.cs" />
+    <!-- Nor has what turns a move's events into a timed script for the view, the clock that plays it, and what a finger on the board means. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Timeline.cs" Link="Unity\Play\Timeline.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\FallLaw.cs" Link="Unity\Play\FallLaw.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Tempo.cs" Link="Unity\Play\Tempo.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Cue.cs" Link="Unity\Play\Cue.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\PieceLedger.cs" Link="Unity\Play\PieceLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Strike.cs" Link="Unity\Play\Strike.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\Volley.cs" Link="Unity\Play\Volley.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\FinalePace.cs" Link="Unity\Play\FinalePace.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\TurnChoreographer.cs" Link="Unity\Play\TurnChoreographer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\BoardPointer.cs" Link="Unity\Play\BoardPointer.cs" />
+    <!-- Nor has the way from one level to the next: a player's progress, a decided game's result and its words (with the plaque's figures and the list of drawings they name). -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PlayerProgress.cs" Link="Unity\Flow\PlayerProgress.cs" />
+    <!-- Nor has the document the progress is saved as, with the rule that reads the layout of the game before the museum. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ProgressDocument.cs" Link="Unity\Flow\ProgressDocument.cs" />
+    <!-- Nor has what an attempt's events do to the progress by the economy's rules, and the wall clock those rules count real time by. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLedger.cs" Link="Unity\Flow\AttemptLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WallClock.cs" Link="Unity\Flow\WallClock.cs" />
+    <!-- Nor have the attempt record's line as the game writes it, the phone's log of those lines, and the document of the phone's random id. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLine.cs" Link="Unity\Flow\AttemptLine.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptLogFile.cs" Link="Unity\Flow\AttemptLogFile.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceDocument.cs" Link="Unity\Flow\DeviceDocument.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelResult.cs" Link="Unity\Flow\LevelResult.cs" />
+    <!-- Nor have the offer of extra moves to a game out of them, and the ad a test build shows in place of one. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\OutOfMovesOffer.cs" Link="Unity\Flow\OutOfMovesOffer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\Ads.cs" Link="Unity\Flow\Ads.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AttemptWords.cs" Link="Unity\Flow\AttemptWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Gallery\HudFigures.cs" Link="Unity\Gallery\HudFigures.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\PieceArt.cs" Link="Unity\Art\PieceArt.cs" />
+    <!-- Nor have the museum's screens in what they show and say of a player's progress (the room's wall, the map's view of a player's progress, the pieces a win gives), and where they put it on a screen. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\MuseumWords.cs" Link="Unity\Flow\MuseumWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PieceReward.cs" Link="Unity\Flow\PieceReward.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\RoomWall.cs" Link="Unity\Flow\RoomWall.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\PageLayout.cs" Link="Unity\Layout\PageLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\HallLayout.cs" Link="Unity\Layout\HallLayout.cs" />
+    <!-- Nor has the painter: his pictures, what each measures around his feet, his looks, and where he stands on a page. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Avatar\PainterPicture.cs" Link="Unity\Avatar\PainterPicture.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\FigurePlace.cs" Link="Unity\Layout\FigurePlace.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\MapLayout.cs" Link="Unity\Layout\MapLayout.cs" />
+    <!-- Nor has the world map (#4): its camera, how an era's pins stand, how far the strip of eras is scrolled, what it shows of a player's progress, and its words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\MapCamera.cs" Link="Unity\Maps\MapCamera.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\PinRows.cs" Link="Unity\Maps\PinRows.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\EraStripScroll.cs" Link="Unity\Maps\EraStripScroll.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Maps\MapStanding.cs" Link="Unity\Maps\MapStanding.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\MapWords.cs" Link="Unity\Flow\MapWords.cs" />
+    <!-- Nor have the jigsaw a painting is restored with (what lies on its table and its tray, when a piece drops in) and the collection, in what they hold and where they put it. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\JigsawTable.cs" Link="Unity\Flow\JigsawTable.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\FramePlace.cs" Link="Unity\Layout\FramePlace.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\JigsawLayout.cs" Link="Unity\Layout\JigsawLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\CollectionLayout.cs" Link="Unity\Layout\CollectionLayout.cs" />
+    <!-- Nor has the list of what is drawn over what: the tests pin the places that a mistake has shown to matter. -->
+    <Compile Include="..\..\unity\Assets\Scripts\DrawOrder.cs" Link="Unity\DrawOrder.cs" />
+    <!-- Nor have the lettering's styles with the typeface each is set in, and the letters the game can write. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Art\GalleryArt.cs" Link="Unity\Art\GalleryArt.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\Typeface.cs" Link="Unity\Art\Typeface.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\LetterSet.cs" Link="Unity\Art\LetterSet.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\FallbackTypeface.cs" Link="Unity\Art\FallbackTypeface.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\BalancedLines.cs" Link="Unity\Art\BalancedLines.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Art\LineBreaks.cs" Link="Unity\Art\LineBreaks.cs" />
+    <!-- Nor have the rules of the controls several screens share: what a booster's disc shows, how a row of pips is set out, how amounts and waits are written. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\BoosterFace.cs" Link="Unity\Screens\BoosterFace.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\PipRowPlan.cs" Link="Unity\Screens\PipRowPlan.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\NumberWords.cs" Link="Unity\Flow\NumberWords.cs" />
+    <!-- Nor has the wallet row of the museum's pages: what it shows of a wallet at an instant, its words, where its parts stand. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletView.cs" Link="Unity\Flow\WalletView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletHandling.cs" Link="Unity\Flow\WalletHandling.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletWords.cs" Link="Unity\Flow\WalletWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\WalletRowLayout.cs" Link="Unity\Layout\WalletRowLayout.cs" />
+    <!-- Nor has the card before a level: what it shows of the level and offers for it, its words, where its parts stand, and where a press in the museum leads. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelBrief.cs" Link="Unity\Flow\LevelBrief.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LevelStartWords.cs" Link="Unity\Flow\LevelStartWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\LevelStartLayout.cs" Link="Unity\Layout\LevelStartLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\Destination.cs" Link="Unity\Screens\Destination.cs" />
+    <!-- Nor has what a finger on the museum's pages means: a tap, a swipe that drags the row of pages, and where the row settles; nor the slop within which a touch taps, and presses a control. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\PageSwipe.cs" Link="Unity\Screens\PageSwipe.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\TapSlop.cs" Link="Unity\Screens\TapSlop.cs" />
+    <!-- Nor has the shelf of the paintings' pictures: each loaded once, a held one never unloaded, and only the few let go of last kept. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Canvases\PictureShelf.cs" Link="Unity\Canvases\PictureShelf.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Engine\LevelStart.cs" Link="Unity\Engine\LevelStart.cs" />
+    <!-- Nor have the board's plaques and the result's card: what the plaques say by the piece a level gives, and the rows of the card. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\BoardWords.cs" Link="Unity\Flow\BoardWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ShelfBrief.cs" Link="Unity\Flow\ShelfBrief.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PillWords.cs" Link="Unity\Flow\PillWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ResultCardLayout.cs" Link="Unity\Layout\ResultCardLayout.cs" />
+    <!-- Nor has the shop: what it and the hall's gift frame show, their words, where the shop's parts stand, and what a request of the wallet's does by the rules. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopView.cs" Link="Unity\Flow\ShopView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ShopWords.cs" Link="Unity\Flow\ShopWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\WalletLedger.cs" Link="Unity\Flow\WalletLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\ShopLayout.cs" Link="Unity\Layout\ShopLayout.cs" />
+    <!-- Nor have the purchases for real money: what the player bought, how the game talks to the store, the course of a purchase, the scripted store of the tools, and their words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchasesMade.cs" Link="Unity\Purchases\PurchasesMade.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\StoreTalk.cs" Link="Unity\Purchases\StoreTalk.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\Checkout.cs" Link="Unity\Purchases\Checkout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\ScriptedStore.cs" Link="Unity\Purchases\ScriptedStore.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PurchaseWords.cs" Link="Unity\Flow\PurchaseWords.cs" />
+    <!-- Nor has the sync with the cloud: the server's numbers of the payments and its ledger, the save's envelope, the merge, the budget, the state on the phone, the cloud's seam with its fake, and the sync itself. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\LedgerNumbers.cs" Link="Unity\Purchases\LedgerNumbers.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchaseLedger.cs" Link="Unity\Purchases\PurchaseLedger.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\DocumentJson.cs" Link="Unity\Cloud\DocumentJson.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudEnvelope.cs" Link="Unity\Cloud\CloudEnvelope.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\ProgressMerge.cs" Link="Unity\Cloud\ProgressMerge.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\SyncPolicy.cs" Link="Unity\Cloud\SyncPolicy.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudState.cs" Link="Unity\Cloud\CloudState.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudStateFile.cs" Link="Unity\Cloud\CloudStateFile.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSaveService.cs" Link="Unity\Cloud\CloudSaveService.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakeCloudSave.cs" Link="Unity\Cloud\FakeCloudSave.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSync.cs" Link="Unity\Cloud\CloudSync.cs" />
+    <!-- Nor has the player's identity in the cloud: the platform's sign-in and Unity's accounts as seams with their fakes, and the game's cloud save that runs them with the sync. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\PlayerIdentity.cs" Link="Unity\Cloud\PlayerIdentity.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakeAccounts.cs" Link="Unity\Cloud\FakeAccounts.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\CloudSaving.cs" Link="Unity\Cloud\CloudSaving.cs" />
+    <!-- Nor has the game's server as the client asks it: the purchase course's seam, the module's seam and the fake server, the settings' view of the account, and the store's names of a player. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\PurchaseServer.cs" Link="Unity\Purchases\PurchaseServer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Purchases\StoreAccount.cs" Link="Unity\Purchases\StoreAccount.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\ServerModule.cs" Link="Unity\Cloud\ServerModule.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\FakePurchaseServer.cs" Link="Unity\Cloud\FakePurchaseServer.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Cloud\AccountView.cs" Link="Unity\Cloud\AccountView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\AccountWords.cs" Link="Unity\Flow\AccountWords.cs" />
+    <!-- Nor have the settings: the phone's settings and what the build honours, what the settings card and the cards it opens show and say, where their parts stand, and the switch's look. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceSettings.cs" Link="Unity\Flow\DeviceSettings.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceAbilities.cs" Link="Unity\Flow\DeviceAbilities.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\DeviceView.cs" Link="Unity\Flow\DeviceView.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TesterMode.cs" Link="Unity\Flow\TesterMode.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\SettingsWords.cs" Link="Unity\Flow\SettingsWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\StartUpWork.cs" Link="Unity\Flow\StartUpWork.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\LoadingBar.cs" Link="Unity\Flow\LoadingBar.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\EntryWords.cs" Link="Unity\Flow\EntryWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\EntryLayout.cs" Link="Unity\Layout\EntryLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\PrivacyWords.cs" Link="Unity\Flow\PrivacyWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\CreditWords.cs" Link="Unity\Flow\CreditWords.cs" />
+    <!-- Nor have the play statistics: the gate that lets a note through only with the player's yes, the notes there are, the key they go through, and the question's words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayStatistics.cs" Link="Unity\Statistics\PlayStatistics.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\PlayNote.cs" Link="Unity\Statistics\PlayNote.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Statistics\StatisticsKey.cs" Link="Unity\Statistics\StatisticsKey.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\ConsentWords.cs" Link="Unity\Flow\ConsentWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\TextPages.cs" Link="Unity\Layout\TextPages.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\PackagePermissions.cs" Link="Unity\Editor\PackagePermissions.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\SettingsLayout.cs" Link="Unity\Layout\SettingsLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Layout\LanguageCardLayout.cs" Link="Unity\Layout\LanguageCardLayout.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Screens\ToggleLook.cs" Link="Unity\Screens\ToggleLook.cs" />
+    <!-- Nor have the sounds: the cues there are, which falls at which moment of play, and what of them the settings let through; nor the build's step that asks the phone for what they need. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\SoundCue.cs" Link="Unity\Flow\SoundCue.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\SoundScore.cs" Link="Unity\Play\SoundScore.cs" />
+    <!-- Nor has the music: how loud it is played against the effects, how it fades as the player's switch turns, and how it gives way to another app's music and tells that music from the game's own on Android. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\SoundLevels.cs" Link="Unity\Sound\SoundLevels.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\MusicFade.cs" Link="Unity\Sound\MusicFade.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\MusicYield.cs" Link="Unity\Sound\MusicYield.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\OtherAudio.cs" Link="Unity\Sound\OtherAudio.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Sound\AndroidPlayback.cs" Link="Unity\Sound\AndroidPlayback.cs" />
+    <!-- Nor has when the game's hint shows itself on a board left untouched, and when it goes. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Play\HintWatch.cs" Link="Unity\Play\HintWatch.cs" />
+    <!-- Nor has the tutorial: its steps, where they may come, what one board shows of them and when it ends, and their words. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialStep.cs" Link="Unity\Flow\TutorialStep.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialPlan.cs" Link="Unity\Flow\TutorialPlan.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Flow\TutorialWords.cs" Link="Unity\Flow\TutorialWords.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\TutorialWatch.cs" Link="Unity\Play\TutorialWatch.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\TradeLine.cs" Link="Unity\Play\TradeLine.cs" />
+    <!-- Nor has the booster intro (#7): where a booster used by hand is aimed, and what the card of a long press plays on its tiny board. -->
+    <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterLessonAim.cs" Link="Unity\Play\BoosterLessonAim.cs" />
+    <Compile Include="..\..\unity\Assets\Scripts\Play\BoosterShowcase.cs" Link="Unity\Play\BoosterShowcase.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestPermissions.cs" Link="Unity\Editor\ManifestPermissions.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestGameCategory.cs" Link="Unity\Editor\ManifestGameCategory.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestOrientation.cs" Link="Unity\Editor\ManifestOrientation.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestLoggingBackend.cs" Link="Unity\Editor\ManifestLoggingBackend.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestPlayGamesStart.cs" Link="Unity\Editor\ManifestPlayGamesStart.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\PlayGamesDependency.cs" Link="Unity\Editor\PlayGamesDependency.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestSystemBars.cs" Link="Unity\Editor\ManifestSystemBars.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestBackupRules.cs" Link="Unity\Editor\ManifestBackupRules.cs" />
+    <!-- Nor has the Google Play bundle's build: the record of uploads and the next versionCode, the key it is signed with, its download sizes and its libraries' 16 KB alignment. -->
+    <Compile Include="..\..\unity\Assets\Editor\PlayUploads.cs" Link="Unity\Editor\PlayUploads.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\BundleSigning.cs" Link="Unity\Editor\BundleSigning.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\BundleDownloadSize.cs" Link="Unity\Editor\BundleDownloadSize.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\NativeLibraryAlignment.cs" Link="Unity\Editor\NativeLibraryAlignment.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\ManifestAssetDelivery.cs" Link="Unity\Editor\ManifestAssetDelivery.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />
     <ProjectReference Include="..\..\src\Puzzle.Bot\Puzzle.Bot.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Museum\Puzzle.Museum.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Meta\Puzzle.Meta.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Generator\Puzzle.Generator.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Tooling\Puzzle.Tooling.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Bank\Puzzle.Bank.csproj" />
+    <ProjectReference Include="..\..\src\Puzzle.Economy\Puzzle.Economy.csproj" />
+    <!-- The attempt recorder's session lifecycle lives in the web lab. -->
+    <ProjectReference Include="..\..\src\Puzzle.Web\Puzzle.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The attempt-record wire format, pinned for every writer of it (the lab here, the Unity game later). -->
+    <None Include="..\fixtures\attempt-records.schema-1.jsonl" Link="fixtures\attempt-records.schema-1.jsonl" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The same format with the optional action list, which the Unity game writes by hand: both writers are held to it. -->
+    <None Include="..\fixtures\attempt-records.actions.jsonl" Link="fixtures\attempt-records.actions.jsonl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\fixtures\attempt-records.first-shuffle-rule.jsonl" Link="fixtures\attempt-records.first-shuffle-rule.jsonl" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

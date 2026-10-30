@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The module's tests: every use case against fakes of Cloud Save, the Secret Manager, Google and Apple (no call
+       leaves the machine), Apple's signatures against a chain of the tests' own and against Apple's real chain, the
+       wire formats the game reads (tests/fixtures/cloud-code), and the layout Unity's Deployment window expects.
+       Never published: the Deployment window publishes the whole solution, and only the module belongs in it. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>MuseumPuzzle.Server.Tests</RootNamespace>
+    <!-- Sentence-style test names and inline test data arrays are intentional; the fakes log nothing worth a delegate. -->
+    <NoWarn>$(NoWarn);CA1707;CA1861;CA1848;CA1873;CA2000</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MuseumPuzzleServer\MuseumPuzzleServer.csproj" />
+  </ItemGroup>
+</Project>

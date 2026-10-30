@@ -1,0 +1,27 @@
+<!-- The brass nameplate on the top edge of a card, as the web test page draws its .nameplate: a gilt plate with a
+     stud at each end, and on its top edge the two pins the card's picture wires end in (54 points to each side of
+     the middle). One unit is one point of the design. The plate is 280 x 40 at (12, 12) and is never stretched. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="912" height="198" viewBox="0 0 304 66">
+<defs>
+<linearGradient id="brass" gradientUnits="userSpaceOnUse" x1="0" y1="12" x2="0" y2="52"><stop offset="0" stop-color="#ffe892"/><stop offset=".55" stop-color="#f6b93c"/><stop offset="1" stop-color="#de9a22"/></linearGradient>
+<radialGradient id="stud" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff4c4"/><stop offset="1" stop-color="#b87412"/></radialGradient>
+<radialGradient id="pin" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4c4"/><stop offset=".37" stop-color="#f6b93c"/><stop offset=".66" stop-color="#d38d1a"/><stop offset=".74" stop-color="#5e3305"/><stop offset=".87" stop-color="#5e3305"/><stop offset=".97" stop-color="#5e3305" stop-opacity="0"/></radialGradient>
+<filter id="soft" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="in-plate"><rect x="12" y="12" width="280" height="40" rx="5"/></clipPath>
+</defs>
+<!-- the plate's shadow on the card, the dark line around it, the brass -->
+<rect x="12" y="16" width="280" height="40" rx="5" fill="#5c3810" fill-opacity=".34" filter="url(#soft)"/>
+<rect x="10.6" y="10.6" width="282.8" height="42.8" rx="6.4" fill="#5e3305"/>
+<rect x="12" y="12" width="280" height="40" rx="5" fill="url(#brass)"/>
+<!-- light along the top edge, a darker line along the foot -->
+<g clip-path="url(#in-plate)">
+<rect x="12" y="12" width="280" height="1.5" fill="#fff6cc"/>
+<rect x="12" y="50" width="280" height="2" fill="#c17e12"/>
+</g>
+<!-- a stud at each end -->
+<circle cx="24" cy="32" r="3" fill="url(#stud)" stroke="#5e3305" stroke-width=".8"/>
+<circle cx="280" cy="32" r="3" fill="url(#stud)" stroke="#5e3305" stroke-width=".8"/>
+<!-- the pins of the two wires, their middles on the plate's top edge -->
+<circle cx="98" cy="11.4" r="3.8" fill="url(#pin)"/>
+<circle cx="206" cy="11.4" r="3.8" fill="url(#pin)"/>
+</svg>

@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/Puzzle.Web", "--urls", "http://localhost:5180"],
+      "port": 5180
+    },
+    {
+      "name": "web-lan",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["out/web/Puzzle.Web.dll", "--urls", "http://0.0.0.0:5180", "--contentRoot", "."],
+      "port": 5180
+    },
+    {
+      "name": "music-candidates",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "http.server", "8120", "--bind", "127.0.0.1", "--directory", "out/music/candidates"],
+      "port": 8120
+    },
+    {
+      "name": "design-preview",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "http.server", "8121", "--bind", "127.0.0.1", "--directory", "out/design/worldmap-preview"],
+      "port": 8121
+    },
+    {
+      "name": "games-site",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "http.server", "8122", "--bind", "127.0.0.1", "--directory", "C:/Users/arcan/games-site/out"],
+      "port": 8122
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "formatVersion": 4,
+  "lives": {
+    "max": 5,
+    "minutesPerLife": 30
+  },
+  "coins": {
+    "perMoveLeftInFinale": 4,
+    "perLevelWon": 0
+  },
+  "rewards": {
+    "paintingCompleted": {
+      "coins": 80,
+      "boostersEachTime": 1,
+      "boosterRotation": [
+        "start-rocket-and-bomb",
+        "start-color-bomb",
+        "start-extra-moves",
+        "hit-cell",
+        "hit-row",
+        "hit-column",
+        "shuffle"
+      ]
+    },
+    "daily": {
+      "coins": 0,
+      "everyDays": 1,
+      "boostersEachTime": 1,
+      "boosterRotation": [
+        "start-rocket-and-bomb",
+        "start-color-bomb",
+        "start-extra-moves",
+        "hit-cell",
+        "hit-row",
+        "hit-column",
+        "shuffle"
+      ]
+    }
+  },
+  "extraMovesOffer": {
+    "freeAdsPerDay": 3,
+    "priceCoins": 900
+  },
+  "prices": {
+    "boosters": [
+      {
+        "booster": "start-rocket-and-bomb",
+        "coins": 200
+      },
+      {
+        "booster": "start-color-bomb",
+        "coins": 500
+      },
+      {
+        "booster": "start-extra-moves",
+        "coins": 200
+      },
+      {
+        "booster": "hit-cell",
+        "coins": 400
+      },
+      {
+        "booster": "hit-row",
+        "coins": 700
+      },
+      {
+        "booster": "hit-column",
+        "coins": 700
+      },
+      {
+        "booster": "shuffle",
+        "coins": 300
+      }
+    ]
+  },
+  "start": {
+    "coins": 200,
+    "boosters": [
+      {
+        "booster": "start-rocket-and-bomb",
+        "count": 3
+      },
+      {
+        "booster": "start-color-bomb",
+        "count": 3
+      },
+      {
+        "booster": "start-extra-moves",
+        "count": 3
+      },
+      {
+        "booster": "hit-cell",
+        "count": 0
+      },
+      {
+        "booster": "hit-row",
+        "count": 0
+      },
+      {
+        "booster": "hit-column",
+        "count": 0
+      },
+      {
+        "booster": "shuffle",
+        "count": 0
+      }
+    ]
+  },
+  "boosterUnlocks": {
+    "levels": [
+      {
+        "booster": "hit-cell",
+        "level": 7
+      },
+      {
+        "booster": "hit-row",
+        "level": 12
+      },
+      {
+        "booster": "hit-column",
+        "level": 16
+      },
+      {
+        "booster": "shuffle",
+        "level": 20
+      }
+    ],
+    "gift": [
+      {
+        "booster": "hit-cell",
+        "count": 3
+      },
+      {
+        "booster": "hit-row",
+        "count": 3
+      },
+      {
+        "booster": "hit-column",
+        "count": 3
+      },
+      {
+        "booster": "shuffle",
+        "count": 3
+      }
+    ]
+  },
+  "startBoosters": {
+    "perAttempt": 3
+  },
+  "hints": {
+    "idleSeconds": 8,
+    "perAttempt": 3,
+    "bot": "casual"
+  },
+  "shop": {
+    "boosterSets": [
+      {
+        "name": "starter",
+        "priceCoins": 900,
+        "boosters": [
+          {
+            "booster": "start-rocket-and-bomb",
+            "count": 1
+          },
+          {
+            "booster": "start-color-bomb",
+            "count": 1
+          },
+          {
+            "booster": "start-extra-moves",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "name": "master",
+        "priceCoins": 6300,
+        "boosters": [
+          {
+            "booster": "hit-cell",
+            "count": 3
+          },
+          {
+            "booster": "hit-row",
+            "count": 3
+          },
+          {
+            "booster": "hit-column",
+            "count": 3
+          },
+          {
+            "booster": "shuffle",
+            "count": 3
+          }
+        ]
+      }
+    ],
+    "adForCoins": {
+      "coins": 4,
+      "perDay": 3
+    }
+  },
+  "store": {
+    "coinPacks": [
+      {
+        "name": "pouch",
+        "productIdSuffix": "coins.pouch",
+        "priceUsdCents": 199,
+        "coins": 1000
+      },
+      {
+        "name": "bag",
+        "productIdSuffix": "coins.bag",
+        "priceUsdCents": 499,
+        "coins": 2750
+      },
+      {
+        "name": "chest",
+        "productIdSuffix": "coins.chest",
+        "priceUsdCents": 999,
+        "coins": 6000
+      },
+      {
+        "name": "treasure",
+        "productIdSuffix": "coins.treasure",
+        "priceUsdCents": 1999,
+        "coins": 13000
+      }
+    ],
+    "starterPack": {
+      "productIdSuffix": "starter.apprentice_kit",
+      "priceUsdCents": 199,
+      "coins": 1500,
+      "boosters": [
+        {
+          "booster": "start-rocket-and-bomb",
+          "count": 1
+        },
+        {
+          "booster": "start-color-bomb",
+          "count": 1
+        },
+        {
+          "booster": "start-extra-moves",
+          "count": 1
+        }
+      ],
+      "timesPerPlayer": 1,
+      "fromLevel": 20
+    }
+  },
+  "build": {
+    "ads": "simulated",
+    "realMoneyPurchases": "store"
+  }
+}

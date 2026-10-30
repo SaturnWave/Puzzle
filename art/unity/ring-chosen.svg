@@ -1,0 +1,9 @@
+<!-- The green ring of a chosen booster, as the design canvas draws it around the cream disc in place of the gilt one
+     (LevelStartTR). It is drawn over disc-cream.svg and shares its picture: one unit is one point of the design, the
+     ring lies around (36, 35) and begins where the disc's face ends, 30 from the middle. The canvas draws the ring
+     on a disc of 66, 3.4 green and 1.4 dark; here it is as much thinner as a disc of 60 is smaller, so that both
+     grow together. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="576" height="576" viewBox="0 0 72 72">
+<circle cx="36" cy="35" r="32.18" fill="none" stroke="#145A1B" stroke-width="4.36"/>
+<circle cx="36" cy="35" r="31.545" fill="none" stroke="#6FD644" stroke-width="3.09"/>
+</svg>

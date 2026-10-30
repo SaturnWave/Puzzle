@@ -1,0 +1,36 @@
+<!-- The small gilt frame with nothing in it: a plain gilt bar around a hole, as the design canvas draws it around the
+     gift's picture on the wall (HomeTR, 60 x 60) and around what the shop's packs show (ShopTR, 100 x 78). The game
+     draws it over a picture, so the picture's corners end under the bar and the shade the bar throws lies on the
+     picture. One unit is one point of the design. The frame is 60 x 60 at (14, 28) and its hole 50 x 50 at (19, 33),
+     in the middle of the picture, so that they stay there at every size; the game stretches the middle of the
+     picture both ways, so nothing between x = 30 and x = 58 may change along x, and nothing between y = 48 and
+     y = 78 along y. Its drops are a dark that is neither warm nor cold: the canvas tints a drop with its ground,
+     and this frame hangs on the teal wall and on a cream plaque alike. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="704" height="928" viewBox="0 0 88 116">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="28" x2="0" y2="88"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".22" stop-color="#FFDB6E"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<filter id="soft-drop" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+<filter id="soft-from-top" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+<filter id="soft-from-side" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2"/></filter>
+<clipPath id="around-frame"><path clip-rule="evenodd" d="M0 0H88V116H0Z M23 26.5H65A10.5 10.5 0 0 1 75.5 37V79A10.5 10.5 0 0 1 65 89.5H23A10.5 10.5 0 0 1 12.5 79V37A10.5 10.5 0 0 1 23 26.5Z"/></clipPath>
+<clipPath id="in-bar"><path clip-rule="evenodd" d="M23 28H65A9 9 0 0 1 74 37V79A9 9 0 0 1 65 88H23A9 9 0 0 1 14 79V37A9 9 0 0 1 23 28Z M23 33H65A4 4 0 0 1 69 37V79A4 4 0 0 1 65 83H23A4 4 0 0 1 19 79V37A4 4 0 0 1 23 33Z"/></clipPath>
+<clipPath id="in-hole"><rect x="19" y="33" width="50" height="50" rx="4"/></clipPath>
+</defs>
+<!-- the drops, seen only around the frame: a soft one far below, a hard one close under it -->
+<g clip-path="url(#around-frame)">
+<rect x="14" y="38" width="60" height="60" rx="9" fill="#14100A" fill-opacity=".34" filter="url(#soft-drop)"/>
+<rect x="12.5" y="31.5" width="63" height="63" rx="10.5" fill="#14100A" fill-opacity=".36"/>
+</g>
+<!-- the dark line around the bar, the gilt bar, light along its top edge, the dark line around the picture -->
+<path fill="#5E3305" fill-rule="evenodd" d="M23 26.5H65A10.5 10.5 0 0 1 75.5 37V79A10.5 10.5 0 0 1 65 89.5H23A10.5 10.5 0 0 1 12.5 79V37A10.5 10.5 0 0 1 23 26.5Z M23 33H65A4 4 0 0 1 69 37V79A4 4 0 0 1 65 83H23A4 4 0 0 1 19 79V37A4 4 0 0 1 23 33Z"/>
+<path fill="url(#gilt)" fill-rule="evenodd" d="M23 28H65A9 9 0 0 1 74 37V79A9 9 0 0 1 65 88H23A9 9 0 0 1 14 79V37A9 9 0 0 1 23 28Z M23 33H65A4 4 0 0 1 69 37V79A4 4 0 0 1 65 83H23A4 4 0 0 1 19 79V37A4 4 0 0 1 23 33Z"/>
+<g clip-path="url(#in-bar)">
+<path fill="#FFF6CC" fill-rule="evenodd" d="M0 0H88V116H0Z M23 29.5H65A9 9 0 0 1 74 38.5V80.5A9 9 0 0 1 65 89.5H23A9 9 0 0 1 14 80.5V38.5A9 9 0 0 1 23 29.5Z"/>
+</g>
+<path fill="#5E3305" fill-rule="evenodd" d="M23 31.6H65A5.4 5.4 0 0 1 70.4 37V79A5.4 5.4 0 0 1 65 84.4H23A5.4 5.4 0 0 1 17.6 79V37A5.4 5.4 0 0 1 23 31.6Z M23 33H65A4 4 0 0 1 69 37V79A4 4 0 0 1 65 83H23A4 4 0 0 1 19 79V37A4 4 0 0 1 23 33Z"/>
+<!-- the shade the bar throws onto the picture, from the top and from the left -->
+<g clip-path="url(#in-hole)">
+<path fill="#140A00" fill-opacity=".35" fill-rule="evenodd" filter="url(#soft-from-top)" d="M-12 -12H100V128H-12Z M23 38H65A4 4 0 0 1 69 42V84A4 4 0 0 1 65 88H23A4 4 0 0 1 19 84V42A4 4 0 0 1 23 38Z"/>
+<path fill="#140A00" fill-opacity=".18" fill-rule="evenodd" filter="url(#soft-from-side)" d="M-12 -12H100V128H-12Z M26 33H68A4 4 0 0 1 72 37V79A4 4 0 0 1 68 83H26A4 4 0 0 1 22 79V37A4 4 0 0 1 26 33Z"/>
+</g>
+</svg>

@@ -15,21 +15,23 @@ public class EffectAndDamageTests
 
         Assert.True(game.TryPlay(Move.Tap(P(3, 3))));
 
-        List<Position> destroyed = DestroyedBeforeCascades(game);
+        List<Position> destroyed = GemsDestroyedBeforeCascades(game);
         Assert.Equal(6, destroyed.Count);
         Assert.All(destroyed, p => Assert.Equal(3, p.Y));
     }
 
-    [Fact]
-    public void Tapped_bomb_clears_a_5x5_area()
+    [Theory]
+    [InlineData('X', 1)] // bomb: 3x3
+    [InlineData('M', 2)] // big bomb: 5x5
+    public void Tapped_bomb_clears_a_square_of_its_radius(char glyph, int radius)
     {
-        Game game = Start(Level(Filler(7, 7).With(3, 3, 'X')));
+        Game game = Start(Level(Filler(7, 7).With(3, 3, glyph)));
 
         game.TryPlay(Move.Tap(P(3, 3)));
 
-        List<Position> destroyed = DestroyedBeforeCascades(game);
-        Assert.Equal(24, destroyed.Count);
-        Assert.All(destroyed, p => Assert.True(Math.Abs(p.X - 3) <= 2 && Math.Abs(p.Y - 3) <= 2));
+        List<Position> gems = GemsDestroyedBeforeCascades(game);
+        Assert.Equal(((2 * radius) + 1) * ((2 * radius) + 1) - 1, gems.Count);
+        Assert.All(gems, p => Assert.True(Math.Abs(p.X - 3) <= radius && Math.Abs(p.Y - 3) <= radius));
     }
 
     [Fact]
@@ -39,7 +41,7 @@ public class EffectAndDamageTests
 
         game.TryPlay(Move.Tap(P(0, 0)));
 
-        Assert.Equal(8, DestroyedBeforeCascades(game).Count);
+        Assert.Equal(3, GemsDestroyedBeforeCascades(game).Count);
     }
 
     [Fact]
@@ -52,7 +54,7 @@ public class EffectAndDamageTests
 
         game.TryPlay(Move.Swap(P(3, 3), P(4, 3)));
 
-        Assert.Equal(gemsOfColor, DestroyedBeforeCascades(game).Count);
+        Assert.Equal(gemsOfColor, GemsDestroyedBeforeCascades(game).Count);
     }
 
     [Fact]
@@ -62,20 +64,34 @@ public class EffectAndDamageTests
 
         game.TryPlay(Move.Swap(P(3, 3), P(4, 3)));
 
-        List<Position> destroyed = DestroyedBeforeCascades(game);
+        List<Position> destroyed = GemsDestroyedBeforeCascades(game);
         Assert.Equal(5 + 6, destroyed.Count);
         Assert.All(destroyed, p => Assert.True(p.Y == 3 || p.X == 4));
     }
 
-    [Fact]
-    public void Bomb_plus_bomb_uses_the_bigger_radius()
+    [Theory]
+    [InlineData('X', 'X', 23)]     // radius 1+1: 5x5 around (3,4) minus the two bomb cells
+    [InlineData('X', 'M', 7 * 6 - 2)] // radius 1+2: rows 1..6 of a 7x7 board
+    [InlineData('M', 'M', 7 * 7 - 2)] // radius 2+2: the whole board
+    public void Two_bombs_blast_with_the_sum_of_their_radii(char first, char second, int expectedGems)
     {
-        Game game = Start(Level(Filler(7, 7).With(3, 3, 'X').With(3, 4, 'X')));
+        Game game = Start(Level(Filler(7, 7).With(3, 3, first).With(3, 4, second)));
 
         game.TryPlay(Move.Swap(P(3, 3), P(3, 4)));
 
-        // Radius 3 around (3,4) covers rows 1..6 of a 7x7 board.
-        Assert.Equal((7 * 6) - 2, DestroyedBeforeCascades(game).Count);
+        Assert.Equal(expectedGems, GemsDestroyedBeforeCascades(game).Count);
+    }
+
+    [Fact]
+    public void Rocket_plus_bomb_clears_three_rows_and_three_columns()
+    {
+        Game game = Start(Level(Filler(7, 7).With(3, 3, 'H').With(4, 3, 'X')));
+
+        game.TryPlay(Move.Swap(P(3, 3), P(4, 3)));
+
+        List<Position> gems = GemsDestroyedBeforeCascades(game);
+        Assert.Equal(21 + 21 - 9 - 2, gems.Count);
+        Assert.All(gems, p => Assert.True(Math.Abs(p.Y - 3) <= 1 || Math.Abs(p.X - 4) <= 1));
     }
 
     [Fact]
@@ -115,7 +131,7 @@ public class EffectAndDamageTests
 
         IReadOnlyList<GameEvent> effectEvents = game.LastEvents.TakeWhile(e => e is not GameEvent.RoundStarted).ToList();
         Assert.Contains(new GameEvent.ChainDamaged(P(5, 3), 0), effectEvents);
-        Assert.DoesNotContain(P(5, 3), DestroyedBeforeCascades(game));
+        Assert.DoesNotContain(P(5, 3), GemsDestroyedBeforeCascades(game));
         Assert.Equal(1, game.LastMove.ChainsBroken);
     }
 
@@ -167,10 +183,12 @@ public class EffectAndDamageTests
         Assert.Throws<InvalidOperationException>(() => game.TryPlay(Move.Tap(P(0, 0))));
     }
 
-    private static List<Position> DestroyedBeforeCascades(Game game) =>
+    /// <summary>Gems destroyed by the move's own effects (specials consumed as they fire are not counted).</summary>
+    private static List<Position> GemsDestroyedBeforeCascades(Game game) =>
         game.LastEvents
             .TakeWhile(e => e is not GameEvent.RoundStarted)
             .OfType<GameEvent.TileDestroyed>()
+            .Where(e => e.Tile.IsGem)
             .Select(e => e.At)
             .ToList();
 

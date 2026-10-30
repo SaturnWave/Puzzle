@@ -1,0 +1,26 @@
+<!-- A handful of coins: the shop's smallest pack, and the mark of the coins an advertisement gives. As the design
+     canvas draws it (ShopTR): its symbol sh-pile with the paints it uses, written by
+     tools/unity/extract-design-symbols.js. Change the canvas and run that again; do not change this file by hand.
+     One unit is one point where the symbol is drawn 100 points wide; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<radialGradient id="f-coin" cx=".34" cy=".26" r=".9"><stop offset="0" stop-color="#FFF6CC"/><stop offset=".4" stop-color="#FFD660"/><stop offset="1" stop-color="#EDA428"/></radialGradient>
+<symbol id="i-coin" viewBox="0 0 100 100">
+<ellipse cx="50" cy="93" rx="34" ry="5.5" fill="url(#g-shadow)"/>
+<circle cx="50" cy="54" r="40" fill="#9C5C0B" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.4"/>
+<circle cx="50" cy="47" r="40" fill="url(#f-coin)" stroke="#5E3305" stroke-opacity=".55" stroke-width="1.4"/>
+<circle cx="50" cy="47" r="31" fill="none" stroke="#C17E12" stroke-width="2.6"/>
+<circle cx="50" cy="48.4" r="31" fill="none" stroke="#FFF6CC" stroke-opacity=".9" stroke-width="1.3"/>
+<path d="M50 25C54 33 64.5 40 64.5 51A14.5 14.5 0 0 1 35.5 51C35.5 40 46 33 50 25Z" transform="translate(1.2 1.8)" fill="#B87412"/>
+<path d="M50 25C54 33 64.5 40 64.5 51A14.5 14.5 0 0 1 35.5 51C35.5 40 46 33 50 25Z" fill="#FFE27A" stroke="#C17E12" stroke-width="1.2"/>
+<path d="M42 50C42 43 46 38 49 34" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="3" stroke-linecap="round"/>
+<path d="M16.17 34.69A36 36 0 0 1 44.99 11.35" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="4" stroke-linecap="round"/>
+<path d="M83.38 60.49A36 36 0 0 1 56.25 82.45" fill="none" stroke="#FFF6CC" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+</symbol>
+</defs>
+<ellipse cx="46" cy="93" rx="40" ry="6" fill="url(#g-shadow)"/>
+<use href="#i-coin" x="4" y="12" width="50" height="50"/>
+<path d="M9 79.5V86A22 8 0 0 0 53 86V79.5Z" fill="#C8841A" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.3"/><path d="M18 88.1V92.5M27 89.5V93.7M36 89.5V93.7M45 87.9V92.3" stroke="#9C5C0B" stroke-opacity=".7" stroke-width="1.3" stroke-linecap="round"/><ellipse cx="31" cy="79.5" rx="22" ry="8" fill="url(#f-coin)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.3"/><ellipse cx="31" cy="79.8" rx="15.5" ry="5" fill="none" stroke="#C17E12" stroke-width="1.5"/><path d="M13.5 77.9C18 74.3 25 73.3 32 73.3" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.9" stroke-linecap="round"/><path d="M7 70.5V77A22 8 0 0 0 51 77V70.5Z" fill="#C8841A" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.3"/><path d="M16 79.1V83.5M25 80.5V84.7M34 80.5V84.7M43 78.9V83.3" stroke="#9C5C0B" stroke-opacity=".7" stroke-width="1.3" stroke-linecap="round"/><ellipse cx="29" cy="70.5" rx="22" ry="8" fill="url(#f-coin)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.3"/><ellipse cx="29" cy="70.8" rx="15.5" ry="5" fill="none" stroke="#C17E12" stroke-width="1.5"/><path d="M11.5 68.9C16 65.3 23 64.3 30 64.3" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.9" stroke-linecap="round"/><path d="M10 61.5V68A22 8 0 0 0 54 68V61.5Z" fill="#C8841A" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.3"/><path d="M19 70.1V74.5M28 71.5V75.7M37 71.5V75.7M46 69.9V74.3" stroke="#9C5C0B" stroke-opacity=".7" stroke-width="1.3" stroke-linecap="round"/><ellipse cx="32" cy="61.5" rx="22" ry="8" fill="url(#f-coin)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.3"/><ellipse cx="32" cy="61.8" rx="15.5" ry="5" fill="none" stroke="#C17E12" stroke-width="1.5"/><path d="M14.5 59.9C19 56.3 26 55.3 33 55.3" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.9" stroke-linecap="round"/>
+<use href="#i-coin" x="42" y="30" width="58" height="58"/>
+</svg>

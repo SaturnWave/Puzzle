@@ -41,14 +41,27 @@ internal sealed class CliArgs
 
     public string Text(string key, string fallback) => _options.TryGetValue(key, out string? value) ? value : fallback;
 
+    /// <summary>The option's value; absent when the option was not given.</summary>
+    public string? OptionalText(string key) => _options.TryGetValue(key, out string? value) ? value : null;
+
     public bool Flag(string key) => _options.ContainsKey(key);
 
     /// <exception cref="UsageException">The value is not an integer.</exception>
-    public int Int(string key, int fallback) => _options.TryGetValue(key, out string? value)
-        ? int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
+    public int Int(string key, int fallback) => OptionalInt(key) ?? fallback;
+
+    /// <summary>The option's value; absent when the option was not given.</summary>
+    /// <exception cref="UsageException">The value is not an integer.</exception>
+    public int? OptionalInt(string key)
+    {
+        if (!_options.TryGetValue(key, out string? value))
+        {
+            return null;
+        }
+
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed)
             ? parsed
-            : throw new UsageException($"--{key} expects an integer, got '{value}'.")
-        : fallback;
+            : throw new UsageException($"--{key} expects an integer, got '{value}'.");
+    }
 
     /// <exception cref="UsageException">The value is not an unsigned integer.</exception>
     public ulong ULong(string key, ulong fallback) => _options.TryGetValue(key, out string? value)

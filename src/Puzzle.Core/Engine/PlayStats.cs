@@ -11,13 +11,16 @@ namespace Puzzle.Core.Engine
 
         public int RocketsCreated { get; init; }
 
+        /// <summary>Small (3x3) bombs.</summary>
         public int BombsCreated { get; init; }
+
+        public int BigBombsCreated { get; init; }
 
         public int SeekersCreated { get; init; }
 
         public int ColorBombsCreated { get; init; }
 
-        public int SpecialsCreated => RocketsCreated + BombsCreated + SeekersCreated + ColorBombsCreated;
+        public int SpecialsCreated => RocketsCreated + BombsCreated + BigBombsCreated + SeekersCreated + ColorBombsCreated;
 
         public int SpecialsActivated { get; init; }
 
@@ -47,6 +50,7 @@ namespace Puzzle.Core.Engine
         public int GemsCleared;
         public int RocketsCreated;
         public int BombsCreated;
+        public int BigBombsCreated;
         public int SeekersCreated;
         public int ColorBombsCreated;
         public int SpecialsActivated;
@@ -71,6 +75,9 @@ namespace Puzzle.Core.Engine
                 case TileKind.Bomb:
                     BombsCreated++;
                     break;
+                case TileKind.BigBomb:
+                    BigBombsCreated++;
+                    break;
                 case TileKind.Seeker:
                     SeekersCreated++;
                     break;
@@ -87,6 +94,7 @@ namespace Puzzle.Core.Engine
             total.GemsCleared += GemsCleared;
             total.RocketsCreated += RocketsCreated;
             total.BombsCreated += BombsCreated;
+            total.BigBombsCreated += BigBombsCreated;
             total.SeekersCreated += SeekersCreated;
             total.ColorBombsCreated += ColorBombsCreated;
             total.SpecialsActivated += SpecialsActivated;
@@ -106,6 +114,7 @@ namespace Puzzle.Core.Engine
             GemsCleared = 0;
             RocketsCreated = 0;
             BombsCreated = 0;
+            BigBombsCreated = 0;
             SeekersCreated = 0;
             ColorBombsCreated = 0;
             SpecialsActivated = 0;
@@ -127,6 +136,7 @@ namespace Puzzle.Core.Engine
             GemsCleared = GemsCleared,
             RocketsCreated = RocketsCreated,
             BombsCreated = BombsCreated,
+            BigBombsCreated = BigBombsCreated,
             SeekersCreated = SeekersCreated,
             ColorBombsCreated = ColorBombsCreated,
             SpecialsActivated = SpecialsActivated,

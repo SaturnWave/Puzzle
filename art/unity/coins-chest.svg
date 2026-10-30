@@ -1,0 +1,47 @@
+<!-- An open chest of coins: the shop's largest pack. As the design canvas draws it (ShopTR): its symbol sh-chest
+     with the paints it uses, written by tools/unity/extract-design-symbols.js. Change the canvas and run that
+     again; do not change this file by hand. One unit is one point where the symbol is drawn 100 points wide; the
+     game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<radialGradient id="f-coin" cx=".34" cy=".26" r=".9"><stop offset="0" stop-color="#FFF6CC"/><stop offset=".4" stop-color="#FFD660"/><stop offset="1" stop-color="#EDA428"/></radialGradient>
+<linearGradient id="f-gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".62" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<linearGradient id="f-wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3CF96"/><stop offset=".45" stop-color="#D9A566"/><stop offset="1" stop-color="#B47B40"/></linearGradient>
+<symbol id="i-coin" viewBox="0 0 100 100">
+<ellipse cx="50" cy="93" rx="34" ry="5.5" fill="url(#g-shadow)"/>
+<circle cx="50" cy="54" r="40" fill="#9C5C0B" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.4"/>
+<circle cx="50" cy="47" r="40" fill="url(#f-coin)" stroke="#5E3305" stroke-opacity=".55" stroke-width="1.4"/>
+<circle cx="50" cy="47" r="31" fill="none" stroke="#C17E12" stroke-width="2.6"/>
+<circle cx="50" cy="48.4" r="31" fill="none" stroke="#FFF6CC" stroke-opacity=".9" stroke-width="1.3"/>
+<path d="M50 25C54 33 64.5 40 64.5 51A14.5 14.5 0 0 1 35.5 51C35.5 40 46 33 50 25Z" transform="translate(1.2 1.8)" fill="#B87412"/>
+<path d="M50 25C54 33 64.5 40 64.5 51A14.5 14.5 0 0 1 35.5 51C35.5 40 46 33 50 25Z" fill="#FFE27A" stroke="#C17E12" stroke-width="1.2"/>
+<path d="M42 50C42 43 46 38 49 34" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="3" stroke-linecap="round"/>
+<path d="M16.17 34.69A36 36 0 0 1 44.99 11.35" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="4" stroke-linecap="round"/>
+<path d="M83.38 60.49A36 36 0 0 1 56.25 82.45" fill="none" stroke="#FFF6CC" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+</symbol>
+</defs>
+<ellipse cx="50" cy="93.5" rx="44" ry="6" fill="url(#g-shadow)"/>
+<path d="M11 47V29C11 15 25 7 50 7C75 7 89 15 89 29V47Z" fill="url(#f-wood)" stroke="#4B2A0F" stroke-opacity=".6" stroke-width="1.6"/>
+<path d="M14.3 29C15 18.5 27 10.3 50 10.3" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M17.5 47V30C17.5 20 29 13.5 50 13.5C71 13.5 82.5 20 82.5 30V47Z" fill="#4B2A0F"/>
+<path d="M45.5 7.4H54.5V14.4H45.5Z" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.2"/>
+<path d="M19.2 47V31C19.2 22.5 30 16 50 16" fill="none" stroke="#7C4E22" stroke-width="2"/>
+<use href="#i-coin" x="13" y="26" width="32" height="32"/><use href="#i-coin" x="55" y="26" width="32" height="32"/><use href="#i-coin" x="32.5" y="19.5" width="35" height="35"/>
+<path d="M17 52C20 43 32 39 50 39C68 39 80 43 83 52Z" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".55" stroke-width="1.2"/>
+<path d="M27 44.5C33 42.5 41 41.6 48 41.6" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-linecap="round"/>
+<rect x="9" y="52" width="82" height="36" rx="6.5" fill="#7C4E22" stroke="#4B2A0F" stroke-opacity=".5" stroke-width="1.6"/>
+<rect x="9" y="46" width="82" height="36" rx="6.5" fill="url(#f-wood)" stroke="#4B2A0F" stroke-opacity=".55" stroke-width="1.6"/>
+<path d="M10 60.5H90M10 71.5H90" stroke="#5C3816" stroke-opacity=".42" stroke-width="2"/>
+<path d="M70 79C78 79 86 78 87.5 72" fill="none" stroke="#FFE9C0" stroke-opacity=".5" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M19 46H28.5V83.5H19ZM71.5 46H81V83.5H71.5Z" transform="translate(0 4.6)" fill="#9C5C0B"/>
+<path d="M19 46H28.5V83.5H19ZM71.5 46H81V83.5H71.5Z" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.2"/>
+<circle cx="23.75" cy="59" r="2" fill="#9C5C0B"/><circle cx="23.75" cy="73" r="2" fill="#9C5C0B"/><circle cx="76.25" cy="59" r="2" fill="#9C5C0B"/><circle cx="76.25" cy="73" r="2" fill="#9C5C0B"/>
+<rect x="6.5" y="45.4" width="87" height="8.6" rx="3.6" fill="#9C5C0B"/>
+<rect x="6.5" y="43" width="87" height="8.6" rx="3.6" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.2"/>
+<path d="M11 46H50" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-linecap="round"/>
+<rect x="42.5" y="48.6" width="15" height="17" rx="4" fill="#9C5C0B"/>
+<rect x="42.5" y="46.4" width="15" height="17" rx="4" fill="url(#f-gilt)" stroke="#5E3305" stroke-opacity=".7" stroke-width="1.2"/>
+<circle cx="50" cy="53" r="2.4" fill="#5E3305"/><path d="M50 53V58.6" stroke="#5E3305" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M13.6 57V66" stroke="#fff" stroke-opacity=".7" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

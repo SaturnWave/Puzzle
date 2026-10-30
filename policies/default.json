@@ -1,0 +1,51 @@
+{
+  // The difficulty policy: who the levels are made for, and how often that player wins the first attempt.
+  // What each level number is (tier, board size, colours, mechanics, move ranges) is the plan's to say.
+  "name": "default",
+  "plan": "../profiles/default.json",
+
+  // The first museum room stays exactly as it is on disk: an older search made it and people have played it.
+  "pinned": ["1-50"],
+
+  // A level people have recorded attempts on keeps its board and goal amounts, so a recording stays a recording of
+  // that level; its limit and seed pool follow the policy. "freeze" keeps such a level byte for byte, "none" lets
+  // recordings protect nothing.
+  "recorded": "keepBoard",
+
+  "bands": [
+    {
+      "fromLevel": 51,
+      "player": "skill-55",
+      "moveMargin": 0,
+      "winShare": { "Easy": 0.90, "Normal": 0.75, "Hard": 0.55, "SuperHard": 0.40 }
+      // A kind of level can have a move range of its own. Drop-item boards need more moves than the plan's ranges
+      // allow (Normal 20-33 holds one item board in six hundred draws); the owner's decision would be stated here:
+      // "kindMoves": { "items": { "Normal": [24, 42] } }
+    }
+  ],
+
+  // The share of the assembled levels each kind should have; a level with two obstacle families counts for both.
+  // Items stand at what the plan's move ranges can hold (about 6 %); a higher share needs kindMoves above.
+  "variety": { "collectOnly": 0.35, "boxes": 0.25, "chains": 0.25, "jelly": 0.18, "items": 0.06 },
+
+  // An assembly names every kind whose share lies further than this from its target; with failOnVarietyMiss it also
+  // ends with a non-zero exit code.
+  "varietyTolerance": 0.03,
+  "failOnVarietyMiss": false,
+
+  // How a candidate's cost is weighed: "centre" per half range its limit lies off the middle of the move range,
+  // "variety" per whole target its kinds are still short of in the set, "repeat" for the families of a direct neighbour.
+  "weights": { "centre": 1, "variety": 4, "repeat": 0.5 },
+
+  "checks": {
+    "confirmSeeds": 24,
+    "confirmGamesPerSeed": 32,
+    "auditGamesPerSeed": 16,
+    "firstSeedGames": 256,
+    "auditRounds": 3,
+    "firstTryTolerance": 0.10,
+    "candidatesPerLevel": 6,
+    // Games per pool seed after the audit has passed; the win share a report states is read from these alone.
+    "checkGamesPerSeed": 16
+  }
+}

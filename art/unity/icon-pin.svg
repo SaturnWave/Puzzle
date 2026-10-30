@@ -1,0 +1,13 @@
+<!-- The red pin of "you are here" on the museum's map, as the design canvas draws it. The picture is the pin's
+     32 x 44 box; its point is at (16, 35) in it. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="704" viewBox="56 22 32 44">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<radialGradient id="f-verm" cx=".32" cy=".24" r=".95"><stop offset="0" stop-color="#FFA283"/><stop offset=".42" stop-color="#F4472F"/><stop offset="1" stop-color="#C7231B"/></radialGradient>
+</defs>
+<ellipse cx="72" cy="61" rx="9" ry="2.6" fill="url(#g-shadow)"/>
+<path d="M72 26C78.6 26 83.5 30.9 83.5 37C83.5 44 76 50 72 57C68 50 60.5 44 60.5 37C60.5 30.9 65.4 26 72 26Z" transform="translate(0 3)" fill="#931313"/>
+<path d="M72 26C78.6 26 83.5 30.9 83.5 37C83.5 44 76 50 72 57C68 50 60.5 44 60.5 37C60.5 30.9 65.4 26 72 26Z" fill="url(#f-verm)" stroke="#5E0A0C" stroke-opacity=".5" stroke-width="1.2"/>
+<circle cx="72" cy="37" r="4.6" fill="#fff"/>
+<path d="M65 37C65 33 68 30.4 71 30" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.6" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,70 @@
+{
+  "room": "room-01",
+  "paintings": [
+    {
+      "file": "beach-at-sainte-adresse.jpg",
+      "title": "The Beach at Sainte-Adresse",
+      "titleTr": "Sainte-Adresse Plajı",
+      "artist": "Claude Monet",
+      "year": "1867",
+      "width": 1920,
+      "height": 1407,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/14598",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_The_Beach_at_Sainte-Adresse_-_1933.439_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "two-sisters-on-the-terrace.jpg",
+      "title": "Two Sisters (On the Terrace)",
+      "titleTr": "Kız Kardeş (Terasta)",
+      "artist": "Pierre-Auguste Renoir",
+      "year": "1881",
+      "width": 1280,
+      "height": 1589,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/14655",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Pierre-Auguste_Renoir_-_Two_Sisters_(On_the_Terrace)_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "paris-street-rainy-day.jpg",
+      "title": "Paris Street; Rainy Day",
+      "titleTr": "Yağmurlu Gün",
+      "artist": "Gustave Caillebotte",
+      "year": "1877",
+      "width": 1920,
+      "height": 1491,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/20684",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Gustave_Caillebotte_-_Paris_Street,_Rainy_Day_-_1964.336_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "water-lilies.jpg",
+      "title": "Water Lilies",
+      "titleTr": "Nilüferler",
+      "artist": "Claude Monet",
+      "year": "1906",
+      "width": 1920,
+      "height": 1848,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/16568",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1933.1157_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "stacks-of-wheat-end-of-summer.jpg",
+      "title": "Stacks of Wheat (End of Summer)",
+      "titleTr": "Buğday Yığınları (Yaz Sonu)",
+      "artist": "Claude Monet",
+      "year": "1890–91",
+      "width": 1920,
+      "height": 1138,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/64818",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Stacks_of_Wheat_(End_of_Summer)_-_1985.1103_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    }
+  ]
+}

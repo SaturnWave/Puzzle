@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ugs-config-schemas.unity3d.com/v1/schedules.schema.json",
+  "Configs": {
+    "poll-google-voided-daily": {
+      "EventName": "poll-google-voided",
+      "Type": "recurring",
+      "Schedule": "0 3 * * *",
+      "PayloadVersion": 1,
+      "Payload": "{}"
+    },
+    "forget-old-traces-daily": {
+      "EventName": "forget-old-traces",
+      "Type": "recurring",
+      "Schedule": "0 4 * * *",
+      "PayloadVersion": 1,
+      "Payload": "{}"
+    }
+  }
+}

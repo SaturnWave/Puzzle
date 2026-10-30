@@ -22,7 +22,7 @@ namespace Puzzle.Core.Engine.Resolution
 
         public int Origin { get; }
 
-        /// <summary>Blast radius of <see cref="EffectKind.Explode"/>.</summary>
+        /// <summary>Blast radius of <see cref="EffectKind.Explode"/>; half-width of <see cref="EffectKind.Cross"/> bands.</summary>
         public int Radius { get; }
 
         /// <summary>Target color of <see cref="EffectKind.ClearColor"/>; absent means "most common color on the board".</summary>
@@ -44,7 +44,8 @@ namespace Puzzle.Core.Engine.Resolution
         {
             TileKind.RocketH => Simple(EffectKind.ClearRow, origin),
             TileKind.RocketV => Simple(EffectKind.ClearColumn, origin),
-            TileKind.Bomb => new Effect(EffectKind.Explode, origin, rules.BombRadius, null, null, 0, null),
+            TileKind.Bomb => Explode(origin, rules.BombRadius),
+            TileKind.BigBomb => Explode(origin, rules.BigBombRadius),
             TileKind.Seeker => new Effect(EffectKind.Seeker, origin, 0, null, null, 1, null),
             TileKind.ColorBomb => Simple(EffectKind.ClearColor, origin),
             _ => throw new ArgumentOutOfRangeException(nameof(special), special, "Not a special tile kind."),
@@ -53,7 +54,10 @@ namespace Puzzle.Core.Engine.Resolution
         public static Effect ClearColorOf(GemColor color, int origin) =>
             new Effect(EffectKind.ClearColor, origin, 0, color, null, 0, null);
 
-        /// <summary>The effect of swapping two specials together; <paramref name="origin"/> is the swap destination.</summary>
+        /// <summary>
+        /// The effect of swapping two specials together; <paramref name="origin"/> is the swap destination.
+        /// Priority: color bomb, then seeker, then rockets and bombs.
+        /// </summary>
         public static Effect ForCombo(TileKind first, TileKind second, int origin, RuleSet rules)
         {
             if (first == TileKind.ColorBomb || second == TileKind.ColorBomb)
@@ -72,24 +76,27 @@ namespace Puzzle.Core.Engine.Resolution
                     : new Effect(EffectKind.Seeker, origin, 0, null, other, 1, null);
             }
 
-            bool firstIsRocket = first.IsRocket();
-            bool secondIsRocket = second.IsRocket();
-            if (firstIsRocket && secondIsRocket)
+            if (first.IsRocket() && second.IsRocket())
             {
-                return Simple(EffectKind.Cross, origin);
+                return Cross(origin, 0);
             }
 
-            if (firstIsRocket || secondIsRocket)
+            if (first.IsRocket() || second.IsRocket())
             {
-                return Simple(EffectKind.WideCross, origin);
+                // Rocket + bomb: bands as wide as the bomb's blast (3 rows/columns for a bomb, 5 for a big bomb).
+                return Cross(origin, rules.RadiusOf(first.IsRocket() ? second : first));
             }
 
-            return new Effect(EffectKind.Explode, origin, rules.DoubleBombRadius, null, null, 0, null);
+            return Explode(origin, rules.RadiusOf(first) + rules.RadiusOf(second));
         }
 
         public Effect RequiringTileAtOrigin(TileKind kind) =>
             new Effect(Kind, Origin, Radius, Color, Payload, Count, kind);
 
         private static Effect Simple(EffectKind kind, int origin) => new Effect(kind, origin, 0, null, null, 0, null);
+
+        private static Effect Explode(int origin, int radius) => new Effect(EffectKind.Explode, origin, radius, null, null, 0, null);
+
+        private static Effect Cross(int origin, int halfWidth) => new Effect(EffectKind.Cross, origin, halfWidth, null, null, 0, null);
     }
 }

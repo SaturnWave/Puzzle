@@ -1,0 +1,19 @@
+<!-- The dark well the rooms' chips lie in, sunk into the collection's plaque in a gilt ring, as the design canvas
+     draws it (CollectionTR). The canvas lets the well run out of the plaque's right end, for a strip that can be
+     pushed along; the game shows as many rooms as fit, so its well has two round ends. One unit is one point of the
+     design. The well is 56 x 36 at (4, 4); the game stretches the middle of the picture sideways to the width the
+     chips need, so nothing between x = 24 and x = 40 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="352" viewBox="0 0 64 44">
+<defs>
+<linearGradient id="well" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="40"><stop offset="0" stop-color="#0C4650"/><stop offset="1" stop-color="#136069"/></linearGradient>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter>
+<clipPath id="in-well"><rect x="4" y="4" width="56" height="36" rx="18"/></clipPath>
+</defs>
+<!-- the dark line around the well, the gilt ring, the well, the soft shade that falls in from its top edge -->
+<rect x="1.2" y="1.2" width="61.6" height="41.6" rx="20.8" fill="#5E3305"/>
+<rect x="2.4" y="2.4" width="59.2" height="39.2" rx="19.6" fill="#F6B93C"/>
+<rect x="4" y="4" width="56" height="36" rx="18" fill="url(#well)"/>
+<g clip-path="url(#in-well)">
+<path fill="#031E24" fill-opacity=".55" fill-rule="evenodd" filter="url(#soft)" d="M-8 -8H72V52H-8Z M22 6.5H42A18 18 0 0 1 60 24.5A18 18 0 0 1 42 42.5H22A18 18 0 0 1 4 24.5A18 18 0 0 1 22 6.5Z"/>
+</g>
+</svg>

@@ -1,0 +1,18 @@
+<!-- The round green button of "get more", as the design canvas draws it at the end of the coins' and the lives' pill
+     (HomeTR); the plus is a picture of its own (glyph-plus.svg). One unit is one point of the design. The disc is 26
+     across around (18, 17). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="576" height="576" viewBox="0 0 36 36">
+<defs>
+<linearGradient id="green" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="30"><stop offset="0" stop-color="#9BEA5E"/><stop offset=".55" stop-color="#4DBE36"/><stop offset="1" stop-color="#2C9A2E"/></linearGradient>
+<clipPath id="in-face"><circle cx="18" cy="17" r="13"/></clipPath>
+</defs>
+<!-- the drop under the disc, the dark line, the face -->
+<circle cx="18" cy="19.5" r="14.6" fill="#052830" fill-opacity=".4"/>
+<circle cx="18" cy="17" r="14.6" fill="#145A1B"/>
+<circle cx="18" cy="17" r="13" fill="url(#green)"/>
+<!-- light along the top of the face, a dark green foot -->
+<g clip-path="url(#in-face)">
+<path fill="#fff" fill-opacity=".6" fill-rule="evenodd" d="M0 0H36V36H0Z M5 19A13 13 0 0 1 31 19A13 13 0 0 1 5 19Z"/>
+<path fill="#1F7F2A" fill-rule="evenodd" d="M0 0H36V36H0Z M5 14.5A13 13 0 0 1 31 14.5A13 13 0 0 1 5 14.5Z"/>
+</g>
+</svg>

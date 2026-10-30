@@ -1,0 +1,351 @@
+{
+  "meta": {
+    "title": "Proposed US in-app purchase price chart (USD) for the museum match-3",
+    "writtenOn": "2026-10-23",
+    "storefront": "US App Store and Google Play US (same USD price points on both)",
+    "status": "PROPOSAL. Every price, amount and ratio below is an ESTIMATE (our design), built on competitor prices that are FACT or REPORTED as marked in each basis entry. Nothing here is in economy/default.json or in the game yet.",
+    "statusLegend": {
+      "FACT": "seen on the cited source on 2026-10-23 (US App Store page / Apple catalog API, the game's own help page, or this repo)",
+      "REPORTED": "secondary source (fan wiki, analyst, forum); may be older than 2026-10-23",
+      "ESTIMATE": "our own inference, design choice or arithmetic"
+    },
+    "correctionsApplied": [
+      "Toy Blast $49.99 (1,625 coins) and $99.99 (3,500 coins) and the 750-coin $19.99 Super Bundle are not used: not reproducible on 2026-10-23 (verification.md P7).",
+      "Toon Pass prices ($9.99 / $19.99) are not used: unsupported (verification.md P17).",
+      "AppMagic offer shares and ARPPU values are not used: chart values, unverified; the offer chart is US Google Play, past six months (verification.md C31).",
+      "Candy Crush Soda pass article dated 2023-08-28 (verification.md C8)."
+    ],
+    "ourCoinScale": {
+      "source": "C:/Users/arcan/puzzle/economy/default.json and docs/GAME_DESIGN.md section 25 (FACT, repo, 2026-10-23)",
+      "extraMovesPriceCoins": 900,
+      "coinsPerMoveLeftInFinale": 4,
+      "coinsPerPaintingCompleted": 80,
+      "averageFreePlayerCoinsPerDay": 420,
+      "averageFreePlayerCoinsPerDayNote": "default.json shop.adForCoins comment: 'about 420 coins' a day for the average free player (skill-55, three 10-minute sessions)",
+      "boosterPricesCoins": {
+        "start-rocket-and-bomb": 200,
+        "start-color-bomb": 500,
+        "start-extra-moves": 200,
+        "hit-cell": 400,
+        "hit-row": 700,
+        "hit-column": 700,
+        "shuffle": 300
+      },
+      "boosterPricesStatus": "start boosters: proposed from the simulator (measured); the four in-level boosters: placeholders, not measured. Any bundle value that counts in-level boosters is therefore uncertain.",
+      "oneOfEachBoosterCoins": 3000,
+      "oneOfEachStartBoosterCoins": 900,
+      "livesNote": "Lives are not sold today (GAME_DESIGN section 23: 'can satilmaz'). With 5 lives and 10-minute sessions lives end no session of the average player (section 25), so unlimited-life time has little value for most of our players."
+    },
+    "storeFees": {
+      "assumedFeePercent": 15,
+      "basis": "Apple Small Business Program 15% (FACT, https://developer.apple.com/app-store/small-business-program/); Google Play US, first $1M a year: 10% service fee + 5% Play Billing fee (FACT, https://support.google.com/googleplay/android-developer/answer/16954621). Net values below are price x 0.85, before sales tax and VAT handling (ESTIMATE)."
+    },
+    "pricingRulesProposed": [
+      "P1 Coins per dollar never falls as the price rises; the top visible pack gives at most +35% over the entry pack (genre at $19.99: +24% to +33%).",
+      "P2 Each coin pack holds about a whole number of '+5 moves' (900 coins) with less than one +5 left over, and the shop shows 'about N times +5'.",
+      "P3 A real-money bundle's or piggy bank's coin value (coins + boosters at prices.boosters) is at most 1.6 times the coin ladder at its price; the starter pack at most 2.5 times and once per player; the season pass is outside this rule because its value is earned by playing.",
+      "P4 No product holds random contents; every content is listed before purchase (section 17/19: no paid random items; Apple 3.1.1, Google Payments policy).",
+      "P5 No purchase touches a level's move limit, seeds or assist (section 17).",
+      "P6 Only store price points ending in .99; no product above $19.99 at launch.",
+      "P7 Every purchase has a confirm step and is never charged on a single tap from a fail screen (FTC Epic order, 2023-03-14)."
+    ]
+  },
+  "products": [
+    {
+      "id": "coins-1",
+      "nameTr": "Bir kese altın",
+      "kind": "coins",
+      "stage": "launch",
+      "priceUsd": 1.99,
+      "purchaseType": "consumable",
+      "limit": "none",
+      "contents": { "coins": 1000, "boosters": {}, "unlimitedLivesHours": 0 },
+      "coinValue": 1000,
+      "coinsPerUsd": 502.5,
+      "bonusVsEntryPercent": 0,
+      "extraMovesEquivalent": 1.11,
+      "daysOfAverageFreeIncome": 2.4,
+      "netUsdAfterStoreFee": 1.69,
+      "basis": [
+        { "game": "Royal Match", "item": "Mini Coin Package", "priceUsd": 1.99, "contents": "1,000 coins", "status": "price FACT, contents REPORTED", "source": "https://apps.apple.com/us/app/royal-match/id1482155847 ; https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret (2025-01-18)" },
+        { "game": "Royal Match", "item": "+5 moves after a loss", "priceUsd": null, "contents": "900 coins (next set 1,900)", "status": "REPORTED (App Store user review, confirmed again in verification.md)", "source": "https://apps.apple.com/us/app/royal-match/id1482155847" },
+        { "game": "Matchington Mansion", "item": "1100 Coins / Stack of Coins", "priceUsd": 1.99, "contents": "1,100 coins", "status": "FACT", "source": "https://apps.apple.com/us/app/matchington-mansion/id1216575026" },
+        { "game": "Candy Crush Saga", "item": "XS Gold Bars Pack", "priceUsd": 1.99, "contents": "10 gold bars = one +5 moves", "status": "price FACT, contents REPORTED", "source": "https://apps.apple.com/us/app/candy-crush-saga/id553834731 ; https://candycrush.fandom.com/wiki/Gold" }
+      ],
+      "why": "The entry pack buys exactly one +5 (900) with 100 left, the same relation as Royal Match, whose coin scale (+5 = 900) matches ours. No $0.99 pack: it could buy no +5 and would invite a second purchase (ESTIMATE).",
+      "simulatorCheck": { "required": true, "what": "Add a paying-player variant (buys this pack when coins run short) and read pace to level 100/300/1000 and purse; the simulator does not simulate real money today." }
+    },
+    {
+      "id": "coins-2",
+      "nameTr": "Bir torba altın",
+      "kind": "coins",
+      "stage": "launch",
+      "priceUsd": 4.99,
+      "purchaseType": "consumable",
+      "limit": "none",
+      "contents": { "coins": 2750, "boosters": {}, "unlimitedLivesHours": 0 },
+      "coinValue": 2750,
+      "coinsPerUsd": 551.1,
+      "bonusVsEntryPercent": 9.7,
+      "extraMovesEquivalent": 3.06,
+      "daysOfAverageFreeIncome": 6.5,
+      "netUsdAfterStoreFee": 4.24,
+      "basis": [
+        { "game": "Matchington Mansion", "item": "Bag of Coins / 3000 Coins", "priceUsd": 4.99, "contents": "3,000 coins (+9% per $ over its $1.99 pack)", "status": "FACT", "source": "https://apps.apple.com/us/app/matchington-mansion/id1216575026" },
+        { "game": "Lily's Garden", "item": "Pile of Coins", "priceUsd": 4.99, "contents": "5,500 coins (+9% per $ over its $0.99 pack)", "status": "FACT", "source": "https://apps.apple.com/us/app/lilys-garden-match-design/id1437783446" },
+        { "game": "Project Makeover", "item": "Purse Full of Gems", "priceUsd": 4.99, "contents": "1,500 gems (+20% per $ over its $1.99 pack)", "status": "FACT", "source": "https://apps.apple.com/us/app/project-makeover/id1483058899" },
+        { "game": "Toy Blast", "item": "140 Coins", "priceUsd": 4.99, "contents": "140 coins (+11% per $ over its $0.99 pack)", "status": "FACT", "source": "https://apps.apple.com/us/app/toy-blast/id890378044" }
+      ],
+      "why": "About three +5. $4.99 is the second most common price in the 90-item sample of prices-b (17 items).",
+      "simulatorCheck": { "required": true, "what": "As coins-1." }
+    },
+    {
+      "id": "coins-3",
+      "nameTr": "Bir sandık altın",
+      "kind": "coins",
+      "stage": "launch",
+      "priceUsd": 9.99,
+      "purchaseType": "consumable",
+      "limit": "none",
+      "contents": { "coins": 6000, "boosters": {}, "unlimitedLivesHours": 0 },
+      "coinValue": 6000,
+      "coinsPerUsd": 600.6,
+      "bonusVsEntryPercent": 19.5,
+      "extraMovesEquivalent": 6.67,
+      "daysOfAverageFreeIncome": 14.3,
+      "netUsdAfterStoreFee": 8.49,
+      "basis": [
+        { "game": "Matchington Mansion", "item": "7000 Coins / Coin Piggy", "priceUsd": 9.99, "contents": "7,000 coins (+27% per $ over $1.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/matchington-mansion/id1216575026" },
+        { "game": "Lily's Garden", "item": "Bag of Coins", "priceUsd": 9.99, "contents": "12,000 coins (+19% per $ over $0.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/lilys-garden-match-design/id1437783446" },
+        { "game": "Project Makeover", "item": "Tiara Class Package", "priceUsd": 9.99, "contents": "3,300 gems (+31% per $ over $1.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/project-makeover/id1483058899" },
+        { "game": "Toy Blast", "item": "300 Coins", "priceUsd": 9.99, "contents": "300 coins (+19% per $ over $0.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/toy-blast/id890378044" }
+      ],
+      "why": "About six +5, +20% per dollar over the entry pack, inside the genre's +19% to +31% at this price.",
+      "simulatorCheck": { "required": true, "what": "As coins-1." }
+    },
+    {
+      "id": "coins-4",
+      "nameTr": "Bir hazine altın",
+      "kind": "coins",
+      "stage": "launch",
+      "priceUsd": 19.99,
+      "purchaseType": "consumable",
+      "limit": "none",
+      "contents": { "coins": 13000, "boosters": {}, "unlimitedLivesHours": 0 },
+      "coinValue": 13000,
+      "coinsPerUsd": 650.3,
+      "bonusVsEntryPercent": 29.4,
+      "extraMovesEquivalent": 14.44,
+      "daysOfAverageFreeIncome": 31.0,
+      "netUsdAfterStoreFee": 16.99,
+      "basis": [
+        { "game": "Lily's Garden", "item": "Chest of Coins", "priceUsd": 19.99, "contents": "25,000 coins (+24% per $ over $0.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/lilys-garden-match-design/id1437783446" },
+        { "game": "Project Makeover", "item": "High Heel Package", "priceUsd": 19.99, "contents": "6,700 gems (+33% per $ over $1.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/project-makeover/id1483058899" },
+        { "game": "Toy Blast", "item": "625 Coins", "priceUsd": 19.99, "contents": "625 coins (+24% per $ over $0.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/toy-blast/id890378044" },
+        { "game": "AppMagic Monetization Report 2025", "item": "Top-10 Puzzle titles, US, H1 2025 offer prices", "priceUsd": null, "contents": "median $1.99, average $6.05; most revenue from LiveOps offers at $6-15; items at $50+ rarely among top purchases", "status": "REPORTED (analyst; text confirmed in verification.md C30)", "source": "https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf" }
+      ],
+      "why": "Top of the launch ladder. $19.99 is the highest coin pack visible in the US top-10 lists we could confirm today; $49.99 / $99.99 packs were not visible (verification.md correction).",
+      "simulatorCheck": { "required": true, "what": "As coins-1; also check how far ahead a one-time buyer of this pack runs." }
+    },
+    {
+      "id": "starter",
+      "nameTr": "Çırak Çantası (başlangıç paketi)",
+      "kind": "starter",
+      "stage": "launch",
+      "priceUsd": 1.99,
+      "purchaseType": "consumable, once per player",
+      "limit": "once per player; shown in the shop from level 20 (all boosters open) until bought; no countdown",
+      "contents": {
+        "coins": 1500,
+        "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1 },
+        "unlimitedLivesHours": 0
+      },
+      "coinValue": 2400,
+      "coinsPerUsd": 753.8,
+      "valuePerUsd": 1206.0,
+      "valueVsSamePriceCoinPack": 2.4,
+      "netUsdAfterStoreFee": 1.69,
+      "basis": [
+        { "game": "Gardenscapes", "item": "Hot Offer", "priceUsd": 1.99, "contents": "1,500 coins + 3 types of power-ups (next to '1000 Coins' at $1.99)", "status": "FACT", "source": "https://apps.apple.com/us/app/gardenscapes/id1105855019" },
+        { "game": "Homescapes", "item": "Starter Pack / Starter Kit", "priceUsd": 1.99, "contents": "not shown ($4.99 Starter Kit also sold)", "status": "FACT", "source": "https://apps.apple.com/us/app/homescapes/id1195621598" },
+        { "game": "Toy Blast", "item": "Beginner's Bundle", "priceUsd": 1.99, "contents": "not published", "status": "FACT", "source": "https://apps.apple.com/us/app/toy-blast/id890378044" },
+        { "game": "Art Puzzle", "item": "Art Puzzle Starter Package", "priceUsd": 4.99, "contents": "head start for the collection", "status": "FACT", "source": "https://apps.apple.com/us/app/art-puzzle-jigsaw-games/id1519174001" }
+      ],
+      "why": "Same shape as Gardenscapes' Hot Offer. Only measured start boosters, so its value is known. It is the one deliberate 'better than coins' deal; the balance rule 3 (sets sold at the sum of their singles) covers coin-priced sets only, so this needs the owner's word.",
+      "simulatorCheck": { "required": true, "what": "Payer variant that buys it at level 20: pace and purse." }
+    },
+    {
+      "id": "bundle-workshop",
+      "nameTr": "Atölye Seti",
+      "kind": "bundle",
+      "stage": "stage-3",
+      "priceUsd": 6.99,
+      "purchaseType": "consumable",
+      "limit": "none",
+      "contents": {
+        "coins": 2750,
+        "boosters": { "start-rocket-and-bomb": 1, "start-color-bomb": 1, "start-extra-moves": 1, "hit-cell": 1, "hit-row": 1, "hit-column": 1, "shuffle": 1 },
+        "unlimitedLivesHours": 0
+      },
+      "coinValue": 5750,
+      "coinValueUncertainPart": 2100,
+      "coinsPerUsd": 393.4,
+      "valuePerUsd": 822.6,
+      "valueVsCoinLadderAtThisPrice": 1.44,
+      "netUsdAfterStoreFee": 5.94,
+      "basis": [
+        { "game": "Matchington Mansion", "item": "Aspiring Decorator", "priceUsd": 5.99, "contents": "3,000 coins (the same as its $4.99 pack) + pre-level boosters", "status": "FACT", "source": "https://apps.apple.com/us/app/matchington-mansion/id1216575026" },
+        { "game": "Homescapes", "item": "Apprentice Pack", "priceUsd": 6.99, "contents": "not shown", "status": "FACT", "source": "https://apps.apple.com/us/app/homescapes/id1195621598" },
+        { "game": "Royal Match", "item": "Royal Favor", "priceUsd": 6.99, "contents": "not published; AppMagic lists it as Royal Match's top offer on US Google Play (share unverified)", "status": "price FACT, ranking REPORTED", "source": "https://apps.apple.com/us/app/royal-match/id1482155847 ; https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf" },
+        { "game": "Royal Kingdom", "item": "King's Favor", "priceUsd": 6.99, "contents": "not published", "status": "FACT", "source": "https://apps.apple.com/us/app/royal-kingdom/id1606549505" }
+      ],
+      "why": "Matchington's pattern: the coins of the $4.99 pack plus one of every booster, at the next common bundle price. 2,100 of its 5,750 coin value are in-level boosters whose prices are placeholders.",
+      "simulatorCheck": { "required": true, "what": "In-level boosters must be measured (or priced by the owner) before this ships." }
+    },
+    {
+      "id": "bundle-master",
+      "nameTr": "Usta Seti",
+      "kind": "bundle",
+      "stage": "stage-3",
+      "priceUsd": 12.99,
+      "purchaseType": "consumable",
+      "limit": "none",
+      "contents": {
+        "coins": 6000,
+        "boosters": { "start-rocket-and-bomb": 2, "start-color-bomb": 2, "start-extra-moves": 2, "hit-cell": 2, "hit-row": 2, "hit-column": 2, "shuffle": 2 },
+        "unlimitedLivesHours": 0
+      },
+      "coinValue": 12000,
+      "coinValueUncertainPart": 4200,
+      "coinsPerUsd": 461.9,
+      "valuePerUsd": 923.8,
+      "valueVsCoinLadderAtThisPrice": 1.5,
+      "netUsdAfterStoreFee": 11.04,
+      "basis": [
+        { "game": "Matchington Mansion", "item": "Talented Designer", "priceUsd": 12.99, "contents": "7,000 coins (the same as its $9.99 pack) + some boosters", "status": "FACT", "source": "https://apps.apple.com/us/app/matchington-mansion/id1216575026" },
+        { "game": "Toon Blast", "item": "Super Bundle", "priceUsd": 12.99, "contents": "not published", "status": "FACT", "source": "https://apps.apple.com/us/app/toon-blast/id1176027022" },
+        { "game": "Gardenscapes", "item": "Florist Kit", "priceUsd": 9.99, "contents": "5,000 coins + 4 types of power-ups", "status": "FACT", "source": "https://apps.apple.com/us/app/gardenscapes/id1105855019" }
+      ],
+      "why": "Coins of the $9.99 pack plus two of every booster; value per dollar rises over the Atölye Seti.",
+      "simulatorCheck": { "required": true, "what": "As bundle-workshop." }
+    },
+    {
+      "id": "season-patron",
+      "nameTr": "Sergi Sezonu: Hami Yolu (sezon pasosunun ücretli yolu)",
+      "kind": "pass",
+      "stage": "stage-2",
+      "priceUsd": 4.99,
+      "purchaseType": "consumable, once per season (not a subscription)",
+      "limit": "once per season; buying late grants every premium reward already reached",
+      "contents": {
+        "coins": 2500,
+        "boosters": { "count": 15, "rule": "the seven boosters in the engine's order, twice, then start-rocket-and-bomb; spread over the 30 steps" },
+        "boostersCoinValue": 6200,
+        "seasonVaultMaxCoins": 3000,
+        "seasonVaultRule": "after step 30, every 10 tickets add 100 coins, paid at season end to Hami buyers only (Royal Match Bonus Bank: 100 per 10 keys, up to 5,000)",
+        "cosmetics": ["gilded frame for the season painting", "'Hami' plaque with the player's chosen name in the exhibition wing"],
+        "unlimitedLivesHours": 0,
+        "livesCap": "not raised (owner decision: Royal Match, Kingdom, Toon and Home passes raise it to 8; our lives end almost no session)"
+      },
+      "coinValueMax": 11700,
+      "valuePerUsdMax": 2344.7,
+      "netUsdAfterStoreFee": 4.24,
+      "basis": [
+        { "game": "Gardenscapes", "item": "Golden ticket", "priceUsd": 4.99, "contents": "premium track of the season, not a subscription", "status": "FACT", "source": "https://apps.apple.com/us/app/gardenscapes/id1105855019" },
+        { "game": "Project Makeover", "item": "Camping Expedition (pass)", "priceUsd": 3.99, "contents": "boosters and gems; not a subscription", "status": "FACT", "source": "https://apps.apple.com/us/app/project-makeover/id1483058899" },
+        { "game": "Royal Match", "item": "Royal Pass", "priceUsd": 9.99, "contents": "30 steps a month; free 500 coins + 1h45m lives, premium 2,500 coins + 3h45m lives + boosters (wiki sums); Bonus Bank up to 5,000", "status": "price and rules FACT, reward sums REPORTED", "source": "https://apps.apple.com/us/app/royal-match/id1482155847 ; https://dreamgames.helpshift.com/hc/en/3-royal-match/faq/112-royal-pass/ ; https://royalmatch.fandom.com/wiki/Royal_Pass" },
+        { "game": "Royal Kingdom", "item": "Kingdom Pass", "priceUsd": 9.99, "contents": "monthly; lives 5 to 8; Bonus Bank up to 5,000", "status": "FACT", "source": "https://apps.apple.com/us/app/royal-kingdom/id1606549505 ; https://dreamgames.helpshift.com/hc/en/6-royal-kingdom-1676903479/faq/315-kingdom-pass-1710944877/" },
+        { "game": "Candy Crush Soda Saga", "item": "Rewards Pass", "priceUsd": null, "contents": "7 / 14 / 21 stages at $4.99 to $12.99", "status": "REPORTED (Gamigion, 2023-08-28)", "source": "https://www.gamigion.com/?p=2672" },
+        { "game": "Deconstructor of Fun", "item": "analysis", "priceUsd": null, "contents": "mobile passes usually $5-15, rewards worth 10-20 times the price", "status": "REPORTED (2022-06-04)", "source": "https://www.deconstructoroffun.com/blog/2022/6/4/battle-passes-analysis" }
+      ],
+      "why": "Coin amounts copied in size from Royal Match's pass (same +5 = 900 scale). Price at the lower genre anchor because our pass lacks the team perks (gold name seen by teammates, team gift) and the lives perk is worth little in our habit.",
+      "simulatorCheck": { "required": true, "what": "Free track enters the free player's simulation (balance rules 6-8); premium track in a payer variant; check the season length against tickets earned per day." }
+    },
+    {
+      "id": "season-free",
+      "nameTr": "Sergi Sezonu: Ücretsiz Yol",
+      "kind": "pass-free-track",
+      "stage": "stage-2",
+      "priceUsd": 0,
+      "purchaseType": "free",
+      "limit": "every season, for everyone from level 25",
+      "contents": {
+        "coins": 500,
+        "boosters": { "count": 10, "rule": "the seven boosters in order, then rocket-and-bomb, color bomb, +3 moves" },
+        "boostersCoinValue": 3900,
+        "unlimitedLivesHours": 1.0,
+        "unlimitedLivesNote": "2 x 30 minutes; a reward, never sold (section 19)",
+        "seasonPainting": "the season's public-domain painting at step 30, assembled as a jigsaw and kept in the exhibition wing for good"
+      },
+      "basis": [
+        { "game": "Royal Match", "item": "Royal Pass free track", "priceUsd": 0, "contents": "single boosters, card packs, 500 coins, 1h45m unlimited lives (wiki sums)", "status": "REPORTED", "source": "https://royalmatch.fandom.com/wiki/Royal_Pass" }
+      ],
+      "why": "Everyone gets the season painting; money buys the frame and more consumables, never art content tied to levels.",
+      "simulatorCheck": { "required": true, "what": "Adds about 4% coins and 16% boosters to a free month (ESTIMATE): pace to level 100 must stay on day 7-9 (rule 6)." }
+    },
+    {
+      "id": "donation-box",
+      "nameTr": "Bağış Kutusu (kumbara)",
+      "kind": "piggy_bank",
+      "stage": "stage-3, optional",
+      "priceUsd": 2.99,
+      "purchaseType": "consumable, repeatable each time it fills",
+      "limit": "opens from 1,800 coins; holds at most 2,500 (at most 1.6 times the coin ladder at $2.99, about 1,550 coins: rule P3)",
+      "contents": { "coins": "1,800 to 2,500", "fillRule": "a copy (never taken from the purse) of 2 coins for every move left in the finale; the simulator sets the final rate", "unlimitedLivesHours": 0 },
+      "coinsPerUsd": "602.0 at 1,800; 836.1 at 2,500",
+      "netUsdAfterStoreFee": 2.54,
+      "basis": [
+        { "game": "Gardenscapes", "item": "Gold Reserve", "priceUsd": 2.99, "contents": "part of the gold won on levels goes into a safe, buyable once full enough", "status": "price FACT, mechanics REPORTED (Mistplay)", "source": "https://apps.apple.com/us/app/gardenscapes/id1105855019 ; https://business.mistplay.com/resources/piggy-banks-in-games/ (2026-01-30)" },
+        { "game": "Gardenscapes", "item": "Gold Reserve ranking", "priceUsd": 2.99, "contents": "third best-selling iOS US purchase per Sensor Tower", "status": "REPORTED", "source": "https://business.mistplay.com/resources/piggy-banks-in-games/" },
+        { "game": "Homescapes", "item": "Gold Reserve", "priceUsd": 2.99, "contents": "not shown", "status": "FACT", "source": "https://apps.apple.com/us/app/homescapes/id1195621598" },
+        { "game": "Fishdom", "item": "Diamond Fishy Bank", "priceUsd": 2.99, "contents": "not shown", "status": "FACT", "source": "https://apps.apple.com/us/app/fishdom/id664575829" },
+        { "game": "Lily's Garden", "item": "Roxy's Reserve", "priceUsd": 2.99, "contents": "coin reserve", "status": "FACT price, kind ESTIMATE", "source": "https://apps.apple.com/us/app/lilys-garden-match-design/id1437783446" }
+      ],
+      "why": "Common and cheap to build; it rewards play. It leans on 'do not lose what you saw pile up', so it is an owner decision for a family game.",
+      "simulatorCheck": { "required": true, "what": "Fill rate: about 12 days to 1,800 for the average player is the target (ESTIMATE)." }
+    },
+    {
+      "id": "museum-friend-card",
+      "nameTr": "Müze Dostu Kartı (reklamsız)",
+      "kind": "no_ads",
+      "stage": "only if real rewarded ads ship",
+      "priceUsd": 9.99,
+      "purchaseType": "non-consumable",
+      "limit": "once, restorable",
+      "contents": { "rule": "the day's ad rewards without watching an ad, within the same daily limits (3 free +5 moves, 3 x 4 coins)", "coins": 0, "unlimitedLivesHours": 0 },
+      "netUsdAfterStoreFee": 8.49,
+      "basis": [
+        { "game": "Jigsaw Puzzles (Easybrain)", "item": "No Ads", "priceUsd": 14.99, "contents": "removes ads", "status": "FACT", "source": "https://apps.apple.com/us/app/jigsaw-puzzles-puzzle-games/id1324604053" },
+        { "game": "Art Puzzle (Easybrain)", "item": "No Ads", "priceUsd": 14.99, "contents": "removes ads", "status": "FACT", "source": "https://apps.apple.com/us/app/art-puzzle-jigsaw-games/id1519174001" },
+        { "game": "Magic Jigsaw Puzzles", "item": "Gold Pack", "priceUsd": 4.99, "contents": "no ads, puzzles from own photos, 3 packs, 4 music tracks", "status": "FACT", "source": "https://apps.apple.com/us/app/magic-jigsaw-puzzles-games/id439873467" }
+      ],
+      "why": "Our ads are optional rewarded ads only, so there is nothing to remove; the card saves time. Priced between the two anchors (ESTIMATE).",
+      "simulatorCheck": { "required": false, "what": "The simulated player already watches every free ad; the card changes time, not coins." }
+    },
+    {
+      "id": "exhibition-pack",
+      "nameTr": "Geçici Sergi paketi (yalnızca yapboz)",
+      "kind": "content_pack",
+      "stage": "optional, owner decision",
+      "priceUsd": 2.99,
+      "purchaseType": "non-consumable",
+      "limit": "once per pack, restorable",
+      "contents": { "paintings": 5, "rule": "five extra public-domain paintings from the reserve pool, as jigsaws only (no levels), kept for good; contents shown before purchase" },
+      "netUsdAfterStoreFee": 2.54,
+      "basis": [
+        { "game": "Jigsaw Puzzles (Easybrain)", "item": "Color Burst / Beaches (themed packs); Relaxing Puzzle (single)", "priceUsd": 3.99, "contents": "themed picture pack; single puzzle at $0.99", "status": "FACT", "source": "https://apps.apple.com/us/app/jigsaw-puzzles-puzzle-games/id1324604053" },
+        { "game": "Magic Jigsaw Puzzles", "item": "themed picture packs (promoted shelf)", "priceUsd": null, "contents": "$2.99 to $4.99, e.g. Postcards from Greece $4.99", "status": "FACT (verification.md correction 11)", "source": "https://apps.apple.com/us/app/magic-jigsaw-puzzles-games/id439873467" }
+      ],
+      "why": "A non-random content purchase that fits a painting game. It sits beside the decided coin-bought side collection, so it needs the owner's word.",
+      "simulatorCheck": { "required": false, "what": "No coins or boosters." }
+    }
+  ],
+  "notSold": [
+    { "what": "$0.99 coin pack", "why": "It could not buy a +5 (900 coins); leftover-coin packs push a second purchase (ESTIMATE)." },
+    { "what": "$49.99 / $99.99 packs at launch", "why": "Not visible on any US top-10 list we could confirm on 2026-10-23; AppMagic: $50+ items rarely top; family audience (ESTIMATE)." },
+    { "what": "Random packs, chests or card packs for money", "why": "Decided in GAME_DESIGN sections 17-19; would also need odds disclosure (Apple 3.1.1, Google Payments policy) and, per the FTC's HoYoverse order, age gating." },
+    { "what": "Lives for money", "why": "Today's rule (section 23: 'can satılmaz'); lives rarely bind in our habit." },
+    { "what": "+5 moves for real money on the fail screen", "why": "Kept as coins or ad; the fail screen links to the shop with a confirm step (FTC Epic order)." },
+    { "what": "Subscriptions", "why": "Only Magic Jigsaw sells one in our sample ($7.99/week with a 7-day trial, $19.99/month); not a fit for a 30+ casual audience at launch (ESTIMATE)." }
+  ]
+}

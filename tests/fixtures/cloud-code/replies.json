@@ -1,0 +1,75 @@
+{
+  "about": "The answers of the Cloud Code module MuseumPuzzleServer (server/CloudCode) as the game receives them, one of each kind, and every reason word it may give. The module's tests write these and compare (server/CloudCode/MuseumPuzzleServer.Tests/EndpointTests.cs); the game's purchase stage reads them. A reason is for the game's log, never for the player. docs/research/server-v1.md section 4.8 says what the game does with each verdict.",
+  "validatePurchase": {
+    "valid": {
+      "verdict": "valid",
+      "seq": 3,
+      "test": false
+    },
+    "alreadyValidated": {
+      "verdict": "alreadyValidated",
+      "seq": 3,
+      "test": true
+    },
+    "pending": {
+      "verdict": "pending"
+    },
+    "invalid": {
+      "verdict": "invalid",
+      "reason": "anotherPlayers"
+    },
+    "unavailable": {
+      "verdict": "unavailable",
+      "reason": "storeUnreachable"
+    }
+  },
+  "checkRefunds": {
+    "checked": {
+      "outcome": "checked",
+      "refunded": [
+        4
+      ]
+    },
+    "notDue": {
+      "outcome": "notDue"
+    },
+    "nothingToCheck": {
+      "outcome": "nothingToCheck"
+    },
+    "unavailable": {
+      "outcome": "unavailable",
+      "reason": "cloudSaveUnreachable"
+    }
+  },
+  "deleteMyData": {
+    "deleted": {
+      "outcome": "deleted"
+    },
+    "unavailable": {
+      "outcome": "unavailable",
+      "reason": "cloudSaveUnreachable"
+    }
+  },
+  "invalidReasons": [
+    "unknownStore",
+    "unknownProduct",
+    "notFromTheStore",
+    "wrongApp",
+    "productMismatch",
+    "cancelled",
+    "refunded",
+    "anotherPlayers",
+    "alreadyRefused"
+  ],
+  "unavailableReasons": [
+    "storeUnreachable",
+    "credentialsMissing",
+    "credentialsRefused",
+    "noSignedTransaction",
+    "storeAnswerUnreadable",
+    "cloudSaveUnreachable",
+    "ledgerUnreadable",
+    "notAPlayer",
+    "outOfTime"
+  ]
+}

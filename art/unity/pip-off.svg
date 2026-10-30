@@ -1,0 +1,9 @@
+<!-- A progress pip of a piece that is not won yet: a hollow in the bar, as the design canvas draws it (JigsawTR).
+     One unit is one point of the design. The pip is 13 x 9 at (3.5, 3). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="384" viewBox="0 0 20 15">
+<defs><linearGradient id="hollow" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="7"><stop offset="0" stop-color="#000" stop-opacity=".4"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+<rect x="2.5" y="3" width="15" height="11" rx="4" fill="#9FE0DC" fill-opacity=".22"/>
+<rect x="2.5" y="2" width="15" height="11" rx="4" fill="#04242B"/>
+<rect x="3.5" y="3" width="13" height="9" rx="3" fill="#0A3A43"/>
+<rect x="3.5" y="3" width="13" height="4" rx="2" fill="url(#hollow)"/>
+</svg>

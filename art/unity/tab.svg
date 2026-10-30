@@ -1,0 +1,21 @@
+<!-- The raised plate behind the navigation bar's chosen destination, as the design canvas draws it (HomeTR, the
+     museum's tab): a teal plate in a gilt rim, rounder at its top than at its foot. One unit is one point of the
+     design. The plate is 70 x 88 at (29, 22); its middle stretches sideways under a longer name. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="22" x2="0" y2="110"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".22" stop-color="#FFDB6E"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="0" y1="25" x2="0" y2="107"><stop offset="0" stop-color="#48BDBF"/><stop offset=".45" stop-color="#1F8E96"/><stop offset="1" stop-color="#136871"/></linearGradient>
+<filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+<clipPath id="in-face"><path d="M49 25H79A17 17 0 0 1 96 42V97.5A9.5 9.5 0 0 1 86.5 107H41.5A9.5 9.5 0 0 1 32 97.5V42A17 17 0 0 1 49 25Z"/></clipPath>
+</defs>
+<!-- the plate's shadow on the bar and the wall above it, the dark line around it, the gilt rim -->
+<path d="M49 18H79A20 20 0 0 1 99 38V94A12 12 0 0 1 87 106H41A12 12 0 0 1 29 94V38A20 20 0 0 1 49 18Z" fill="#031E24" fill-opacity=".35" filter="url(#soft)"/>
+<path d="M49 20.5H79A21.5 21.5 0 0 1 100.5 42V98A13.5 13.5 0 0 1 87 111.5H41A13.5 13.5 0 0 1 27.5 98V42A21.5 21.5 0 0 1 49 20.5Z" fill="#5E3305"/>
+<path d="M49 22H79A20 20 0 0 1 99 42V98A12 12 0 0 1 87 110H41A12 12 0 0 1 29 98V42A20 20 0 0 1 49 22Z" fill="url(#gilt)"/>
+<!-- the face: teal, light along its top, a thin dark line around -->
+<g clip-path="url(#in-face)">
+<rect x="32" y="25" width="64" height="82" fill="url(#teal)"/>
+<path fill="#fff" fill-opacity=".5" fill-rule="evenodd" d="M0 0H128V128H0Z M49 29.5H79A16 16 0 0 1 95 45.5V112H33V45.5A16 16 0 0 1 49 29.5Z"/>
+<path d="M49 25.7H79A16.3 16.3 0 0 1 95.3 42V97.5A8.8 8.8 0 0 1 86.5 106.3H41.5A8.8 8.8 0 0 1 32.7 97.5V42A16.3 16.3 0 0 1 49 25.7Z" fill="none" stroke="#0A3640" stroke-width="1.4"/>
+</g>
+</svg>

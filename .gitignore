@@ -5,3 +5,29 @@ obj/
 *.user
 TestResults/
 out/
+recordings/
+data/
+
+# Written by "puzzle humans" from the local recordings.
+reports/humans.csv
+
+# Unity project (unity/): what the Editor generates and rebuilds on its own.
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/UserSettings/
+unity/Build/
+unity/Builds/
+unity/*.csproj
+unity/*.sln
+unity/*.slnx
+
+# Derived from the repository by tools/unity/sync-engine.js (engine assemblies, packed levels).
+unity/Assets/Generated/
+unity/Assets/Generated.meta
+
+# Unity temporary files.
+unity/.utmp/
+
+# Written by Unity packages during a build.
+unity/Assets/Resources/PerformanceTestRun*

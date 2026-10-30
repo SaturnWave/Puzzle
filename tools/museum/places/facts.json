@@ -1,0 +1,7656 @@
+{
+ "fetched": "2026-10-22",
+ "source": "Wikidata (wbgetentities and the query service)",
+ "paintings": {
+  "monet-beach-at-sainte-adresse": {
+   "item": "Q3966658",
+   "byMuseumId": [
+    "Q3966658"
+   ],
+   "label": "The Beach at Sainte-Adresse",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1933.439"
+   ],
+   "inception": [
+    "+1867-01-01 (precision 9)"
+   ],
+   "madeIn": [
+    "Q604222"
+   ],
+   "depictsPlaces": [
+    "Q604222"
+   ]
+  },
+  "renoir-two-sisters-on-the-terrace": {
+   "item": "Q630121",
+   "byMuseumId": [
+    "Q630121"
+   ],
+   "label": "Two Sisters",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1933.455"
+   ],
+   "inception": [
+    "+1881-01-01 (precision 9)"
+   ],
+   "madeIn": [
+    "Q1640215"
+   ],
+   "depictsPlaces": []
+  },
+  "caillebotte-paris-street-rainy-day": {
+   "item": "Q1452762",
+   "byMuseumId": [
+    "Q1452762"
+   ],
+   "label": "Paris Street; Rainy Day",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1964.336"
+   ],
+   "inception": [
+    "+1877-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q3451108",
+    "Q3447463",
+    "Q962082"
+   ]
+  },
+  "monet-water-lilies-1906": {
+   "item": "Q20267671",
+   "byMuseumId": [
+    "Q20267671"
+   ],
+   "label": "Water Lilies",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1933.1157"
+   ],
+   "inception": [
+    "+1906-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "monet-stacks-of-wheat-end-of-summer": {
+   "item": "Q47774422",
+   "byMuseumId": [
+    "Q47774422"
+   ],
+   "label": "Stacks of Wheat (End of Summer)",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1985.1103"
+   ],
+   "inception": [
+    "+1897-00-00 (precision 9)",
+    "+1891-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "van-gogh-self-portrait-1887": {
+   "item": "Q9162657",
+   "byMuseumId": [
+    "Q9162657"
+   ],
+   "label": "Self-Portrait",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1954.326"
+   ],
+   "inception": [
+    "+1887-04-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "cezanne-basket-of-apples": {
+   "item": "Q3956440",
+   "byMuseumId": [
+    "Q3956440"
+   ],
+   "label": "The Basket of Apples",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1926.252"
+   ],
+   "inception": [
+    "+1893-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "toulouse-lautrec-at-the-moulin-rouge": {
+   "item": "Q3607521",
+   "byMuseumId": [
+    "Q3607521"
+   ],
+   "label": "At the Moulin Rouge",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1928.610"
+   ],
+   "inception": [
+    "+1892-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "van-gogh-the-bedroom": {
+   "item": "Q18713076",
+   "byMuseumId": [
+    "Q18713076"
+   ],
+   "label": "Bedroom in Arles",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1926.417"
+   ],
+   "inception": [
+    "+1889-09-00 (precision 10)"
+   ],
+   "madeIn": [
+    "Q221507"
+   ],
+   "depictsPlaces": []
+  },
+  "seurat-sunday-on-la-grande-jatte": {
+   "item": "Q1044742",
+   "byMuseumId": [
+    "Q1044742"
+   ],
+   "label": "A Sunday Afternoon on the Island of La Grande Jatte",
+   "collection": [
+    "Q239303"
+   ],
+   "inventory": [
+    "1926.224"
+   ],
+   "inception": [
+    "+1884-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q1902319"
+   ]
+  },
+  "hill-apple-tree-in-blossom": {
+   "item": "Q18573984",
+   "byMuseumId": [
+    "Q18573984"
+   ],
+   "label": "Apple Tree in Blossom",
+   "collection": [
+    "Q842858"
+   ],
+   "inventory": [
+    "NM 1864"
+   ],
+   "inception": [
+    "+1877-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "petersen-breton-girl-in-the-hothouse": {
+   "item": "Q20440297",
+   "byMuseumId": [
+    "Q20440297"
+   ],
+   "label": "Breton Girl Looking After Plants in the Hothouse",
+   "collection": [
+    "Q671384"
+   ],
+   "inventory": [
+    "KMS8289"
+   ],
+   "inception": [
+    "+1884-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "edelfelt-luxembourg-gardens": {
+   "item": "Q18346884",
+   "byMuseumId": [],
+   "label": "The Luxembourg Gardens, Paris",
+   "collection": [
+    "Q2983474"
+   ],
+   "inventory": [
+    "A II 835"
+   ],
+   "inception": [
+    "+1887-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q309458",
+    "Q329852",
+    "Q295844"
+   ]
+  },
+  "zorn-midsummer-dance": {
+   "item": "Q10585101",
+   "byMuseumId": [
+    "Q10585101"
+   ],
+   "label": "Midsummer Dance",
+   "collection": [
+    "Q842858"
+   ],
+   "inventory": [
+    "NM 1603"
+   ],
+   "inception": [
+    "+1897-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q10685333",
+    "Q18292376"
+   ]
+  },
+  "larsson-breakfast-under-the-big-birch": {
+   "item": "Q18587186",
+   "byMuseumId": [
+    "Q18587186"
+   ],
+   "label": "Breakfast under the Big Birch. From A Home (26 watercolours)",
+   "collection": [
+    "Q842858"
+   ],
+   "inventory": [
+    "NMB 279"
+   ],
+   "inception": [
+    "+1896-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "homer-the-dinner-horn": {
+   "item": "Q20188727",
+   "byMuseumId": [
+    "Q20188727"
+   ],
+   "label": "The Dinner Horn (Blowing the Horn at Seaside)",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1994.59.2"
+   ],
+   "inception": [
+    "+1870-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "eakins-champion-single-sculls": {
+   "item": "Q1913390",
+   "byMuseumId": [
+    "Q1913390"
+   ],
+   "label": "Max Schmitt in a Single Scull",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "34.92"
+   ],
+   "inception": [
+    "+1871-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "sargent-setting-out-to-fish": {
+   "item": "Q20188839",
+   "byMuseumId": [
+    "Q20188839"
+   ],
+   "label": "Setting Out to Fish",
+   "collection": [
+    "Q214867",
+    "Q768446"
+   ],
+   "inventory": [
+    "2014.79.32"
+   ],
+   "inception": [
+    "+1878-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q203561"
+   ]
+  },
+  "chase-a-friendly-call": {
+   "item": "Q20190485",
+   "byMuseumId": [
+    "Q20190485"
+   ],
+   "label": "A Friendly Call",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1943.1.2"
+   ],
+   "inception": [
+    "+1895-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "homer-snap-the-whip": {
+   "item": "Q19925470",
+   "byMuseumId": [
+    "Q19925470"
+   ],
+   "label": "Snap the Whip",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "50.41"
+   ],
+   "inception": [
+    "+1872-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "springer-zuiderhavendijk-enkhuizen": {
+   "item": "Q17328710",
+   "byMuseumId": [
+    "Q17328710"
+   ],
+   "label": "The Zuiderhavendijk, Enkhuizen",
+   "collection": [
+    "Q190804"
+   ],
+   "inventory": [
+    "SK-A-2388"
+   ],
+   "inception": [
+    "+1868-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "maris-girl-with-flowers-on-the-grass": {
+   "item": "Q17334699",
+   "byMuseumId": [
+    "Q17334699"
+   ],
+   "label": "A Girl with Flowers on the Grass",
+   "collection": [
+    "Q190804"
+   ],
+   "inventory": [
+    "SK-A-3680"
+   ],
+   "inception": [
+    "+1878-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "breitner-yellow-riders": {
+   "item": "Q13571245",
+   "byMuseumId": [
+    "Q13571245"
+   ],
+   "label": "Rijdende artillerie",
+   "collection": [
+    "Q190804"
+   ],
+   "inventory": [
+    "SK-A-1328"
+   ],
+   "inception": [
+    "+1885-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "gabriel-in-the-month-of-july": {
+   "item": "Q17324244",
+   "byMuseumId": [
+    "Q17324244"
+   ],
+   "label": "A Windmill on a Polder Waterway, Known as ‘In the Month of July’",
+   "collection": [
+    "Q190804"
+   ],
+   "inventory": [
+    "SK-A-1505"
+   ],
+   "inception": [
+    "+1889-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "mauve-morning-ride-along-the-beach": {
+   "item": "Q13099109",
+   "byMuseumId": [
+    "Q13099109"
+   ],
+   "label": "Morning Ride on the Beach",
+   "collection": [
+    "Q190804"
+   ],
+   "inventory": [
+    "SK-A-3602"
+   ],
+   "inception": [
+    "+1876-00-00 (precision 9)"
+   ],
+   "madeIn": [
+    "Q55"
+   ],
+   "depictsPlaces": []
+  },
+  "kuniyoshi-cats-of-the-tokaido": {
+   "item": "Q97657363",
+   "byMuseumId": [],
+   "label": "Cats suggested as the fifty-three stations of the Tōkaidō",
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "hiroshige-plum-park-in-kameido": {
+   "item": "Q21127606",
+   "byMuseumId": [],
+   "label": "Plum Park in Kameido",
+   "collection": [
+    "Q632682",
+    "Q391976"
+   ],
+   "inventory": [
+    "30.1478.30",
+    "J 2693"
+   ],
+   "inception": [
+    "+1857-11-00 (precision 10)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q100935225"
+   ]
+  },
+  "kiyochika-snow-at-ochanomizu": {
+   "item": null,
+   "byMuseumId": [],
+   "label": null,
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "yoshitoshi-moon-of-musashi-plain": {
+   "item": null,
+   "byMuseumId": [],
+   "label": null,
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "hiroshige-sudden-shower-over-shin-ohashi": {
+   "item": "Q5826309",
+   "byMuseumId": [],
+   "label": "Sudden Shower over Shin-Ōhashi Bridge and Atake",
+   "collection": [
+    "Q632682",
+    "Q160236",
+    "Q1233913",
+    "Q1075126",
+    "Q6373"
+   ],
+   "inventory": [],
+   "inception": [
+    "+1857-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q222149",
+    "Q11501659",
+    "Q60189195"
+   ]
+  },
+  "courbet-young-ladies-of-the-village": {
+   "item": "Q19911495",
+   "byMuseumId": [
+    "Q19911495"
+   ],
+   "label": "Young Ladies of the Village",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "40.175"
+   ],
+   "inception": [
+    "+1851-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "boudin-festival-in-the-harbor-of-honfleur": {
+   "item": "Q20188396",
+   "byMuseumId": [
+    "Q20188396"
+   ],
+   "label": "Festival in the Harbor of Honfleur",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1983.1.10"
+   ],
+   "inception": [
+    "+1858-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "fantin-latour-still-life-with-flowers-and-fruit": {
+   "item": "Q19912712",
+   "byMuseumId": [
+    "Q19912712"
+   ],
+   "label": "Still Life with Flowers and Fruit",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "1980.3"
+   ],
+   "inception": [
+    "+1866-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "bonheur-weaning-the-calves": {
+   "item": "Q19912677",
+   "byMuseumId": [
+    "Q19912677"
+   ],
+   "label": "Weaning the Calves",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "87.15.109"
+   ],
+   "inception": [
+    "+1879-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "ingres-princesse-de-broglie": {
+   "item": "Q18222055",
+   "byMuseumId": [
+    "Q18222055"
+   ],
+   "label": "Joséphine-Éléonore-Marie-Pauline de Galard de Brassac de Béarn (1825–1860), Princesse de Broglie",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "1975.1.186"
+   ],
+   "inception": [
+    "+1853-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "bingham-fur-traders-descending-the-missouri": {
+   "item": "Q3172087",
+   "byMuseumId": [
+    "Q3172087"
+   ],
+   "label": "Fur Traders Descending the Missouri",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "33.61"
+   ],
+   "inception": [
+    "+1845-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q5419"
+   ]
+  },
+  "hicks-cornell-farm": {
+   "item": "Q7727622",
+   "byMuseumId": [
+    "Q7727622"
+   ],
+   "label": "The Cornell Farm",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1964.23.4"
+   ],
+   "inception": [
+    "+1848-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "bierstadt-merced-river-yosemite": {
+   "item": "Q20170835",
+   "byMuseumId": [
+    "Q20170835"
+   ],
+   "label": "Merced River, Yosemite Valley",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "09.214.1"
+   ],
+   "inception": [
+    "+1866-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q1996389",
+    "Q1470035"
+   ]
+  },
+  "cole-the-oxbow": {
+   "item": "Q3172259",
+   "byMuseumId": [
+    "Q3172259"
+   ],
+   "label": "The Oxbow",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "08.228"
+   ],
+   "inception": [
+    "+1836-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q379648",
+    "Q3321866",
+    "Q49186",
+    "Q7755777"
+   ]
+  },
+  "leutze-washington-crossing-the-delaware": {
+   "item": "Q509806",
+   "byMuseumId": [
+    "Q509806"
+   ],
+   "label": "Washington Crossing the Delaware",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "97.34"
+   ],
+   "inception": [
+    "+1851-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q464945",
+    "Q7971587",
+    "Q42537",
+    "Q192769"
+   ]
+  },
+  "rorbye-view-from-the-artists-window": {
+   "item": "Q18359104",
+   "byMuseumId": [
+    "Q18359104"
+   ],
+   "label": "View from the Artist's Window",
+   "collection": [
+    "Q671384"
+   ],
+   "inventory": [
+    "KMS7452"
+   ],
+   "inception": [
+    "+1825-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q761716"
+   ]
+  },
+  "kobke-street-in-osterbro": {
+   "item": "Q20268761",
+   "byMuseumId": [
+    "Q20268761"
+   ],
+   "label": "View of a Street in Østerbro outside Copenhagen. Morning Light",
+   "collection": [
+    "Q671384"
+   ],
+   "inventory": [
+    "KMS844"
+   ],
+   "inception": [
+    "+1836-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q308345"
+   ]
+  },
+  "hansen-danish-artists-in-rome": {
+   "item": "Q2015484",
+   "byMuseumId": [
+    "Q2015484"
+   ],
+   "label": "A Group of Danish Artists in Rome",
+   "collection": [
+    "Q671384"
+   ],
+   "inventory": [
+    "KMS3236"
+   ],
+   "inception": [
+    "+1837-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "skovgaard-beech-wood-in-may": {
+   "item": "Q20267166",
+   "byMuseumId": [
+    "Q20267166"
+   ],
+   "label": "A Beech Wood in May near Iselingen Manor, Zealand",
+   "collection": [
+    "Q671384"
+   ],
+   "inventory": [
+    "KMS4580"
+   ],
+   "inception": [
+    "+1857-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q34",
+    "Q12318611"
+   ]
+  },
+  "eckersberg-three-arches-of-the-colosseum": {
+   "item": "Q3079004",
+   "byMuseumId": [
+    "Q3079004"
+   ],
+   "label": "A View through Three of the North-Western Arches of the Third Storey of the Coliseum",
+   "collection": [
+    "Q671384"
+   ],
+   "inventory": [
+    "KMS3123"
+   ],
+   "inception": [
+    "+1815-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q220",
+    "Q10285"
+   ]
+  },
+  "constable-salisbury-cathedral": {
+   "item": "Q19896685",
+   "byMuseumId": [
+    "Q19896685"
+   ],
+   "label": "Salisbury Cathedral from the Bishop's Garden",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "50.145.8"
+   ],
+   "inception": [
+    "+1825-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q390150"
+   ]
+  },
+  "lawrence-lady-templetown-and-her-son": {
+   "item": "Q20181439",
+   "byMuseumId": [
+    "Q20181439"
+   ],
+   "label": "Lady Mary Templetown and Her Eldest Son",
+   "collection": [
+    "Q214867",
+    "Q46596638"
+   ],
+   "inventory": [
+    "1937.1.96"
+   ],
+   "inception": [
+    "+1802-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "turner-mortlake-terrace": {
+   "item": "Q20185584",
+   "byMuseumId": [
+    "Q20185584"
+   ],
+   "label": "Mortlake Terrace",
+   "collection": [
+    "Q214867",
+    "Q46596638"
+   ],
+   "inventory": [
+    "1937.1.109"
+   ],
+   "inception": [
+    "+1827-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "bonington-grand-canal": {
+   "item": "Q20185495",
+   "byMuseumId": [
+    "Q20185495"
+   ],
+   "label": "The Grand Canal",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "2001.87.1"
+   ],
+   "inception": [
+    "+1826-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "turner-burning-of-the-houses-of-parliament": {
+   "item": "Q60514853",
+   "byMuseumId": [
+    "Q60514853"
+   ],
+   "label": "The Burning of the Houses of Lords and Commons, 16 October 1834",
+   "collection": [
+    "Q657415"
+   ],
+   "inventory": [
+    "1942.647"
+   ],
+   "inception": [
+    "+1835-01-01 (precision 9)"
+   ],
+   "madeIn": [
+    "Q21"
+   ],
+   "depictsPlaces": [
+    "Q4859409"
+   ]
+  },
+  "sharaku-otani-oniji-as-yakko-edobei": {
+   "item": "Q59915220",
+   "byMuseumId": [
+    "Q59915220"
+   ],
+   "label": "Kabuki Actor Ōtani Oniji III as Yakko Edobei in the Play The Colored Reins of a Loving Wife (Koi nyōbō somewake tazuna)",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "JP2822"
+   ],
+   "inception": [
+    "+1794-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "hokusai-red-fuji": {
+   "item": "Q3565037",
+   "byMuseumId": [],
+   "label": "Fine Wind, Clear Morning",
+   "collection": [
+    "Q1117704",
+    "Q1233913",
+    "Q843638",
+    "Q6373"
+   ],
+   "inventory": [
+    "60.12"
+   ],
+   "inception": [
+    "+1830-01-01 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q10539254"
+   ]
+  },
+  "hiroshige-hakone-lake": {
+   "item": "Q80015655",
+   "byMuseumId": [
+    "Q80015655"
+   ],
+   "label": "Picture of the Lake at Hakone, from the series 53 Stations of the Tokaido",
+   "collection": [
+    "Q657415"
+   ],
+   "inventory": [
+    "1940.982"
+   ],
+   "inception": [
+    "+1833-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "kuniyoshi-tsukuda-island": {
+   "item": null,
+   "byMuseumId": [],
+   "label": null,
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "hokusai-great-wave": {
+   "item": "Q252485",
+   "byMuseumId": [],
+   "label": "The Great Wave off Kanagawa",
+   "collection": [
+    "Q653433",
+    "Q190804",
+    "Q128316",
+    "Q3180768",
+    "Q160236",
+    "Q6373",
+    "Q1233913",
+    "Q1464509",
+    "Q896052",
+    "Q239303",
+    "Q1641836",
+    "Q6735528",
+    "Q478455"
+   ],
+   "inventory": [
+    "13695",
+    "CVR.JP-P0075",
+    "bite",
+    "1925.3245"
+   ],
+   "inception": [
+    "+1830-00-00 (precision 8)"
+   ],
+   "madeIn": [
+    "Q17"
+   ],
+   "depictsPlaces": [
+    "Q39231",
+    "Q141017",
+    "Q11497722",
+    "Q66686028"
+   ]
+  },
+  "peale-benjamin-and-eleanor-laming": {
+   "item": "Q20179558",
+   "byMuseumId": [
+    "Q20179558"
+   ],
+   "label": "Benjamin and Eleanor Ridgely Laming",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1966.10.1"
+   ],
+   "inception": [
+    "+1788-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "kemmelmeyer-washington-reviewing-the-western-army": {
+   "item": "Q19925808",
+   "byMuseumId": [
+    "Q19925808"
+   ],
+   "label": "Washington Reviewing the Western Army at Fort Cumberland, Maryland",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "63.201.2"
+   ],
+   "inception": [
+    "+1795-00-00 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q5471008"
+   ]
+  },
+  "david-general-gerard": {
+   "item": "Q19911964",
+   "byMuseumId": [
+    "Q19911964"
+   ],
+   "label": "General Étienne-Maurice Gérard (1773–1852), Marshal of France",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "65.14.5"
+   ],
+   "inception": [
+    "+1816-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "sully-lady-with-a-harp": {
+   "item": "Q20184112",
+   "byMuseumId": [
+    "Q20184112"
+   ],
+   "label": "Lady with a Harp: Eliza Ridgely",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1945.9.1"
+   ],
+   "inception": [
+    "+1818-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "goya-manuel-osorio-the-red-boy": {
+   "item": "Q3035829",
+   "byMuseumId": [
+    "Q3035829"
+   ],
+   "label": "Don Manuel Osorio de Zuniga",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "49.7.41"
+   ],
+   "inception": [
+    "+1787-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "devis-maynard-family-at-waltons": {
+   "item": "Q20178116",
+   "byMuseumId": [
+    "Q20178116"
+   ],
+   "label": "Members of the Maynard Family in the Park at Waltons",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1964.2.4"
+   ],
+   "inception": [
+    "+1758-00-00 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "stubbs-duke-of-dorsets-hunter": {
+   "item": "Q19912530",
+   "byMuseumId": [
+    "Q19912530"
+   ],
+   "label": "The Third Duke of Dorset's Hunter with a Groom and a Dog",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "1980.468"
+   ],
+   "inception": [
+    "+1768-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "reynolds-lady-caroline-howard": {
+   "item": "Q6470018",
+   "byMuseumId": [
+    "Q6470018"
+   ],
+   "label": "Lady Caroline Howard",
+   "collection": [
+    "Q214867",
+    "Q46596638"
+   ],
+   "inventory": [
+    "1937.1.106"
+   ],
+   "inception": [
+    "+1778-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "gainsborough-mrs-richard-brinsley-sheridan": {
+   "item": "Q6929863",
+   "byMuseumId": [
+    "Q6929863"
+   ],
+   "label": "Mrs. Richard Brinsley Sheridan",
+   "collection": [
+    "Q214867",
+    "Q46596638"
+   ],
+   "inventory": [
+    "1937.1.92"
+   ],
+   "inception": [
+    "+1785-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "lawrence-elizabeth-farren": {
+   "item": "Q6106751",
+   "byMuseumId": [
+    "Q6106751"
+   ],
+   "label": "Elizabeth Farren (born about 1759, died 1829), Later Countess of Derby",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "50.135.5"
+   ],
+   "inception": [
+    "+1790-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "vanmour-view-of-istanbul-from-pera": {
+   "item": "Q17337886",
+   "byMuseumId": [
+    "Q17337886"
+   ],
+   "label": "View of Istanbul from the Dutch Embassy at Pera",
+   "collection": [
+    "Q190804",
+    "Q21010176",
+    "Q34076860",
+    "Q18015075"
+   ],
+   "inventory": [
+    "SK-A-4084"
+   ],
+   "inception": [
+    "+1728-00-00 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q406"
+   ]
+  },
+  "panini-interior-of-the-pantheon": {
+   "item": "Q19904602",
+   "byMuseumId": [
+    "Q19904602"
+   ],
+   "label": "Interior of the Pantheon, Rome",
+   "collection": [
+    "Q214867",
+    "Q2074027"
+   ],
+   "inventory": [
+    "1939.1.24"
+   ],
+   "inception": [
+    "+1730-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q99309"
+   ]
+  },
+  "bellotto-campo-santi-giovanni-e-paolo": {
+   "item": "Q19681642",
+   "byMuseumId": [
+    "Q19681642"
+   ],
+   "label": "The Campo di SS. Giovanni e Paolo, Venice",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1942.9.7"
+   ],
+   "inception": [
+    "+1743-01-01 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "guardi-cannaregio-canal": {
+   "item": "Q20178778",
+   "byMuseumId": [
+    "Q20178778"
+   ],
+   "label": "View on the Cannaregio Canal, Venice",
+   "collection": [
+    "Q214867",
+    "Q2074027"
+   ],
+   "inventory": [
+    "1939.1.113"
+   ],
+   "inception": [
+    "+1767-00-00 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "canaletto-square-of-saint-marks": {
+   "item": "Q19660464",
+   "byMuseumId": [
+    "Q19660464"
+   ],
+   "label": "The Square of Saint Mark's, Venice",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1945.15.3"
+   ],
+   "inception": [
+    "+1742-01-01 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q217527",
+    "Q172988"
+   ]
+  },
+  "watteau-italian-comedians": {
+   "item": "Q20177791",
+   "byMuseumId": [
+    "Q20177791"
+   ],
+   "label": "The Italian Comedians",
+   "collection": [
+    "Q214867",
+    "Q2074027",
+    "Q21753940",
+    "Q97142972"
+   ],
+   "inventory": [
+    "1946.7.9",
+    "K1344"
+   ],
+   "inception": [
+    "+1720-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "oudry-misse-and-luttine": {
+   "item": "Q20177834",
+   "byMuseumId": [
+    "Q20177834"
+   ],
+   "label": "Misse and Luttine",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1994.53.1"
+   ],
+   "inception": [
+    "+1729-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "boucher-madame-bergeret": {
+   "item": "Q20178351",
+   "byMuseumId": [
+    "Q20178351"
+   ],
+   "label": "Madame Bergeret",
+   "collection": [
+    "Q214867",
+    "Q2074027"
+   ],
+   "inventory": [
+    "1946.7.3"
+   ],
+   "inception": [
+    "+1766-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "robert-ponte-salario": {
+   "item": "Q19609471",
+   "byMuseumId": [
+    "Q19609471"
+   ],
+   "label": "The Old Bridge",
+   "collection": [
+    "Q214867",
+    "Q2074027"
+   ],
+   "inventory": [
+    "1952.5.50"
+   ],
+   "inception": [
+    "+1775-01-17 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "fragonard-young-girl-reading": {
+   "item": "Q2629423",
+   "byMuseumId": [
+    "Q2629423"
+   ],
+   "label": "A Young Girl Reading",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1961.16.1"
+   ],
+   "inception": [
+    "+1770-00-00 (precision 9)"
+   ],
+   "madeIn": [
+    "Q90"
+   ],
+   "depictsPlaces": []
+  },
+  "cuyp-maas-at-dordrecht": {
+   "item": "Q5822565",
+   "byMuseumId": [
+    "Q5822565"
+   ],
+   "label": "The Maas at Dordrecht",
+   "collection": [
+    "Q214867",
+    "Q46596638"
+   ],
+   "inventory": [
+    "1940.2.1"
+   ],
+   "inception": [
+    "+1650-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q41986",
+    "Q26421"
+   ]
+  },
+  "asselijn-threatened-swan": {
+   "item": "Q17319634",
+   "byMuseumId": [
+    "Q17319634"
+   ],
+   "label": "The Threatened Swan",
+   "collection": [
+    "Q190804",
+    "Q23959785"
+   ],
+   "inventory": [
+    "SK-A-4"
+   ],
+   "inception": [
+    "+1650-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "vermeer-young-woman-with-a-water-pitcher": {
+   "item": "Q386453",
+   "byMuseumId": [
+    "Q386453"
+   ],
+   "label": "Woman with a Water Jug",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "89.15.21"
+   ],
+   "inception": [
+    "+1660-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "ruisdael-wheat-fields": {
+   "item": "Q19905217",
+   "byMuseumId": [
+    "Q19905217"
+   ],
+   "label": "Wheat Fields",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "14.40.623"
+   ],
+   "inception": [
+    "+1670-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "vermeer-the-little-street": {
+   "item": "Q586035",
+   "byMuseumId": [
+    "Q586035"
+   ],
+   "label": "The Little Street",
+   "collection": [
+    "Q190804"
+   ],
+   "inventory": [
+    "SK-A-2860"
+   ],
+   "inception": [
+    "+1658-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q19635965"
+   ]
+  },
+  "brueghel-river-landscape-1607": {
+   "item": "Q20176899",
+   "byMuseumId": [
+    "Q20176899"
+   ],
+   "label": "River Landscape",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "2000.4.1"
+   ],
+   "inception": [
+    "+1607-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "heda-banquet-piece-with-mince-pie": {
+   "item": "Q20177138",
+   "byMuseumId": [
+    "Q20177138"
+   ],
+   "label": "Banquet Piece with Mince Pie",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1991.87.1"
+   ],
+   "inception": [
+    "+1635-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "verspronck-andries-stilte": {
+   "item": "Q20177165",
+   "byMuseumId": [
+    "Q20177165"
+   ],
+   "label": "Andries Stilte as a Standard Bearer",
+   "collection": [
+    "Q214867",
+    "Q221092",
+    "Q2284748",
+    "Q28872849"
+   ],
+   "inventory": [
+    "1998.13.1"
+   ],
+   "inception": [
+    "+1640-01-01 (precision 9)"
+   ],
+   "madeIn": [
+    "Q9920"
+   ],
+   "depictsPlaces": []
+  },
+  "lorrain-trojan-women-setting-fire-to-their-fleet": {
+   "item": "Q19911726",
+   "byMuseumId": [
+    "Q19911726"
+   ],
+   "label": "The Trojan Women Setting Fire to Their Fleet",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "55.119"
+   ],
+   "inception": [
+    "+1643-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "leyster-self-portrait": {
+   "item": "Q18888002",
+   "byMuseumId": [
+    "Q18888002"
+   ],
+   "label": "Self-portrait by Judith Leyster",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1949.6.1"
+   ],
+   "inception": [
+    "+1630-00-00 (precision 9)"
+   ],
+   "madeIn": [
+    "Q9920"
+   ],
+   "depictsPlaces": []
+  },
+  "sultan-muhammad-feast-of-sada": {
+   "item": "Q29385197",
+   "byMuseumId": [
+    "Q29385197"
+   ],
+   "label": "\"The Feast of Sada\", Folio 22v from the Shahnama (Book of Kings) of Shah Tahmasp",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "1970.301.2"
+   ],
+   "inception": [
+    "+1525-01-01 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "habiballah-concourse-of-the-birds": {
+   "item": "Q29385176",
+   "byMuseumId": [
+    "Q29385176"
+   ],
+   "label": "\"The Concourse of the Birds\", Folio 11r from a Mantiq al-tair (Language of the Birds)",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "63.210.11"
+   ],
+   "inception": [
+    "+1600-01-01 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q9168"
+   ]
+  },
+  "mansur-study-of-a-nilgai": {
+   "item": null,
+   "byMuseumId": [],
+   "label": null,
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "balchand-jahangir-and-akbar": {
+   "item": null,
+   "byMuseumId": [],
+   "label": null,
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "payag-shah-jahan-on-horseback": {
+   "item": null,
+   "byMuseumId": [],
+   "label": null,
+   "collection": [],
+   "inventory": [],
+   "inception": [],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "cariani-a-concert": {
+   "item": "Q20175486",
+   "byMuseumId": [
+    "Q20175486"
+   ],
+   "label": "A Concert",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1997.57.2"
+   ],
+   "inception": [
+    "+1519-00-00 (precision 7)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "holbein-edward-vi-as-a-child": {
+   "item": "Q20176182",
+   "byMuseumId": [
+    "Q20176182"
+   ],
+   "label": "Edward VI as a Child",
+   "collection": [
+    "Q214867",
+    "Q46596638"
+   ],
+   "inventory": [
+    "1937.1.64"
+   ],
+   "inception": [
+    "+1538-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "arcimboldo-the-librarian": {
+   "item": "Q17021187",
+   "byMuseumId": [],
+   "label": "The Librarian",
+   "collection": [
+    "Q1891413"
+   ],
+   "inventory": [
+    "SKO 11616"
+   ],
+   "inception": [
+    "+1556-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "grimmer-marketplace-in-bergen-op-zoom": {
+   "item": "Q20176826",
+   "byMuseumId": [
+    "Q20176826"
+   ],
+   "label": "The Marketplace in Bergen op Zoom",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1979.50.1"
+   ],
+   "inception": [
+    "+1590-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": [
+    "Q1917400"
+   ]
+  },
+  "arcimboldo-vertumnus": {
+   "item": "Q16333797",
+   "byMuseumId": [],
+   "label": "Rudolf II as Vertumnus",
+   "collection": [
+    "Q2946"
+   ],
+   "inventory": [
+    "SKO 11615"
+   ],
+   "inception": [
+    "+1591-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "van-der-weyden-francesco-d-este": {
+   "item": "Q3399428",
+   "byMuseumId": [
+    "Q3399428"
+   ],
+   "label": "Portrait of Francesco d'Este",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "32.100.43"
+   ],
+   "inception": [
+    "+1460-01-01 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "neroccio-portrait-of-a-lady": {
+   "item": "Q20174436",
+   "byMuseumId": [
+    "Q20174436"
+   ],
+   "label": "Portrait of a Lady",
+   "collection": [
+    "Q214867"
+   ],
+   "inventory": [
+    "1942.9.47"
+   ],
+   "inception": [
+    "+1480-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "ghirlandaio-francesco-sassetti-and-his-son": {
+   "item": "Q15089686",
+   "byMuseumId": [
+    "Q15089686"
+   ],
+   "label": "Francesco Sassetti and His Son Teodoro",
+   "collection": [
+    "Q160236"
+   ],
+   "inventory": [
+    "49.7.7"
+   ],
+   "inception": [
+    "+1488-00-00 (precision 9)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "carpaccio-hunting-on-the-lagoon": {
+   "item": "Q3649290",
+   "byMuseumId": [],
+   "label": "Hunting on the Lagoon",
+   "collection": [
+    "Q731126"
+   ],
+   "inventory": [
+    "79.PB.72"
+   ],
+   "inception": [
+    "+1490-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  },
+  "botticelli-giuliano-de-medici": {
+   "item": "Q3399442",
+   "byMuseumId": [
+    "Q3399442"
+   ],
+   "label": "Portrait of Giuliano de' Medici",
+   "collection": [
+    "Q214867",
+    "Q2074027"
+   ],
+   "inventory": [
+    "1952.5.56",
+    "K1644"
+   ],
+   "inception": [
+    "+1479-00-00 (precision 8)"
+   ],
+   "madeIn": [],
+   "depictsPlaces": []
+  }
+ },
+ "items": {
+  "Q604222": {
+   "labels": {
+    "en": "Sainte-Adresse",
+    "tr": "Sainte-Adresse",
+    "ko": "생트아드레스",
+    "ja": "サン＝タドレス",
+    "de": "Sainte-Adresse",
+    "fr": "Sainte-Adresse",
+    "es": "Sainte-Adresse",
+    "pt-br": "Sainte-Adresse",
+    "pt": "Sainte-Adresse",
+    "it": "Sainte-Adresse",
+    "ru": "Сент-Адресс",
+    "zh-hans": "圣阿德雷斯",
+    "zh-hant": "聖阿德雷斯",
+    "zh": "圣阿德雷斯",
+    "id": "Sainte-Adresse"
+   },
+   "coordinates": [
+    49.5064,
+    0.0833
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q701434"
+   ]
+  },
+  "Q239303": {
+   "labels": {
+    "en": "Art Institute of Chicago",
+    "tr": "Art Institute of Chicago",
+    "ko": "시카고 미술관",
+    "ja": "シカゴ美術館",
+    "de": "Art Institute of Chicago",
+    "fr": "Art Institute of Chicago",
+    "es": "Instituto de Arte de Chicago",
+    "pt": "Art Institute of Chicago",
+    "it": "Art Institute of Chicago",
+    "ru": "Чикагский институт искусств",
+    "zh-hans": "芝加哥艺术博物馆",
+    "zh-hant": "芝加哥藝術博物館",
+    "zh": "芝加哥艺术博物馆",
+    "zh-cn": "芝加哥艺术博物馆",
+    "zh-tw": "芝加哥藝術博物館",
+    "zh-hk": "芝加哥藝術博物館",
+    "id": "Art Institute of Chicago"
+   },
+   "coordinates": [
+    41.8794,
+    -87.6239
+   ],
+   "instanceOf": [
+    "Q3196771",
+    "Q2385804",
+    "Q163740"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1297"
+   ]
+  },
+  "Q1640215": {
+   "labels": {
+    "en": "maison Fournaise",
+    "tr": "Maison Fournaise",
+    "ko": "메종 푸르네즈",
+    "de": "Maison Fournaise",
+    "fr": "maison Fournaise",
+    "ru": "Дом Фурнез",
+    "zh": "福乃茲之家"
+   },
+   "coordinates": [
+    48.8896,
+    2.1633
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q11707"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q240752"
+   ]
+  },
+  "Q3451108": {
+   "labels": {
+    "en": "rue de Turin",
+    "tr": "Turin Sokağı",
+    "ko": "튀랭가",
+    "de": "Rue de Turin",
+    "fr": "rue de Turin",
+    "zh": "都灵路"
+   },
+   "coordinates": [
+    48.8816,
+    2.3245
+   ],
+   "instanceOf": [
+    "Q79007"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q90",
+    "Q270230",
+    "Q1037632"
+   ]
+  },
+  "Q3447463": {
+   "labels": {
+    "en": "rue Clapeyron",
+    "tr": "Clapeyron Sokağı",
+    "ko": "클라페롱가",
+    "de": "Rue Clapeyron",
+    "fr": "rue Clapeyron",
+    "zh": "克拉佩龙路"
+   },
+   "coordinates": [
+    48.8819,
+    2.3238
+   ],
+   "instanceOf": [
+    "Q79007"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q270230",
+    "Q1037632",
+    "Q90"
+   ]
+  },
+  "Q962082": {
+   "labels": {
+    "en": "rue de Moscou",
+    "tr": "Moscou Sokağı",
+    "ko": "모스쿠가",
+    "de": "Rue de Moscou",
+    "fr": "rue de Moscou",
+    "ru": "Рю-де-Моску",
+    "zh": "莫斯科路"
+   },
+   "coordinates": [
+    48.8809,
+    2.3241
+   ],
+   "instanceOf": [
+    "Q79007"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q90",
+    "Q270230",
+    "Q1037632"
+   ]
+  },
+  "Q221507": {
+   "labels": {
+    "en": "Saint-Rémy-de-Provence",
+    "tr": "Saint-Rémy-de-Provence",
+    "ko": "생레미드프로방스",
+    "ja": "サン＝レミ＝ド＝プロヴァンス",
+    "de": "Saint-Rémy-de-Provence",
+    "fr": "Saint-Rémy-de-Provence",
+    "es": "Saint-Rémy-de-Provence",
+    "pt-br": "Saint-Rémy-de-Provence",
+    "pt": "Saint-Rémy-de-Provence",
+    "it": "Saint-Rémy-de-Provence",
+    "ru": "Сен-Реми-де-Прованс",
+    "zh-hans": "普罗旺斯地区圣雷米",
+    "zh-hant": "普羅旺斯地區聖雷米",
+    "zh": "普罗旺斯地区圣雷米",
+    "zh-cn": "普罗旺斯地区圣雷米",
+    "zh-tw": "普羅旺斯地區聖雷米",
+    "zh-hk": "普羅旺斯地區聖雷米",
+    "id": "Saint-Rémy-de-Provence"
+   },
+   "coordinates": [
+    43.7894,
+    4.8317
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q3240",
+    "Q700484",
+    "Q17623257",
+    "Q1117995"
+   ]
+  },
+  "Q1902319": {
+   "labels": {
+    "en": "île de la Jatte",
+    "ko": "그랑드자트섬",
+    "ja": "グランド・ジャット島",
+    "de": "Île de la Jatte",
+    "fr": "île de la Jatte",
+    "es": "Isla de la Jatte",
+    "pt": "Grande Jatte",
+    "ru": "Остров Гранд-Жатт",
+    "zh": "雅特岛"
+   },
+   "coordinates": [
+    48.8956,
+    2.2686
+   ],
+   "instanceOf": [
+    "Q162602"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q166640",
+    "Q48958"
+   ]
+  },
+  "Q842858": {
+   "labels": {
+    "en": "Nationalmuseum",
+    "tr": "Nationalmuseum",
+    "ko": "스웨덴 국립미술관",
+    "ja": "スウェーデン国立美術館",
+    "de": "Schwedisches Nationalmuseum",
+    "fr": "Nationalmuseum",
+    "es": "Museo Nacional de Estocolmo",
+    "pt": "Museu Nacional de Belas-Artes da Suécia",
+    "it": "Museo nazionale di Stoccolma",
+    "ru": "Национальный музей изобразительных искусств",
+    "zh-hans": "瑞典国立博物馆",
+    "zh-hant": "瑞典國立博物館",
+    "zh": "瑞典國立博物館",
+    "zh-hk": "瑞典國立博物館",
+    "id": "Nationalmuseum"
+   },
+   "coordinates": [
+    59.3286,
+    18.0781
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q17431399",
+    "Q68295960"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q506250",
+    "Q1754"
+   ]
+  },
+  "Q671384": {
+   "labels": {
+    "en": "Statens Museum for Kunst",
+    "ko": "국립미술관",
+    "ja": "コペンハーゲン国立美術館",
+    "de": "Statens Museum for Kunst",
+    "fr": "Statens Museum for Kunst",
+    "es": "Galería Nacional de Dinamarca",
+    "pt": "Museu Nacional de Arte da Dinamarca",
+    "it": "Statens Museum for Kunst",
+    "ru": "Государственный музей искусств",
+    "zh-hant": "丹麥國立美術館",
+    "zh": "國立丹麥美術館",
+    "zh-tw": "丹麥國立美術館"
+   },
+   "coordinates": [
+    55.6889,
+    12.5786
+   ],
+   "instanceOf": [
+    "Q3844310"
+   ],
+   "country": [
+    "Q35"
+   ],
+   "in": [
+    "Q504125"
+   ]
+  },
+  "Q309458": {
+   "labels": {
+    "en": "Jardin du Luxembourg",
+    "tr": "Lüksemburg Bahçesi",
+    "ko": "뤽상부르 공원",
+    "ja": "リュクサンブール公園",
+    "de": "Jardin du Luxembourg",
+    "fr": "jardin du Luxembourg",
+    "es": "Jardín del Luxemburgo",
+    "pt-br": "Jardim de Luxemburgo",
+    "pt": "Jardim de Luxemburgo",
+    "it": "Giardini del Lussemburgo",
+    "ru": "Люксембургский сад",
+    "zh-hans": "卢森堡公园",
+    "zh-hant": "盧森堡公園",
+    "zh": "卢森堡公园",
+    "zh-cn": "卢森堡公园",
+    "zh-tw": "盧森堡公園",
+    "zh-hk": "盧森堡公園",
+    "id": "Jardin du Luxembourg"
+   },
+   "coordinates": [
+    48.8469,
+    2.3372
+   ],
+   "instanceOf": [
+    "Q22746",
+    "Q56478984"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q245546"
+   ]
+  },
+  "Q329852": {
+   "labels": {
+    "en": "Luxembourg Palace",
+    "tr": "Lüksemburg Sarayı",
+    "ko": "뤽상부르궁",
+    "ja": "リュクサンブール宮殿",
+    "de": "Palais du Luxembourg",
+    "fr": "palais du Luxembourg",
+    "es": "Palacio del Luxemburgo",
+    "pt-br": "Palácio do Luxemburgo",
+    "pt": "Palácio do Luxemburgo",
+    "it": "Palazzo del Lussemburgo",
+    "ru": "Люксембургский дворец",
+    "zh-hans": "卢森堡宫",
+    "zh-hant": "盧森堡宮",
+    "zh": "卢森堡宫",
+    "zh-cn": "卢森堡宫",
+    "zh-tw": "盧森堡宮",
+    "zh-hk": "盧森堡宮",
+    "id": "Palais du Luxembourg"
+   },
+   "coordinates": [
+    48.8483,
+    2.3375
+   ],
+   "instanceOf": [
+    "Q16560"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q3413185"
+   ]
+  },
+  "Q295844": {
+   "labels": {
+    "en": "Church of Saint-Sulpice",
+    "ko": "생 쉴피스 교회",
+    "ja": "サン＝シュルピス教会",
+    "de": "St-Sulpice de Paris",
+    "fr": "église Saint-Sulpice de Paris",
+    "es": "iglesia de Saint-Sulpice",
+    "pt": "Igreja de São Sulpício",
+    "it": "chiesa di Saint-Sulpice",
+    "ru": "Сен-Сюльпис",
+    "zh-hans": "圣叙尔皮斯教堂",
+    "zh-hant": "聖敘爾皮斯教堂",
+    "zh": "圣叙尔皮斯教堂",
+    "zh-cn": "圣叙尔皮斯教堂",
+    "zh-tw": "聖敘爾皮斯教堂",
+    "zh-hk": "聖敘爾皮斯教堂",
+    "id": "Saint-Sulpice, Paris"
+   },
+   "coordinates": [
+    48.851,
+    2.3349
+   ],
+   "instanceOf": [
+    "Q16970"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q3413185",
+    "Q245546"
+   ]
+  },
+  "Q2983474": {
+   "labels": {
+    "en": "Finnish National Gallery",
+    "tr": "Finlandiya Ulusal Galerisi",
+    "ko": "핀란드 국립미술관",
+    "ja": "フィンランド国立美術館",
+    "de": "Finnische Nationalgalerie",
+    "fr": "Galerie nationale de Finlande",
+    "es": "Galería Nacional de Finlandia",
+    "pt-br": "Finnish National Gallery",
+    "pt": "Galeria Nacional Finlandesa",
+    "it": "Galleria nazionale finlandese",
+    "ru": "Финская национальная галерея",
+    "zh": "芬兰国立画廊"
+   },
+   "coordinates": [
+    60.1717,
+    24.9369
+   ],
+   "instanceOf": [
+    "Q207694"
+   ],
+   "country": [
+    "Q33"
+   ],
+   "in": [
+    "Q1757"
+   ]
+  },
+  "Q10685333": {
+   "labels": {
+    "en": "folk costume of Sweden",
+    "ja": "スウェーデンの民族衣装",
+    "fr": "costume folklorique suédois"
+   },
+   "coordinates": null,
+   "instanceOf": [],
+   "country": [
+    "Q34"
+   ],
+   "in": []
+  },
+  "Q18292376": {
+   "labels": {
+    "en": "Morkarlby"
+   },
+   "coordinates": [
+    61.0002,
+    14.5166
+   ],
+   "instanceOf": [
+    "Q532"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q504239"
+   ]
+  },
+  "Q214867": {
+   "labels": {
+    "tr": "Ulusal Sanat Galerisi",
+    "ko": "내셔널 갤러리 오브 아트",
+    "ja": "ナショナル・ギャラリー・オブ・アート",
+    "de": "National Gallery of Art",
+    "fr": "National Gallery of Art",
+    "es": "Galería Nacional de Arte",
+    "pt-br": "Galeria Nacional de Arte",
+    "pt": "Galeria Nacional de Arte",
+    "it": "National Gallery of Art",
+    "ru": "Национальная галерея искусства",
+    "zh-hans": "国家艺廊",
+    "zh-hant": "國家藝廊",
+    "zh": "國家藝廊",
+    "zh-cn": "国家艺术馆",
+    "zh-tw": "國家藝廊",
+    "zh-hk": "國家藝廊",
+    "id": "National Gallery of Art"
+   },
+   "coordinates": [
+    38.8914,
+    -77.02
+   ],
+   "instanceOf": [
+    "Q3844310",
+    "Q2085381",
+    "Q163740",
+    "Q20857065",
+    "Q221096"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q61"
+   ]
+  },
+  "Q160236": {
+   "labels": {
+    "en": "Metropolitan Museum of Art",
+    "tr": "Metropolitan Museum of Art",
+    "ko": "메트로폴리탄 미술관",
+    "ja": "メトロポリタン美術館",
+    "de": "Metropolitan Museum of Art",
+    "fr": "Metropolitan Museum of Art",
+    "es": "Museo Metropolitano de Arte",
+    "pt-br": "Metropolitan Museum of Art",
+    "pt": "Metropolitan Museum of Art",
+    "it": "Metropolitan Museum of Art",
+    "ru": "Метрополитен-музей",
+    "zh-hans": "大都会艺术博物馆",
+    "zh-hant": "大都會藝術博物館",
+    "zh": "大都會藝術博物館",
+    "zh-cn": "大都会艺术博物馆",
+    "zh-tw": "大都會藝術博物館",
+    "zh-hk": "大都會藝術博物館",
+    "id": "Metropolitan Museum of Art"
+   },
+   "coordinates": [
+    40.7794,
+    -73.9633
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q2085381",
+    "Q11396960",
+    "Q163740",
+    "Q33506"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q11299"
+   ]
+  },
+  "Q203561": {
+   "labels": {
+    "en": "Cancale",
+    "tr": "Cancale",
+    "ja": "カンカル",
+    "de": "Cancale",
+    "fr": "Cancale",
+    "es": "Cancale",
+    "pt-br": "Cancale",
+    "pt": "Cancale",
+    "it": "Cancale",
+    "ru": "Канкаль",
+    "zh-hans": "康卡勒",
+    "zh-hant": "康卡勒",
+    "zh": "康卡勒",
+    "zh-cn": "康卡勒",
+    "zh-tw": "康卡勒",
+    "zh-hk": "康卡勒",
+    "id": "Cancale"
+   },
+   "coordinates": [
+    48.6767,
+    -1.8519
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q702395",
+    "Q12549",
+    "Q1120177"
+   ]
+  },
+  "Q768446": {
+   "labels": {
+    "en": "Corcoran Gallery of Art",
+    "ko": "코코런 미술관",
+    "ja": "コーコラン美術館",
+    "de": "Corcoran Gallery of Art",
+    "fr": "Galerie d'Art Corcoran",
+    "es": "Galería de Arte Corcoran",
+    "pt-br": "Corcoran Gallery of Art",
+    "pt": "Corcoran Gallery of Art",
+    "it": "Corcoran Gallery of Art",
+    "ru": "Галерея Коркоран",
+    "zh-hant": "科科倫藝術館",
+    "zh": "科科倫藝術館"
+   },
+   "coordinates": [
+    38.8959,
+    -77.0399
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q464980"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q61"
+   ]
+  },
+  "Q190804": {
+   "labels": {
+    "en": "Rijksmuseum",
+    "tr": "Rijksmuseum",
+    "ko": "암스테르담 국립미술관",
+    "ja": "アムステルダム国立美術館",
+    "de": "Rijksmuseum",
+    "fr": "Rijksmuseum",
+    "es": "Rijksmuseum",
+    "pt-br": "Museu Estatal de Amsterdã",
+    "pt": "Rijksmuseum",
+    "it": "Rijksmuseum",
+    "ru": "Рейксмюсеум",
+    "zh-hans": "阿姆斯特丹国家博物馆",
+    "zh-hant": "阿姆斯特丹國家博物館",
+    "zh": "阿姆斯特丹国家博物馆",
+    "zh-cn": "阿姆斯特丹国家博物馆",
+    "zh-tw": "阿姆斯特丹國家博物館",
+    "zh-hk": "阿姆斯特丹國家博物館",
+    "id": "Rijksmuseum"
+   },
+   "coordinates": [
+    52.36,
+    4.8853
+   ],
+   "instanceOf": [
+    "Q17431399",
+    "Q16735822",
+    "Q11396960",
+    "Q1172284"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9899"
+   ]
+  },
+  "Q55": {
+   "labels": {
+    "en": "Netherlands",
+    "tr": "Hollanda",
+    "ko": "네덜란드",
+    "ja": "オランダ",
+    "de": "Niederlande",
+    "fr": "Pays-Bas",
+    "es": "Países Bajos",
+    "pt-br": "Países Baixos",
+    "pt": "Países Baixos",
+    "it": "Paesi Bassi",
+    "ru": "Нидерланды",
+    "zh-hans": "荷兰",
+    "zh-hant": "荷蘭",
+    "zh": "荷蘭",
+    "zh-cn": "荷兰",
+    "zh-tw": "荷蘭",
+    "zh-hk": "荷蘭",
+    "id": "Belanda"
+   },
+   "coordinates": [
+    52.3167,
+    5.55
+   ],
+   "instanceOf": [
+    "Q15304003",
+    "Q6256"
+   ],
+   "country": [
+    "Q29999"
+   ],
+   "in": [
+    "Q29999"
+   ]
+  },
+  "Q100935225": {
+   "labels": {
+    "en": "Kameido Umeyashiki",
+    "ja": "亀戸梅屋舗"
+   },
+   "coordinates": [
+    35.7033,
+    139.8205
+   ],
+   "instanceOf": [
+    "Q167346",
+    "Q96084375"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q215175"
+   ]
+  },
+  "Q632682": {
+   "labels": {
+    "en": "Brooklyn Museum",
+    "tr": "Brooklyn Müzesi",
+    "ko": "브루클린 미술관",
+    "ja": "ブルックリン美術館",
+    "de": "Brooklyn Museum",
+    "fr": "Brooklyn Museum",
+    "es": "Museo Brooklyn",
+    "pt": "Brooklyn Museum",
+    "it": "Brooklyn Museum",
+    "ru": "Бруклинский музей",
+    "zh-hans": "布鲁克林博物馆",
+    "zh-hant": "布魯克林博物館",
+    "zh": "布鲁克林博物馆",
+    "zh-hk": "布魯克林博物館",
+    "id": "Brooklyn Museum"
+   },
+   "coordinates": [
+    40.6712,
+    -73.9636
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q163740",
+    "Q33506"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q18419"
+   ]
+  },
+  "Q391976": {
+   "labels": {
+    "en": "Chester Beatty Library",
+    "ja": "チェスター・ビーティ図書館",
+    "de": "Chester Beatty Library",
+    "fr": "bibliothèque Chester-Beatty",
+    "es": "Chester Beatty Library",
+    "pt-br": "Chester Beatty Library",
+    "pt": "Chester Beatty Library",
+    "it": "Chester Beatty Library",
+    "ru": "Библиотека Честера Битти",
+    "zh-hans": "切斯特·比替图书馆",
+    "zh-hant": "切斯特·比替圖書館",
+    "zh": "切斯特·比替图书馆",
+    "zh-cn": "切斯特·比替图书馆",
+    "zh-tw": "切斯特·比替圖書館",
+    "zh-hk": "切斯特·比替圖書館",
+    "id": "Chester Beatty Library"
+   },
+   "coordinates": [
+    53.342,
+    -6.267
+   ],
+   "instanceOf": [
+    "Q7075",
+    "Q207694",
+    "Q163740"
+   ],
+   "country": [
+    "Q27"
+   ],
+   "in": [
+    "Q1761"
+   ]
+  },
+  "Q222149": {
+   "labels": {
+    "en": "Sumida River",
+    "tr": "Sumida Nehri",
+    "ko": "스미다강",
+    "ja": "隅田川",
+    "de": "Sumida",
+    "fr": "rivière Sumida",
+    "es": "Río Sumida",
+    "pt": "Rio Sumida",
+    "it": "Sumida",
+    "ru": "Сумида",
+    "zh": "隅田川",
+    "zh-tw": "隅田川",
+    "zh-hk": "隅田川",
+    "id": "Sungai Sumida"
+   },
+   "coordinates": [
+    35.7186,
+    139.8072
+   ],
+   "instanceOf": [
+    "Q4022"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q1490"
+   ]
+  },
+  "Q11501659": {
+   "labels": {
+    "en": "Shin-Ōhashi Bridge",
+    "ja": "新大橋"
+   },
+   "coordinates": [
+    35.6875,
+    139.7919
+   ],
+   "instanceOf": [
+    "Q12280"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q11501661",
+    "Q11508340"
+   ]
+  },
+  "Q60189195": {
+   "labels": {
+    "ja": "安宅"
+   },
+   "coordinates": [
+    35.6879,
+    139.7929
+   ],
+   "instanceOf": [
+    "Q486972"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": []
+  },
+  "Q1233913": {
+   "labels": {
+    "en": "Tokyo Fuji Art Museum",
+    "ko": "도쿄 후지 미술관",
+    "ja": "東京富士美術館",
+    "de": "Tokyo Fuji Art Museum",
+    "fr": "musée d'Art Fuji de Tokyo",
+    "pt-br": "Tokyo Fuji Art Museum",
+    "pt": "Tokyo Fuji Art Museum",
+    "zh": "東京富士美術館",
+    "id": "Museum Seni Fuji Tokyo"
+   },
+   "coordinates": [
+    35.6865,
+    139.3295
+   ],
+   "instanceOf": [
+    "Q207694"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q109599743"
+   ]
+  },
+  "Q1075126": {
+   "labels": {
+    "en": "Freer Gallery of Art",
+    "ko": "프리어 미술관",
+    "ja": "フリーア美術館",
+    "de": "Freer Gallery of Art",
+    "fr": "Freer Gallery of Art",
+    "es": "Galería Freer",
+    "pt-br": "Freer Gallery of Art",
+    "it": "Freer Gallery of Art",
+    "ru": "Галерея искусства Фрир",
+    "zh-hans": "佛利尔美术馆",
+    "zh-hant": "佛利爾美術館",
+    "zh": "佛利尔美术馆",
+    "zh-cn": "佛利尔美术馆",
+    "zh-hk": "佛利爾美術館"
+   },
+   "coordinates": [
+    38.8883,
+    -77.0275
+   ],
+   "instanceOf": [
+    "Q207694"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q61"
+   ]
+  },
+  "Q6373": {
+   "labels": {
+    "en": "British Museum",
+    "tr": "British Museum",
+    "ko": "대영박물관",
+    "ja": "大英博物館",
+    "de": "British Museum",
+    "fr": "British Museum",
+    "es": "Museo Británico",
+    "pt-br": "Museu Britânico",
+    "pt": "Museu Britânico",
+    "it": "British Museum",
+    "ru": "Британский музей",
+    "zh-hans": "大英博物馆",
+    "zh-hant": "大英博物館",
+    "zh": "大英博物馆",
+    "zh-cn": "大英博物馆",
+    "zh-tw": "大英博物館",
+    "zh-hk": "大英博物館",
+    "id": "British Museum"
+   },
+   "coordinates": [
+    51.5194,
+    -0.1269
+   ],
+   "instanceOf": [
+    "Q17431399",
+    "Q3343298",
+    "Q207694",
+    "Q33506",
+    "Q708676"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q202088"
+   ]
+  },
+  "Q5419": {
+   "labels": {
+    "en": "Missouri River",
+    "tr": "Missouri Nehri",
+    "ko": "미주리강",
+    "ja": "ミズーリ川",
+    "de": "Missouri",
+    "fr": "rivière Missouri",
+    "es": "Río Misuri",
+    "pt-br": "Rio Missouri",
+    "pt": "Rio Missouri",
+    "it": "Missouri",
+    "ru": "Миссури",
+    "zh": "密蘇里河",
+    "id": "Sungai Missouri"
+   },
+   "coordinates": [
+    45.9275,
+    -111.5081
+   ],
+   "instanceOf": [
+    "Q4022"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1212",
+    "Q1207",
+    "Q1211",
+    "Q1553",
+    "Q1546",
+    "Q1581",
+    "Q1558"
+   ]
+  },
+  "Q1996389": {
+   "labels": {
+    "en": "Yosemite Valley",
+    "tr": "Yosemite Vadisi",
+    "ko": "요세미티 계곡",
+    "ja": "ヨセミテ渓谷",
+    "de": "Yosemite Valley",
+    "fr": "vallée de Yosemite",
+    "es": "Valle de Yosemite",
+    "pt-br": "Vale de Yosemite",
+    "pt": "Vale de Yosemite",
+    "it": "Yosemite Valley",
+    "ru": "Йосемитская долина",
+    "zh-hans": "尤塞米提谷",
+    "zh-hant": "尤塞米提谷",
+    "zh": "尤塞米提谷",
+    "zh-hk": "尤塞米提谷",
+    "id": "Lembah Yosemite"
+   },
+   "coordinates": [
+    37.7217,
+    -119.646
+   ],
+   "instanceOf": [
+    "Q39816",
+    "Q15243209"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q156191"
+   ]
+  },
+  "Q1470035": {
+   "labels": {
+    "en": "Merced River",
+    "ko": "머세드강",
+    "ja": "マーセド川",
+    "de": "Merced River",
+    "fr": "Merced",
+    "es": "Río Merced",
+    "pt": "Rio Merced",
+    "ru": "Мерсед",
+    "zh-hans": "美熹德河",
+    "zh-hant": "美熹德河",
+    "zh": "美熹德河",
+    "zh-hk": "美熹德河"
+   },
+   "coordinates": [
+    37.7008,
+    -119.3474
+   ],
+   "instanceOf": [
+    "Q4022"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q99"
+   ]
+  },
+  "Q379648": {
+   "labels": {
+    "en": "Connecticut River",
+    "tr": "Connecticut Nehri",
+    "ko": "코네티컷강",
+    "ja": "コネティカット川",
+    "de": "Connecticut River",
+    "fr": "Connecticut",
+    "es": "Río Connecticut",
+    "pt-br": "Rio Connecticut",
+    "pt": "Rio Connecticut",
+    "it": "Connecticut",
+    "ru": "Коннектикут",
+    "zh-hans": "康涅狄格河",
+    "zh-hant": "康乃狄克河",
+    "zh": "康乃狄克河",
+    "zh-cn": "康涅狄格河",
+    "zh-tw": "康乃狄克河",
+    "zh-hk": "康涅狄格河"
+   },
+   "coordinates": [
+    45.2375,
+    -71.2
+   ],
+   "instanceOf": [
+    "Q4022"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q779",
+    "Q771",
+    "Q16551",
+    "Q759"
+   ]
+  },
+  "Q3321866": {
+   "labels": {
+    "en": "Mount Holyoke",
+    "ja": "ホルヨーク山",
+    "de": "Mount Holyoke",
+    "fr": "Mount Holyoke"
+   },
+   "coordinates": [
+    42.3008,
+    -72.5869
+   ],
+   "instanceOf": [
+    "Q8502"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q771"
+   ]
+  },
+  "Q49186": {
+   "labels": {
+    "en": "Northampton",
+    "tr": "Northampton",
+    "ko": "노샘프턴",
+    "ja": "ノーサンプトン",
+    "de": "Northampton",
+    "fr": "Northampton",
+    "es": "Northampton",
+    "pt-br": "Northampton",
+    "pt": "Northampton",
+    "it": "Northampton",
+    "ru": "Нортгемптон",
+    "zh-hans": "北安普敦",
+    "zh-hant": "北安普敦",
+    "zh": "北安普敦",
+    "zh-cn": "北安普敦",
+    "zh-tw": "北安普敦",
+    "zh-hk": "北安普敦",
+    "id": "Northampton"
+   },
+   "coordinates": [
+    42.3181,
+    -72.6319
+   ],
+   "instanceOf": [
+    "Q1093829",
+    "Q748198",
+    "Q62049"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q54161"
+   ]
+  },
+  "Q7755777": {
+   "labels": {
+    "en": "The Oxbow",
+    "ja": "オックスボウ (コネチカット川)"
+   },
+   "coordinates": [
+    42.2918,
+    -72.639
+   ],
+   "instanceOf": [
+    "Q209333",
+    "Q23397"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q54161"
+   ]
+  },
+  "Q464945": {
+   "labels": {
+    "en": "Poopó Lake",
+    "tr": "Poopó Gölü",
+    "ko": "포오포호",
+    "ja": "ポオポ湖",
+    "de": "Poopó-See",
+    "fr": "lac Poopó",
+    "es": "Lago Poopó",
+    "pt-br": "Lago Poopó",
+    "pt": "Lago Poopó",
+    "it": "lago Poopó",
+    "ru": "Поопо",
+    "zh-hans": "波波湖",
+    "zh-hant": "波波湖",
+    "zh": "波波湖",
+    "zh-cn": "波波湖",
+    "zh-tw": "波波湖",
+    "zh-hk": "波波湖",
+    "id": "Danau Poopó"
+   },
+   "coordinates": [
+    -18.7819,
+    -67.0247
+   ],
+   "instanceOf": [
+    "Q188025",
+    "Q9019918",
+    "Q23397"
+   ],
+   "country": [
+    "Q750"
+   ],
+   "in": [
+    "Q1061368"
+   ]
+  },
+  "Q7971587": {
+   "labels": {
+    "en": "Washington's crossing of the Delaware River",
+    "ko": "조지 워싱턴의 델라웨어강 횡단",
+    "ja": "ジョージ・ワシントンによるデラウェア川渡河",
+    "fr": "traversée du Delaware par George Washington",
+    "es": "cruce de Washington del río Delaware",
+    "it": "attraversamento del Delaware",
+    "ru": "переправа армии Джорджа Вашингтона через реку Делавэр",
+    "zh-hant": "華盛頓穿越特拉華河"
+   },
+   "coordinates": [
+    40.3,
+    -74.8734
+   ],
+   "instanceOf": [
+    "Q645883"
+   ],
+   "country": [],
+   "in": []
+  },
+  "Q42537": {
+   "labels": {
+    "en": "flag of the United States",
+    "tr": "Amerika Birleşik Devletleri bayrağı",
+    "ko": "미국의 국기",
+    "ja": "アメリカ合衆国の国旗",
+    "de": "Flagge der Vereinigten Staaten",
+    "fr": "drapeau des États-Unis",
+    "es": "bandera de los Estados Unidos",
+    "pt": "bandeira dos Estados Unidos",
+    "it": "bandiera degli Stati Uniti d'America",
+    "ru": "флаг Соединённых Штатов",
+    "zh": "美国国旗",
+    "id": "Bendera Amerika Serikat"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q186516"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": []
+  },
+  "Q192769": {
+   "labels": {
+    "en": "American Revolution",
+    "tr": "Amerikan Devrimi",
+    "ko": "미국 독립 혁명",
+    "ja": "アメリカ合衆国の独立",
+    "de": "Amerikanische Revolution",
+    "fr": "révolution américaine",
+    "es": "Revolución de las Trece Colonias",
+    "pt-br": "Revolução Americana",
+    "pt": "Revolução Americana",
+    "it": "rivoluzione americana",
+    "ru": "Американская революция",
+    "zh-hans": "美国革命",
+    "zh-hant": "美國革命",
+    "zh": "美國革命",
+    "zh-cn": "美国革命",
+    "zh-tw": "美國革命",
+    "zh-hk": "美國革命",
+    "id": "Revolusi Amerika Serikat"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q10931",
+    "Q2738074"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": []
+  },
+  "Q761716": {
+   "labels": {
+    "en": "Naval Station Copenhagen",
+    "ja": "ホルメン海軍基地",
+    "de": "Marinestation Kopenhagen",
+    "fr": "Holmen",
+    "zh": "荷爾文海軍基地"
+   },
+   "coordinates": [
+    55.68,
+    12.6035
+   ],
+   "instanceOf": [
+    "Q1324633"
+   ],
+   "country": [
+    "Q35"
+   ],
+   "in": [
+    "Q504125"
+   ]
+  },
+  "Q308345": {
+   "labels": {
+    "en": "Østerbro",
+    "ko": "외스테르브로",
+    "de": "Østerbro",
+    "fr": "Østerbro",
+    "es": "Østerbro",
+    "it": "Østerbro",
+    "ru": "Эстербро",
+    "zh-hans": "厄斯特布罗",
+    "zh-hant": "奧斯特布羅",
+    "zh": "厄斯特布罗",
+    "zh-cn": "厄斯特布罗"
+   },
+   "coordinates": [
+    55.7066,
+    12.5691
+   ],
+   "instanceOf": [
+    "Q109392731"
+   ],
+   "country": [
+    "Q35"
+   ],
+   "in": [
+    "Q504125"
+   ]
+  },
+  "Q34": {
+   "labels": {
+    "en": "Sweden",
+    "tr": "İsveç",
+    "ko": "스웨덴",
+    "ja": "スウェーデン",
+    "de": "Schweden",
+    "fr": "Suède",
+    "es": "Suecia",
+    "pt-br": "Suécia",
+    "pt": "Suécia",
+    "it": "Svezia",
+    "ru": "Швеция",
+    "zh-hans": "瑞典",
+    "zh-hant": "瑞典",
+    "zh": "瑞典",
+    "zh-cn": "瑞典",
+    "zh-tw": "瑞典",
+    "zh-hk": "瑞典",
+    "id": "Swedia"
+   },
+   "coordinates": [
+    61,
+    15
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q6256",
+    "Q179164",
+    "Q63791824",
+    "Q41614"
+   ],
+   "country": [],
+   "in": []
+  },
+  "Q12318611": {
+   "labels": {
+    "en": "Iselingen",
+    "de": "Iselingen",
+    "fr": "Iselingen"
+   },
+   "coordinates": [
+    55.0149,
+    11.9262
+   ],
+   "instanceOf": [
+    "Q879050"
+   ],
+   "country": [
+    "Q35"
+   ],
+   "in": [
+    "Q183572"
+   ]
+  },
+  "Q220": {
+   "labels": {
+    "en": "Rome",
+    "tr": "Roma",
+    "ko": "로마",
+    "ja": "ローマ",
+    "de": "Rom",
+    "fr": "Rome",
+    "es": "Roma",
+    "pt-br": "Roma",
+    "pt": "Roma",
+    "it": "Roma",
+    "ru": "Рим",
+    "zh-hans": "罗马",
+    "zh-hant": "羅馬",
+    "zh": "罗马",
+    "zh-cn": "罗马",
+    "zh-tw": "羅馬",
+    "zh-hk": "羅馬",
+    "id": "Roma"
+   },
+   "coordinates": [
+    41.8931,
+    12.4828
+   ],
+   "instanceOf": [
+    "Q902814",
+    "Q3685476",
+    "Q1200957",
+    "Q200250",
+    "Q51929311",
+    "Q1187811",
+    "Q1549591",
+    "Q747074",
+    "Q108178728",
+    "Q5119"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q18288160"
+   ]
+  },
+  "Q10285": {
+   "labels": {
+    "en": "Colosseum",
+    "tr": "Kolezyum",
+    "ko": "콜로세움",
+    "ja": "コロッセオ",
+    "de": "Kolosseum",
+    "fr": "Colisée",
+    "es": "Coliseo",
+    "pt-br": "Coliseu de Roma",
+    "pt": "Coliseu de Roma",
+    "it": "Colosseo",
+    "ru": "Колизей",
+    "zh-hans": "罗马斗兽场",
+    "zh": "罗马斗兽场",
+    "id": "Koloseum"
+   },
+   "coordinates": [
+    41.8903,
+    12.4922
+   ],
+   "instanceOf": [
+    "Q7362268",
+    "Q839954",
+    "Q483110",
+    "Q112132548",
+    "Q3867560",
+    "Q112132522",
+    "Q124830411",
+    "Q133444874"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q3940419"
+   ]
+  },
+  "Q390150": {
+   "labels": {
+    "en": "Salisbury Cathedral",
+    "tr": "Salisbury Katedrali",
+    "ko": "솔즈베리 대성당",
+    "ja": "ソールズベリー大聖堂",
+    "de": "Kathedrale von Salisbury",
+    "fr": "cathédrale de Salisbury",
+    "es": "Catedral de Salisbury",
+    "pt-br": "Catedral de Salisbury",
+    "pt": "Catedral de Salisbury",
+    "it": "cattedrale di Salisbury",
+    "ru": "Солсберийский собор",
+    "zh": "索爾茲伯里大教堂",
+    "id": "Katedral Salisbury"
+   },
+   "coordinates": [
+    51.0647,
+    -1.7975
+   ],
+   "instanceOf": [
+    "Q56242250"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q160642"
+   ]
+  },
+  "Q46596638": {
+   "labels": {
+    "en": "Andrew W. Mellon collection",
+    "de": "Andrew W. Mellon collection",
+    "fr": "collection Andrew W. Mellon",
+    "pt-br": "Andrew W. Mellon collection",
+    "pt": "Andrew W. Mellon collection"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q7328910"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": []
+  },
+  "Q21": {
+   "labels": {
+    "en": "England",
+    "tr": "İngiltere",
+    "ko": "잉글랜드",
+    "ja": "イングランド",
+    "de": "England",
+    "fr": "Angleterre",
+    "es": "Inglaterra",
+    "pt-br": "Inglaterra",
+    "pt": "Inglaterra",
+    "it": "Inghilterra",
+    "ru": "Англия",
+    "zh-hans": "英格兰",
+    "zh-hant": "英格蘭",
+    "zh": "英格兰",
+    "zh-cn": "英格兰",
+    "zh-tw": "英格蘭",
+    "zh-hk": "英格蘭",
+    "id": "Inggris"
+   },
+   "coordinates": [
+    53,
+    -1
+   ],
+   "instanceOf": [
+    "Q3336843"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q145"
+   ]
+  },
+  "Q4859409": {
+   "labels": {
+    "en": "Burning of Parliament",
+    "ko": "영국 국회의사당 화재",
+    "ja": "イギリス国会議事堂の火災",
+    "de": "Brand von Westminster Palace",
+    "fr": "incendie du Parlement",
+    "es": "Incendio del Parlamento del Reino Unido",
+    "pt": "Incêndio do Parlamento Britânico em 1834",
+    "zh": "國會之焚"
+   },
+   "coordinates": [
+    51.4993,
+    -0.1247
+   ],
+   "instanceOf": [
+    "Q3196"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": []
+  },
+  "Q657415": {
+   "labels": {
+    "en": "Cleveland Museum of Art",
+    "tr": "Cleveland Museum of Art",
+    "ko": "클리블랜드 미술관",
+    "ja": "クリーヴランド美術館",
+    "de": "Cleveland Museum of Art",
+    "fr": "Cleveland Museum of Art",
+    "es": "Museo de Arte de Cleveland",
+    "pt": "Museu de Arte de Cleveland",
+    "it": "Cleveland Museum of Art",
+    "ru": "Художественный музей Кливленда",
+    "zh-hans": "克利夫兰艺术博物馆",
+    "zh-hant": "克利夫蘭藝術博物館",
+    "zh": "克利夫蘭藝術博物館",
+    "zh-cn": "克利夫兰美术馆",
+    "id": "Museum Seni Cleveland"
+   },
+   "coordinates": [
+    41.5089,
+    -81.6117
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q2085381",
+    "Q96888669",
+    "Q163740",
+    "Q33506"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q37320"
+   ]
+  },
+  "Q10539254": {
+   "labels": {
+    "en": "Red Fuji",
+    "ja": "赤富士",
+    "zh": "赤富士"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q1406161"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": []
+  },
+  "Q1117704": {
+   "labels": {
+    "tr": "Indianapolis Sanat Müzesi",
+    "ko": "인디애나폴리스 미술관",
+    "ja": "インディアナポリス美術館",
+    "fr": "Musée d'Art d'Indianapolis",
+    "es": "Museo de Arte de Indianápolis",
+    "pt": "Museu de Arte de Indianápolis",
+    "ru": "Художественный музей Индианаполиса",
+    "zh-hans": "印第安纳波利斯艺术博物馆",
+    "zh-hant": "印第安納波利斯藝術博物館",
+    "zh": "印第安納波利斯藝術博物館",
+    "zh-cn": "印第安纳波利斯艺术博物馆",
+    "id": "Museum Kesenian Indianapolis"
+   },
+   "coordinates": [
+    39.826,
+    -86.1857
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q163740"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q6346"
+   ]
+  },
+  "Q843638": {
+   "labels": {
+    "en": "MOA Museum of Art",
+    "ko": "MOA 미술관",
+    "ja": "MOA美術館",
+    "de": "MOA-Kunstmuseum",
+    "fr": "musée d'art MOA",
+    "es": "MOA",
+    "pt-br": "MOA Museum of Art",
+    "pt": "MOA Museum of Art",
+    "it": "Moa Museum of Art",
+    "ru": "MOA",
+    "zh-hans": "MOA美术馆",
+    "zh-hant": "MOA美術館",
+    "zh": "MOA美術館",
+    "zh-hk": "MOA美術館",
+    "id": "Museum Seni MOA"
+   },
+   "coordinates": [
+    35.1093,
+    139.0752
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q614316"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q653364"
+   ]
+  },
+  "Q17": {
+   "labels": {
+    "en": "Japan",
+    "tr": "Japonya",
+    "ko": "일본",
+    "ja": "日本",
+    "de": "Japan",
+    "fr": "Japon",
+    "es": "Japón",
+    "pt-br": "Japão",
+    "pt": "Japão",
+    "it": "Giappone",
+    "ru": "Япония",
+    "zh-hans": "日本",
+    "zh-hant": "日本",
+    "zh": "日本",
+    "zh-cn": "日本",
+    "zh-tw": "日本",
+    "zh-hk": "日本",
+    "id": "Jepang"
+   },
+   "coordinates": [
+    35,
+    136
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q112099",
+    "Q6256"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": []
+  },
+  "Q39231": {
+   "labels": {
+    "en": "Mount Fuji",
+    "tr": "Fuji Dağı",
+    "ko": "후지산",
+    "ja": "富士山",
+    "de": "Fuji",
+    "fr": "mont Fuji",
+    "es": "Monte Fuji",
+    "pt": "Monte Fuji",
+    "it": "Fuji",
+    "ru": "Фудзияма",
+    "zh-hant": "富士山",
+    "zh": "富士山",
+    "zh-cn": "富士山",
+    "zh-tw": "富士山",
+    "zh-hk": "富士山",
+    "id": "Gunung Fuji"
+   },
+   "coordinates": [
+    35.3606,
+    138.7275
+   ],
+   "instanceOf": [
+    "Q1330974",
+    "Q3393392",
+    "Q11571545",
+    "Q169358",
+    "Q11588709",
+    "Q8502"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q131320",
+    "Q132720"
+   ]
+  },
+  "Q141017": {
+   "labels": {
+    "en": "Tokyo Bay",
+    "tr": "Tokyo Körfezi",
+    "ko": "도쿄만",
+    "ja": "東京湾",
+    "de": "Bucht von Tokio",
+    "fr": "baie de Tokyo",
+    "es": "Bahía de Tokio",
+    "pt": "Baía de Tóquio",
+    "it": "baia di Tokyo",
+    "ru": "Токийский залив",
+    "zh-hans": "东京湾",
+    "zh-hant": "東京灣",
+    "zh": "東京灣",
+    "zh-cn": "东京湾",
+    "zh-tw": "東京灣",
+    "zh-hk": "東京灣",
+    "id": "Teluk Tokyo"
+   },
+   "coordinates": [
+    35.4167,
+    139.7833
+   ],
+   "instanceOf": [
+    "Q39594"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q1490",
+    "Q127513",
+    "Q80011"
+   ]
+  },
+  "Q11497722": {
+   "labels": {
+    "en": "Oshiokuribune",
+    "ko": "오시오쿠리부네",
+    "ja": "押送船"
+   },
+   "coordinates": null,
+   "instanceOf": [],
+   "country": [
+    "Q17"
+   ],
+   "in": []
+  },
+  "Q66686028": {
+   "labels": {
+    "ko": "가나가와항",
+    "ja": "神奈川湊"
+   },
+   "coordinates": [
+    35.4673,
+    139.6519
+   ],
+   "instanceOf": [
+    "Q44782"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q38283"
+   ]
+  },
+  "Q653433": {
+   "labels": {
+    "en": "Tokyo National Museum",
+    "tr": "Tokyo Ulusal Müzesi",
+    "ko": "도쿄 국립박물관",
+    "ja": "東京国立博物館",
+    "de": "Nationalmuseum Tokio",
+    "fr": "musée national de Tokyo",
+    "es": "Museo Nacional de Tokio",
+    "pt": "Museu Nacional de Tóquio",
+    "it": "Museo nazionale di Tokyo",
+    "ru": "Токийский национальный музей",
+    "zh-hans": "东京国立博物馆",
+    "zh-hant": "東京國立博物館",
+    "zh": "東京國立博物館",
+    "zh-tw": "東京國立博物館",
+    "zh-hk": "東京國立博物館",
+    "id": "Museum Nasional Tokyo"
+   },
+   "coordinates": [
+    35.7189,
+    139.7764
+   ],
+   "instanceOf": [
+    "Q17431399"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q92909922"
+   ]
+  },
+  "Q128316": {
+   "labels": {
+    "en": "Honolulu Museum of Art",
+    "ko": "호놀룰루 미술관",
+    "ja": "ホノルル美術館",
+    "de": "Honolulu Museum",
+    "fr": "Musée d'Art de Honolulu",
+    "es": "Museo de Arte de Honolulu",
+    "pt": "Museu de Arte Honolulu",
+    "it": "Honolulu Museum of Art",
+    "ru": "Художественный музей Гонолулу",
+    "zh-hans": "檀香山艺术学院",
+    "zh-hant": "檀香山藝術學院",
+    "zh": "檀香山艺术学院",
+    "zh-cn": "檀香山艺术学院",
+    "zh-tw": "檀香山藝術學院",
+    "zh-hk": "檀香山藝術學院",
+    "id": "Honolulu Museum of Art"
+   },
+   "coordinates": [
+    21.3039,
+    -157.8487
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q163740",
+    "Q33506"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q18094"
+   ]
+  },
+  "Q3180768": {
+   "labels": {
+    "en": "Centre Céramique",
+    "de": "Centre Céramique",
+    "fr": "centre Céramique"
+   },
+   "coordinates": [
+    50.8458,
+    5.7011
+   ],
+   "instanceOf": [
+    "Q1329623",
+    "Q7075"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q1309"
+   ]
+  },
+  "Q1464509": {
+   "labels": {
+    "en": "National Gallery of Victoria",
+    "tr": "National Gallery",
+    "ko": "빅토리아 국립미술관",
+    "ja": "ヴィクトリア国立美術館",
+    "de": "National Gallery of Victoria",
+    "fr": "musée national du Victoria",
+    "es": "Galería Nacional de Victoria",
+    "pt": "National Gallery of Victoria",
+    "it": "National Gallery of Victoria",
+    "ru": "Национальная галерея Виктории",
+    "zh-hant": "維多利亞國立美術館",
+    "zh": "維多利亞國立美術館",
+    "id": "National Gallery of Victoria"
+   },
+   "coordinates": [
+    -37.8225,
+    144.9689
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q17431399",
+    "Q11396960",
+    "Q2085381"
+   ],
+   "country": [
+    "Q408"
+   ],
+   "in": [
+    "Q1919098"
+   ]
+  },
+  "Q896052": {
+   "labels": {
+    "en": "Museum of Art and Crafts Hamburg",
+    "ko": "함부르크 예술 공예 박물관",
+    "ja": "ハンブルク美術工芸博物館",
+    "de": "Museum für Kunst und Gewerbe Hamburg",
+    "fr": "musée des arts et métiers de Hambourg",
+    "es": "Museo de Artes y Oficios de Hamburgo",
+    "pt": "Museum für Kunst und Gewerbe Hamburg",
+    "it": "Museum für Kunst und Gewerbe",
+    "ru": "Музей прикладного искусства и ремёсел (Гамбург)",
+    "zh": "漢堡工藝美術館"
+   },
+   "coordinates": [
+    53.5511,
+    10.0094
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q24699794"
+   ],
+   "country": [
+    "Q183"
+   ],
+   "in": [
+    "Q1626"
+   ]
+  },
+  "Q1641836": {
+   "labels": {
+    "en": "Los Angeles County Museum of Art",
+    "tr": "Los Angeles County Sanat Müzesi",
+    "ko": "로스앤젤레스 카운티 미술관",
+    "ja": "ロサンゼルス・カウンティ美術館",
+    "de": "Los Angeles County Museum of Art",
+    "fr": "musée d'Art du comté de Los Angeles",
+    "es": "Museo de Arte del Condado de Los Ángeles",
+    "pt-br": "Los Angeles County Museum of Art",
+    "pt": "Los Angeles County Museum of Art",
+    "it": "Los Angeles County Museum of Art",
+    "ru": "Музей искусств округа Лос-Анджелес",
+    "zh-hant": "洛杉磯縣立藝術博物館",
+    "zh": "洛杉磯郡藝術博物館",
+    "zh-cn": "洛杉矶县立艺术博物馆",
+    "id": "Los Angeles County Museum of Art"
+   },
+   "coordinates": [
+    34.0633,
+    -118.3592
+   ],
+   "instanceOf": [
+    "Q207694",
+    "Q163740",
+    "Q33506"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q65"
+   ]
+  },
+  "Q6735528": {
+   "labels": {
+    "en": "Maidstone Museum and Bentlif Art Gallery",
+    "de": "Maidstone Museum & Art Gallery",
+    "fr": "Maidstone Museum & Bentlif Art Gallery"
+   },
+   "coordinates": [
+    51.2758,
+    0.5206
+   ],
+   "instanceOf": [
+    "Q1970365",
+    "Q1595639",
+    "Q207694",
+    "Q115154345"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q737114"
+   ]
+  },
+  "Q478455": {
+   "labels": {
+    "en": "MAK – Museum of Applied Arts",
+    "tr": "Viyana Uygulamalı Sanatlar Müzesi",
+    "ko": "응용미술관",
+    "ja": "オーストリア応用美術博物館",
+    "de": "MAK - Museum für angewandte Kunst",
+    "fr": "MAK – Musée autrichien d’arts appliqués / art contemporain",
+    "es": "Museo de Artes Aplicadas de Viena",
+    "it": "Museum für angewandte Kunst",
+    "ru": "Австрийский музей прикладного искусства",
+    "zh": "应用艺术博物馆",
+    "id": "Museum Seni Terapan Wina"
+   },
+   "coordinates": [
+    48.2077,
+    16.3814
+   ],
+   "instanceOf": [
+    "Q62098611",
+    "Q24699794",
+    "Q207694"
+   ],
+   "country": [
+    "Q40"
+   ],
+   "in": [
+    "Q267329"
+   ]
+  },
+  "Q5471008": {
+   "labels": {
+    "en": "Fort Cumberland",
+    "fr": "fort Cumberland",
+    "zh": "坎伯蘭堡 (馬利蘭州)"
+   },
+   "coordinates": [
+    39.6511,
+    -78.7653
+   ],
+   "instanceOf": [
+    "Q1785071",
+    "Q19860854"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1391"
+   ]
+  },
+  "Q406": {
+   "labels": {
+    "en": "Istanbul",
+    "tr": "İstanbul",
+    "ko": "이스탄불",
+    "ja": "イスタンブール",
+    "de": "Istanbul",
+    "fr": "Istanbul",
+    "es": "Estambul",
+    "pt-br": "Istambul",
+    "pt": "Istambul",
+    "it": "Istanbul",
+    "ru": "Стамбул",
+    "zh-hans": "伊斯坦布尔",
+    "zh-hant": "伊斯坦堡",
+    "zh": "伊斯坦堡",
+    "zh-cn": "伊斯坦布尔",
+    "zh-tw": "伊斯坦堡",
+    "zh-hk": "伊斯坦堡",
+    "id": "Istanbul"
+   },
+   "coordinates": [
+    41.01,
+    28.9603
+   ],
+   "instanceOf": [
+    "Q2716259",
+    "Q27554677",
+    "Q174844",
+    "Q51929311",
+    "Q2264924",
+    "Q1549591"
+   ],
+   "country": [
+    "Q43"
+   ],
+   "in": [
+    "Q534799"
+   ]
+  },
+  "Q21010176": {
+   "labels": {
+    "en": "Directie van de Levantse handel en de Navigatie op de Middellandse Zee",
+    "de": "Directie van de Levantse handel en de Navigatie op de Middellandse Zee"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q178706"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9899"
+   ]
+  },
+  "Q34076860": {
+   "labels": {
+    "en": "Koninklijk Kabinet van Zeldzaamheden"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q33506"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q36600"
+   ]
+  },
+  "Q18015075": {
+   "labels": {
+    "en": "Nederlandsch Museum voor Geschiedenis en Kunst",
+    "de": "Nederlandsch Museum voor Geschiedenis en Kunst",
+    "fr": "Nederlandsch Museum voor Geschiedenis en Kunst"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q16735822",
+    "Q207694"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9899"
+   ]
+  },
+  "Q99309": {
+   "labels": {
+    "en": "Pantheon",
+    "tr": "Panteon",
+    "ko": "판테온",
+    "ja": "パンテオン",
+    "de": "Pantheon",
+    "fr": "Panthéon",
+    "es": "Panteón de Agripa",
+    "pt-br": "Panteão",
+    "pt": "Panteão",
+    "it": "Pantheon",
+    "ru": "Пантеон",
+    "zh": "万神庙",
+    "id": "Pantheon, Roma"
+   },
+   "coordinates": [
+    41.8986,
+    12.4769
+   ],
+   "instanceOf": [
+    "Q867143",
+    "Q21752084",
+    "Q120560",
+    "Q96376684",
+    "Q14752696",
+    "Q92755865",
+    "Q3867560",
+    "Q112132548",
+    "Q112132522",
+    "Q124830411"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q220"
+   ]
+  },
+  "Q2074027": {
+   "labels": {
+    "en": "Samuel H. Kress Collection",
+    "ja": "サミュエル・H・クレス・コレクション",
+    "de": "Sammlung Samuel H. Kress",
+    "fr": "Samuel H. Kress Collection",
+    "pt-br": "Coleção Samuel H. Kress",
+    "pt": "Coleção Samuel H. Kress",
+    "it": "Collezione Samuel H. Kress"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q7328910"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": []
+  },
+  "Q217527": {
+   "labels": {
+    "en": "Piazza San Marco",
+    "tr": "San Marco Meydanı",
+    "ko": "산마르코 광장",
+    "ja": "サン・マルコ広場",
+    "de": "Markusplatz",
+    "fr": "place Saint-Marc",
+    "es": "Plaza de San Marcos",
+    "pt": "Praça de São Marcos",
+    "it": "piazza San Marco",
+    "ru": "Площадь Сан-Марко",
+    "zh-hans": "圣马可广场",
+    "zh-hant": "聖馬可廣場",
+    "zh": "圣马可广场",
+    "zh-cn": "圣马可广场",
+    "zh-tw": "聖馬可廣場",
+    "zh-hk": "聖馬可廣場",
+    "id": "Piazza San Marco"
+   },
+   "coordinates": [
+    45.434,
+    12.338
+   ],
+   "instanceOf": [
+    "Q174782",
+    "Q1497375"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q641"
+   ]
+  },
+  "Q172988": {
+   "labels": {
+    "en": "St Mark's Basilica",
+    "tr": "San Marco Bazilikası",
+    "ko": "산마르코 대성당",
+    "ja": "サン・マルコ寺院",
+    "de": "Markusdom",
+    "fr": "basilique Saint-Marc",
+    "es": "basílica de San Marcos",
+    "pt": "Basílica de São Marcos",
+    "it": "basilica di San Marco",
+    "ru": "Собор Святого Марка",
+    "zh-hans": "圣马尔谷圣殿宗主教座堂",
+    "zh-hant": "聖馬爾谷聖殿宗主教座堂",
+    "zh": "聖馬爾谷聖殿宗主教座堂",
+    "zh-cn": "圣马尔谷圣殿宗主教座堂",
+    "zh-tw": "聖馬爾谷聖殿宗主教座堂",
+    "zh-hk": "聖馬哥聖殿宗主教座堂",
+    "id": "Basilika Santo Markus"
+   },
+   "coordinates": [
+    45.4344,
+    12.3397
+   ],
+   "instanceOf": [
+    "Q2977",
+    "Q120560"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q641"
+   ]
+  },
+  "Q21753940": {
+   "labels": {
+    "en": "Thyssen-Bornemisza family Collection",
+    "de": "Sammlung Thyssen-Bornemisza",
+    "fr": "Sammlung Schloss Rohoncz",
+    "es": "Colección Thyssen-Bornemisza",
+    "pt-br": "Sammlung Schloss Rohoncz",
+    "pt": "Sammlung Schloss Rohoncz",
+    "it": "Sammlung Schloss Rohoncz",
+    "ru": "Sammlung Schloss Rohoncz"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q7328910",
+    "Q768717",
+    "Q47114558"
+   ],
+   "country": [],
+   "in": []
+  },
+  "Q97142972": {
+   "labels": {
+    "en": "Northbrook collection",
+    "de": "Northbrook Sammlung",
+    "fr": "Northbrook collection",
+    "pt-br": "Coleção Northbrook"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q7328910"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": []
+  },
+  "Q90": {
+   "labels": {
+    "en": "Paris",
+    "tr": "Paris",
+    "ko": "파리",
+    "ja": "パリ",
+    "de": "Paris",
+    "fr": "Paris",
+    "es": "París",
+    "pt-br": "Paris",
+    "pt": "Paris",
+    "it": "Parigi",
+    "ru": "Париж",
+    "zh-hans": "巴黎",
+    "zh-hant": "巴黎",
+    "zh": "巴黎",
+    "zh-cn": "巴黎",
+    "zh-tw": "巴黎",
+    "zh-hk": "巴黎",
+    "id": "Paris"
+   },
+   "coordinates": [
+    48.8567,
+    2.3522
+   ],
+   "instanceOf": [
+    "Q484170",
+    "Q22923920",
+    "Q200250",
+    "Q1200957",
+    "Q208511",
+    "Q51929311",
+    "Q1187811",
+    "Q1549591",
+    "Q1422929",
+    "Q108178728",
+    "Q1066984",
+    "Q11418818",
+    "Q134445478",
+    "Q2240381",
+    "Q471822"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q16665915"
+   ]
+  },
+  "Q41986": {
+   "labels": {
+    "en": "Meuse",
+    "tr": "Maas Nehri",
+    "ko": "뫼즈강",
+    "ja": "マース川",
+    "de": "Maas",
+    "fr": "Meuse",
+    "es": "Mosa",
+    "pt": "Rio Mosa",
+    "it": "Mosa",
+    "ru": "Маас",
+    "zh-hant": "默茲河",
+    "zh": "默兹河",
+    "id": "Meuse"
+   },
+   "coordinates": [
+    51.8664,
+    4.0189
+   ],
+   "instanceOf": [
+    "Q4022"
+   ],
+   "country": [
+    "Q142",
+    "Q31",
+    "Q55"
+   ],
+   "in": [
+    "Q12607",
+    "Q3105",
+    "Q12631",
+    "Q3164",
+    "Q1125",
+    "Q1127",
+    "Q1093",
+    "Q1095",
+    "Q1101",
+    "Q775"
+   ]
+  },
+  "Q26421": {
+   "labels": {
+    "en": "Dordrecht",
+    "tr": "Dordrecht",
+    "ko": "도르드레흐트",
+    "ja": "ドルトレヒト",
+    "de": "Dordrecht",
+    "fr": "Dordrecht",
+    "es": "Dordrecht",
+    "pt-br": "Dordrecht",
+    "pt": "Dordrecht",
+    "it": "Dordrecht",
+    "ru": "Дордрехт",
+    "zh-hans": "多德雷赫特",
+    "zh-hant": "多德雷赫特",
+    "zh": "多德雷赫特",
+    "zh-cn": "多德雷赫特",
+    "id": "Dordrecht"
+   },
+   "coordinates": [
+    51.7958,
+    4.6783
+   ],
+   "instanceOf": [
+    "Q2039348",
+    "Q515",
+    "Q1852859",
+    "Q13539802"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q694"
+   ]
+  },
+  "Q23959785": {
+   "labels": {
+    "en": "National Art Gallery of the Netherlands",
+    "de": "Nationale Kunstgalerie",
+    "fr": "Nationale Konst-gallercij"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q3196771"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": []
+  },
+  "Q19635965": {
+   "labels": {
+    "en": "Vlamingstraat",
+    "de": "Vlamingstraat",
+    "pt": "Vlamingstraat"
+   },
+   "coordinates": [
+    52.0133,
+    4.3619
+   ],
+   "instanceOf": [
+    "Q79007"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q690"
+   ]
+  },
+  "Q9920": {
+   "labels": {
+    "en": "Haarlem",
+    "tr": "Haarlem",
+    "ko": "하를럼",
+    "ja": "ハールレム",
+    "de": "Haarlem",
+    "fr": "Haarlem",
+    "es": "Haarlem",
+    "pt-br": "Haarlem",
+    "pt": "Haarlem",
+    "it": "Haarlem",
+    "ru": "Харлем",
+    "zh-hans": "哈勒姆",
+    "zh-hant": "哈倫",
+    "zh": "哈勒姆",
+    "zh-cn": "哈勒姆",
+    "id": "Haarlem"
+   },
+   "coordinates": [
+    52.3814,
+    4.6356
+   ],
+   "instanceOf": [
+    "Q515",
+    "Q13539802",
+    "Q1852859",
+    "Q1549591",
+    "Q2039348"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q701"
+   ]
+  },
+  "Q221092": {
+   "labels": {
+    "en": "Mauritshuis",
+    "tr": "Mauritshuis",
+    "ko": "마우리츠하위스 미술관",
+    "ja": "マウリッツハイス美術館",
+    "de": "Mauritshuis",
+    "fr": "Mauritshuis",
+    "es": "Mauritshuis",
+    "pt-br": "Mauritshuis",
+    "pt": "Mauritshuis",
+    "it": "Mauritshuis",
+    "ru": "Маурицхёйс",
+    "zh": "莫瑞泰斯皇家美术馆",
+    "id": "Mauritshuis"
+   },
+   "coordinates": [
+    52.0804,
+    4.3143
+   ],
+   "instanceOf": [
+    "Q3196771",
+    "Q17431399"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q36600"
+   ]
+  },
+  "Q2284748": {
+   "labels": {
+    "en": "Jacques Goudstikker collection",
+    "de": "Sammlung Jacques Goudstikker",
+    "fr": "collection de Jacques Goudstikker",
+    "pt-br": "Jacques Goudstikker collection",
+    "pt": "Jacques Goudstikker collection"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q7328910"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": []
+  },
+  "Q28872849": {
+   "labels": {
+    "en": "Kunsthandel P. de Boer",
+    "de": "Kunsthandel P. de Boer",
+    "fr": "Kunsthandel P. de Boer",
+    "es": "Kunsthandel P. de Boer",
+    "pt": "Kunsthandel P. de Boer",
+    "it": "Kunsthandel P. de Boer"
+   },
+   "coordinates": null,
+   "instanceOf": [
+    "Q4830453",
+    "Q1007870"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": []
+  },
+  "Q9168": {
+   "labels": {
+    "en": "Persian",
+    "tr": "Farsça",
+    "ko": "페르시아어",
+    "ja": "ペルシア語",
+    "de": "Persisch",
+    "fr": "persan",
+    "es": "persa",
+    "pt-br": "persa",
+    "pt": "persa",
+    "it": "persiano",
+    "ru": "персидский язык",
+    "zh-hant": "波斯語",
+    "zh": "波斯語",
+    "zh-cn": "波斯语",
+    "zh-tw": "波斯語",
+    "zh-hk": "波斯語",
+    "id": "bahasa Persia"
+   },
+   "coordinates": [
+    31,
+    56
+   ],
+   "instanceOf": [
+    "Q33742",
+    "Q1288568",
+    "Q152559",
+    "Q1047113",
+    "Q2267705",
+    "Q215844",
+    "Q34770",
+    "Q25295",
+    "Q1208380"
+   ],
+   "country": [
+    "Q794",
+    "Q398",
+    "Q817",
+    "Q889",
+    "Q843",
+    "Q863",
+    "Q265",
+    "Q159",
+    "Q878",
+    "Q796"
+   ],
+   "in": []
+  },
+  "Q1891413": {
+   "labels": {
+    "en": "Skokloster Castle",
+    "ja": "スコークロステル城",
+    "de": "Schloss Skokloster",
+    "fr": "château de Skokloster",
+    "es": "Castillo de Skokloster",
+    "pt": "Castelo Skokloster",
+    "it": "castello di Skokloster",
+    "ru": "Замок Скоклостер",
+    "zh": "斯庫克洛斯特城堡"
+   },
+   "coordinates": [
+    59.7031,
+    17.6214
+   ],
+   "instanceOf": [
+    "Q23413",
+    "Q1497375",
+    "Q33506",
+    "Q2065736",
+    "Q2668072",
+    "Q96211395"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q511253"
+   ]
+  },
+  "Q1917400": {
+   "labels": {
+    "en": "Grote Markt"
+   },
+   "coordinates": [
+    51.4944,
+    4.2869
+   ],
+   "instanceOf": [
+    "Q26987258"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9814"
+   ]
+  },
+  "Q2946": {
+   "labels": {
+    "en": "Palace of Versailles",
+    "tr": "Versay Sarayı",
+    "ko": "베르사유궁",
+    "ja": "ヴェルサイユ宮殿",
+    "de": "Schloss Versailles",
+    "fr": "château de Versailles",
+    "es": "Palacio de Versalles",
+    "pt-br": "Palácio de Versalhes",
+    "pt": "Palácio de Versalhes",
+    "it": "Reggia di Versailles",
+    "ru": "Версаль",
+    "zh-hans": "凡尔赛宫",
+    "zh": "凡尔赛宫",
+    "zh-tw": "凡爾賽宮",
+    "id": "Palace of Versailles"
+   },
+   "coordinates": [
+    48.8047,
+    2.1203
+   ],
+   "instanceOf": [
+    "Q751876",
+    "Q16560",
+    "Q53536964",
+    "Q207694"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q621"
+   ]
+  },
+  "Q731126": {
+   "labels": {
+    "en": "J. Paul Getty Museum",
+    "tr": "J. Paul Getty Müzesi",
+    "ko": "J. 폴 게티 미술관",
+    "ja": "J・ポール・ゲティ美術館",
+    "de": "J. Paul Getty Museum",
+    "fr": "musée J. Paul Getty",
+    "es": "Museo J. Paul Getty",
+    "pt-br": "Museu J. Paul Getty",
+    "pt": "Museu J. Paul Getty",
+    "it": "Getty Museum",
+    "ru": "Музей Гетти",
+    "zh": "保罗·盖蒂博物馆",
+    "zh-hk": "保羅吉地博物館",
+    "id": "Museum Getty"
+   },
+   "coordinates": [
+    34.0775,
+    -118.475
+   ],
+   "instanceOf": [
+    "Q207694"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q65"
+   ]
+  },
+  "Q1473446": {
+   "labels": {
+    "en": "Claude Monet Foundation",
+    "ko": "클로드 모네 재단",
+    "ja": "クロード・モネ財団",
+    "de": "Haus und Garten Claude Monet",
+    "fr": "fondation Claude-Monet",
+    "es": "Fundación Monet en Giverny",
+    "pt": "Fundação Claude Monet",
+    "it": "Casa e giardini di Claude Monet",
+    "ru": "Музей Клода Моне в Живерни",
+    "zh": "莫奈花园"
+   },
+   "coordinates": [
+    49.075,
+    1.5356
+   ],
+   "instanceOf": [
+    "Q3947"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q165061"
+   ]
+  },
+  "Q165061": {
+   "labels": {
+    "en": "Giverny",
+    "tr": "Giverny",
+    "ko": "지베르니",
+    "ja": "ジヴェルニー",
+    "de": "Giverny",
+    "fr": "Giverny",
+    "es": "Giverny",
+    "pt-br": "Giverny",
+    "pt": "Giverny",
+    "it": "Giverny",
+    "ru": "Живерни",
+    "zh": "吉韦尔尼",
+    "id": "Giverny"
+   },
+   "coordinates": [
+    49.0761,
+    1.5292
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q3372",
+    "Q1728020",
+    "Q701477"
+   ]
+  },
+  "Q186115": {
+   "labels": {
+    "en": "Montmartre",
+    "tr": "Montmartre",
+    "ko": "몽마르트르",
+    "ja": "モンマルトル",
+    "de": "Montmartre",
+    "fr": "Montmartre",
+    "es": "Montmartre",
+    "pt-br": "Montmartre",
+    "pt": "Montmartre",
+    "it": "Montmartre",
+    "ru": "Монмартр",
+    "zh-hans": "蒙马特",
+    "zh-hant": "蒙馬特",
+    "zh": "蒙馬特",
+    "zh-cn": "蒙马特",
+    "zh-tw": "蒙馬特",
+    "zh-hk": "蒙馬特",
+    "id": "Montmartre"
+   },
+   "coordinates": [
+    48.8869,
+    2.3411
+   ],
+   "instanceOf": [
+    "Q149621",
+    "Q54050",
+    "Q123705"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q200126"
+   ]
+  },
+  "Q47465": {
+   "labels": {
+    "en": "Aix-en-Provence",
+    "tr": "Aix-en-Provence",
+    "ko": "엑상프로방스",
+    "ja": "エクス＝アン＝プロヴァンス",
+    "de": "Aix-en-Provence",
+    "fr": "Aix-en-Provence",
+    "es": "Aix-en-Provence",
+    "pt-br": "Aix-en-Provence",
+    "pt": "Aix-en-Provence",
+    "it": "Aix-en-Provence",
+    "ru": "Экс-ан-Прованс",
+    "zh-hant": "普羅旺斯地區艾克斯",
+    "zh": "普罗旺斯地区艾克斯",
+    "zh-cn": "普罗旺斯地区艾克斯",
+    "zh-tw": "普羅旺斯地區艾克斯",
+    "id": "Aix-en-Provence"
+   },
+   "coordinates": [
+    43.5278,
+    5.4456
+   ],
+   "instanceOf": [
+    "Q484170",
+    "Q1549591"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q1533801",
+    "Q1467069",
+    "Q540707",
+    "Q700364",
+    "Q3240",
+    "Q16665884"
+   ]
+  },
+  "Q151030": {
+   "labels": {
+    "en": "Moulin Rouge",
+    "tr": "Moulin Rouge",
+    "ko": "물랭 루주",
+    "ja": "ムーラン・ルージュ",
+    "de": "Moulin Rouge",
+    "fr": "Moulin-Rouge",
+    "es": "Moulin Rouge",
+    "pt": "Moulin Rouge",
+    "it": "Moulin Rouge",
+    "ru": "Мулен Руж",
+    "zh-hans": "红磨坊",
+    "zh-hant": "紅磨坊",
+    "zh": "红磨坊",
+    "zh-cn": "红磨坊",
+    "zh-tw": "紅磨坊",
+    "zh-hk": "紅磨坊",
+    "id": "Moulin Rouge"
+   },
+   "coordinates": [
+    48.8842,
+    2.3322
+   ],
+   "instanceOf": [
+    "Q131183",
+    "Q8719053"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q200126"
+   ]
+  },
+  "Q48292": {
+   "labels": {
+    "en": "Arles",
+    "tr": "Arles",
+    "ko": "아를",
+    "ja": "アルル",
+    "de": "Arles",
+    "fr": "Arles",
+    "es": "Arlés",
+    "pt-br": "Arles",
+    "pt": "Arles",
+    "it": "Arles",
+    "ru": "Арль",
+    "zh-hans": "阿尔勒",
+    "zh-hant": "亞爾",
+    "zh": "阿尔勒",
+    "zh-cn": "阿尔勒",
+    "zh-tw": "亞爾",
+    "id": "Arles"
+   },
+   "coordinates": [
+    43.6769,
+    4.6286
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q3240",
+    "Q700484",
+    "Q16912418",
+    "Q1119844"
+   ]
+  },
+  "Q771863": {
+   "labels": {
+    "en": "Sundborn",
+    "tr": "Sundborn",
+    "ja": "スンドボーン",
+    "de": "Sundborn",
+    "fr": "Sundborn",
+    "es": "Sundborn",
+    "pt": "Sundborn",
+    "it": "Sundborn",
+    "ru": "Сундборн",
+    "zh": "桑德波恩"
+   },
+   "coordinates": [
+    60.6519,
+    15.7703
+   ],
+   "instanceOf": [
+    "Q12813115"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q501545"
+   ]
+  },
+  "Q14707794": {
+   "labels": {
+    "en": "William Merritt Chase Homestead"
+   },
+   "coordinates": [
+    40.8872,
+    -72.4719
+   ],
+   "instanceOf": [
+    "Q5773747"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1384"
+   ]
+  },
+  "Q1285433": {
+   "labels": {
+    "en": "Hurley",
+    "tr": "Hurley",
+    "ko": "헐리",
+    "de": "Hurley",
+    "fr": "Hurley",
+    "es": "Hurley",
+    "pt-br": "Hurley",
+    "it": "Hurley",
+    "ru": "Хёрли",
+    "zh": "赫利 (紐約州)"
+   },
+   "coordinates": [
+    41.9242,
+    -74.0617
+   ],
+   "instanceOf": [
+    "Q106071004"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q56152"
+   ]
+  },
+  "Q9918": {
+   "labels": {
+    "en": "Enkhuizen",
+    "tr": "Enkhuizen",
+    "ko": "엥크하위전",
+    "ja": "エンクホイゼン",
+    "de": "Enkhuizen",
+    "fr": "Enkhuizen",
+    "es": "Encusa",
+    "pt-br": "Enkhuizen",
+    "pt": "Enkhuizen",
+    "it": "Enkhuizen",
+    "ru": "Энкхёйзен",
+    "zh": "恩克赫伊森",
+    "id": "Enkhuizen"
+   },
+   "coordinates": [
+    52.7,
+    5.2833
+   ],
+   "instanceOf": [
+    "Q2039348",
+    "Q515",
+    "Q1852859",
+    "Q13539802"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q701"
+   ]
+  },
+  "Q36600": {
+   "labels": {
+    "en": "The Hague",
+    "tr": "Lahey",
+    "ko": "헤이그",
+    "ja": "デン・ハーグ",
+    "de": "Den Haag",
+    "fr": "La Haye",
+    "es": "La Haya",
+    "pt-br": "Haia",
+    "pt": "Haia",
+    "it": "L'Aia",
+    "ru": "Гаага",
+    "zh-hans": "海牙",
+    "zh-hant": "海牙",
+    "zh": "海牙",
+    "zh-cn": "海牙",
+    "zh-tw": "海牙",
+    "zh-hk": "海牙",
+    "id": "Den Haag"
+   },
+   "coordinates": [
+    52.08,
+    4.31
+   ],
+   "instanceOf": [
+    "Q2039348",
+    "Q515",
+    "Q13539802",
+    "Q1852859"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q694"
+   ]
+  },
+  "Q2317705": {
+   "labels": {
+    "en": "Kortenhoef",
+    "tr": "Kortenhoef",
+    "de": "Kortenhoef",
+    "fr": "Kortenhoef",
+    "it": "Kortenhoef"
+   },
+   "coordinates": [
+    52.2397,
+    5.1147
+   ],
+   "instanceOf": [
+    "Q532",
+    "Q1852859",
+    "Q2039348"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9975",
+    "Q701"
+   ]
+  },
+  "Q837211": {
+   "labels": {
+    "en": "Scheveningen",
+    "tr": "Scheveningen",
+    "ko": "스헤베닝언",
+    "ja": "スヘフェニンゲン",
+    "de": "Scheveningen",
+    "fr": "Scheveningen",
+    "es": "Scheveningen",
+    "pt": "Scheveningen",
+    "it": "Scheveningen",
+    "ru": "Схевенинген",
+    "zh-hans": "斯海弗宁恩",
+    "zh-hant": "斯海弗寧恩",
+    "zh": "斯海弗宁恩",
+    "zh-cn": "斯海弗宁恩",
+    "zh-hk": "斯海弗寧恩",
+    "id": "Scheveningen"
+   },
+   "coordinates": [
+    52.1081,
+    4.2731
+   ],
+   "instanceOf": [
+    "Q532",
+    "Q1021711",
+    "Q19413015",
+    "Q2368508",
+    "Q86681780"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q36600"
+   ]
+  },
+  "Q215646": {
+   "labels": {
+    "en": "Edo",
+    "tr": "Edo",
+    "ko": "에도",
+    "ja": "江戸",
+    "de": "Edo",
+    "fr": "Edo",
+    "es": "Edo",
+    "pt": "Edo",
+    "it": "Edo",
+    "ru": "Эдо",
+    "zh-hans": "江户",
+    "zh-hant": "江戶",
+    "zh": "江戶",
+    "zh-cn": "江户",
+    "zh-tw": "江戶",
+    "zh-hk": "江戶",
+    "id": "Edo (Jepang)"
+   },
+   "coordinates": [
+    35.6839,
+    139.7744
+   ],
+   "instanceOf": [
+    "Q22674925",
+    "Q909458",
+    "Q1025961",
+    "Q19953632"
+   ],
+   "country": [
+    "Q17",
+    "Q205662"
+   ],
+   "in": [
+    "Q10876926"
+   ]
+  },
+  "Q3120746": {
+   "labels": {
+    "en": "Ochanomizu",
+    "tr": "Ochanomizu",
+    "ko": "오차노미즈",
+    "ja": "御茶ノ水",
+    "fr": "Ochanomizu",
+    "pt": "Ochanomizu",
+    "zh-hans": "御茶之水",
+    "zh-hant": "御茶之水",
+    "zh": "御茶之水",
+    "zh-hk": "御茶之水"
+   },
+   "coordinates": [
+    35.6983,
+    139.7642
+   ],
+   "instanceOf": [
+    "Q123705"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q212713",
+    "Q214051"
+   ]
+  },
+  "Q907398": {
+   "labels": {
+    "en": "Musashi Province",
+    "tr": "Musashi",
+    "ko": "무사시국",
+    "ja": "武蔵国",
+    "de": "Provinz Musashi",
+    "fr": "province de Musashi",
+    "es": "Provincia de Musashi",
+    "pt": "Província de Musashi",
+    "it": "Musashi",
+    "ru": "Мусаси",
+    "zh-hans": "武藏国",
+    "zh-hant": "武藏國",
+    "zh": "武藏國",
+    "zh-hk": "武藏國",
+    "id": "Provinsi Musashi"
+   },
+   "coordinates": [
+    35.8061,
+    139.4092
+   ],
+   "instanceOf": [
+    "Q860290"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q1334011",
+    "Q1196306"
+   ]
+  },
+  "Q499537": {
+   "labels": {
+    "en": "Ornans",
+    "tr": "Ornans",
+    "ja": "オルナン",
+    "de": "Ornans",
+    "fr": "Ornans",
+    "es": "Ornans",
+    "pt-br": "Ornans",
+    "pt": "Ornans",
+    "it": "Ornans",
+    "ru": "Орнан",
+    "zh-hans": "奥尔南",
+    "zh-hant": "奧爾南",
+    "zh": "奥尔南",
+    "zh-cn": "奥尔南",
+    "zh-hk": "奧爾南",
+    "id": "Ornans"
+   },
+   "coordinates": [
+    47.1053,
+    6.1431
+   ],
+   "instanceOf": [
+    "Q484170",
+    "Q21869758"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q3361",
+    "Q700660"
+   ]
+  },
+  "Q231720": {
+   "labels": {
+    "en": "Honfleur",
+    "tr": "Honfleur",
+    "ko": "옹플뢰르",
+    "ja": "オンフルール",
+    "de": "Honfleur",
+    "fr": "Honfleur",
+    "es": "Honfleur",
+    "pt-br": "Honfleur",
+    "pt": "Honfleur",
+    "it": "Honfleur",
+    "ru": "Онфлёр",
+    "zh-hans": "翁弗勒尔",
+    "zh-hant": "翁弗勒爾",
+    "zh": "翁弗勒尔",
+    "zh-cn": "翁弗勒尔",
+    "zh-tw": "翁弗勒爾",
+    "zh-hk": "翁弗勒爾",
+    "id": "Honfleur"
+   },
+   "coordinates": [
+    49.4189,
+    0.2331
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q932796",
+    "Q3249",
+    "Q701531"
+   ]
+  },
+  "Q1665255": {
+   "labels": {
+    "en": "Château de By",
+    "tr": "Rosa Bonheur Atölye Müzesi",
+    "de": "Musée de l’Atelier de Rosa Bonheur",
+    "fr": "musée de l'atelier Rosa Bonheur",
+    "es": "Museo Rosa Bonheur",
+    "pt": "Musée de l'atelier Rosa Bonheur",
+    "zh": "畢堡"
+   },
+   "coordinates": [
+    48.3961,
+    2.7832
+   ],
+   "instanceOf": [
+    "Q33506",
+    "Q41176"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q899588"
+   ]
+  },
+  "Q1894350": {
+   "labels": {
+    "en": "Northampton Township",
+    "ja": "ノーサンプトン郡区",
+    "de": "Northampton Township",
+    "fr": "canton de Northampton",
+    "es": "Municipio de Northampton",
+    "it": "Northampton",
+    "ru": "Нортгемптон",
+    "zh": "北安普敦鎮區 (賓夕法尼亞州巴克斯縣)"
+   },
+   "coordinates": [
+    40.2011,
+    -75.0003
+   ],
+   "instanceOf": [
+    "Q9035798"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q494192"
+   ]
+  },
+  "Q84": {
+   "labels": {
+    "en": "London",
+    "tr": "Londra",
+    "ko": "런던",
+    "ja": "ロンドン",
+    "de": "London",
+    "fr": "Londres",
+    "es": "Londres",
+    "pt-br": "Londres",
+    "pt": "Londres",
+    "it": "Londra",
+    "ru": "Лондон",
+    "zh-hans": "伦敦",
+    "zh-hant": "倫敦",
+    "zh": "倫敦",
+    "zh-cn": "伦敦",
+    "zh-tw": "倫敦",
+    "zh-hk": "倫敦",
+    "id": "London"
+   },
+   "coordinates": [
+    51.5072,
+    -0.1275
+   ],
+   "instanceOf": [
+    "Q200250",
+    "Q1066984",
+    "Q515",
+    "Q208511",
+    "Q471822",
+    "Q51929311",
+    "Q108178728",
+    "Q1048835"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q23306"
+   ]
+  },
+  "Q2456238": {
+   "labels": {
+    "en": "Mortlake",
+    "tr": "Mortlake",
+    "ja": "モルトレーク",
+    "de": "Mortlake",
+    "fr": "Mortlake",
+    "es": "Mortlake",
+    "it": "Mortlake",
+    "ru": "Мортлейк",
+    "zh-hans": "莫特莱克",
+    "zh": "莫特莱克",
+    "zh-cn": "莫特莱克"
+   },
+   "coordinates": [
+    51.4655,
+    -0.2643
+   ],
+   "instanceOf": [
+    "Q2755753",
+    "Q102496"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q32515"
+   ]
+  },
+  "Q309243": {
+   "labels": {
+    "en": "Grand Canal",
+    "tr": "Büyük Kanal",
+    "ko": "카날 그랑데",
+    "ja": "カナル・グランデ",
+    "de": "Canal Grande",
+    "fr": "Grand Canal",
+    "es": "Gran Canal",
+    "pt": "Grande Canal de Veneza",
+    "it": "Canal Grande",
+    "ru": "Гранд-канал",
+    "zh-hans": "大运河",
+    "zh-hant": "大運河",
+    "zh": "大运河",
+    "zh-cn": "大运河",
+    "zh-tw": "大運河",
+    "zh-hk": "大運河",
+    "id": "Kanal Besar Venesia"
+   },
+   "coordinates": [
+    45.4422,
+    12.3264
+   ],
+   "instanceOf": [
+    "Q12284",
+    "Q83620"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q641"
+   ]
+  },
+  "Q187053": {
+   "labels": {
+    "en": "Lake Ashi",
+    "tr": "Ashi Gölü",
+    "ko": "아시노호",
+    "ja": "芦ノ湖",
+    "de": "Ashi-See",
+    "fr": "lac Ashi",
+    "es": "Lago Ashi",
+    "pt": "Lago Ashi",
+    "it": "Lago Ashi",
+    "ru": "Аси",
+    "zh": "蘆之湖"
+   },
+   "coordinates": [
+    35.2117,
+    139.0039
+   ],
+   "instanceOf": [
+    "Q204324"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q671040"
+   ]
+  },
+  "Q11381595": {
+   "labels": {
+    "en": "Tsukuda",
+    "tr": "Tsukuda",
+    "ja": "佃",
+    "fr": "Tsukuda",
+    "ru": "Цукуда",
+    "zh": "佃"
+   },
+   "coordinates": [
+    35.6679,
+    139.785
+   ],
+   "instanceOf": [
+    "Q5327369",
+    "Q28550993"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q212704"
+   ]
+  },
+  "Q5092": {
+   "labels": {
+    "en": "Baltimore",
+    "tr": "Baltimore",
+    "ko": "볼티모어",
+    "ja": "ボルティモア",
+    "de": "Baltimore",
+    "fr": "Baltimore",
+    "es": "Baltimore",
+    "pt-br": "Baltimore",
+    "pt": "Baltimore",
+    "it": "Baltimora",
+    "ru": "Балтимор",
+    "zh-hans": "巴尔的摩",
+    "zh-hant": "巴爾的摩",
+    "zh": "巴爾的摩",
+    "zh-cn": "巴尔的摩",
+    "zh-tw": "巴爾的摩",
+    "zh-hk": "波地摩",
+    "id": "Baltimore"
+   },
+   "coordinates": [
+    39.2864,
+    -76.615
+   ],
+   "instanceOf": [
+    "Q1266818"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1391"
+   ]
+  },
+  "Q239": {
+   "labels": {
+    "en": "Brussels",
+    "tr": "Brüksel Şehri",
+    "ko": "브뤼셀",
+    "ja": "ブリュッセル市",
+    "de": "Brüssel",
+    "fr": "Bruxelles",
+    "es": "Bruselas",
+    "pt-br": "Cidade de Bruxelas",
+    "pt": "Bruxelas",
+    "it": "Bruxelles",
+    "ru": "Брюссель",
+    "zh-hans": "布鲁塞尔",
+    "zh-hant": "布魯塞爾",
+    "zh": "布鲁塞尔",
+    "zh-cn": "布鲁塞尔",
+    "zh-tw": "布魯塞爾",
+    "zh-hk": "布魯塞爾",
+    "id": "Kota Brussel"
+   },
+   "coordinates": [
+    50.8467,
+    4.3517
+   ],
+   "instanceOf": [
+    "Q1549591",
+    "Q1375749",
+    "Q493522",
+    "Q257391"
+   ],
+   "country": [
+    "Q31"
+   ],
+   "in": [
+    "Q90870"
+   ]
+  },
+  "Q1345": {
+   "labels": {
+    "en": "Philadelphia",
+    "tr": "Philadelphia",
+    "ko": "필라델피아",
+    "ja": "フィラデルフィア",
+    "de": "Philadelphia",
+    "fr": "Philadelphie",
+    "es": "Filadelfia",
+    "pt-br": "Filadélfia",
+    "pt": "Filadélfia",
+    "it": "Filadelfia",
+    "ru": "Филадельфия",
+    "zh-hans": "费城",
+    "zh-hant": "費城",
+    "zh": "費城",
+    "zh-cn": "费城",
+    "zh-tw": "費城",
+    "zh-hk": "費城",
+    "id": "Philadelphia"
+   },
+   "coordinates": [
+    39.9528,
+    -75.1636
+   ],
+   "instanceOf": [
+    "Q21010817",
+    "Q62049",
+    "Q5888666",
+    "Q3301053"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q496900"
+   ]
+  },
+  "Q2807": {
+   "labels": {
+    "en": "Madrid",
+    "tr": "Madrid",
+    "ko": "마드리드",
+    "ja": "マドリード",
+    "de": "Madrid",
+    "fr": "Madrid",
+    "es": "Madrid",
+    "pt-br": "Madri",
+    "pt": "Madrid",
+    "it": "Madrid",
+    "ru": "Мадрид",
+    "zh-hans": "马德里",
+    "zh-hant": "馬德里",
+    "zh": "马德里",
+    "zh-cn": "马德里",
+    "zh-tw": "馬德里",
+    "zh-hk": "馬德里",
+    "id": "Madrid"
+   },
+   "coordinates": [
+    40.4169,
+    -3.7033
+   ],
+   "instanceOf": [
+    "Q2074737"
+   ],
+   "country": [
+    "Q29"
+   ],
+   "in": [
+    "Q5756"
+   ]
+  },
+  "Q1832065": {
+   "labels": {
+    "en": "Ashdon",
+    "tr": "Ashdon",
+    "ja": "アシュドン",
+    "fr": "Ashdon",
+    "es": "Ashdon",
+    "it": "Ashdon"
+   },
+   "coordinates": [
+    52.0552,
+    0.3093
+   ],
+   "instanceOf": [
+    "Q532",
+    "Q1115575"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q1496198"
+   ]
+  },
+  "Q1285144": {
+   "labels": {
+    "en": "Knole House",
+    "ja": "ノール・ハウス",
+    "de": "Knole House",
+    "fr": "Knole House",
+    "pt-br": "Knole House",
+    "pt": "Knole",
+    "it": "Knole House",
+    "ru": "Ноул-хаус",
+    "zh-hant": "諾爾莊園",
+    "zh": "諾爾莊園"
+   },
+   "coordinates": [
+    51.266,
+    0.206
+   ],
+   "instanceOf": [
+    "Q1343246",
+    "Q2087181",
+    "Q16884952"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q1499339"
+   ]
+  },
+  "Q1258837": {
+   "labels": {
+    "en": "Pera",
+    "tr": "Pera",
+    "ja": "ペラ",
+    "de": "Pera",
+    "fr": "Pera",
+    "it": "Pera",
+    "ru": "Пера"
+   },
+   "coordinates": [
+    41.0319,
+    28.9761
+   ],
+   "instanceOf": [],
+   "country": [
+    "Q43"
+   ],
+   "in": []
+  },
+  "Q3654630": {
+   "labels": {
+    "en": "campo Santi Giovanni e Paolo",
+    "de": "Campo Santi Giovanni e Paolo",
+    "fr": "campo Santi Giovanni e Paolo",
+    "it": "campo Santi Giovanni e Paolo",
+    "ru": "Кампо Санти-Джованни э Паоло",
+    "zh": "圣若望及保禄广场"
+   },
+   "coordinates": [
+    45.4392,
+    12.3413
+   ],
+   "instanceOf": [
+    "Q2935533"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q641"
+   ]
+  },
+  "Q2450564": {
+   "labels": {
+    "en": "Canale di Cannaregio",
+    "ja": "カンナレージョ運河",
+    "de": "Canale di Cannaregio",
+    "fr": "canal de Cannaregio",
+    "es": "Canal de Cannaregio",
+    "it": "Canale di Cannaregio"
+   },
+   "coordinates": [
+    45.4451,
+    12.3224
+   ],
+   "instanceOf": [
+    "Q12284"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q641",
+    "Q1243"
+   ]
+  },
+  "Q621": {
+   "labels": {
+    "en": "Versailles",
+    "tr": "Versailles",
+    "ko": "베르사유",
+    "ja": "ヴェルサイユ",
+    "de": "Versailles",
+    "fr": "Versailles",
+    "es": "Versalles",
+    "pt-br": "Versalhes",
+    "pt": "Versalhes",
+    "it": "Versailles",
+    "ru": "Версаль",
+    "zh-hans": "凡尔赛",
+    "zh-hant": "凡爾賽",
+    "zh": "凡尔赛",
+    "zh-cn": "凡尔赛",
+    "zh-tw": "凡爾賽",
+    "id": "Versailles"
+   },
+   "coordinates": [
+    48.805,
+    2.135
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q12820"
+   ]
+  },
+  "Q943224": {
+   "labels": {
+    "en": "Ponte Salario",
+    "tr": "Salario Köprüsü",
+    "de": "Ponte Salario",
+    "fr": "pont Salario",
+    "es": "Puente Salario",
+    "it": "Ponte Salario",
+    "zh": "薩拉里奧橋"
+   },
+   "coordinates": [
+    41.9394,
+    12.5083
+   ],
+   "instanceOf": [
+    "Q14276458",
+    "Q3397526",
+    "Q1223230"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q3940419"
+   ]
+  },
+  "Q727": {
+   "labels": {
+    "en": "Amsterdam",
+    "tr": "Amsterdam",
+    "ko": "암스테르담",
+    "ja": "アムステルダム",
+    "de": "Amsterdam",
+    "fr": "Amsterdam",
+    "es": "Ámsterdam",
+    "pt-br": "Amsterdã",
+    "pt": "Amesterdão",
+    "it": "Amsterdam",
+    "ru": "Амстердам",
+    "zh-hans": "阿姆斯特丹",
+    "zh-hant": "阿姆斯特丹",
+    "zh": "阿姆斯特丹",
+    "zh-cn": "阿姆斯特丹",
+    "zh-tw": "阿姆斯特丹",
+    "zh-hk": "阿姆斯特丹",
+    "id": "Amsterdam"
+   },
+   "coordinates": [
+    52.3667,
+    4.8833
+   ],
+   "instanceOf": [
+    "Q515",
+    "Q13539802",
+    "Q1549591",
+    "Q2264924",
+    "Q1852859",
+    "Q1392581",
+    "Q51929311",
+    "Q108178728"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9899"
+   ]
+  },
+  "Q690": {
+   "labels": {
+    "en": "Delft",
+    "tr": "Delft",
+    "ko": "델프트",
+    "ja": "デルフト",
+    "de": "Delft",
+    "fr": "Delft",
+    "es": "Delft",
+    "pt": "Delft",
+    "it": "Delft",
+    "ru": "Делфт",
+    "zh-hant": "代爾夫特",
+    "zh": "代尔夫特",
+    "id": "Delft"
+   },
+   "coordinates": [
+    52.0117,
+    4.3592
+   ],
+   "instanceOf": [
+    "Q2039348",
+    "Q13539802",
+    "Q1852859",
+    "Q1549591"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q694"
+   ]
+  },
+  "Q12892": {
+   "labels": {
+    "en": "Antwerp",
+    "tr": "Anvers",
+    "ko": "안트베르펜",
+    "ja": "アントウェルペン",
+    "de": "Antwerpen",
+    "fr": "Anvers",
+    "es": "Amberes",
+    "pt-br": "Antuérpia",
+    "pt": "Antuérpia",
+    "it": "Anversa",
+    "ru": "Антверпен",
+    "zh-hans": "安特卫普",
+    "zh-hant": "安特衛普",
+    "zh": "安特卫普",
+    "zh-cn": "安特卫普",
+    "zh-tw": "安特衛普",
+    "zh-hk": "安特衛普",
+    "id": "Antwerpen"
+   },
+   "coordinates": [
+    51.2211,
+    4.3997
+   ],
+   "instanceOf": [
+    "Q15273785",
+    "Q493522",
+    "Q2264924"
+   ],
+   "country": [
+    "Q31"
+   ],
+   "in": [
+    "Q90895"
+   ]
+  },
+  "Q80053": {
+   "labels": {
+    "en": "Tabriz",
+    "tr": "Tebriz",
+    "ko": "타브리즈",
+    "ja": "タブリーズ",
+    "de": "Täbris",
+    "fr": "Tabriz",
+    "es": "Tabriz",
+    "pt": "Tabriz",
+    "it": "Tabriz",
+    "ru": "Тебриз",
+    "zh-hans": "大不里士",
+    "zh-hant": "大不里士",
+    "zh": "大不里士",
+    "zh-cn": "大不里士",
+    "id": "Tabriz"
+   },
+   "coordinates": [
+    38.0739,
+    46.2961
+   ],
+   "instanceOf": [
+    "Q56557504"
+   ],
+   "country": [
+    "Q794"
+   ],
+   "in": [
+    "Q4815518"
+   ]
+  },
+  "Q42053": {
+   "labels": {
+    "en": "Isfahan",
+    "tr": "İsfahan",
+    "ko": "이스파한",
+    "ja": "エスファハーン",
+    "de": "Isfahan",
+    "fr": "Ispahan",
+    "es": "Isfahán",
+    "pt": "Isfahan",
+    "it": "Esfahan",
+    "ru": "Исфахан",
+    "zh-hans": "伊斯法罕",
+    "zh-hant": "伊斯法罕",
+    "zh": "伊斯法罕",
+    "zh-cn": "伊斯法罕",
+    "id": "Kota Isfahan"
+   },
+   "coordinates": [
+    32.6525,
+    51.6747
+   ],
+   "instanceOf": [
+    "Q56557504",
+    "Q1549591",
+    "Q200250",
+    "Q208511"
+   ],
+   "country": [
+    "Q794"
+   ],
+   "in": [
+    "Q5060828"
+   ]
+  },
+  "Q42941": {
+   "labels": {
+    "en": "Agra",
+    "tr": "Agra",
+    "ko": "아그라",
+    "ja": "アーグラ",
+    "de": "Agra",
+    "fr": "Agra",
+    "es": "Agra",
+    "pt-br": "Agra",
+    "pt": "Agra",
+    "it": "Agra",
+    "ru": "Агра",
+    "zh-hans": "阿格拉",
+    "zh-hant": "阿格拉",
+    "zh": "阿格拉",
+    "zh-cn": "阿格拉",
+    "zh-tw": "阿格拉",
+    "zh-hk": "阿格拉",
+    "id": "Agra"
+   },
+   "coordinates": [
+    27.18,
+    78.02
+   ],
+   "instanceOf": [
+    "Q515",
+    "Q1549591",
+    "Q27554677"
+   ],
+   "country": [
+    "Q668"
+   ],
+   "in": [
+    "Q606343"
+   ]
+  },
+  "Q641": {
+   "labels": {
+    "en": "Venice",
+    "tr": "Venedik",
+    "ko": "베네치아",
+    "ja": "ヴェネツィア",
+    "de": "Venedig",
+    "fr": "Venise",
+    "es": "Venecia",
+    "pt-br": "Veneza",
+    "pt": "Veneza",
+    "it": "Venezia",
+    "ru": "Венеция",
+    "zh-hans": "威尼斯",
+    "zh-hant": "威尼斯",
+    "zh": "威尼斯",
+    "zh-cn": "威尼斯",
+    "zh-tw": "威尼斯",
+    "zh-hk": "威尼斯",
+    "id": "Venesia"
+   },
+   "coordinates": [
+    45.4397,
+    12.3319
+   ],
+   "instanceOf": [
+    "Q747074",
+    "Q581830",
+    "Q2264924",
+    "Q515",
+    "Q1549591",
+    "Q4115680"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q3678587"
+   ]
+  },
+  "Q1741": {
+   "labels": {
+    "en": "Vienna",
+    "tr": "Viyana",
+    "ko": "빈",
+    "ja": "ウィーン",
+    "de": "Wien",
+    "fr": "Vienne",
+    "es": "Viena",
+    "pt": "Viena",
+    "it": "Vienna",
+    "ru": "Вена",
+    "zh-hans": "维也纳",
+    "zh-hant": "維也納",
+    "zh": "維也納",
+    "zh-cn": "维也纳",
+    "zh-tw": "維也納",
+    "zh-hk": "維也納",
+    "id": "Wina"
+   },
+   "coordinates": [
+    48.2083,
+    16.3725
+   ],
+   "instanceOf": [
+    "Q257391",
+    "Q262882",
+    "Q261543",
+    "Q200250",
+    "Q171441",
+    "Q133442",
+    "Q667509",
+    "Q51929311",
+    "Q871419",
+    "Q13539802"
+   ],
+   "country": [
+    "Q40"
+   ],
+   "in": [
+    "Q40"
+   ]
+  },
+  "Q1085": {
+   "labels": {
+    "en": "Prague",
+    "tr": "Prag",
+    "ko": "프라하",
+    "ja": "プラハ",
+    "de": "Prag",
+    "fr": "Prague",
+    "es": "Praga",
+    "pt-br": "Praga",
+    "pt": "Praga",
+    "it": "Praga",
+    "ru": "Прага",
+    "zh-hans": "布拉格",
+    "zh-hant": "布拉格",
+    "zh": "布拉格",
+    "zh-cn": "布拉格",
+    "zh-tw": "布拉格",
+    "zh-hk": "布拉格",
+    "id": "Praha"
+   },
+   "coordinates": [
+    50.0875,
+    14.4214
+   ],
+   "instanceOf": [
+    "Q15978299",
+    "Q548611",
+    "Q192611",
+    "Q12031379",
+    "Q8452914",
+    "Q38911",
+    "Q7841907",
+    "Q1549591",
+    "Q7819319",
+    "Q76007695",
+    "Q76009696",
+    "Q1200957",
+    "Q5153359",
+    "Q108178728"
+   ],
+   "country": [
+    "Q213"
+   ],
+   "in": [
+    "Q213"
+   ]
+  },
+  "Q2751": {
+   "labels": {
+    "en": "Siena",
+    "tr": "Siena",
+    "ko": "시에나",
+    "ja": "シエーナ",
+    "de": "Siena",
+    "fr": "Sienne",
+    "es": "Siena",
+    "pt-br": "Siena",
+    "pt": "Siena",
+    "it": "Siena",
+    "ru": "Сиена",
+    "zh-hant": "西恩納",
+    "zh": "锡耶纳",
+    "id": "Siena"
+   },
+   "coordinates": [
+    43.3183,
+    11.3314
+   ],
+   "instanceOf": [
+    "Q1187811",
+    "Q747074",
+    "Q515"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q16275"
+   ]
+  },
+  "Q2044": {
+   "labels": {
+    "en": "Florence",
+    "tr": "Firenze",
+    "ko": "피렌체",
+    "ja": "フィレンツェ",
+    "de": "Florenz",
+    "fr": "Florence",
+    "es": "Florencia",
+    "pt-br": "Florença",
+    "pt": "Florença",
+    "it": "Firenze",
+    "ru": "Флоренция",
+    "zh-hans": "佛罗伦萨",
+    "zh-hant": "佛羅倫斯",
+    "zh": "佛罗伦萨",
+    "zh-cn": "佛罗伦萨",
+    "zh-tw": "佛羅倫斯",
+    "zh-hk": "佛羅倫斯",
+    "id": "Firenze"
+   },
+   "coordinates": [
+    43.7714,
+    11.2542
+   ],
+   "instanceOf": [
+    "Q747074",
+    "Q1549591",
+    "Q4115680"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q18288148"
+   ]
+  },
+  "Q18677875": {
+   "labels": {
+    "en": "Normandy",
+    "tr": "Normandiya",
+    "ko": "노르망디",
+    "ja": "ノルマンディー地域圏",
+    "de": "Normandie",
+    "fr": "Normandie",
+    "es": "Normandía",
+    "pt": "Normandia",
+    "it": "Normandia",
+    "ru": "Нормандия",
+    "zh-hans": "诺曼底大区",
+    "zh-hant": "諾曼第大區",
+    "zh": "诺曼底大区",
+    "zh-cn": "诺曼底大区",
+    "zh-tw": "諾曼第大區",
+    "zh-hk": "諾曼第大區",
+    "id": "Normandia"
+   },
+   "coordinates": [
+    49.1833,
+    -0.35
+   ],
+   "instanceOf": [
+    "Q36784"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q212429"
+   ]
+  },
+  "Q142": {
+   "labels": {
+    "en": "France",
+    "tr": "Fransa",
+    "ko": "프랑스",
+    "ja": "フランス",
+    "de": "Frankreich",
+    "fr": "France",
+    "es": "Francia",
+    "pt-br": "França",
+    "pt": "França",
+    "it": "Francia",
+    "ru": "Франция",
+    "zh-hans": "法国",
+    "zh-hant": "法國",
+    "zh": "法國",
+    "zh-cn": "法国",
+    "zh-tw": "法國",
+    "zh-hk": "法國",
+    "id": "Prancis"
+   },
+   "coordinates": [
+    47,
+    2
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q7270",
+    "Q6256"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": []
+  },
+  "Q240752": {
+   "labels": {
+    "en": "Chatou",
+    "tr": "Chatou",
+    "ko": "샤투",
+    "ja": "シャトゥー",
+    "de": "Chatou",
+    "fr": "Chatou",
+    "es": "Chatou",
+    "pt-br": "Chatou",
+    "pt": "Chatou",
+    "it": "Chatou",
+    "ru": "Шату",
+    "zh-hans": "沙图",
+    "zh-hant": "沙圖",
+    "zh": "沙图",
+    "id": "Chatou"
+   },
+   "coordinates": [
+    48.8906,
+    2.1569
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q12820",
+    "Q212673"
+   ]
+  },
+  "Q849874": {
+   "labels": {
+    "en": "Mora",
+    "ko": "모라",
+    "ja": "ムーラ市 (スウェーデン)",
+    "de": "Mora",
+    "fr": "Mora",
+    "es": "Mora",
+    "pt-br": "Mora",
+    "pt": "Mora",
+    "it": "Mora",
+    "ru": "Мура",
+    "zh-hant": "穆拉",
+    "zh": "穆拉"
+   },
+   "coordinates": [
+    61.0096,
+    14.5635
+   ],
+   "instanceOf": [
+    "Q3957",
+    "Q12813115"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q504239"
+   ]
+  },
+  "Q205218": {
+   "labels": {
+    "en": "Dalarna",
+    "tr": "Dalarna",
+    "ko": "달라르나",
+    "ja": "ダーラナ地方",
+    "de": "Dalarna",
+    "fr": "Dalécarlie",
+    "es": "Dalecarlia",
+    "pt": "Dalarna",
+    "it": "Dalarna",
+    "ru": "Даларна",
+    "zh-hans": "达拉纳",
+    "zh-hant": "達拉納",
+    "zh": "達拉納",
+    "zh-cn": "达拉纳",
+    "zh-tw": "達拉納",
+    "zh-hk": "達拉納"
+   },
+   "coordinates": [
+    60.8667,
+    14.7333
+   ],
+   "instanceOf": [
+    "Q193556"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q103732"
+   ]
+  },
+  "Q30": {
+   "labels": {
+    "en": "United States",
+    "tr": "Amerika Birleşik Devletleri",
+    "ko": "미국",
+    "ja": "アメリカ合衆国",
+    "de": "Vereinigte Staaten",
+    "fr": "États-Unis",
+    "es": "Estados Unidos",
+    "pt-br": "Estados Unidos",
+    "pt": "Estados Unidos",
+    "it": "Stati Uniti",
+    "ru": "США",
+    "zh-hans": "美国",
+    "zh-hant": "美國",
+    "zh": "美國",
+    "zh-cn": "美国",
+    "zh-tw": "美國",
+    "zh-hk": "美國",
+    "id": "Amerika Serikat"
+   },
+   "coordinates": [
+    39.8282,
+    -98.5795
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q6256"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": []
+  },
+  "Q605122": {
+   "labels": {
+    "en": "Schuylkill River",
+    "tr": "Schuylkill Nehri",
+    "ko": "스쿨킬강",
+    "ja": "スクールキル川",
+    "de": "Schuylkill River",
+    "fr": "Schuylkill",
+    "es": "Río Schuylkill",
+    "pt": "Rio Schuylkill",
+    "it": "Schuylkill",
+    "ru": "Скулкилл",
+    "zh-hans": "斯库尔基尔河",
+    "zh-hant": "斯庫基爾河",
+    "zh": "斯库尔基尔河",
+    "zh-hk": "斯庫基爾河"
+   },
+   "coordinates": [
+    40.6336,
+    -76.1803
+   ],
+   "instanceOf": [
+    "Q4022",
+    "Q7164110"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1400"
+   ]
+  },
+  "Q12130": {
+   "labels": {
+    "en": "Brittany",
+    "tr": "Bretonya",
+    "ko": "브르타뉴",
+    "ja": "ブルターニュ地域圏",
+    "de": "Bretagne",
+    "fr": "Bretagne",
+    "es": "Bretaña",
+    "pt-br": "Bretanha",
+    "pt": "Bretanha",
+    "it": "Bretagna",
+    "ru": "Бретань",
+    "zh-hans": "布列塔尼大区",
+    "zh-hant": "布列塔尼大區",
+    "zh": "布列塔尼大區",
+    "id": "Bretonia"
+   },
+   "coordinates": [
+    48,
+    -3
+   ],
+   "instanceOf": [
+    "Q36784"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q212429"
+   ]
+  },
+  "Q3460166": {
+   "labels": {
+    "en": "Shinnecock Hills",
+    "tr": "Shinnecock Hills",
+    "de": "Shinnecock Hills",
+    "fr": "Shinnecock Hills",
+    "es": "Shinnecock Hills",
+    "it": "Shinnecock Hills",
+    "ru": "Шиннекок-Хилс",
+    "zh": "欣納科克希爾斯 (紐約州)"
+   },
+   "coordinates": [
+    40.8881,
+    -72.4617
+   ],
+   "instanceOf": [
+    "Q498162",
+    "Q17343829"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q2631643"
+   ]
+  },
+  "Q1384": {
+   "labels": {
+    "en": "New York",
+    "tr": "New York",
+    "ko": "뉴욕주",
+    "ja": "ニューヨーク州",
+    "de": "New York",
+    "fr": "New York",
+    "es": "Nueva York",
+    "pt": "Nova Iorque",
+    "it": "New York",
+    "ru": "Нью-Йорк",
+    "zh-hans": "纽约州",
+    "zh-hant": "紐約州",
+    "zh": "纽约州",
+    "zh-cn": "纽约州",
+    "zh-tw": "紐約州",
+    "zh-hk": "紐約州",
+    "id": "New York"
+   },
+   "coordinates": [
+    43,
+    -75
+   ],
+   "instanceOf": [
+    "Q35657"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q30"
+   ]
+  },
+  "Q11370950": {
+   "labels": {
+    "en": "Kameido",
+    "tr": "Kameido",
+    "ko": "가메이도",
+    "ja": "亀戸",
+    "fr": "Kameido",
+    "zh": "龜戶"
+   },
+   "coordinates": [
+    35.6976,
+    139.8263
+   ],
+   "instanceOf": [
+    "Q5327369"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q215175"
+   ]
+  },
+  "Q1490": {
+   "labels": {
+    "en": "Tokyo",
+    "tr": "Tokyo",
+    "ko": "도쿄도",
+    "ja": "東京都",
+    "de": "Tokio",
+    "fr": "Tokyo",
+    "es": "Tokio",
+    "pt-br": "Tóquio",
+    "pt": "Tóquio",
+    "it": "Tokyo",
+    "ru": "Токио",
+    "zh-hans": "东京都",
+    "zh-hant": "東京都",
+    "zh": "東京都",
+    "zh-cn": "东京都",
+    "zh-tw": "東京都",
+    "zh-hk": "東京都",
+    "id": "Tokyo"
+   },
+   "coordinates": [
+    35.6894,
+    139.6917
+   ],
+   "instanceOf": [
+    "Q124313007",
+    "Q1025961",
+    "Q1200957",
+    "Q200250",
+    "Q208511",
+    "Q174844",
+    "Q51929311",
+    "Q1549591",
+    "Q50337",
+    "Q200250",
+    "Q1066984"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q17"
+   ]
+  },
+  "Q899588": {
+   "labels": {
+    "en": "Thomery",
+    "tr": "Thomery",
+    "ja": "トメリ",
+    "de": "Thomery",
+    "fr": "Thomery",
+    "es": "Thomery",
+    "pt-br": "Thomery",
+    "pt": "Thomery",
+    "it": "Thomery",
+    "ru": "Томери",
+    "zh": "托姆里",
+    "id": "Thomery"
+   },
+   "coordinates": [
+    48.4083,
+    2.7861
+   ],
+   "instanceOf": [
+    "Q484170"
+   ],
+   "country": [
+    "Q142"
+   ],
+   "in": [
+    "Q12753",
+    "Q701190"
+   ]
+  },
+  "Q1400": {
+   "labels": {
+    "en": "Pennsylvania",
+    "tr": "Pensilvanya",
+    "ko": "펜실베이니아주",
+    "ja": "ペンシルベニア州",
+    "de": "Pennsylvania",
+    "fr": "Pennsylvanie",
+    "es": "Pensilvania",
+    "pt-br": "Pensilvânia",
+    "pt": "Pensilvânia",
+    "it": "Pennsylvania",
+    "ru": "Пенсильвания",
+    "zh-hans": "宾夕法尼亚州",
+    "zh-hant": "賓夕法尼亞州",
+    "zh": "宾夕法尼亚州",
+    "zh-cn": "宾夕法尼亚州",
+    "zh-tw": "賓夕法尼亞州",
+    "zh-hk": "賓夕凡尼亞州",
+    "id": "Pennsylvania"
+   },
+   "coordinates": [
+    41,
+    -77.5
+   ],
+   "instanceOf": [
+    "Q35657"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q30"
+   ]
+  },
+  "Q99": {
+   "labels": {
+    "en": "California",
+    "tr": "Kaliforniya",
+    "ko": "캘리포니아주",
+    "ja": "カリフォルニア州",
+    "de": "Kalifornien",
+    "fr": "Californie",
+    "es": "California",
+    "pt-br": "Califórnia",
+    "pt": "Califórnia",
+    "it": "California",
+    "ru": "Калифорния",
+    "zh-hans": "加利福尼亚州",
+    "zh-hant": "加利福尼亞州",
+    "zh": "加利福尼亚州",
+    "zh-cn": "加利福尼亚州",
+    "zh-tw": "加利福尼亞州",
+    "zh-hk": "加利福尼亞州",
+    "id": "California"
+   },
+   "coordinates": [
+    37,
+    -120
+   ],
+   "instanceOf": [
+    "Q35657"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q30"
+   ]
+  },
+  "Q771": {
+   "labels": {
+    "en": "Massachusetts",
+    "tr": "Massachusetts",
+    "ko": "매사추세츠주",
+    "ja": "マサチューセッツ州",
+    "de": "Massachusetts",
+    "fr": "Massachusetts",
+    "es": "Massachusetts",
+    "pt-br": "Massachusetts",
+    "pt": "Massachusetts",
+    "it": "Massachusetts",
+    "ru": "Массачусетс",
+    "zh-hans": "马萨诸塞州",
+    "zh-hant": "麻薩諸塞州",
+    "zh": "麻薩諸塞州",
+    "zh-cn": "马萨诸塞州",
+    "zh-tw": "麻薩諸塞州",
+    "zh-hk": "麻省",
+    "id": "Massachusetts"
+   },
+   "coordinates": [
+    42.3,
+    -71.8
+   ],
+   "instanceOf": [
+    "Q35657"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q30"
+   ]
+  },
+  "Q143762": {
+   "labels": {
+    "en": "Delaware River",
+    "tr": "Delaware Nehri",
+    "ko": "델라웨어강",
+    "ja": "デラウェア川",
+    "de": "Delaware River",
+    "fr": "Delaware",
+    "es": "Río Delaware",
+    "pt": "Rio Delaware",
+    "it": "Delaware",
+    "ru": "Делавэр",
+    "zh-hans": "特拉华河",
+    "zh-hant": "德拉瓦河",
+    "zh": "特拉華河",
+    "zh-cn": "特拉华河",
+    "zh-tw": "德拉瓦河",
+    "zh-hk": "德拉瓦河",
+    "id": "Sungai Delaware"
+   },
+   "coordinates": [
+    41.939,
+    -75.2791
+   ],
+   "instanceOf": [
+    "Q4022"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1384",
+    "Q1408",
+    "Q1400",
+    "Q1393"
+   ]
+  },
+  "Q1748": {
+   "labels": {
+    "en": "Copenhagen",
+    "tr": "Kopenhag",
+    "ko": "코펜하겐",
+    "ja": "コペンハーゲン",
+    "de": "Kopenhagen",
+    "fr": "Copenhague",
+    "es": "Copenhague",
+    "pt-br": "Copenhague",
+    "pt": "Copenhaga",
+    "it": "Copenaghen",
+    "ru": "Копенгаген",
+    "zh-hans": "哥本哈根",
+    "zh-hant": "哥本哈根",
+    "zh": "哥本哈根",
+    "zh-cn": "哥本哈根",
+    "zh-tw": "哥本哈根",
+    "zh-hk": "哥本哈根",
+    "id": "Kopenhagen"
+   },
+   "coordinates": [
+    55.6761,
+    12.5689
+   ],
+   "instanceOf": [
+    "Q51929311",
+    "Q1392581",
+    "Q515",
+    "Q1549591",
+    "Q108178728"
+   ],
+   "country": [
+    "Q35"
+   ],
+   "in": [
+    "Q26073"
+   ]
+  },
+  "Q35": {
+   "labels": {
+    "en": "Denmark",
+    "tr": "Danimarka",
+    "ko": "덴마크",
+    "ja": "デンマーク",
+    "de": "Dänemark",
+    "fr": "Danemark",
+    "es": "Dinamarca",
+    "pt-br": "Dinamarca",
+    "pt": "Dinamarca",
+    "it": "Danimarca",
+    "ru": "Дания",
+    "zh-hans": "丹麦",
+    "zh-hant": "丹麥",
+    "zh": "丹麥",
+    "zh-cn": "丹麦",
+    "zh-tw": "丹麥",
+    "zh-hk": "丹麥",
+    "id": "Denmark"
+   },
+   "coordinates": [
+    56,
+    10
+   ],
+   "instanceOf": [
+    "Q7275",
+    "Q20181813",
+    "Q63791824",
+    "Q6256",
+    "Q66724388"
+   ],
+   "country": [
+    "Q756617"
+   ],
+   "in": [
+    "Q756617"
+   ]
+  },
+  "Q38": {
+   "labels": {
+    "en": "Italy",
+    "tr": "İtalya",
+    "ko": "이탈리아",
+    "ja": "イタリア",
+    "de": "Italien",
+    "fr": "Italie",
+    "es": "Italia",
+    "pt-br": "Itália",
+    "pt": "Itália",
+    "it": "Italia",
+    "ru": "Италия",
+    "zh-hans": "意大利",
+    "zh-hant": "義大利",
+    "zh": "意大利",
+    "zh-cn": "意大利",
+    "zh-tw": "義大利",
+    "zh-hk": "意大利",
+    "id": "Italia"
+   },
+   "coordinates": [
+    42.5,
+    12.5
+   ],
+   "instanceOf": [
+    "Q6256",
+    "Q3624078"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": []
+  },
+  "Q25535": {
+   "labels": {
+    "en": "Zealand",
+    "tr": "Sjaelland",
+    "ko": "셸란섬",
+    "ja": "シェラン島",
+    "de": "Seeland",
+    "fr": "Seeland",
+    "es": "Selandia",
+    "pt": "Zelândia",
+    "it": "Sjælland",
+    "ru": "Зеландия",
+    "zh-hans": "西兰岛",
+    "zh-hant": "西蘭島",
+    "zh": "西蘭島",
+    "zh-cn": "西兰岛",
+    "id": "Zealand"
+   },
+   "coordinates": [
+    55.57,
+    11.89
+   ],
+   "instanceOf": [
+    "Q23442"
+   ],
+   "country": [
+    "Q35"
+   ],
+   "in": []
+  },
+  "Q160642": {
+   "labels": {
+    "en": "Salisbury",
+    "tr": "Salisbury",
+    "ko": "솔즈베리",
+    "ja": "ソールズベリー",
+    "de": "Salisbury",
+    "fr": "Salisbury",
+    "es": "Salisbury",
+    "pt": "Salisbury",
+    "it": "Salisbury",
+    "ru": "Солсбери",
+    "zh-hans": "索尔兹伯里",
+    "zh-hant": "索爾茲伯里",
+    "zh": "索爾茲伯里",
+    "zh-cn": "索尔兹伯里",
+    "zh-hk": "梳士巴利",
+    "id": "Salisbury"
+   },
+   "coordinates": [
+    51.074,
+    -1.7936
+   ],
+   "instanceOf": [
+    "Q515",
+    "Q1115575",
+    "Q27104997"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q21694746"
+   ]
+  },
+  "Q189960": {
+   "labels": {
+    "en": "Westminster",
+    "tr": "Westminster",
+    "ko": "웨스트민스터",
+    "ja": "ウェストミンスター",
+    "de": "Westminster",
+    "fr": "Westminster",
+    "es": "Westminster",
+    "pt": "Westminster",
+    "it": "Westminster",
+    "ru": "Вестминстер",
+    "zh-hans": "威斯敏斯特",
+    "zh-hant": "西敏",
+    "zh": "西敏",
+    "zh-cn": "威斯敏斯特",
+    "zh-tw": "西敏",
+    "zh-hk": "西敏"
+   },
+   "coordinates": [
+    51.4995,
+    -0.1333
+   ],
+   "instanceOf": [
+    "Q2755753",
+    "Q18511725"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q179351"
+   ]
+  },
+  "Q671040": {
+   "labels": {
+    "en": "Hakone",
+    "tr": "Hakone",
+    "ko": "하코네정",
+    "ja": "箱根町",
+    "de": "Hakone",
+    "fr": "Hakone",
+    "es": "Hakone",
+    "pt": "Hakone",
+    "it": "Hakone",
+    "ru": "Хаконе",
+    "zh": "箱根町",
+    "id": "Hakone"
+   },
+   "coordinates": [
+    35.2324,
+    139.1069
+   ],
+   "instanceOf": [
+    "Q1059478",
+    "Q11422368",
+    "Q1200957"
+   ],
+   "country": [
+    "Q17"
+   ],
+   "in": [
+    "Q1193172"
+   ]
+  },
+  "Q1391": {
+   "labels": {
+    "en": "Maryland",
+    "tr": "Maryland",
+    "ko": "메릴랜드주",
+    "ja": "メリーランド州",
+    "de": "Maryland",
+    "fr": "Maryland",
+    "es": "Maryland",
+    "pt-br": "Maryland",
+    "pt": "Maryland",
+    "it": "Maryland",
+    "ru": "Мэриленд",
+    "zh-hans": "马里兰州",
+    "zh-hant": "馬里蘭州",
+    "zh": "马里兰州",
+    "zh-cn": "马里兰州",
+    "zh-tw": "馬里蘭州",
+    "zh-hk": "馬利蘭州",
+    "id": "Maryland"
+   },
+   "coordinates": [
+    39,
+    -76.7
+   ],
+   "instanceOf": [
+    "Q35657"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q30"
+   ]
+  },
+  "Q31": {
+   "labels": {
+    "en": "Belgium",
+    "tr": "Belçika",
+    "ko": "벨기에",
+    "ja": "ベルギー",
+    "de": "Belgien",
+    "fr": "Belgique",
+    "es": "Bélgica",
+    "pt-br": "Bélgica",
+    "pt": "Bélgica",
+    "it": "Belgio",
+    "ru": "Бельгия",
+    "zh-hans": "比利时",
+    "zh-hant": "比利時",
+    "zh": "比利時",
+    "zh-cn": "比利时",
+    "zh-tw": "比利時",
+    "zh-hk": "比利時",
+    "id": "Belgia"
+   },
+   "coordinates": [
+    50.6411,
+    4.6681
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q6256"
+   ],
+   "country": [
+    "Q31"
+   ],
+   "in": []
+  },
+  "Q29": {
+   "labels": {
+    "en": "Spain",
+    "tr": "İspanya",
+    "ko": "스페인",
+    "ja": "スペイン王国",
+    "de": "Spanien",
+    "fr": "Espagne",
+    "es": "España",
+    "pt-br": "Espanha",
+    "pt": "Espanha",
+    "it": "Spagna",
+    "ru": "Испания",
+    "zh-hans": "西班牙",
+    "zh-hant": "西班牙",
+    "zh": "西班牙",
+    "zh-cn": "西班牙",
+    "zh-tw": "西班牙",
+    "zh-hk": "西班牙",
+    "id": "Spanyol"
+   },
+   "coordinates": [
+    40.2,
+    -3.5
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q1250464",
+    "Q6256",
+    "Q51576574",
+    "Q179671"
+   ],
+   "country": [
+    "Q29"
+   ],
+   "in": []
+  },
+  "Q23240": {
+   "labels": {
+    "en": "Essex",
+    "tr": "Essex",
+    "ko": "에식스주",
+    "ja": "エセックス",
+    "de": "Essex",
+    "fr": "Essex",
+    "es": "Essex",
+    "pt-br": "Essex",
+    "pt": "Essex",
+    "it": "Essex",
+    "ru": "Эссекс",
+    "zh-hans": "埃塞克斯郡",
+    "zh-hant": "埃塞克斯郡",
+    "zh": "埃塞克斯郡",
+    "zh-cn": "埃塞克斯郡",
+    "zh-hk": "雅息士郡",
+    "id": "Essex"
+   },
+   "coordinates": [
+    51.75,
+    0.5833
+   ],
+   "instanceOf": [
+    "Q180673"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q48006"
+   ]
+  },
+  "Q23298": {
+   "labels": {
+    "en": "Kent",
+    "tr": "Kent",
+    "ko": "켄트주",
+    "ja": "ケント",
+    "de": "Kent",
+    "fr": "Kent",
+    "es": "Kent",
+    "pt-br": "Kent",
+    "pt": "Kent",
+    "it": "Kent",
+    "ru": "Кент",
+    "zh-hans": "肯特郡",
+    "zh-hant": "肯特郡",
+    "zh": "肯特郡",
+    "zh-cn": "肯特郡",
+    "zh-tw": "肯特郡",
+    "zh-hk": "根德郡",
+    "id": "Kent"
+   },
+   "coordinates": [
+    51.19,
+    0.73
+   ],
+   "instanceOf": [
+    "Q180673"
+   ],
+   "country": [
+    "Q145"
+   ],
+   "in": [
+    "Q48015"
+   ]
+  },
+  "Q52423": {
+   "labels": {
+    "en": "Cannaregio",
+    "ko": "카나레조",
+    "ja": "カンナレージョ",
+    "de": "Cannaregio",
+    "fr": "Cannaregio",
+    "es": "Cannaregio",
+    "pt-br": "Cannaregio",
+    "pt": "Cannaregio",
+    "it": "Cannaregio",
+    "ru": "Каннареджо",
+    "zh": "卡纳雷焦区",
+    "id": "Cannaregio"
+   },
+   "coordinates": [
+    45.446,
+    12.327
+   ],
+   "instanceOf": [
+    "Q1067867",
+    "Q123705"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q3867184"
+   ]
+  },
+  "Q794": {
+   "labels": {
+    "en": "Iran",
+    "tr": "İran",
+    "ko": "이란",
+    "ja": "イラン",
+    "de": "Iran",
+    "fr": "Iran",
+    "es": "Irán",
+    "pt-br": "Irã",
+    "pt": "Irão",
+    "it": "Iran",
+    "ru": "Иран",
+    "zh-hans": "伊朗",
+    "zh-hant": "伊朗",
+    "zh": "伊朗",
+    "zh-cn": "伊朗",
+    "zh-tw": "伊朗",
+    "zh-hk": "伊朗",
+    "id": "Iran"
+   },
+   "coordinates": [
+    32,
+    53
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q6256",
+    "Q127693126"
+   ],
+   "country": [
+    "Q794"
+   ],
+   "in": []
+  },
+  "Q668": {
+   "labels": {
+    "en": "India",
+    "tr": "Hindistan",
+    "ko": "인도",
+    "ja": "インド",
+    "de": "Indien",
+    "fr": "Inde",
+    "es": "India",
+    "pt-br": "Índia",
+    "pt": "Índia",
+    "it": "India",
+    "ru": "Индия",
+    "zh-hans": "印度",
+    "zh-hant": "印度",
+    "zh": "印度",
+    "zh-cn": "印度",
+    "zh-tw": "印度",
+    "zh-hk": "印度",
+    "id": "India"
+   },
+   "coordinates": [
+    22.8,
+    83
+   ],
+   "instanceOf": [
+    "Q6256",
+    "Q3624078"
+   ],
+   "country": [
+    "Q668"
+   ],
+   "in": []
+  },
+  "Q40": {
+   "labels": {
+    "en": "Austria",
+    "tr": "Avusturya",
+    "ko": "오스트리아",
+    "ja": "オーストリア",
+    "de": "Österreich",
+    "fr": "Autriche",
+    "es": "Austria",
+    "pt-br": "Áustria",
+    "pt": "Áustria",
+    "it": "Austria",
+    "ru": "Австрия",
+    "zh-hans": "奥地利",
+    "zh-hant": "奧地利",
+    "zh": "奧地利",
+    "zh-cn": "奥地利",
+    "zh-tw": "奧地利",
+    "zh-hk": "奧地利",
+    "id": "Austria"
+   },
+   "coordinates": [
+    48,
+    14
+   ],
+   "instanceOf": [
+    "Q3624078",
+    "Q4209223",
+    "Q123480",
+    "Q127693126",
+    "Q6256"
+   ],
+   "country": [
+    "Q40"
+   ],
+   "in": []
+  },
+  "Q192508": {
+   "labels": {
+    "en": "Bergen op Zoom",
+    "tr": "Bergen op Zoom",
+    "ko": "베르헌옵좀",
+    "ja": "ベルヘン・オプ・ゾーム",
+    "de": "Bergen op Zoom",
+    "fr": "Berg-op-Zoom",
+    "es": "Bergen op Zoom",
+    "pt-br": "Bergen op Zoom",
+    "pt": "Bergen op Zoom",
+    "it": "Bergen op Zoom",
+    "ru": "Берген-оп-Зом",
+    "zh-hans": "贝亨奥普佐姆",
+    "zh-hant": "貝亨奧普佐姆",
+    "zh": "貝亨奧普佐姆",
+    "zh-cn": "贝亨奥普佐姆",
+    "zh-tw": "貝亨奧普佐姆",
+    "zh-hk": "貝亨奧普佐姆",
+    "id": "Bergen op Zoom"
+   },
+   "coordinates": [
+    51.5,
+    4.3
+   ],
+   "instanceOf": [
+    "Q13539802",
+    "Q1852859",
+    "Q515"
+   ],
+   "country": [
+    "Q55"
+   ],
+   "in": [
+    "Q9814"
+   ]
+  },
+  "Q213": {
+   "labels": {
+    "en": "Czech Republic",
+    "tr": "Çekya",
+    "ko": "체코",
+    "ja": "チェコ共和国",
+    "de": "Tschechien",
+    "fr": "Tchéquie",
+    "es": "República Checa",
+    "pt-br": "Tchéquia",
+    "pt": "Chéquia",
+    "it": "Repubblica Ceca",
+    "ru": "Чехия",
+    "zh-hans": "捷克",
+    "zh-hant": "捷克",
+    "zh": "捷克",
+    "zh-cn": "捷克",
+    "zh-tw": "捷克",
+    "zh-hk": "捷克",
+    "id": "Ceko"
+   },
+   "coordinates": [
+    50,
+    15
+   ],
+   "instanceOf": [
+    "Q6256",
+    "Q3624078",
+    "Q123480",
+    "Q7270",
+    "Q127693126"
+   ],
+   "country": [
+    "Q213"
+   ],
+   "in": []
+  },
+  "Q76925": {
+   "labels": {
+    "en": "Venetian Lagoon",
+    "tr": "Venedik Lagünü",
+    "ko": "베네치아 석호",
+    "ja": "ヴェネツィアの潟",
+    "de": "Lagune von Venedig",
+    "fr": "lagune de Venise",
+    "es": "Laguna de Venecia",
+    "pt": "Lagoa de Veneza",
+    "it": "laguna di Venezia",
+    "ru": "Венецианская лагуна",
+    "zh": "威尼斯潟湖",
+    "id": "Teluk Laguna Venesia"
+   },
+   "coordinates": [
+    45.4131,
+    12.2972
+   ],
+   "instanceOf": [
+    "Q39594",
+    "Q187223"
+   ],
+   "country": [
+    "Q38"
+   ],
+   "in": [
+    "Q641",
+    "Q46810",
+    "Q34680",
+    "Q55416",
+    "Q47995",
+    "Q47281",
+    "Q48144"
+   ]
+  },
+  "Q1297": {
+   "labels": {
+    "en": "Chicago",
+    "tr": "Şikago",
+    "ko": "시카고",
+    "ja": "シカゴ",
+    "de": "Chicago",
+    "fr": "Chicago",
+    "es": "Chicago",
+    "pt-br": "Chicago",
+    "pt": "Chicago",
+    "it": "Chicago",
+    "ru": "Чикаго",
+    "zh-hans": "芝加哥",
+    "zh-hant": "芝加哥",
+    "zh": "芝加哥",
+    "zh-cn": "芝加哥",
+    "zh-tw": "芝加哥",
+    "zh-hk": "芝加哥",
+    "id": "Chicago"
+   },
+   "coordinates": [
+    41.8819,
+    -87.6278
+   ],
+   "instanceOf": [
+    "Q110071194",
+    "Q208511",
+    "Q1549591"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q108418"
+   ]
+  },
+  "Q1754": {
+   "labels": {
+    "en": "Stockholm",
+    "tr": "Stockholm",
+    "ko": "스톡홀름",
+    "ja": "ストックホルム",
+    "de": "Stockholm",
+    "fr": "Stockholm",
+    "es": "Estocolmo",
+    "pt-br": "Estocolmo",
+    "pt": "Estocolmo",
+    "it": "Stoccolma",
+    "ru": "Стокгольм",
+    "zh-hans": "斯德哥尔摩",
+    "zh-hant": "斯德哥爾摩",
+    "zh": "斯德哥尔摩",
+    "zh-cn": "斯德哥尔摩",
+    "zh-tw": "斯德哥爾摩",
+    "zh-hk": "斯德哥爾摩",
+    "id": "Stockholm"
+   },
+   "coordinates": [
+    59.3294,
+    18.0686
+   ],
+   "instanceOf": [
+    "Q515",
+    "Q1549591",
+    "Q707813",
+    "Q2264924",
+    "Q51929311",
+    "Q108178728"
+   ],
+   "country": [
+    "Q34"
+   ],
+   "in": [
+    "Q506250"
+   ]
+  },
+  "Q1757": {
+   "labels": {
+    "en": "Helsinki",
+    "tr": "Helsinki",
+    "ko": "헬싱키",
+    "ja": "ヘルシンキ",
+    "de": "Helsinki",
+    "fr": "Helsinki",
+    "es": "Helsinki",
+    "pt-br": "Helsinque",
+    "pt": "Helsínquia",
+    "it": "Helsinki",
+    "ru": "Хельсинки",
+    "zh-hans": "赫尔辛基",
+    "zh-hant": "赫爾辛基",
+    "zh": "赫尔辛基",
+    "zh-cn": "赫尔辛基",
+    "zh-tw": "赫爾辛基",
+    "zh-hk": "赫爾辛基",
+    "id": "Helsinki"
+   },
+   "coordinates": [
+    60.1708,
+    24.9375
+   ],
+   "instanceOf": [
+    "Q515",
+    "Q200250",
+    "Q856076",
+    "Q1549591",
+    "Q2264924"
+   ],
+   "country": [
+    "Q33"
+   ],
+   "in": [
+    "Q5711"
+   ]
+  },
+  "Q61": {
+   "labels": {
+    "en": "Washington, D.C.",
+    "tr": "Washington",
+    "ko": "워싱턴 D.C.",
+    "ja": "ワシントンD.C.",
+    "de": "Washington, D.C.",
+    "fr": "Washington",
+    "es": "Washington D. C.",
+    "pt": "Washington, D.C.",
+    "it": "Washington",
+    "ru": "Вашингтон",
+    "zh-hans": "华盛顿哥伦比亚特区",
+    "zh-hant": "華盛頓哥倫比亞特區",
+    "zh": "華盛頓哥倫比亞特區",
+    "zh-cn": "华盛顿哥伦比亚特区",
+    "zh-tw": "華盛頓哥倫比亞特區",
+    "zh-hk": "華盛頓哥倫比亞特區",
+    "id": "Washington, D.C."
+   },
+   "coordinates": [
+    38.895,
+    -77.0367
+   ],
+   "instanceOf": [
+    "Q1093829",
+    "Q1549591",
+    "Q486972",
+    "Q15840617",
+    "Q114496982",
+    "Q257391"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q3551781"
+   ]
+  },
+  "Q60": {
+   "labels": {
+    "en": "New York City",
+    "tr": "New York",
+    "ko": "뉴욕",
+    "ja": "ニューヨーク",
+    "de": "New York City",
+    "fr": "New York",
+    "es": "Nueva York",
+    "pt-br": "Nova Iorque",
+    "pt": "Nova Iorque",
+    "it": "New York",
+    "ru": "Нью-Йорк",
+    "zh-hans": "纽约",
+    "zh-hant": "紐約",
+    "zh": "纽约",
+    "zh-cn": "纽约",
+    "zh-tw": "紐約",
+    "zh-hk": "紐約",
+    "id": "Kota New York"
+   },
+   "coordinates": [
+    40.7128,
+    -74.0061
+   ],
+   "instanceOf": [
+    "Q208511",
+    "Q2264924",
+    "Q1093829",
+    "Q515",
+    "Q1549591",
+    "Q51929311",
+    "Q15063611",
+    "Q200250",
+    "Q174844"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q1384"
+   ]
+  },
+  "Q37320": {
+   "labels": {
+    "en": "Cleveland",
+    "tr": "Cleveland",
+    "ko": "클리블랜드",
+    "ja": "クリーブランド",
+    "de": "Cleveland",
+    "fr": "Cleveland",
+    "es": "Cleveland",
+    "pt-br": "Cleveland",
+    "pt": "Cleveland",
+    "it": "Cleveland",
+    "ru": "Кливленд",
+    "zh-hans": "克利夫兰",
+    "zh-hant": "克里夫蘭",
+    "zh": "克利夫兰",
+    "zh-cn": "克利夫兰",
+    "zh-tw": "克里夫蘭",
+    "zh-hk": "克里夫蘭",
+    "id": "Cleveland, Ohio"
+   },
+   "coordinates": [
+    41.4992,
+    -81.6947
+   ],
+   "instanceOf": [
+    "Q1093829",
+    "Q1549591",
+    "Q62049",
+    "Q108569710"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q251267"
+   ]
+  },
+  "Q65": {
+   "labels": {
+    "en": "Los Angeles",
+    "tr": "Los Angeles",
+    "ko": "로스앤젤레스",
+    "ja": "ロサンゼルス",
+    "de": "Los Angeles",
+    "fr": "Los Angeles",
+    "es": "Los Ángeles",
+    "pt-br": "Los Angeles",
+    "pt": "Los Angeles",
+    "it": "Los Angeles",
+    "ru": "Лос-Анджелес",
+    "zh-hans": "洛杉矶",
+    "zh-hant": "洛杉磯",
+    "zh": "洛杉矶",
+    "zh-cn": "洛杉矶",
+    "zh-tw": "洛杉磯",
+    "zh-hk": "洛杉磯",
+    "id": "Los Angeles"
+   },
+   "coordinates": [
+    34.0522,
+    -118.2437
+   ],
+   "instanceOf": [
+    "Q13218391"
+   ],
+   "country": [
+    "Q30"
+   ],
+   "in": [
+    "Q104994"
+   ]
+  }
+ }
+}
