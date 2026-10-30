@@ -4,6 +4,13 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-10-30 · Oturum 37 — versionCode 2 onaylandı; cihazlar arası kayıt yok
+
+- **Onay:** Google versionCode 2'yi onayladı. Kapalı test kanalı "Latest release: 2 (1.0)", incelemede bir şey yok. Pano kapalı test sürümünü yayımlanmış olarak işaretliyor; 3 test kullanıcısı katılmış (12 gerekiyor). Test bağlantısı aynı.
+- **Sahip: "Aynı Play Store hesabından hem tablete hem telefona indirince veriler eşlenmemiş".** Kodda cihazlar arası kayıt Google Play Games girişine dayanıyor (`PlayGamesSignIn`, `UgsAccounts`; plan §5.1, §3.6). Platform kurulumu (Aşama 6; plan §9 B2–B5, A4) yapılmadı. Derlemede oyun kimliği ve web istemci kimliği olmadığından her cihaz ayrı bir anonim hesap açıyor; açılış kaydı bunu söylüyor. Mağaza metni ise "Link it to Google Play Games to bring your progress to a new phone" diyor.
+- Hata kaydı: `docs/LESSONS.md` H6 ve kural 7 (metin derlemeyle uyuşur); PLAY_RELEASE 10'un 5. adımına metin karşılaştırması; `CLAUDE.md`'ye bir satır.
+- **Sonraki:** Aşama 6 versionCode 3'e. Sahip Play Console'da Play Games projesini ve kimlik bilgilerini açar (B2–B5), Unity'de sağlayıcıyı kurar (A4, web istemcisinin sırrıyla). Claude eklentinin ayarını derlemeye koyar, PLAY_RELEASE 10'a göre telefonda ve dahili testte dener, telefon ile tablette aynı hesapla eşitlemeyi sınar.
+
 ## 2026-10-29 · Oturum 36 — versionCode 1 açılışta kapanıyordu; düzeltme ve versionCode 2
 
 **Kapalı test onaylandı, oyun açılmıyordu**

@@ -10,6 +10,15 @@
 4. **Varsayım olgu gibi yazılmaz.** Doğrulanmamış bir öngörü belgede "denenmedi" diye işaretlenir ve bir telefon testine bağlanır.
 5. **Yazılan test koşulmadan iş bitmiş sayılmaz.** Bir değişikliğin telefonda kanıtı "Bekliyor" durumundaysa o değişiklik mağazaya gitmez. Zaman baskısı gerekçe değildir.
 6. **Çökme okunabilir olur.** Paket yerel kütüphanelerin sembol tablolarını taşır. Telefondaki çökme kaydı okunur: `adb logcat -b crash`, `adb shell dumpsys dropbox`, Unity'nin iş parçacığı dökümündeki "Pending exception" satırı.
+7. **Metin derlemeyle uyuşur.** Mağaza metni ve sürüm notları yalnız o derlemenin yaptığını söyler. Kapalı olan ya da kurulmamış bir özellik (açılış kaydındaki "not set up", "turned off" satırları) yüklemeden önce sahibe söylenir: ya kurulur ya metin düzeltilir.
+
+## H6 — Aynı Google hesabıyla telefon ve tablette ilerleme eşitlenmiyor (2026-10-30)
+
+- **Ne oldu:** sahip oyunu aynı Play Store hesabıyla hem telefona hem tablete kurdu; ilerleme iki cihaz arasında eşitlenmedi.
+- **Neden:** cihazlar arası kayıt Google Play Games girişine dayanıyor (`docs/research/server-v1.md` §5.1, §3.6). Oyun Play Games'e girince Unity Authentication o kimliğin oyuncusuna girer ve iki cihaz aynı bulut kaydını paylaşır. Kod hazır (`Cloud/Ugs/PlayGamesSignIn.cs`, `UgsAccounts.cs`). Ama "Platform kurulumu" (plan §9 B2–B5, A4; Aşama 6) yapılmadı: derlemede Play Games'in oyun kimliği ve web istemci kimliği yok. Oyun bu yüzden her cihazda ayrı bir anonim hesap açıyor; açılış kaydı bunu söylüyor: "Google Play Games: this build is not set up for the game's Play Games project …, so the account stays on this phone".
+- **Neden yakalanmadı:** eksik planda yazılıydı, ama mağaza paketi gönderilirken sahibe açıkça söylenmedi. Mağaza metni ise "Link it to Google Play Games to bring your progress to a new phone" diyor; bu derlemede bağlanma yok. Yükleme öncesi listesinde "metin derlemeyle uyuşuyor mu" maddesi yoktu.
+- **Kural (7):** mağaza metni ve sürüm notları yalnız o derlemenin gerçekten yaptığını söyler. Yüklemeden önce açılış kaydındaki "not set up / turned off" satırları okunur; metnin söz verdiği bir özellik kapalıysa ya kurulur ya metin düzeltilir, karar sahibe sorulur (`docs/PLAY_RELEASE.md` 10, 5. adım).
+- **Düzeltme:** Aşama 6 (Play Games kurulumu) versionCode 3'e; sahibin adımları plan §9 B2–B5 ve A4'te (web istemcisinin sırrı Unity'ye sahip tarafından girilir).
 
 ## H5 — versionCode 1 Play'den kurulunca her açılışta kapanıyordu (2026-10-29)
 
