@@ -176,6 +176,9 @@ public enum RealMoneyInTheBuild
 
     /// <summary>The store's products, through the platform's own store, which takes the money.</summary>
     ThroughTheStore,
+
+    /// <summary>Nothing yet, in a store build: the store's coin packs are shown as coming and cannot be bought.</summary>
+    ComingSoon,
 }
 
 /// <summary>A set of boosters the game's shop sells for coins.</summary>

@@ -77,8 +77,8 @@ public class EconomyFileTests
         });
         Assert.Equal(stated.CoinsForAnAd.Amount, game.Shop.AdForCoins.Coins.Amount);
         Assert.Equal(stated.AdsForCoinsPerDay, game.Shop.AdForCoins.PerDay);
-        Assert.Equal((AdsInTheBuild.Simulated, RealMoneyInTheBuild.ThroughTheStore), (stated.Ads, stated.RealMoneyPurchases));
-        Assert.Equal((AdSource.Simulated, RealMoneySales.ThroughTheStore), (game.Ads, game.Shop.RealMoney));
+        Assert.Equal((AdsInTheBuild.Simulated, RealMoneyInTheBuild.ComingSoon), (stated.Ads, stated.RealMoneyPurchases));
+        Assert.Equal((AdSource.Simulated, RealMoneySales.ComingSoon), (game.Ads, game.Shop.RealMoney));
     }
 
     [Fact]
@@ -232,7 +232,8 @@ public class EconomyFileTests
         Assert.Contains("build.ads is \"live\"; this build can only show an ad that is \"simulated\"", Refused(pack => pack.build.ads = "live").Message);
         Assert.Contains("build.ads is \"\"", Refused(pack => pack.build.ads = string.Empty).Message);
         Assert.Contains(
-            "build.realMoneyPurchases is \"live\"; a build sells nothing for money (\"notAvailable\") or sells the store's products through the platform's store (\"store\")",
+            "build.realMoneyPurchases is \"live\"; a build sells nothing for money (\"notAvailable\"), sells the store's products through the platform's store (\"store\") "
+            + "or is a store build that sells nothing yet (\"comingSoon\")",
             Refused(pack => pack.build.realMoneyPurchases = "live").Message);
         Assert.Contains("build.realMoneyPurchases is \"Simulated\"", Refused(pack => pack.build.realMoneyPurchases = "Simulated").Message);
         Assert.Equal(RealMoneySales.ThroughTheStore, MetaSupport.Rules(MetaSupport.InAStoreBuild).Shop.RealMoney);

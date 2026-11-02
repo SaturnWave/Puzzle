@@ -393,6 +393,7 @@
     {"id":"AccountSwitchOffAfterDeletion","text":"雲端存檔已關閉，可以在設定中重新開啟。"},
     {"id":"PrivacyParagraphCloud","text":"遊戲會為你建立一個看不見的玩家帳號。它不詢問姓名、電子郵件或密碼；帳號由一個隨機的玩家ID來辨識。你的進度、錢包和購買清單保存在這個帳號中，存放在Unity Gaming Services的伺服器上；Unity代表我們提供這項服務。如果帳號已連結Google Play Games或Game Center，或者還原了手機備份，重新安裝遊戲或更換手機後你可以從上次的地方繼續；兩者都沒有時，遊戲會從頭開始。沒有網路時遊戲照常可玩；連上網路後存檔會同步。你的設定、統計授權和嘗試紀錄不屬於雲端存檔。你可以用設定中的雲端存檔開關關閉雲端存檔；關閉後遊戲不會連結帳號，也不會同步任何內容。"},
     {"id":"PrivacyParagraphPlatform","text":"如果你的手機開啟了Google Play Games（iPhone和iPad上為Game Center），你的帳號就會與它連結。為此，Google或Apple會向Unity確認你在本遊戲中的玩家ID；你的姓名、電子郵件和好友清單不會到達遊戲。如果不連結，只能從這支手機或用它的備份設定的手機進入你的帳號。"},
-    {"id":"PrivacyParagraphVerification","text":"為了確認購買是真實的，遊戲會把商店提供的購買紀錄（商品、訂單編號和商店的簽署紀錄）傳送到我們在Unity上的伺服器程式碼。伺服器會向Google Play或Apple核實，並把結果保存在你的帳號中。已退款的購買會在這個清單中被標記。"}
+    {"id":"PrivacyParagraphVerification","text":"為了確認購買是真實的，遊戲會把商店提供的購買紀錄（商品、訂單編號和商店的簽署紀錄）傳送到我們在Unity上的伺服器程式碼。伺服器會向Google Play或Apple核實，並把結果保存在你的帳號中。已退款的購買會在這個清單中被標記。"},
+    {"id":"NoticeComingSoon","text":"金幣禮包即將推出。"}
   ]
 }

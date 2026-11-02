@@ -1142,10 +1142,11 @@ namespace Puzzle.Client.Screens
                     _asked.Add(new WalletRequest.BuyASet(buy.Set));
                     break;
                 case MuseumPress.BuyFromTheStore _ when _shop.Store.Status is StoreStatus.NotSold:
-                    // A test build sells nothing for money: no course is asked, and the card says so.
+                    // A build that sells nothing for money (a test build, or a store build whose purchases are still to
+                    // come): no course is asked, and the card says why.
                     Hang(
                         NoticeCard.Create(
-                            _root.transform, _art, ShopWords.PacksTitle, new NoticeExhibit.Mark(GalleryArt.CoinChest, NoticeMarkSize), ShopWords.NotOnSale,
+                            _root.transform, _art, ShopWords.PacksTitle, new NoticeExhibit.Mark(GalleryArt.CoinChest, NoticeMarkSize), ShopWords.NotOnSaleIn(_device.RealMoney),
                             ShopWords.WhereCoinsComeFrom),
                         roomIsDark: false);
                     break;

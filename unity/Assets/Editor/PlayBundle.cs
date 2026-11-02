@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Puzzle.Client.Engine;
+using Puzzle.Client.Statistics;
 using Puzzle.Meta;
 using Puzzle.Meta.Settings;
 using Unity.Android.Types;
@@ -24,9 +25,10 @@ namespace Puzzle.Client.EditorTools
     /// usage: Unity.exe -batchmode -quit -projectPath unity -executeMethod Puzzle.Client.EditorTools.PlayBundle.Run -logFile out/unity/play-bundle.log
     /// <para>
     /// The bundle is the test package's game (<see cref="AndroidBuild"/>: the same settings, the same manifest step, the
-    /// same checks), built as Google Play takes it. The store build: it sells through Google Play (the settings'
-    /// build.realMoneyPurchases is "store"; one that sells nothing stops the build), so it has no tester mode, and its
-    /// ads are what the settings say (the stand-in card until real ads come). It lands at
+    /// same checks), built as Google Play takes it. The store build: it sells through Google Play or will (the
+    /// settings' build.realMoneyPurchases is "store", or "comingSoon" while its purchases are still to come; a test
+    /// build's "notAvailable" stops the build), so it has no tester mode, and its ads are what the settings say (the
+    /// stand-in card until real ads come). It lands at
     /// D:/puzzle-cache/play/museumpuzzle-vc&lt;versionCode&gt;-&lt;upload|debug&gt;.aab, outside the repository. Google Play
     /// takes a bundle whose base module downloads in at most 200 MB, and the game's data is larger, so Unity's "Split
     /// Application Binary" is turned on for this build: Unity puts its data, the paintings among them, into the
@@ -161,21 +163,40 @@ namespace Puzzle.Client.EditorTools
         }
 
         /// <summary>What this build is to be: its versionCode and versionName, its key and its files.</summary>
-        /// <exception cref="InvalidOperationException">The game's settings do not sell through the store.</exception>
+        /// <exception cref="InvalidOperationException">The game's settings are a test build's, or the build lacks the Play Games project or the statistics' key the store listing promises.</exception>
         /// <exception cref="FormatException">The record of uploads is not well formed.</exception>
         /// <exception cref="IOException">The record of uploads could not be read.</exception>
         /// <exception cref="EconomyFormatException">The game's settings could not be read.</exception>
         private static BundlePlan Plan()
         {
             EconomyRules rules = EconomyPack.LoadPacked();
-            if (rules.Shop.RealMoney != RealMoneySales.ThroughTheStore)
+            string sells = rules.Shop.RealMoney switch
+            {
+                RealMoneySales.ThroughTheStore => "it sells through Google Play",
+                RealMoneySales.ComingSoon => "it sells nothing for money yet (its coin packs show as coming)",
+                _ => throw new InvalidOperationException(
+                    $"the game's settings sell {rules.Shop.RealMoney} (economy/default.json, build.realMoneyPurchases): the bundle for Google Play is a store build, "
+                    + "which sells through the store or will, and has no tester mode"),
+            };
+
+            Debug.Log($"Play bundle: the store build: {sells}, its ads are {rules.Ads}, it has no tester mode.");
+
+            // The store listing promises what these give (docs/LESSONS.md H6 and rule 7): a bundle without them is not built.
+            if (!(AndroidBuild.PlayGamesOfThisProject() is PlayGamesProject.SetUp playGames))
             {
                 throw new InvalidOperationException(
-                    $"the game's settings sell {rules.Shop.RealMoney} (economy/default.json, build.realMoneyPurchases): the bundle for Google Play is the store build, "
-                    + "which sells through the store and has no tester mode");
+                    $"the store listing promises linking the progress to Google Play Games, and this build has {AndroidBuild.PlayGamesOfThisProject()} "
+                    + "(unity/Assets/Resources/PlayGamesSettings.asset: the project id and the web client id from Play Console, docs/PLAY_RELEASE.md)");
             }
 
-            Debug.Log($"Play bundle: the store build: it sells through Google Play, its ads are {rules.Ads}, it has no tester mode.");
+            if (!(AptabaseNotes.KeyOfThisBuild() is StatisticsKey.OfTheEu statisticsKey))
+            {
+                throw new InvalidOperationException(
+                    $"the game asks the player whether it may send play statistics, and this build has {AptabaseNotes.KeyOfThisBuild()} to send them with "
+                    + "(unity/Assets/Resources/AptabaseSettings.asset: the owner's App Key of Aptabase's European region)");
+            }
+
+            Debug.Log($"Play bundle: {playGames}; statistics through {statisticsKey}.");
             int versionCode = PlayUploads.NextVersionCode(PlayUploads.Read(File.ReadAllText(PlayUploads.RecordPath)));
             string keystore = Variable(BundleSigning.KeystoreVariable) ?? BundleSigning.DefaultKeystorePath;
             string? storePassword = Variable(BundleSigning.StorePasswordVariable);

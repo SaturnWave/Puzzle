@@ -41,6 +41,7 @@ public static class SettingsLoader
     private const string SimulatedAdsWord = "simulated";
     private const string NoRealMoneyWord = "notAvailable";
     private const string StoreWord = "store";
+    private const string ComingSoonWord = "comingSoon";
 
     /// <summary>
     /// No amount of coins in a settings file may be above this. It is far above any price a game has and far below
@@ -395,8 +396,10 @@ public static class SettingsLoader
                 {
                     NoRealMoneyWord => RealMoneyInTheBuild.NotAvailable,
                     StoreWord => RealMoneyInTheBuild.ThroughTheStore,
+                    ComingSoonWord => RealMoneyInTheBuild.ComingSoon,
                     _ => throw Invalid(
-                        $"build.realMoneyPurchases is '{file.Build.RealMoneyPurchases}'; a build sells nothing for money ('{NoRealMoneyWord}') or sells the store's products through the platform's store ('{StoreWord}')"),
+                        $"build.realMoneyPurchases is '{file.Build.RealMoneyPurchases}'; a build sells nothing for money ('{NoRealMoneyWord}'), sells the store's products through the platform's "
+                        + $"store ('{StoreWord}') or is a store build that sells nothing yet ('{ComingSoonWord}')"),
                 },
             };
         }

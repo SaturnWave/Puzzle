@@ -28,7 +28,20 @@ public class SettingsWordsTests
     [Fact]
     public void The_foot_says_the_players_id_and_the_games_version()
     {
-        Assert.Equal("Oyuncu kimliği: 6F1C-0E9A · Sürüm 1.0", SettingsWords.Foot(new DeviceId("6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a"), "1.0"));
+        Assert.Equal("Oyuncu kimliği: 6F1C-0E9A · Sürüm 1.0", SettingsWords.Foot(TestDevices.Phone()));
+    }
+
+    /// <summary>The owner's decision of 2026-10-28: while the cloud save is on, the cards name the player by the account support finds them by.</summary>
+    [Fact]
+    public void The_cards_show_the_accounts_player_code_while_the_cloud_save_is_on_and_the_phones_id_otherwise()
+    {
+        const string PlayerCode = "hWHj 8vr9 oPrG 57qg myc8 DctD WkfF";
+
+        Assert.Equal(PlayerCode, SettingsWords.PlayerIdOf(TestDevices.Phone(TestDevices.Cloud(isSwitchedOn: true, isSignedIn: true))));
+        Assert.Equal($"Oyuncu kimliği: {PlayerCode} · Sürüm 1.0", SettingsWords.Foot(TestDevices.Phone(TestDevices.Cloud(isSwitchedOn: true, isSignedIn: true))));
+        Assert.Equal("6F1C-0E9A", SettingsWords.PlayerIdOf(TestDevices.Phone(TestDevices.Cloud(isSwitchedOn: true, isSignedIn: false))));
+        Assert.Equal("6F1C-0E9A", SettingsWords.PlayerIdOf(TestDevices.Phone(TestDevices.Cloud(isSwitchedOn: false, isSignedIn: false))));
+        Assert.Equal("6F1C-0E9A", SettingsWords.PlayerIdOf(TestDevices.Phone()));
     }
 
     [Fact]
@@ -36,17 +49,19 @@ public class SettingsWordsTests
     {
         Assert.Equal("Test sürümü · reklamlar canlandırma, satın alma kapalı", SettingsWords.BuildLine(AdSource.Simulated, RealMoneySales.NotAvailable));
         Assert.Equal("Bu sürüm · reklamlar canlandırma, satın alma mağazadan", SettingsWords.BuildLine(AdSource.Simulated, RealMoneySales.ThroughTheStore));
+        Assert.Equal("Bu sürüm · reklamlar canlandırma, satın alma kapalı", SettingsWords.BuildLine(AdSource.Simulated, RealMoneySales.ComingSoon));
     }
 
+    /// <summary>The owner's decision of 2026-11-02: the closed test's versionCode 3 is a store build that sells nothing yet.</summary>
     [Fact]
-    public void The_build_line_of_the_pack_the_game_carries_which_sells_through_the_store_is_no_test_builds()
+    public void The_build_line_of_the_pack_the_game_carries_which_sells_nothing_yet_is_no_test_builds()
     {
         var file = JsonSerializer.Deserialize<EconomyFile>(File.ReadAllText(RepoFiles.EconomyPackPath), AsUnityMapsIt)!;
         EconomyRules rules = EconomyFileMapper.ToRules(file);
 
-        Assert.Equal(RealMoneySales.ThroughTheStore, rules.Shop.RealMoney);
+        Assert.Equal(RealMoneySales.ComingSoon, rules.Shop.RealMoney);
         Assert.DoesNotContain("Test", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney), StringComparison.Ordinal);
-        Assert.EndsWith("satın alma mağazadan", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney), StringComparison.Ordinal);
+        Assert.EndsWith("satın alma kapalı", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney), StringComparison.Ordinal);
     }
 
     /// <summary>

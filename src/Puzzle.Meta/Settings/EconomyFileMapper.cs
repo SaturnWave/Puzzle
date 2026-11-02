@@ -35,6 +35,9 @@ namespace Puzzle.Meta.Settings
         /// <summary>The settings' word for a build that sells the store's products through the platform's store.</summary>
         public const string StoreWord = "store";
 
+        /// <summary>The settings' word for a store build that sells nothing for money yet.</summary>
+        public const string ComingSoonWord = "comingSoon";
+
         /// <summary>The starter pack's name, as the economy simulator's reports call it.</summary>
         public const string StarterPackName = "starter-pack";
 
@@ -344,9 +347,12 @@ namespace Puzzle.Meta.Settings
                     return RealMoneySales.NotAvailable;
                 case StoreWord:
                     return RealMoneySales.ThroughTheStore;
+                case ComingSoonWord:
+                    return RealMoneySales.ComingSoon;
                 default:
                     throw Invalid(
-                        $"build.realMoneyPurchases is \"{build.realMoneyPurchases}\"; a build sells nothing for money (\"{NoRealMoneyWord}\") or sells the store's products through the platform's store (\"{StoreWord}\")");
+                        $"build.realMoneyPurchases is \"{build.realMoneyPurchases}\"; a build sells nothing for money (\"{NoRealMoneyWord}\"), sells the store's products through the "
+                        + $"platform's store (\"{StoreWord}\") or is a store build that sells nothing yet (\"{ComingSoonWord}\")");
             }
         }
 

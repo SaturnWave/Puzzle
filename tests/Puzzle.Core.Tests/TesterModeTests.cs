@@ -42,7 +42,8 @@ public class TesterModeTests
     {
         Assert.True(TesterMode.IsOfferedBy(AdSource.Simulated, RealMoneySales.NotAvailable));
         Assert.False(TesterMode.IsOfferedBy((AdSource)1, RealMoneySales.NotAvailable));
-        Assert.False(TesterMode.IsOfferedBy(AdSource.Simulated, (RealMoneySales)1));
+        Assert.False(TesterMode.IsOfferedBy(AdSource.Simulated, RealMoneySales.ThroughTheStore));
+        Assert.False(TesterMode.IsOfferedBy(AdSource.Simulated, RealMoneySales.ComingSoon));
     }
 
     [Fact]

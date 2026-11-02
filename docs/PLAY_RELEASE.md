@@ -36,7 +36,9 @@
 | 11 | Claude | Değişiklikleri incelemeye gönder (5.2, 8. adım) | Gönderildi, 2026-10-28: 28 değişiklik. Google 29 Ekim'de onayladı; test bağlantısı açık |
 | 12 | Claude | versionCode 1'in açılış çökmesi: neden, düzeltme, versionCode 2 (9) | Yapıldı, 2026-10-29: `museumpuzzle-vc2-upload.aab`, telefonda açılıyor |
 | 13 | Sahip | versionCode 2'yi kapalı teste yükle (Create new release; sahibin kararı, 2026-10-29: tek seferlik istisna, 10'un 6. adımı atlanıyor) | Yapıldı, 2026-10-29: Play işledi, 2 (1.0) |
-| 14 | Claude | Sürüm notları, incelemeye gönder, kayda yaz (`2 1.0 2026-10-29 closed`); onaydan hemen sonra Play'den kurup dene (T583) | Gönderildi ve kayda yazıldı, 2026-10-29; Play'den deneme onaydan sonra |
+| 14 | Claude | Sürüm notları, incelemeye gönder, kayda yaz (`2 1.0 2026-10-29 closed`); onaydan hemen sonra Play'den kurup dene (T583) | Gönderildi ve kayda yazıldı, 2026-10-29; Google onayladı (30 Ekim) |
+| 15 | Sahip, Claude | versionCode 3: Play Games kurulumu (plan §9 B2–B5, A4), satın almasız mağaza (`comingSoon`), Aptabase anahtarı, mağaza metni (DEVLOG Oturum 38) | Sürüyor, 2026-11-02: Play Games projesi açık (235305914512), kod ve metin hazır; OAuth, istemciler, sır, anahtar bekliyor |
+| 16 | Claude | vc3'ü 10. bölümün sırasıyla dene: APK seti, F34 telefon ve tablette, dahili test, kapalı teste terfi | Bekliyor |
 
 ## 3. Yükleme anahtarı
 

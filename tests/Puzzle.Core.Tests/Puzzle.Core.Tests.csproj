@@ -211,6 +211,7 @@
     <Compile Include="..\..\unity\Assets\Editor\BundleDownloadSize.cs" Link="Unity\Editor\BundleDownloadSize.cs" />
     <Compile Include="..\..\unity\Assets\Editor\NativeLibraryAlignment.cs" Link="Unity\Editor\NativeLibraryAlignment.cs" />
     <Compile Include="..\..\unity\Assets\Editor\ManifestAssetDelivery.cs" Link="Unity\Editor\ManifestAssetDelivery.cs" />
+    <Compile Include="..\..\unity\Assets\Editor\PlayGamesProject.cs" Link="Unity\Editor\PlayGamesProject.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Puzzle.Core\Puzzle.Core.csproj" />

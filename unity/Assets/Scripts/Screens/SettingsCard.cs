@@ -86,7 +86,7 @@ namespace Puzzle.Client.Screens
             _buildLine = Lettering.Write("Build", _card.Content, art, LetteringStyle.Soft, SettingsLayout.SmallSize, Lettering.LabelInk, DrawOrder.CardLettering);
             Lettering.SayWithin(_buildLine, SettingsWords.BuildLine(device.Ads, device.RealMoney), SettingsLayout.SmallSize, room);
             _buildLine.transform.localPosition = _card.At(_layout.BuildLineMiddle);
-            Lettering.SayWithin(_foot, SettingsWords.Foot(device.Device, device.GameVersion), SettingsLayout.SmallSize, room);
+            Lettering.SayWithin(_foot, SettingsWords.Foot(device), SettingsLayout.SmallSize, room);
         }
 
         public HangingCard<MuseumPress> Card => _card;

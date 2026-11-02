@@ -1189,5 +1189,8 @@ namespace Puzzle.Client.Words
 
         /// <summary>Privacy card, the paragraph on the verification of purchases.</summary>
         PrivacyParagraphVerification,
+
+        /// <summary>Coin pack card in a store build that sells nothing for money yet: the packs come later.</summary>
+        NoticeComingSoon,
     }
 }

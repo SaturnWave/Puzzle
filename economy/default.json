@@ -223,8 +223,11 @@
     "ads": "simulated",
     // What is sold for real money: "store" sells the store section's products through the platform's own store
     // (Google Play, the App Store), which takes the money; "notAvailable" shows its coin packs and sells none, as a
-    // test build did before v1. v1 sells (the owner's decision of 2026-10-24). [decided 2026-10-24]
-    "realMoneyPurchases": "store"
+    // test build did before v1; "comingSoon" is a store build that sells none yet: its coin packs show as coming, the
+    // platform's store is never asked, and the rest is the store build's (production cloud, no tester mode). v1 was to
+    // sell (the owner's decision of 2026-10-24); its payments profile and products are not set up, so the closed test's
+    // versionCode 3 sells nothing yet and purchases come with a later version (the owner, 2026-11-02). [decided 2026-11-02]
+    "realMoneyPurchases": "comingSoon"
   },
 
   // What the game sells for real money in v1: the owner's products of 2026-10-24 (docs/research/monetization-and-

@@ -14,7 +14,10 @@ namespace Puzzle.Client.Purchases
         {
         }
 
-        /// <summary>A test build: nothing is sold for money (the settings' build.realMoneyPurchases), and the store is never asked.</summary>
+        /// <summary>
+        /// A build that sells nothing for money (the settings' build.realMoneyPurchases): a test build, or a store build
+        /// whose purchases are still to come. The store is never asked.
+        /// </summary>
         public sealed class NotSold : StoreStatus
         {
             public override string ToString() => "not sold in this build";
@@ -414,9 +417,9 @@ namespace Puzzle.Client.Purchases
 
         public RestoreState Restore { get; }
 
-        /// <summary>The store as a shop shows it with no purchase's course behind it: a test build's, or one not yet asked.</summary>
+        /// <summary>The store as a shop shows it with no purchase's course behind it: that of a build that sells nothing, or one not yet asked.</summary>
         public static StoreView Unasked(StoreCatalogue catalogue, RealMoneySales sales) => new StoreView(
-            sales == RealMoneySales.NotAvailable ? new StoreStatus.NotSold() : (StoreStatus)new StoreStatus.Connecting(),
+            Checkout.Sells(sales) ? new StoreStatus.Connecting() : (StoreStatus)new StoreStatus.NotSold(),
             catalogue.CoinPacks.Select(pack => new ProductOffer(pack, price: null)).ToArray(), catalogue.StarterPack.Product, starterPack: null, offersRestore: false,
             PurchaseState.Idle, RestoreState.None);
     }
@@ -507,14 +510,19 @@ namespace Puzzle.Client.Purchases
             _catalogue = catalogue ?? throw new ArgumentNullException(nameof(catalogue));
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _listings = StoreListing.AllOf(catalogue, applicationId);
-            _sells = sales switch
-            {
-                RealMoneySales.NotAvailable => false,
-                RealMoneySales.ThroughTheStore => true,
-                _ => throw new ArgumentOutOfRangeException(nameof(sales), sales, "A build sells for money or does not."),
-            };
+            _sells = Sells(sales);
             Status = _sells ? new StoreStatus.Connecting() : (StoreStatus)new StoreStatus.NotSold();
         }
+
+        /// <summary>True for a build that sells through the platform's store; a test build and a store build whose purchases are still to come never ask it.</summary>
+        /// <exception cref="ArgumentOutOfRangeException">A way of selling this game does not know.</exception>
+        internal static bool Sells(RealMoneySales sales) => sales switch
+        {
+            RealMoneySales.NotAvailable => false,
+            RealMoneySales.ThroughTheStore => true,
+            RealMoneySales.ComingSoon => false,
+            _ => throw new ArgumentOutOfRangeException(nameof(sales), sales, "A build sells for money or does not."),
+        };
 
         public StoreStatus Status { get; private set; }
 

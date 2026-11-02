@@ -93,9 +93,18 @@ namespace Puzzle.Client.Flow
             return $"{id.Substring(0, 4)}-{id.Substring(4, 4)}";
         }
 
-        /// <summary>The settings card's foot: "Oyuncu kimliği: 6F1C-0E9A · Sürüm 1.0".</summary>
-        public static string Foot(DeviceId device, string gameVersion) =>
-            Speech.Say(WordId.SettingsFoot, ("playerId", PlayerId(device)), ("version", gameVersion));
+        /// <summary>
+        /// The player's id as the settings card's foot and the support card show it (the owner's decision of
+        /// 2026-10-28): while the cloud save is on and an account is known, the account's player code, the one the account
+        /// card shows and copies and support finds the player by ("hWHj 8vr9 oPrG …"); otherwise the phone's id
+        /// (<see cref="PlayerId"/>), which the attempt records carry.
+        /// </summary>
+        public static string PlayerIdOf(DeviceView device) =>
+            device.SendsTheCloudSave && device.Account.PlayerCode is string code ? code : PlayerId(device.Device);
+
+        /// <summary>The settings card's foot: "Oyuncu kimliği: 6F1C-0E9A · Sürüm 1.0", with the id of <see cref="PlayerIdOf"/>.</summary>
+        public static string Foot(DeviceView device) =>
+            Speech.Say(WordId.SettingsFoot, ("playerId", PlayerIdOf(device)), ("version", device.GameVersion));
 
         /// <summary>The support card's content version: "sürüm 1".</summary>
         public static string ContentVersionOf(ContentVersion content) =>
@@ -105,7 +114,8 @@ namespace Puzzle.Client.Flow
         /// The line under the foot that says what kind of build this is, from the build's marks in the economy's
         /// settings: "Test sürümü · reklamlar canlandırma, satın alma kapalı" for the stand-in build, which sells nothing
         /// for money; "Bu sürüm · reklamlar canlandırma, satın alma mağazadan" for a build that sells through the
-        /// platform's store, which is no test build. A build with real ads must say so here before it can be made.
+        /// platform's store, which is no test build; "Bu sürüm · reklamlar canlandırma, satın alma kapalı" for a store
+        /// build that sells nothing yet. A build with real ads must say so here before it can be made.
         /// </summary>
         public static string BuildLine(AdSource ads, RealMoneySales realMoney)
         {
@@ -118,6 +128,7 @@ namespace Puzzle.Client.Flow
             {
                 RealMoneySales.NotAvailable => Speech.Say(WordId.SettingsBuildLine, ("ads", adsAre), ("buying", Speech.Say(WordId.BuildNoBuying))),
                 RealMoneySales.ThroughTheStore => Speech.Say(WordId.SettingsBuildLineStoreBuild, ("ads", adsAre), ("buying", Speech.Say(WordId.BuildStoreBuying))),
+                RealMoneySales.ComingSoon => Speech.Say(WordId.SettingsBuildLineStoreBuild, ("ads", adsAre), ("buying", Speech.Say(WordId.BuildNoBuying))),
                 _ => throw new ArgumentOutOfRangeException(nameof(realMoney), realMoney, "A way of selling the settings card cannot name."),
             };
         }

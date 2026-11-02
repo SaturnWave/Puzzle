@@ -87,7 +87,7 @@ namespace Puzzle.Client.Screens
             var sketch = new MeshSketch();
             (string Label, string Value)[] rows =
             {
-                (SettingsWords.PlayerIdLabel, SettingsWords.PlayerId(device.Device)),
+                (SettingsWords.PlayerIdLabel, SettingsWords.PlayerIdOf(device)),
                 (SettingsWords.GameVersionLabel, device.GameVersion),
                 (SettingsWords.ContentVersionLabel, SettingsWords.ContentVersionOf(device.Content)),
             };

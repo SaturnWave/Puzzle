@@ -4,6 +4,36 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
+
+- Sahip: "Başlayalım; bu sefer eksiksiz olsun, 3. kez upload edeceğiz, bu kabul edilemez."
+- Mağaza metni derlemeyle karşılaştırıldı (kural 7). Üç uyuşmazlık çıktı:
+  - Play Games'e bağlama: kurulmamış.
+  - Gerçek parayla satış: Play'de ödeme hesabı yok ("You need to set up a Google Payments merchant account"), ürün açılamıyor.
+  - İstatistik sorusu: derlemede Aptabase anahtarı yok.
+- Kararlar (sahip): satın alma sonraki sürüme kalır; Aptabase kurulur.
+- **Play Games:**
+  - Claude Google Cloud projesini açtı: `museum-puzzle-513510`, numara 235305914512.
+  - Play Games projesi açıldı: Project ID 235305914512, taslak. Sözleşmeli "Use" düğmesine sahip bastı.
+  - SHA-1'ler: uygulama imza `E8:3E:A7:B2:C4:D7:0C:A9:09:65:F2:1E:1F:AB:65:0A:9A:B3:28:91` (Play Console, App signing); yükleme `51:10:D0:52:B8:5A:AF:AF:F5:34:54:68:56:CF:0F:13:2D:7C:2A:3F` (vc2 paketinden); hata ayıklama `F1:57:AD:A1:59:C8:FE:B6:9A:43:DB:2C:61:1C:48:F7:BE:57:E4:F4` (APK setinden).
+  - OAuth izin ekranı dolduruldu: ad Museum Puzzle, destek arcanthedeveloper@gmail.com (tek seçenek), External, iletişim saturnwave.apps@gmail.com. Google'ın politika kutusu ve "Create" sahibin.
+- **Satın almasız mağaza:** `RealMoneySales.ComingSoon`, ayar sözcüğü `"comingSoon"`. Meta, simülatör ve oyun bu sözcüğü tanıyor.
+  - Mağaza hiç sorulmuyor (`Checkout.Sells`); paketler "Yakında", kartı "Altın paketleri yakında satışta." (yeni `NoticeComingSoon`, 13 dilde; Japoncası alt-küme yazı tipinin harfleriyle).
+  - Ayarlar satırı "Bu sürüm · …, satın alma kapalı"; giriş sayfası yalnız "Sürüm 1.0"; bulut `production`; test modu yok.
+  - `PlayBundle` test derlemesini reddediyor, `store` ve `comingSoon`'u alıyor.
+- **Oyuncu kimliği** (sahibin 28 Ekim kararı): `SettingsWords.PlayerIdOf`. Bulut kaydı açıkken ve hesap biliniyorsa Ayarlar'ın alt satırı ve Destek kartı oyuncu kodunu, değilse cihaz kimliğini gösteriyor.
+- **Play Games derlemesi:**
+  - Projede eklentinin yalnız çalışma zamanı var, Editor kurulumu yok. Yeni `PlayGamesProject` eklentinin ayar dosyasını (`Resources/PlayGamesSettings`) okuyor: kurulmamış, kurulmuş ya da reddedilmiş.
+  - Manifest adımı oyun kimliğini `com.google.android.gms.games.APP_ID` olarak "\u003…" biçiminde yazıyor. SDK bunu `getString` ile okuyor (play-services-games-v2 22.1.0, bytecode okundu); paket `aapt` ile geri okunuyor.
+  - Eklentinin `AndroidClient`'ı SDK'yı kendisi başlatıyor (`PlayGamesSdk.initialize`); `PlayGamesInitProvider`'ın çıkarılması bu yüzden doğru. Telefonda kanıtı T590.
+- **Mağaza paketi kapısı:** `PlayBundle`, Play Games projesi ya da AB bölgesinden bir Aptabase anahtarı olmadan mağaza paketi derlemiyor; mağaza metni ikisini de vaat ediyor (H6, kural 7).
+- **Mağaza metni:** gerçek para paragrafı 13 dilde çıktı (`release/store-listing`, `StoreListingTests` 66/66). Play Console'da da her dilde çıkarıldı, uzunluklar depodakiyle aynı; kaydedildi, incelemeye vc3'le gidecek. Yapay zekâ beyanı yine "Don't label".
+- **Yükleme kapısı:** PHONE_TESTS F34 (T590–T596) ve F28–F31'in Play Games testleri; telefon ve tabletle iki tur (APK seti, sonra dahili test).
+- **Denetimler:** 6.189 + 83 test; Unity hatasız derlendi ve `EngineSmokeTest` geçti.
+- **Sıradaki:**
+  - Sahip: OAuth'u onaylar, Aptabase anahtarını verir, web istemcisinin sırrını Unity'ye girer (plan A4).
+  - Claude: Android istemcileri (3 SHA-1) ve web istemcisini oluşturur, Play Games test kullanıcılarını ve yayınını yapar, `PlayGamesSettings` ile Aptabase anahtarını derlemeye koyar, vc3'ü derler, F34'ü telefon ve tablette koşar, dahili testi açar, kapalı teste terfi ettirir.
+
 ## 2026-10-30 · Oturum 37 — versionCode 2 onaylandı; cihazlar arası kayıt yok
 
 - **Onay:** Google versionCode 2'yi onayladı. Kapalı test kanalı "Latest release: 2 (1.0)", incelemede bir şey yok. Pano kapalı test sürümünü yayımlanmış olarak işaretliyor; 3 test kullanıcısı katılmış (12 gerekiyor). Test bağlantısı aynı.

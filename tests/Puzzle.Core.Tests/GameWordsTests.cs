@@ -166,7 +166,7 @@ public class GameWordsTests
     {
         using IDisposable speaking = TestWords.Speak(language);
 
-        Assert.Equal(foot, SettingsWords.Foot(new DeviceId("6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a"), "1.0"));
+        Assert.Equal(foot, SettingsWords.Foot(TestDevices.Phone()));
         Assert.Equal(fileLine, PrivacyWords.FileLine("attempts.jsonl"));
         Assert.Equal(content, SettingsWords.ContentVersionOf(ContentVersion.First));
     }
@@ -262,7 +262,7 @@ public class GameWordsTests
             ("ShopWords.Title", ShopWords.Title), ("ShopWords.Coins", ShopWords.Coins), ("ShopWords.Boosters", ShopWords.Boosters), ("ShopWords.Free", ShopWords.Free),
             ("ShopWords.ComingSoon", ShopWords.ComingSoon), ("ShopWords.Watch", ShopWords.Watch), ("ShopWords.TomorrowAgain", ShopWords.TomorrowAgain),
             ("ShopWords.ToTheShop", ShopWords.ToTheShop), ("ShopWords.Gift", ShopWords.Gift), ("ShopWords.PacksTitle", ShopWords.PacksTitle),
-            ("ShopWords.NotOnSale", ShopWords.NotOnSale), ("ShopWords.WhereCoinsComeFrom", ShopWords.WhereCoinsComeFrom), ("ShopWords.CoinsShortTitle", ShopWords.CoinsShortTitle),
+            ("ShopWords.WhereCoinsComeFrom", ShopWords.WhereCoinsComeFrom), ("ShopWords.CoinsShortTitle", ShopWords.CoinsShortTitle),
             ("ShopWords.GatherCoins", ShopWords.GatherCoins), ("ShopWords.BoughtTitle", ShopWords.BoughtTitle), ("ShopWords.GiftTitle", ShopWords.GiftTitle),
             ("ShopWords.GiftTaken", ShopWords.GiftTaken), ("ShopWords.PaintingsReward", ShopWords.PaintingsReward), ("ShopWords.NoAdTitle", ShopWords.NoAdTitle),
             ("ShopWords.NoAdLeft", ShopWords.NoAdLeft), ("ShopWords.ComeTomorrow", ShopWords.ComeTomorrow),
@@ -300,7 +300,10 @@ public class GameWordsTests
             ("SettingsWords.WhatToTell", SettingsWords.WhatToTell), ("SettingsWords.TesterModeQuestion", SettingsWords.TesterModeQuestion),
             ("SettingsWords.TesterModeTells", SettingsWords.TesterModeTells), ("SettingsWords.TurnTesterModeOn", SettingsWords.TurnTesterModeOn),
             ("SettingsWords.LeaveTesterModeOff", SettingsWords.LeaveTesterModeOff), ("SettingsWords.LanguageSpoken", SettingsWords.LanguageSpoken),
-            ("SettingsWords.Foot", SettingsWords.Foot(new DeviceId("6f1c0e9a2b7d4c3e8a5f0b1d2c3e4f5a"), "1.0")),
+            ("SettingsWords.Foot", SettingsWords.Foot(TestDevices.Phone())),
+            ("SettingsWords.Foot cloud", SettingsWords.Foot(TestDevices.Phone(TestDevices.Cloud(isSwitchedOn: true, isSignedIn: true)))),
+            ("ShopWords.NotOnSaleIn test", ShopWords.NotOnSaleIn(RealMoneySales.NotAvailable)),
+            ("ShopWords.NotOnSaleIn coming", ShopWords.NotOnSaleIn(RealMoneySales.ComingSoon)),
             ("SettingsWords.ContentVersionOf", SettingsWords.ContentVersionOf(ContentVersion.First)),
             ("SettingsWords.BuildLine", SettingsWords.BuildLine(rules.Ads, rules.Shop.RealMoney)),
             ("PrivacyWords.Title", PrivacyWords.Title), ("PrivacyWords.DeleteTheRecords", PrivacyWords.DeleteTheRecords), ("PrivacyWords.KeepThem", PrivacyWords.KeepThem),
@@ -333,6 +336,7 @@ public class GameWordsTests
             ("SettingsWords.BuildLine store build", SettingsWords.BuildLine(rules.Ads, RealMoneySales.ThroughTheStore)),
             ("EntryWords.Version test build", EntryWords.Version("1.0", RealMoneySales.NotAvailable)),
             ("EntryWords.Version store build", EntryWords.Version("1.0", RealMoneySales.ThroughTheStore)),
+            ("EntryWords.Version store build coming", EntryWords.Version("1.0", RealMoneySales.ComingSoon)),
         };
 
         foreach (StoreProduct product in store.Products)

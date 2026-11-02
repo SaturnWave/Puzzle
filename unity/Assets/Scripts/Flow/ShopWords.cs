@@ -21,7 +21,7 @@ namespace Puzzle.Client.Flow
         public static string Boosters => Speech.Say(WordId.ShopBoostersHeader);
         public static string Free => Speech.Say(WordId.ShopFreeHeader);
 
-        /// <summary>The button of a pack of coins, which a test build does not sell.</summary>
+        /// <summary>The button of a pack of coins, which a build that sells nothing for money does not sell.</summary>
         public static string ComingSoon => Speech.Say(WordId.ShopComingSoon);
 
         /// <summary>The blue button of the free strip, and what it says once the day's ads are used up.</summary>
@@ -34,10 +34,21 @@ namespace Puzzle.Client.Flow
         /// <summary>The hall's gift frame while the daily reward waits.</summary>
         public static string Gift => Speech.Say(WordId.HallGift);
 
-        /// <summary>The card a pack of coins answers with: a test build sells nothing for money.</summary>
+        /// <summary>The card a pack of coins answers with in a build that sells nothing for money.</summary>
         public static string PacksTitle => Speech.Say(WordId.NoticePacksTitle);
-        public static string NotOnSale => Speech.Say(WordId.NoticeNotOnSale);
         public static string WhereCoinsComeFrom => Speech.Say(WordId.NoticeWhereCoinsComeFrom);
+
+        /// <summary>
+        /// Why that card's pack cannot be bought: "Bu test sürümünde satın alma yok." in a test build, "Altın paketleri
+        /// yakında satışta." in a store build whose purchases are still to come.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The build sells through the store, whose packs answer with the store's course, not this card.</exception>
+        public static string NotOnSaleIn(RealMoneySales sales) => sales switch
+        {
+            RealMoneySales.NotAvailable => Speech.Say(WordId.NoticeNotOnSale),
+            RealMoneySales.ComingSoon => Speech.Say(WordId.NoticeComingSoon),
+            _ => throw new ArgumentOutOfRangeException(nameof(sales), sales, "Only a build that sells nothing for money answers a coin pack with a card."),
+        };
 
         /// <summary>The card of a set the coins do not cover.</summary>
         public static string CoinsShortTitle => Speech.Say(WordId.NoticeCoinsShortTitle);

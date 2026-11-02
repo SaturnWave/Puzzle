@@ -225,7 +225,7 @@ public class EconomySettingsTests
     [InlineData("""{ "shop": { "boosterSets": { "none": { "priceCoins": 10, "boosters": {} } } } }""", "shop.boosterSets.none.boosters is empty")]
     [InlineData("""{ "shop": { "adForCoins": { "perDay": -1 } } }""", "shop.adForCoins.perDay -1 must be at least 0")]
     [InlineData("""{ "build": { "ads": "live" } }""", "build.ads is 'live'")]
-    [InlineData("""{ "build": { "realMoneyPurchases": "live" } }""", "build.realMoneyPurchases is 'live'; a build sells nothing for money ('notAvailable') or sells the store's products")]
+    [InlineData("""{ "build": { "realMoneyPurchases": "live" } }""", "build.realMoneyPurchases is 'live'; a build sells nothing for money ('notAvailable'), sells the store's products")]
     public void Settings_that_contradict_themselves_are_refused(string change, string expectedInTheMessage) =>
         Assert.Contains(expectedInTheMessage, Refused(change).Message);
 
@@ -302,6 +302,7 @@ public class EconomySettingsTests
         Assert.Equal((new Coins(50), 3), (game.CoinsForAnAd, game.AdsForCoinsPerDay));
         Assert.Equal((AdsInTheBuild.Simulated, RealMoneyInTheBuild.NotAvailable), (game.Ads, game.RealMoneyPurchases));
         Assert.Equal(RealMoneyInTheBuild.ThroughTheStore, EconomySupport.Settings("""{ "build": { "realMoneyPurchases": "store" } }""").Game.RealMoneyPurchases);
+        Assert.Equal(RealMoneyInTheBuild.ComingSoon, EconomySupport.Settings("""{ "build": { "realMoneyPurchases": "comingSoon" } }""").Game.RealMoneyPurchases);
 
         // The catalogue says of each of these that no simulated player meets it, and of nothing else.
         string[] gameOnly = SettingsCatalogue.Fields.Where(field => field.Use == SettingUse.GameOnly).Select(field => field.Path.Split('.')[0]).Distinct().ToArray();

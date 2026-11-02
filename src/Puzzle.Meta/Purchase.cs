@@ -65,5 +65,13 @@ namespace Puzzle.Meta
 
         /// <summary>The store's products are sold through the platform's own store (Google Play, the App Store), which takes the money.</summary>
         ThroughTheStore,
+
+        /// <summary>
+        /// A store build that sells nothing for money yet: the store's coin packs are shown as coming and cannot be
+        /// bought, and the platform's store is never asked. Everything else is the store build's: the production cloud,
+        /// no tester mode, no "test version" on the entry page (the owner's decision of 2026-11-02: purchases come with a
+        /// later version).
+        /// </summary>
+        ComingSoon,
     }
 }

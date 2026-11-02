@@ -393,6 +393,7 @@
     {"id":"AccountSwitchOffAfterDeletion","text":"云存档已关闭，可以在设置中重新打开。"},
     {"id":"PrivacyParagraphCloud","text":"游戏会为你创建一个看不见的玩家账号。它不询问姓名、邮箱或密码；账号由一个随机的玩家ID来识别。你的进度、钱包和购买列表保存在这个账号中，存放在Unity Gaming Services的服务器上；Unity代表我们提供这项服务。如果账号已关联Google Play Games或Game Center，或者恢复了手机备份，重新安装游戏或更换手机后你可以从上次的地方继续；两者都没有时，游戏会从头开始。没有网络时游戏照常可玩；连上网络后存档会同步。你的设置、统计授权和尝试记录不属于云存档。你可以用设置中的云存档开关关闭云存档；关闭后游戏不会连接账号，也不会同步任何内容。"},
     {"id":"PrivacyParagraphPlatform","text":"如果你的手机开启了Google Play Games（iPhone和iPad上为Game Center），你的账号就会与它关联。为此，Google或Apple会向Unity确认你在本游戏中的玩家ID；你的姓名、邮箱和好友列表不会到达游戏。如果不关联，只能从这部手机或用它的备份设置的手机进入你的账号。"},
-    {"id":"PrivacyParagraphVerification","text":"为了确认购买是真实的，游戏会把商店提供的购买记录（商品、订单号和商店的签名记录）发送到我们在Unity上的服务器代码。服务器会向Google Play或Apple核实，并把结果保存在你的账号中。已退款的购买会在这个列表中被标记。"}
+    {"id":"PrivacyParagraphVerification","text":"为了确认购买是真实的，游戏会把商店提供的购买记录（商品、订单号和商店的签名记录）发送到我们在Unity上的服务器代码。服务器会向Google Play或Apple核实，并把结果保存在你的账号中。已退款的购买会在这个列表中被标记。"},
+    {"id":"NoticeComingSoon","text":"金币礼包即将推出。"}
   ]
 }

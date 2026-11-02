@@ -146,11 +146,14 @@ public class PurchaseTests
         Assert.Equal(2, next.Progress.Purchases.TimesBought(Large.IdSuffix));
     }
 
-    [Fact]
-    public void A_test_build_never_asks_the_store_and_its_packs_cannot_be_bought()
+    /// <summary>A test build, and the store build whose purchases are still to come (the owner's decision of 2026-11-02).</summary>
+    [Theory]
+    [InlineData(RealMoneySales.NotAvailable)]
+    [InlineData(RealMoneySales.ComingSoon)]
+    public void A_build_that_sells_nothing_for_money_never_asks_the_store_and_its_packs_cannot_be_bought(RealMoneySales sales)
     {
         var store = ScriptedStore.AtUsPrices(Catalogue, TestApplicationId, offersRestore: true);
-        var checkout = new Checkout(Catalogue, RealMoneySales.NotAvailable, TestApplicationId, store);
+        var checkout = new Checkout(Catalogue, sales, TestApplicationId, store);
 
         var keeper = new Keeper(OnLevelTwentyFive);
         checkout.Open(TimeSpan.Zero, keeper);
@@ -158,6 +161,7 @@ public class PurchaseTests
 
         Assert.Equal(0, store.TimesOpened);
         Assert.IsType<StoreStatus.NotSold>(checkout.Status);
+        Assert.IsType<StoreStatus.NotSold>(StoreView.Unasked(Catalogue, sales).Status);
         Assert.False(checkout.OffersRestore);
         Assert.False(checkout.Ask(Small, PurchasesMade.None, levelNumber: 25));
         StoreView view = checkout.ViewFor(PurchasesMade.None, levelNumber: 25);

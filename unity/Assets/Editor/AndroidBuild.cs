@@ -151,6 +151,19 @@ namespace Puzzle.Client.EditorTools
             Debug.Log($"Android build: the package registers no backend for Google's logging transport ({ManifestLoggingBackend.CctBackend} withdrawn).");
             ManifestPlayGamesStart.RequireWithdrawnFrom(manifest);
             Debug.Log($"Android build: the package does not start Play Games with the game ({ManifestPlayGamesStart.InitProvider} withdrawn).");
+            switch (PlayGamesOfThisProject())
+            {
+                case PlayGamesProject.SetUp project:
+                    PlayGamesProject.RequireDeclaredIn(manifest, project);
+                    Debug.Log($"Android build: the package names its Play Games project {project.AppId} ({PlayGamesProject.AppIdName}), for {project}.");
+                    break;
+                case PlayGamesProject.NotSetUp _:
+                    Debug.Log("Android build: the package has no Play Games project: its account stays on the phone.");
+                    break;
+                case PlayGamesProject.Refused refused:
+                    throw new InvalidOperationException($"the Play Games settings are refused: {refused.Why}");
+            }
+
             switch (built)
             {
                 case BuiltPackage.BundleBase:
@@ -168,6 +181,13 @@ namespace Puzzle.Client.EditorTools
 
             ManifestBackupRules.RequireIn(manifest);
             Debug.Log($"Android build: Android's backup keeps {ManifestBackupRules.PlayerPrefsFile(PackageId)} and {string.Join(", ", ManifestBackupRules.GameFiles)}, nothing else.");
+        }
+
+        /// <summary>The game's Play Games project as the plugin's settings file holds it (unity/Assets/Resources/PlayGamesSettings.asset); not set up where there is none.</summary>
+        internal static PlayGamesProject PlayGamesOfThisProject()
+        {
+            GooglePlayGames.PlayGamesSettings? settings = GooglePlayGames.PlayGamesSettings.LoadInstance();
+            return PlayGamesProject.Read(settings != null ? settings.AppId : null, settings != null ? settings.WebClientId : null);
         }
 
         /// <summary>The Unity library's manifest of the build before, taken away so that Unity writes it anew; nothing where there is none.</summary>
@@ -288,7 +308,15 @@ namespace Puzzle.Client.EditorTools
         {
             string manifest = Path.Combine(path, "src", "main", "AndroidManifest.xml");
             string withdrawn = ManifestPlayGamesStart.Withdraw(ManifestLoggingBackend.Withdraw(ManifestPermissions.Apply(File.ReadAllText(manifest), AndroidBuild.Permissions)));
-            string written = ManifestBackupRules.Apply(BringsPlayAssetDelivery ? ManifestAssetDelivery.KeepWithoutItsType(withdrawn) : withdrawn);
+            PlayGamesProject playGames = AndroidBuild.PlayGamesOfThisProject();
+            string named = playGames switch
+            {
+                PlayGamesProject.SetUp project => PlayGamesProject.Declare(withdrawn, project),
+                PlayGamesProject.NotSetUp _ => withdrawn,
+                PlayGamesProject.Refused refused => throw new InvalidOperationException($"Android build: the Play Games settings are refused: {refused.Why}"),
+                _ => throw new ArgumentOutOfRangeException(nameof(playGames), playGames, "A state of the Play Games settings the manifest step does not know."),
+            };
+            string written = ManifestBackupRules.Apply(BringsPlayAssetDelivery ? ManifestAssetDelivery.KeepWithoutItsType(named) : named);
             ManifestGameCategory.Require(written);
             ManifestOrientation.Require(written);
             ManifestSystemBars.Require(written);
@@ -296,7 +324,8 @@ namespace Puzzle.Client.EditorTools
             WriteTheBackupRules(Path.Combine(path, "src", "main", "res", "xml"));
             Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game that opens {ManifestOrientation.Upright}, "
                 + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend} and {ManifestPlayGamesStart.InitProvider}"
-                + (BringsPlayAssetDelivery ? $"; it keeps {ManifestAssetDelivery.ForegroundService} without its type, for Play Asset Delivery's library." : "."));
+                + (BringsPlayAssetDelivery ? $"; it keeps {ManifestAssetDelivery.ForegroundService} without its type, for Play Asset Delivery's library" : string.Empty)
+                + (playGames is PlayGamesProject.SetUp ofTheGame ? $"; it names the Play Games project {ofTheGame.AppId}." : "; it names no Play Games project."));
             string gradle = Path.Combine(path, "build.gradle");
             File.WriteAllText(gradle, PlayGamesDependency.Into(File.ReadAllText(gradle)));
             Debug.Log($"Android build: the Unity library depends on {PlayGamesDependency.Library} for the Play Games plugin.");

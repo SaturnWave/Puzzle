@@ -251,6 +251,6 @@
   },
   "build": {
     "ads": "simulated",
-    "realMoneyPurchases": "store"
+    "realMoneyPurchases": "comingSoon"
   }
 }

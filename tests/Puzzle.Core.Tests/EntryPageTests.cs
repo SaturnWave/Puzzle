@@ -224,6 +224,7 @@ public class EntryPageTests
             Assert.Equal("SaturnWave", EntryWords.Studio);
             Assert.Equal("Sürüm 1.0 · test sürümü", EntryWords.Version("1.0", RealMoneySales.NotAvailable));
             Assert.Equal("Sürüm 1.0", EntryWords.Version("1.0", RealMoneySales.ThroughTheStore));
+            Assert.Equal("Sürüm 1.0", EntryWords.Version("1.0", RealMoneySales.ComingSoon));
             Assert.Equal("Sürüm 1.0", EntryWords.VersionAlone("1.0"));
             Assert.Equal("Oyun açılamadı; yeniden başlatın", EntryWords.CouldNotStart);
         }
