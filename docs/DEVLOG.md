@@ -30,9 +30,24 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - **Mağaza metni:** gerçek para paragrafı 13 dilde çıktı (`release/store-listing`, `StoreListingTests` 66/66). Play Console'da da her dilde çıkarıldı, uzunluklar depodakiyle aynı; kaydedildi, incelemeye vc3'le gidecek. Yapay zekâ beyanı yine "Don't label".
 - **Yükleme kapısı:** PHONE_TESTS F34 (T590–T596) ve F28–F31'in Play Games testleri; telefon ve tabletle iki tur (APK seti, sonra dahili test).
 - **Denetimler:** 6.189 + 83 test; Unity hatasız derlendi ve `EngineSmokeTest` geçti.
+- **Play Games ve istatistik kuruldu (aynı gün, devam):**
+  - Web istemcisi "Museum Puzzle game server": `235305914512-rjud0bmd9bn0mlqmhj45hdiq4g6jo9ab.apps.googleusercontent.com`. Sırrını sahip Unity'ye girdi; Claude o pencereye bakmadı.
+  - UGS'de Google Play Games sağlayıcısı açık. Kimlik sağlayıcıları proje düzeyinde, ortam seçilmiyor; bir kez girmek yetti.
+  - OAuth uygulaması üretimde (sahip: "evet yayınla"). Hassas kapsam yok, doğrulama gerekmiyor. Marka doğrulanmadığından Google'ın izin ekranlarında ad ve logo görünmüyor; Play Games girişi o ekranı kullanmıyor.
+  - Play Games projesi yayında: oyun sunucusu ve üç Android kimlik bilgisi (hata ayıklama `F1:57…`, yükleme `51:10…`, Play'in kullanımdaki imza anahtarı `E8:3E…`). Korsan koruması hepsinde kapalı; açık olsaydı Play'den kurulmamış kopyada, örneğin kabloyla kurulan APK setinde, giriş çalışmazdı.
+  - **Önceki imza anahtarı:** Play'in App signing sayfasında kullanımdaki anahtardan başka bir "önceki" anahtar daha var. İlk kullanımı 27 Ekim 20:25, "Quantum-ready (beta)"; klasik SHA-1'i `C7:DF:15:82:34:37:C5:87:ED:AE:C7:E4:57:07:D2:E2:A7:DA:D0:05`. Kayıtlı değildi. Play'in hangi cihaza hangi anahtarla imzalı paket vereceği buradan bilinmiyor; kayıtlı olmayan anahtarla imzalı kopyada Play Games girişi sessizce başarısız olur. Dördüncü Android istemcisi ve Play Games kimlik bilgisi eklendi; yayını sahibin onayını bekliyor. Play'den kurulan kopyanın imzası dahili testte okunur (PLAY_RELEASE 10, 6. adım).
+  - Aptabase: sahibin AB bölgesindeki hesabı ve "Museum Puzzle" uygulaması. App Key `A-EU-5523168514` derlemede. Oyun kimliği, web istemci kimliği ve App Key her pakette açıkça duruyor; sır değiller (0bfe8a8).
+  - **vc3 paketi derlendi** (PLAY_RELEASE 10, 1. adım geçti): 17,6 dakika; `museumpuzzle-vc3-upload.aab`, 331.465.898 bayt, SHA-256 `c7074222…1cea2e`. Kayıttaki satırlar:
+    - Mağaza derlemesi, satın alma yakında, test modu yok; Play Games projesi ve AB bölgesinin anahtarı tanındı.
+    - Yükleme anahtarıyla imzalı (`jarsigner` doğruladı; `META-INF`'te yalnız `MANIFEST.MF`, `UPLOAD.SF`, `UPLOAD.RSA`).
+    - İzinler tam beş. Google'ın kayıt arka ucu yok, Play Games açılışta başlamıyor, manifest oyun kimliğini (235305914512) taşıyor.
+    - Play Asset Delivery'nin iki servisi tanımlı, ön plan servis türü yok. Yedek kuralları yerinde.
+    - Altı yerel kütüphane 16 KB sayfada yükleniyor, sembol tabloları pakette. Temel modül 59,6 MB, asset pack'le kurulum 305,1 MB.
+  - APK setinin APK'ları hata ayıklama anahtarıyla imzalı (`F1:57…`, `apksigner` okudu). Bu kimlik bilgisi Play Games'te yayında; kabloyla kurulan sette de giriş çalışabilir.
+  - Unity proje ayar dosyasını yalnız satır sonlarıyla yeniden yazdı (`git diff` boş); dosya geri alındı.
 - **Sıradaki:**
-  - Sahip: OAuth'u onaylar, Aptabase anahtarını verir, web istemcisinin sırrını Unity'ye girer (plan A4).
-  - Claude: Android istemcileri (3 SHA-1) ve web istemcisini oluşturur, Play Games test kullanıcılarını ve yayınını yapar, `PlayGamesSettings` ile Aptabase anahtarını derlemeye koyar, vc3'ü derler, F34'ü telefon ve tablette koşar, dahili testi açar, kapalı teste terfi ettirir.
+  - Sahip: önceki imza anahtarının kimlik bilgisini yayınlama onayı; telefonu ve tableti aynı Google hesabıyla bağlamak.
+  - Claude: APK seti telefon ve tablette, F34 (T590–T596) ve öteki Play Games testleri; dahili test (paketi sahip yükler); Play'den kurulan kopyanın imzası; kapalı teste terfi; kayıt.
 
 ## 2026-10-30 · Oturum 37 — versionCode 2 onaylandı; cihazlar arası kayıt yok
 
