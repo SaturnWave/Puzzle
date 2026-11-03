@@ -35,7 +35,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   - UGS'de Google Play Games sağlayıcısı açık. Kimlik sağlayıcıları proje düzeyinde, ortam seçilmiyor; bir kez girmek yetti.
   - OAuth uygulaması üretimde (sahip: "evet yayınla"). Hassas kapsam yok, doğrulama gerekmiyor. Marka doğrulanmadığından Google'ın izin ekranlarında ad ve logo görünmüyor; Play Games girişi o ekranı kullanmıyor.
   - Play Games projesi yayında: oyun sunucusu ve üç Android kimlik bilgisi (hata ayıklama `F1:57…`, yükleme `51:10…`, Play'in kullanımdaki imza anahtarı `E8:3E…`). Korsan koruması hepsinde kapalı; açık olsaydı Play'den kurulmamış kopyada, örneğin kabloyla kurulan APK setinde, giriş çalışmazdı.
-  - **Önceki imza anahtarı:** Play'in App signing sayfasında kullanımdaki anahtardan başka bir "önceki" anahtar daha var. İlk kullanımı 27 Ekim 20:25, "Quantum-ready (beta)"; klasik SHA-1'i `C7:DF:15:82:34:37:C5:87:ED:AE:C7:E4:57:07:D2:E2:A7:DA:D0:05`. Kayıtlı değildi. Play'in hangi cihaza hangi anahtarla imzalı paket vereceği buradan bilinmiyor; kayıtlı olmayan anahtarla imzalı kopyada Play Games girişi sessizce başarısız olur. Dördüncü Android istemcisi ve Play Games kimlik bilgisi eklendi; yayını sahibin onayını bekliyor. Play'den kurulan kopyanın imzası dahili testte okunur (PLAY_RELEASE 10, 6. adım).
+  - **Önceki imza anahtarı:** Play'in App signing sayfasında kullanımdaki anahtardan başka bir "önceki" anahtar daha var. İlk kullanımı 27 Ekim 20:25, "Quantum-ready (beta)"; klasik SHA-1'i `C7:DF:15:82:34:37:C5:87:ED:AE:C7:E4:57:07:D2:E2:A7:DA:D0:05`. Kayıtlı değildi. Play'in hangi cihaza hangi anahtarla imzalı paket vereceği buradan bilinmiyor; kayıtlı olmayan anahtarla imzalı kopyada Play Games girişi sessizce başarısız olur. Dördüncü Android istemcisi ve Play Games kimlik bilgisi eklendi. Sahibin onayıyla ("Yayınla") 3 Kasım'da yayınlandı: dört Android kimlik bilgisi ve oyun sunucusu yayında, yayınlanacak değişiklik kalmadı. Google'a göre yayılması birkaç saat sürebilir. Play'den kurulan kopyanın imzası dahili testte okunur (PLAY_RELEASE 10, 6. adım).
   - Aptabase: sahibin AB bölgesindeki hesabı ve "Museum Puzzle" uygulaması. App Key `A-EU-5523168514` derlemede. Oyun kimliği, web istemci kimliği ve App Key her pakette açıkça duruyor; sır değiller (0bfe8a8).
   - **vc3 paketi derlendi** (PLAY_RELEASE 10, 1. adım geçti): 17,6 dakika; `museumpuzzle-vc3-upload.aab`, 331.465.898 bayt, SHA-256 `c7074222…1cea2e`. Kayıttaki satırlar:
     - Mağaza derlemesi, satın alma yakında, test modu yok; Play Games projesi ve AB bölgesinin anahtarı tanındı.
@@ -46,7 +46,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   - APK setinin APK'ları hata ayıklama anahtarıyla imzalı (`F1:57…`, `apksigner` okudu). Bu kimlik bilgisi Play Games'te yayında; kabloyla kurulan sette de giriş çalışabilir.
   - Unity proje ayar dosyasını yalnız satır sonlarıyla yeniden yazdı (`git diff` boş); dosya geri alındı.
 - **Sıradaki:**
-  - Sahip: önceki imza anahtarının kimlik bilgisini yayınlama onayı; telefonu ve tableti aynı Google hesabıyla bağlamak.
+  - Sahip: telefonu ve tableti aynı Google hesabıyla bağlamak.
   - Claude: APK seti telefon ve tablette, F34 (T590–T596) ve öteki Play Games testleri; dahili test (paketi sahip yükler); Play'den kurulan kopyanın imzası; kapalı teste terfi; kayıt.
 
 ## 2026-10-30 · Oturum 37 — versionCode 2 onaylandı; cihazlar arası kayıt yok
