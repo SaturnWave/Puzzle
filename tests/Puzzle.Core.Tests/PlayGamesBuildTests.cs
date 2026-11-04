@@ -1,17 +1,22 @@
+using System.Text;
 using System.Xml.Linq;
+using Puzzle.Client.Cloud;
 using Puzzle.Client.EditorTools;
 
 namespace Puzzle.Core.Tests;
 
 /// <summary>
-/// The Android build's steps for Google's Play Games plugin: the Unity library's manifest marks Play Games' start-up
-/// provider for removal, so nothing of Play Games starts with the game while the player's switch is off; the check of
-/// the built package, whose manifest must not declare it; and the Unity library's build.gradle, which is given the Play
-/// Games library once however often the step runs. <c>ManifestPlayGamesStart</c> and <c>PlayGamesDependency</c> are
-/// the Unity project's Editor source files, compiled into these tests; the steps run only while a package is built.
+/// The Android build's steps for Google's Play Games plugin: the Unity library's manifest marks the SDK's start-up
+/// provider for removal, which would start Play Games whatever the player's switch says, and a build set up for Play
+/// Games declares the game's own, which starts it with the process while the switch is on (docs/LESSONS.md H7); the
+/// checks of the built package; and the Unity library's build.gradle, which is given the Play Games library once
+/// however often the step runs. <c>ManifestPlayGamesStart</c> and <c>PlayGamesDependency</c> are the Unity project's
+/// Editor source files, compiled into these tests; the steps run only while a package is built. The game's provider is
+/// Java (unity/Assets/Plugins/Android/PlayGamesStart.java): what it reads of cloud.json is held to the file's layout here.
 /// </summary>
 public class PlayGamesBuildTests
 {
+    private const string PackageId = "com.saturnwave.museumpuzzle";
     private static readonly XNamespace Android = "http://schemas.android.com/apk/res/android";
     private static readonly XNamespace Tools = "http://schemas.android.com/tools";
 
@@ -72,6 +77,54 @@ public class PlayGamesBuildTests
         ManifestPlayGamesStart.RequireWithdrawnFrom(withdrawn);
         Assert.Throws<InvalidOperationException>(() => ManifestPlayGamesStart.RequireWithdrawnFrom("package: name='com.saturnwave.museumpuzzle'"));
         Assert.Throws<InvalidOperationException>(() => ManifestPlayGamesStart.Withdraw("<application />"));
+    }
+
+    [Fact]
+    public void The_games_own_provider_is_declared_once_not_exported_under_the_packages_authority()
+    {
+        string written = ManifestPlayGamesStart.StartWithTheSwitch(ManifestPlayGamesStart.Withdraw(UnitysManifest), PackageId);
+
+        XElement[] providers = XDocument.Parse(written).Root!.Element("application")!.Elements("provider").ToArray();
+        XElement start = Assert.Single(providers, provider => (string?)provider.Attribute(Android + "name") == ManifestPlayGamesStart.GamesStart);
+        Assert.Equal("com.saturnwave.museumpuzzle.playgamesstart", (string?)start.Attribute(Android + "authorities"));
+        Assert.Equal("false", (string?)start.Attribute(Android + "exported"));
+        Assert.Null(start.Attribute(Tools + "node"));
+        Assert.Single(ProvidersIn(written));
+        Assert.Equal(written, ManifestPlayGamesStart.StartWithTheSwitch(written, PackageId));
+        Assert.Throws<InvalidOperationException>(() => ManifestPlayGamesStart.StartWithTheSwitch("<application />", PackageId));
+    }
+
+    [Fact]
+    public void A_set_up_package_without_the_games_provider_or_its_class_stops_the_build()
+    {
+        string declared = DumpWithTheProvider.Replace(ManifestPlayGamesStart.InitProvider, ManifestPlayGamesStart.GamesStart, StringComparison.Ordinal);
+        byte[] withTheClass = Encoding.ASCII.GetBytes("dex\n035\0...Landroid/content/ContentProvider;...Lcom/saturnwave/museumpuzzle/PlayGamesStart;...");
+        byte[] withoutTheClass = Encoding.ASCII.GetBytes("dex\n035\0...Landroid/content/ContentProvider;...Lcom/unity3d/player/UnityPlayerGameActivity;...");
+
+        ManifestPlayGamesStart.RequireTheGamesStartIn(declared, new[] { withoutTheClass, withTheClass });
+        InvalidOperationException undeclared = Assert.Throws<InvalidOperationException>(() => ManifestPlayGamesStart.RequireTheGamesStartIn(DumpWithTheProvider, new[] { withTheClass }));
+        Assert.Contains(ManifestPlayGamesStart.GamesStart, undeclared.Message, StringComparison.Ordinal);
+        InvalidOperationException missing = Assert.Throws<InvalidOperationException>(() => ManifestPlayGamesStart.RequireTheGamesStartIn(declared, new[] { withoutTheClass }));
+        Assert.Contains("dex", missing.Message, StringComparison.Ordinal);
+        Assert.Throws<InvalidOperationException>(() => ManifestPlayGamesStart.RequireTheGamesStartIn("package: name='com.saturnwave.museumpuzzle'", new[] { withTheClass }));
+    }
+
+    [Fact]
+    public void The_games_provider_reads_the_switch_as_cloud_json_writes_it()
+    {
+        string source = File.ReadAllText(RepoFiles.RepositoryFile("unity/Assets/Plugins/Android/PlayGamesStart.java"));
+        string className = ManifestPlayGamesStart.GamesStart.Substring(ManifestPlayGamesStart.GamesStart.LastIndexOf('.') + 1);
+        string packageName = ManifestPlayGamesStart.GamesStart.Substring(0, ManifestPlayGamesStart.GamesStart.LastIndexOf('.'));
+
+        Assert.Contains($"package {packageName};", source, StringComparison.Ordinal);
+        Assert.Contains($"public final class {className} extends ContentProvider", source, StringComparison.Ordinal);
+        Assert.Contains($"\"{CloudStateFile.FileName}\"", source, StringComparison.Ordinal);
+        Assert.Contains($"optBoolean(\"{nameof(CloudStateDocument.switchedOn)}\", false)", source, StringComparison.Ordinal);
+        Assert.Contains($"optString(\"{nameof(CloudStateDocument.writer)}\", \"\")", source, StringComparison.Ordinal);
+        Assert.Contains($"optInt(\"{nameof(CloudStateDocument.version)}\", 0) >= 1", source, StringComparison.Ordinal);
+        Assert.True(CloudStateDocument.CurrentVersion >= 1);
+        Assert.True(CloudState.New("writer").IsSwitchedOn, "A new installation, which has no cloud.json, starts with the switch on: the provider starts Play Games for it.");
+        Assert.All(source, letter => Assert.True(letter < 128, "Gradle compiles the Java source in an encoding of its own: it is kept to ASCII."));
     }
 
     [Fact]

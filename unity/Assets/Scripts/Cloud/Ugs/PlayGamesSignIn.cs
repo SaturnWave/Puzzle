@@ -18,9 +18,16 @@ namespace Puzzle.Client.Cloud
     /// It works only in a build set up for the game's Play Games project: the plugin's settings
     /// (Resources/PlayGamesSettings) with the game's id and the web client's id, which the owner's resources from the
     /// Play Console give (plan §9 B2–B4, Stage 6), and the same id in the manifest. A build without them has no sign-in of
-    /// the platform (<see cref="OfThisBuild"/>), and the game offers no link. The plugin is activated (Google's SDK
-    /// initialised) at the first sign-in only, which the game asks for once Unity's services have started: with the
-    /// player's switch off, nothing of Play Games runs either.
+    /// the platform (<see cref="OfThisBuild"/>), and the game offers no link.
+    /// </para>
+    /// <para>
+    /// Google's SDK starts with the game's process, from the game's own provider, while the player's switch is on
+    /// (Plugins/Android/PlayGamesStart.java, Editor/ManifestPlayGamesStart.cs): its own sign-in starts only as an activity
+    /// is created, and the quiet sign-in reads how that came out (docs/LESSONS.md H7). The plugin is activated at the
+    /// first sign-in, which the game asks for once Unity's services have started; its initialisation finds the SDK
+    /// started. With the switch off at the start nothing of Play Games runs. A switch turned on later in the run finds the
+    /// SDK not started: that run's quiet sign-in fails (error 10), the account starts on this phone, and the link joins it
+    /// to Play Games.
     /// </para>
     /// The plugin answers on Unity's main thread; its errors are written to the log by the plugin itself and come here as
     /// a status, which ends as a <see cref="PlatformRefusal"/>.

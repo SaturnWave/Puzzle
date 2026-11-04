@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Android;
@@ -133,7 +134,8 @@ namespace Puzzle.Client.EditorTools
 
         /// <summary>
         /// Reads the built package back with Android's own tool: it asks for exactly <see cref="MergedPermissions"/>,
-        /// registers no backend for Google's logging transport, does not start Play Games with the game's process, has
+        /// registers no backend for Google's logging transport, starts Play Games with the game's process only through the
+        /// game's own provider, while the switch is on (<see cref="ManifestPlayGamesStart"/>), has
         /// Play Asset Delivery as its kind of package needs it (<see cref="ManifestAssetDelivery"/>), and keeps
         /// Android's backup to its rules. The Google Play bundle's base APK is read the same way (<see cref="PlayBundle"/>).
         /// </summary>
@@ -150,12 +152,14 @@ namespace Puzzle.Client.EditorTools
             ManifestLoggingBackend.RequireWithdrawnFrom(manifest);
             Debug.Log($"Android build: the package registers no backend for Google's logging transport ({ManifestLoggingBackend.CctBackend} withdrawn).");
             ManifestPlayGamesStart.RequireWithdrawnFrom(manifest);
-            Debug.Log($"Android build: the package does not start Play Games with the game ({ManifestPlayGamesStart.InitProvider} withdrawn).");
+            Debug.Log($"Android build: the package withdraws {ManifestPlayGamesStart.InitProvider}, which would start Play Games whatever the switch says.");
             switch (PlayGamesOfThisProject())
             {
                 case PlayGamesProject.SetUp project:
                     PlayGamesProject.RequireDeclaredIn(manifest, project);
                     Debug.Log($"Android build: the package names its Play Games project {project.AppId} ({PlayGamesProject.AppIdName}), for {project}.");
+                    ManifestPlayGamesStart.RequireTheGamesStartIn(manifest, DexFilesOf(package));
+                    Debug.Log($"Android build: the package starts Play Games with its process while the cloud save is on ({ManifestPlayGamesStart.GamesStart}, declared and in its dex).");
                     break;
                 case PlayGamesProject.NotSetUp _:
                     Debug.Log("Android build: the package has no Play Games project: its account stays on the phone.");
@@ -188,6 +192,21 @@ namespace Puzzle.Client.EditorTools
         {
             GooglePlayGames.PlayGamesSettings? settings = GooglePlayGames.PlayGamesSettings.LoadInstance();
             return PlayGamesProject.Read(settings != null ? settings.AppId : null, settings != null ? settings.WebClientId : null);
+        }
+
+        /// <summary>The package's classes*.dex files, which hold its Java classes.</summary>
+        private static IReadOnlyList<byte[]> DexFilesOf(string package)
+        {
+            using ZipArchive apk = ZipFile.OpenRead(package);
+            return apk.Entries.Where(entry => entry.FullName.StartsWith("classes", StringComparison.Ordinal) && entry.FullName.EndsWith(".dex", StringComparison.Ordinal))
+                .Select(entry =>
+                {
+                    using Stream dex = entry.Open();
+                    using var copy = new MemoryStream();
+                    dex.CopyTo(copy);
+                    return copy.ToArray();
+                })
+                .ToArray();
         }
 
         /// <summary>The Unity library's manifest of the build before, taken away so that Unity writes it anew; nothing where there is none.</summary>
@@ -282,7 +301,8 @@ namespace Puzzle.Client.EditorTools
     /// The build's manifest step: once Unity has made the Gradle project of an Android build (this tool's, or any
     /// other), the Unity library's manifest is given the build's permissions (<see cref="AndroidBuild.Permissions"/>)
     /// and withdraws the backend of Google's logging transport (<see cref="ManifestLoggingBackend"/>) and Play Games'
-    /// start-up provider (<see cref="ManifestPlayGamesStart"/>); in a bundle with an asset pack it keeps Play Asset
+    /// start-up provider, and a build set up for Play Games declares the game's own, which starts Play Games with the
+    /// switch (<see cref="ManifestPlayGamesStart"/>); in a bundle with an asset pack it keeps Play Asset
     /// Delivery's foreground service without its type (<see cref="ManifestAssetDelivery"/>); and it must say
     /// that the application is a game (<see cref="ManifestGameCategory"/>), open Unity's activity upright
     /// (<see cref="ManifestOrientation"/>) and hide the system bars with Android's default behaviour
@@ -311,7 +331,7 @@ namespace Puzzle.Client.EditorTools
             PlayGamesProject playGames = AndroidBuild.PlayGamesOfThisProject();
             string named = playGames switch
             {
-                PlayGamesProject.SetUp project => PlayGamesProject.Declare(withdrawn, project),
+                PlayGamesProject.SetUp project => ManifestPlayGamesStart.StartWithTheSwitch(PlayGamesProject.Declare(withdrawn, project), AndroidBuild.PackageId),
                 PlayGamesProject.NotSetUp _ => withdrawn,
                 PlayGamesProject.Refused refused => throw new InvalidOperationException($"Android build: the Play Games settings are refused: {refused.Why}"),
                 _ => throw new ArgumentOutOfRangeException(nameof(playGames), playGames, "A state of the Play Games settings the manifest step does not know."),
@@ -325,7 +345,9 @@ namespace Puzzle.Client.EditorTools
             Debug.Log($"Android build: the manifest says {string.Join<PermissionLine>(", ", AndroidBuild.Permissions)}, of a game that opens {ManifestOrientation.Upright}, "
                 + $"hides the system bars as \"{ManifestSystemBars.Default}\" and withdraws {ManifestLoggingBackend.CctBackend} and {ManifestPlayGamesStart.InitProvider}"
                 + (BringsPlayAssetDelivery ? $"; it keeps {ManifestAssetDelivery.ForegroundService} without its type, for Play Asset Delivery's library" : string.Empty)
-                + (playGames is PlayGamesProject.SetUp ofTheGame ? $"; it names the Play Games project {ofTheGame.AppId}." : "; it names no Play Games project."));
+                + (playGames is PlayGamesProject.SetUp ofTheGame
+                    ? $"; it names the Play Games project {ofTheGame.AppId} and declares {ManifestPlayGamesStart.GamesStart}, which starts Play Games with the switch."
+                    : "; it names no Play Games project."));
             string gradle = Path.Combine(path, "build.gradle");
             File.WriteAllText(gradle, PlayGamesDependency.Into(File.ReadAllText(gradle)));
             Debug.Log($"Android build: the Unity library depends on {PlayGamesDependency.Library} for the Play Games plugin.");

@@ -31,10 +31,24 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   1. **Google'ın sağlayıcısını geri koymak:** En kısa yol. Play Games her açılışta başlar ve oyuncuyu kendiliğinden girer, "Bulut kaydı" kapalı olsa da. Google'ın "hoş geldin" şeridi açılışta görünür; sahibin 1. kararı değişir.
   2. **Oyunun kendi küçük başlatıcısı:** Süreç başlarken, yalnız "Bulut kaydı" açıksa `PlayGamesSdk.initialize` çağrılır; 1. karar korunur. Java tarafında küçük bir sağlayıcı, oyunun yazdığı bir işaret, derleme denetimi ve testler gerekir. Anahtar açıkken Google'ın şeridi açılışta görünebilir (T541'in beklentisi değişir).
   - İkisinde de paket yeniden derlenir (yaklaşık 18 dk), sonra T590 ve T545 verisi silinmiş telefonda yinelenir. versionCode 3 hâlâ boş.
+- **Sahibin seçimi: 2. yol** ("2 ile devam et"). Sahibin notu: internet yokken ilerleme oyunda tutulup sonra eşitlenebilir. Oyun bunu zaten yapıyor: ilerleme önce telefonda, bağlantı yokken yükleme bekliyor.
+- **Düzeltme:**
+  - **Başlatıcı:** `unity/Assets/Plugins/Android/PlayGamesStart.java`, bir ContentProvider; süreç başlarken, etkinlikten önce çalışıyor. `cloud.json`'daki `switchedOn` açıksa `PlayGamesSdk.initialize` çağırıyor. Dosya yoksa (yeni kurulum) açık, okunmuyorsa kapalı sayıyor; ikisi de C#'ın kuralı. SDK bir hata atarsa günlüğe yazıp eski yola, ilk girişe bırakıyor: sağlayıcıda atılan hata oyunu her açılışta kapatırdı (H5). Java ASCII tutuldu.
+  - **Manifest adımı:** `ManifestPlayGamesStart.StartWithTheSwitch`, Play Games projesi kurulu derlemede sağlayıcıyı tanımlıyor (dışa kapalı, `com.saturnwave.museumpuzzle.playgamesstart`). Google'ınki yine çıkarılıyor.
+  - **Paket denetimi:** `RequireTheGamesStartIn`, sağlayıcıyı `aapt` dökümünde ve sınıfının tanımlayıcısını paketin `classes*.dex` dosyalarında arıyor.
+  - **Testler:** `PlayGamesBuildTests`'e üç test. Biri Java'nın okuduğu dosya adını ve alanları (`cloud.json`, `switchedOn`, `writer`, `version`) `CloudStateFile`'ın düzenine bağlıyor. 6.189 test geçti.
+  - **Belgeler:** `PlayGamesSignIn`'in açıklaması, GAME_DESIGN, server-v1 §5.8, PLAY_RELEASE, LESSONS H7 (düzeltme), PHONE_TESTS (T541'in adımı ve beklentisi).
+- **Yeni paket** (PLAY_RELEASE 10, 1. adım): 7,3 dk; 331.466.494 bayt, SHA-256 `d13cbd39…ec5f08`. Kayıtta: Unity Java dosyasını Gradle projesine kopyaladı ("the package starts Play Games with its process while the cloud save is on (… declared and in its dex)"); öteki satırlar ilk paketle aynı.
+- **Telefonda (2–5. adımlar, APK seti eskisinin üstüne):**
+  - Güncellemede: `PlayGamesStart` "starts with the game", Google'ın girişi açılışta; oyun bağlı hesapla açıldı.
+  - Veri silinince: sessiz giriş hatasız, oyun bağlı hesaba girdi ve "Your save is back · Level 2 · Coins: 268" kartı geldi; Link ya da Switch gerekmedi (T590, T545).
+  - Anahtar kapalıyken: "does not start with the game", Google'a istek yok, açılışta şerit yok (T541). Anahtar yeniden açılınca bağlı hesaba girip eşitledi.
+  - Üç açılışta çökme ve faturalama yok. Veri silinmiş açılışta istatistiğe "Don't allow" denendi; Aptabase sayfası açılmadığı için panoya yeniden bakılamadı.
+- **Kalan kenar durumlar (A55):** Yeni telefonda ilk açılış internetsizse Google'ın girişi o açılışta tutmuyor. Anahtar bir çalışmanın ortasında açılırsa ("Delete my data" ya da okunmayan `cloud.json` sonrası) SDK başlamamış oluyor. İkisinde de ilerleme Link → "Switch" ile geliyor.
 - **Sıradaki:**
-  - Sahibin seçeneği; düzeltme, derleme, T590 ve T545.
-  - Dahili test: test kullanıcılarının listesi seçilir; iki cihazı test kullanıcıları dener.
-  - Kapalı teste terfi.
+  - Paketi sahip dahili teste yükler (PLAY_RELEASE 10, 6. adım).
+  - Dahili teste test kullanıcılarının listesi seçilir. İki cihazın eşitlemesini test kullanıcıları dener (T591, T592).
+  - Play'in kopyasının imzası okunur (T596). Kapalı teste terfi, kayıt.
 
 ## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
 
