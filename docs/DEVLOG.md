@@ -49,10 +49,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 - **Play Console (yalnız bakıldı):**
   - Mağaza metni: Play'deki 13 dilin adı, kısa ve uzun açıklaması depodakiyle (`release/store-listing`, 5014bca) birebir aynı; alanların SHA-256'sı karşılaştırıldı. Yayın özetindeki 13 değişiklik vc3'le aynı gönderimde gidecek.
   - Android vitals (son 28 gün, 4 Kasım 11:00): iki çökme, ikisi de 1 (1.0)'da: `libgame.so` `OnApplicationCommand` SIGABRT (3 kullanıcı, 21 olay) ve `libunity.so` `ResolveMethod` SIGABRT (1 kullanıcı). 2 (1.0)'da çökme yok.
+- **Yüklendi ve incelemede (aynı gün):**
+  - Sahip paketi kapalı testin ("Alpha") yeni sürümüne yükledi. İlk paket (`c7074222…`) aynı adla üzerine yazıldığından yüklenebilecek tek vc3 paketi düzeltilmiş olandı (331.466.494 bayt, `d13cbd39…`).
+  - Play işledi: 3 (1.0), API 26+, hedef SDK 36, arm64-v8a, 4 ekran düzeni, 5 gerekli özellik. Yeni kurulumda 305 MB, güncellemede 24,8 MB. Desteklenen cihaz 13.257 (vc2'yle aynı), 178 ülke. 2 (1.0) bu sürümde devre dışı, saklanan paket yok.
+  - Sürüm notları (Claude girdi, en-US ve tr-TR): "Your progress can now come with you to a new phone: link the game to Google Play Games in Settings, … Coin packs are not on sale in this version. The game asks once whether it may send short play statistics. …" / "İlerlemen artık yeni telefonuna da gelir: … Bu sürümde altın paketleri satışta değil. …".
+  - Sahibin isteğiyle Claude 14 değişikliği (sürüm ve 13 dilin uzun açıklaması) incelemeye gönderdi. Play'in ön denetimleri sürüyordu ("Changes in review"). Kayıt: `3 1.0 2026-11-04 closed`.
 - **Sıradaki:**
-  - Sahip paketi kapalı testin ("Alpha") yeni sürümüne yükler. Claude sürüm notlarını girer, paketin Play'deki özetini okur, sürümü ve 13 dilin metnini incelemeye gönderir, kayda yazar (`3 1.0 <gün> closed`).
-  - Onaydan hemen sonra Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar yinelenir, imza SHA-1'i okunur (T583, T596).
-  - İki cihazın eşitlemesini test kullanıcıları dener (T591, T592, T531).
+  - Google onaylayınca sürüm kendiliğinden yayına çıkar (yönetimli yayın kapalı). Hemen ardından Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar ve yeniden başlatma yinelenir, imza SHA-1'i okunur (T583, T596).
+  - Sahip testçilere duyurur. İki cihazın eşitlemesini test kullanıcıları dener (T591, T592, T531).
 
 ## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
 
