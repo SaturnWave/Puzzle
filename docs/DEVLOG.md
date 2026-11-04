@@ -4,6 +4,38 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-11-04 · Oturum 39 — versionCode 3 telefonda: bağlama çalışıyor, yeni telefonda kendiliğinden geri yükleme yok (H7)
+
+- Sahip: "Telefon tablet dursun… tablet ve telefon arası hesap bağlantısı yeni sürüm yüklendikten sonra test kullanıcıları ile denenecek." İki cihazın eşitlemesi (T591, T592, T531) test kullanıcılarına kaldı; yüklemeden önceki deneme sahibin telefonunda.
+- **Play Console (yalnız bakıldı):**
+  - vc3 yüklenmedi: paket gezgininde vc1 (devre dışı) ve vc2 (etkin) var.
+  - Kapalı test "Alpha" 2 (1.0) sürümünde, "SketchPaint testers" listesiyle (30 kişi). Dahili test kurulmamış, liste seçili değil.
+  - Yayın özetinde incelemeye gönderilmemiş 13 değişiklik var: mağaza açıklamasının 13 dili.
+  - Üstte "Declare your trader status" uyarısı duruyor (hesap ayarı, sahibin).
+- **Telefondaki kopya:** vc2, `com.android.shell`'den kurulu: 29 Ekim'in APK seti, hata ayıklama anahtarıyla (`F1:57…`). Play'in kopyası değil; Play'in imza anahtarı sorusu dahili teste (T596) kalıyor. vc3'ün seti aynı anahtarla imzalı, kaldırmadan üstüne kuruldu; ilerleme silinmedi.
+- **Geçenler:**
+  - T578: üç parça; 268 altın ve 2. bölüm aynı.
+  - T567 geçti. T594 ve T595 sınanan kısımlarıyla geçti; Aptabase panosunda (Release) `app_start` ve `shop_open` görünüyor.
+  - T546 (b): "Another save found" ve "Switch" çalıştı.
+  - Üç soğuk açılışta çökme yok. Günlükte faturalama yok; ortam `production`, Wire kapalı, AB anahtarı. Ayrıntı PHONE_TESTS'te.
+- **Kalanlar (T590, T545):**
+  - Ayarlar'daki "Link" anonim hesabı Play Games'e bağladı; Google bir şey sormadı.
+  - Sonra oyunun verisi silinip oyun açıldı. Sessiz giriş "Authentication failed - ApiException: 10" ile döndü, Google'a istek gitmedi ve oyun yeni bir anonim hesap açtı (200 altın, 1. bölüm). Bu iki kez aynı çıktı; arka plana alıp geri getirmek bir şey değiştirmedi.
+  - İlerleme yalnız "Link" → "Another save found" → "Switch" ile geldi ("Level 2 · Coins: 268").
+- **Neden (H7):** SDK'nın bytecode'u okundu (`javap`, play-services-games-v2 22.1.0).
+  - `PlayGamesSdk.initialize` kendiliğinden girişi bir `ActivityLifecycleCallbacks` ile kuruyor; deneme yalnız `onActivityCreated`'da başlıyor (`zzar`).
+  - `PlayGamesInitProvider` çıkarıldığı için SDK ekran açıldıktan sonra başlıyor. Deneme hiç yapılmıyor, durum "UNINITIALIZED" kalıyor ve `isAuthenticated` 10 dönüyor (`zzbq.zzs`).
+  - Elle giriş (`signIn`) bu denemeye bağlı değil.
+- **Küçük bulgu:** Ayarlar'dan "Link"e basınca "Another save found" kartı Ayarlar kapanana kadar görünmüyor.
+- **Seçenekler (karar sahibin):**
+  1. **Google'ın sağlayıcısını geri koymak:** En kısa yol. Play Games her açılışta başlar ve oyuncuyu kendiliğinden girer, "Bulut kaydı" kapalı olsa da. Google'ın "hoş geldin" şeridi açılışta görünür; sahibin 1. kararı değişir.
+  2. **Oyunun kendi küçük başlatıcısı:** Süreç başlarken, yalnız "Bulut kaydı" açıksa `PlayGamesSdk.initialize` çağrılır; 1. karar korunur. Java tarafında küçük bir sağlayıcı, oyunun yazdığı bir işaret, derleme denetimi ve testler gerekir. Anahtar açıkken Google'ın şeridi açılışta görünebilir (T541'in beklentisi değişir).
+  - İkisinde de paket yeniden derlenir (yaklaşık 18 dk), sonra T590 ve T545 verisi silinmiş telefonda yinelenir. versionCode 3 hâlâ boş.
+- **Sıradaki:**
+  - Sahibin seçeneği; düzeltme, derleme, T590 ve T545.
+  - Dahili test: test kullanıcılarının listesi seçilir; iki cihazı test kullanıcıları dener.
+  - Kapalı teste terfi.
+
 ## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
 
 - Sahip: "Başlayalım; bu sefer eksiksiz olsun, 3. kez upload edeceğiz, bu kabul edilemez."
