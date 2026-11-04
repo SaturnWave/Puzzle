@@ -45,10 +45,14 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   - Anahtar kapalıyken: "does not start with the game", Google'a istek yok, açılışta şerit yok (T541). Anahtar yeniden açılınca bağlı hesaba girip eşitledi.
   - Üç açılışta çökme ve faturalama yok. Veri silinmiş açılışta istatistiğe "Don't allow" denendi; Aptabase sayfası açılmadığı için panoya yeniden bakılamadı.
 - **Kalan kenar durumlar (A55):** Yeni telefonda ilk açılış internetsizse Google'ın girişi o açılışta tutmuyor. Anahtar bir çalışmanın ortasında açılırsa ("Delete my data" ya da okunmayan `cloud.json` sonrası) SDK başlamamış oluyor. İkisinde de ilerleme Link → "Switch" ile geliyor.
+- **Karar (sahip, aynı gün): vc3 kapalı teste doğrudan gider, dahili test atlanır** ("Kapalı teste girelim direk"). Claude dahili testi önermişti: Play'in imzaladığı ve otomatik koruma eklediği kopya henüz hiçbir sürümde telefonda açılmadı (T583 vc1'de kaldı, vc2'de yinelenmedi). Kalan risk o kopyada Play Games girişi; Play'in iki imza anahtarı da (`E8:3E…`, `C7:DF…`) Play Games'te kayıtlı.
+- **Play Console (yalnız bakıldı):**
+  - Mağaza metni: Play'deki 13 dilin adı, kısa ve uzun açıklaması depodakiyle (`release/store-listing`, 5014bca) birebir aynı; alanların SHA-256'sı karşılaştırıldı. Yayın özetindeki 13 değişiklik vc3'le aynı gönderimde gidecek.
+  - Android vitals (son 28 gün, 4 Kasım 11:00): iki çökme, ikisi de 1 (1.0)'da: `libgame.so` `OnApplicationCommand` SIGABRT (3 kullanıcı, 21 olay) ve `libunity.so` `ResolveMethod` SIGABRT (1 kullanıcı). 2 (1.0)'da çökme yok.
 - **Sıradaki:**
-  - Paketi sahip dahili teste yükler (PLAY_RELEASE 10, 6. adım).
-  - Dahili teste test kullanıcılarının listesi seçilir. İki cihazın eşitlemesini test kullanıcıları dener (T591, T592).
-  - Play'in kopyasının imzası okunur (T596). Kapalı teste terfi, kayıt.
+  - Sahip paketi kapalı testin ("Alpha") yeni sürümüne yükler. Claude sürüm notlarını girer, paketin Play'deki özetini okur, sürümü ve 13 dilin metnini incelemeye gönderir, kayda yazar (`3 1.0 <gün> closed`).
+  - Onaydan hemen sonra Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar yinelenir, imza SHA-1'i okunur (T583, T596).
+  - İki cihazın eşitlemesini test kullanıcıları dener (T591, T592, T531).
 
 ## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
 
