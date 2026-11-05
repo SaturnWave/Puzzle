@@ -68,6 +68,42 @@ public class CloudSyncTests
         Assert.Equal(merged, phoneB.Progress.Current);
     }
 
+    /// <summary>
+    /// H9 (2026-11-05): a phone and a tablet on an account linked to the platform. What the tablet played is on the
+    /// phone as the phone's game comes back from the background or opens again, minutes later, not 12 hours later. An
+    /// account of this phone keeps to the read budget, and so does a linked one once Remote Config turns its switch off.
+    /// </summary>
+    [Fact]
+    public async Task A_linked_account_reads_what_its_other_device_wrote_as_each_session_begins()
+    {
+        Device phone = Phone(NewPlayer().Won(3), "phone");
+        await phone.SyncsAsync(SyncTrigger.ColdStart, SaveWriters.EveryDeviceSignedIn);
+        Device tablet = Phone(NewPlayer(), "tablet");
+        await tablet.SyncsAsync(SyncTrigger.ColdStart, SaveWriters.EveryDeviceSignedIn);
+
+        _clock.Passes(TimeSpan.FromMinutes(10));
+        tablet.Progress.Play(progress => progress.Won(5));
+        await tablet.SyncsAsync(SyncTrigger.Background, SaveWriters.EveryDeviceSignedIn); // put away: its wins go at once
+        _clock.Passes(TimeSpan.FromMinutes(5));
+        var cameBack = Assert.IsType<SyncOutcome.Done>(await phone.SyncsAsync(SyncTrigger.CameBack, SaveWriters.EveryDeviceSignedIn));
+        int levelsAfterTheReturn = phone.Progress.Current.LevelsWon;
+
+        tablet.Progress.Play(progress => progress.Won(1));
+        await tablet.SyncsAsync(SyncTrigger.Background, SaveWriters.EveryDeviceSignedIn);
+        _clock.Passes(TimeSpan.FromMinutes(5));
+        bool readAsThisPhonesAccount = Assert.IsType<SyncOutcome.Done>(await phone.SyncsAsync(SyncTrigger.CameBack, SaveWriters.ThisPhone)).Read;
+        phone.Sync.Settings = SyncSettings.FromRemote(null, null, null, null, linkedReadsEachSession: false);
+        bool readWithTheSwitchOff = Assert.IsType<SyncOutcome.Done>(await phone.SyncsAsync(SyncTrigger.ColdStart, SaveWriters.EveryDeviceSignedIn)).Read;
+        phone.Sync.Settings = SyncSettings.Default;
+        var openedAgain = Assert.IsType<SyncOutcome.Done>(await phone.SyncsAsync(SyncTrigger.ColdStart, SaveWriters.EveryDeviceSignedIn));
+
+        Assert.Equal((true, true, 8), (cameBack.Read, cameBack.Adopted, levelsAfterTheReturn));
+        Assert.False(readAsThisPhonesAccount); // 5 minutes after the last read: the budget's 12 hours hold it back
+        Assert.False(readWithTheSwitchOff);
+        Assert.Equal((true, 9), (openedAgain.Read, phone.Progress.Current.LevelsWon));
+        Assert.Equal(tablet.Progress.Current, phone.Progress.Current);
+    }
+
     /// <summary>The game deleted and installed again on a phone linked to Google Play Games: the same account, no cloud.json. The cloud's save comes back with what was played before the sign-in on top.</summary>
     [Fact]
     public async Task After_a_reinstall_the_save_comes_back_with_what_was_played_since_on_top()
@@ -505,9 +541,9 @@ public class CloudSyncTests
         var progress = new HeldProgress(NewPlayer().Won(3));
         var sync = new CloudSync(gated, new CloudStateInMemory(CloudState.New("phone")), progress, Rules, Json, _clock, "1.1.0", RandomIds.New);
 
-        Task<SyncOutcome> first = sync.SyncAsync(Player, SyncTrigger.ColdStart, CancellationToken.None);
+        Task<SyncOutcome> first = sync.SyncAsync(Player, SyncTrigger.ColdStart, SaveWriters.ThisPhone, CancellationToken.None);
         progress.Play(held => held.Bought(Small, "GPA.1", number: 1));
-        SyncOutcome second = await sync.SyncAsync(Player, SyncTrigger.PurchaseDelivered, CancellationToken.None);
+        SyncOutcome second = await sync.SyncAsync(Player, SyncTrigger.PurchaseDelivered, SaveWriters.ThisPhone, CancellationToken.None);
         gated.Opens();
 
         Assert.IsType<SyncOutcome.Queued>(second);

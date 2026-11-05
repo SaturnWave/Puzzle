@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Your progress is safe on this phone."},
     {"id":"AccountOtherSaveTitle","text":"Another save found"},
     {"id":"AccountOtherSaveLine","text":"Your {platform} account has a save."},
-    {"id":"AccountOtherSaveMergeLine","text":"If you switch, this phone's progress is added to it."},
+    {"id":"AccountOtherSaveMergeLine","text":"If you switch, level {level} stays and coins add up."},
     {"id":"AccountSwitchButton","text":"Switch"},
     {"id":"AccountStayButton","text":"Cancel"},
     {"id":"AccountSaveBackTitle","text":"Your save is back"},

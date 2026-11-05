@@ -45,13 +45,19 @@ public sealed class SyncPolicyTests : IDisposable
     [Fact]
     public void By_default_the_game_syncs_and_verifies_uploads_at_most_hourly_with_the_wins_at_once_and_reads_every_12_hours()
     {
-        Assert.Equal((true, TimeSpan.FromMinutes(60), TimeSpan.FromHours(12), true, true),
-            (SyncSettings.Default.Syncs, SyncSettings.Default.UploadEvery, SyncSettings.Default.ReadEvery, SyncSettings.Default.ValidatesPurchases, SyncSettings.Default.WinsGoAtOnce));
+        Assert.Equal((true, TimeSpan.FromMinutes(60), TimeSpan.FromHours(12), true, true, true),
+            (SyncSettings.Default.Syncs, SyncSettings.Default.UploadEvery, SyncSettings.Default.ReadEvery, SyncSettings.Default.ValidatesPurchases, SyncSettings.Default.WinsGoAtOnce,
+                SyncSettings.Default.LinkedReadsEachSession));
         Assert.Equal(SyncSettings.Default.UploadEvery, SyncSettings.FromRemote(null, null, null, null).UploadEvery);
         Assert.True(SyncSettings.FromRemote(null, null, null, null).WinsGoAtOnce);
+        Assert.True(SyncSettings.FromRemote(null, null, null, null).LinkedReadsEachSession);
         Assert.Equal(
-            new[] { "cloud_sync_enabled", "cloud_upload_min_minutes", "cloud_read_min_hours", "purchase_validation_enabled", "cloud_win_uploads_at_once" },
-            new[] { RemoteConfigKeys.CloudSyncEnabled, RemoteConfigKeys.UploadMinMinutes, RemoteConfigKeys.ReadMinHours, RemoteConfigKeys.PurchaseValidationEnabled, RemoteConfigKeys.WinUploadsAtOnce });
+            new[] { "cloud_sync_enabled", "cloud_upload_min_minutes", "cloud_read_min_hours", "purchase_validation_enabled", "cloud_win_uploads_at_once", "cloud_linked_reads_each_session" },
+            new[]
+            {
+                RemoteConfigKeys.CloudSyncEnabled, RemoteConfigKeys.UploadMinMinutes, RemoteConfigKeys.ReadMinHours, RemoteConfigKeys.PurchaseValidationEnabled, RemoteConfigKeys.WinUploadsAtOnce,
+                RemoteConfigKeys.LinkedReadsEachSession,
+            });
     }
 
     [Theory]
@@ -62,11 +68,11 @@ public sealed class SyncPolicyTests : IDisposable
     [InlineData(long.MaxValue, long.MaxValue, 1440, 168)]
     public void Remote_config_sets_the_budget_within_bounds(long uploadMinutes, long readHours, int minutes, int hours)
     {
-        SyncSettings settings = SyncSettings.FromRemote(syncs: false, uploadMinutes, readHours, validatesPurchases: false, winsGoAtOnce: false);
+        SyncSettings settings = SyncSettings.FromRemote(syncs: false, uploadMinutes, readHours, validatesPurchases: false, winsGoAtOnce: false, linkedReadsEachSession: false);
 
         Assert.Equal(
-            (false, TimeSpan.FromMinutes(minutes), TimeSpan.FromHours(hours), false, false),
-            (settings.Syncs, settings.UploadEvery, settings.ReadEvery, settings.ValidatesPurchases, settings.WinsGoAtOnce));
+            (false, TimeSpan.FromMinutes(minutes), TimeSpan.FromHours(hours), false, false, false),
+            (settings.Syncs, settings.UploadEvery, settings.ReadEvery, settings.ValidatesPurchases, settings.WinsGoAtOnce, settings.LinkedReadsEachSession));
     }
 
     [Fact]
@@ -98,6 +104,7 @@ public sealed class SyncPolicyTests : IDisposable
     [InlineData(SyncTrigger.Background, false)]
     [InlineData(SyncTrigger.LongSession, false)]
     [InlineData(SyncTrigger.LevelWon, false)]
+    [InlineData(SyncTrigger.CameBack, false)]
     public void A_payment_a_painting_a_sign_in_and_the_switch_turned_on_upload_outside_the_budget(SyncTrigger trigger, bool outside)
     {
         Assert.Equal(outside, trigger.IsOutsideTheBudget());
@@ -115,6 +122,8 @@ public sealed class SyncPolicyTests : IDisposable
     [InlineData(SyncTrigger.Background, WinsInTheCloud.LacksTheSessionsFirst, true)]
     [InlineData(SyncTrigger.Background, WinsInTheCloud.AllThere, false)]
     [InlineData(SyncTrigger.ColdStart, WinsInTheCloud.LacksTheSessionsFirst, true)]
+    [InlineData(SyncTrigger.CameBack, WinsInTheCloud.LacksALaterOne, true)]
+    [InlineData(SyncTrigger.CameBack, WinsInTheCloud.AllThere, false)]
     [InlineData(SyncTrigger.LongSession, WinsInTheCloud.LacksALaterOne, false)]
     public void A_won_level_the_cloud_lacks_goes_at_once_at_the_sessions_first_win_on_the_way_out_and_at_the_next_start(SyncTrigger trigger, WinsInTheCloud wins, bool atOnce)
     {
@@ -130,7 +139,7 @@ public sealed class SyncPolicyTests : IDisposable
     {
         CloudState backingOff = CloudState.Restored(true, "w", Player, CloudBase.NoSave(Rules.StartingWallet), Noon, Noon, null, 3, Noon.AddHours(2), null);
 
-        Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.SwitchedOn, backingOff, SyncSettings.Default, Noon.AddMinutes(1)));
+        Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.SwitchedOn, backingOff, SyncSettings.Default, SaveWriters.ThisPhone, Noon.AddMinutes(1)));
         Assert.False(SyncPolicy.WaitsForTheBackoff(SyncTrigger.SwitchedOn, backingOff, Noon.AddMinutes(1)));
         Assert.True(SyncPolicy.WaitsForTheBackoff(SyncTrigger.LevelWon, backingOff, Noon.AddMinutes(1)));
     }
@@ -150,9 +159,32 @@ public sealed class SyncPolicyTests : IDisposable
         CloudState state = CloudState.Restored(true, "w", Player, CloudBase.NoSave(Rules.StartingWallet), Noon, Noon, null, 0, null, null);
         DateTimeOffset dayBefore = Noon.AddDays(-1);
 
-        Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.ColdStart, state, SyncSettings.Default, dayBefore));
+        Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.ColdStart, state, SyncSettings.Default, SaveWriters.ThisPhone, dayBefore));
         Assert.Null(SyncPolicy.UploadWaitsUntil(SyncTrigger.Background, WinsInTheCloud.AllThere, state, SyncSettings.Default, dayBefore));
-        Assert.False(SyncPolicy.ReadsFirst(SyncTrigger.Background, state, SyncSettings.Default, Noon.AddDays(3))); // only the start reads by the clock
+        Assert.False(SyncPolicy.ReadsFirst(SyncTrigger.Background, state, SyncSettings.Default, SaveWriters.ThisPhone, Noon.AddDays(3))); // only a session's beginning reads by the clock
+    }
+
+    /// <summary>
+    /// H9 (2026-11-05): ten minutes after the last read, a session's beginning (the start, the return from the
+    /// background) reads for an account other devices write and not for one of this phone; the way out and a won level
+    /// read for neither. Remote Config's switch puts the linked account back on the budget, and after the budget's 12
+    /// hours every session's beginning reads.
+    /// </summary>
+    [Theory]
+    [InlineData(SyncTrigger.ColdStart, SaveWriters.EveryDeviceSignedIn, true)]
+    [InlineData(SyncTrigger.CameBack, SaveWriters.EveryDeviceSignedIn, true)]
+    [InlineData(SyncTrigger.ColdStart, SaveWriters.ThisPhone, false)]
+    [InlineData(SyncTrigger.CameBack, SaveWriters.ThisPhone, false)]
+    [InlineData(SyncTrigger.Background, SaveWriters.EveryDeviceSignedIn, false)]
+    [InlineData(SyncTrigger.LevelWon, SaveWriters.EveryDeviceSignedIn, false)]
+    public void An_account_other_devices_write_reads_as_each_session_begins(SyncTrigger trigger, SaveWriters writers, bool reads)
+    {
+        CloudState readAtNoon = CloudState.Restored(true, "w", Player, CloudBase.NoSave(Rules.StartingWallet), Noon, Noon, null, 0, null, null);
+        SyncSettings switchedOff = SyncSettings.FromRemote(null, null, null, null, linkedReadsEachSession: false);
+
+        Assert.Equal(reads, SyncPolicy.ReadsFirst(trigger, readAtNoon, SyncSettings.Default, writers, Noon.AddMinutes(10)));
+        Assert.False(SyncPolicy.ReadsFirst(trigger, readAtNoon, switchedOff, writers, Noon.AddMinutes(10)));
+        Assert.Equal(trigger.BeginsASession(), SyncPolicy.ReadsFirst(trigger, readAtNoon, SyncSettings.Default, writers, Noon.AddHours(12)));
     }
 
     [Fact]
@@ -227,7 +259,7 @@ public sealed class SyncPolicyTests : IDisposable
 
         Assert.Null(read.Base);
         Assert.True(read.IsSwitchedOn);
-        Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.Background, read, SyncSettings.Default, Noon));
+        Assert.True(SyncPolicy.ReadsFirst(SyncTrigger.Background, read, SyncSettings.Default, SaveWriters.ThisPhone, Noon));
     }
 
     [Fact]

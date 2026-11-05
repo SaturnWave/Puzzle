@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"進行状況はこのスマートフォンに残っています。"},
     {"id":"AccountOtherSaveTitle","text":"別のデータがあります"},
     {"id":"AccountOtherSaveLine","text":"{platform}のアカウントにデータがあります。"},
-    {"id":"AccountOtherSaveMergeLine","text":"切り替えると、このスマートフォンの進行状況が加わります。"},
+    {"id":"AccountOtherSaveMergeLine","text":"切り替えても、レベル{level}は残り、コインは合算されます。"},
     {"id":"AccountSwitchButton","text":"切り替える"},
     {"id":"AccountStayButton","text":"キャンセル"},
     {"id":"AccountSaveBackTitle","text":"データが戻りました"},

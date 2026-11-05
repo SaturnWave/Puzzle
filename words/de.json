@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Dein Fortschritt ist auf diesem Handy sicher."},
     {"id":"AccountOtherSaveTitle","text":"Anderer Spielstand gefunden"},
     {"id":"AccountOtherSaveLine","text":"Dein {platform}-Konto hat einen Spielstand."},
-    {"id":"AccountOtherSaveMergeLine","text":"Beim Wechsel kommt der Fortschritt dieses Handys dazu."},
+    {"id":"AccountOtherSaveMergeLine","text":"Beim Wechsel bleibt Level {level}, Münzen werden addiert."},
     {"id":"AccountSwitchButton","text":"Wechseln"},
     {"id":"AccountStayButton","text":"Abbrechen"},
     {"id":"AccountSaveBackTitle","text":"Spielstand ist zurück"},

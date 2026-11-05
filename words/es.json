@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Tu progreso está a salvo en este teléfono."},
     {"id":"AccountOtherSaveTitle","text":"Hay otra partida"},
     {"id":"AccountOtherSaveLine","text":"Tu cuenta de {platform} tiene una partida."},
-    {"id":"AccountOtherSaveMergeLine","text":"Si cambias, el progreso de este teléfono se le suma."},
+    {"id":"AccountOtherSaveMergeLine","text":"Si cambias, conservas el nivel {level} y sumas monedas."},
     {"id":"AccountSwitchButton","text":"Cambiar"},
     {"id":"AccountStayButton","text":"Cancelar"},
     {"id":"AccountSaveBackTitle","text":"Tu partida ha vuelto"},

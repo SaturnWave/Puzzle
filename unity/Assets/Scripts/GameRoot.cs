@@ -111,6 +111,12 @@ namespace Puzzle.Client
         private bool _isTheEntryDrawn;
 
         /// <summary>
+        /// True from the moment the game is put away until it is brought back: Unity also calls the pause's "brought back"
+        /// as the game starts, which is no return and syncs nothing of its own.
+        /// </summary>
+        private bool _isPutAway;
+
+        /// <summary>
         /// The finger the game follows. A second finger that comes down meanwhile is not followed; the session is
         /// only told that it came down, which ends a won game's finale as any touch does.
         /// </summary>
@@ -335,6 +341,7 @@ namespace Puzzle.Client
         {
             if (isPaused)
             {
+                _isPutAway = true;
                 LetGoOfTheFinger();
                 _music?.PutAway();
                 _session?.SaveProgress();
@@ -350,6 +357,14 @@ namespace Puzzle.Client
             else
             {
                 _music?.ComeBack();
+                if (_isPutAway && _cloud is CloudSaving cloud)
+                {
+                    // The return begins a session: an account linked to the platform reads what its other devices wrote
+                    // meanwhile, so a tablet's levels are on the phone when the phone's game comes back (H9).
+                    cloud.AskForTheReturnsSync();
+                }
+
+                _isPutAway = false;
             }
         }
 

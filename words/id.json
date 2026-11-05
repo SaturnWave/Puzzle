@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Progresmu aman di ponsel ini."},
     {"id":"AccountOtherSaveTitle","text":"Ada progres lain"},
     {"id":"AccountOtherSaveLine","text":"Akun {platform}-mu punya progres."},
-    {"id":"AccountOtherSaveMergeLine","text":"Jika beralih, progres ponsel ini ditambahkan ke sana."},
+    {"id":"AccountOtherSaveMergeLine","text":"Jika beralih, level {level} tetap dan koin dijumlahkan."},
     {"id":"AccountSwitchButton","text":"Beralih"},
     {"id":"AccountStayButton","text":"Batal"},
     {"id":"AccountSaveBackTitle","text":"Progresmu kembali"},

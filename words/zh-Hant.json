@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"你的進度在這支手機上很安全。"},
     {"id":"AccountOtherSaveTitle","text":"發現其他進度"},
     {"id":"AccountOtherSaveLine","text":"你的{platform}帳號中已有進度。"},
-    {"id":"AccountOtherSaveMergeLine","text":"切換後，這支手機的進度會合併進去。"},
+    {"id":"AccountOtherSaveMergeLine","text":"切換後保留第{level}關，金幣會相加。"},
     {"id":"AccountSwitchButton","text":"切換"},
     {"id":"AccountStayButton","text":"取消"},
     {"id":"AccountSaveBackTitle","text":"進度已恢復"},

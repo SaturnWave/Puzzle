@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Ваш прогресс в безопасности на этом телефоне."},
     {"id":"AccountOtherSaveTitle","text":"Найден другой прогресс"},
     {"id":"AccountOtherSaveLine","text":"В аккаунте {platform} есть прогресс."},
-    {"id":"AccountOtherSaveMergeLine","text":"При переходе прогресс этого телефона добавится к нему."},
+    {"id":"AccountOtherSaveMergeLine","text":"При переходе уровень {level} останется, а монеты сложатся."},
     {"id":"AccountSwitchButton","text":"Перейти"},
     {"id":"AccountStayButton","text":"Отмена"},
     {"id":"AccountSaveBackTitle","text":"Прогресс вернулся"},

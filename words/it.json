@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"I tuoi progressi sono al sicuro su questo telefono."},
     {"id":"AccountOtherSaveTitle","text":"Ci sono altri progressi"},
     {"id":"AccountOtherSaveLine","text":"Il tuo account {platform} ha dei progressi."},
-    {"id":"AccountOtherSaveMergeLine","text":"Se passi a quelli, i progressi di questo telefono si aggiungono."},
+    {"id":"AccountOtherSaveMergeLine","text":"Se passi, il livello {level} resta e le monete si sommano."},
     {"id":"AccountSwitchButton","text":"Passa"},
     {"id":"AccountStayButton","text":"Annulla"},
     {"id":"AccountSaveBackTitle","text":"I tuoi progressi sono tornati"},

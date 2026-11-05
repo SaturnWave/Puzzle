@@ -9,7 +9,7 @@ namespace Puzzle.Client.Cloud
 {
     /// <summary>
     /// What Unity's Remote Config 4.2.5 (com.unity.remote-config, pinned) says of the sync: the four keys of the owner's
-    /// decision 6 and the wins' switch of 2026-10-27 (<see cref="RemoteConfigKeys"/>), each that it gives read within the sync's bounds
+    /// decision 6, the wins' switch of 2026-10-27 and the linked accounts' reads of 2026-11-05 (<see cref="RemoteConfigKeys"/>), each that it gives read within the sync's bounds
     /// (<see cref="SyncSettings.FromRemote"/>), each it does not give at its default. Fetched once a run, after the
     /// sign-in, with no attributes of the player's; what it fetched on an earlier run counts when this run's fetch did not
     /// get through. A fetch that fails, or comes back with nothing of the project (none is set up yet), leaves the
@@ -49,7 +49,8 @@ namespace Puzzle.Client.Cloud
                 config.HasKey(RemoteConfigKeys.UploadMinMinutes) ? config.GetLong(RemoteConfigKeys.UploadMinMinutes) : (long?)null,
                 config.HasKey(RemoteConfigKeys.ReadMinHours) ? config.GetLong(RemoteConfigKeys.ReadMinHours) : (long?)null,
                 config.HasKey(RemoteConfigKeys.PurchaseValidationEnabled) ? config.GetBool(RemoteConfigKeys.PurchaseValidationEnabled) : (bool?)null,
-                config.HasKey(RemoteConfigKeys.WinUploadsAtOnce) ? config.GetBool(RemoteConfigKeys.WinUploadsAtOnce) : (bool?)null);
+                config.HasKey(RemoteConfigKeys.WinUploadsAtOnce) ? config.GetBool(RemoteConfigKeys.WinUploadsAtOnce) : (bool?)null,
+                config.HasKey(RemoteConfigKeys.LinkedReadsEachSession) ? config.GetBool(RemoteConfigKeys.LinkedReadsEachSession) : (bool?)null);
         }
 
         /// <summary>The attributes the fetch sends of the player and of the app: none.</summary>

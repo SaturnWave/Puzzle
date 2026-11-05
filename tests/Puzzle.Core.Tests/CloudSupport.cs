@@ -165,9 +165,10 @@ internal sealed class Device
 
     public CloudSync Sync { get; }
 
-    public Task<SyncOutcome> SyncsAsync(SyncTrigger trigger) => Sync.SyncAsync(CloudSupport.Player, trigger, CancellationToken.None);
+    /// <param name="writers">Which devices write the account's save: an account of this phone, unless the test links it.</param>
+    public Task<SyncOutcome> SyncsAsync(SyncTrigger trigger, SaveWriters writers = SaveWriters.ThisPhone) => Sync.SyncAsync(CloudSupport.Player, trigger, writers, CancellationToken.None);
 
-    public Task<SyncOutcome> SyncsAsync(CloudPlayerId player, SyncTrigger trigger) => Sync.SyncAsync(player, trigger, CancellationToken.None);
+    public Task<SyncOutcome> SyncsAsync(CloudPlayerId player, SyncTrigger trigger) => Sync.SyncAsync(player, trigger, SaveWriters.ThisPhone, CancellationToken.None);
 }
 
 /// <summary>A cloud whose reads wait until the test lets them through: two syncs at once on one device.</summary>

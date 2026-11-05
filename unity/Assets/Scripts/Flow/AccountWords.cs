@@ -136,7 +136,10 @@ namespace Puzzle.Client.Flow
             Speech.Say(WordId.AccountOfferTitle), Speech.Say(WordId.AccountOfferLine), Speech.Say(WordId.AccountOfferPlatformLine, Named(platform)));
 
         /// <summary>The card of what the account has to tell.</summary>
-        /// <param name="levelNumber">The level the player stands on, counted from 1: the card of a save that came back names it.</param>
+        /// <param name="levelNumber">
+        /// The level the player stands on, counted from 1: the card of a save that came back names it, and so does the
+        /// question of the platform player's own save, as the level going over keeps (H9).
+        /// </param>
         /// <param name="coins">The coins in the wallet: the card of a save that came back names them.</param>
         /// <exception cref="ArgumentOutOfRangeException">News the cards have no words for.</exception>
         public static AccountCardWords Of(AccountNews news, int levelNumber, Coins coins) => news switch
@@ -148,7 +151,8 @@ namespace Puzzle.Client.Flow
             AccountNews.NotLinked _ => new AccountCardWords(
                 Speech.Say(WordId.AccountNotLinkedTitle), Speech.Say(WordId.AccountUnreachableLine), Speech.Say(WordId.AccountSafeLine)),
             AccountNews.OtherSaveFound other => new AccountCardWords(
-                Speech.Say(WordId.AccountOtherSaveTitle), Speech.Say(WordId.AccountOtherSaveLine, Named(other.Platform)), Speech.Say(WordId.AccountOtherSaveMergeLine)),
+                Speech.Say(WordId.AccountOtherSaveTitle), Speech.Say(WordId.AccountOtherSaveLine, Named(other.Platform)),
+                Speech.Say(WordId.AccountOtherSaveMergeLine, ("level", levelNumber.ToString(CultureInfo.InvariantCulture)))),
             AccountNews.SaveCameBack _ => new AccountCardWords(
                 Speech.Say(WordId.AccountSaveBackTitle),
                 Speech.Say(WordId.AccountSaveBackLine, ("level", levelNumber.ToString(CultureInfo.InvariantCulture)), ("coins", NumberWords.Amount(coins.Amount))),

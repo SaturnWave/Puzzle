@@ -26,10 +26,11 @@
   - Birim testi iki telefonun birleşmesini saati 12 saat ileri sararak deniyor (`CloudSyncTests.Two_phones_of_one_player_add_up_what_each_earned`). Gecikme bilinen bir bütçe kararıydı, ama oyuncunun göreceği sonucu sahibe söylenmedi. T591 "telefon yeniden açılınca 5. bölümde" diyor; bu, kodun kuralıyla karşılaştırılmadan yazılmış bir beklenti.
   - Yayına giden küçük bulgu bir işe bağlanmadı; yükleme öncesinde sahibe ayrıca söylenmedi.
 - **Etkisi:** testçi tabletteki ilerlemesinin kaybolacağından korktu. Telefon tableti sormayınca "birden fazla cihazda bulut kaydı çalışmıyor" sanıldı.
-- **Düzeltme:** sahibin kararını bekliyor.
-  - Hemen: Remote Config'te `cloud_read_min_hours = 1`.
-  - vc4'te: Play Games'e bağlı hesaplarda her açılışta ve arka plandan dönüşte okuma (anonim hesap tek cihazdadır, 12 saat kalabilir).
-  - Kart için iş: SaturnWave/Puzzle#11. Kart Ayarlar'ın üstünde hemen ve bir kez çıkar; bu cihazın ilerlemesini gösterir ve birleştirmenin hiçbir şeyi kaybettirmediğini söyler; tablette "telefon" yerine "cihaz" der.
+- **Düzeltme (sahibin "Ok yap"ı, 5 Kasım):**
+  - Remote Config: production'da `cloud_read_min_hours = 1` (Long), aynı gün yayında. Güncellemesiz; açılışta okuma saatte bire indi.
+  - vc4 için kod: Play Games ya da Game Center'a bağlı hesap her oturum başında okur, soğuk açılışta ve arka plandan dönüşte (`SyncTrigger.CameBack`, `SaveWriters`; `GameRoot` dönüşte ister). Anonim hesap bütçede kalır. Remote Config'in altıncı anahtarı `cloud_linked_reads_each_session` (varsayılan açık) bağlı hesabı bütçeye döndürür.
+  - Kart (SaturnWave/Puzzle#11): hesap kartındaki "Bağlan" Ayarlar'ın kartlarını hemen kaldırıyor, soru beklemeden geliyor. Aynı soru beklerken ya da asılıyken ikinci kez gelmiyor. İkinci satır bu cihazın bölümünü söylüyor ("Geçersen Bölüm X kalır, altınlar toplanır."), 13 dilde, "telefon" sözcüğü olmadan. İlk uzun hâli kartta %53'e küçülüyordu; kısaltıldı.
+  - Denetim: birim testleri (iki cihazlı `CloudSyncTests`, `CloudSavingTests`, `SyncPolicyTests`; saat ileri sarılmadan, kural 8) ve Unity'de `CloudCheck`'in hesap kartı durumu. Telefonda T597 ve T598 bekliyor (PHONE_TESTS F35).
 - **Bir daha olmasın diye:** kural 8.
 
 ## H7 — Yeni telefonda Play Games'in sessiz girişi hiç denenmiyordu (2026-11-04)

@@ -4,6 +4,33 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
 
 ---
 
+## 2026-11-05 · Oturum 40 — H9'un düzeltmesi: bağlı hesap her oturumda okur, kart Ayarlar'ı kapatır
+
+- Sahip, H9'un iki önerisine: "Ok yap".
+- **Remote Config (production, güncellemesiz):** `cloud_read_min_hours = 1` (Long).
+  - Production'ın ilk anahtarı. Pano önce kurulum rehberini açtı; ortamlar onaylandı, yeni ortam eklenmedi.
+  - Kaydedildi: "No unpublished changes", sürüm 5 Kasım 13:57 UTC. Oyun Remote Config'i girişten sonra, açılış eşitlemesinden önce okuyor, yani bir sonraki açılıştan geçerli.
+- **Kod (versionCode 4 için):**
+  - `SyncPolicy`:
+    - `SyncTrigger.CameBack`: arka plandan dönüş, oturum başı. Bulutta olmayan kazancı soğuk açılış gibi hemen gönderir.
+    - `SaveWriters` (`ThisPhone`, `EveryDeviceSignedIn`).
+    - `ReadsFirst`: bağlı hesap her oturum başında okur, anonim hesap bütçede kalır.
+    - Altıncı Remote Config anahtarı `cloud_linked_reads_each_session` (varsayılan açık) bağlı hesabı bütçeye döndürür.
+  - `CloudSync.SyncAsync` hesabın yazanlarını alıyor. `CloudSaving` onları hesabın türünden çıkarıyor ve `SyncTheReturnAsync` ile dönüşü eşitliyor; öteki cihaz ilerletmişse "Kaydın geri geldi" kartı gelir.
+  - `GameRoot` dönüşte eşitlemeyi istiyor. Unity'nin açılışta yaptığı "geri geldi" çağrısı dönüş sayılmıyor.
+  - `MuseumStage`: hesap kartındaki "Bağlan" Ayarlar'ın kartlarını hemen kaldırıyor. "Başka bir kayıt var" beklerken ya da asılıyken ikinci kez gelmiyor (SaturnWave/Puzzle#11).
+  - Kartın ikinci satırı 13 dilde değişti, Türkçesi "Geçersen Bölüm {level} kalır, altınlar toplanır."; bölümü `AccountWords` veriyor.
+    - İlk uzun hâli kartta yazı boyunun %53'üne küçüldü. Her dilde eski satırın uzunluğuna indirildi; artık küçülme uyarısı yok.
+    - Görüntü: `out/unity/shots/cloud/other-save-from-the-account-card.png`.
+    - Çince, Japonca ve Korece yazı tiplerinin harfleri ProjectSetup'la yeniden kuruldu (`LetteringTests`).
+- **Denetimler:**
+  - 6.203 test geçti, 11'i yeni (iki cihazlı `CloudSyncTests` ve `CloudSavingTests`, saat ileri sarılmadan; `SyncPolicyTests`). Sunucu modülünün 83 testi de geçti.
+  - Unity'de `CloudCheck` geçti. Yeni durum: "Bağlan on the account card: the settings went up, the question came at once and once".
+- **Belgeler:** LESSONS H9 (düzeltme), PHONE_TESTS F35 (T597, T598) ile T591 ve T538, server-v1 §3.4, GAME_DESIGN.
+- **Sıradaki:**
+  - versionCode 4'ün paketi ve PLAY_RELEASE 10: APK seti telefonda ve tablette, T597, T598 ve iki cihaz testleri. Paketi sahip yükler.
+  - vc3'ün Play kopyası (T583, T596) hâlâ bekliyor. Kablolu kopya kaldırılmadan önce sahibe sorulur.
+
 ## 2026-11-04 · Oturum 39 — versionCode 3 telefonda: bağlama çalışıyor, yeni telefonda kendiliğinden geri yükleme yok (H7)
 
 - Sahip: "Telefon tablet dursun… tablet ve telefon arası hesap bağlantısı yeni sürüm yüklendikten sonra test kullanıcıları ile denenecek." İki cihazın eşitlemesi (T591, T592, T531) test kullanıcılarına kaldı; yüklemeden önceki deneme sahibin telefonunda.
@@ -69,7 +96,7 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
     - vc4'te: bağlı hesaplarda her açılışta ve arka plandan dönüşte okuma.
     - Kart için iş açıldı (SaturnWave/Puzzle#11): Ayarlar'ın üstünde hemen ve bir kez çıkması, bu cihazın ilerlemesini göstermesi, tablette "telefon" yerine "cihaz". Hesaptaki kaydı göstermek için önce o hesaba girmek gerekir (Unity aynı anda tek oyuncuya girer); kolay yol bu cihazın ilerlemesi.
 - **Sıradaki:**
-  - Sahibin kararı: H9'un önerileri (Remote Config, vc4).
+  - H9'un önerileri: sahip onayladı, yapıldı (Oturum 40).
   - Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar ve yeniden başlatma yinelenir, imza SHA-1'i okunur (T583, T596).
   - İki cihazın eşitlemesini test kullanıcıları dener (T591, T531).
 

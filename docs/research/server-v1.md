@@ -269,7 +269,8 @@ Sonuç (ESTIMATE): yazma sınırı artık okumadan önce, **≈40 bin aylık oyu
 
 | Olay | Ne yapılır | Bütçe (varsayılan; Remote Config'le değişir) |
 |---|---|---|
-| Soğuk açılış | Oturum aç (§5), `save` ve `purchases`'ı oku, birleştir (§3.5) | Son okumadan 6 saat geçmediyse ve hesap değişmediyse okuma atlanır |
+| Soğuk açılış | Oturum aç (§5), `save` ve `purchases`'ı oku, birleştir (§3.5) | Son okumadan 6 saat geçmediyse ve hesap değişmediyse okuma atlanır. **2026-11-05 (H9):** platforma bağlı hesapta her açılışta okunur |
+| Uygulama arka plandan döner (2026-11-05, H9) | Soğuk açılış gibi: oku, birleştir, yükle | Platforma bağlı hesapta her dönüşte okunur; anonim hesapta soğuk açılışın bütçesi |
 | Uygulama arka plana geçer / kapanır | Yerel belge tabandan farklıysa yükle | Son yüklemeden en az 15 dakika; **2026-10-27:** bulutta olmayan kazanç varsa bütçe dışı, istek Unity duraksamadan gönderilir |
 | Bölüm kazanıldı (2026-10-27) | Oturumun bulutta olmayan ilk kazancıysa hemen yükle | Bütçe dışı; oturumun sonraki kazançları çıkışta |
 | "Bulut kaydı" yeniden açıldı (2026-10-27) | Oturum aç, oku, birleştir, yükle | Bütçe ve geri çekilme dışı |
@@ -283,6 +284,13 @@ Sonuç (ESTIMATE): yazma sınırı artık okumadan önce, **≈40 bin aylık oyu
 **İlk `save`:** hesap açılır açılmaz değil, **ilk bölüm kazanılınca** yazılır. Kurup hemen bırakanlar depolama harcamaz. ESTIMATE
 
 **Aşama 1'in bütçesi (2026-10-26):** varsayılanlar §2.4'ün sıkı kuralı: soğuk açılışta okuma **12 saatte bir**, bütçeli yükleme (arka plan, uzun oturum, soğuk açılıştan sonraki yükleme) **en az 60 dakika** arayla; satın alma, tablo/oda ve hesap değişimi bütçe dışı. Remote Config ikisini sınırlar içinde değiştirir (yükleme 5 dk–24 sa, okuma 1 sa–7 gün; sınırın dışındaki değer en yakın sınıra çekilir), böylece yanlış yazılmış bir değer ne aylık bütçeyi bir günde harcar ne eşitlemeyi durdurur. Tablodaki 6 saat / 15 dakika Remote Config'le açılabilir. Geri çekilme: ağ yokken adım yok (buluta bir şey gitmedi, sonraki tetikleyici yine dener); öteki her hatada 1, 5, 30 dk, 2, 6, 24 sa. Yeni giriş (hesap bağlandı ya da değişti) geri çekilmeyi beklemez. Okunamayan ya da daha yeni bir oyunun kaydında yazma durur; okuma yalnız soğuk açılışta bütçeyle sürer, kayıt okunur olunca durma kalkar.
+
+**İki cihaz (2026-11-05, H9):** aynı hesaptaki iki cihaz birbirinin ilerlemesini 12 saate kadar geç görüyordu (`docs/LESSONS.md` H9). Kayıp yoktu: yazma kilidi üstüne yazmayı önlüyor. Düzeltme şöyle:
+- Google Play Games ya da Game Center'a bağlı hesap her oturum başında okur: soğuk açılışta ve uygulama arka plandan dönünce (`SyncTrigger.CameBack`). Birden çok cihazda olabilen yalnız bu hesaplardır (`SaveWriters.EveryDeviceSignedIn`).
+- Anonim hesap bütçede kalır.
+- Remote Config'in altıncı anahtarı `cloud_linked_reads_each_session` (bool, varsayılan açık); kapatılırsa bağlı hesap da bütçeye döner.
+- Production'da `cloud_read_min_hours = 1` (5 Kasım, sahibin kararı).
+- Okuma yükü (ESTIMATE): günde 2.000 oyuncu, oyuncu başına 3 oturum, hepsi bağlı sayılırsa ayda ≈180.000 okuma, ücretsiz sınırın %18'i.
 
 ### 3.5 Birleştirme kuralları (üç yollu)
 

@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"你的进度在这部手机上很安全。"},
     {"id":"AccountOtherSaveTitle","text":"发现其他进度"},
     {"id":"AccountOtherSaveLine","text":"你的{platform}账号中已有进度。"},
-    {"id":"AccountOtherSaveMergeLine","text":"切换后，这部手机的进度会合并进去。"},
+    {"id":"AccountOtherSaveMergeLine","text":"切换后保留第{level}关，金币会相加。"},
     {"id":"AccountSwitchButton","text":"切换"},
     {"id":"AccountStayButton","text":"取消"},
     {"id":"AccountSaveBackTitle","text":"进度已恢复"},

@@ -6,8 +6,9 @@ namespace Puzzle.Client.Cloud
 {
     /// <summary>
     /// The keys of the game's Remote Config (the owner's decision 6, 2026-10-26): the four settings the owner can turn
-    /// without an update of the game, when the free tier's limits come near or a merge goes wrong, and a fifth of
-    /// 2026-10-27 for the won levels that upload at once. A key the project does not set keeps its default.
+    /// without an update of the game, when the free tier's limits come near or a merge goes wrong, a fifth of 2026-10-27
+    /// for the won levels that upload at once, and a sixth of 2026-11-05 for the reads of an account other devices write.
+    /// A key the project does not set keeps its default.
     /// </summary>
     public static class RemoteConfigKeys
     {
@@ -28,15 +29,23 @@ namespace Puzzle.Client.Cloud
         /// owner's lever when the free tier's writes come near (<see cref="SyncPolicy.LetsAWinGoAtOnce"/>).
         /// </summary>
         public const string WinUploadsAtOnce = "cloud_win_uploads_at_once";
+
+        /// <summary>
+        /// A switch (2026-11-05, H9): false lets an account linked to Google Play Games or Game Center read within the
+        /// budget, as an account of this phone does; the owner's lever when the free tier's reads come near
+        /// (<see cref="SyncPolicy.ReadsFirst"/>).
+        /// </summary>
+        public const string LinkedReadsEachSession = "cloud_linked_reads_each_session";
     }
 
     /// <summary>
     /// How often the sync may use the cloud, so the free tier's monthly reads and writes last (docs/research/server-v1.md
-    /// §2.4): at most one read every 12 hours at the game's start and one upload every 60 minutes by default (the
+    /// §2.4): at most one read every 12 hours as a session begins and one upload every 60 minutes by default (the
     /// tighter of the plan's two rules, 2026-10-26); a payment delivered, a painting or a room completed, a new sign-in
     /// and the switch turned on upload at once, outside the budget, and so do the won levels the cloud lacks, as
-    /// <see cref="SyncPolicy.LetsAWinGoAtOnce"/> says (2026-10-27). Remote Config can change each within bounds that keep
-    /// a typing mistake from spending the month's budget in a day, or from never syncing at all.
+    /// <see cref="SyncPolicy.LetsAWinGoAtOnce"/> says (2026-10-27). An account other devices write reads as every session
+    /// begins (2026-11-05, H9: a phone saw what a tablet wrote up to 12 hours late). Remote Config can change each within
+    /// bounds that keep a typing mistake from spending the month's budget in a day, or from never syncing at all.
     /// This file has no Unity dependency, so the repository's tests compile it too.
     /// </summary>
     public sealed class SyncSettings
@@ -53,8 +62,9 @@ namespace Puzzle.Client.Cloud
         public static readonly TimeSpan ReadEveryAtMost = TimeSpan.FromDays(7);
 
         /// <param name="winsGoAtOnce">Whether a won level the cloud lacks may upload outside the budget (<see cref="WinsGoAtOnce"/>).</param>
+        /// <param name="linkedReadsEachSession">Whether an account other devices write reads as every session begins (<see cref="LinkedReadsEachSession"/>).</param>
         /// <exception cref="ArgumentOutOfRangeException">A time outside its bounds.</exception>
-        public SyncSettings(bool syncs, TimeSpan uploadEvery, TimeSpan readEvery, bool validatesPurchases, bool winsGoAtOnce)
+        public SyncSettings(bool syncs, TimeSpan uploadEvery, TimeSpan readEvery, bool validatesPurchases, bool winsGoAtOnce, bool linkedReadsEachSession)
         {
             if (uploadEvery < UploadEveryAtLeast || uploadEvery > UploadEveryAtMost)
             {
@@ -71,13 +81,15 @@ namespace Puzzle.Client.Cloud
             ReadEvery = readEvery;
             ValidatesPurchases = validatesPurchases;
             WinsGoAtOnce = winsGoAtOnce;
+            LinkedReadsEachSession = linkedReadsEachSession;
         }
 
         /// <summary>
         /// The settings of a game that has not heard from Remote Config: it syncs and verifies, an upload an hour at most
-        /// with the won levels at once, a read every 12 hours.
+        /// with the won levels at once, a read every 12 hours, and one as every session begins for an account other devices write.
         /// </summary>
-        public static SyncSettings Default { get; } = new SyncSettings(syncs: true, DefaultUploadEvery, DefaultReadEvery, validatesPurchases: true, winsGoAtOnce: true);
+        public static SyncSettings Default { get; } =
+            new SyncSettings(syncs: true, DefaultUploadEvery, DefaultReadEvery, validatesPurchases: true, winsGoAtOnce: true, linkedReadsEachSession: true);
 
         /// <summary>Whether the save is read and written at all (<see cref="RemoteConfigKeys.CloudSyncEnabled"/>).</summary>
         public bool Syncs { get; }
@@ -94,21 +106,27 @@ namespace Puzzle.Client.Cloud
         /// <summary>Whether a won level the cloud lacks may upload outside the budget (<see cref="RemoteConfigKeys.WinUploadsAtOnce"/>, <see cref="SyncPolicy.LetsAWinGoAtOnce"/>).</summary>
         public bool WinsGoAtOnce { get; }
 
+        /// <summary>Whether an account other devices write reads as every session begins (<see cref="RemoteConfigKeys.LinkedReadsEachSession"/>, <see cref="SyncPolicy.ReadsFirst"/>).</summary>
+        public bool LinkedReadsEachSession { get; }
+
         /// <summary>
         /// The settings Remote Config gave, each key that it did not give at its default, and a time outside its bounds
         /// at the bound nearest to it.
         /// </summary>
-        public static SyncSettings FromRemote(bool? syncs, long? uploadMinMinutes, long? readMinHours, bool? validatesPurchases, bool? winsGoAtOnce = null) =>
+        public static SyncSettings FromRemote(
+            bool? syncs, long? uploadMinMinutes, long? readMinHours, bool? validatesPurchases, bool? winsGoAtOnce = null, bool? linkedReadsEachSession = null) =>
             new SyncSettings(
                 syncs ?? Default.Syncs,
                 uploadMinMinutes is long minutes ? Within(TimeSpan.FromMinutes(Math.Min(minutes, (long)UploadEveryAtMost.TotalMinutes + 1)), UploadEveryAtLeast, UploadEveryAtMost) : Default.UploadEvery,
                 readMinHours is long hours ? Within(TimeSpan.FromHours(Math.Min(hours, (long)ReadEveryAtMost.TotalHours + 1)), ReadEveryAtLeast, ReadEveryAtMost) : Default.ReadEvery,
                 validatesPurchases ?? Default.ValidatesPurchases,
-                winsGoAtOnce ?? Default.WinsGoAtOnce);
+                winsGoAtOnce ?? Default.WinsGoAtOnce,
+                linkedReadsEachSession ?? Default.LinkedReadsEachSession);
 
         public override string ToString() =>
             $"{(Syncs ? "syncs" : "does not sync")}, an upload every {UploadEvery.TotalMinutes:0} min at most{(WinsGoAtOnce ? " with the won levels at once" : ", the won levels too")}, "
-            + $"a read every {ReadEvery.TotalHours:0} h, {(ValidatesPurchases ? "verifies" : "does not verify")} purchases";
+            + $"a read every {ReadEvery.TotalHours:0} h{(LinkedReadsEachSession ? " and a linked account's as every session begins" : ", a linked account's too")}, "
+            + $"{(ValidatesPurchases ? "verifies" : "does not verify")} purchases";
 
         private static TimeSpan Within(TimeSpan time, TimeSpan least, TimeSpan most) => time < least ? least : time > most ? most : time;
     }
@@ -117,8 +135,9 @@ namespace Puzzle.Client.Cloud
     public enum SyncTrigger
     {
         /// <summary>
-        /// The game started and the player signed in: read (within the budget), merge, upload what the phone has new
-        /// (within the budget; at once when the cloud lacks a won level the way out before could not send).
+        /// The game started and the player signed in, which begins a session: read (an account other devices write at
+        /// once, any other within the budget), merge, upload what the phone has new (within the budget; at once when the
+        /// cloud lacks a won level the way out before could not send).
         /// </summary>
         ColdStart,
 
@@ -151,6 +170,12 @@ namespace Puzzle.Client.Cloud
         /// what was played while it was off at once, outside the budget and the backing off, as a new sign-in does.
         /// </summary>
         SwitchedOn,
+
+        /// <summary>
+        /// The game came back from the background, which begins a session (2026-11-05, H9): as at the start, read (an
+        /// account other devices write at once, any other within the budget), merge, upload what the phone has new.
+        /// </summary>
+        CameBack,
     }
 
     /// <summary>
@@ -184,6 +209,19 @@ namespace Puzzle.Client.Cloud
 
         /// <summary>The tester mode: unlimited coins are never the cloud's (§3.1).</summary>
         TesterMode,
+    }
+
+    /// <summary>
+    /// Which devices write the account's save (2026-11-05, H9), which tells how soon the sync must read what another one
+    /// wrote. A closed set.
+    /// </summary>
+    public enum SaveWriters
+    {
+        /// <summary>An account of this phone: only this installation signs in to it (a phone set up from its backup aside).</summary>
+        ThisPhone,
+
+        /// <summary>An account linked to Google Play Games or Game Center: every device signed in to the platform writes the same save.</summary>
+        EveryDeviceSignedIn,
     }
 
     /// <summary>
@@ -243,6 +281,7 @@ namespace Puzzle.Client.Cloud
             SyncTrigger.Background => false,
             SyncTrigger.LongSession => false,
             SyncTrigger.LevelWon => false,
+            SyncTrigger.CameBack => false,
             _ => throw new ArgumentOutOfRangeException(nameof(trigger), trigger, "A trigger the sync does not know."),
         };
 
@@ -252,10 +291,13 @@ namespace Puzzle.Client.Cloud
         /// </summary>
         public static bool IsANewSignIn(this SyncTrigger trigger) => trigger == SyncTrigger.AccountChanged || trigger == SyncTrigger.SwitchedOn;
 
+        /// <summary>Whether the trigger begins a session: the game's start, and its return from the background.</summary>
+        public static bool BeginsASession(this SyncTrigger trigger) => trigger == SyncTrigger.ColdStart || trigger == SyncTrigger.CameBack;
+
         /// <summary>
         /// Whether a won level the cloud lacks lets the trigger upload at once, outside the budget (2026-10-27, T530): the
         /// session's first such win at the win itself; every win the cloud lacks on the way out, which ends the session;
-        /// and at the next start what the way out could not send. Android cuts a game it puts away off the network within
+        /// and as the next session begins what the way out could not send. Android cuts a game it puts away off the network within
         /// seconds and Unity stops its loop at once, so a won level left to the hourly budget reached the cloud only when
         /// the game came to the front again, or never. A session's later wins wait for its way out: a write a win would
         /// cost the free tier (docs/research/server-v1.md §2.4). Remote Config's switch lets every win wait for the budget
@@ -274,6 +316,7 @@ namespace Puzzle.Client.Cloud
                 SyncTrigger.LevelWon => wins == WinsInTheCloud.LacksTheSessionsFirst,
                 SyncTrigger.Background => true,
                 SyncTrigger.ColdStart => true,
+                SyncTrigger.CameBack => true,
                 SyncTrigger.LongSession => false,
                 SyncTrigger.PurchaseDelivered => false,
                 SyncTrigger.PaintingOrRoomCompleted => false,
@@ -285,21 +328,28 @@ namespace Puzzle.Client.Cloud
 
         /// <summary>
         /// Whether the sync reads the cloud before anything else: always for a new sign-in, an account never read, or a
-        /// write whose answer was lost; at the game's start once the read budget's time has passed (or the clock went
-        /// back before the last read); never otherwise, since a write that crosses another is refused and read then.
+        /// write whose answer was lost; as a session begins (the game's start, its return from the background), at once
+        /// for an account other devices write, else once the read budget's time has passed (or the clock went back before
+        /// the last read); never otherwise, since a write that crosses another is refused and read then. An account other
+        /// devices write saw what another wrote up to the budget's 12 hours late before 2026-11-05 (H9); Remote Config's
+        /// switch puts it back on the budget (<see cref="SyncSettings.LinkedReadsEachSession"/>).
         /// An account whose sync stopped (<see cref="CloudState.Halt"/>) writes nothing, so it reads only at a new sign-in
-        /// and at the game's start within the budget, to see whether the save reads again.
+        /// and as a session begins, as above, to see whether the save reads again.
         /// </summary>
-        public static bool ReadsFirst(SyncTrigger trigger, CloudState state, SyncSettings settings, DateTimeOffset now)
+        public static bool ReadsFirst(SyncTrigger trigger, CloudState state, SyncSettings settings, SaveWriters writers, DateTimeOffset now)
         {
-            bool startsAndMayRead = trigger == SyncTrigger.ColdStart && IsDue(state.LastRead, settings.ReadEvery, now);
+            bool beginsAndMayRead = trigger.BeginsASession() && (ReadsEachSession(writers, settings) || IsDue(state.LastRead, settings.ReadEvery, now));
             if (trigger.IsANewSignIn() || state.Halt != null)
             {
-                return trigger.IsANewSignIn() || startsAndMayRead;
+                return trigger.IsANewSignIn() || beginsAndMayRead;
             }
 
-            return state.Base == null || state.Pending != null || startsAndMayRead;
+            return state.Base == null || state.Pending != null || beginsAndMayRead;
         }
+
+        /// <summary>Whether every session's beginning reads the cloud: for an account other devices write, while Remote Config lets it.</summary>
+        private static bool ReadsEachSession(SaveWriters writers, SyncSettings settings) =>
+            writers == SaveWriters.EveryDeviceSignedIn && settings.LinkedReadsEachSession;
 
         /// <summary>
         /// Whether a merge reads the ledger of verified payments (the protected item "purchases", a read of the free tier's

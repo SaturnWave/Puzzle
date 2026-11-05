@@ -150,6 +150,37 @@ public sealed class CloudSavingTests
         Assert.True(phone.Progress.Current.Wallet.Coins.Amount > coinsOnTheOldPhone, "the coins this phone won are added to the save it went over to");
     }
 
+    /// <summary>
+    /// H9 (2026-11-05): a phone and a tablet signed in to the same Play Games player. What the tablet played comes to the
+    /// phone as the phone's game comes back from the background, minutes later, and the museum is told. An account of
+    /// this phone keeps to the read budget on its return, and a game whose cloud is off syncs nothing.
+    /// </summary>
+    [Fact]
+    public async Task A_linked_phone_coming_back_from_the_background_gets_what_the_tablet_played_and_the_museum_is_told()
+    {
+        var services = new FakeUnityServices();
+        var phone = new Phone(services, new FakePlatformSignIn(SignInPlatform.PlayGames, Alice, isSignedIn: true), CloudSupport.NewPlayer().Won(3));
+        await phone.Cloud.StartAsync(CancellationToken.None);
+        var tablet = new Phone(services, new FakePlatformSignIn(SignInPlatform.PlayGames, Alice, isSignedIn: true), CloudSupport.NewPlayer());
+        await tablet.Cloud.StartAsync(CancellationToken.None);
+        tablet.Progress.Play(progress => progress.Won(5));
+        await tablet.Cloud.UploadAsync(SyncTrigger.Background, CancellationToken.None);
+        var alone = new Phone(services, NoPlatform(), CloudSupport.NewPlayer().Won(2));
+        await alone.Cloud.StartAsync(CancellationToken.None);
+        var off = new Phone(services, NoPlatform(), CloudSupport.NewPlayer().Won(2), switchedOn: false);
+
+        phone.Clock.Passes(TimeSpan.FromMinutes(5));
+        await phone.Cloud.SyncTheReturnAsync(CancellationToken.None);
+        alone.Clock.Passes(TimeSpan.FromMinutes(5));
+        await alone.Cloud.SyncTheReturnAsync(CancellationToken.None);
+        await off.Cloud.SyncTheReturnAsync(CancellationToken.None);
+
+        Assert.Equal(8, phone.Progress.Current.LevelsWon);
+        Assert.IsType<AccountNews.SaveCameBack>(Assert.Single(phone.Cloud.TakeNews()));
+        Assert.False(Assert.IsType<SyncOutcome.Done>(alone.Cloud.LastSync).Read);
+        Assert.Null(off.Cloud.LastSync);
+    }
+
     [Fact]
     public async Task A_player_who_declines_on_the_platforms_sheet_hears_nothing_and_one_without_the_platform_is_told()
     {

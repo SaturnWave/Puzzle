@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Ta progression est en sécurité sur ce téléphone."},
     {"id":"AccountOtherSaveTitle","text":"Une autre partie existe"},
     {"id":"AccountOtherSaveLine","text":"Ton compte {platform} a une partie."},
-    {"id":"AccountOtherSaveMergeLine","text":"Si tu changes, la progression de ce téléphone s'y ajoute."},
+    {"id":"AccountOtherSaveMergeLine","text":"Si tu changes, le niveau {level} reste et les pièces s'ajoutent."},
     {"id":"AccountSwitchButton","text":"Changer"},
     {"id":"AccountStayButton","text":"Annuler"},
     {"id":"AccountSaveBackTitle","text":"Ta partie est revenue"},

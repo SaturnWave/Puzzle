@@ -34,8 +34,9 @@ namespace Puzzle.Client.EditorTools
     /// won level, and "Bağlan" links it and says so; a new phone signed in to Play Games gets the save back, the hall
     /// opens on it and a card says so;</item>
     /// <item>"Şimdi değil" is not asked again; a platform player with a save of their own is asked about it, and "Ona geç"
-    /// goes over to it with this phone's progress added; a phone without Play Games is offered nothing; services out of
-    /// reach leave the game as it was.</item>
+    /// goes over to it with this phone's progress added; asked from the settings' account card, "Bağlan" takes the
+    /// settings' cards up and the question comes down at once, once (H9, issue #11); a phone without Play Games is
+    /// offered nothing; services out of reach leave the game as it was.</item>
     /// <item>The settings' account card (Stage 5): the account, the switch, the last sync and the player code; the switch
     /// turned off signs out and stops the sync, on again finds the same account; "Verilerimi sil" asks, deletes the
     /// account and its save in the cloud, turns the switch off and asks about this phone's progress, "Kalsın" keeping it;
@@ -76,6 +77,7 @@ namespace Puzzle.Client.EditorTools
                     CheckTheLinkAndTheRestoreOnANewPhone(bench),
                     CheckThatNotNowIsNotAskedAgain(bench),
                     CheckGoingOverToThePlatformPlayersSave(bench),
+                    CheckLinkingFromTheAccountCard(bench),
                     CheckAPhoneWithoutThePlatform(bench),
                     CheckServicesOutOfReach(bench),
                     CheckTheAccountCard(bench),
@@ -199,6 +201,40 @@ namespace Puzzle.Client.EditorTools
             Require(phone.Session.Progress.LevelsWon == 2 && phone.Session.Progress.Wallet.Coins.Amount > coinsOfTheSave, $"going over left {phone.Session.Progress}, not the save's 2 levels with this phone's coins added to its {coinsOfTheSave}");
             RequireTheCard(phone, AccountWords.Of(new AccountNews.SaveCameBack(), 3, phone.Session.Progress.Wallet.Coins), NoticeAnswers.Done, "after Ona geç");
             return $"Gone over to {theirs}: {phone.Session.Progress.Wallet.Coins.Amount} coins of the save's {coinsOfTheSave} and this phone's.";
+        }
+
+        /// <summary>
+        /// "Bağlan" on the settings' account card, the platform player having a save of their own (H9, issue #11): the
+        /// settings' cards go up at once and the question comes down over the page, naming the level this phone stands
+        /// on; the same question heard again while it hangs does not come down a second time, and "Vazgeç" leaves none.
+        /// </summary>
+        private static string CheckLinkingFromTheAccountCard(Bench bench)
+        {
+            var services = new FakeUnityServices();
+            using (PhoneOfThePlayer old = bench.NewPhone(services, new FakePlatformSignIn(SignInPlatform.PlayGames, Alice, isSignedIn: true)))
+            {
+                bench.WinTheLevel(old.Session);
+                old.Cloud.AskForAnUpload(SyncTrigger.PaintingOrRoomCompleted);
+            }
+
+            using PhoneOfThePlayer phone = bench.NewPhone(services, new FakePlatformSignIn(SignInPlatform.PlayGames, Alice, isSignedIn: false));
+            bench.WinTheLevel(phone.Session);
+            ThroughTheCard.Press(phone.Session, phone.Museum.NoticeBlueAnswerPixel, "the offer's Şimdi değil");
+            Settle(phone);
+            OpenTheAccountCard(phone);
+            ThroughTheCard.Press(phone.Session, phone.Museum.AccountLinkPixel, "the account card's Bağlan");
+            Settle(phone);
+            Require(!phone.Museum.ShowsTheSettings, "the settings' cards still hang after the account card's Bağlan");
+            AccountCardWords question = AccountWords.Of(new AccountNews.OtherSaveFound(SignInPlatform.PlayGames), 2, phone.Session.Progress.Wallet.Coins);
+            RequireTheCard(phone, question, NoticeAnswers.SwitchOrStay, "after the account card's Bağlan");
+            bench.Shoot(phone, "other-save-from-the-account-card.png");
+
+            phone.Museum.Hear(new AccountNews.OtherSaveFound(SignInPlatform.PlayGames), 2, phone.Session.Progress.Wallet.Coins);
+            ThroughTheCard.Press(phone.Session, phone.Museum.NoticeBlueAnswerPixel, "the question's Vazgeç");
+            Settle(phone);
+            Require(phone.Museum.NoticeShown == null, $"after Vazgeç \"{phone.Museum.NoticeShown}\" came down: the question was asked twice");
+            Require(phone.Cloud.Account is Account.Anonymous, $"after Vazgeç the phone is {phone.Cloud.Account}, not on its own account");
+            return $"Bağlan on the account card: the settings went up, the question came at once and once (\"{question.SecondLine}\").";
         }
 
         /// <summary>A phone without Play Games plays on an account of its own and is never offered the link.</summary>

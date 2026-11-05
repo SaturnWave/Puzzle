@@ -182,8 +182,11 @@ namespace Puzzle.Client.Cloud
     /// </para>
     /// <para>
     /// The sync follows the session the game is in (2026-10-27, T530): a session begins with the sync, as the game
-    /// starts, and again after each way out (<see cref="SyncTrigger.Background"/>). The session's first won level the
-    /// cloud lacks uploads at once, the later ones on the way out (<see cref="SyncPolicy.LetsAWinGoAtOnce"/>).
+    /// starts and as it comes back from the background (<see cref="SyncTrigger.CameBack"/>), and ends with the way out
+    /// (<see cref="SyncTrigger.Background"/>). The session's first won level the cloud lacks uploads at once, the later
+    /// ones on the way out (<see cref="SyncPolicy.LetsAWinGoAtOnce"/>). An account other devices write reads as every
+    /// session begins, so what a tablet played is on the phone the next time the phone's game comes to the front
+    /// (2026-11-05, H9; <see cref="SaveWriters"/>).
     /// </para>
     /// <para>
     /// A cloud.json and a progress file that Android's backup brought back are as old as the backup, while the
@@ -213,6 +216,7 @@ namespace Puzzle.Client.Cloud
         private bool _isRunning;
         private SyncTrigger? _runNext;
         private CloudPlayerId _runNextFor;
+        private SaveWriters _runNextWriters;
 
         /// <summary>How many levels the phone had won with the session's first won level; nothing before the session's first win.</summary>
         private int? _sessionsFirstWin;
@@ -278,28 +282,30 @@ namespace Puzzle.Client.Cloud
 
         /// <summary>
         /// Syncs for the account signed in, as the trigger asks. While another sync runs, this one waits behind it
-        /// (one waits at most: the one that asks for more takes the place).
+        /// (one waits at most: the one that asks for more takes the place, for the account and its writers asked last).
         /// </summary>
+        /// <param name="writers">Which devices write the account's save: one other devices write reads as every session begins.</param>
         /// <exception cref="System.IO.IOException">The state's file could not be written. A write of the save is never sent before its id is kept.</exception>
         /// <exception cref="UnauthorizedAccessException">The game may not write the state's file.</exception>
-        public async Task<SyncOutcome> SyncAsync(CloudPlayerId player, SyncTrigger trigger, CancellationToken cancel)
+        public async Task<SyncOutcome> SyncAsync(CloudPlayerId player, SyncTrigger trigger, SaveWriters writers, CancellationToken cancel)
         {
             FollowTheSession(trigger);
             if (_isRunning)
             {
                 _runNext = _runNext is SyncTrigger waiting && Weight(waiting) >= Weight(trigger) ? waiting : trigger;
                 _runNextFor = player;
+                _runNextWriters = writers;
                 return new SyncOutcome.Queued();
             }
 
             _isRunning = true;
             try
             {
-                SyncOutcome outcome = await RunAsync(player, trigger, cancel);
+                SyncOutcome outcome = await RunAsync(player, trigger, writers, cancel);
                 while (_runNext is SyncTrigger next)
                 {
                     _runNext = null;
-                    outcome = await RunAsync(_runNextFor, next, cancel);
+                    outcome = await RunAsync(_runNextFor, next, _runNextWriters, cancel);
                 }
 
                 return outcome;
@@ -327,7 +333,7 @@ namespace Puzzle.Client.Cloud
             }
         }
 
-        private async Task<SyncOutcome> RunAsync(CloudPlayerId player, SyncTrigger trigger, CancellationToken cancel)
+        private async Task<SyncOutcome> RunAsync(CloudPlayerId player, SyncTrigger trigger, SaveWriters writers, CancellationToken cancel)
         {
             if (SyncPolicy.Gate(State.IsSwitchedOn, Settings, _holder.Keeping, _holder.IsTesterMode) is CloudOff off)
             {
@@ -346,7 +352,7 @@ namespace Puzzle.Client.Cloud
             }
 
             bool theGameWasUpdated = State.Halt is CloudHalt.LaterGame later && later.ProgressLayout <= ProgressDocument.CurrentVersion;
-            bool reads = SyncPolicy.ReadsFirst(trigger, State, Settings, now) || theGameWasUpdated;
+            bool reads = SyncPolicy.ReadsFirst(trigger, State, Settings, writers, now) || theGameWasUpdated;
             if (State.Halt is CloudHalt halt && !reads)
             {
                 return new SyncOutcome.Halted(halt, understood: null);
@@ -599,8 +605,8 @@ namespace Puzzle.Client.Cloud
         /// <summary>
         /// How much a trigger asks of a sync, so that of two waiting the one that asks more runs: a new sign-in most, then
         /// an upload outside the budget and a won level (a payment must not wait for the budget behind the start's read,
-        /// which the sync that ran has as good as done), then the start and the way out, which send the wins the cloud
-        /// lacks at once, then a long session's tick.
+        /// which the sync that ran has as good as done), then the start, the return and the way out, which send the wins
+        /// the cloud lacks at once, then a long session's tick.
         /// </summary>
         private static int Weight(SyncTrigger trigger) => trigger switch
         {
@@ -610,6 +616,7 @@ namespace Puzzle.Client.Cloud
             SyncTrigger.PaintingOrRoomCompleted => 2,
             SyncTrigger.LevelWon => 2,
             SyncTrigger.ColdStart => 1,
+            SyncTrigger.CameBack => 1,
             SyncTrigger.Background => 1,
             SyncTrigger.LongSession => 0,
             _ => throw new ArgumentOutOfRangeException(nameof(trigger), trigger, "A trigger the sync does not know."),

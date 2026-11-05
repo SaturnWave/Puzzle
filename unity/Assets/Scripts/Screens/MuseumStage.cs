@@ -811,8 +811,9 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// What the cloud has to tell of the account: a card that says it comes down once the page is the player's. The
-        /// card of the platform player's own save asks whether to go over to it ("Ona geç", "Vazgeç"); the card of a save
-        /// that came back names the level the player stands on and the coins.
+        /// card of the platform player's own save asks whether to go over to it ("Ona geç", "Vazgeç") and names the level
+        /// this device stands on, which going over keeps; it is asked once, however often "Bağlan" was pressed meanwhile
+        /// (H9). The card of a save that came back names the level the player stands on and the coins.
         /// </summary>
         /// <param name="levelNumber">The level the player stands on now, counted from 1.</param>
         /// <param name="coins">The coins in the wallet now.</param>
@@ -822,6 +823,11 @@ namespace Puzzle.Client.Screens
             if (isTheDeletions && _cards.Find(card => card is AccountCard) is AccountCard account)
             {
                 account.Hear(news); // the account card that asked shows what came of it
+                return;
+            }
+
+            if (news is AccountNews.OtherSaveFound && IsTheQuestionOfTheOtherSaveDueOrHanging)
+            {
                 return;
             }
 
@@ -1201,8 +1207,10 @@ namespace Puzzle.Client.Screens
                     _timeline.Add(0f, Tempo.SwitchSlides, account.Slide);
                     break;
                 case MuseumPress.LinkFromTheAccountCard _ when TopCard is AccountCard:
-                    // What the link came to comes as news, on a card of its own once the settings' cards are closed.
+                    // The settings' cards go up at once, and what the link came to comes as news, on a card of its own over
+                    // the page. Behind the settings it waited unseen, and a tester pressed "Bağlan" again and again (H9).
                     _askedOfTheAccount.Add(new AccountRequest.Link());
+                    TakeEveryCardUp();
                     break;
                 case MuseumPress.CopyThePlayerCode _ when TopCard is AccountCard account && _device.Account.KnownPlayer is CloudPlayerId player:
                     GUIUtility.systemCopyBuffer = player.Value;
@@ -1675,7 +1683,8 @@ namespace Puzzle.Client.Screens
 
         /// <summary>
         /// The next card about the player's account comes down when one is due, no card hangs and the page is the
-        /// player's: a link asked for while the settings card hangs tells of it once that card is closed.
+        /// player's. A link asked for on the settings' account card takes the settings' cards up as it is asked, so the
+        /// card of what it came to does not wait behind them (H9).
         /// </summary>
         private void FollowTheAccount()
         {
@@ -1690,6 +1699,10 @@ namespace Puzzle.Client.Screens
 
         /// <summary>True while a card about the account is due and has not come down yet: the museum is not settled until it hangs.</summary>
         private bool IsAnAccountCardDue => _accountCardsDue.Count > 0 && _cards.Count == 0 && !_isLeaving && PlayerLeftFor == null;
+
+        /// <summary>True while the question of the platform player's own save is due or hangs: asking it twice would ask nothing new.</summary>
+        private bool IsTheQuestionOfTheOtherSaveDueOrHanging =>
+            _cards.Exists(card => card is NoticeCard { Answers: NoticeAnswers.SwitchOrStay }) || _accountCardsDue.Any(due => due.Answers == NoticeAnswers.SwitchOrStay);
 
         /// <summary>True while a card of a purchase is due and has not come down yet: the museum is not settled until it hangs.</summary>
         private bool IsAPurchaseCardDue => _purchaseCard == null && _cards.Count == 0 && !_isLeaving && PlayerLeftFor == null && DuePurchaseCard(_shop.Store) != null;

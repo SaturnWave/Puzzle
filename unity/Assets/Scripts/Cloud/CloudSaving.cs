@@ -254,6 +254,9 @@ namespace Puzzle.Client.Cloud
     /// its platform gets the save back, and the museum is told so.</item>
     /// <item>The game's other moments ask for uploads (a won level, the background, a painting or a room completed, a
     /// payment); the sync's budget decides what goes, and a won level the cloud lacks goes at once (T530).</item>
+    /// <item>The game's return from the background begins a session: an account linked to the platform reads what its
+    /// other devices wrote meanwhile at once, and the museum is told when that brought the player further (2026-11-05,
+    /// H9).</item>
     /// <item>The purchase's course asks it about each payment (<see cref="IPurchaseServer"/>): it asks the Cloud Code
     /// module as the player signed in, once a start under way has signed in, and tries a start that could not reach Unity
     /// again first. A verified payment leaves the ledger copy stale, so the next merge reads the ledger.</item>
@@ -473,6 +476,22 @@ namespace Puzzle.Client.Cloud
         }
 
         public void AskForAnUpload(SyncTrigger trigger) => ReportTheFaultOf(UploadAsync(trigger, CancellationToken.None));
+
+        /// <summary>The game came back from the background: its sync runs in the background (<see cref="SyncTheReturnAsync"/>).</summary>
+        public void AskForTheReturnsSync() => ReportTheFaultOf(SyncTheReturnAsync(CancellationToken.None));
+
+        /// <summary>
+        /// The game came back from the background, which begins a session (2026-11-05, H9): the account signed in syncs
+        /// for it, an account linked to the platform reading what its other devices wrote meanwhile, and the museum is told
+        /// when that brought the player further. Nothing while no account is signed in.
+        /// </summary>
+        public async Task SyncTheReturnAsync(CancellationToken cancel)
+        {
+            if (Account.Player is CloudPlayerId player)
+            {
+                await SyncTellingWhenTheSaveCameBackAsync(player, SyncTrigger.CameBack, cancel);
+            }
+        }
 
         /// <summary>
         /// Work that runs in the background reports a fault of the game's own code where the game's root says (the
@@ -780,12 +799,16 @@ namespace Puzzle.Client.Cloud
             }
         }
 
-        /// <summary>Runs the sync and writes what it came to into the log; nothing when cloud.json could not be written, which the log says too.</summary>
+        /// <summary>
+        /// Runs the sync for the account as it stands (one linked to the platform is written by every device signed in to
+        /// it) and writes what it came to into the log; nothing when cloud.json could not be written, which the log says too.
+        /// </summary>
         private async Task<SyncOutcome?> SyncAsync(CloudPlayerId player, SyncTrigger trigger, CancellationToken cancel)
         {
+            SaveWriters writers = Account is Account.Linked ? SaveWriters.EveryDeviceSignedIn : SaveWriters.ThisPhone;
             try
             {
-                SyncOutcome outcome = await _sync.SyncAsync(player, trigger, cancel);
+                SyncOutcome outcome = await _sync.SyncAsync(player, trigger, writers, cancel);
                 LastSync = outcome;
                 _log($"Cloud save: the sync for {trigger} came to: {outcome}.");
                 if (outcome is SyncOutcome.Done done)

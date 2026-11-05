@@ -530,7 +530,7 @@ public class PurchaseVerificationTests
         public Task StartAsync(CancellationToken cancel) => _cloud.StartAsync(cancel);
 
         /// <summary>The cold start's sync again, on the account signed in: what the game's next opening does.</summary>
-        public Task<SyncOutcome> StartAgainForTheTestAsync() => sync.SyncAsync(_cloud.Account.Player!.Value, SyncTrigger.ColdStart, CancellationToken.None);
+        public Task<SyncOutcome> StartAgainForTheTestAsync() => sync.SyncAsync(_cloud.Account.Player!.Value, SyncTrigger.ColdStart, SaveWriters.ThisPhone, CancellationToken.None);
 
         public Task UploadAsync(SyncTrigger trigger, CancellationToken cancel) => _cloud.UploadAsync(trigger, cancel);
 

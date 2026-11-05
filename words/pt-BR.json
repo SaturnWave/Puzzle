@@ -342,7 +342,7 @@
     {"id":"AccountSafeLine","text":"Seu progresso está seguro neste celular."},
     {"id":"AccountOtherSaveTitle","text":"Há outro progresso"},
     {"id":"AccountOtherSaveLine","text":"Sua conta do {platform} tem um progresso."},
-    {"id":"AccountOtherSaveMergeLine","text":"Se trocar, o progresso deste celular é somado a ele."},
+    {"id":"AccountOtherSaveMergeLine","text":"Se trocar, a fase {level} fica e as moedas se somam."},
     {"id":"AccountSwitchButton","text":"Trocar"},
     {"id":"AccountStayButton","text":"Cancelar"},
     {"id":"AccountSaveBackTitle","text":"Seu progresso voltou"},
