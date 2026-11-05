@@ -1,0 +1,18 @@
+<!-- The cream chip of the chosen room in the collection's well: a pill in a dark line, with no gilt, as the design
+     canvas draws it (CollectionTR). One unit is one point of the design. The chip is 56 x 28 at (4, 3); the game
+     stretches the middle of the picture sideways to the width a room's name needs, so nothing between x = 20 and
+     x = 44 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="288" viewBox="0 0 64 36">
+<defs>
+<linearGradient id="face" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="31"><stop offset="0" stop-color="#FFFDF4"/><stop offset=".55" stop-color="#FBF0D6"/><stop offset="1" stop-color="#F0DFBB"/></linearGradient>
+<clipPath id="in-face"><rect x="4" y="3" width="56" height="28" rx="14"/></clipPath>
+</defs>
+<!-- the drop in the well, the dark line around the chip, the face with a darker lip along its foot and light along its top -->
+<rect x="2.8" y="3.8" width="58.4" height="30.4" rx="15.2" fill="#031E24" fill-opacity=".5"/>
+<rect x="2.8" y="1.8" width="58.4" height="30.4" rx="15.2" fill="#5E3305"/>
+<rect x="4" y="3" width="56" height="28" rx="14" fill="url(#face)"/>
+<g clip-path="url(#in-face)">
+<path fill="#E3CC9C" fill-rule="evenodd" d="M0 0H64V36H0Z M18 1H46A14 14 0 0 1 60 15A14 14 0 0 1 46 29H18A14 14 0 0 1 4 15A14 14 0 0 1 18 1Z"/>
+<path fill="#fff" fill-rule="evenodd" d="M0 0H64V36H0Z M18 5H46A14 14 0 0 1 60 19A14 14 0 0 1 46 33H18A14 14 0 0 1 4 19A14 14 0 0 1 18 5Z"/>
+</g>
+</svg>

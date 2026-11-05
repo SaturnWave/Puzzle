@@ -1,0 +1,4 @@
+<!-- The target on the world map's round button that leads to where the player is (MapWorldTR), in a box of 24 points, drawn 19 across. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="6" fill="none" stroke="#C7231B" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="#C7231B"/><path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2" stroke="#46260F" stroke-width="1.7" stroke-linecap="round"/>
+</svg>

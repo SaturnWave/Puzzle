@@ -1,0 +1,10 @@
+<!-- The white triangle of "watch", on its dark blue edge and the shade that edge throws downwards, as the design
+     canvas draws it on the blue buttons that play an advertisement (LoseTR; ShopTR shows it 21 across): the canvas'
+     own shapes, which it writes in a box of 28 and shows 24 points across. One unit is one point of the design. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24">
+<g transform="scale(.857143)">
+<path d="M8.2 5.6C8.2 4.1 9.8 3.2 11.1 4L21 10.4C22.2 11.2 22.2 12.8 21 13.6L11.1 20C9.8 20.8 8.2 19.9 8.2 18.4Z" transform="translate(0 3.2)" fill="#0F2670" stroke="#0F2670" stroke-width="5.6" stroke-linejoin="round"/>
+<path d="M8.2 5.6C8.2 4.1 9.8 3.2 11.1 4L21 10.4C22.2 11.2 22.2 12.8 21 13.6L11.1 20C9.8 20.8 8.2 19.9 8.2 18.4Z" transform="translate(0 1.2)" fill="#0F2670" stroke="#0F2670" stroke-width="5.6" stroke-linejoin="round"/>
+<path d="M8.2 5.6C8.2 4.1 9.8 3.2 11.1 4L21 10.4C22.2 11.2 22.2 12.8 21 13.6L11.1 20C9.8 20.8 8.2 19.9 8.2 18.4Z" transform="translate(0 1.2)" fill="#fff"/>
+</g>
+</svg>

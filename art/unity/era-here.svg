@@ -1,0 +1,5 @@
+<!-- The medallion of the era the player is in, on the world map's strip (MapWorldTR): teal, 34 points across around (24, 24), in a red ring of 2.5, a cream ring out to 4 and a drop. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 48 48">
+<defs><linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#48BDBF"/><stop offset=".5" stop-color="#1F8E96"/><stop offset="1" stop-color="#136871"/></linearGradient></defs>
+<circle cx="24" cy="26.5" r="21" fill="#5C3810" fill-opacity=".3"/><circle cx="24" cy="24" r="21" fill="#FFFDF4"/><circle cx="24" cy="24" r="19.5" fill="#F4472F"/><circle cx="24" cy="24" r="17" fill="url(#m)"/>
+</svg>

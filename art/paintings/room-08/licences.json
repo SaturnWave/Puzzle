@@ -1,0 +1,94 @@
+{
+  "room": "room-08",
+  "paintings": [
+    {
+      "file": "fur-traders-descending-the-missouri.jpg",
+      "title": "Fur Traders Descending the Missouri",
+      "titleTr": "Missouri'den Aşağı İnen Kürk Tüccarları",
+      "artist": "George Caleb Bingham",
+      "year": "1845",
+      "width": 1852,
+      "height": 1479,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/10159",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Fur_Traders_Descending_the_Missouri_MET_DT73.jpg",
+      "crop": {
+        "left": 0.018,
+        "top": 0.017,
+        "right": 0.983,
+        "bottom": 0.98
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "cornell-farm.jpg",
+      "title": "The Cornell Farm",
+      "titleTr": "Cornell Çiftliği",
+      "artist": "Edward Hicks",
+      "year": "1848",
+      "width": 1920,
+      "height": 1438,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/50261",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Edward_Hicks,_The_Cornell_Farm,_1848,_NGA_50261.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "merced-river-yosemite.jpg",
+      "title": "Merced River, Yosemite Valley",
+      "titleTr": "Merced Nehri, Yosemite Vadisi",
+      "artist": "Albert Bierstadt",
+      "year": "1866",
+      "width": 1882,
+      "height": 1340,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/10150",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Merced_River,_Yosemite_Valley_MET_DT2961.jpg",
+      "crop": {
+        "left": 0.012,
+        "top": 0.016,
+        "right": 0.992,
+        "bottom": 0.986
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "the-oxbow.jpg",
+      "title": "The Oxbow (View from Mount Holyoke, Northampton, Massachusetts, after a Thunderstorm)",
+      "titleTr": "Oxbow: Fırtınadan Sonra Holyoke Dağı'ndan Görünüm",
+      "artist": "Thomas Cole",
+      "year": "1836",
+      "width": 1867,
+      "height": 1266,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/10497",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:View_from_Mount_Holyoke,_Northampton,_Massachusetts,_after_a_Thunderstorm—The_Oxbow_MET_DT71.jpg",
+      "crop": {
+        "left": 0.01,
+        "top": 0.012,
+        "right": 0.99,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "washington-crossing-the-delaware.jpg",
+      "title": "Washington Crossing the Delaware",
+      "titleTr": "Washington Delaware Nehri'ni Geçerken",
+      "artist": "Emanuel Leutze",
+      "year": "1851",
+      "width": 1761,
+      "height": 1103,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/11417",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Washington_Crossing_the_Delaware_MET_DP215410.jpg",
+      "crop": {
+        "left": 0.06,
+        "top": 0.011,
+        "right": 0.969,
+        "bottom": 0.982
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

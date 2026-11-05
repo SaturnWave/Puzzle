@@ -1,0 +1,88 @@
+{
+  "room": "room-12",
+  "paintings": [
+    {
+      "file": "benjamin-and-eleanor-laming.jpg",
+      "title": "Benjamin and Eleanor Ridgely Laming",
+      "titleTr": "Benjamin ve Eleanor Ridgely Laming",
+      "artist": "Charles Willson Peale",
+      "year": "1788",
+      "width": 1920,
+      "height": 1334,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/50684",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Charles_Willson_Peale,_Benjamin_and_Eleanor_Ridgely_Laming,_1788,_NGA_50684.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "washington-reviewing-the-western-army.jpg",
+      "title": "Washington Reviewing the Western Army at Fort Cumberland, Maryland",
+      "titleTr": "Washington, Maryland'deki Cumberland Kalesi'nde Batı Ordusu'nu Denetliyor",
+      "artist": "Attributed to Frederick Kemmelmeyer",
+      "year": "1795 sonrası",
+      "width": 1882,
+      "height": 1194,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/11302",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Washington_Reviewing_the_Western_Army_at_Fort_Cumberland,_Maryland_MET_DT2045.jpg",
+      "crop": {
+        "left": 0.01,
+        "top": 0.014,
+        "right": 0.99,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "general-gerard.jpg",
+      "title": "General Étienne-Maurice Gérard",
+      "titleTr": "General Étienne-Maurice Gérard",
+      "artist": "Jacques-Louis David",
+      "year": "1816",
+      "width": 1326,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/436107",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:General_Étienne-Maurice_Gérard_(1773–1852)_MET_DP-13141-001.jpg",
+      "crop": {
+        "left": 0.01,
+        "top": 0.01,
+        "right": 0.99,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "lady-with-a-harp.jpg",
+      "title": "Lady with a Harp: Eliza Ridgely",
+      "titleTr": "Arplı Kadın: Eliza Ridgely",
+      "artist": "Thomas Sully",
+      "year": "1818",
+      "width": 1277,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/32577",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Thomas_Sully,_Lady_with_a_Harp_-_Eliza_Ridgely,_1818,_NGA_32577.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "the-red-boy.jpg",
+      "title": "Manuel Osorio Manrique de Zuñiga (The Red Boy)",
+      "titleTr": "Manuel Osorio Manrique de Zúñiga (Kırmızılı Çocuk)",
+      "artist": "Francisco de Goya",
+      "year": "1787–88",
+      "width": 1409,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/436545",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Manuel_Osorio_Manrique_de_Zuñiga_(1784–1792)_MET_DP287624.jpg",
+      "crop": {
+        "left": 0.01,
+        "top": 0.01,
+        "right": 0.986,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+<!-- The medallion of a restored era on the world map's strip (MapWorldTR): gilt, 34 points across around (24, 24), its dark line of 1.5 and its drop. The era's number is lettering. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 48 48">
+<defs><radialGradient id="m" cx=".35" cy=".28" r=".75"><stop offset="0" stop-color="#FFF6CC"/><stop offset=".45" stop-color="#FFD660"/><stop offset="1" stop-color="#E39A22"/></radialGradient></defs>
+<circle cx="24" cy="26.5" r="19.5" fill="#5C3810" fill-opacity=".35"/><circle cx="24" cy="24" r="18.5" fill="#5E3305"/><circle cx="24" cy="24" r="17" fill="url(#m)"/>
+</svg>

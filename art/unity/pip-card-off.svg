@@ -1,0 +1,15 @@
+<!-- A pip of a piece not won yet, on a cream card: a shallow hollow in the card's own darker cream, as the design
+     canvas draws the last pips of its row (WinTR). One unit is one point of the design. The pip is 19 x 13 at
+     (6.5, 6), as pip-card-on.svg's is. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="448" viewBox="0 0 32 28">
+<defs>
+<filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1"/></filter>
+<clipPath id="in-pip"><rect x="6.5" y="6" width="19" height="13" rx="4.5"/></clipPath>
+</defs>
+<!-- the faint brown line around the hollow, the hollow, the soft shade that falls in from its top edge -->
+<rect x="5.1" y="4.6" width="21.8" height="15.8" rx="5.9" fill="#5E3305" fill-opacity=".6"/>
+<rect x="6.5" y="6" width="19" height="13" rx="4.5" fill="#E3CC9C"/>
+<g clip-path="url(#in-pip)">
+<path fill="#5C3810" fill-opacity=".4" fill-rule="evenodd" filter="url(#soft)" d="M-8 -8H40V36H-8Z M11 8H21A4.5 4.5 0 0 1 25.5 12.5V16.5A4.5 4.5 0 0 1 21 21H11A4.5 4.5 0 0 1 6.5 16.5V12.5A4.5 4.5 0 0 1 11 8Z"/>
+</g>
+</svg>

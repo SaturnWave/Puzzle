@@ -1,0 +1,11 @@
+<!-- A stud of a brass nameplate: a small brass head in a dark line, as the design canvas draws one at each end of a
+     plate, 9 points in from the end (LevelStartTR, SettingsTR, WinTR). One unit is one point of the design. The stud
+     is 6 across around (4, 4); the canvas draws the studs of its small plates 4.5 across. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 8 8">
+<defs>
+<!-- the canvas' light "at 35% 30%" of the stud's own box, out to the box's farthest corner -->
+<radialGradient id="head" gradientUnits="userSpaceOnUse" cx="3.1" cy="2.8" r="5.73"><stop offset="0" stop-color="#FFF4C4"/><stop offset="1" stop-color="#B87412"/></radialGradient>
+</defs>
+<circle cx="4" cy="4" r="3.8" fill="#5E3305"/>
+<circle cx="4" cy="4" r="3" fill="url(#head)"/>
+</svg>

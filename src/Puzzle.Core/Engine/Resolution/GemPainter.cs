@@ -20,20 +20,20 @@ namespace Puzzle.Core.Engine.Resolution
             _matches = matches;
         }
 
-        /// <summary>Paints a color that does not create a match at the cell, if one exists among the first <paramref name="colors"/>.</summary>
-        public void Paint(int index, int colors, Rng rng)
+        /// <summary>Paints a palette color that does not create a match at the cell, if one exists.</summary>
+        public void Paint(int index, IReadOnlyList<GemColor> palette, Rng rng)
         {
             _allowed.Clear();
-            for (int c = 0; c < colors; c++)
+            foreach (GemColor candidate in palette)
             {
-                _board.Set(index, Tile.Gem((GemColor)c));
+                _board.Set(index, Tile.Gem(candidate));
                 if (!_matches.HasMatchAt(index))
                 {
-                    _allowed.Add((GemColor)c);
+                    _allowed.Add(candidate);
                 }
             }
 
-            GemColor color = _allowed.Count > 0 ? _allowed[rng.NextInt(_allowed.Count)] : (GemColor)rng.NextInt(colors);
+            GemColor color = _allowed.Count > 0 ? _allowed[rng.NextInt(_allowed.Count)] : palette[rng.NextInt(palette.Count)];
             _board.Set(index, Tile.Gem(color));
         }
     }

@@ -1,0 +1,6 @@
+<!-- The world map's globe button while the whole world is shown (MapWorldTR): map-button.svg with a light teal face. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 44 44">
+<defs><linearGradient id="gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient><linearGradient id="face" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFEAE4"/><stop offset="1" stop-color="#7FCFCB"/></linearGradient></defs>
+<circle cx="22" cy="25" r="20.4" fill="#042028" fill-opacity=".35"/>
+<circle cx="22" cy="22" r="20.4" fill="#5E3305"/><circle cx="22" cy="22" r="19" fill="url(#gilt)"/><circle cx="22" cy="22" r="16.5" fill="url(#face)"/>
+</svg>

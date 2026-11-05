@@ -1,0 +1,504 @@
+{
+    "pictures": [
+        {
+            "image": "room-01/beach-at-sainte-adresse.jpg",
+            "width": 1920,
+            "height": 1407
+        },
+        {
+            "image": "room-01/paris-street-rainy-day.jpg",
+            "width": 1920,
+            "height": 1491
+        },
+        {
+            "image": "room-01/stacks-of-wheat-end-of-summer.jpg",
+            "width": 1920,
+            "height": 1138
+        },
+        {
+            "image": "room-01/two-sisters-on-the-terrace.jpg",
+            "width": 1280,
+            "height": 1589
+        },
+        {
+            "image": "room-01/water-lilies.jpg",
+            "width": 1920,
+            "height": 1848
+        },
+        {
+            "image": "room-02/at-the-moulin-rouge.jpg",
+            "width": 1920,
+            "height": 1679
+        },
+        {
+            "image": "room-02/basket-of-apples.jpg",
+            "width": 1920,
+            "height": 1537
+        },
+        {
+            "image": "room-02/sunday-on-la-grande-jatte.jpg",
+            "width": 1920,
+            "height": 1278
+        },
+        {
+            "image": "room-02/the-bedroom.jpg",
+            "width": 1920,
+            "height": 1507
+        },
+        {
+            "image": "room-02/van-gogh-self-portrait.jpg",
+            "width": 1280,
+            "height": 1623
+        },
+        {
+            "image": "room-03/apple-tree-in-blossom.jpg",
+            "width": 1908,
+            "height": 1548
+        },
+        {
+            "image": "room-03/breakfast-under-the-big-birch.jpg",
+            "width": 1882,
+            "height": 1285
+        },
+        {
+            "image": "room-03/breton-girl-in-the-hothouse.jpg",
+            "width": 1522,
+            "height": 1920
+        },
+        {
+            "image": "room-03/luxembourg-gardens.jpg",
+            "width": 1920,
+            "height": 1437
+        },
+        {
+            "image": "room-03/midsummer-dance.jpg",
+            "width": 1409,
+            "height": 1920
+        },
+        {
+            "image": "room-04/a-friendly-call.jpg",
+            "width": 1920,
+            "height": 1198
+        },
+        {
+            "image": "room-04/champion-single-sculls.jpg",
+            "width": 1868,
+            "height": 1290
+        },
+        {
+            "image": "room-04/setting-out-to-fish.jpg",
+            "width": 1920,
+            "height": 1213
+        },
+        {
+            "image": "room-04/snap-the-whip.jpg",
+            "width": 1920,
+            "height": 1201
+        },
+        {
+            "image": "room-04/the-dinner-horn.jpg",
+            "width": 1350,
+            "height": 1920
+        },
+        {
+            "image": "room-05/girl-with-flowers-on-the-grass.jpg",
+            "width": 1280,
+            "height": 1905
+        },
+        {
+            "image": "room-05/in-the-month-of-july.jpg",
+            "width": 1241,
+            "height": 1920
+        },
+        {
+            "image": "room-05/morning-ride-along-the-beach.jpg",
+            "width": 1920,
+            "height": 1229
+        },
+        {
+            "image": "room-05/yellow-riders.jpg",
+            "width": 1280,
+            "height": 1908
+        },
+        {
+            "image": "room-05/zuiderhavendijk-enkhuizen.jpg",
+            "width": 1920,
+            "height": 1455
+        },
+        {
+            "image": "room-06/cats-of-the-tokaido.jpg",
+            "width": 1284,
+            "height": 1920
+        },
+        {
+            "image": "room-06/moon-of-musashi-plain.jpg",
+            "width": 1305,
+            "height": 1920
+        },
+        {
+            "image": "room-06/plum-park-in-kameido.jpg",
+            "width": 1279,
+            "height": 1920
+        },
+        {
+            "image": "room-06/snow-at-ochanomizu.jpg",
+            "width": 1920,
+            "height": 1203
+        },
+        {
+            "image": "room-06/sudden-shower-over-shin-ohashi.jpg",
+            "width": 1243,
+            "height": 1920
+        },
+        {
+            "image": "room-07/fantin-latour-still-life.jpg",
+            "width": 1551,
+            "height": 1920
+        },
+        {
+            "image": "room-07/festival-in-the-harbor-of-honfleur.jpg",
+            "width": 1920,
+            "height": 1313
+        },
+        {
+            "image": "room-07/princesse-de-broglie.jpg",
+            "width": 1426,
+            "height": 1920
+        },
+        {
+            "image": "room-07/weaning-the-calves.jpg",
+            "width": 1860,
+            "height": 1487
+        },
+        {
+            "image": "room-07/young-ladies-of-the-village.jpg",
+            "width": 1904,
+            "height": 1420
+        },
+        {
+            "image": "room-08/cornell-farm.jpg",
+            "width": 1920,
+            "height": 1438
+        },
+        {
+            "image": "room-08/fur-traders-descending-the-missouri.jpg",
+            "width": 1852,
+            "height": 1479
+        },
+        {
+            "image": "room-08/merced-river-yosemite.jpg",
+            "width": 1882,
+            "height": 1340
+        },
+        {
+            "image": "room-08/the-oxbow.jpg",
+            "width": 1867,
+            "height": 1266
+        },
+        {
+            "image": "room-08/washington-crossing-the-delaware.jpg",
+            "width": 1761,
+            "height": 1103
+        },
+        {
+            "image": "room-09/beech-wood-in-may.jpg",
+            "width": 1601,
+            "height": 1920
+        },
+        {
+            "image": "room-09/danish-artists-in-rome.jpg",
+            "width": 1906,
+            "height": 1572
+        },
+        {
+            "image": "room-09/street-in-osterbro.jpg",
+            "width": 1904,
+            "height": 1232
+        },
+        {
+            "image": "room-09/three-arches-of-the-colosseum.jpg",
+            "width": 1889,
+            "height": 1207
+        },
+        {
+            "image": "room-09/view-from-the-artists-window.jpg",
+            "width": 1518,
+            "height": 1920
+        },
+        {
+            "image": "room-10/bonington-grand-canal.jpg",
+            "width": 1920,
+            "height": 1397
+        },
+        {
+            "image": "room-10/burning-of-the-houses-of-parliament.jpg",
+            "width": 1920,
+            "height": 1426
+        },
+        {
+            "image": "room-10/lady-templetown-and-her-son.jpg",
+            "width": 1280,
+            "height": 1858
+        },
+        {
+            "image": "room-10/mortlake-terrace.jpg",
+            "width": 1920,
+            "height": 1446
+        },
+        {
+            "image": "room-10/salisbury-cathedral.jpg",
+            "width": 1874,
+            "height": 1470
+        },
+        {
+            "image": "room-11/great-wave.jpg",
+            "width": 1824,
+            "height": 1236
+        },
+        {
+            "image": "room-11/hakone-lake.jpg",
+            "width": 1920,
+            "height": 1340
+        },
+        {
+            "image": "room-11/otani-oniji-as-yakko-edobei.jpg",
+            "width": 1199,
+            "height": 1862
+        },
+        {
+            "image": "room-11/red-fuji.jpg",
+            "width": 1832,
+            "height": 1226
+        },
+        {
+            "image": "room-11/tsukuda-island.jpg",
+            "width": 1830,
+            "height": 1217
+        },
+        {
+            "image": "room-12/benjamin-and-eleanor-laming.jpg",
+            "width": 1920,
+            "height": 1334
+        },
+        {
+            "image": "room-12/general-gerard.jpg",
+            "width": 1326,
+            "height": 1920
+        },
+        {
+            "image": "room-12/lady-with-a-harp.jpg",
+            "width": 1277,
+            "height": 1920
+        },
+        {
+            "image": "room-12/the-red-boy.jpg",
+            "width": 1409,
+            "height": 1920
+        },
+        {
+            "image": "room-12/washington-reviewing-the-western-army.jpg",
+            "width": 1882,
+            "height": 1194
+        },
+        {
+            "image": "room-13/duke-of-dorsets-hunter.jpg",
+            "width": 1882,
+            "height": 1508
+        },
+        {
+            "image": "room-13/elizabeth-farren.jpg",
+            "width": 1199,
+            "height": 1920
+        },
+        {
+            "image": "room-13/lady-caroline-howard.jpg",
+            "width": 1521,
+            "height": 1920
+        },
+        {
+            "image": "room-13/maynard-family-at-waltons.jpg",
+            "width": 1920,
+            "height": 1339
+        },
+        {
+            "image": "room-13/mrs-richard-brinsley-sheridan.jpg",
+            "width": 1355,
+            "height": 1920
+        },
+        {
+            "image": "room-14/campo-santi-giovanni-e-paolo.jpg",
+            "width": 1920,
+            "height": 1192
+        },
+        {
+            "image": "room-14/cannaregio-canal.jpg",
+            "width": 1920,
+            "height": 1235
+        },
+        {
+            "image": "room-14/interior-of-the-pantheon.jpg",
+            "width": 1477,
+            "height": 1920
+        },
+        {
+            "image": "room-14/square-of-saint-marks.jpg",
+            "width": 1920,
+            "height": 1421
+        },
+        {
+            "image": "room-14/view-of-istanbul-from-pera.jpg",
+            "width": 1920,
+            "height": 1226
+        },
+        {
+            "image": "room-15/italian-comedians.jpg",
+            "width": 1920,
+            "height": 1593
+        },
+        {
+            "image": "room-15/madame-bergeret.jpg",
+            "width": 1405,
+            "height": 1920
+        },
+        {
+            "image": "room-15/misse-and-luttine.jpg",
+            "width": 1920,
+            "height": 1426
+        },
+        {
+            "image": "room-15/ponte-salario.jpg",
+            "width": 1920,
+            "height": 1445
+        },
+        {
+            "image": "room-15/young-girl-reading.jpg",
+            "width": 1527,
+            "height": 1920
+        },
+        {
+            "image": "room-16/maas-at-dordrecht.jpg",
+            "width": 1920,
+            "height": 1294
+        },
+        {
+            "image": "room-16/ruisdael-wheat-fields.jpg",
+            "width": 1870,
+            "height": 1426
+        },
+        {
+            "image": "room-16/the-little-street.jpg",
+            "width": 1560,
+            "height": 1920
+        },
+        {
+            "image": "room-16/threatened-swan.jpg",
+            "width": 1920,
+            "height": 1619
+        },
+        {
+            "image": "room-16/young-woman-with-a-water-pitcher.jpg",
+            "width": 1699,
+            "height": 1920
+        },
+        {
+            "image": "room-17/andries-stilte-as-a-standard-bearer.jpg",
+            "width": 1427,
+            "height": 1920
+        },
+        {
+            "image": "room-17/banquet-piece-with-mince-pie.jpg",
+            "width": 1920,
+            "height": 1855
+        },
+        {
+            "image": "room-17/brueghel-river-landscape.jpg",
+            "width": 1920,
+            "height": 1232
+        },
+        {
+            "image": "room-17/leyster-self-portrait.jpg",
+            "width": 1688,
+            "height": 1920
+        },
+        {
+            "image": "room-17/trojan-women-setting-fire-to-their-fleet.jpg",
+            "width": 1862,
+            "height": 1271
+        },
+        {
+            "image": "room-18/concourse-of-the-birds.jpg",
+            "width": 1193,
+            "height": 1920
+        },
+        {
+            "image": "room-18/feast-of-sada.jpg",
+            "width": 1550,
+            "height": 1920
+        },
+        {
+            "image": "room-18/jahangir-and-akbar.jpg",
+            "width": 1277,
+            "height": 1920
+        },
+        {
+            "image": "room-18/shah-jahan-on-horseback.jpg",
+            "width": 1190,
+            "height": 1825
+        },
+        {
+            "image": "room-18/study-of-a-nilgai.jpg",
+            "width": 1920,
+            "height": 1236
+        },
+        {
+            "image": "room-19/cariani-a-concert.jpg",
+            "width": 1920,
+            "height": 1336
+        },
+        {
+            "image": "room-19/edward-vi-as-a-child.jpg",
+            "width": 1488,
+            "height": 1920
+        },
+        {
+            "image": "room-19/marketplace-in-bergen-op-zoom.jpg",
+            "width": 1904,
+            "height": 1465
+        },
+        {
+            "image": "room-19/the-librarian.jpg",
+            "width": 1384,
+            "height": 1920
+        },
+        {
+            "image": "room-19/vertumnus.jpg",
+            "width": 1553,
+            "height": 1920
+        },
+        {
+            "image": "room-20/francesco-d-este.jpg",
+            "width": 1320,
+            "height": 1920
+        },
+        {
+            "image": "room-20/francesco-sassetti-and-his-son.jpg",
+            "width": 1420,
+            "height": 1920
+        },
+        {
+            "image": "room-20/giuliano-de-medici.jpg",
+            "width": 1241,
+            "height": 1873
+        },
+        {
+            "image": "room-20/hunting-on-the-lagoon.jpg",
+            "width": 1582,
+            "height": 1897
+        },
+        {
+            "image": "room-20/neroccio-portrait-of-a-lady.jpg",
+            "width": 1228,
+            "height": 1920
+        }
+    ]
+}

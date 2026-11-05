@@ -1,0 +1,42 @@
+{
+  "about": "The game's one piece of music (#9, docs/GAME_DESIGN.md §19, docs/music/MUSIC_BRIEF.md): where it came from, under what terms, and how tools/music/cut-loop.py cuts it into the two clips the game plays. The CC0 sounds of play are listed apart, in licences.json.",
+  "piece": "M1",
+  "title": "Müze Teması",
+  "plays": "everywhere: the museum's hall, the map, the collection, the shop and the levels; no other music and no short cues",
+  "source": {
+    "file": "M1 Müze Teması.wav",
+    "sha256": "7c9d0269d11abff75f7e137da48fe43862a15ea68c36102ed52af62fd1976faf",
+    "sampleRate": 48000,
+    "channels": 2,
+    "bitsPerSample": 16,
+    "frames": 6798720
+  },
+  "licence": {
+    "madeWith": "Suno",
+    "account": "the project owner's Suno Premier account",
+    "generated": "2026-10-20",
+    "commercialUse": "allowed, per the owner: their Suno Premier subscription allows commercial use of the songs made while it is active, and they already publish their Suno music on their YouTube channel (2026-10-19)",
+    "instrumental": true,
+    "titleInSuno": "Müze teması",
+    "prompt": "gentle chamber music, warm museum gallery ambience, solo piano with pizzicato strings and soft celesta, calm and cozy, light waltz feel, 84 bpm, F major, no drums, no vocals, loopable, cinematic casual game menu music",
+    "promptSource": "docs/music/MUSIC_BRIEF.md §3, M1",
+    "open": [
+      "The song's Suno link is not on record yet; the owner may add it here as sunoLink."
+    ]
+  },
+  "cut": {
+    "loop": "M1-B",
+    "loops": {
+      "M1-A": { "startSample": 1542656, "endSample": 5667689, "bars": 30 },
+      "M1-B": { "startSample": 1611776, "endSample": 6576096, "bars": 36 },
+      "M1-C": { "startSample": 1712640, "endSample": 6116681, "bars": 32 }
+    },
+    "crossfadeSeconds": 0.25,
+    "targetRmsDbfs": -20.0,
+    "peakCeilingDbfs": -1.0,
+    "quietBelowDbfs": -60.0,
+    "folder": "unity/Assets/Art/Music",
+    "introFile": "music-intro.wav",
+    "loopFile": "music-loop.wav"
+  }
+}

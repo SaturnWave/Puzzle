@@ -1,0 +1,5 @@
+<!-- The medallion of an era still ahead on the world map's strip (MapWorldTR): ivory, 34 points across around (24, 24), in a line of 1.4. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 48 48">
+<defs><linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF2DA"/><stop offset="1" stop-color="#E9D7AE"/></linearGradient></defs>
+<circle cx="24" cy="24" r="18.4" fill="#8A6A3A" fill-opacity=".8"/><circle cx="24" cy="24" r="17" fill="url(#m)"/>
+</svg>

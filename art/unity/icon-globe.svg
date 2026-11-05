@@ -1,0 +1,10 @@
+<!-- A globe: the mark of the settings' row for the language. As the design canvas draws it (SettingsTR): its symbol
+     st-globe with the paints it uses, written by tools/unity/extract-design-symbols.js. Change the canvas and run
+     that again; do not change this file by hand. One unit is one point where the symbol is drawn 100 points wide;
+     the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+</defs>
+<g transform="translate(0 4.5)"><path d="M50 16A34 34 0 1 1 49.9 16Z" fill="none" stroke="#0C4A53" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 16C35 28 35 72 50 84C65 72 65 28 50 16ZM17 50H83" fill="none" stroke="#0C4A53" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></g><path d="M50 16A34 34 0 1 1 49.9 16Z" fill="none" stroke="url(#f-ivory)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 16C35 28 35 72 50 84C65 72 65 28 50 16ZM17 50H83" fill="none" stroke="url(#f-ivory)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

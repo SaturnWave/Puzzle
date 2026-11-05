@@ -1,0 +1,5 @@
+<!-- The red pill of the painting being restored on its card of the world map (MapWorldTR): as map-pill-restored.svg, red in a dark red line. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="528" height="264" viewBox="0 0 48 24">
+<defs><linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFA283"/><stop offset=".45" stop-color="#F4472F"/><stop offset="1" stop-color="#C7231B"/></linearGradient></defs>
+<rect x="0.7" y="0.7" width="46.6" height="22.6" rx="11.3" fill="#6E1208" fill-opacity="1"/><rect x="2" y="2" width="44" height="20" rx="10" fill="url(#p)"/>
+</svg>

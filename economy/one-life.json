@@ -1,0 +1,12 @@
+{
+  // The default economy with ONE life: not the game's rule, but one of the two settings that slow the average
+  // player to the first wish (level 100 between day 10 and day 14). A session then ends at its first loss. The
+  // owner kept five lives on 2026-10-13; this file keeps what that choice was made against. The coin amounts are
+  // the default's and are not tuned to one life.
+  "extends": "default.json",
+  "name": "one-life",
+  "lives": {
+    // Lives a player can hold. [not the game's rule: an alternative the owner set aside]
+    "max": 1
+  }
+}

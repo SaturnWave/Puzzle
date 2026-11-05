@@ -12,7 +12,12 @@ namespace Puzzle.Core.Model
 
         /// <summary>Clears its whole column.</summary>
         RocketV = 3,
+
+        /// <summary>3x3 blast; made by an L, T or plus of exactly five gems.</summary>
         Bomb = 4,
+
+        /// <summary>5x5 blast; made by a crossing shape of six or more gems.</summary>
+        BigBomb = 10,
 
         /// <summary>Hits a plus shape around itself, then flies to the most goal-relevant cell.</summary>
         Seeker = 5,
@@ -35,12 +40,15 @@ namespace Puzzle.Core.Model
             TileKind.RocketH => true,
             TileKind.RocketV => true,
             TileKind.Bomb => true,
+            TileKind.BigBomb => true,
             TileKind.Seeker => true,
             TileKind.ColorBomb => true,
             _ => false,
         };
 
         public static bool IsRocket(this TileKind kind) => kind == TileKind.RocketH || kind == TileKind.RocketV;
+
+        public static bool IsBomb(this TileKind kind) => kind == TileKind.Bomb || kind == TileKind.BigBomb;
 
         /// <summary>Affected by gravity (when not chained).</summary>
         public static bool IsMovable(this TileKind kind) => kind switch

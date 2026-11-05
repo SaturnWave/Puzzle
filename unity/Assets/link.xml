@@ -1,0 +1,18 @@
+<!--
+  What managed code stripping must keep for the game's reflection (2026-10-27), each found by name at run time:
+  - Unity's main-thread synchronization context's Exec, which the way out to the background runs once more so the
+    cloud's upload is sent before Unity stops its loop (Scripts/Cloud/Ugs/MainThreadQueue.cs);
+  - Wire's client's Disable, which keeps Wire's websocket closed (Scripts/Cloud/Ugs/Wire/WireSwitch.cs).
+-->
+<linker>
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.UnitySynchronizationContext">
+      <method name="Exec" />
+    </type>
+  </assembly>
+  <assembly fullname="Unity.Services.Wire.Internal">
+    <type fullname="Unity.Services.Wire.Internal.Client">
+      <method name="Disable" />
+    </type>
+  </assembly>
+</linker>

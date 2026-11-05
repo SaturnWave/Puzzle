@@ -1,0 +1,9 @@
+<!-- The gilt pin a picture wire ends in, as the design canvas draws one over each top corner of a card that hangs
+     (LevelStartTR, SettingsTR) and where the two wires of a small frame or of the shop's sign meet (HomeTR, ShopTR).
+     One unit is one point of the design. The pin is 6 across around (4, 4), in a dark line. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 8 8">
+<defs>
+<linearGradient id="gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".62" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+</defs>
+<circle cx="4" cy="4" r="3" fill="url(#gilt)" stroke="#5E3305" stroke-width=".8"/>
+</svg>

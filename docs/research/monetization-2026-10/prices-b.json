@@ -1,0 +1,878 @@
+[
+  {
+    "game": "Homescapes",
+    "publisher": "Playrix (seller PLR Worldwide Sales Limited)",
+    "appId": "1195621598",
+    "storeUrl": "https://apps.apple.com/us/app/homescapes/id1195621598",
+    "checkedOn": "2026-10-23",
+    "version": "9.2.102 (2026-10-14)",
+    "rating": "4.6 from 2,178,140 ratings",
+    "storeEventsSeen": [
+      "Spooky Pass (NEW SEASON: complete stages, play levels, collect keys)",
+      "Four Elements (team event)",
+      "Night in the Castle (expedition)"
+    ],
+    "items": [
+      {
+        "name": "Handful of Coins",
+        "priceUsd": 0.99,
+        "contents": "coins (amount not shown on the store)",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Starter Pack",
+        "priceUsd": 1.99,
+        "contents": "not shown on the store",
+        "kind": "starter",
+        "status": "FACT"
+      },
+      {
+        "name": "Handful of Coins",
+        "priceUsd": 1.99,
+        "contents": "coins (amount not shown)",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Gold Reserve",
+        "priceUsd": 2.99,
+        "contents": "not shown; same name as the Gardenscapes piggy bank",
+        "kind": "piggy_bank",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Apprentice Pack",
+        "priceUsd": 6.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Handful of Coins",
+        "priceUsd": 4.99,
+        "contents": "coins (amount not shown)",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Handful of Coins",
+        "priceUsd": 0.99,
+        "contents": "coins (older product id 1220466227)",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Pro Pack",
+        "priceUsd": 15.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Handful of Coins",
+        "priceUsd": 9.99,
+        "contents": "coins (amount not shown)",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Starter Kit",
+        "priceUsd": 4.99,
+        "contents": "not shown",
+        "kind": "starter",
+        "status": "FACT"
+      }
+    ],
+    "secondary": [
+      {
+        "claim": "Coin packs ran from $0.99 for 1,000 coins to $99.99 for 150,000 coins; one life cost 900 coins (about $0.90).",
+        "status": "REPORTED",
+        "source": "https://www.pocketgamer.biz/how-does-homescapes-monetise/",
+        "sourceDate": "2017-10-13",
+        "seenOn": "2026-10-23",
+        "note": "Old article; current pack sizes are not shown on the store."
+      },
+      {
+        "claim": "Coins buy extra moves (900-3,800), boosters (900-3,800) and a lives refill (900); a level win pays 50-150 coins.",
+        "status": "REPORTED",
+        "source": "https://homescapes.fandom.com/wiki/Coins",
+        "seenOn": "2026-10-23"
+      }
+    ],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Gardenscapes",
+    "publisher": "Playrix (seller PLR Worldwide Sales Limited)",
+    "appId": "1105855019",
+    "storeUrl": "https://apps.apple.com/us/app/gardenscapes/id1105855019",
+    "checkedOn": "2026-10-23",
+    "version": "10.0.0 (2026-10-15)",
+    "rating": "4.7 from 1,694,360 ratings; #25 Casual (top free)",
+    "storeEventsSeen": [
+      "Magic Collection (card collection)",
+      "Spooky Pass (NEW SEASON: complete levels, collect keys)",
+      "Polar Station Mystery (expedition)"
+    ],
+    "items": [
+      {
+        "name": "Gold Reserve",
+        "priceUsd": 2.99,
+        "contents": "piggy bank: part of the gold won on levels goes into a safe, buyable once it reaches a set amount",
+        "kind": "piggy_bank",
+        "status": "FACT",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://business.mistplay.com/resources/piggy-banks-in-games/"
+      },
+      {
+        "name": "1000 Coins",
+        "priceUsd": 1.99,
+        "contents": "1000 coins",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Hot Offer",
+        "priceUsd": 1.99,
+        "contents": "1500 coins and 3 types of power-ups",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "1000 Coins",
+        "priceUsd": 0.99,
+        "contents": "1000 coins",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Botanist Kit",
+        "priceUsd": 5.99,
+        "contents": "2000 coins and 4 types of power-ups",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Golden ticket",
+        "priceUsd": 4.99,
+        "contents": "premium track of the season / Garden Pass",
+        "kind": "pass",
+        "status": "FACT",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://gardenscapes.fandom.com/wiki/Furry_Season"
+      },
+      {
+        "name": "Garden Kit",
+        "priceUsd": 1.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Garden Kit",
+        "priceUsd": 1.99,
+        "contents": "not shown (second product id)",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Florist Kit",
+        "priceUsd": 9.99,
+        "contents": "5000 coins and 4 types of power-ups",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Garden Kit",
+        "priceUsd": 0.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      }
+    ],
+    "secondary": [
+      {
+        "claim": "Gold Reserve sells at $2.99 and is the 3rd best-selling IAP in the game (iOS, US, per Sensor Tower).",
+        "status": "REPORTED",
+        "source": "https://business.mistplay.com/resources/piggy-banks-in-games/",
+        "sourceDate": "2026-01-30",
+        "seenOn": "2026-10-23"
+      },
+      {
+        "claim": "A season (Furry Season, first run Nov 2019) had 30 stages of 30 points each, a free chain and a golden chain; points per level depend on difficulty and attempts. Golden chain: 8 lives instead of 5, boosters, timed unlimited boosters, a pet at stage 25, about 3,500 coins in total (2,000 at stage 30). Free chain: about 500 coins, 30-60 min unlimited lives, single boosters.",
+        "status": "REPORTED",
+        "source": "https://gardenscapes.fandom.com/wiki/Furry_Season",
+        "seenOn": "2026-10-23",
+        "note": "Coin totals summed by me from the wiki table."
+      },
+      {
+        "claim": "A player calls the Golden Ticket $4.99 for almost 30 days of boosters; another says it is a season ticket, not a recurring subscription.",
+        "status": "REPORTED",
+        "source": "https://www.facebook.com/groups/gardenscapes.family/posts/1270352150343648/",
+        "seenOn": "2026-10-23",
+        "note": "Seen as a search-result excerpt only."
+      },
+      {
+        "claim": "Some players saw a new season priced at $9.99 while others still saw $4.99 (likely a price test).",
+        "status": "REPORTED",
+        "source": "https://www.reddit.com/r/Gardenscapes/comments/1eue0wm/price_increase_for_new_season/",
+        "seenOn": "2026-10-23",
+        "note": "Search-result excerpt only; thread date not verified."
+      },
+      {
+        "claim": "Current pass perks cited from the Playrix Help Center: 8 lives instead of 5, gold profile frame and name colour, extra moves on hard levels, Bonus Bank rewards, 50-coin gift for teammates; perks end with the season.",
+        "status": "REPORTED",
+        "source": "https://www.gardenscapesstrategy.com/2026/10/garden-pass-more-important-than-levels.html?m=1",
+        "sourceDate": "2026-08-22",
+        "seenOn": "2026-10-23"
+      }
+    ],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Fishdom",
+    "publisher": "Playrix (seller PLR Worldwide Sales Limited)",
+    "appId": "664575829",
+    "storeUrl": "https://apps.apple.com/us/app/fishdom/id664575829",
+    "checkedOn": "2026-10-23",
+    "version": "10.1.6 (2026-10-12)",
+    "rating": "4.6 from 1,151,212 ratings",
+    "storeEventsSeen": [
+      "Spooky Pass (new season: beat levels, collect keys)",
+      "Toxic Business (expedition)"
+    ],
+    "items": [
+      {
+        "name": "Wonderous Collection",
+        "priceUsd": 1.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Diamond Fishy Bank",
+        "priceUsd": 2.99,
+        "contents": "not shown; name points to a diamond piggy bank",
+        "kind": "piggy_bank",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "A few Diamonds",
+        "priceUsd": 1.99,
+        "contents": "store text: \"Get the Diamond Stash bundle\"",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "A few Diamonds",
+        "priceUsd": 0.99,
+        "contents": "diamonds (premium currency), amount not shown",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Hatchling's Cache",
+        "priceUsd": 6.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "A few Diamonds!",
+        "priceUsd": 0.99,
+        "contents": "diamonds (older product id 767296822)",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Handful of Diamonds",
+        "priceUsd": 4.99,
+        "contents": "diamonds, amount not shown",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Crab's Finds",
+        "priceUsd": 15.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Marvelous Collection",
+        "priceUsd": 5.99,
+        "contents": "store text: \"Get the Diamond Stash bundle\"",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Handful of Diamonds",
+        "priceUsd": 4.99,
+        "contents": "diamonds (older product id 767298881)",
+        "kind": "coins",
+        "status": "FACT"
+      }
+    ],
+    "secondary": [],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Matchington Mansion",
+    "publisher": "Magic Tavern, Inc.",
+    "appId": "1216575026",
+    "storeUrl": "https://apps.apple.com/us/app/matchington-mansion/id1216575026",
+    "checkedOn": "2026-10-23",
+    "version": "1.212.0 (2026-10-16)",
+    "rating": "4.3 from 300,792 ratings; #156 Family (top free)",
+    "items": [
+      {
+        "name": "1100 Matchington Mansion Coins",
+        "priceUsd": 1.99,
+        "contents": "1100 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 553
+      },
+      {
+        "name": "Stack of Coins",
+        "priceUsd": 1.99,
+        "contents": "1,100 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 553
+      },
+      {
+        "name": "Novice Furnisher",
+        "priceUsd": 2.99,
+        "contents": "1600 coins and pre-level boosters",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Aspiring Decorator",
+        "priceUsd": 5.99,
+        "contents": "3000 coins and pre-level boosters",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Bag of Coins",
+        "priceUsd": 4.99,
+        "contents": "3,000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 601
+      },
+      {
+        "name": "Coin Piggy",
+        "priceUsd": 9.99,
+        "contents": "7,000 coins (a plain coin pack despite the name)",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 701
+      },
+      {
+        "name": "Coin Bundle 1.99-1",
+        "priceUsd": 1.99,
+        "contents": "store text: \"Bag of Coins\"",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "3000 Matchington Mansion Coins",
+        "priceUsd": 4.99,
+        "contents": "3000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 601
+      },
+      {
+        "name": "Talented Designer",
+        "priceUsd": 12.99,
+        "contents": "7000 coins and some boosters",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "7000 Matchington Mansion Coins",
+        "priceUsd": 9.99,
+        "contents": "7000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 701
+      }
+    ],
+    "secondary": [
+      {
+        "claim": "The game ran a Battle Pass tied to a June-July 2025 event (price not given).",
+        "status": "REPORTED",
+        "source": "https://www.playing4theplanet.org/2025-participants/matchington-mansion",
+        "seenOn": "2026-10-23",
+        "note": "Search-result excerpt only."
+      }
+    ],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Lily's Garden: Match & Design",
+    "publisher": "Tactile Games ApS",
+    "appId": "1437783446",
+    "storeUrl": "https://apps.apple.com/us/app/lilys-garden-match-design/id1437783446",
+    "checkedOn": "2026-10-23",
+    "version": "3.86.0 (2026-10-21)",
+    "rating": "4.8 from 272,153 ratings",
+    "items": [
+      {
+        "name": "Quick Refill",
+        "priceUsd": 0.99,
+        "contents": "not shown (name suggests a lives or moves refill)",
+        "kind": "other",
+        "status": "FACT",
+        "contentsStatus": "ESTIMATE"
+      },
+      {
+        "name": "Pack of Coins",
+        "priceUsd": 0.99,
+        "contents": "1000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1010
+      },
+      {
+        "name": "Pile of Coins",
+        "priceUsd": 4.99,
+        "contents": "5500 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1102
+      },
+      {
+        "name": "Quick Refill",
+        "priceUsd": 2.99,
+        "contents": "not shown",
+        "kind": "other",
+        "status": "FACT",
+        "contentsStatus": "ESTIMATE"
+      },
+      {
+        "name": "Bag of Coins",
+        "priceUsd": 9.99,
+        "contents": "12000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1201
+      },
+      {
+        "name": "Roxy's Reserve",
+        "priceUsd": 2.99,
+        "contents": "store text: \"Buy coins from Roxy's Reserve\" (coin reserve, piggy-bank style)",
+        "kind": "piggy_bank",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Chest of Coins",
+        "priceUsd": 19.99,
+        "contents": "25000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1251
+      },
+      {
+        "name": "Special Offer",
+        "priceUsd": 9.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Special Offer",
+        "priceUsd": 4.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Special Offer",
+        "priceUsd": 6.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      }
+    ],
+    "secondary": [],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Project Makeover",
+    "publisher": "Magic Tavern, Inc.",
+    "appId": "1483058899",
+    "storeUrl": "https://apps.apple.com/us/app/project-makeover/id1483058899",
+    "checkedOn": "2026-10-23",
+    "version": "2.149.1 (2026-10-12)",
+    "rating": "4.5 from 799,572 ratings",
+    "items": [
+      {
+        "name": "Pile of Gems",
+        "priceUsd": 1.99,
+        "contents": "500 gems",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 251
+      },
+      {
+        "name": "Purse Full of Gems",
+        "priceUsd": 4.99,
+        "contents": "1500 gems",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 301
+      },
+      {
+        "name": "Tiara Class Package",
+        "priceUsd": 9.99,
+        "contents": "3300 gems",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 330
+      },
+      {
+        "name": "Special Offer(01)",
+        "priceUsd": 1.99,
+        "contents": "gems",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Mini Gem Package",
+        "priceUsd": 1.99,
+        "contents": "gems, amount not shown",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "High Heel Package",
+        "priceUsd": 19.99,
+        "contents": "6700 gems",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 335
+      },
+      {
+        "name": "Stylish Stash",
+        "priceUsd": 5.99,
+        "contents": "store text: \"Contains a lot of gems\"",
+        "kind": "piggy_bank",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Camping Expedition",
+        "priceUsd": 3.99,
+        "contents": "store text: a pass for boosters and gems",
+        "kind": "pass",
+        "status": "FACT"
+      },
+      {
+        "name": "Stylish Stash",
+        "priceUsd": 19.99,
+        "contents": "store text: \"Contains a lot of gems\"",
+        "kind": "piggy_bank",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Special Offer",
+        "priceUsd": 4.99,
+        "contents": "gems and boosters",
+        "kind": "bundle",
+        "status": "FACT"
+      }
+    ],
+    "secondary": [],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Jigsaw Puzzles - Puzzle Games",
+    "publisher": "Easybrain Ltd",
+    "appId": "1324604053",
+    "storeUrl": "https://apps.apple.com/us/app/jigsaw-puzzles-puzzle-games/id1324604053",
+    "checkedOn": "2026-10-23",
+    "version": "4.10.0 (2026-10-06)",
+    "rating": "4.7 from 1,112,002 ratings; #48 Board (top free)",
+    "items": [
+      {
+        "name": "Jigsaw Puzzles No Ads",
+        "priceUsd": 14.99,
+        "contents": "removes ads",
+        "kind": "no_ads",
+        "status": "FACT"
+      },
+      {
+        "name": "Big Pack of Coins",
+        "priceUsd": 2.99,
+        "contents": "4500 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1505
+      },
+      {
+        "name": "Epic Pack of Coins",
+        "priceUsd": 9.99,
+        "contents": "20000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 2002
+      },
+      {
+        "name": "Small Pack of Coins",
+        "priceUsd": 0.99,
+        "contents": "1200 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1212
+      },
+      {
+        "name": "Relaxing Puzzle",
+        "priceUsd": 0.99,
+        "contents": "one puzzle picture",
+        "kind": "other",
+        "status": "FACT"
+      },
+      {
+        "name": "Winter Puzzle - Premium Jigsaw",
+        "priceUsd": 0.99,
+        "contents": "one premium puzzle picture",
+        "kind": "other",
+        "status": "FACT"
+      },
+      {
+        "name": "Giant Pack of Coins",
+        "priceUsd": 6.99,
+        "contents": "12000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1717
+      },
+      {
+        "name": "Color Burst",
+        "priceUsd": 3.99,
+        "contents": "themed puzzle pack",
+        "kind": "other",
+        "status": "FACT"
+      },
+      {
+        "name": "Beaches",
+        "priceUsd": 3.99,
+        "contents": "themed puzzle pack",
+        "kind": "other",
+        "status": "FACT"
+      },
+      {
+        "name": "Hard Jigsaw Puzzle",
+        "priceUsd": 0.99,
+        "contents": "one hard puzzle",
+        "kind": "other",
+        "status": "FACT"
+      }
+    ],
+    "secondary": [],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Magic Jigsaw Puzzles - Games",
+    "publisher": "ZiMAD (seller XIMAD, Inc.)",
+    "appId": "439873467",
+    "storeUrl": "https://apps.apple.com/us/app/magic-jigsaw-puzzles-games/id439873467",
+    "checkedOn": "2026-10-23",
+    "version": "4.31.1 (2026-10-15)",
+    "rating": "4.8 from 387,994 ratings",
+    "items": [
+      {
+        "name": "One Week",
+        "priceUsd": 7.99,
+        "contents": "unlimited access to 21,000+ puzzles; auto-renewing weekly; 7-day free trial",
+        "kind": "subscription",
+        "status": "FACT"
+      },
+      {
+        "name": "Gold Pack",
+        "priceUsd": 4.99,
+        "contents": "ad-free app, puzzles from own photos, 3 puzzle packs (80 pictures), 4 music tracks",
+        "kind": "no_ads",
+        "status": "FACT"
+      },
+      {
+        "name": "Firework Boosters Pack",
+        "priceUsd": 1.99,
+        "contents": "firework boosters",
+        "kind": "boosters",
+        "status": "FACT"
+      },
+      {
+        "name": "One Month",
+        "priceUsd": 19.99,
+        "contents": "unlimited access to 21,000+ puzzles; auto-renewing monthly",
+        "kind": "subscription",
+        "status": "FACT"
+      },
+      {
+        "name": "5000 coins",
+        "priceUsd": 4.99,
+        "contents": "5000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1002
+      },
+      {
+        "name": "Super discount",
+        "priceUsd": 1.99,
+        "contents": "not shown",
+        "kind": "bundle",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "1000 coins",
+        "priceUsd": 0.99,
+        "contents": "1000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1010
+      },
+      {
+        "name": "Expensive boost",
+        "priceUsd": 4.99,
+        "contents": "not shown beyond the name",
+        "kind": "boosters",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "Cheap boost",
+        "priceUsd": 2.99,
+        "contents": "not shown beyond the name",
+        "kind": "boosters",
+        "status": "FACT",
+        "kindStatus": "ESTIMATE"
+      },
+      {
+        "name": "3000 coins",
+        "priceUsd": 2.99,
+        "contents": "3000 coins",
+        "kind": "coins",
+        "status": "FACT",
+        "unitsPerUsd": 1003
+      }
+    ],
+    "secondary": [],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  },
+  {
+    "game": "Art Puzzle - Jigsaw Games",
+    "publisher": "Easybrain Ltd",
+    "appId": "1519174001",
+    "storeUrl": "https://apps.apple.com/us/app/art-puzzle-jigsaw-games/id1519174001",
+    "checkedOn": "2026-10-23",
+    "version": "5.3.0 (2026-10-12)",
+    "rating": "4.6 from 288,864 ratings; #69 Board (top free)",
+    "items": [
+      {
+        "name": "Art Puzzle Hints (Medium Package)",
+        "priceUsd": 1.99,
+        "contents": "hints",
+        "kind": "boosters",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Hints (Large)",
+        "priceUsd": 4.99,
+        "contents": "hints",
+        "kind": "boosters",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle No Ads",
+        "priceUsd": 14.99,
+        "contents": "removes ads",
+        "kind": "no_ads",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Hints (Small Package)",
+        "priceUsd": 0.99,
+        "contents": "hints",
+        "kind": "boosters",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Starter Package",
+        "priceUsd": 4.99,
+        "contents": "store text: a head start for the collection",
+        "kind": "starter",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Comfort Package",
+        "priceUsd": 4.99,
+        "contents": "store text: for long, stress-free sessions",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Progress Package",
+        "priceUsd": 14.99,
+        "contents": "store text: to overcome challenges and reveal art faster",
+        "kind": "bundle",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Coins (Large Pack)",
+        "priceUsd": 9.99,
+        "contents": "coins, amount not shown",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Coins (Mini Pack)",
+        "priceUsd": 1.99,
+        "contents": "coins, amount not shown",
+        "kind": "coins",
+        "status": "FACT"
+      },
+      {
+        "name": "Art Puzzle Coins (Medium Pack)",
+        "priceUsd": 5.99,
+        "contents": "coins, amount not shown",
+        "kind": "coins",
+        "status": "FACT"
+      }
+    ],
+    "secondary": [],
+    "storeSourceNote": "US App Store listing read through the apps-apple-com catalog provider (firecrawl Alexandria, country=us) and, for Homescapes/Gardenscapes/Fishdom, also the rendered page; the store shows only the top 10 in-app purchases (in_app_purchases_truncated=true).",
+    "itemsTruncatedToTop10": true
+  }
+]

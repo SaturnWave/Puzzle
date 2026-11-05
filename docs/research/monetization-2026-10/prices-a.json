@@ -1,0 +1,986 @@
+[
+  {
+    "game": "Royal Match",
+    "publisher": "Dream Games",
+    "appId": "1482155847",
+    "storeUrl": "https://apps.apple.com/us/app/royal-match/id1482155847",
+    "checkedOn": "2026-10-23",
+    "items": [
+      {
+        "name": "Mini Coin Package",
+        "priceUsd": 1.99,
+        "contents": "1,000 coins",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret (2025-01-18)",
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1508108277",
+        "note": "AppMagic: 10.8% share of top purchases (Oct 2024-Sep 2025)"
+      },
+      {
+        "name": "Royal Favor",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1612221066",
+        "note": "AppMagic: #1 offer of Royal Match, 15% share (Oct 2024-Sep 2025). Contents not published."
+      },
+      {
+        "name": "Duke's Treasure",
+        "priceUsd": 5.99,
+        "contents": "coins + boosters + time-limited unlimited boosters (treasure family; exact amounts not found)",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://en.namu.wiki/w/%EB%A1%9C%EC%96%84%20%EB%A7%A4%EC%B9%98",
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1558118722"
+      },
+      {
+        "name": "Prince's Treasure",
+        "priceUsd": 9.99,
+        "contents": "coins + boosters + time-limited unlimited boosters (treasure family; exact amounts not found)",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://en.namu.wiki/w/%EB%A1%9C%EC%96%84%20%EB%A7%A4%EC%B9%98",
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1518063659",
+        "note": "AppMagic: 7% share"
+      },
+      {
+        "name": "Mini Offer",
+        "priceUsd": 2.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "1563803353"
+      },
+      {
+        "name": "Tiny Concept Offer",
+        "priceUsd": 0.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "1583915366",
+        "note": "'Concept' offers come in 0.99 / 2.99 / 6.99 tiers; contents not published"
+      },
+      {
+        "name": "Queen's Treasure",
+        "priceUsd": 19.99,
+        "contents": "coins + boosters + time-limited unlimited boosters; a search snippet of NamuWiki links it to a 12-hour duration (snippet only, not verified on the page)",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://en.namu.wiki/w/%EB%A1%9C%EC%96%84%20%EB%A7%A4%EC%B9%98",
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1518064211",
+        "note": "AppMagic: 6.6% share"
+      },
+      {
+        "name": "Royal Pass",
+        "priceUsd": 9.99,
+        "contents": "one monthly season: premium reward track (30 stages) + max lives 5->8 + gold name/frame + gift to teammates + Bonus Bank (100 coins per 10 keys after the last stage, cap 5,000 coins)",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://royalmatch.fandom.com/wiki/Royal_Pass ; https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret",
+        "kind": "pass",
+        "status": "FACT",
+        "storeProductId": "1568154368"
+      },
+      {
+        "name": "Normal Concept Offer",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "1583917445"
+      },
+      {
+        "name": "Mini Concept Offer",
+        "priceUsd": 2.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "1583916353"
+      },
+      {
+        "name": "King's Treasure",
+        "priceUsd": 39.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "REPORTED",
+        "source": "https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf",
+        "note": "Not in today's top-10 store list. AppMagic: 6.4% share (Oct 2024-Sep 2025)."
+      },
+      {
+        "name": "5,000-coin shop pack (store name unknown)",
+        "priceUsd": 7.99,
+        "contents": "5,000 coins",
+        "kind": "coins",
+        "status": "REPORTED",
+        "source": "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret",
+        "note": "GameMakers says buying 5,000 coins in the shop costs $7.99 (Jan 2025)."
+      }
+    ],
+    "currencyLadder": {
+      "currency": "coins",
+      "points": [
+        {
+          "priceUsd": 1.99,
+          "amount": 1000,
+          "perUsd": 502.5,
+          "status": "REPORTED (amount) / ESTIMATE (perUsd)",
+          "source": "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret"
+        },
+        {
+          "priceUsd": 7.99,
+          "amount": 5000,
+          "perUsd": 625.8,
+          "status": "REPORTED (amount) / ESTIMATE (perUsd)",
+          "source": "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret"
+        }
+      ],
+      "largestPack": {
+        "claim": "100,000 coins for CAD 129 (probably USD 99.99)",
+        "status": "REPORTED (reader comment under the GameMakers article, low reliability)",
+        "source": "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret"
+      },
+      "sinks": [
+        {
+          "what": "+5 moves after a failed level",
+          "cost": "900 coins (second set 1,900 per one review)",
+          "status": "REPORTED (App Store user reviews seen 2026-10-23)",
+          "source": "https://apps.apple.com/us/app/royal-match/id1482155847"
+        },
+        {
+          "what": "refill 5 lives",
+          "cost": "900 coins",
+          "status": "REPORTED",
+          "source": "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret"
+        },
+        {
+          "what": "first set of 5 extra moves in USD terms",
+          "cost": "about $2 of coins; later sets $4.35, $6.65, $8.95",
+          "status": "REPORTED (2022)",
+          "source": "https://naavik.co/deep-dives/royal-match/"
+        }
+      ]
+    },
+    "pass": {
+      "name": "Royal Pass (seasonal names, e.g. 'Haunted Pass' event live on 2026-10-23)",
+      "priceUsd": 9.99,
+      "priceStatus": "FACT",
+      "length": "one calendar month",
+      "stages": 30,
+      "progress": "keys from beating levels; hard and super hard levels give extra keys",
+      "freeTrack": "30 rewards: single boosters, card packs, 100-200 coins (500 coins in total), 15-30 min unlimited lives (1h45m in total) in one documented season",
+      "premiumTrack": "50 rewards: bigger booster stacks, timed unlimited boosters, 2,500 coins in total, unlimited lives 15 min to 1 h (3h45m in total) in one documented season; plus 8 max lives, gold name and frame, team gift, Bonus Bank up to 5,000 coins",
+      "trackStatus": "REPORTED (wiki table and GameMakers; totals are my sums = ESTIMATE)",
+      "otherNotes": [
+        "GameMakers: same USD price in every country, no discounts or alternative versions (REPORTED, 2025-01-18)",
+        "GameMakers: rewards valued at about $219 for $9.99 (their own valuation method) (REPORTED)",
+        "Naavik: launched June 2021; Royal Match revenue rose 31% in the 30 days after launch (REPORTED, 2022-05-25)"
+      ],
+      "sources": [
+        "https://apps.apple.com/us/app/royal-match/id1482155847",
+        "https://royalmatch.fandom.com/wiki/Royal_Pass",
+        "https://www.gamemakers.com/p/royal-matchs-219-battle-pass-secret",
+        "https://naavik.co/deep-dives/royal-match/"
+      ]
+    }
+  },
+  {
+    "game": "Royal Kingdom",
+    "publisher": "Dream Games",
+    "appId": "1606549505",
+    "storeUrl": "https://apps.apple.com/us/app/royal-kingdom/id1606549505",
+    "checkedOn": "2026-10-23",
+    "items": [
+      {
+        "name": "Mini Coin Pack",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "6445500522",
+        "note": "AppMagic: 11.0% of purchases. Coin amount not found; if it mirrors Royal Match it would be 1,000 coins (ESTIMATE only)."
+      },
+      {
+        "name": "Splendid Pouch",
+        "priceUsd": 9.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "6445985472",
+        "note": "AppMagic: #1 offer, 14.4% of purchases"
+      },
+      {
+        "name": "King's Favor",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "6739640504",
+        "note": "AppMagic: 10.1% of purchases"
+      },
+      {
+        "name": "Noble Pack",
+        "priceUsd": 5.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "6445985441",
+        "note": "AppMagic: 8.4% of purchases"
+      },
+      {
+        "name": "Superior Chest",
+        "priceUsd": 19.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "6445985502",
+        "note": "AppMagic: 12.3% of purchases"
+      },
+      {
+        "name": "Mini Offer",
+        "priceUsd": 2.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "6745561589"
+      },
+      {
+        "name": "Kingdom Pass",
+        "priceUsd": 9.99,
+        "contents": "monthly pass: extra/exclusive reward track, max lives 5->8, gold name and frame, team gift, Bonus Bank (cap 5,000 coins)",
+        "contentsStatus": "FACT",
+        "contentsSource": "https://dreamgames.helpshift.com/hc/en/6-royal-kingdom-1676903479/faq/315-kingdom-pass-1710944877/",
+        "kind": "pass",
+        "status": "FACT",
+        "storeProductId": "6449701589"
+      },
+      {
+        "name": "Small Coin Package",
+        "priceUsd": 7.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "6445984554",
+        "note": "Amount not found; Royal Match sells 5,000 coins at $7.99 (REPORTED), so 5,000 is a plausible ESTIMATE only."
+      },
+      {
+        "name": "Mini Concept Offer",
+        "priceUsd": 2.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "6747342495"
+      },
+      {
+        "name": "Normal Concept Offer",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "6747342663"
+      }
+    ],
+    "pass": {
+      "name": "Kingdom Pass",
+      "priceUsd": 9.99,
+      "priceStatus": "FACT",
+      "length": "calendar month (ends on the 1st of next month)",
+      "unlockLevel": 31,
+      "progress": "keys from beating levels; Hard, Super Hard, Kingdom and Dark Kingdom levels give extra keys",
+      "bonusBank": "after all stages, keys keep saving coins; cap 5,000; pass needed to claim; claimable at the start of next month",
+      "status": "FACT (official help center, read 2026-10-23); stage count not stated there",
+      "sources": [
+        "https://dreamgames.helpshift.com/hc/en/6-royal-kingdom-1676903479/faq/315-kingdom-pass-1710944877/",
+        "https://apps.apple.com/us/app/royal-kingdom/id1606549505"
+      ]
+    }
+  },
+  {
+    "game": "Candy Crush Saga",
+    "publisher": "King",
+    "appId": "553834731",
+    "storeUrl": "https://apps.apple.com/us/app/candy-crush-saga/id553834731",
+    "checkedOn": "2026-10-23",
+    "items": [
+      {
+        "name": "XS Gold Bars Pack",
+        "priceUsd": 1.99,
+        "contents": "10 gold bars",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf ; https://candycrush.fandom.com/wiki/Gold",
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1444292180",
+        "note": "AppMagic: #1 offer, 24.7% (Oct 2024-Sep 2025)"
+      },
+      {
+        "name": "Extra Moves",
+        "priceUsd": 0.99,
+        "contents": "5 extra moves (store description)",
+        "contentsStatus": "FACT",
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "646274481"
+      },
+      {
+        "name": "Extra Lives",
+        "priceUsd": 0.99,
+        "contents": "restores all lives (store description)",
+        "contentsStatus": "FACT",
+        "kind": "lives",
+        "status": "FACT",
+        "storeProductId": "553841317"
+      },
+      {
+        "name": "10x Gold Bars package",
+        "priceUsd": 0.99,
+        "contents": "10 gold bars (wiki calls it a sale price)",
+        "contentsStatus": "FACT (name) / REPORTED (sale)",
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "892722340"
+      },
+      {
+        "name": "Extra Moves",
+        "priceUsd": 0.99,
+        "contents": "5 additional moves (store description)",
+        "contentsStatus": "FACT",
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "553840674"
+      },
+      {
+        "name": "Extra small offer",
+        "priceUsd": 2.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1467864479"
+      },
+      {
+        "name": "S Gold Bars Pack",
+        "priceUsd": 7.99,
+        "contents": "50 gold bars",
+        "contentsStatus": "REPORTED",
+        "contentsSource": "https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf",
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1444292981",
+        "note": "AppMagic: 14% share"
+      },
+      {
+        "name": "Small offer",
+        "priceUsd": 5.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1467865027",
+        "note": "AppMagic: 8.6% share"
+      },
+      {
+        "name": "Extra Moves",
+        "priceUsd": 0.99,
+        "contents": "5 extra moves + a striped candy (store description)",
+        "contentsStatus": "FACT",
+        "kind": "other",
+        "status": "FACT",
+        "storeProductId": "646276376"
+      },
+      {
+        "name": "Lollipop Hammer",
+        "priceUsd": 1.99,
+        "contents": "Lollipop Hammer booster; wiki says a set of 3",
+        "contentsStatus": "FACT (item) / REPORTED (x3)",
+        "contentsSource": "https://candycrush.fandom.com/wiki/Gold",
+        "kind": "boosters",
+        "status": "FACT",
+        "storeProductId": "553840156"
+      },
+      {
+        "name": "Offer",
+        "priceUsd": 19.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "REPORTED",
+        "source": "https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf",
+        "note": "AppMagic: 8% share"
+      },
+      {
+        "name": "Offer",
+        "priceUsd": 9.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "REPORTED",
+        "source": "https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf",
+        "note": "AppMagic: 5.9% share"
+      },
+      {
+        "name": "15x Gold Bars Package",
+        "priceUsd": 1.99,
+        "contents": "15 gold bars",
+        "kind": "coins",
+        "status": "REPORTED",
+        "source": "https://candycrush.fandom.com/wiki/Gold",
+        "note": "Wiki's top-10 list as of game version 1.281 (older than today)"
+      },
+      {
+        "name": "Largest gold pack",
+        "priceUsd": 100,
+        "contents": "1,000 gold bars (10 per USD); largest bundle at the same price: 650 gold + 18h unlimited lives + several days of booster passes + 10+ of each booster",
+        "kind": "coins",
+        "status": "REPORTED",
+        "source": "https://candycrush.fandom.com/wiki/Yeti_Shop",
+        "note": "Wiki says 'last known prices', undated; $100 probably means $99.99 (ESTIMATE)"
+      },
+      {
+        "name": "Gold Pass (Season Pass premium track)",
+        "priceUsd": null,
+        "contents": "premium reward track of the Season Pass",
+        "kind": "pass",
+        "status": "REPORTED",
+        "source": "https://candycrush.fandom.com/wiki/Season_Pass ; https://community.king.com/en/candy-crush-saga/discussion/473894/gold-season-pass-price",
+        "note": "Price varies between players and over time: player posts mention $2.99, $4.99, $6.99, $12.99 and once $27 (dates not visible). Not in the top-10 store list."
+      }
+    ],
+    "currencyLadder": {
+      "currency": "gold bars",
+      "points": [
+        {
+          "priceUsd": 0.99,
+          "amount": 10,
+          "perUsd": 10.1,
+          "status": "FACT (name) / ESTIMATE (perUsd); sale SKU"
+        },
+        {
+          "priceUsd": 1.99,
+          "amount": 10,
+          "perUsd": 5,
+          "status": "REPORTED / ESTIMATE"
+        },
+        {
+          "priceUsd": 7.99,
+          "amount": 50,
+          "perUsd": 6.3,
+          "status": "REPORTED / ESTIMATE"
+        },
+        {
+          "priceUsd": 100,
+          "amount": 1000,
+          "perUsd": 10,
+          "status": "REPORTED (wiki, undated)"
+        }
+      ],
+      "wikiRule": "regular gold price 5 to 10 gold bars per USD (REPORTED, https://candycrush.fandom.com/wiki/Yeti_Shop)",
+      "sinks": [
+        {
+          "what": "+5 moves",
+          "cost": "10 gold bars",
+          "status": "REPORTED",
+          "source": "https://candycrush.fandom.com/wiki/Gold"
+        },
+        {
+          "what": "refill lives",
+          "cost": "12 gold bars",
+          "status": "REPORTED",
+          "source": "https://candycrush.fandom.com/wiki/Gold"
+        },
+        {
+          "what": "6h unlimited lives",
+          "cost": "69 gold bars",
+          "status": "REPORTED",
+          "source": "https://candycrush.fandom.com/wiki/Gold"
+        },
+        {
+          "what": "Lollipop Hammer x3 / x9 / x18",
+          "cost": "19 / 49 / 88 gold bars",
+          "status": "REPORTED (older wiki table)",
+          "source": "https://candycrush.fandom.com/wiki/Yeti_Shop"
+        }
+      ]
+    },
+    "pass": {
+      "name": "Season Pass (Free Pass + Gold Pass)",
+      "priceUsd": null,
+      "priceStatus": "REPORTED as variable, roughly $2.99-$12.99 per player posts",
+      "since": "November 2022",
+      "progress": "points from winning levels; from October 2026 only the current (new) level counts, replays do not",
+      "status": "REPORTED",
+      "sources": [
+        "https://candycrush.fandom.com/wiki/Season_Pass",
+        "https://community.king.com/en/candy-crush-saga/discussion/473894/gold-season-pass-price"
+      ]
+    }
+  },
+  {
+    "game": "Candy Crush Soda Saga",
+    "publisher": "King",
+    "appId": "850417475",
+    "storeUrl": "https://apps.apple.com/us/app/candy-crush-soda-saga/id850417475",
+    "checkedOn": "2026-10-23",
+    "items": [
+      {
+        "name": "Dainty offer",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1455390578"
+      },
+      {
+        "name": "Extra Small Gold Bar Package",
+        "priceUsd": 0.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "867510796"
+      },
+      {
+        "name": "Hard Currency 2 XS",
+        "priceUsd": 0.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1084724955"
+      },
+      {
+        "name": "Hard Currency 3 XS",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1172828416"
+      },
+      {
+        "name": "Small Gold Bar Package",
+        "priceUsd": 4.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "867515063"
+      },
+      {
+        "name": "Sweet offer",
+        "priceUsd": 3.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1455345052"
+      },
+      {
+        "name": "Offer Small",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1084731717"
+      },
+      {
+        "name": "Juicy offer",
+        "priceUsd": 8.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1455347601"
+      },
+      {
+        "name": "Sweet offer",
+        "priceUsd": 4.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1455392501"
+      },
+      {
+        "name": "Sweet offer",
+        "priceUsd": 5.99,
+        "contents": null,
+        "kind": "bundle",
+        "kindStatus": "ESTIMATE",
+        "status": "FACT",
+        "storeProductId": "1455631310"
+      },
+      {
+        "name": "Rewards Pass (Small / Medium / Big = 7 / 14 / 21 stages)",
+        "priceUsd": null,
+        "contents": "player picks one paid pass; prices from $4.99 to $12.99; earlier a single pass cost $5.99 for 8 stages",
+        "kind": "pass",
+        "status": "REPORTED",
+        "source": "https://www.gamigion.com/?p=2672 ; https://candycrush.fandom.com/wiki/Season_Pass",
+        "note": "Gamigion article dated Aug 28 (year not shown; search index places it in 2024)"
+      }
+    ]
+  },
+  {
+    "game": "Toon Blast",
+    "publisher": "Peak",
+    "appId": "1176027022",
+    "storeUrl": "https://apps.apple.com/us/app/toon-blast/id1176027022",
+    "checkedOn": "2026-10-23",
+    "items": [
+      {
+        "name": "Tiny Coin Pack",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1597512018"
+      },
+      {
+        "name": "Tiny Coin Pack",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1182324843",
+        "note": "two SKUs with the same name and price (likely A/B or legacy)"
+      },
+      {
+        "name": "Super Bundle",
+        "priceUsd": 12.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1342115722"
+      },
+      {
+        "name": "Toon Bundle",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1295023656"
+      },
+      {
+        "name": "Toon Bundle",
+        "priceUsd": 9.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1597511635"
+      },
+      {
+        "name": "Small Coin Pack",
+        "priceUsd": 4.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1182326938"
+      },
+      {
+        "name": "Mini Bundle",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1636867792"
+      },
+      {
+        "name": "Super Bundle",
+        "priceUsd": 19.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1597511687"
+      },
+      {
+        "name": "Small Coin Pack",
+        "priceUsd": 7.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "storeProductId": "1597511987"
+      },
+      {
+        "name": "Big Team Bundle",
+        "priceUsd": 4.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "storeProductId": "1579081533",
+        "note": "name suggests a team (clan) offer; contents not published"
+      },
+      {
+        "name": "Toon Pass",
+        "priceUsd": 9.99,
+        "contents": "Special Pass track: 30 stages + grand prize at 100 badges; max lives 5->8; gold frame and name; team gift; sticker",
+        "kind": "pass",
+        "status": "REPORTED",
+        "source": "https://toonblast.fandom.com/wiki/Toon_Pass",
+        "note": "Wiki section title says $9.99 but its body text says 'around $5' and that the price changes daily: price is uncertain. Not in the top-10 store list."
+      },
+      {
+        "name": "Diamond Pass",
+        "priceUsd": 19.99,
+        "contents": "higher pass tier added in 2026 (rewards not listed on the wiki)",
+        "kind": "pass",
+        "status": "REPORTED",
+        "source": "https://toonblast.fandom.com/wiki/Toon_Pass"
+      }
+    ],
+    "currencyLadder": {
+      "currency": "coins",
+      "points": [],
+      "note": "Coin amounts per Toon Blast pack were not found on any source (store descriptions only repeat the name).",
+      "sinks": [
+        {
+          "what": "continue with +5 moves",
+          "cost": "100 coins, then 200, then 300 for each further continue",
+          "status": "REPORTED",
+          "source": "https://toonblast.fandom.com/wiki/Coins"
+        },
+        {
+          "what": "refill lives to 5",
+          "cost": "100 coins",
+          "status": "REPORTED",
+          "source": "https://toonblast.fandom.com/wiki/Coins"
+        },
+        {
+          "what": "boosters",
+          "cost": "up to 300 coins for a set of 3",
+          "status": "REPORTED",
+          "source": "https://toonblast.fandom.com/wiki/Coins"
+        },
+        {
+          "what": "create a team",
+          "cost": "100 coins",
+          "status": "REPORTED",
+          "source": "https://toonblast.fandom.com/wiki/Coins"
+        }
+      ]
+    },
+    "pass": {
+      "name": "Toon Pass (Free Pass + Special/Toon Pass; Diamond Pass tier from 2026)",
+      "priceUsd": 9.99,
+      "priceStatus": "REPORTED and contradictory (wiki also says ~$5, varying daily)",
+      "length": "about 26 days",
+      "unlockLevel": 30,
+      "stages": 30,
+      "progress": "1 badge per level won; stage costs grow from 1 to 50 badges; grand prize at 100 badges needs the paid pass",
+      "freeTrack": "single boosters, 15-min unlimited lives (x4), 15-min double star progress, small coin rewards (10 coins)",
+      "premiumTrack": "50 / 25 / 100 coin rewards, 30-60 min unlimited lives, free +5 moves tokens, bigger booster stacks, grand prize chest",
+      "launched": "2022-02-10",
+      "status": "REPORTED",
+      "sources": [
+        "https://toonblast.fandom.com/wiki/Toon_Pass"
+      ]
+    }
+  },
+  {
+    "game": "Toy Blast",
+    "publisher": "Peak",
+    "appId": "890378044",
+    "storeUrl": "https://apps.apple.com/us/app/toy-blast/id890378044",
+    "checkedOn": "2026-10-23",
+    "listNote": "The web page and the catalog API showed two different top-10 lists on the same day. Items marked listSource=web come from the web page (read through WebFetch); listSource=api come from the catalog API with Apple's own product descriptions.",
+    "items": [
+      {
+        "name": "25 Coins",
+        "priceUsd": 0.99,
+        "contents": "25 coins ('Standart Package')",
+        "contentsStatus": "FACT",
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "api+web",
+        "storeProductId": "907077224"
+      },
+      {
+        "name": "140 Coins",
+        "priceUsd": 4.99,
+        "contents": "140 coins",
+        "contentsStatus": "FACT",
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "api+web",
+        "storeProductId": "907077225"
+      },
+      {
+        "name": "300 Coins",
+        "priceUsd": 9.99,
+        "contents": "300 coins",
+        "contentsStatus": "FACT",
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "api+web",
+        "storeProductId": "907077226"
+      },
+      {
+        "name": "625 Coins",
+        "priceUsd": 19.99,
+        "contents": "625 coins",
+        "contentsStatus": "FACT",
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "api+web",
+        "storeProductId": "907077227"
+      },
+      {
+        "name": "1625 Coins",
+        "priceUsd": 49.99,
+        "contents": "1,625 coins",
+        "contentsStatus": "FACT",
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "api",
+        "storeProductId": "907077228"
+      },
+      {
+        "name": "3500 Coins",
+        "priceUsd": 99.99,
+        "contents": "3,500 coins ('Truck of 3500 Coins')",
+        "contentsStatus": "FACT",
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "api",
+        "storeProductId": "1036169827"
+      },
+      {
+        "name": "Super Sale",
+        "priceUsd": 0.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "listSource": "api",
+        "storeProductId": "1041886365"
+      },
+      {
+        "name": "Super Bundle",
+        "priceUsd": 19.99,
+        "contents": "750 coins + 6 hours unlimited lives + 3 each of Drill, Puzzle Cube, TNT, Rotor",
+        "contentsStatus": "FACT",
+        "kind": "bundle",
+        "status": "FACT",
+        "listSource": "api",
+        "storeProductId": "1041887593"
+      },
+      {
+        "name": "Special Offer",
+        "priceUsd": 0.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "listSource": "api",
+        "storeProductId": "1083671718"
+      },
+      {
+        "name": "Special Offer",
+        "priceUsd": 4.99,
+        "contents": null,
+        "kind": "other",
+        "status": "FACT",
+        "listSource": "api",
+        "storeProductId": "1083672309"
+      },
+      {
+        "name": "Tiny Coin Pack",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "web"
+      },
+      {
+        "name": "Super Bundle",
+        "priceUsd": 12.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "listSource": "web"
+      },
+      {
+        "name": "Toy Bundle",
+        "priceUsd": 6.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "listSource": "web"
+      },
+      {
+        "name": "Small Coin Pack",
+        "priceUsd": 4.99,
+        "contents": null,
+        "kind": "coins",
+        "status": "FACT",
+        "listSource": "web"
+      },
+      {
+        "name": "Mega Bundle",
+        "priceUsd": 24.99,
+        "contents": null,
+        "kind": "bundle",
+        "status": "FACT",
+        "listSource": "web"
+      },
+      {
+        "name": "Beginner's Bundle",
+        "priceUsd": 1.99,
+        "contents": null,
+        "kind": "starter",
+        "status": "FACT",
+        "listSource": "web"
+      }
+    ],
+    "currencyLadder": {
+      "currency": "coins",
+      "points": [
+        {
+          "priceUsd": 0.99,
+          "amount": 25,
+          "perUsd": 25.3,
+          "bonusVsSmallest": "0%"
+        },
+        {
+          "priceUsd": 4.99,
+          "amount": 140,
+          "perUsd": 28.1,
+          "bonusVsSmallest": "+11%"
+        },
+        {
+          "priceUsd": 9.99,
+          "amount": 300,
+          "perUsd": 30,
+          "bonusVsSmallest": "+19%"
+        },
+        {
+          "priceUsd": 19.99,
+          "amount": 625,
+          "perUsd": 31.3,
+          "bonusVsSmallest": "+24%"
+        },
+        {
+          "priceUsd": 49.99,
+          "amount": 1625,
+          "perUsd": 32.5,
+          "bonusVsSmallest": "+29%"
+        },
+        {
+          "priceUsd": 99.99,
+          "amount": 3500,
+          "perUsd": 35,
+          "bonusVsSmallest": "+39%"
+        }
+      ],
+      "status": "FACT (amounts, Apple product descriptions) / ESTIMATE (perUsd and bonus, my arithmetic)",
+      "note": "These product ids date from 2015 (legacy SKUs) but are still served in the US catalog on 2026-10-23. The $19.99 Super Bundle gives 750 coins (37.5 per USD) plus lives and boosters, i.e. bundles beat plain coin packs."
+    },
+    "pass": {
+      "name": null,
+      "note": "No Toy Blast pass found on any source.",
+      "status": "gap"
+    }
+  }
+]

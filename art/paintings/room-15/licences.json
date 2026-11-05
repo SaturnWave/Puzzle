@@ -1,0 +1,70 @@
+{
+  "room": "room-15",
+  "paintings": [
+    {
+      "file": "italian-comedians.jpg",
+      "title": "The Italian Comedians",
+      "titleTr": "İtalyan Komedyenler",
+      "artist": "Antoine Watteau",
+      "year": "muhtemelen 1720",
+      "width": 1920,
+      "height": 1593,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/32687-italian-comedians",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Antoine_Watteau,_The_Italian_Comedians,_probably_1720,_NGA_32687.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "misse-and-luttine.jpg",
+      "title": "Misse and Luttine",
+      "titleTr": "Misse ile Luttine",
+      "artist": "Jean-Baptiste Oudry",
+      "year": "1729",
+      "width": 1920,
+      "height": 1426,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/89604-misse-and-luttine",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Jean-Baptiste_Oudry,_Misse_and_Luttine,_1729,_NGA_89604.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "madame-bergeret.jpg",
+      "title": "Madame Bergeret",
+      "titleTr": "Madam Bergeret",
+      "artist": "François Boucher",
+      "year": "belki 1766",
+      "width": 1405,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/32681-madame-bergeret",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:François_Boucher,_Madame_Bergeret,_possibly_1766,_NGA_32681.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "ponte-salario.jpg",
+      "title": "The Ponte Salario",
+      "titleTr": "Salario Köprüsü",
+      "artist": "Hubert Robert",
+      "year": "y. 1775",
+      "width": 1920,
+      "height": 1445,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/41665-ponte-salario",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Hubert_Robert,_The_Ponte_Salario,_c._1775,_NGA_41665.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "young-girl-reading.jpg",
+      "title": "Young Girl Reading",
+      "titleTr": "Kitap Okuyan Genç Kız",
+      "artist": "Jean Honoré Fragonard",
+      "year": "y. 1769",
+      "width": 1527,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/46303-young-girl-reading",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Jean_Honoré_Fragonard,_Young_Girl_Reading,_c._1769,_NGA_46303.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    }
+  ]
+}

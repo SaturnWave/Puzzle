@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The rules of the meta game: the museum's rooms and paintings, the jigsaw cut, a player's pieces.
+       Same Unity constraints as Puzzle.Core (netstandard2.1, C# 9, no package dependencies): this assembly is
+       copied into the Unity project as-is by tools/unity/sync-engine.js, and the server and the tools can
+       reference it too. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Puzzle.Museum</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Puzzle.Core\Puzzle.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Puzzle.Core.Tests" />
+  </ItemGroup>
+</Project>

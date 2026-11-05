@@ -1,0 +1,6 @@
+<!-- The painting the player restores now as a dot on the world map (MapWorldTR): red, 9 points across in a dark red line of 1.4 and a red halo of 4 at 30 %, around the middle of the picture. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 21.8 21.8">
+<defs></defs>
+<circle cx="10.9" cy="10.9" r="9.9" fill="#F4472F" fill-opacity=".3"/>
+<circle cx="10.9" cy="10.9" r="5.9" fill="#6E1208"/><circle cx="10.9" cy="10.9" r="4.5" fill="#F4472F"/>
+</svg>

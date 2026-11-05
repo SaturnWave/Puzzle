@@ -1,0 +1,15 @@
+<!-- A wall lamp in the pool of its own light: the web test page's sconce symbol (pieces.svg) with the paints it
+     uses. The picture is the 148 x 148 box around the glow; the lamp itself is the 30 x 59 in its lower middle. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="-36 140 148 148">
+<defs>
+<linearGradient id="gilt-across" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D38D1A"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".5" stop-color="#FFF4C4"/><stop offset=".75" stop-color="#F6B93C"/><stop offset="1" stop-color="#9C5C0B"/></linearGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFE9A8" stop-opacity=".7"/><stop offset=".3" stop-color="#FFE9A8" stop-opacity=".26"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/></radialGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF0"/><stop offset=".6" stop-color="#FFE9A8"/><stop offset="1" stop-color="#F2B63C"/></linearGradient>
+</defs>
+<circle cx="38" cy="214" r="74" fill="url(#glow)"/>
+<rect x="31.5" y="249" width="13" height="25" rx="6.5" fill="#5E3305"/><rect x="32.5" y="248" width="11" height="23.5" rx="5.5" fill="url(#gilt-across)"/>
+<rect x="35" y="234" width="6" height="26" rx="3" fill="#5E3305"/><rect x="36.1" y="234" width="3.8" height="25" rx="1.9" fill="url(#gilt-across)"/>
+<path d="M23 220C23 238 53 238 53 220Z" fill="#5E3305" stroke="#5E3305" stroke-width="2.4" stroke-linejoin="round"/><path d="M23 220C23 238 53 238 53 220Z" fill="url(#glass)"/>
+<ellipse cx="38" cy="220" rx="15" ry="4.2" fill="#FFFBE6" stroke="#F6B93C" stroke-width="1.6"/><ellipse cx="38" cy="220" rx="9" ry="2.2" fill="#fff"/>
+<path d="M27.5 225C28.5 230 32 233 36 234" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-linecap="round"/>
+</svg>

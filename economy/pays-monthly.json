@@ -1,0 +1,16 @@
+{
+  // A paying player: the default economy, and one $9.99 pack of coins a month, on day 1 and every 30 days after,
+  // whatever the purse holds; nothing else is bought for money. The third of the three paying players the research asked
+  // for, with the season pass of v2 left out (docs/research/monetization-and-retention.md section 3.6). Set it beside
+  // the default: puzzle economy compare economy/default.json economy/pays-monthly.json.
+  "extends": "default.json",
+  "name": "pays-monthly",
+  "player": {
+    "purchases": {
+      // The chest, $9.99 for 6 000 coins. [a paying player to compare]
+      "scheduledPack": "chest",
+      // About a month. [a paying player to compare]
+      "scheduledEveryDays": 30
+    }
+  }
+}

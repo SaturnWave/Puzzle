@@ -6,12 +6,58 @@
   "height": 10,
   "moves": 25,
   "cells": [
-    "##########", "##########", "##########", "##########", "##########",
-    "##########", "##########", "##########", "##########", "##########"
+    "##########",
+    "##########",
+    "##########",
+    "##########",
+    "##########",
+    "##########",
+    "##########",
+    "##########",
+    "##########",
+    "##########"
   ],
   "goals": [
-    { "type": "CollectColor", "color": "Red", "count": 40 },
-    { "type": "CollectColor", "color": "Blue", "count": 40 }
+    {
+      "type": "CollectColor",
+      "color": "Red",
+      "count": 40
+    },
+    {
+      "type": "CollectColor",
+      "color": "Blue",
+      "count": 40
+    }
   ],
-  "spawn": { "colors": 5, "smoothingPermille": 60 }
+  "spawn": {
+    "colors": 5,
+    "smoothingPermille": 60,
+    "goalBias": 0,
+    "cascadeBias": 0,
+    "itemsTotal": 0,
+    "maxItemsOnBoard": 0,
+    "itemChancePercent": 0
+  },
+  "attempts": {
+    "board": "varied",
+    "boardSeed": 0,
+    "seedPool": [
+      275214058,
+      692726288,
+      779706037,
+      928846459,
+      1329841184,
+      1812991704,
+      1861880397,
+      1862033324,
+      2017787616,
+      2025720755,
+      2208214478,
+      2266668718,
+      2528196336,
+      2695977880,
+      2778193304,
+      2874433649
+    ]
+  }
 }

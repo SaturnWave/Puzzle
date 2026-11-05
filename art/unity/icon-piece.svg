@@ -1,0 +1,15 @@
+<!-- A jigsaw piece of ivory in a gilt edge: the mark of the pieces a painting is restored with, as the design canvas
+     draws it on the piece counter and on the blue buttons (its symbol with the paints it uses). The picture is the
+     symbol's own 100 x 100 box; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+</defs>
+<ellipse cx="55" cy="94" rx="32" ry="5" fill="url(#g-shadow)"/>
+<path d="M21 31H38C40.4 31 41.4 29.3 40.4 27.2C36.6 20.6 40.2 11 47 11C53.8 11 57.4 20.6 53.6 27.2C52.6 29.3 53.6 31 56 31H73V48C73 50.4 74.7 51.4 76.8 50.4C83.4 46.6 93 50.2 93 57C93 63.8 83.4 67.4 76.8 63.6C74.7 62.6 73 63.6 73 66V83H21V66C21 63.6 22.7 62.6 24.8 63.6C31.4 67.4 41 63.8 41 57C41 50.2 31.4 46.6 24.8 50.4C22.7 51.4 21 50.4 21 48Z" transform="translate(0 6)" fill="#9C5C0B" stroke="#5E3305" stroke-opacity=".7" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M21 31H38C40.4 31 41.4 29.3 40.4 27.2C36.6 20.6 40.2 11 47 11C53.8 11 57.4 20.6 53.6 27.2C52.6 29.3 53.6 31 56 31H73V48C73 50.4 74.7 51.4 76.8 50.4C83.4 46.6 93 50.2 93 57C93 63.8 83.4 67.4 76.8 63.6C74.7 62.6 73 63.6 73 66V83H21V66C21 63.6 22.7 62.6 24.8 63.6C31.4 67.4 41 63.8 41 57C41 50.2 31.4 46.6 24.8 50.4C22.7 51.4 21 50.4 21 48Z" fill="url(#f-ivory)" stroke="#D38D1A" stroke-width="3" stroke-linejoin="round"/>
+<path d="M27 46V37H36" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M44 18.5C45 16.6 46.5 16 48 16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+<path d="M30 77H66" fill="none" stroke="#DDC694" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

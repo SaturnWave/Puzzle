@@ -1,0 +1,21 @@
+<!-- A gold coin with a drop of paint struck on it: the mark of the player's coins, on the wallet, on a price and on
+     what a level pays. As the design canvas draws it (HomeTR): its symbol i-coin with the paints it uses, written
+     by tools/unity/extract-design-symbols.js. Change the canvas and run that again; do not change this file by
+     hand. One unit is one point where the symbol is drawn 100 points wide; the game draws it at the size a place
+     needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<radialGradient id="f-coin" cx=".34" cy=".26" r=".9"><stop offset="0" stop-color="#FFF6CC"/><stop offset=".4" stop-color="#FFD660"/><stop offset="1" stop-color="#EDA428"/></radialGradient>
+</defs>
+<ellipse cx="50" cy="93" rx="34" ry="5.5" fill="url(#g-shadow)"/>
+<circle cx="50" cy="54" r="40" fill="#9C5C0B" stroke="#5E3305" stroke-opacity=".6" stroke-width="1.4"/>
+<circle cx="50" cy="47" r="40" fill="url(#f-coin)" stroke="#5E3305" stroke-opacity=".55" stroke-width="1.4"/>
+<circle cx="50" cy="47" r="31" fill="none" stroke="#C17E12" stroke-width="2.6"/>
+<circle cx="50" cy="48.4" r="31" fill="none" stroke="#FFF6CC" stroke-opacity=".9" stroke-width="1.3"/>
+<path d="M50 25C54 33 64.5 40 64.5 51A14.5 14.5 0 0 1 35.5 51C35.5 40 46 33 50 25Z" transform="translate(1.2 1.8)" fill="#B87412"/>
+<path d="M50 25C54 33 64.5 40 64.5 51A14.5 14.5 0 0 1 35.5 51C35.5 40 46 33 50 25Z" fill="#FFE27A" stroke="#C17E12" stroke-width="1.2"/>
+<path d="M42 50C42 43 46 38 49 34" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="3" stroke-linecap="round"/>
+<path d="M16.17 34.69A36 36 0 0 1 44.99 11.35" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="4" stroke-linecap="round"/>
+<path d="M83.38 60.49A36 36 0 0 1 56.25 82.45" fill="none" stroke="#FFF6CC" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+</svg>

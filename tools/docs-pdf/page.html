@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>{{title}}</title>
+<style>
+{{stylesheet}}
+</style>
+<style>
+@page {
+  @top-left { content: {{running_title}}; }
+  @top-right { content: {{running_edition}}; }
+  @bottom-left { content: {{running_project}}; }
+}
+/* The cover carries no header or footer. Chrome lets the later rule win, so this must follow the one above. */
+@page :first {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+}
+</style>
+</head>
+<body>
+<section class="cover">
+  <p class="cover-project">{{project}}</p>
+  <div class="cover-heading">
+    <p class="cover-kind">{{kind}}</p>
+    <h1 class="cover-title">{{title}}</h1>
+  </div>
+  <div class="cover-control">
+    <table class="control">
+      <tbody>
+{{control_rows}}
+      </tbody>
+    </table>
+    <p class="cover-note">Bu PDF kaynak dosyadan otomatik üretilir. Düzeltmeler kaynak dosyada yapılır ve PDF yeniden üretilir.</p>
+  </div>
+</section>
+{{contents}}
+<main>
+{{body}}
+</main>
+</body>
+</html>

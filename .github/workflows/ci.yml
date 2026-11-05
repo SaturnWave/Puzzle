@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build, test, validate levels
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Puzzle.slnx
+
+      - name: Build
+        run: dotnet build Puzzle.slnx --no-restore -c Release
+
+      - name: Test
+        run: dotnet test Puzzle.slnx --no-build -c Release --logger "console;verbosity=normal"
+
+      - name: Validate level files
+        run: dotnet run --project src/Puzzle.Cli -c Release --no-build -- validate levels

@@ -1,8 +1,9 @@
 using Puzzle.Bot;
-using Puzzle.Core.Engine;
 using Puzzle.Core.Engine.Events;
+using Puzzle.Core.Engine;
 using Puzzle.Core.Levels;
 using Puzzle.Core.Randomness;
+using Puzzle.Tooling;
 
 namespace Puzzle.Cli.Commands;
 
@@ -32,7 +33,7 @@ internal static class DemoCommand
         }
 
         Console.WriteLine($"Result: {game.Status} after {game.MovesUsed} moves.");
-        Console.WriteLine("Legend: R G B Y P O gems, - | rockets, * bomb, + seeker, @ color bomb, 1-3 box, $ item, [x] chained, ' \" jelly");
+        Console.WriteLine("Legend: R G B Y P O C K gems, - | rockets, * bomb, % big bomb, + seeker, @ color bomb, 1-3 box, $ item, [x] chained, ' \" jelly");
         return 0;
     }
 }

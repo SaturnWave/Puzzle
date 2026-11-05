@@ -1,0 +1,8 @@
+<!-- The pin of the painting the player restores now (MapWorldTR): map-pin.svg in a red ring of 3 points at 75 %. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="696" height="768" viewBox="-6 -6 58 64">
+<defs><linearGradient id="gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".22" stop-color="#FFDB6E"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient><mask id="hole"><rect x="-10" y="-10" width="70" height="80" fill="#fff"/><rect x="2.6" y="0.6" width="40.8" height="40.8" rx="6.4" fill="#000"/></mask><mask id="picture"><rect x="-10" y="-10" width="70" height="80" fill="#fff"/><rect x="7" y="5" width="32" height="32" rx="2.5" fill="#000"/></mask></defs>
+<g mask="url(#hole)"><rect x="-0.4" y="-2.4" width="46.8" height="46.8" rx="9.4" fill="#F4472F" fill-opacity=".75"/></g>
+<g mask="url(#picture)"><rect x="1.6" y="2.6" width="42.8" height="42.8" rx="7.4" fill="#042028" fill-opacity=".35"/><rect x="2.6" y="0.6" width="40.8" height="40.8" rx="6.4" fill="#5E3305"/><rect x="4" y="2" width="38" height="38" rx="5" fill="url(#gilt)"/></g>
+<rect x="7" y="5" width="32" height="32" rx="2.5" fill="none" stroke="#5E3305" stroke-opacity=".55" stroke-width="2"/>
+<path d="M19 40h8l-4 7z" fill="#5E3305"/>
+</svg>

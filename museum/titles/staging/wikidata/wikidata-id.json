@@ -1,0 +1,2582 @@
+{
+  "language": "id",
+  "fetched": "2026-10-19T12:05:38.456Z",
+  "paintings": [
+    {
+      "id": "monet-beach-at-sainte-adresse",
+      "originalTitle": "The Beach at Sainte-Adresse",
+      "painter": "Claude Monet",
+      "painterItem": "Q296 Claude Monet (French painter (1840–1926))",
+      "works": 1313,
+      "match": {
+        "item": "Q3966658",
+        "en": "The Beach at Sainte-Adresse",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20188702",
+          "en": "Sainte-Adresse",
+          "label": null
+        },
+        {
+          "item": "Q432253",
+          "en": "Garden at Sainte-Adresse",
+          "label": "Garden at Sainte-Adresse"
+        },
+        {
+          "item": "Q734082",
+          "en": "Regatta at Sainte-Adresse",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "renoir-two-sisters-on-the-terrace",
+      "originalTitle": "Two Sisters (On the Terrace)",
+      "painter": "Pierre-Auguste Renoir",
+      "painterItem": "Q39931 Pierre-Auguste Renoir (French painter and sculptor (1841–1919))",
+      "works": 2246,
+      "match": {
+        "item": "Q630121",
+        "en": "Two Sisters",
+        "label": "Les Deux Sœurs",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q9632679",
+          "en": "The Two Sisters",
+          "label": null
+        },
+        {
+          "item": "Q20809905",
+          "en": "Two Girls",
+          "label": null
+        },
+        {
+          "item": "Q28129843",
+          "en": "Two Nudes",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "caillebotte-paris-street-rainy-day",
+      "originalTitle": "Paris Street; Rainy Day",
+      "painter": "Gustave Caillebotte",
+      "painterItem": "Q295144 Gustave Caillebotte (French painter (1848–1894))",
+      "works": 253,
+      "match": {
+        "item": "Q1452762",
+        "en": "Paris Street; Rainy Day",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q112201893",
+          "en": "Street scene",
+          "label": null
+        },
+        {
+          "item": "Q16837275",
+          "en": "A Balcony in Paris",
+          "label": null
+        },
+        {
+          "item": "Q63952938",
+          "en": "Paris Street. Raining (study)",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "monet-water-lilies-1906",
+      "originalTitle": "Water Lilies",
+      "painter": "Claude Monet",
+      "painterItem": "Q296 Claude Monet (French painter (1840–1926))",
+      "works": 1313,
+      "match": {
+        "item": "Q1189907",
+        "en": "Water Lilies",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q3877090",
+          "en": "Water Lilies",
+          "label": null
+        },
+        {
+          "item": "Q3877091",
+          "en": "White Water Lilies",
+          "label": null
+        },
+        {
+          "item": "Q3877088",
+          "en": "Water Lilies",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "monet-stacks-of-wheat-end-of-summer",
+      "originalTitle": "Stacks of Wheat (End of Summer)",
+      "painter": "Claude Monet",
+      "painterItem": "Q296 Claude Monet (French painter (1840–1926))",
+      "works": 1313,
+      "match": {
+        "item": "Q18683955",
+        "en": "Summer",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q47774422",
+          "en": "Stacks of Wheat (End of Summer)",
+          "label": null
+        },
+        {
+          "item": "Q20268626",
+          "en": "Stacks of Wheat (End of Day, Autumn)",
+          "label": null
+        },
+        {
+          "item": "Q17494280",
+          "en": "Haystacks, end of Summer",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "van-gogh-self-portrait-1887",
+      "originalTitle": "Self-Portrait",
+      "painter": "Vincent van Gogh",
+      "painterItem": "Q5582 Vincent van Gogh (Dutch painter (1853–1890))",
+      "works": 1148,
+      "match": {
+        "item": "Q2714571",
+        "en": "Self-Portrait With a Bandaged Ear",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q3630735",
+          "en": "Self-portrait",
+          "label": null
+        },
+        {
+          "item": "Q3643629",
+          "en": "Self-portrait, dedicated to Paul Gauguin",
+          "label": null
+        },
+        {
+          "item": "Q9162658",
+          "en": "Self-portrait by Vincent van Gogh",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "cezanne-basket-of-apples",
+      "originalTitle": "The Basket of Apples",
+      "painter": "Paul Cézanne",
+      "painterItem": "Q35548 Paul Cézanne (French painter (1839–1906))",
+      "works": 828,
+      "match": {
+        "item": "Q3956440",
+        "en": "The Basket of Apples",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20168332",
+          "en": "Apples",
+          "label": null
+        },
+        {
+          "item": "Q3213037",
+          "en": "Still life with fruit basket",
+          "label": null
+        },
+        {
+          "item": "Q3873326",
+          "en": "Apples and Oranges",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "toulouse-lautrec-at-the-moulin-rouge",
+      "originalTitle": "At the Moulin Rouge",
+      "painter": "Henri de Toulouse-Lautrec",
+      "painterItem": "Q82445 Henri de Toulouse-Lautrec (French painter and illustrator (1864–1901))",
+      "works": 605,
+      "match": {
+        "item": "Q951954",
+        "en": "The clownesse cha-u-kao at the Moulin Rouge",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q3607521",
+          "en": "At the Moulin Rouge",
+          "label": null
+        },
+        {
+          "item": "Q3633443",
+          "en": "At the Moulin Rouge, The Dance",
+          "label": null
+        },
+        {
+          "item": "Q5831987",
+          "en": "At the Moulin Rouge: Two women waltzing",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "van-gogh-the-bedroom",
+      "originalTitle": "The Bedroom",
+      "painter": "Vincent van Gogh",
+      "painterItem": "Q5582 Vincent van Gogh (Dutch painter (1853–1890))",
+      "works": 1148,
+      "match": {
+        "item": "Q724377",
+        "en": "Bedroom in Arles",
+        "label": "Kamar Tidur di Arles",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q18543956",
+          "en": "Bedroom in Arles",
+          "label": null
+        },
+        {
+          "item": "Q18713070",
+          "en": "Bedroom in Arles",
+          "label": null
+        },
+        {
+          "item": "Q18713076",
+          "en": "Bedroom in Arles",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "seurat-sunday-on-la-grande-jatte",
+      "originalTitle": "A Sunday on La Grande Jatte — 1884",
+      "painter": "Georges Seurat",
+      "painterItem": "Q34013 Georges Seurat (French painter (1859-1891))",
+      "works": 193,
+      "match": {
+        "item": "Q1044742",
+        "en": "A Sunday Afternoon on the Island of La Grande Jatte",
+        "label": null,
+        "likeness": 0.75
+      },
+      "alternatives": [
+        {
+          "item": "Q13571392",
+          "en": "The Seine at La Grande Jatte",
+          "label": null
+        },
+        {
+          "item": "Q3602905",
+          "en": "À droite. Moyenne distance. Étude pour la Grande-Jatte",
+          "label": null
+        },
+        {
+          "item": "Q3853687",
+          "en": "Moyenne distance, gauche, deux personnages. Étude pour la Grande-Jatte",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hill-apple-tree-in-blossom",
+      "originalTitle": "Apple Tree in Blossom",
+      "painter": "Carl Fredrik Hill",
+      "painterItem": "Q858483 Carl Fredrik Hill (Swedish artist (1849-1911))",
+      "works": 152,
+      "match": {
+        "item": "Q18573984",
+        "en": "Apple Tree in Blossom",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q130610968",
+          "en": "Fruit Tree in Blossom, Bois-le-Roi",
+          "label": null
+        },
+        {
+          "item": "Q18573983",
+          "en": "The Tree and the River III (The Seine at Bois-le-Roi)",
+          "label": null
+        },
+        {
+          "item": "Q108741898",
+          "en": "The Blossoming Fruit Tree in the Cave",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "petersen-breton-girl-in-the-hothouse",
+      "originalTitle": "Breton Girl Looking After Plants in the Hothouse",
+      "painter": "Anna Petersen",
+      "painterItem": "Q12301770 Anna Petersen (Danish painter (1845-1910))",
+      "works": 8,
+      "match": {
+        "item": "Q20440297",
+        "en": "Breton Girl Looking After Plants in the Hothouse",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "edelfelt-luxembourg-gardens",
+      "originalTitle": "The Luxembourg Gardens, Paris",
+      "painter": "Albert Edelfelt",
+      "painterItem": "Q356644 Albert Edelfelt (Finland Swedish painter and illustrator (1854-1905))",
+      "works": 420,
+      "match": {
+        "item": "Q18346884",
+        "en": "The Luxembourg Gardens, Paris",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20796953",
+          "en": "Final Study for The Luxembourg Gardens, Paris",
+          "label": null
+        },
+        {
+          "item": "Q20781887",
+          "en": "Paris in Snow",
+          "label": null
+        },
+        {
+          "item": "Q20795954",
+          "en": "The Cluny Museum Garden in Paris",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "zorn-midsummer-dance",
+      "originalTitle": "Midsummer Dance",
+      "painter": "Anders Zorn",
+      "painterItem": "Q206820 Anders Zorn (Swedish painter and engraver (1860-1920))",
+      "works": 405,
+      "match": {
+        "item": "Q10585101",
+        "en": "Midsummer Dance",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q43227010",
+          "en": "Transferred to the Riksdag: Dance in Gopsmor",
+          "label": null
+        },
+        {
+          "item": "Q60971026",
+          "en": "Dance in the Gopsmorkate",
+          "label": null
+        },
+        {
+          "item": "Q109942096",
+          "en": "Dance in Gopsmor",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "larsson-breakfast-under-the-big-birch",
+      "originalTitle": "Breakfast under the Big Birch (from A Home)",
+      "painter": "Carl Larsson",
+      "painterItem": "Q187310 Carl Larsson (Swedish painter (1853-1919))",
+      "works": 289,
+      "match": {
+        "item": "Q18587186",
+        "en": "Breakfast under the Big Birch. From A Home (26 watercolours)",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "homer-the-dinner-horn",
+      "originalTitle": "The Dinner Horn (Blowing the Horn at Seaside)",
+      "painter": "Winslow Homer",
+      "painterItem": "Q344838 Winslow Homer (American landscape painter (1836–1910))",
+      "works": 654,
+      "match": {
+        "item": "Q20188727",
+        "en": "The Dinner Horn (Blowing the Horn at Seaside)",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20778160",
+          "en": "The Dinner Horn",
+          "label": null
+        },
+        {
+          "item": "Q64572042",
+          "en": "The Dinner Horn",
+          "label": null
+        },
+        {
+          "item": "Q138589480",
+          "en": "Answering the Horn",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "eakins-champion-single-sculls",
+      "originalTitle": "The Champion Single Sculls (Max Schmitt in a Single Scull)",
+      "painter": "Thomas Eakins",
+      "painterItem": "Q214905 Thomas Eakins (American painter (1844–1916))",
+      "works": 324,
+      "match": {
+        "item": "Q1913390",
+        "en": "Max Schmitt in a Single Scull",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20812850",
+          "en": "Sketch of Max Schmitt in a Single Scull",
+          "label": null
+        },
+        {
+          "item": "Q49182692",
+          "en": "John Biglin in a Single Scull",
+          "label": null
+        },
+        {
+          "item": "Q83560170",
+          "en": "John Biglin in a Single Scull",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "sargent-setting-out-to-fish",
+      "originalTitle": "En route pour la pêche (Setting Out to Fish)",
+      "painter": "John Singer Sargent",
+      "painterItem": "Q155626 John Singer Sargent (American painter (1856–1925))",
+      "works": 862,
+      "match": {
+        "item": "Q20188839",
+        "en": "Setting Out to Fish",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q64584092",
+          "en": "En Route pour la pêche (Setting Out to Fish)",
+          "label": null
+        },
+        {
+          "item": "Q28796795",
+          "en": "An Out-of-Doors Study",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "chase-a-friendly-call",
+      "originalTitle": "A Friendly Call",
+      "painter": "William Merritt Chase",
+      "painterItem": "Q265820 William Merritt Chase (American painter (1849–1916))",
+      "works": 208,
+      "match": {
+        "item": "Q20190485",
+        "en": "A Friendly Call",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "homer-snap-the-whip",
+      "originalTitle": "Snap the Whip",
+      "painter": "Winslow Homer",
+      "painterItem": "Q344838 Winslow Homer (American landscape painter (1836–1910))",
+      "works": 654,
+      "match": {
+        "item": "Q18209719",
+        "en": "Snap the Whip",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q19925470",
+          "en": "Snap the Whip",
+          "label": null
+        },
+        {
+          "item": "Q96741343",
+          "en": "Snap the Whip",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "springer-zuiderhavendijk-enkhuizen",
+      "originalTitle": "The Zuiderhavendijk, Enkhuizen",
+      "painter": "Cornelis Springer",
+      "painterItem": "Q474066 Cornelis Springer (painter from the Northern Netherlands (1817-1891))",
+      "works": 90,
+      "match": {
+        "item": "Q17328710",
+        "en": "The Zuiderhavendijk, Enkhuizen",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q105445190",
+          "en": "The Zuiderspui with the Drommedaris, Enkhuizen",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "maris-girl-with-flowers-on-the-grass",
+      "originalTitle": "A Girl with Flowers on the Grass",
+      "painter": "Jacob Maris",
+      "painterItem": "Q978158 Jacob Maris (Dutch painter (1837-1899))",
+      "works": 245,
+      "match": {
+        "item": "Q17334699",
+        "en": "A Girl with Flowers on the Grass",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q17331822",
+          "en": "Girl at the Piano",
+          "label": null
+        },
+        {
+          "item": "Q19925691",
+          "en": "Italian girl",
+          "label": null
+        },
+        {
+          "item": "Q116298793",
+          "en": "Servant girl",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "breitner-yellow-riders",
+      "originalTitle": "The Yellow Riders (Horse Artillery)",
+      "painter": "George Hendrik Breitner",
+      "painterItem": "Q289441 George Hendrik Breitner (Dutch painter (1857–1923))",
+      "works": 392,
+      "match": {
+        "item": "Q114708012",
+        "en": "Artillery",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q17334475",
+          "en": "Artillery on Maneuver",
+          "label": null
+        },
+        {
+          "item": "Q114708983",
+          "en": "Artillery maneuver",
+          "label": null
+        },
+        {
+          "item": "Q141248924",
+          "en": "The White Horse",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "gabriel-in-the-month-of-july",
+      "originalTitle": "In the Month of July (A Windmill on a Polder Waterway)",
+      "painter": "Paul Gabriël",
+      "painterItem": "Q2303402 Paul Joseph Constantin Gabriël (Dutch painter and draftsman (1828-1903))",
+      "works": 114,
+      "match": {
+        "item": "Q17324244",
+        "en": "A Windmill on a Polder Waterway, Known as ‘In the Month of July’",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q17327969",
+          "en": "Windmill on a pond",
+          "label": null
+        },
+        {
+          "item": "Q19925739",
+          "en": "Polder in Vreeland",
+          "label": null
+        },
+        {
+          "item": "Q24047436",
+          "en": "Polder landscape",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "mauve-morning-ride-along-the-beach",
+      "originalTitle": "Morning Ride along the Beach",
+      "painter": "Anton Mauve",
+      "painterItem": "Q591907 Anton Mauve (Dutch painter (1838–1888))",
+      "works": 204,
+      "match": {
+        "item": "Q13099109",
+        "en": "Morning Ride on the Beach",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q119626882",
+          "en": "On the Beach",
+          "label": null
+        },
+        {
+          "item": "Q19857351",
+          "en": "Early Morning Plowing",
+          "label": null
+        },
+        {
+          "item": "Q24050640",
+          "en": "Fishing boat on the beach",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "kuniyoshi-cats-of-the-tokaido",
+      "originalTitle": "Cats Suggested as the Fifty-three Stations of the Tokaido (the last sheet of three)",
+      "painter": "Utagawa Kuniyoshi",
+      "painterItem": "Q317736 Utagawa Kuniyoshi (Japanese ukiyo-e artist (1798–1861))",
+      "works": 602,
+      "match": {
+        "item": "Q97657363",
+        "en": "Cats suggested as the fifty-three stations of the Tōkaidō",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q96473092",
+          "en": "From the Fifty-three Stations of the Tokaido Road",
+          "label": null
+        },
+        {
+          "item": "Q96471610",
+          "en": "Fifty-Three Stations of the Chushingura",
+          "label": null
+        },
+        {
+          "item": "Q96621411",
+          "en": "Fifty-Three Tokaido Stations: a Record of Humility",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hiroshige-plum-park-in-kameido",
+      "originalTitle": "Plum Park in Kameido, from One Hundred Famous Views of Edo",
+      "painter": "Utagawa Hiroshige",
+      "painterItem": "Q200798 Utagawa Hiroshige (Japanese ukiyo-e artist (1797–1858))",
+      "works": 451,
+      "match": {
+        "item": "Q165190",
+        "en": "One Hundred Famous Views of Edo",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q21127606",
+          "en": "Plum Park in Kameido",
+          "label": null
+        },
+        {
+          "item": "Q99559148",
+          "en": "Famous Views of Kantō",
+          "label": null
+        },
+        {
+          "item": "Q109451024",
+          "en": "The Famous Views of Naniwa",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "kiyochika-snow-at-ochanomizu",
+      "originalTitle": "Snow at Ochanomizu",
+      "painter": "Kobayashi Kiyochika",
+      "painterItem": "Q3121142 Kobayashi Kiyochika (Japanese artist (1847-1915))",
+      "works": 10,
+      "match": {
+        "item": "Q20881434",
+        "en": "Rainy Day at Ochanomizu, Tokyo",
+        "label": null,
+        "likeness": 0.5
+      },
+      "alternatives": []
+    },
+    {
+      "id": "yoshitoshi-moon-of-musashi-plain",
+      "originalTitle": "Moon of Musashi Plain, from One Hundred Aspects of the Moon",
+      "painter": "Tsukioka Yoshitoshi",
+      "painterItem": "Q467337 Yoshitoshi (Japanese artist and printmaker (1839–1892))",
+      "works": 334,
+      "match": {
+        "item": "Q3541645",
+        "en": "One Hundred Aspects of the Moon",
+        "label": "One Hundred Aspects of the Moon",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q78610361",
+          "en": "Murasaki Shikibu at Ishiyamadera Temple, based on the print “The Moon at Ishiyama,” from the series One Hundred Aspects of the Moon (Tsuki hyakushi: Ishiyama no tsuki)",
+          "label": null
+        },
+        {
+          "item": "Q78610431",
+          "en": "The Spirit of the Deceased Yūgao Entwined in Moonflower Vines, based on the print “The Lady of the Evening Faces,” from the series One Hundred Aspects of the Moon (Tsuki hyakushi: Genji Yūgao no maki)",
+          "label": null
+        },
+        {
+          "item": "Q62060765",
+          "en": "Full Moon",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hiroshige-sudden-shower-over-shin-ohashi",
+      "originalTitle": "Sudden Shower over Shin-Ohashi Bridge and Atake, from One Hundred Famous Views of Edo",
+      "painter": "Utagawa Hiroshige",
+      "painterItem": "Q200798 Utagawa Hiroshige (Japanese ukiyo-e artist (1797–1858))",
+      "works": 451,
+      "match": {
+        "item": "Q5826309",
+        "en": "Sudden Shower over Shin-Ōhashi Bridge and Atake",
+        "label": "Sudden Shower over Shin-Ōhashi Bridge and Atake",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q165190",
+          "en": "One Hundred Famous Views of Edo",
+          "label": null
+        },
+        {
+          "item": "Q60780869",
+          "en": "Sudden Shower over Shin-Ōhashi Bridge and Atake, from the series One Hundred Famous Views of Edo",
+          "label": null
+        },
+        {
+          "item": "Q50815400",
+          "en": "Evening Shower at Ōhashi Bridge, Atake",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "courbet-young-ladies-of-the-village",
+      "originalTitle": "Young Ladies of the Village",
+      "painter": "Gustave Courbet",
+      "painterItem": "Q34618 Gustave Courbet (French painter (1819–1877))",
+      "works": 748,
+      "match": {
+        "item": "Q19911495",
+        "en": "Young Ladies of the Village",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q1293985",
+          "en": "Young Ladies Beside the Seine",
+          "label": null
+        },
+        {
+          "item": "Q26692617",
+          "en": "Young Ladies on the Bank of the Seine",
+          "label": null
+        },
+        {
+          "item": "Q28797759",
+          "en": "Young Ladies on the bank of the Seine – fragment of a painting (Woman with Flowers on Her Hat)",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "boudin-festival-in-the-harbor-of-honfleur",
+      "originalTitle": "Festival in the Harbor of Honfleur",
+      "painter": "Eugène Boudin",
+      "painterItem": "Q212600 Eugène Louis Boudin (French painter (1824-1898))",
+      "works": 939,
+      "match": {
+        "item": "Q20539486",
+        "en": "Harbor at Honfleur",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q86856703",
+          "en": "Harbor",
+          "label": null
+        },
+        {
+          "item": "Q20188396",
+          "en": "Festival in the Harbor of Honfleur",
+          "label": null
+        },
+        {
+          "item": "Q115158045",
+          "en": "Honfleur",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "fantin-latour-still-life-with-flowers-and-fruit",
+      "originalTitle": "Still Life with Flowers and Fruit",
+      "painter": "Henri Fantin-Latour",
+      "painterItem": "Q310715 Henri Fantin-Latour (French painter and printmaker (1836-1904))",
+      "works": 481,
+      "match": {
+        "item": "Q17331298",
+        "en": "Still Life with Fruit",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q19912712",
+          "en": "Still Life with Flowers and Fruit",
+          "label": null
+        },
+        {
+          "item": "Q19928684",
+          "en": "Flowers",
+          "label": null
+        },
+        {
+          "item": "Q20188684",
+          "en": "Still Life",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "bonheur-weaning-the-calves",
+      "originalTitle": "Weaning the Calves",
+      "painter": "Rosa Bonheur",
+      "painterItem": "Q241732 Rosa Bonheur (French artist (1822-1899))",
+      "works": 367,
+      "match": {
+        "item": "Q19912677",
+        "en": "Weaning the Calves",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "ingres-princesse-de-broglie",
+      "originalTitle": "Princesse de Broglie",
+      "painter": "Jean-Auguste-Dominique Ingres",
+      "painterItem": "Q23380 Jean-Auguste-Dominique Ingres (French painter (1780–1867))",
+      "works": 356,
+      "match": {
+        "item": "Q18222055",
+        "en": "Joséphine-Éléonore-Marie-Pauline de Galard de Brassac de Béarn (1825–1860), Princesse de Broglie",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "bingham-fur-traders-descending-the-missouri",
+      "originalTitle": "Fur Traders Descending the Missouri",
+      "painter": "George Caleb Bingham",
+      "painterItem": "Q598030 George Caleb Bingham (American artist (1811–1879))",
+      "works": 77,
+      "match": {
+        "item": "Q3172087",
+        "en": "Fur Traders Descending the Missouri",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20198054",
+          "en": "Boatmen on the Missouri",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hicks-cornell-farm",
+      "originalTitle": "The Cornell Farm",
+      "painter": "Edward Hicks",
+      "painterItem": "Q2723190 Edward Hicks (American artist (1780-1849))",
+      "works": 41,
+      "match": {
+        "item": "Q7727622",
+        "en": "The Cornell Farm",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "bierstadt-merced-river-yosemite",
+      "originalTitle": "Merced River, Yosemite Valley",
+      "painter": "Albert Bierstadt",
+      "painterItem": "Q77132 Albert Bierstadt (American painter (1830–1902))",
+      "works": 658,
+      "match": {
+        "item": "Q20441386",
+        "en": "The Merced River in Yosemite",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20441422",
+          "en": "Yosemite Valley",
+          "label": null
+        },
+        {
+          "item": "Q20487142",
+          "en": "Valley of the Yosemite",
+          "label": null
+        },
+        {
+          "item": "Q20487813",
+          "en": "In the Valley of the Yosemite",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "cole-the-oxbow",
+      "originalTitle": "The Oxbow (View from Mount Holyoke, Northampton, Massachusetts, after a Thunderstorm)",
+      "painter": "Thomas Cole",
+      "painterItem": "Q334001 Thomas Cole (19th-century American painter (1801-1848))",
+      "works": 198,
+      "match": {
+        "item": "Q20169452",
+        "en": "Sketch for View from Mount Holyoke, Northampton, Massachusetts, after a Thunderstorm (The Oxbow)",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q3172259",
+          "en": "The Oxbow",
+          "label": null
+        },
+        {
+          "item": "Q103955058",
+          "en": "View of Mount Etna",
+          "label": null
+        },
+        {
+          "item": "Q20776170",
+          "en": "View of the Thames",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "leutze-washington-crossing-the-delaware",
+      "originalTitle": "Washington Crossing the Delaware",
+      "painter": "Emanuel Leutze",
+      "painterItem": "Q452321 Emanuel Leutze (American artist (1816-1868))",
+      "works": 69,
+      "match": {
+        "item": "Q509806",
+        "en": "Washington Crossing the Delaware",
+        "label": "Washington Crossing the Delaware",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q64559321",
+          "en": "Studies for \"Washington Crossing the Delaware\" [recto]",
+          "label": null
+        },
+        {
+          "item": "Q110819859",
+          "en": "Washington Crossing the Delaware",
+          "label": null
+        },
+        {
+          "item": "Q63412586",
+          "en": "Washington Rallying the Troops at Monmouth",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "rorbye-view-from-the-artists-window",
+      "originalTitle": "View from the Artist's Window",
+      "painter": "Martinus Rørbye",
+      "painterItem": "Q979541 Martinus Rørbye (Danish artist (1803-1848))",
+      "works": 78,
+      "match": {
+        "item": "Q18359104",
+        "en": "View from the Artist's Window",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20355485",
+          "en": "The Artist's Mother, Frederikke Eleonore Cathrine Rørbye, née Stockfleth",
+          "label": null
+        },
+        {
+          "item": "Q20392111",
+          "en": "View of Copenhagen at Sunset",
+          "label": null
+        },
+        {
+          "item": "Q141447614",
+          "en": "View of the Square in Amalfi",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "kobke-street-in-osterbro",
+      "originalTitle": "A View of a Street in Østerbro outside Copenhagen. Morning Light",
+      "painter": "Christen Købke",
+      "painterItem": "Q381458 Christen Købke (Danish artist (1810-1848))",
+      "works": 113,
+      "match": {
+        "item": "Q20268761",
+        "en": "View of a Street in Østerbro outside Copenhagen. Morning Light",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20434788",
+          "en": "View of Falkonerallé outside Copenhagen",
+          "label": null
+        },
+        {
+          "item": "Q20539647",
+          "en": "View Near Copenhagen",
+          "label": null
+        },
+        {
+          "item": "Q117822195",
+          "en": "View of Dosseringen, Copenhagen",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hansen-danish-artists-in-rome",
+      "originalTitle": "A Group of Danish Artists in Rome",
+      "painter": "Constantin Hansen",
+      "painterItem": "Q539474 Constantin Hansen (Danish artist (1804-1880))",
+      "works": 121,
+      "match": {
+        "item": "Q2015484",
+        "en": "A Group of Danish Artists in Rome",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q138876833",
+          "en": "The Tiber in the north of Rome",
+          "label": null
+        },
+        {
+          "item": "Q3202466",
+          "en": "The Danish Constituent Assembly",
+          "label": null
+        },
+        {
+          "item": "Q20422109",
+          "en": "The Arch of Titus in Rome",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "skovgaard-beech-wood-in-may",
+      "originalTitle": "A Beech Wood in May near Iselingen Manor, Zealand",
+      "painter": "P. C. Skovgaard",
+      "painterItem": "Q2761358 P. C. Skovgaard (Danish artist (1817-1875))",
+      "works": 150,
+      "match": {
+        "item": "Q20267166",
+        "en": "A Beech Wood in May near Iselingen Manor, Zealand",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q47472175",
+          "en": "Beech Wood in May",
+          "label": null
+        },
+        {
+          "item": "Q20469618",
+          "en": "Twilight Setting in a Wood near Iselingen Manor, Zealand",
+          "label": null
+        },
+        {
+          "item": "Q20355363",
+          "en": "Landscape near the Manor of Dortheaslyst",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "eckersberg-three-arches-of-the-colosseum",
+      "originalTitle": "A View through Three Arches of the Third Storey of the Colosseum",
+      "painter": "Christoffer Wilhelm Eckersberg",
+      "painterItem": "Q363823 Christoffer Wilhelm Eckersberg (Danish painter (1783–1853))",
+      "works": 283,
+      "match": {
+        "item": "Q3079004",
+        "en": "A View through Three of the North-Western Arches of the Third Storey of the Coliseum",
+        "label": null,
+        "likeness": 0.86
+      },
+      "alternatives": [
+        {
+          "item": "Q47501050",
+          "en": "View of the interior of the Colosseum",
+          "label": null
+        },
+        {
+          "item": "Q20355607",
+          "en": "View of the Interior of the Colosseum",
+          "label": null
+        },
+        {
+          "item": "Q21781576",
+          "en": "View through a Door to Running Figures",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "constable-salisbury-cathedral",
+      "originalTitle": "Salisbury Cathedral from the Bishop's Grounds",
+      "painter": "John Constable",
+      "painterItem": "Q159297 John Constable (English painter (1776-1837))",
+      "works": 573,
+      "match": {
+        "item": "Q398973",
+        "en": "Salisbury Cathedral from the Bishop's Grounds",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q19896714",
+          "en": "Salisbury Cathedral from the Bishop's Grounds",
+          "label": null
+        },
+        {
+          "item": "Q50813927",
+          "en": "Salisbury",
+          "label": null
+        },
+        {
+          "item": "Q59543134",
+          "en": "Salisbury Cathedral from the Bishop's Grounds",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "lawrence-lady-templetown-and-her-son",
+      "originalTitle": "Lady Mary Templetown and Her Eldest Son",
+      "painter": "Thomas Lawrence",
+      "painterItem": "Q312096 Thomas Lawrence (English portrait painter (1769–1830))",
+      "works": 557,
+      "match": {
+        "item": "Q20181439",
+        "en": "Lady Mary Templetown and Her Eldest Son",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q112240146",
+          "en": "portrait of a lady",
+          "label": null
+        },
+        {
+          "item": "Q112241254",
+          "en": "portrait of a lady",
+          "label": null
+        },
+        {
+          "item": "Q119014368",
+          "en": "Portrait of a Lady",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "turner-mortlake-terrace",
+      "originalTitle": "Mortlake Terrace",
+      "painter": "J. M. W. Turner",
+      "painterItem": "Q159758 J. M. W. Turner (English painter and draftsman (c.1775–1851))",
+      "works": 4065,
+      "match": {
+        "item": "Q18556096",
+        "en": "Mortlake Terrace",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q19857395",
+          "en": "Mortlake Terrace: Early Summer Morning",
+          "label": null
+        },
+        {
+          "item": "Q20185584",
+          "en": "Mortlake Terrace",
+          "label": null
+        },
+        {
+          "item": "Q18552584",
+          "en": "View of a River from a Terrace: ?Mâcon",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "bonington-grand-canal",
+      "originalTitle": "The Grand Canal",
+      "painter": "Richard Parkes Bonington",
+      "painterItem": "Q380395 Richard Parkes Bonington (British painter (1801-1828))",
+      "works": 238,
+      "match": {
+        "item": "Q20185495",
+        "en": "The Grand Canal",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q23758320",
+          "en": "Grand Canal, Venice",
+          "label": null
+        },
+        {
+          "item": "Q27964270",
+          "en": "Venice: The Grand Canal",
+          "label": null
+        },
+        {
+          "item": "Q28798151",
+          "en": "The Grand Canal, Venice, Looking Toward the Rialto",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "turner-burning-of-the-houses-of-parliament",
+      "originalTitle": "The Burning of the Houses of Lords and Commons, 16 October 1834",
+      "painter": "J. M. W. Turner",
+      "painterItem": "Q159758 J. M. W. Turner (English painter and draftsman (c.1775–1851))",
+      "works": 4065,
+      "match": {
+        "item": "Q3204090",
+        "en": "The Burning of the Houses of Lords and Commons",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q60514853",
+          "en": "The Burning of the Houses of Lords and Commons, 16 October 1834",
+          "label": null
+        },
+        {
+          "item": "Q80974590",
+          "en": "The Burning of the Houses of Lords and Commons",
+          "label": null
+        },
+        {
+          "item": "Q18571464",
+          "en": "The Burning of the Houses of Parliament",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "sharaku-otani-oniji-as-yakko-edobei",
+      "originalTitle": "Kabuki Actor Otani Oniji III as Yakko Edobei",
+      "painter": "Sharaku",
+      "painterItem": "Q361174 Sharaku (Japanese artist (fl. 1794–1795))",
+      "works": 167,
+      "match": {
+        "item": "Q59915220",
+        "en": "Kabuki Actor Ōtani Oniji III as Yakko Edobei in the Play The Colored Reins of a Loving Wife (Koi nyōbō somewake tazuna)",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q62372435",
+          "en": "Ichikawa Omezō as Tomita Hyōtarō and Ōtani Oniji III as Kawashima Jibugorō",
+          "label": null
+        },
+        {
+          "item": "Q62381845",
+          "en": "Ōtani Oniji II as Kawashima Jibugorō",
+          "label": null
+        },
+        {
+          "item": "Q62382188",
+          "en": "Arashi Ryūzō I as Yakko Ukiyo Matabei and Ōtani Hiroji III as Yakko Tosa no Matabei",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hokusai-red-fuji",
+      "originalTitle": "South Wind, Clear Sky (Red Fuji), from Thirty-six Views of Mount Fuji",
+      "painter": "Katsushika Hokusai",
+      "painterItem": "Q5586 Katsushika Hokusai (Japanese artist (1760-1849))",
+      "works": 387,
+      "match": {
+        "item": "Q227494",
+        "en": "Thirty-six Views of Mount Fuji",
+        "label": "36 Pemandangan Gunung Fuji",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q60757269",
+          "en": "South Wind, Clear Sky, from the series Thirty-six Views of Mount Fuji",
+          "label": null
+        },
+        {
+          "item": "Q2944321",
+          "en": "One Hundred Views of Mt. Fuji",
+          "label": "One Hundred Views of Mount Fuji"
+        },
+        {
+          "item": "Q3565037",
+          "en": "Fine Wind, Clear Morning",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hiroshige-hakone-lake",
+      "originalTitle": "Hakone: Picture of the Lake, from Fifty-three Stations of the Tokaido",
+      "painter": "Utagawa Hiroshige",
+      "painterItem": "Q200798 Utagawa Hiroshige (Japanese ukiyo-e artist (1797–1858))",
+      "works": 451,
+      "match": {
+        "item": "Q243248",
+        "en": "The Fifty-three Stations of the Tōkaidō",
+        "label": "Lima Puluh Tiga Perhentian di Tōkaidō",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q50815478",
+          "en": "Lake at Hakone",
+          "label": null
+        },
+        {
+          "item": "Q75090700",
+          "en": "Hakone",
+          "label": null
+        },
+        {
+          "item": "Q102965918",
+          "en": "Hakone, from \"The Fifty-three Stations of the Tokaido\" (reproduction)",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "kuniyoshi-tsukuda-island",
+      "originalTitle": "Tsukuda Island, from Famous Places in the Eastern Capital",
+      "painter": "Utagawa Kuniyoshi",
+      "painterItem": "Q317736 Utagawa Kuniyoshi (Japanese ukiyo-e artist (1798–1861))",
+      "works": 602,
+      "match": {
+        "item": "Q69552877",
+        "en": "Famous Places of the Eastern Capital",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q96676364",
+          "en": "Fifty-three Stations of the Tokaido Road, Six Famous Places",
+          "label": null
+        },
+        {
+          "item": "Q96677999",
+          "en": "Fifty-three Stations of the Tokaido Road, Three Famous Places",
+          "label": null
+        },
+        {
+          "item": "Q96678006",
+          "en": "Fifty-three Stations of the Tokaido Road, Four Famous Places",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "hokusai-great-wave",
+      "originalTitle": "Under the Wave off Kanagawa (The Great Wave), from Thirty-six Views of Mount Fuji",
+      "painter": "Katsushika Hokusai",
+      "painterItem": "Q5586 Katsushika Hokusai (Japanese artist (1760-1849))",
+      "works": 387,
+      "match": {
+        "item": "Q227494",
+        "en": "Thirty-six Views of Mount Fuji",
+        "label": "36 Pemandangan Gunung Fuji",
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q252485",
+          "en": "The Great Wave off Kanagawa",
+          "label": "Arus Besar di lepas Kanagawa"
+        },
+        {
+          "item": "Q28912605",
+          "en": "The Great Wave off Kanagawa",
+          "label": null
+        },
+        {
+          "item": "Q28913656",
+          "en": "The Great Wave off Kanagawa",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "peale-benjamin-and-eleanor-laming",
+      "originalTitle": "Benjamin and Eleanor Ridgely Laming",
+      "painter": "Charles Willson Peale",
+      "painterItem": "Q454945 Charles Willson Peale (American painter (1741–1827))",
+      "works": 202,
+      "match": {
+        "item": "Q20179558",
+        "en": "Benjamin and Eleanor Ridgely Laming",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q132357241",
+          "en": "Benjamin Rush",
+          "label": null
+        },
+        {
+          "item": "Q20862545",
+          "en": "Benjamin Franklin",
+          "label": null
+        },
+        {
+          "item": "Q130711007",
+          "en": "Portrait of Benjamin Randolph",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "kemmelmeyer-washington-reviewing-the-western-army",
+      "originalTitle": "Washington Reviewing the Western Army at Fort Cumberland, Maryland",
+      "painter": "Frederick Kemmelmeyer",
+      "painterItem": "Q3087120 Frederick Kemmelmeyer (German-American painter (1760-1821))",
+      "works": 6,
+      "match": {
+        "item": "Q19925808",
+        "en": "Washington Reviewing the Western Army at Fort Cumberland, Maryland",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "david-general-gerard",
+      "originalTitle": "General Étienne-Maurice Gérard",
+      "painter": "Jacques-Louis David",
+      "painterItem": "Q83155 Jacques-Louis David (French painter (1748–1825))",
+      "works": 401,
+      "match": {
+        "item": "Q19911964",
+        "en": "General Étienne-Maurice Gérard (1773–1852), Marshal of France",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q113957814",
+          "en": "Rabaut Saint-Etienne",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "sully-lady-with-a-harp",
+      "originalTitle": "Lady with a Harp: Eliza Ridgely",
+      "painter": "Thomas Sully",
+      "painterItem": "Q786545 Thomas Sully (American painter (1783-1872))",
+      "works": 288,
+      "match": {
+        "item": "Q20184112",
+        "en": "Lady with a Harp: Eliza Ridgely",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20177034",
+          "en": "Portrait of a Lady",
+          "label": null
+        },
+        {
+          "item": "Q20863028",
+          "en": "Eliza Leslie",
+          "label": null
+        },
+        {
+          "item": "Q20184286",
+          "en": "Charles Carnan Ridgely",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "goya-manuel-osorio-the-red-boy",
+      "originalTitle": "Manuel Osorio Manrique de Zuñiga (The Red Boy)",
+      "painter": "Francisco de Goya",
+      "painterItem": "Q5432 Francisco Goya (Spanish painter and printmaker (1746–1828))",
+      "works": 1064,
+      "match": {
+        "item": "Q3035829",
+        "en": "Don Manuel Osorio de Zuniga",
+        "label": null,
+        "likeness": 0.75
+      },
+      "alternatives": [
+        {
+          "item": "Q5795925",
+          "en": "Boy on a Ram",
+          "label": null
+        },
+        {
+          "item": "Q5825829",
+          "en": "the Boy with a bird",
+          "label": null
+        },
+        {
+          "item": "Q5825919",
+          "en": "The tree boy",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "devis-maynard-family-at-waltons",
+      "originalTitle": "Members of the Maynard Family in the Park at Waltons",
+      "painter": "Arthur Devis",
+      "painterItem": "Q3286189 Arthur Devis (English painter (1712-1787))",
+      "works": 137,
+      "match": {
+        "item": "Q20178116",
+        "en": "Members of the Maynard Family in the Park at Waltons",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q28545297",
+          "en": "The James Family",
+          "label": null
+        },
+        {
+          "item": "Q119007572",
+          "en": "Family Group",
+          "label": null
+        },
+        {
+          "item": "Q119702198",
+          "en": "The Barton Family",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "stubbs-duke-of-dorsets-hunter",
+      "originalTitle": "The Third Duke of Dorset's Hunter with a Groom and a Dog",
+      "painter": "George Stubbs",
+      "painterItem": "Q381728 George Stubbs (British painter (1724–1806))",
+      "works": 280,
+      "match": {
+        "item": "Q19912530",
+        "en": "The Third Duke of Dorset's Hunter with a Groom and a Dog",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q28024783",
+          "en": "A Rough Dog",
+          "label": null
+        },
+        {
+          "item": "Q28039116",
+          "en": "Truss, A Hunter",
+          "label": null
+        },
+        {
+          "item": "Q132783049",
+          "en": "The Duke of Ancaster's bay stallion Blank, held by Old Parnam, his Groom",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "reynolds-lady-caroline-howard",
+      "originalTitle": "Lady Caroline Howard",
+      "painter": "Joshua Reynolds",
+      "painterItem": "Q194402 Joshua Reynolds (English painter (1723–1792))",
+      "works": 879,
+      "match": {
+        "item": "Q6470018",
+        "en": "Lady Caroline Howard",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q52218288",
+          "en": "Lady ‘Harriot’ Christian Henrietta Caroline Fox-Strangways, Mrs John Dyke Acland (1749/50-1815)",
+          "label": null
+        },
+        {
+          "item": "Q122537631",
+          "en": "Lady Caroline Scott as 'Winter'",
+          "label": null
+        },
+        {
+          "item": "Q18687743",
+          "en": "Lady Sunderlin",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "gainsborough-mrs-richard-brinsley-sheridan",
+      "originalTitle": "Mrs. Richard Brinsley Sheridan",
+      "painter": "Thomas Gainsborough",
+      "painterItem": "Q192720 Thomas Gainsborough (English portrait and landscape painter (1727-1788))",
+      "works": 667,
+      "match": {
+        "item": "Q6929863",
+        "en": "Mrs. Richard Brinsley Sheridan",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20809003",
+          "en": "Portrait of Miss Elizabeth Linley [later Mrs. Richard Brinsley Sheridan]",
+          "label": null
+        },
+        {
+          "item": "Q20429680",
+          "en": "Mrs Siddons",
+          "label": null
+        },
+        {
+          "item": "Q119013648",
+          "en": "Richard Hurd",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "lawrence-elizabeth-farren",
+      "originalTitle": "Elizabeth Farren, Later Countess of Derby",
+      "painter": "Thomas Lawrence",
+      "painterItem": "Q312096 Thomas Lawrence (English portrait painter (1769–1830))",
+      "works": 557,
+      "match": {
+        "item": "Q6106751",
+        "en": "Elizabeth Farren (born about 1759, died 1829), Later Countess of Derby",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q119750394",
+          "en": "Miss Elizabeth Farren (c.1759–1829) (later second wife of the Earl of Derby)",
+          "label": null
+        },
+        {
+          "item": "Q28536995",
+          "en": "The Countess of Darnley",
+          "label": null
+        },
+        {
+          "item": "Q29654473",
+          "en": "Countess  of Inchiquin",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "vanmour-view-of-istanbul-from-pera",
+      "originalTitle": "View of Istanbul from the Dutch Embassy at Pera",
+      "painter": "Jean Baptiste Vanmour",
+      "painterItem": "Q956812 Jean Baptiste Vanmour (Flemish-French painter (1671-1737))",
+      "works": 158,
+      "match": {
+        "item": "Q17337886",
+        "en": "View of Istanbul from the Dutch Embassy at Pera",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q17326684",
+          "en": "An Embassy Building in Pera",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "panini-interior-of-the-pantheon",
+      "originalTitle": "Interior of the Pantheon, Rome",
+      "painter": "Giovanni Paolo Panini",
+      "painterItem": "Q286670 Giovanni Paolo Panini (Italian painter and architect (1691–1765))",
+      "works": 244,
+      "match": {
+        "item": "Q19904602",
+        "en": "Interior of the Pantheon, Rome",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20278011",
+          "en": "Interior of the Pantheon, Rome",
+          "label": null
+        },
+        {
+          "item": "Q131523372",
+          "en": "Interior of the Pantheon, Rome",
+          "label": null
+        },
+        {
+          "item": "Q60472658",
+          "en": "Interior of the Pantheon, Rome",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "bellotto-campo-santi-giovanni-e-paolo",
+      "originalTitle": "The Campo di SS. Giovanni e Paolo, Venice",
+      "painter": "Bernardo Bellotto",
+      "painterItem": "Q164688 Bernardo Bellotto (Italian artist (1722–1780))",
+      "works": 269,
+      "match": {
+        "item": "Q118989400",
+        "en": "Venice",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q19681642",
+          "en": "The Campo di SS. Giovanni e Paolo, Venice",
+          "label": null
+        },
+        {
+          "item": "Q112240675",
+          "en": "Ponte di Rialto at Venice",
+          "label": null
+        },
+        {
+          "item": "Q52249446",
+          "en": "Campo San Stin, Venice",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "guardi-cannaregio-canal",
+      "originalTitle": "View on the Cannaregio Canal, Venice",
+      "painter": "Francesco Guardi",
+      "painterItem": "Q318769 Francesco Guardi (Italian painter (1712-1793))",
+      "works": 438,
+      "match": {
+        "item": "Q19857300",
+        "en": "View of the Cannaregio Canal in Venice",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20178778",
+          "en": "View on the Cannaregio Canal, Venice",
+          "label": null
+        },
+        {
+          "item": "Q27966087",
+          "en": "View of Venice",
+          "label": null
+        },
+        {
+          "item": "Q52249111",
+          "en": "View of Venice",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "canaletto-square-of-saint-marks",
+      "originalTitle": "The Square of Saint Mark's, Venice",
+      "painter": "Canaletto",
+      "painterItem": "Q182664 Giovanni Antonio Canal (Italian painter of landscapes (1697–1768))",
+      "works": 570,
+      "match": {
+        "item": "Q19660464",
+        "en": "The Square of Saint Mark's, Venice",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q119840648",
+          "en": "Saint Mark's Square, Venice",
+          "label": null
+        },
+        {
+          "item": "Q119840652",
+          "en": "Saint Mark's Square, Venice, Looking towards the Basilica",
+          "label": null
+        },
+        {
+          "item": "Q119943199",
+          "en": "Venice",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "watteau-italian-comedians",
+      "originalTitle": "The Italian Comedians",
+      "painter": "Antoine Watteau",
+      "painterItem": "Q183221 Jean-Antoine Watteau (French painter (1684-1721))",
+      "works": 318,
+      "match": {
+        "item": "Q20177791",
+        "en": "The Italian Comedians",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20178634",
+          "en": "The Italian Comedians",
+          "label": null
+        },
+        {
+          "item": "Q18601021",
+          "en": "The Italian Serenade",
+          "label": null
+        },
+        {
+          "item": "Q19911603",
+          "en": "The French Comedians",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "oudry-misse-and-luttine",
+      "originalTitle": "Misse and Luttine",
+      "painter": "Jean-Baptiste Oudry",
+      "painterItem": "Q737137 Jean-Baptiste Oudry (French painter and printmaker (1686-1755))",
+      "works": 244,
+      "match": {
+        "item": "Q20177834",
+        "en": "Misse and Luttine",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "boucher-madame-bergeret",
+      "originalTitle": "Madame Bergeret",
+      "painter": "François Boucher",
+      "painterItem": "Q180932 François Boucher (French painter (1703–1770))",
+      "works": 584,
+      "match": {
+        "item": "Q20178351",
+        "en": "Madame Bergeret",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q12841555",
+          "en": "Portrait of Madame de Pompadour",
+          "label": null
+        },
+        {
+          "item": "Q18552705",
+          "en": "Madame de Pompadour",
+          "label": null
+        },
+        {
+          "item": "Q18684142",
+          "en": "Madame de Pompadour",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "robert-ponte-salario",
+      "originalTitle": "The Ponte Salario",
+      "painter": "Hubert Robert",
+      "painterItem": "Q548205 Hubert Robert (French painter (1733-1808))",
+      "works": 544,
+      "match": {
+        "item": "Q137643135",
+        "en": "View of the Ponte Lucano, near Tivoli, and the Tomb of the Plautii",
+        "label": null,
+        "likeness": 0.5
+      },
+      "alternatives": []
+    },
+    {
+      "id": "fragonard-young-girl-reading",
+      "originalTitle": "Young Girl Reading",
+      "painter": "Jean-Honoré Fragonard",
+      "painterItem": "Q127171 Jean-Honoré Fragonard (French painter (1732–1806))",
+      "works": 355,
+      "match": {
+        "item": "Q2629423",
+        "en": "A Young Girl Reading",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q64581230",
+          "en": "The Reading",
+          "label": null
+        },
+        {
+          "item": "Q19912209",
+          "en": "Young Woman Reading",
+          "label": null
+        },
+        {
+          "item": "Q106867336",
+          "en": "Young Girl with a Marmot",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "cuyp-maas-at-dordrecht",
+      "originalTitle": "The Maas at Dordrecht",
+      "painter": "Aelbert Cuyp",
+      "painterItem": "Q313194 Aelbert Cuyp (Dutch landscape painter (1620-1691))",
+      "works": 410,
+      "match": {
+        "item": "Q5822565",
+        "en": "The Maas at Dordrecht",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20178397",
+          "en": "A View of the Maas at Dordrecht",
+          "label": null
+        },
+        {
+          "item": "Q20881221",
+          "en": "View of the Maas near Dordrecht",
+          "label": null
+        },
+        {
+          "item": "Q23928740",
+          "en": "Cattle near the Maas, with Dordrecht in the distance",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "asselijn-threatened-swan",
+      "originalTitle": "The Threatened Swan",
+      "painter": "Jan Asselijn",
+      "painterItem": "Q541976 Jan Asselijn (painter from the Northern Netherlands (1610–1652))",
+      "works": 108,
+      "match": {
+        "item": "Q17319634",
+        "en": "The Threatened Swan",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "vermeer-young-woman-with-a-water-pitcher",
+      "originalTitle": "Young Woman with a Water Pitcher",
+      "painter": "Johannes Vermeer",
+      "painterItem": "Q41264 Johannes Vermeer (Dutch painter (1632–1675))",
+      "works": 36,
+      "match": {
+        "item": "Q386453",
+        "en": "Woman with a Water Jug",
+        "label": null,
+        "likeness": 0.67
+      },
+      "alternatives": [
+        {
+          "item": "Q958088",
+          "en": "Portrait of a Young Woman",
+          "label": null
+        },
+        {
+          "item": "Q839359",
+          "en": "Woman with a Lute",
+          "label": null
+        },
+        {
+          "item": "Q2267440",
+          "en": "A Young Woman seated at a Virginal",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "ruisdael-wheat-fields",
+      "originalTitle": "Wheat Fields",
+      "painter": "Jacob van Ruisdael",
+      "painterItem": "Q213612 Jacob van Ruisdael (Dutch painter and engraver (1628-1682))",
+      "works": 642,
+      "match": {
+        "item": "Q19905217",
+        "en": "Wheat Fields",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q15805700",
+          "en": "View of Haarlem with Bleaching Fields",
+          "label": null
+        },
+        {
+          "item": "Q17275831",
+          "en": "View of bleaching fields and Haarlem",
+          "label": null
+        },
+        {
+          "item": "Q17320346",
+          "en": "View of Haarlem from the Northwest, with the Bleaching Fields in the Foreground",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "vermeer-the-little-street",
+      "originalTitle": "The Little Street (View of Houses in Delft)",
+      "painter": "Johannes Vermeer",
+      "painterItem": "Q41264 Johannes Vermeer (Dutch painter (1632–1675))",
+      "works": 36,
+      "match": {
+        "item": "Q523974",
+        "en": "View of Delft",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q586035",
+          "en": "The Little Street",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "brueghel-river-landscape-1607",
+      "originalTitle": "River Landscape",
+      "painter": "Jan Brueghel the Elder",
+      "painterItem": "Q209050 Jan Brueghel the Elder (Flemish painter (1568–1625))",
+      "works": 604,
+      "match": {
+        "item": "Q20176899",
+        "en": "River Landscape",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q20421121",
+          "en": "Landscape",
+          "label": null
+        },
+        {
+          "item": "Q20440351",
+          "en": "Landscape",
+          "label": null
+        },
+        {
+          "item": "Q21617532",
+          "en": "A River Landscape",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "heda-banquet-piece-with-mince-pie",
+      "originalTitle": "Banquet Piece with Mince Pie",
+      "painter": "Willem Claesz Heda",
+      "painterItem": "Q40150 Willem Claesz. Heda (painter from the Northern Netherlands (1594–1680))",
+      "works": 149,
+      "match": {
+        "item": "Q20177138",
+        "en": "Banquet Piece with Mince Pie",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q77972039",
+          "en": "A Banquet-piece",
+          "label": null
+        },
+        {
+          "item": "Q28043162",
+          "en": "Banquet Piece with Ham",
+          "label": null
+        },
+        {
+          "item": "Q38493050",
+          "en": "The Blackcurrant Pie",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "verspronck-andries-stilte",
+      "originalTitle": "Andries Stilte as a Standard Bearer",
+      "painter": "Johannes Cornelisz Verspronck",
+      "painterItem": "Q577974 Johannes Cornelisz Verspronck (Dutch painter (1606–1662))",
+      "works": 103,
+      "match": {
+        "item": "Q20177165",
+        "en": "Andries Stilte as a Standard Bearer",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q51668973",
+          "en": "Portrait of Andries Stilte (1639-1640)",
+          "label": null
+        },
+        {
+          "item": "Q51708449",
+          "en": "Portrait of Mattheus Stilte",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "lorrain-trojan-women-setting-fire-to-their-fleet",
+      "originalTitle": "The Trojan Women Setting Fire to Their Fleet",
+      "painter": "Claude Lorrain",
+      "painterItem": "Q214074 Claude Lorrain (French painter, draughtsman and etcher (1600–1682))",
+      "works": 367,
+      "match": {
+        "item": "Q19911726",
+        "en": "The Trojan Women Setting Fire to Their Fleet",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q119756830",
+          "en": "Beacon Fire",
+          "label": null
+        },
+        {
+          "item": "Q27701036",
+          "en": "Setting out with the Herd",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "leyster-self-portrait",
+      "originalTitle": "Self-Portrait",
+      "painter": "Judith Leyster",
+      "painterItem": "Q232423 Judith Leyster (Dutch Golden Age painter (1609-1660))",
+      "works": 57,
+      "match": {
+        "item": "Q18888002",
+        "en": "Self-portrait by Judith Leyster",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q28105012",
+          "en": "Self-portrait",
+          "label": null
+        },
+        {
+          "item": "Q18120482",
+          "en": "Portrait of a man",
+          "label": null
+        },
+        {
+          "item": "Q18599310",
+          "en": "Round portrait of a boy with beret",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "sultan-muhammad-feast-of-sada",
+      "originalTitle": "The Feast of Sada (from the Shahnama of Shah Tahmasp)",
+      "painter": "Sultan Muhammad",
+      "painterItem": "Q6712884 Sultan Muhammad (16th-century Persian miniaturist)",
+      "works": 11,
+      "match": {
+        "item": "Q29385197",
+        "en": "\"The Feast of Sada\", Folio 22v from the Shahnama (Book of Kings) of Shah Tahmasp",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q29385199",
+          "en": "\"Tahmuras Defeats the Divs\", Folio 23v from the Shahnama (Book of Kings) of Shah Tahmasp",
+          "label": null
+        },
+        {
+          "item": "Q131281679",
+          "en": "Hushang Slays the Black Div, from the Shah Tahmasp's Shahnama",
+          "label": null
+        },
+        {
+          "item": "Q64665898",
+          "en": "The Court of Kayumars, Folio from the Shahnameh (Book of Kings) of Shah Tahmasp",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "habiballah-concourse-of-the-birds",
+      "originalTitle": "The Concourse of the Birds",
+      "painter": "Habiballah of Sava",
+      "painterItem": "Q4494389 Habiballah Savaji (Iranian painter active during the reign of Shah Abbas I (1587-1628))",
+      "works": 3,
+      "match": {
+        "item": "Q29385176",
+        "en": "\"The Concourse of the Birds\", Folio 11r from a Mantiq al-tair (Language of the Birds)",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "mansur-study-of-a-nilgai",
+      "originalTitle": "Study of a Nilgai (Blue Bull)",
+      "painter": "Ustad Mansur",
+      "painterItem": "Q2502664 Ustad Mansur (Mughal painter and court artist)",
+      "works": 6,
+      "match": null,
+      "alternatives": []
+    },
+    {
+      "id": "balchand-jahangir-and-akbar",
+      "originalTitle": "Jahangir and His Father, Akbar",
+      "painter": "Balchand",
+      "painterItem": "Q15406852 Balchand (Indian painter)",
+      "works": 5,
+      "match": {
+        "item": "Q123039474",
+        "en": "Dara Shikoh with his consort",
+        "label": null,
+        "likeness": 0.25
+      },
+      "alternatives": []
+    },
+    {
+      "id": "payag-shah-jahan-on-horseback",
+      "originalTitle": "Shah Jahan on Horseback",
+      "painter": "Payag",
+      "painterItem": "Q105103587 Payag (Indian painter (1595–1655))",
+      "works": 2,
+      "match": {
+        "item": "Q64512978",
+        "en": "Shah Shuja Hunting Nilgai",
+        "label": null,
+        "likeness": 0.33
+      },
+      "alternatives": []
+    },
+    {
+      "id": "cariani-a-concert",
+      "originalTitle": "A Concert",
+      "painter": "Giovanni Cariani",
+      "painterItem": "Q976391 Giovanni Cariani (Italian painter (1485-1547))",
+      "works": 96,
+      "match": {
+        "item": "Q20175486",
+        "en": "A Concert",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q21968119",
+          "en": "Countryside concert",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "holbein-edward-vi-as-a-child",
+      "originalTitle": "Edward VI as a Child",
+      "painter": "Hans Holbein the Younger",
+      "painterItem": "Q48319 Hans Holbein the Younger (German artist and printmaker (1497–1543))",
+      "works": 269,
+      "match": {
+        "item": "Q20176182",
+        "en": "Edward VI as a Child",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q28797764",
+          "en": "Edward, Prince of Wales, later King Edward VI",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "arcimboldo-the-librarian",
+      "originalTitle": "The Librarian",
+      "painter": "Giuseppe Arcimboldo",
+      "painterItem": "Q7751 Giuseppe Arcimboldo (Italian painter of the late Renaissance (1527–1593))",
+      "works": 44,
+      "match": {
+        "item": "Q17021187",
+        "en": "The Librarian",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "grimmer-marketplace-in-bergen-op-zoom",
+      "originalTitle": "The Marketplace in Bergen op Zoom",
+      "painter": "Abel Grimmer",
+      "painterItem": "Q2315989 Abel Grimmer (Flemish painter (1570–1628))",
+      "works": 115,
+      "match": {
+        "item": "Q20176826",
+        "en": "The Marketplace in Bergen op Zoom",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "arcimboldo-vertumnus",
+      "originalTitle": "Vertumnus (Emperor Rudolf II as Vertumnus)",
+      "painter": "Giuseppe Arcimboldo",
+      "painterItem": "Q7751 Giuseppe Arcimboldo (Italian painter of the late Renaissance (1527–1593))",
+      "works": 44,
+      "match": {
+        "item": "Q16333797",
+        "en": "Rudolf II as Vertumnus",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q27981230",
+          "en": "Archduchess Anna (1549-1580), Daughter of Emperor Maximilian II",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "van-der-weyden-francesco-d-este",
+      "originalTitle": "Francesco d'Este",
+      "painter": "Rogier van der Weyden",
+      "painterItem": "Q68631 Rogier van der Weyden (early Netherlandish painter (c. 1399–1464))",
+      "works": 100,
+      "match": {
+        "item": "Q3399428",
+        "en": "Portrait of Francesco d'Este",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "neroccio-portrait-of-a-lady",
+      "originalTitle": "Portrait of a Lady",
+      "painter": "Neroccio de' Landi",
+      "painterItem": "Q1398270 Neroccio di Bartolomeo de' Landi (Italian painter and sculptor of the early-Renaissance or Quattrocento period in Siena (1447-1500))",
+      "works": 39,
+      "match": {
+        "item": "Q20174436",
+        "en": "Portrait of a Lady",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": []
+    },
+    {
+      "id": "ghirlandaio-francesco-sassetti-and-his-son",
+      "originalTitle": "Francesco Sassetti and His Son Teodoro",
+      "painter": "Domenico Ghirlandaio",
+      "painterItem": "Q191423 Domenico Ghirlandaio (Italian Renaissance painter from Florence (1448–1494))",
+      "works": 157,
+      "match": {
+        "item": "Q15089686",
+        "en": "Francesco Sassetti and His Son Teodoro",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q526637",
+          "en": "Sassetti Chapel",
+          "label": null
+        },
+        {
+          "item": "Q140774531",
+          "en": "Cappella Tornabuoni - Zacharias Writes Down the Name of his Son",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "carpaccio-hunting-on-the-lagoon",
+      "originalTitle": "Hunting on the Lagoon",
+      "painter": "Vittore Carpaccio",
+      "painterItem": "Q5581 Vittore Carpaccio (Italian painter (1465-1526))",
+      "works": 99,
+      "match": {
+        "item": "Q3649290",
+        "en": "Hunting on the Lagoon",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q136029825",
+          "en": "Hunting in the Lagoon",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "botticelli-giuliano-de-medici",
+      "originalTitle": "Giuliano de' Medici",
+      "painter": "Sandro Botticelli",
+      "painterItem": "Q5669 Sandro Botticelli (Italian painter (1445–1510))",
+      "works": 207,
+      "match": {
+        "item": "Q2272723",
+        "en": "Portrait of Giuliano de' Medici",
+        "label": null,
+        "likeness": 1
+      },
+      "alternatives": [
+        {
+          "item": "Q3399438",
+          "en": "Portrait of Giuliano de' Medici",
+          "label": null
+        },
+        {
+          "item": "Q3399442",
+          "en": "Portrait of Giuliano de' Medici",
+          "label": null
+        },
+        {
+          "item": "Q20808469",
+          "en": "Portrait of a Young Man, possibly Giuliano de' Medici",
+          "label": null
+        }
+      ]
+    }
+  ]
+}

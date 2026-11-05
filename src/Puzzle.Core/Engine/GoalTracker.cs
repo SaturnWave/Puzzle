@@ -126,6 +126,9 @@ namespace Puzzle.Core.Engine
 
         internal GoalTracker Clone() => new GoalTracker(this);
 
+        /// <summary>Takes the counts of <paramref name="earlier"/>, a clone of this tracker: what was counted since is forgotten.</summary>
+        internal void RestoreFrom(GoalTracker earlier) => Array.Copy(earlier._done, _done, _done.Length);
+
         private bool Wants<TGoal>()
             where TGoal : GoalSpec
         {

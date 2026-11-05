@@ -1,0 +1,5 @@
+<!-- The design's four-pointed sparkle, as the web test page cuts it out of a square (gallery.css, .sparkle). One
+     unit is one point of the design: the sparkle is 24 points across, and the game draws it at the size it needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24">
+<path d="M12 0L14.88 9.12L24 12L14.88 14.88L12 24L9.12 14.88L0 12L9.12 9.12Z" fill="#fff6cc"/>
+</svg>

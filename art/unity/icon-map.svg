@@ -1,0 +1,22 @@
+<!-- The map's mark on the navigation bar: a folded plan with a pin, as the design canvas draws it (its symbol with the paints it uses). The picture is the
+     symbol's own 100 x 100 box; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<radialGradient id="f-verm" cx=".32" cy=".24" r=".95"><stop offset="0" stop-color="#FFA283"/><stop offset=".42" stop-color="#F4472F"/><stop offset="1" stop-color="#C7231B"/></radialGradient>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+<linearGradient id="f-ivory-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3E4C0"/><stop offset="1" stop-color="#DDC694"/></linearGradient>
+</defs>
+<ellipse cx="50" cy="94" rx="40" ry="5" fill="url(#g-shadow)"/>
+<g transform="translate(0 5)" fill="#B8985A"><path d="M9 24L35 15V77L9 86Z"/><path d="M35 15L65 24V86L35 77Z"/><path d="M65 24L91 15V77L65 86Z"/></g>
+<path d="M9 24L35 15V77L9 86Z" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".55" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M35 15L65 24V86L35 77Z" fill="url(#f-ivory-d)" stroke="#6E4B1E" stroke-opacity=".55" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M65 24L91 15V77L65 86Z" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".55" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M14 40L30 34.5V52L14 57.5Z" fill="#34A5AA" fill-opacity=".8"/>
+<path d="M40 30L60 36V50L40 44Z" fill="#43BF4D" fill-opacity=".75"/>
+<path d="M17 74C24 62 33 66 39 62C47 57 50 68 58 66C64 64.5 68 60 71 56" fill="none" stroke="#F4472F" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/>
+<path d="M72 26C78.6 26 83.5 30.9 83.5 37C83.5 44 76 50 72 57C68 50 60.5 44 60.5 37C60.5 30.9 65.4 26 72 26Z" transform="translate(0 3)" fill="#931313"/>
+<path d="M72 26C78.6 26 83.5 30.9 83.5 37C83.5 44 76 50 72 57C68 50 60.5 44 60.5 37C60.5 30.9 65.4 26 72 26Z" fill="url(#f-verm)" stroke="#5E0A0C" stroke-opacity=".5" stroke-width="1.2"/>
+<circle cx="72" cy="37" r="4.6" fill="#fff"/>
+<path d="M13 28.5L32 22" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+</svg>

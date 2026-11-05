@@ -17,13 +17,15 @@ namespace Puzzle.Core.Levels
             }
 
             LevelId id = WithLevelContext(file.id, () => new LevelId(file.id));
+            ContentVersion contentVersion = WithLevelContext(file.id, () => new ContentVersion(file.contentVersion));
             DifficultyTier difficulty = WithLevelContext(file.id, () => ParseDifficulty(file.difficulty));
             LevelLayout layout = WithLevelContext(file.id, () => ParseLayout(file));
             GoalSpec[] goals = WithLevelContext(file.id, () => file.goals.Select(ParseGoal).ToArray());
             SpawnRules spawn = WithLevelContext(file.id, () => ParseSpawn(file.spawn));
+            AttemptPolicy attempts = WithLevelContext(file.id, () => ParseAttempts(file.attempts));
 
             // LevelDefinition reports cross-part inconsistencies with the level id already in the message.
-            return new LevelDefinition(id, difficulty, layout, goals, file.moves, spawn);
+            return new LevelDefinition(id, difficulty, layout, goals, file.moves, spawn, attempts, contentVersion);
         }
 
         public static LevelFile ToFile(LevelDefinition level)
@@ -32,6 +34,7 @@ namespace Puzzle.Core.Levels
             return new LevelFile
             {
                 id = level.Id.Value,
+                contentVersion = level.ContentVersion.Value,
                 difficulty = level.Difficulty.ToString(),
                 width = level.Layout.Shape.Width,
                 height = level.Layout.Shape.Height,
@@ -44,11 +47,15 @@ namespace Puzzle.Core.Levels
                 spawn = new SpawnFile
                 {
                     colors = level.Spawn.Colors,
+                    palette = IsDefaultPalette(level.Spawn.Palette) ? null : level.Spawn.Palette.Select(c => c.ToString()).ToArray(),
                     smoothingPermille = level.Spawn.SmoothingPermille,
+                    goalBias = level.Spawn.GoalBiasPercent,
+                    cascadeBias = level.Spawn.CascadeBiasPercent,
                     itemsTotal = level.Spawn.Items.Total,
                     maxItemsOnBoard = level.Spawn.Items.MaxOnBoard,
                     itemChancePercent = level.Spawn.Items.ChancePercent,
                 },
+                attempts = ToAttemptsFile(level.Attempts),
             };
         }
 
@@ -89,7 +96,10 @@ namespace Puzzle.Core.Levels
                 ? tier
                 : throw new LevelFormatException($"unknown difficulty '{text}'");
 
-        private static GoalSpec ParseGoal(GoalFile goal) => goal.type switch
+        /// <summary>A goal in the level-file vocabulary; attempt records name their goals the same way.</summary>
+        /// <exception cref="LevelFormatException">Unknown goal type or color.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The count is not positive.</exception>
+        public static GoalSpec ParseGoal(GoalFile goal) => goal.type switch
         {
             "CollectColor" => new GoalSpec.CollectColor(ParseColor(goal.color), goal.count),
             "BreakBoxes" => new GoalSpec.BreakBoxes(goal.count),
@@ -106,8 +116,10 @@ namespace Puzzle.Core.Levels
 
         private static SpawnRules ParseSpawn(SpawnFile spawn) => new SpawnRules
         {
-            Colors = spawn.colors,
+            Palette = spawn.palette is { Length: > 0 } names ? names.Select(ParseColor).ToArray() : GemColors.First(spawn.colors),
             SmoothingPermille = spawn.smoothingPermille,
+            GoalBiasPercent = spawn.goalBias,
+            CascadeBiasPercent = spawn.cascadeBias,
             Items = new ItemSpawnRules
             {
                 Total = spawn.itemsTotal,
@@ -116,7 +128,33 @@ namespace Puzzle.Core.Levels
             },
         };
 
-        private static GoalFile ToGoalFile(GoalSpec goal) => goal switch
+        private static AttemptPolicy ParseAttempts(AttemptsFile? attempts)
+        {
+            if (attempts is null)
+            {
+                return AttemptPolicy.Default;
+            }
+
+            StartBoard board = attempts.board switch
+            {
+                "varied" => new StartBoard.Varied(),
+                "fixed" => new StartBoard.Fixed(attempts.boardSeed ?? throw new LevelFormatException("a fixed start board needs boardSeed")),
+                _ => throw new LevelFormatException($"unknown start board '{attempts.board}' (use varied or fixed)"),
+            };
+            return new AttemptPolicy { Board = board, SeedPool = attempts.seedPool };
+        }
+
+        /// <summary>The default policy is omitted so plain levels stay short.</summary>
+        private static AttemptsFile? ToAttemptsFile(AttemptPolicy attempts) => attempts.Board switch
+        {
+            StartBoard.Varied _ when attempts.SeedPool.Count == 0 => null,
+            StartBoard.Varied _ => new AttemptsFile { board = "varied", seedPool = attempts.SeedPool.ToArray() },
+            StartBoard.Fixed fixedBoard => new AttemptsFile { board = "fixed", boardSeed = fixedBoard.Seed, seedPool = attempts.SeedPool.ToArray() },
+            _ => throw new InvalidOperationException($"Unhandled start board {attempts.Board.GetType().Name}."),
+        };
+
+        /// <summary>The level-file form of a goal; the inverse of <see cref="ParseGoal"/>.</summary>
+        public static GoalFile ToGoalFile(GoalSpec goal) => goal switch
         {
             GoalSpec.CollectColor collect => new GoalFile { type = "CollectColor", color = collect.Color.ToString(), count = goal.Target },
             GoalSpec.BreakBoxes _ => new GoalFile { type = "BreakBoxes", count = goal.Target },
@@ -125,6 +163,9 @@ namespace Puzzle.Core.Levels
             GoalSpec.DropItems _ => new GoalFile { type = "DropItems", count = goal.Target },
             _ => throw new InvalidOperationException($"Unhandled goal {goal.GetType().Name}."),
         };
+
+        private static bool IsDefaultPalette(IReadOnlyList<GemColor> palette) =>
+            palette.SequenceEqual(GemColors.First(palette.Count));
 
         /// <summary>Optional layers that carry no information are omitted from the file.</summary>
         private static string[]? NullIfBlank(IReadOnlyList<string>? rows) =>

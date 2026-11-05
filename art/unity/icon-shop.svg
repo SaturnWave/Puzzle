@@ -1,0 +1,27 @@
+<!-- The shop's mark on the navigation bar: a market stall under a striped awning. As the design canvas draws it
+     (HomeTR): its symbol n-shop with the paints it uses, written by tools/unity/extract-design-symbols.js. Change
+     the canvas and run that again; do not change this file by hand. One unit is one point where the symbol is drawn
+     100 points wide; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<radialGradient id="g-shadow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#062B33" stop-opacity=".42"/><stop offset=".6" stop-color="#062B33" stop-opacity=".2"/><stop offset="1" stop-color="#062B33" stop-opacity="0"/></radialGradient>
+<linearGradient id="f-verm-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFA283"/><stop offset=".4" stop-color="#F4472F"/><stop offset="1" stop-color="#C7231B"/></linearGradient>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+<linearGradient id="f-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34A5AA"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+</defs>
+<ellipse cx="50" cy="93" rx="40" ry="5.5" fill="url(#g-shadow)"/>
+<rect x="14" y="58" width="72" height="32" rx="6" fill="#0C4A53"/>
+<rect x="14" y="54" width="72" height="31" rx="6" fill="url(#f-teal)" stroke="#062F37" stroke-opacity=".6" stroke-width="1.4"/>
+<rect x="21" y="64" width="26" height="15" rx="3" fill="#0C4A53" fill-opacity=".55"/><rect x="53" y="64" width="26" height="15" rx="3" fill="#0C4A53" fill-opacity=".55"/>
+<rect x="18" y="38" width="6" height="20" fill="#B47B40"/><rect x="76" y="38" width="6" height="20" fill="#B47B40"/>
+<rect x="9" y="50.5" width="82" height="9" rx="3.5" fill="#B8985A"/>
+<rect x="9" y="48" width="82" height="9" rx="3.5" fill="url(#f-ivory)" stroke="#6E4B1E" stroke-opacity=".55" stroke-width="1.2"/>
+<g transform="translate(0 4)" fill="#931313"><path d="M14 20H86L92 42A8.4 8.4 0 0 1 75.2 42A8.4 8.4 0 0 1 58.4 42A8.4 8.4 0 0 1 41.6 42A8.4 8.4 0 0 1 24.8 42A8.4 8.4 0 0 1 8 42Z"/></g>
+<path d="M14 20H28.4L24.8 42A8.4 8.4 0 0 1 8 42Z" fill="url(#f-verm-l)"/><path d="M28.4 20H42.8L41.6 42A8.4 8.4 0 0 1 24.8 42Z" fill="url(#f-ivory)"/><path d="M42.8 20H57.2L58.4 42A8.4 8.4 0 0 1 41.6 42Z" fill="url(#f-verm-l)"/><path d="M57.2 20H71.6L75.2 42A8.4 8.4 0 0 1 58.4 42Z" fill="url(#f-ivory)"/><path d="M71.6 20H86L92 42A8.4 8.4 0 0 1 75.2 42Z" fill="url(#f-verm-l)"/>
+<path d="M8 42A8.4 8.4 0 0 0 24.8 42A8.4 8.4 0 0 0 41.6 42A8.4 8.4 0 0 0 58.4 42A8.4 8.4 0 0 0 75.2 42A8.4 8.4 0 0 0 92 42" transform="translate(0 0)" fill="none" stroke="#5E0A0C" stroke-opacity=".35" stroke-width="1.4"/>
+<path d="M14 20H86L92 42" fill="none" stroke="#5E0A0C" stroke-opacity=".0" stroke-width="1"/>
+<rect x="11" y="13" width="78" height="9" rx="4" fill="#931313"/>
+<rect x="11" y="11" width="78" height="9" rx="4" fill="url(#f-verm-l)" stroke="#5E0A0C" stroke-opacity=".5" stroke-width="1.2"/>
+<path d="M16 14.5H60" stroke="#fff" stroke-opacity=".7" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M17 25L12.5 39" stroke="#fff" stroke-opacity=".6" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

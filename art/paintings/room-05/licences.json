@@ -1,0 +1,82 @@
+{
+  "room": "room-05",
+  "paintings": [
+    {
+      "file": "zuiderhavendijk-enkhuizen.jpg",
+      "title": "The Zuiderhavendijk, Enkhuizen",
+      "titleTr": "Enkhuizen'de Zuiderhavendijk",
+      "artist": "Cornelis Springer",
+      "year": "1868",
+      "width": 1920,
+      "height": 1455,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/nl/collectie/object/SK-A-2388--a84a20a4ce29168b6de07bb377e6e2f8",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:De_Zuiderhavendijk_in_Enkhuizen_Rijksmuseum_SK-A-2388.jpeg",
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "girl-with-flowers-on-the-grass.jpg",
+      "title": "A Girl with Flowers on the Grass",
+      "titleTr": "Çimenlerde Çiçekli Kız",
+      "artist": "Jacob Maris",
+      "year": "1878",
+      "width": 1280,
+      "height": 1905,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/nl/collectie/object/SK-A-3680--2d9416ce8507baeb2d613e573fe88920",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Een_meisje_met_bloemen_in_het_gras_Dochter_van_Jacob_Maris_met_bloemen_in_het_gras,_SK-A-3680.jpg",
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "yellow-riders.jpg",
+      "title": "The Yellow Riders (Horse Artillery)",
+      "titleTr": "Sarı Süvariler (Atlı Topçular)",
+      "artist": "George Hendrik Breitner",
+      "year": "1885–86",
+      "width": 1280,
+      "height": 1908,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/nl/collectie/object/SK-A-1328--ca80fe396099a6b215dcde3d9ab94e66",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:De_Gele_Rijders_Rijksmuseum_SK-A-1328.jpeg",
+      "crop": {
+        "left": 0,
+        "top": 0.003,
+        "right": 1,
+        "bottom": 1
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "in-the-month-of-july.jpg",
+      "title": "In the Month of July (A Windmill on a Polder Waterway)",
+      "titleTr": "Temmuz Ayında (Polder Kanalında Bir Yel Değirmeni)",
+      "artist": "Paul Joseph Constantin Gabriël",
+      "year": "y. 1889",
+      "width": 1241,
+      "height": 1920,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/nl/collectie/object/SK-A-1505--3e97d6f21dd17609968549d9d3b76922",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Een_molen_aan_een_poldervaart,_bekend_als_‘In_de_maand_juli’,_SK-A-1505.jpg",
+      "crop": {
+        "left": 0,
+        "top": 0,
+        "right": 1,
+        "bottom": 0.995
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "morning-ride-along-the-beach.jpg",
+      "title": "Morning Ride along the Beach",
+      "titleTr": "Sahilde Sabah At Gezintisi",
+      "artist": "Anton Mauve",
+      "year": "1876",
+      "width": 1920,
+      "height": 1229,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/nl/collectie/object/SK-A-3602--6102580b0dc8656aa3ce497c8395c93d",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Morgenrit_langs_het_strand_Rijksmuseum_SK-A-3602.jpeg",
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    }
+  ]
+}

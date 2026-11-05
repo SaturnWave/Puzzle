@@ -1,0 +1,5 @@
+<!-- A painting still ahead as a dot on the world map (MapWorldTR): cream, 7 points across in a line of 1.2, all at 85 %, around the middle of the picture. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 11.4 11.4">
+<defs></defs>
+<g opacity=".85"><circle cx="5.7" cy="5.7" r="4.7" fill="#8A6A3A"/><circle cx="5.7" cy="5.7" r="3.5" fill="#FBF2DA"/></g>
+</svg>

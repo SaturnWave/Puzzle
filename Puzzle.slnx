@@ -1,8 +1,19 @@
 <Solution>
+  <Folder Name="/server/">
+    <Project Path="server/CloudCode/MuseumPuzzleServer.Tests/MuseumPuzzleServer.Tests.csproj" />
+    <Project Path="server/CloudCode/MuseumPuzzleServer/MuseumPuzzleServer.csproj" />
+  </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Puzzle.Bank/Puzzle.Bank.csproj" />
     <Project Path="src/Puzzle.Bot/Puzzle.Bot.csproj" />
     <Project Path="src/Puzzle.Cli/Puzzle.Cli.csproj" />
     <Project Path="src/Puzzle.Core/Puzzle.Core.csproj" />
+    <Project Path="src/Puzzle.Economy/Puzzle.Economy.csproj" />
+    <Project Path="src/Puzzle.Generator/Puzzle.Generator.csproj" />
+    <Project Path="src/Puzzle.Meta/Puzzle.Meta.csproj" />
+    <Project Path="src/Puzzle.Museum/Puzzle.Museum.csproj" />
+    <Project Path="src/Puzzle.Tooling/Puzzle.Tooling.csproj" />
+    <Project Path="src/Puzzle.Web/Puzzle.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Puzzle.Core.Tests/Puzzle.Core.Tests.csproj" />

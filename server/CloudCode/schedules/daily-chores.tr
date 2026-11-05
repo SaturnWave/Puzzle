@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ugs-config-schemas.unity3d.com/v1/triggers.schema.json",
+  "Configs": [
+    {
+      "Name": "poll-google-voided",
+      "EventType": "com.unity.services.scheduler.poll-google-voided.v1",
+      "ActionUrn": "urn:ugs:cloud-code:MuseumPuzzleServer/PollGoogleVoided",
+      "ActionType": "cloud-code"
+    },
+    {
+      "Name": "forget-old-traces",
+      "EventType": "com.unity.services.scheduler.forget-old-traces.v1",
+      "ActionUrn": "urn:ugs:cloud-code:MuseumPuzzleServer/ForgetOldTraces",
+      "ActionType": "cloud-code"
+    }
+  ]
+}

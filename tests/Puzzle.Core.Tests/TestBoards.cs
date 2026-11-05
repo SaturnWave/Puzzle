@@ -54,7 +54,7 @@ internal static class TestBoards
             layout,
             goals ?? new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Red, 999) },
             moves,
-            new SpawnRules { Colors = colors, Items = items ?? ItemSpawnRules.None });
+            new SpawnRules { Palette = GemColors.First(colors), Items = items ?? ItemSpawnRules.None });
     }
 
     public static Game Start(LevelDefinition level, ulong seed = 1) =>

@@ -1,0 +1,4 @@
+<!-- The light under the era the map shows, on the world map's strip (MapWorldTR): 58 x 64 points of teal at 22 % with corners of 10, at (3, 3). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="560" viewBox="0 0 64 70">
+<rect x="3" y="3" width="58" height="64" rx="10" fill="#48BDBF" fill-opacity=".22"/>
+</svg>

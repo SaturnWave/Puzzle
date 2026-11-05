@@ -22,6 +22,16 @@ public class BotTests
     }
 
     [Fact]
+    public void Extra_moves_win_rate_is_read_five_moves_past_the_limit_and_only_within_the_cap()
+    {
+        LevelReport report = LevelReport.From(new[] { Run(10), Run(12), Run(12), Run(20), Run(null) }, moveCap: 18);
+
+        Assert.Equal(0.6, report.WinRateWithExtraMoves(7));
+        Assert.Equal(0.6, report.WinRateWithExtraMoves(13));
+        Assert.Null(report.WinRateWithExtraMoves(14)); // 19 moves is past the cap of 18: the run at 20 was never seen to finish
+    }
+
+    [Fact]
     public void Near_miss_counts_losses_that_got_close()
     {
         var almost = new RunResult(1, GameStatus.Won, 6, 6, new[] { 0f, 0.5f, 0.85f, 0.9f, 0.9f, 0.95f, 1f }, PlayStats.None);

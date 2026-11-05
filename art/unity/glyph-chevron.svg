@@ -1,0 +1,9 @@
+<!-- The white chevron to the right that says a row leads somewhere, on its dark teal edge, as the design canvas
+     draws it on the smallest teal disc (SettingsTR): the canvas' own strokes, which it writes in a box of 20 and
+     shows 14 points across. One unit is one point of the design. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 14 14">
+<g transform="scale(.7)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M7.6 4.6L13 10L7.6 15.4" stroke="#0A3640" stroke-width="5.4"/>
+<path d="M7.6 4.6L13 10L7.6 15.4" stroke="#fff" stroke-width="3"/>
+</g>
+</svg>

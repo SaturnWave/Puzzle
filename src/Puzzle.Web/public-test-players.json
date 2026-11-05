@@ -1,0 +1,8 @@
+{
+  "about": "Ready-made TEST accounts of the public test. When the server starts in the public mode (Puzzle:Mode=Public) it makes every account listed here that does not exist yet; an account that exists is left alone, with its progress, also when its password here was changed since ('puzzle players password <username>' changes a password). These are plain player accounts: the names give no rights, and the lab stays behind the owner key. The passwords are test passwords that everyone who can read this file knows: never put one here that matters. To stop the server from making an account, remove its entry; to make none, remove them all or set Puzzle:ReadyMadePlayersPath to an empty value. Plain JSON without comments: the start script reads this file too.",
+  "players": [
+    { "username": "Admin", "password": "123" },
+    { "username": "Admin1", "password": "123" },
+    { "username": "Admin2", "password": "123" }
+  ]
+}

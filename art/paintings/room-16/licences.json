@@ -1,0 +1,88 @@
+{
+  "room": "room-16",
+  "paintings": [
+    {
+      "file": "maas-at-dordrecht.jpg",
+      "title": "The Maas at Dordrecht",
+      "titleTr": "Dordrecht'te Maas Nehri",
+      "artist": "Aelbert Cuyp",
+      "year": "y. 1650",
+      "width": 1920,
+      "height": 1294,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://www.nga.gov/artworks/576-maas-dordrecht",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Aelbert_Cuyp,_The_Maas_at_Dordrecht,_c._1650,_NGA_576.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "threatened-swan.jpg",
+      "title": "The Threatened Swan",
+      "titleTr": "Tehdit Altındaki Kuğu",
+      "artist": "Jan Asselijn",
+      "year": "y. 1650",
+      "width": 1920,
+      "height": 1619,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/SK-A-4",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:De_bedreigde_zwaan_Rijksmuseum_SK-A-4.jpeg",
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "young-woman-with-a-water-pitcher.jpg",
+      "title": "Young Woman with a Water Pitcher",
+      "titleTr": "Su Sürahili Genç Kadın",
+      "artist": "Johannes Vermeer",
+      "year": "y. 1662",
+      "width": 1699,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/437881",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Young_Woman_with_a_Water_Pitcher_MET_DP353257.jpg",
+      "crop": {
+        "left": 0.027,
+        "top": 0.025,
+        "right": 0.973,
+        "bottom": 0.975
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "ruisdael-wheat-fields.jpg",
+      "title": "Wheat Fields",
+      "titleTr": "Buğday Tarlaları",
+      "artist": "Jacob van Ruisdael",
+      "year": "y. 1670",
+      "width": 1870,
+      "height": 1426,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/437549",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Wheat_Fields_MET_DP145911.jpg",
+      "crop": {
+        "left": 0.011,
+        "top": 0.022,
+        "right": 0.985,
+        "bottom": 0.981
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    },
+    {
+      "file": "the-little-street.jpg",
+      "title": "The Little Street (View of Houses in Delft)",
+      "titleTr": "Küçük Sokak (Delft'te Evler)",
+      "artist": "Johannes Vermeer",
+      "year": "y. 1658",
+      "width": 1560,
+      "height": 1920,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/SK-A-2860",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Gezicht_op_huizen_in_Delft,_bekend_als_‘Het_straatje’_Gezicht_op_huizen_in_Delft,_bekend_als_'Het_straatje',_SK-A-2860.jpg",
+      "crop": {
+        "left": 0.006,
+        "top": 0.007,
+        "right": 0.988,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    }
+  ]
+}

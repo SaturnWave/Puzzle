@@ -1,0 +1,17 @@
+<!-- The round teal badge a room's number stands on, in a gilt ring, as the design canvas draws it on the room's
+     plaque (HomeTR) and on the map (MapTR). One unit is one point of the design. The badge is 34 across around
+     (24, 24); with its rings it is 40.4 across. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 48 48">
+<defs>
+<linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="0" y1="7" x2="0" y2="41"><stop offset="0" stop-color="#3AB0B3"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+<clipPath id="in-face"><circle cx="24" cy="24" r="17"/></clipPath>
+</defs>
+<circle cx="24" cy="24" r="20.2" fill="#5E3305"/>
+<circle cx="24" cy="24" r="19" fill="#F6B93C"/>
+<circle cx="24" cy="24" r="17" fill="url(#teal)"/>
+<!-- light along the top of the face, a darker foot -->
+<g clip-path="url(#in-face)">
+<path fill="#fff" fill-opacity=".5" fill-rule="evenodd" d="M0 0H48V48H0Z M7 26A17 17 0 0 1 41 26A17 17 0 0 1 7 26Z"/>
+<path fill="#06323A" fill-opacity=".6" fill-rule="evenodd" d="M0 0H48V48H0Z M7 21.5A17 17 0 0 1 41 21.5A17 17 0 0 1 7 21.5Z"/>
+</g>
+</svg>

@@ -1,0 +1,100 @@
+{
+  "room": "room-06",
+  "paintings": [
+    {
+      "file": "cats-of-the-tokaido.jpg",
+      "title": "Cats Suggested as the Fifty-three Stations of the Tokaido (the last sheet of three)",
+      "titleTr": "Tokaido'nun Elli Üç Konağı Olarak Kediler (üç yapraktan sonuncusu)",
+      "artist": "Utagawa Kuniyoshi",
+      "year": "1847–50",
+      "width": 1284,
+      "height": 1920,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/object/AK-MAK-909--8819cf0d15c4bbaac6a30634e3007dc2",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Katten_voor_de_53_stations_van_de_Tokaido,_AK-MAK-909.jpg",
+      "crop": {
+        "left": 0.034,
+        "top": 0.034,
+        "right": 0.868,
+        "bottom": 0.968
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "plum-park-in-kameido.jpg",
+      "title": "Plum Park in Kameido, from One Hundred Famous Views of Edo",
+      "titleTr": "Kameido'da Erik Bahçesi (Edo'nun Yüz Ünlü Manzarası)",
+      "artist": "Utagawa Hiroshige",
+      "year": "1857",
+      "width": 1279,
+      "height": 1920,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1956-743--835003111f8a3f0b1d1e6532cad2d416",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:De_pruimenboomgaard_te_Kameido_Kameido_umeyashiki_(titel_op_object)_Honderd_beroemde_gezichten_op_Edo_(serietitel)_Meisho_Edo_hyakkei_(serietitel_op_object),_RP-P-1956-743.jpg",
+      "crop": {
+        "left": 0.054,
+        "top": 0.058,
+        "right": 0.944,
+        "bottom": 0.967
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "snow-at-ochanomizu.jpg",
+      "title": "Snow at Ochanomizu",
+      "titleTr": "Ochanomizu'da Kar",
+      "artist": "Kobayashi Kiyochika",
+      "year": "1880",
+      "width": 1920,
+      "height": 1203,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1988-283--b050562994c3f7fca270b77070ff6f5e",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Sneeuw_te_Ochanomizu_Chanomizu_yuki_(titel_op_object),_RP-P-1988-283.jpg",
+      "crop": {
+        "left": 0.048,
+        "top": 0.121,
+        "right": 0.954,
+        "bottom": 0.945
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "moon-of-musashi-plain.jpg",
+      "title": "Moon of Musashi Plain, from One Hundred Aspects of the Moon",
+      "titleTr": "Musashi Ovası'nda Ay (Ayın Yüz Görünümü)",
+      "artist": "Tsukioka Yoshitoshi",
+      "year": "1891",
+      "width": 1305,
+      "height": 1920,
+      "museum": "Rijksmuseum",
+      "museumPage": "https://www.rijksmuseum.nl/en/collection/object/RP-P-1994-70--e1a09c972ea9726ef2e00044f304ef5e",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Maan_van_Musashi_Musashino_no_tsuki_(titel_op_object)_Honderd_aspecten_van_de_maan_(serietitel)_Tsuki_hyakushi_(serietitel_op_object),_RP-P-1994-70.jpg",
+      "crop": {
+        "left": 0.052,
+        "top": 0.077,
+        "right": 0.939,
+        "bottom": 0.955
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free for any use, commercial included (Rijksmuseum)"
+    },
+    {
+      "file": "sudden-shower-over-shin-ohashi.jpg",
+      "title": "Sudden Shower over Shin-Ohashi Bridge and Atake, from One Hundred Famous Views of Edo",
+      "titleTr": "Shin-Ohashi Köprüsü ve Atake'de Ani Sağanak (Edo'nun Yüz Ünlü Manzarası)",
+      "artist": "Utagawa Hiroshige",
+      "year": "1857",
+      "width": 1243,
+      "height": 1920,
+      "museum": "The Metropolitan Museum of Art",
+      "museumPage": "https://www.metmuseum.org/art/collection/search/37386",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Ōhashi_Atake_no_yūdachi-名所江戸百景_大はしあたけの夕立-Sudden_Shower_over_Shin-Ōhashi_Bridge_and_Atake_(Ōhashi_Atake_no_yūdachi),_from_the_series_One_Hundred_Famous_Views_of_Edo_(Meisho_Edo_hyakkei)_MET_DP123602.jpg",
+      "crop": {
+        "left": 0.089,
+        "top": 0.072,
+        "right": 0.951,
+        "bottom": 0.947
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (The Metropolitan Museum of Art Open Access)"
+    }
+  ]
+}

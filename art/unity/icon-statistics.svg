@@ -1,0 +1,10 @@
+<!-- Three bars that rise from left to right: the mark of the settings' row for the play statistics. The design canvas
+     draws no such row; the mark is drawn by hand in the manner of the canvas' settings marks (SettingsTR: st-sound,
+     st-music, st-shield): ivory shapes with their dark teal edge set 4.5 lower. One unit is one point where the symbol
+     is drawn 100 points wide; the game draws it at the size a place needs. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="f-ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C0"/></linearGradient>
+</defs>
+<g transform="translate(0 4.5)"><rect x="19" y="54" width="16" height="27" rx="4" fill="#0C4A53" stroke="#0C4A53" stroke-width="5" stroke-linejoin="round"/><rect x="42" y="36" width="16" height="45" rx="4" fill="#0C4A53" stroke="#0C4A53" stroke-width="5" stroke-linejoin="round"/><rect x="65" y="18" width="16" height="63" rx="4" fill="#0C4A53" stroke="#0C4A53" stroke-width="5" stroke-linejoin="round"/></g><rect x="19" y="54" width="16" height="27" rx="4" fill="url(#f-ivory)" stroke="url(#f-ivory)" stroke-width="5" stroke-linejoin="round"/><rect x="42" y="36" width="16" height="45" rx="4" fill="url(#f-ivory)" stroke="url(#f-ivory)" stroke-width="5" stroke-linejoin="round"/><rect x="65" y="18" width="16" height="63" rx="4" fill="url(#f-ivory)" stroke="url(#f-ivory)" stroke-width="5" stroke-linejoin="round"/>
+</svg>

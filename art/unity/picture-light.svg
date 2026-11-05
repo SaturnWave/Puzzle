@@ -1,0 +1,19 @@
+<!-- The brass picture light over a painting's frame with the light it throws down, as the design canvas draws it on
+     the museum's home (HomeTR). One unit is one point of the design. The lamp is the 160 x 30 at (40, 0); the knob
+     it is fixed by, at (120, 23), sits on the frame's top bar. The light is the half ellipse under it, 220 x 46. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="256" viewBox="0 0 240 64">
+<defs>
+<linearGradient id="gilt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".3" stop-color="#FFDB6E"/><stop offset=".62" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<radialGradient id="light" gradientUnits="userSpaceOnUse" cx="120" cy="11" r="110" gradientTransform="translate(120 11) scale(1 .418) translate(-120 -11)"><stop offset="0" stop-color="#FFF0B4" stop-opacity=".6"/><stop offset=".55" stop-color="#FFF0B4" stop-opacity=".16"/><stop offset="1" stop-color="#FFF0B4" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="10" y="11" width="220" height="46" fill="url(#light)"/>
+<g transform="translate(40 0)">
+<path d="M80 22V13" stroke="#5E3305" stroke-width="6" stroke-linecap="round"/><path d="M80 22V13" stroke="#F6B93C" stroke-width="3.6" stroke-linecap="round"/>
+<rect x="16" y="6" width="128" height="13" rx="6.5" fill="#5E3305"/>
+<rect x="17.2" y="4.4" width="125.6" height="12" rx="6" fill="url(#gilt)"/>
+<rect x="17.2" y="4.4" width="9" height="12" rx="4.5" fill="#D38D1A"/><rect x="133.8" y="4.4" width="9" height="12" rx="4.5" fill="#D38D1A"/>
+<path d="M30 7.8H130" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-linecap="round"/>
+<path d="M22 16.6H138" stroke="#FFF1B4" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="80" cy="23" r="3.6" fill="url(#gilt)" stroke="#5E3305" stroke-width="1"/>
+</g>
+</svg>

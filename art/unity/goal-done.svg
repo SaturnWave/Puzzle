@@ -1,0 +1,5 @@
+<!-- The mark of a goal that is met: a green seal with a tick, as the web test page's HUD draws it (hud.js). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 20 20">
+<circle cx="10" cy="10" r="9" fill="#3FAE35" stroke="#145A1B" stroke-width="1.6"/>
+<path d="M5.6 10.4L8.8 13.4L14.4 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,24 @@
+<!-- The gilt bar of the entry page that fills while the game starts (EntryTR), drawn for the cream ground of the app
+     icon F: the gilt rim of the wallet's pills in a dark brown line, around a dark warm well the green fill runs in.
+     One unit is one point of the design. The bar is 52 x 22 at (6, 4), its well 46 x 16 at (9, 7); the game stretches
+     the middle of the picture sideways to the bar's width (260 points in the canvas), so nothing between x = 20 and
+     x = 44 may change along x. Its drop is a warm dark, as it lies on cream. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 64 32">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="26"><stop offset="0" stop-color="#FFF4C4"/><stop offset=".22" stop-color="#FFDB6E"/><stop offset=".58" stop-color="#F6B93C"/><stop offset="1" stop-color="#D38D1A"/></linearGradient>
+<linearGradient id="well" gradientUnits="userSpaceOnUse" x1="0" y1="7" x2="0" y2="23"><stop offset="0" stop-color="#2A170A"/><stop offset="1" stop-color="#4A2C12"/></linearGradient>
+<linearGradient id="hollow" gradientUnits="userSpaceOnUse" x1="0" y1="7" x2="0" y2="12"><stop offset="0" stop-color="#000000" stop-opacity=".5"/><stop offset="1" stop-color="#000000" stop-opacity="0"/></linearGradient>
+<clipPath id="in-gilt"><rect x="6" y="4" width="52" height="22" rx="11"/></clipPath>
+<clipPath id="in-well"><rect x="9" y="7" width="46" height="16" rx="8"/></clipPath>
+</defs>
+<!-- the drop under the bar, and the dark line around its gilt -->
+<rect x="4.8" y="5.6" width="54.4" height="24.4" rx="12.2" fill="#5A3A12" fill-opacity=".3"/>
+<rect x="4.8" y="2.8" width="54.4" height="24.4" rx="12.2" fill="#5E3305"/>
+<rect x="6" y="4" width="52" height="22" rx="11" fill="url(#gilt)"/>
+<!-- a thin light along the gilt's top edge -->
+<rect x="6" y="4.4" width="52" height="2.6" fill="#FFFBE6" fill-opacity=".55" clip-path="url(#in-gilt)"/>
+<!-- the well: dark warm wood, its shade under the rim, a dark line around it -->
+<rect x="9" y="7" width="46" height="16" rx="8" fill="url(#well)"/>
+<rect x="9" y="7" width="46" height="5" fill="url(#hollow)" clip-path="url(#in-well)"/>
+<rect x="9.3" y="7.3" width="45.4" height="15.4" rx="7.7" fill="none" stroke="#2A1206" stroke-opacity=".8" stroke-width=".6"/>
+</svg>

@@ -1,0 +1,22 @@
+<!-- The brass plate under a painting that names it, as the design canvas draws it on the museum's home (HomeTR):
+     a gilt plate with a stud at each end. One unit is one point of the design. The plate is 112 x 35 at (8, 6); the
+     game stretches the middle of the picture sideways to the width a title needs, so nothing between x = 24 and
+     x = 104 may change along x. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="208" viewBox="0 0 128 52">
+<defs>
+<linearGradient id="brass" gradientUnits="userSpaceOnUse" x1="0" y1="6" x2="0" y2="41"><stop offset="0" stop-color="#FFE892"/><stop offset=".55" stop-color="#F6B93C"/><stop offset="1" stop-color="#DE9A22"/></linearGradient>
+<radialGradient id="stud" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#FFF4C4"/><stop offset="1" stop-color="#B87412"/></radialGradient>
+<filter id="soft" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
+<clipPath id="in-plate"><rect x="8" y="6" width="112" height="35" rx="5"/></clipPath>
+</defs>
+<!-- the plate's shadow on the wall, the dark line around it, the brass with light along its top and a dark foot -->
+<rect x="8" y="10" width="112" height="35" rx="5" fill="#031E24" fill-opacity=".45" filter="url(#soft)"/>
+<rect x="6.6" y="4.6" width="114.8" height="37.8" rx="6.4" fill="#5E3305"/>
+<rect x="8" y="6" width="112" height="35" rx="5" fill="url(#brass)"/>
+<g clip-path="url(#in-plate)">
+<rect x="8" y="6" width="112" height="1.5" fill="#FFF6CC"/>
+<rect x="8" y="39" width="112" height="2" fill="#C17E12"/>
+</g>
+<circle cx="16.25" cy="23.5" r="3.05" fill="#5E3305"/><circle cx="16.25" cy="23.5" r="2.25" fill="url(#stud)"/>
+<circle cx="111.75" cy="23.5" r="3.05" fill="#5E3305"/><circle cx="111.75" cy="23.5" r="2.25" fill="url(#stud)"/>
+</svg>

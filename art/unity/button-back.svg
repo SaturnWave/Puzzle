@@ -1,0 +1,23 @@
+<!-- The round teal button with an arrow to the left that leads back from a screen, as the design canvas draws it
+     (JigsawTR): a teal disc in a gilt ring on a dark lip. One unit is one point of the design. The disc is 44 across
+     around (32, 30); the game turns the picture around for an arrow to the right. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">
+<defs>
+<linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="0" y1="8" x2="0" y2="52"><stop offset="0" stop-color="#3AB0B3"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+<clipPath id="in-face"><circle cx="32" cy="30" r="22"/></clipPath>
+</defs>
+<!-- the lip the button is pressed down onto, the dark line, the gilt ring, the face -->
+<circle cx="32" cy="34" r="26" fill="#052830" fill-opacity=".4"/>
+<circle cx="32" cy="30" r="26" fill="#5E3305"/>
+<circle cx="32" cy="30" r="24.6" fill="#F6B93C"/>
+<circle cx="32" cy="30" r="22" fill="url(#teal)"/>
+<g clip-path="url(#in-face)">
+<path fill="#fff" fill-opacity=".5" fill-rule="evenodd" d="M0 0H64V64H0Z M10 32.5A22 22 0 0 1 54 32.5A22 22 0 0 1 10 32.5Z"/>
+<path fill="#06323A" fill-opacity=".6" fill-rule="evenodd" d="M0 0H64V64H0Z M10 27A22 22 0 0 1 54 27A22 22 0 0 1 10 27Z"/>
+</g>
+<!-- the arrow: the design's, drawn in a box of 100 that is 27 points across, on its own dark shade -->
+<g transform="translate(18.5 16.5) scale(.27)" fill="none" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+<path d="M80 50H27M49 25L24 50L49 75" transform="translate(0 4.5)" stroke="#0C4A53"/>
+<path d="M80 50H27M49 25L24 50L49 75" stroke="#FFF8E7"/>
+</g>
+</svg>

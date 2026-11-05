@@ -1,0 +1,70 @@
+{
+  "room": "room-02",
+  "paintings": [
+    {
+      "file": "van-gogh-self-portrait.jpg",
+      "title": "Self-Portrait",
+      "titleTr": "Otoportre",
+      "artist": "Vincent van Gogh",
+      "year": "1887",
+      "width": 1280,
+      "height": 1623,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/80607",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Self-Portrait_-_1954.326_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "basket-of-apples.jpg",
+      "title": "The Basket of Apples",
+      "titleTr": "Elma Sepeti",
+      "artist": "Paul Cézanne",
+      "year": "y. 1893",
+      "width": 1920,
+      "height": 1537,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/111436",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Paul_Cézanne_-_The_Basket_of_Apples_-_1926.252_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "at-the-moulin-rouge.jpg",
+      "title": "At the Moulin Rouge",
+      "titleTr": "Moulin Rouge'da",
+      "artist": "Henri de Toulouse-Lautrec",
+      "year": "1892–95",
+      "width": 1920,
+      "height": 1679,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/61128",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_1928.610_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "the-bedroom.jpg",
+      "title": "The Bedroom",
+      "titleTr": "Yatak Odası",
+      "artist": "Vincent van Gogh",
+      "year": "1889",
+      "width": 1920,
+      "height": 1507,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/28560",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_The_Bedroom_-_1926.417_-_Art_Institute_of_Chicago.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (Art Institute of Chicago open access)"
+    },
+    {
+      "file": "sunday-on-la-grande-jatte.jpg",
+      "title": "A Sunday on La Grande Jatte — 1884",
+      "titleTr": "Grande Jatte Adası'nda Bir Pazar Öğleden Sonrası",
+      "artist": "Georges Seurat",
+      "year": "1884–86",
+      "width": 1920,
+      "height": 1278,
+      "museum": "Art Institute of Chicago",
+      "museumPage": "https://www.artic.edu/artworks/27992",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Georges_Seurat_-_A_Sunday_on_La_Grande_Jatte_--_1884_-_Google_Art_Project.jpg",
+      "licence": "Public domain work; the photograph is Google Arts & Culture's faithful reproduction of it (public domain), taken from Wikimedia Commons."
+    }
+  ]
+}

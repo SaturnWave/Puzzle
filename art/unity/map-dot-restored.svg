@@ -1,0 +1,5 @@
+<!-- A restored painting of another era as a dot on the world map (MapWorldTR): gilt, 7 points across in a dark line of 1.3, around the middle of the picture. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 11.6 11.6">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE892"/><stop offset="1" stop-color="#E8A62C"/></linearGradient></defs>
+<circle cx="5.8" cy="5.8" r="4.8" fill="#5E3305"/><circle cx="5.8" cy="5.8" r="3.5" fill="url(#g)"/>
+</svg>

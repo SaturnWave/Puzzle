@@ -1,0 +1,19 @@
+<!-- The small teal disc a row's mark stands on, in a gilt ring, as the design canvas draws it at the head of each row
+     of the settings (SettingsTR). One unit is one point of the design. The disc is 32 across around (24, 23); with
+     its rings it is 38.4 across. Its drop is the brown a thing throws on a cream card. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="528" height="528" viewBox="0 0 48 48">
+<defs>
+<linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="0" y1="7" x2="0" y2="39"><stop offset="0" stop-color="#3AB0B3"/><stop offset=".5" stop-color="#1D8890"/><stop offset="1" stop-color="#136871"/></linearGradient>
+<clipPath id="in-face"><circle cx="24" cy="23" r="16"/></clipPath>
+</defs>
+<!-- the drop under the disc, the dark line, the gilt ring, the face -->
+<circle cx="24" cy="25.5" r="19.2" fill="#5C3810" fill-opacity=".3"/>
+<circle cx="24" cy="23" r="19.2" fill="#5E3305"/>
+<circle cx="24" cy="23" r="18" fill="#F6B93C"/>
+<circle cx="24" cy="23" r="16" fill="url(#teal)"/>
+<!-- light along the top of the face, a darker foot -->
+<g clip-path="url(#in-face)">
+<path fill="#fff" fill-opacity=".5" fill-rule="evenodd" d="M0 0H48V48H0Z M8 25A16 16 0 0 1 40 25A16 16 0 0 1 8 25Z"/>
+<path fill="#06323A" fill-opacity=".6" fill-rule="evenodd" d="M0 0H48V48H0Z M8 20.5A16 16 0 0 1 40 20.5A16 16 0 0 1 8 20.5Z"/>
+</g>
+</svg>

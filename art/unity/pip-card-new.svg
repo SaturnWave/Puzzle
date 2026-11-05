@@ -1,0 +1,18 @@
+<!-- The pip of the piece a level has just given, on a cream card: gilt in a ring of light, of red and of dark red, as
+     the design canvas draws the seventh pip of its row (WinTR). One unit is one point of the design. The pip is
+     19 x 13 at (6.5, 6), as pip-card-on.svg's is; with its rings it is 28.2 x 22.2. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="448" viewBox="0 0 32 28">
+<defs>
+<linearGradient id="gilt" gradientUnits="userSpaceOnUse" x1="0" y1="6" x2="0" y2="19"><stop offset="0" stop-color="#FFF4C4"/><stop offset="1" stop-color="#F6B93C"/></linearGradient>
+<clipPath id="in-pip"><rect x="6.5" y="6" width="19" height="13" rx="4.5"/></clipPath>
+</defs>
+<!-- the drop on the card, then the rings from the outermost in: dark red, red, light; the gilt, light along its top -->
+<rect x="1.9" y="3.9" width="28.2" height="22.2" rx="9.1" fill="#5C3810" fill-opacity=".3"/>
+<rect x="1.9" y="1.4" width="28.2" height="22.2" rx="9.1" fill="#5E0A0C"/>
+<rect x="2.9" y="2.4" width="26.2" height="20.2" rx="8.1" fill="#F4472F"/>
+<rect x="4.5" y="4" width="23" height="17" rx="6.5" fill="#FFF6CC"/>
+<rect x="6.5" y="6" width="19" height="13" rx="4.5" fill="url(#gilt)"/>
+<g clip-path="url(#in-pip)">
+<path fill="#FFFBE6" fill-rule="evenodd" d="M0 0H32V28H0Z M11 7.5H21A4.5 4.5 0 0 1 25.5 12V16A4.5 4.5 0 0 1 21 20.5H11A4.5 4.5 0 0 1 6.5 16V12A4.5 4.5 0 0 1 11 7.5Z"/>
+</g>
+</svg>

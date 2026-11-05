@@ -1,0 +1,16 @@
+{
+  // The floor with the fewest assumptions: nobody takes the +5 moves and nobody starts with a booster. What is left
+  // is the measured games, lives and the session habit.
+  "extends": "default.json",
+  "name": "no-offers",
+  "player": {
+    "extraMoves": {
+      "watchesAds": false,
+      "paysCoins": false
+    },
+    "startBoosters": {
+      "useAfterLossesOnLevel": null,
+      "buyAfterLossesOnLevel": null
+    }
+  }
+}

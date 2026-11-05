@@ -95,7 +95,7 @@ public class GameTests
         LevelLayout.Parse(new LayoutLayers { Cells = Blank(10, 12, '#') }),
         new GoalSpec[] { new GoalSpec.CollectColor(GemColor.Red, 60) },
         moveLimit: 30,
-        new SpawnRules { Colors = 5 });
+        new SpawnRules { Palette = GemColors.First(5) });
 
     internal static LevelDefinition ObstacleLevel()
     {
@@ -133,7 +133,7 @@ public class GameTests
             moveLimit: 40,
             new SpawnRules
             {
-                Colors = 5,
+                Palette = GemColors.First(5),
                 Items = new ItemSpawnRules { Total = 3, MaxOnBoard = 2, ChancePercent = 8 },
             });
     }

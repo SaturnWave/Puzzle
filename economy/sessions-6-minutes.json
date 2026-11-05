@@ -1,0 +1,12 @@
+{
+  // The default economy with shorter sessions than the recordings showed: about three attempts a session, three
+  // times a day. It is the habit in which the average player would have met the first wish (level 100 between day
+  // 10 and day 14); the three free ads of a day then cover nearly every +5 that is wanted, and coins have little
+  // to go to. Set it beside the default (puzzle economy compare).
+  "extends": "default.json",
+  "name": "sessions-6-minutes",
+  "habit": {
+    // Minutes after which no new attempt starts in a session. [assumed 2, the ceiling lowered]
+    "sessionCeilingMinutes": 6
+  }
+}

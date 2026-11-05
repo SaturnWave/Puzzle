@@ -1,0 +1,88 @@
+{
+  "room": "room-19",
+  "paintings": [
+    {
+      "file": "cariani-a-concert.jpg",
+      "title": "A Concert",
+      "titleTr": "Konser",
+      "artist": "Cariani (Giovanni Busi)",
+      "year": "y. 1518–20",
+      "width": 1920,
+      "height": 1336,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/90793",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Cariani,_A_Concert,_c._1518-1520,_NGA_90793.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "edward-vi-as-a-child.jpg",
+      "title": "Edward VI as a Child",
+      "titleTr": "Çocukken VI. Edward",
+      "artist": "Hans Holbein the Younger",
+      "year": "muhtemelen 1538",
+      "width": 1488,
+      "height": 1920,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/71",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_the_Younger,_Edward_VI_as_a_Child,_probably_1538,_NGA_71.jpg",
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "the-librarian.jpg",
+      "title": "The Librarian",
+      "titleTr": "Kütüphaneci",
+      "artist": "Giuseppe Arcimboldo",
+      "year": "y. 1562–66",
+      "width": 1384,
+      "height": 1920,
+      "museum": "Skokloster Castle",
+      "museumPage": "https://samlingar.shm.se/object/465F670E-FE9D-4AF7-9C45-7DE92E39EB9A",
+      "fetchedFrom": "https://media.samlingar.shm.se/item/6374F08D-58CA-4752-A9A6-04F3D4ED3343",
+      "crop": {
+        "left": 0.013,
+        "top": 0.01,
+        "right": 0.988,
+        "bottom": 0.99
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free to use in every way (Skoklosters slott/SHM)"
+    },
+    {
+      "file": "marketplace-in-bergen-op-zoom.jpg",
+      "title": "The Marketplace in Bergen op Zoom",
+      "titleTr": "Bergen op Zoom'da Pazar Yeri",
+      "artist": "Attributed to Abel Grimmer",
+      "year": "muhtemelen 1590 ve 1597",
+      "width": 1904,
+      "height": 1465,
+      "museum": "National Gallery of Art",
+      "museumPage": "https://purl.org/nga/collection/artobject/57418",
+      "fetchedFrom": "https://commons.wikimedia.org/wiki/File:Attributed_to_Abel_Grimmer,_The_Marketplace_in_Bergen_op_Zoom,_probably_1590_and_1597,_NGA_57418.jpg",
+      "crop": {
+        "left": 0.004,
+        "top": 0.004,
+        "right": 0.996,
+        "bottom": 0.996
+      },
+      "licence": "Public domain work; the museum's photograph is released under CC0 (National Gallery of Art open access)"
+    },
+    {
+      "file": "vertumnus.jpg",
+      "title": "Vertumnus (Emperor Rudolf II as Vertumnus)",
+      "titleTr": "Vertumnus (Vertumnus Olarak İmparator II. Rudolf)",
+      "artist": "Giuseppe Arcimboldo",
+      "year": "1591",
+      "width": 1553,
+      "height": 1920,
+      "museum": "Skokloster Castle",
+      "museumPage": "https://samlingar.shm.se/object/BD10473C-4D1B-4D89-82D9-4ADD890B7941",
+      "fetchedFrom": "https://media.samlingar.shm.se/item/3A2122A1-3181-45E6-B2B5-B8B2C0259EE9",
+      "crop": {
+        "left": 0.005,
+        "top": 0.008,
+        "right": 0.995,
+        "bottom": 0.995
+      },
+      "licence": "Public domain work; the museum marks its photograph with the Public Domain Mark, free to use in every way (Skoklosters slott/SHM)"
+    }
+  ]
+}

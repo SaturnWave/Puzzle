@@ -1,4 +1,5 @@
 using System;
+using Puzzle.Core.Model;
 
 namespace Puzzle.Core.Engine
 {
@@ -8,26 +9,35 @@ namespace Puzzle.Core.Engine
     /// </summary>
     public sealed class RuleSet
     {
-        private readonly int _bombRadius = 2;
-        private readonly int _doubleBombRadius = 3;
+        private readonly int _bombRadius = 1;
+        private readonly int _bigBombRadius = 2;
         private readonly int _seekerComboTargets = 3;
         private readonly int _minInitialMoves = 3;
+        private readonly int _startBoosterExtraMoves = 3;
 
         public static RuleSet Default { get; } = new RuleSet();
 
-        /// <summary>Chebyshev radius of a bomb blast: 2 means a 5x5 area.</summary>
+        /// <summary>Chebyshev radius of the small bomb: 1 means a 3x3 area.</summary>
         public int BombRadius
         {
             get => _bombRadius;
             init => _bombRadius = RequireRange(value, 1, 5, nameof(BombRadius));
         }
 
-        /// <summary>Radius of the bomb + bomb combo.</summary>
-        public int DoubleBombRadius
+        /// <summary>Radius of the big bomb: 2 means a 5x5 area. Two bombs swapped together blast with the sum of their radii.</summary>
+        public int BigBombRadius
         {
-            get => _doubleBombRadius;
-            init => _doubleBombRadius = RequireRange(value, 1, 8, nameof(DoubleBombRadius));
+            get => _bigBombRadius;
+            init => _bigBombRadius = RequireRange(value, 1, 6, nameof(BigBombRadius));
         }
+
+        /// <summary>Blast radius of a bomb kind.</summary>
+        public int RadiusOf(TileKind bomb) => bomb switch
+        {
+            TileKind.Bomb => BombRadius,
+            TileKind.BigBomb => BigBombRadius,
+            _ => throw new ArgumentOutOfRangeException(nameof(bomb), bomb, "Not a bomb."),
+        };
 
         /// <summary>How many targets the seeker + seeker combo flies to.</summary>
         public int SeekerComboTargets
@@ -44,6 +54,13 @@ namespace Puzzle.Core.Engine
         {
             get => _minInitialMoves;
             init => _minInitialMoves = RequireRange(value, 1, 50, nameof(MinInitialMoves));
+        }
+
+        /// <summary>How many moves the <see cref="StartBooster.ExtraMoves"/> booster adds to the level's limit.</summary>
+        public int StartBoosterExtraMoves
+        {
+            get => _startBoosterExtraMoves;
+            init => _startBoosterExtraMoves = RequireRange(value, 1, 20, nameof(StartBoosterExtraMoves));
         }
 
         public int InitialFillAttempts { get; init; } = 60;

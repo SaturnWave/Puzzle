@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "title": "US App Store in-app purchase prices (USD) of six top match-3 / blast games",
+    "checkedOn": "2026-10-23",
+    "storefront": "us",
+    "currency": "USD (store prices, before sales tax)",
+    "statusLegend": {
+      "FACT": "seen directly on the cited source on checkedOn (App Store page / Apple catalog API, or the game's own help page)",
+      "REPORTED": "secondary source (wiki, analyst, newsletter, forum, tracker); may be older than checkedOn",
+      "ESTIMATE": "my own inference or arithmetic; not seen on any source"
+    },
+    "method": "Each App Store page was read twice on 2026-10-23: the web page (apps.apple.com, 'In-App Purchases' list) and Apple's catalog API view 'top-in-app-purchasables' (via the Firecrawl apps-apple-com provider; source_url https://apps.apple.com/api/apps/v1/catalog/us/apps/<id>?...&views=top-in-app-purchasables). Apple shows only the top 10 IAPs per app (the API flags in_app_purchases_truncated=true for every game), so the full SKU ladder is not public. For five games both reads gave the same 10 items; for Toy Blast they gave two different sets, both are listed.",
+    "caveat": "Item names on the store rarely say what is inside. Contents come from secondary sources where found; otherwise contents is null."
+  },
+  "marketContext": {
+    "source": "AppMagic Monetization Report 2025 (data Oct 2024 - Sep 2025), https://appmagic.rocks/files/img-blog/EN_Monetization_Report_2025.pdf",
+    "status": "REPORTED",
+    "topOffersByShare": {
+      "Royal Match": [
+        [
+          "Royal Favor $6.99",
+          15
+        ],
+        [
+          "Mini Coin Package $1.99",
+          10.8
+        ],
+        [
+          "Prince's Treasure $9.99",
+          7
+        ],
+        [
+          "Queen's Treasure $19.99",
+          6.6
+        ],
+        [
+          "King's Treasure $39.99",
+          6.4
+        ]
+      ],
+      "Candy Crush Saga": [
+        [
+          "10 gold bars $1.99",
+          24.7
+        ],
+        [
+          "50 gold bars $7.99",
+          14
+        ],
+        [
+          "small offer $5.99",
+          8.6
+        ],
+        [
+          "Offer $19.99",
+          8
+        ],
+        [
+          "Offer $9.99",
+          5.9
+        ]
+      ],
+      "Royal Kingdom": [
+        [
+          "Splendid Pouch $9.99",
+          14.4
+        ],
+        [
+          "Superior Chest $19.99",
+          12.3
+        ],
+        [
+          "Mini Coin Package $1.99",
+          11
+        ],
+        [
+          "King's Favor $6.99",
+          10.1
+        ],
+        [
+          "Noble Pack $5.99",
+          8.4
+        ]
+      ]
+    },
+    "puzzleGenre": {
+      "appStoreOfferPrice2025": {
+        "min": 0.39,
+        "avg": 6.05,
+        "median": 1.99,
+        "max": 99.99
+      },
+      "googlePlayOfferPrice2025": {
+        "min": 0.99,
+        "avg": 5.69,
+        "median": 1.99,
+        "max": 99.99
+      },
+      "arppuTopTitlesAppStoreUsd": {
+        "30d": 69,
+        "60d": 107,
+        "90d": 135
+      },
+      "arppuTopTitlesGooglePlayUsd": {
+        "30d": 44,
+        "60d": 68,
+        "90d": 85
+      },
+      "avgPurchaseValueAppStoreUsd": {
+        "1st": 9.6,
+        "2nd": 9.7,
+        "3rd+": 12.6
+      },
+      "avgPurchasesPerPayerAppStore": {
+        "30d": 3.9,
+        "60d": 5.8,
+        "90d": 7
+      },
+      "match3RevenueUsd": {
+        "Oct2023-Sep2024": "4.4B",
+        "Oct2024-Sep2025": "4.6B"
+      },
+      "keyLine": "Most revenue in puzzle games comes from LiveOps-tied special offers in the $6-15 range; items at $50+ rarely make the top purchases."
+    },
+    "googlePlayRoyalMatchUsRange": {
+      "value": "$0.99 - $99.99",
+      "status": "REPORTED",
+      "source": "https://opentherank.com/mobile-game-pricing/royal-match/ (captured 2026-10-10)"
+    }
+  }
+}

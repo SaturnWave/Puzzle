@@ -17,7 +17,9 @@ namespace Puzzle.Core.Levels
             LevelLayout layout,
             IReadOnlyList<GoalSpec> goals,
             int moveLimit,
-            SpawnRules spawn)
+            SpawnRules spawn,
+            AttemptPolicy? attempts = null,
+            ContentVersion contentVersion = default)
         {
             Id = id;
             Difficulty = difficulty;
@@ -25,6 +27,8 @@ namespace Puzzle.Core.Levels
             Goals = goals.ToArray();
             MoveLimit = moveLimit;
             Spawn = spawn;
+            Attempts = attempts ?? AttemptPolicy.Default;
+            ContentVersion = contentVersion;
             Validate();
         }
 
@@ -40,6 +44,24 @@ namespace Puzzle.Core.Levels
 
         public SpawnRules Spawn { get; }
 
+        /// <summary>How retries differ: starting-board rule and the calibrated seed pool.</summary>
+        public AttemptPolicy Attempts { get; }
+
+        /// <summary>Which revision of this level number's content this is; the first unless a patch made it.</summary>
+        public ContentVersion ContentVersion { get; }
+
+        /// <summary>The same level with a different move budget (set by the bot calibration).</summary>
+        public LevelDefinition WithMoveLimit(int moveLimit) =>
+            new LevelDefinition(Id, Difficulty, Layout, Goals, moveLimit, Spawn, Attempts, ContentVersion);
+
+        /// <summary>The same level with a different attempt policy (e.g. after calibrating its seed pool).</summary>
+        public LevelDefinition WithAttempts(AttemptPolicy attempts) =>
+            new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, attempts, ContentVersion);
+
+        /// <summary>The same content under another version number (set when a patch is made).</summary>
+        public LevelDefinition WithContentVersion(ContentVersion contentVersion) =>
+            new LevelDefinition(Id, Difficulty, Layout, Goals, MoveLimit, Spawn, Attempts, contentVersion);
+
         private void Validate()
         {
             if (Goals.Count == 0 || Goals.Count > MaxGoals)
@@ -52,9 +74,9 @@ namespace Puzzle.Core.Levels
                 throw Problem($"move limit {MoveLimit} is outside 1..{MaxMoveLimit}");
             }
 
-            if (Layout.MaxPresetColorIndex() >= Spawn.Colors)
+            if (Layout.PresetColors().Any(color => !Spawn.Contains(color)))
             {
-                throw Problem($"a preset gem uses a color outside the level's {Spawn.Colors} colors");
+                throw Problem("a preset gem uses a color outside the level's palette");
             }
 
             foreach (GoalSpec goal in Goals)
@@ -70,9 +92,9 @@ namespace Puzzle.Core.Levels
 
         private void ValidateGoal(GoalSpec goal)
         {
-            if (goal is GoalSpec.CollectColor collect && (int)collect.Color >= Spawn.Colors)
+            if (goal is GoalSpec.CollectColor collect && !Spawn.Contains(collect.Color))
             {
-                throw Problem($"goal {goal} uses a color outside the level's {Spawn.Colors} colors");
+                throw Problem($"goal {goal} uses a color outside the level's palette");
             }
 
             int available = goal switch
