@@ -59,9 +59,19 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   - Kapalı test "Alpha" etkin: 3 (1.0) "Available to selected testers", 178 ülke, yayın 5 Kasım 00:13.
   - Seçili liste yalnız "SketchPaint testers" (30 kişi). "Masa testçileri" (28) ve "Testers1" (9) seçili değil.
   - Katılma bağlantıları: web `https://play.google.com/apps/testing/com.saturnwave.museumpuzzle`, Android `https://play.google.com/store/apps/details?id=com.saturnwave.museumpuzzle`. Sahip bağlantıyı istedi; testçilere kendisi duyuruyor.
+- **İlk testçi: tablet ve telefon (5 Kasım, sahibin aktardığı):**
+  - Tablette eski sürümden kalan ilerleme vardı (anonim hesap, 4.872 altın). Testçi güncelledi, oyunu telefona da kurdu ve telefonu Play Games'e bağladı (1. oda, 280 altın). Telefon tabletin kaydını sormadı; tablette "Bağlan"a defalarca basıldı. Sahibin ekran görüntülerinde iki ayrı oyuncu kodu vardı: telefonda "Google Play Games ile bağlı", tablette "Bağlan".
+  - Koddan neden: Play Games kimliği telefonun hesabında olduğundan tabletin bağlaması "Başka bir kayıt var" kartına düşüyor; kart Ayarlar kapanana kadar arkada kalıyor (4 Kasım'ın küçük bulgusu, vc3'le çıktı). Soru yalnız sonradan bağlanan cihazda çıkar; telefonun sormaması tasarım gereği.
+  - Testçiye verilen yol: tablette "Bağlan", Ayarlar'ı kapat, "Ona geç". Telefonda "Bulut kaydı"nı kapatıp açmak okumayı zorlar (`SyncTrigger.SwitchedOn`). Sonuç (sahip): "eşleme istenilen gibi oldu, ileride ki hesap gibi". İki ilerleme birleşti, ileri olan kaldı (T592).
+  - **Bulgu (LESSONS H9):** aynı hesaptaki iki cihaz birbirinin ilerlemesini geç görüyor. Açılışta okuma en çok 12 saatte bir (`SyncPolicy.ReadsFirst`). Cihaz ötekinin yazdığını kendi yazması reddedilince (bir bölüm kazanınca), anahtar kapatılıp açılınca ya da 12 saat sonra görüyor. T591'in "telefon yeniden açılınca 5. bölümde" beklentisi bu yüzden 12 saat içinde tutmaz. Veri kaybı yok: yazma kilidi üstüne yazmayı önlüyor, iki kayıt birleşiyor. Mağaza metni yalnız yeni telefona taşımayı vaat ediyor; o çalışıyor.
+  - Öneriler (sahibin kararını bekliyor):
+    - Hemen: Remote Config'te `cloud_read_min_hours = 1`.
+    - vc4'te: bağlı hesaplarda her açılışta ve arka plandan dönüşte okuma.
+    - Kart için iş açıldı (SaturnWave/Puzzle#11): Ayarlar'ın üstünde hemen ve bir kez çıkması, bu cihazın ilerlemesini göstermesi, tablette "telefon" yerine "cihaz". Hesaptaki kaydı göstermek için önce o hesaba girmek gerekir (Unity aynı anda tek oyuncuya girer); kolay yol bu cihazın ilerlemesi.
 - **Sıradaki:**
+  - Sahibin kararı: H9'un önerileri (Remote Config, vc4).
   - Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar ve yeniden başlatma yinelenir, imza SHA-1'i okunur (T583, T596).
-  - İki cihazın eşitlemesini test kullanıcıları dener (T591, T592, T531).
+  - İki cihazın eşitlemesini test kullanıcıları dener (T591, T531).
 
 ## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
 

@@ -11,6 +11,26 @@
 5. **Yazılan test koşulmadan iş bitmiş sayılmaz.** Bir değişikliğin telefonda kanıtı "Bekliyor" durumundaysa o değişiklik mağazaya gitmez. Zaman baskısı gerekçe değildir.
 6. **Çökme okunabilir olur.** Paket yerel kütüphanelerin sembol tablolarını taşır. Telefondaki çökme kaydı okunur: `adb logcat -b crash`, `adb shell dumpsys dropbox`, Unity'nin iş parçacığı dökümündeki "Pending exception" satırı.
 7. **Metin derlemeyle uyuşur.** Mağaza metni ve sürüm notları yalnız o derlemenin yaptığını söyler. Kapalı olan ya da kurulmamış bir özellik (açılış kaydındaki "not set up", "turned off" satırları) yüklemeden önce sahibe söylenir: ya kurulur ya metin düzeltilir.
+8. **Beklenti kodun kuralıyla karşılaştırılır; bulgu yayına sessiz gitmez.** Bir telefon testinin beklentisi, kodun bütçe, süre ve kapılarıyla karşılaştırılarak yazılır. İki cihazlı her beklenti bir birim testiyle de denenir: iki kurulum, tek sahte bulut, gerçek `SyncPolicy`, saat ileri sarılmadan. Bir bütçe kararının oyuncunun göreceği sonucu (örneğin "öteki cihaz 12 saate kadar geç görür") sahibe söylenir. Yüklemeden önce bilinen her bulgu ya düzeltilir ya bir işe bağlanıp sahibe söylenir (H9).
+
+## H9 — Aynı hesaptaki iki cihaz birbirini geç görüyor; ikinci cihazın kartı Ayarlar'ın arkasında (2026-11-05)
+
+- **Ne oldu:** kapalı testin ilk testçisi tabletle telefonu eşitleyemedi. Telefon Play Games'e bağlıydı. Tablette "Bağlan"a defalarca basıldı, ama tablet kendi anonim hesabında kaldı; telefon da tabletin kaydını hiç sormadı. Sahibin ekran görüntülerinde iki ayrı oyuncu kodu vardı. Testçi tablette Ayarlar'ı kapatıp "Ona geç"i seçince iki ilerleme birleşti (T592, DEVLOG Oturum 39).
+- **Neden:**
+  - Play Games kimliği telefonun hesabında olduğundan tabletin bağlaması "Başka bir kayıt var" kartına düşüyor. Kart Ayarlar kapanana kadar görünmüyor. Bu 4 Kasım'da telefonda görüldü ve DEVLOG'a "küçük bulgu" diye yazıldı, ama düzeltilmeden vc3'le çıktı.
+  - Aynı hesaptaki bir cihazın yazdığı, öteki cihaza açılışta en çok 12 saatte bir gelir: `SyncPolicy.ReadsFirst` açılışta yalnız `ReadEvery` (12 saat) geçtiyse okur. Cihaz ötekinin yazdığını ancak kendi yazması reddedilince (bir bölüm kazanınca) ya da anahtar kapatılıp açılınca görüyor.
+  - Oturum 34'te (26 Ekim) bütçenin varsayılanı olarak planın sıkı kuralı seçildi. Plan bu kuralı büyük oyuncu sayısı için önermişti (`docs/research/server-v1.md` §2.4: varsayılan kuralla ücretsiz katman yaklaşık 50 bin aylık oyuncuya yeter).
+  - Veri kaybı yok: yazma kilidi üstüne yazmayı önlüyor, iki kayıt birleşiyor.
+- **Neden yakalanmadı:**
+  - İki cihaz testleri (T591, T592) yüklemeden önce koşulmadı; sahibin 4 Kasım kararıyla test kullanıcılarına kaldı.
+  - Birim testi iki telefonun birleşmesini saati 12 saat ileri sararak deniyor (`CloudSyncTests.Two_phones_of_one_player_add_up_what_each_earned`). Gecikme bilinen bir bütçe kararıydı, ama oyuncunun göreceği sonucu sahibe söylenmedi. T591 "telefon yeniden açılınca 5. bölümde" diyor; bu, kodun kuralıyla karşılaştırılmadan yazılmış bir beklenti.
+  - Yayına giden küçük bulgu bir işe bağlanmadı; yükleme öncesinde sahibe ayrıca söylenmedi.
+- **Etkisi:** testçi tabletteki ilerlemesinin kaybolacağından korktu. Telefon tableti sormayınca "birden fazla cihazda bulut kaydı çalışmıyor" sanıldı.
+- **Düzeltme:** sahibin kararını bekliyor.
+  - Hemen: Remote Config'te `cloud_read_min_hours = 1`.
+  - vc4'te: Play Games'e bağlı hesaplarda her açılışta ve arka plandan dönüşte okuma (anonim hesap tek cihazdadır, 12 saat kalabilir).
+  - Kart için iş: SaturnWave/Puzzle#11. Kart Ayarlar'ın üstünde hemen ve bir kez çıkar; bu cihazın ilerlemesini gösterir ve birleştirmenin hiçbir şeyi kaybettirmediğini söyler; tablette "telefon" yerine "cihaz" der.
+- **Bir daha olmasın diye:** kural 8.
 
 ## H7 — Yeni telefonda Play Games'in sessiz girişi hiç denenmiyordu (2026-11-04)
 
