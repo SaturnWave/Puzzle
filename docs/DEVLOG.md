@@ -53,10 +53,15 @@ Her oturumun kararları, bulguları ve değişiklikleri. En yeni kayıt en üstt
   - Sahip paketi kapalı testin ("Alpha") yeni sürümüne yükledi. İlk paket (`c7074222…`) aynı adla üzerine yazıldığından yüklenebilecek tek vc3 paketi düzeltilmiş olandı (331.466.494 bayt, `d13cbd39…`).
   - Play işledi: 3 (1.0), API 26+, hedef SDK 36, arm64-v8a, 4 ekran düzeni, 5 gerekli özellik. Yeni kurulumda 305 MB, güncellemede 24,8 MB. Desteklenen cihaz 13.257 (vc2'yle aynı), 178 ülke. 2 (1.0) bu sürümde devre dışı, saklanan paket yok.
   - Sürüm notları (Claude girdi, en-US ve tr-TR): "Your progress can now come with you to a new phone: link the game to Google Play Games in Settings, … Coin packs are not on sale in this version. The game asks once whether it may send short play statistics. …" / "İlerlemen artık yeni telefonuna da gelir: … Bu sürümde altın paketleri satışta değil. …".
-  - Sahibin isteğiyle Claude 14 değişikliği (sürüm ve 13 dilin uzun açıklaması) incelemeye gönderdi. Play'in ön denetimleri sürüyordu ("Changes in review"). Kayıt: `3 1.0 2026-11-04 closed`.
+  - Sahibin isteğiyle Claude 14 değişikliği (sürüm ve 13 dilin uzun açıklaması) incelemeye gönderdi. Play'in ön denetimleri geçti ("Your changes are now in review"). Kayıt: `3 1.0 2026-11-04 closed`.
+- **Onaylandı (5 Kasım):**
+  - Yayın özetinde incelemede değişiklik kalmadı ("Last published on November 5, 2026"); 14 değişiklik yayında.
+  - Kapalı test "Alpha" etkin: 3 (1.0) "Available to selected testers", 178 ülke, yayın 5 Kasım 00:13.
+  - Seçili liste yalnız "SketchPaint testers" (30 kişi). "Masa testçileri" (28) ve "Testers1" (9) seçili değil.
+  - Katılma bağlantıları: web `https://play.google.com/apps/testing/com.saturnwave.museumpuzzle`, Android `https://play.google.com/store/apps/details?id=com.saturnwave.museumpuzzle`. Sahip bağlantıyı istedi; testçilere kendisi duyuruyor.
 - **Sıradaki:**
-  - Google onaylayınca sürüm kendiliğinden yayına çıkar (yönetimli yayın kapalı). Hemen ardından Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar ve yeniden başlatma yinelenir, imza SHA-1'i okunur (T583, T596).
-  - Sahip testçilere duyurur. İki cihazın eşitlemesini test kullanıcıları dener (T591, T592, T531).
+  - Play'in kopyası sahibin telefonunda: kablolu kopya kaldırılır (önce sahibe sorulur), Play'den kurulur, 4. ve 5. adımlar ve yeniden başlatma yinelenir, imza SHA-1'i okunur (T583, T596).
+  - İki cihazın eşitlemesini test kullanıcıları dener (T591, T592, T531).
 
 ## 2026-11-02 · Oturum 38 — versionCode 3'e hazırlık: Play Games, satın almasız mağaza, istatistik
 
